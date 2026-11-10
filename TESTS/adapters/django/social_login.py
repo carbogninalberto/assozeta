@@ -2,6 +2,8 @@
 
 Provider responses are explicitly controlled here: this proves the account,
 normalization/audit and OTP boundary, not Google/Apple network or token validation.
+The controlled identity carries email_verified: the view continues only for a
+string e-mail whose claim is True or 'true'.
 """
 import datetime
 import json
@@ -34,7 +36,7 @@ def run(work, log, tool_env):
         actor=User.original_objects.create(user_id=uid(729900),username='SOCIAL-AUDIT-ACTOR',email='social-audit-actor@example.test',role=1,password='!unused')
         association=SportAssociation.original_objects.create(sport_association_id=uid(729901),user=actor,denomination='Social audit fixture')
     def add(name,*,rows=None,selected=0,backend='google',identifier=unset,token='synthetic-social-token',email=unset,
-            valid=True,provider_error=False,provider_calls=1,outcome='required',otp=None,present=False,two_fa=True,audit_actor=False):
+            valid=True,provider_error=False,provider_calls=1,outcome='required',otp=None,present=False,two_fa=True,audit_actor=False,verified=True):
         index=len(cases);address=f'social-{index}@example.test'
         if rows is None:rows=[{}]
         users=[]
@@ -48,7 +50,7 @@ def run(work, log, tool_env):
         selected_id=users[selected]['id'] if selected is not None else ''
         changed=selected is not None and outcome in ('','required','invalid_otp','otp_type') and users[selected]['username']!=users[selected]['username'].upper()
         cases.append({'name':name,'identifier':address if identifier is unset else identifier,'token':token,'backend':backend,
-            'email':address if email is unset else email,'valid':valid,'provider_error':provider_error,'provider_calls':provider_calls,
+            'email':address if email is unset else email,'verified':verified,'valid':valid,'provider_error':provider_error,'provider_calls':provider_calls,
             'provider':'apple' if backend in ('apple','apple-id') else 'google','outcome':outcome,'otp':otp,'present':present,
             'selected':selected_id,'changed':changed,'rows':users,'actor':str(actor.pk) if audit_actor else None})
     for backend in ('google','google-oauth2','google-identity','apple','apple-id'):
@@ -64,8 +66,8 @@ def run(work, log, tool_env):
     add('email sharp-s is not casefold',rows=[{'email':'straße-social-lower@example.test','username':'Social-sharp'}],identifier='social-sharp',email='STRASSE-SOCIAL-LOWER@example.test',outcome='email')
     add('email final sigma',rows=[{'email':'ΟΣ@example.test','username':'Social-sigma'}],identifier='social-sigma',email='ος@example.test')
     add('email dotted I',rows=[{'email':'İ@example.test','username':'Social-dot'}],identifier='social-dot',email='i\u0307@example.test')
-    add('missing email',email=None,outcome='identity')
-    add('numeric email',email=123,outcome='identity')
+    add('missing email',email=None,outcome='token')
+    add('numeric email',email=123,outcome='token')
     add('inactive after token',rows=[{'is_active':False}],valid=False,outcome='token')
     add('inactive after email',rows=[{'is_active':False}],email='else@example.test',outcome='email')
     add('inactive valid identity',rows=[{'is_active':False}],outcome='invalid')
@@ -85,9 +87,17 @@ def run(work, log, tool_env):
     add('unchanged username has no audit',rows=[{'username':'SOCIAL-UNCHANGED'}])
     add('numeric identifier',rows=[{'username':'730039'}],identifier=730039)
     add('Unicode fold preference',rows=[{'email':'straße-social@example.test','username':'STRASSE-SOCIAL@EXAMPLE.TEST'},{'email':'straße-social@example.test'}],identifier='straße-social@example.test',email='straße-social@example.test')
+    # The provider must mark the e-mail as verified (Apple sends the claim as text or as a boolean).
+    add('unverified email',verified=False,outcome='token')
+    add('null email verification',verified=None,outcome='token')
+    add('text false email verification',backend='apple',verified='false',outcome='token')
+    add('numeric email verification',verified=1,outcome='token')
+    add('empty email',email='',outcome='token')
+    add('unverified inactive account',rows=[{'is_active':False}],verified=False,outcome='token')
+    add('text email verification',backend='apple-id',verified='true')
 
-    query_counts=[5,5,5,5,5,1,1,1,5,1,1,1,5,1,5,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,5,5,6,2,2,2]
-    assert len(cases)==len(query_counts)==41
+    query_counts=[5,5,5,5,5,1,1,1,5,1,1,1,5,1,5,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,5,5,5,6,2,2,2,1,1,1,1,1,1,5]
+    assert len(cases)==len(query_counts)==48
     for case,count in zip(cases,query_counts):case['queries']=count
     batches=[]
     with disable_auditlog():
@@ -132,7 +142,7 @@ def run(work, log, tool_env):
                 assert token==case['token'],(case['name'],'provider token changed')
                 calls.append(provider)
                 if case['provider_error']:raise RuntimeError('synthetic provider failure')
-                return case['valid'],{'email':case['email'],'email_verified':False}
+                return case['valid'],{'email':case['email'],'email_verified':case['verified']}
             with patch('application.views.auth_views.SocialAuthService.verify_google_token',side_effect=lambda token:verify('google',token)),patch('application.views.auth_views.SocialAuthService.verify_apple_token',side_effect=lambda token:verify('apple',token)):
                 payload={'username':case['identifier'],'token':case['token'],'backend':case['backend'],'password':'ignored-social-branch'}
                 if case['present']:payload['otp']=case['otp']

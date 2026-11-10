@@ -15,6 +15,7 @@ import (
 type socialFixture struct {
 	rows         []domain.Account
 	email        any
+	claim        *any // email_verified; nil: true
 	valid        bool
 	err, readErr error
 	calls        int
@@ -39,8 +40,34 @@ func (f *socialFixture) Verify(_ context.Context, provider string, token any) (S
 	f.calls++
 	f.provider = provider
 	f.token = token
-	return SocialIdentity{Email: f.email}, f.valid, f.err
+	return SocialIdentity{Email: f.email, EmailVerified: f.verified()}, f.valid, f.err
 }
+
+// verified is the identity's email_verified: true unless the case sets another value.
+func (f *socialFixture) verified() any {
+	if f.claim != nil {
+		return *f.claim
+	}
+	return true
+}
+func TestSocialSelectionRequiresVerifiedEmail(t *testing.T) {
+	account := domain.Account{ID: "one", Username: "TARGET", Email: "target@example.test", Active: true}
+	for _, tc := range []struct {
+		claim any
+		want  error
+	}{
+		{true, nil}, {"true", nil}, // Apple sends the claim as text or as a boolean
+		{false, ErrSocialToken}, {"false", ErrSocialToken}, {nil, ErrSocialToken}, {float64(1), ErrSocialToken}, {"True", ErrSocialToken},
+	} {
+		claim := tc.claim
+		f := &socialFixture{rows: []domain.Account{account}, email: account.Email, claim: &claim, valid: true}
+		got, err := NewSocialLogin(f, f, 2).Select(context.Background(), "target", "opaque", "apple")
+		if !errors.Is(err, tc.want) || (tc.want == nil) != (got != nil) || f.calls != 1 {
+			t.Errorf("%v: %v %v", tc.claim, got, err)
+		}
+	}
+}
+
 func TestSocialSelectionOrdering(t *testing.T) {
 	account := domain.Account{ID: "one", Username: "TARGET", Email: "target@example.test", Password: "must-not-escape", Active: true}
 	for _, tc := range []struct {
@@ -59,8 +86,8 @@ func TestSocialSelectionOrdering(t *testing.T) {
 		{"preferred wins", []domain.Account{{ID: "a", Username: "a"}, account}, "apple", account.Email, true, nil, "one", 1},
 		{"invalid token", []domain.Account{account}, "google", nil, false, ErrSocialToken, "", 1},
 		{"wrong email", []domain.Account{account}, "google", "else@example.test", true, ErrSocialEmail, "", 1},
-		{"missing email", []domain.Account{account}, "google", nil, true, ErrSocialIdentity, "", 1},
-		{"nontext email", []domain.Account{account}, "google", true, true, ErrSocialIdentity, "", 1},
+		{"missing email", []domain.Account{account}, "google", nil, true, ErrSocialToken, "", 1},
+		{"nontext email", []domain.Account{account}, "google", true, true, ErrSocialToken, "", 1},
 		{"inactive after token", []domain.Account{{ID: "one", Username: "TARGET", Email: account.Email}}, "google", nil, false, ErrSocialToken, "", 1},
 		{"inactive after email", []domain.Account{{ID: "one", Username: "TARGET", Email: account.Email}}, "google", account.Email, true, ErrLoginCredentials, "", 1},
 	} {
@@ -172,7 +199,7 @@ func (v *blockingSocialVerifier) Verify(ctx context.Context, _ string, _ any) (S
 	case <-ctx.Done():
 		return SocialIdentity{}, false, ctx.Err()
 	case <-v.release:
-		return SocialIdentity{Email: "target@example.test"}, true, nil
+		return SocialIdentity{Email: "target@example.test", EmailVerified: true}, true, nil
 	}
 }
 func TestSocialAdmissionBoundAndCancelledWaiter(t *testing.T) {

@@ -68,6 +68,7 @@ class ProviderProxy:
                     kind = 'google-userinfo'
                     info = owner.access.get(self.headers.get('Authorization', '').removeprefix('Bearer '))
                     body = {'email': info['email'], 'sub': 'fixture-access'} if info else {}
+                    if info and 'email_verified' in info: body['email_verified'] = info['email_verified']
                     if not info: status = 401
                 else:
                     kind, status, body = 'unexpected', 502, {}
@@ -116,12 +117,13 @@ class ProviderProxy:
         return {'HTTPS_PROXY': f'http://127.0.0.1:{self.server.server_port}',
                 'NO_PROXY': '127.0.0.1,localhost', 'REQUESTS_CA_BUNDLE': str(self.ca), 'SSL_CERT_FILE': str(self.ca)}
 
-    def token(self, provider, email, *, audience=None, expired=False, wrong_signature=False):
+    def token(self, provider, email, *, audience=None, expired=False, wrong_signature=False, verified=True):
         import jwt
         now = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
         claims = {'iss': 'https://appleid.apple.com' if provider == 'apple' else 'accounts.google.com',
                   'aud': audience or 'http-'+provider, 'iat': now-60, 'exp': now-30 if expired else now+3600,
-                  'sub': 'fixture-subject', 'email': email, 'email_verified': True}
+                  'sub': 'fixture-subject', 'email': email}
+        if verified is not None: claims['email_verified'] = verified
         return jwt.encode(claims, self.other_key if wrong_signature else self.key, algorithm='RS256', headers={'kid': 'public-fixture'})
 
     def close(self):

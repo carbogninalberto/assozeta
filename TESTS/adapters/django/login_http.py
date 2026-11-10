@@ -113,7 +113,7 @@ def _run(work,log,tool_env,proxy):
             payload.pop('password')
             payload.update(token=token,backend=social)
             case['provider_calls']=['apple-keys' if provider=='apple' else 'google-certs']
-            if provider=='google' and token_options:case['provider_calls'].append('google-tokeninfo')
+            if provider=='google' and token_options and 'verified' not in token_options:case['provider_calls'].append('google-tokeninfo')
             case['normalized']=status==200 or expected in ({'msg':'OTP code required.'},{'msg':'OTP code not valid.'})
             if deleted or social=='unsupported':case['provider_calls']=[]
         if valid_otp:case['totp_secret']=secret
@@ -150,16 +150,25 @@ def _run(work,log,tool_env,proxy):
         for kind,options in [('expired',{'expired':True}),('audience',{'audience':'wrong-client'}),('signature',{'wrong_signature':True})]:
             add(f'{provider}-{kind}',social=provider,token_options=options,status=401,expected={'error':'Invalid social token'})
         add(provider+'-email-mismatch',social=provider,claims_email='other@example.test',status=401,expected={'error':'Email mismatch'})
-        add(provider+'-email-missing',social=provider,claims_email=None,status=500)
+        add(provider+'-email-missing',social=provider,claims_email=None,status=401,expected={'error':'Invalid social token'})
+        for kind,value in [('unverified',False),('verification-missing',None),('verification-text-false','false')]:
+            add(f'{provider}-{kind}',social=provider,token_options={'verified':value},status=401,expected={'error':'Invalid social token'})
         add(provider+'-inactive',social=provider,active=False,status=401,expected={'error':'invalid credentials'})
         add(provider+'-deleted',social=provider,deleted=True,status=401,expected={'error':'invalid credential (not found)'})
         add(provider+'-otp-required',social=provider,two_fa=True,status=401,expected={'msg':'OTP code required.'})
         add(provider+'-otp-valid',social=provider,two_fa=True,valid_otp=True)
+    add('apple-verification-text',social='apple-id',token_options={'verified':'true'})
+    cases[-1]['normalized']=True
     add('google-access-fallback',social='google')
     access='synthetic-provider-access'
     cases[-1]['payload']['token']=access
     cases[-1]['provider_calls']=['google-certs','google-tokeninfo','google-userinfo']
-    proxy.access[access]={'aud':'http-google','email':cases[-1]['email']}
+    proxy.access[access]={'aud':'http-google','email':cases[-1]['email'],'email_verified':True}
+    add('google-access-unverified',social='google',status=401,expected={'error':'Invalid social token'})
+    unverified_access='synthetic-provider-unverified'
+    cases[-1]['payload']['token']=unverified_access
+    cases[-1]['provider_calls']=['google-certs','google-tokeninfo','google-userinfo']
+    proxy.access[unverified_access]={'aud':'http-google','email':cases[-1]['email']}
     add('google-access-wrong-client',social='google',status=401,expected={'error':'Invalid social token'})
     denied_access='synthetic-provider-wrong-client'
     cases[-1]['payload']['token']=denied_access

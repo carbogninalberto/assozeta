@@ -134,9 +134,10 @@ func (s *SocialLogin) Select(ctx context.Context, identifierValue, token, backen
 	if !valid {
 		return nil, ErrSocialToken
 	}
-	email, ok := identity.Email.(string)
-	if !ok {
-		return nil, ErrSocialIdentity
+	// has_verified_email: a string e-mail the provider marks as verified.
+	email, verified := identity.VerifiedEmail()
+	if !verified {
+		return nil, ErrSocialToken
 	}
 	// Django lower(), not casefold(): expanding sharp-s would authorize a different
 	// email. Unicode full lowercase also preserves dotted-I and final-sigma behavior.
