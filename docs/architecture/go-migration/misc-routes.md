@@ -24,6 +24,12 @@ The other routes looked at for this family are not ported (see the end of this p
 - Dates are `parse_datetime` (Django 5.2: `datetime.fromisoformat`, then `datetime_re`): naive values render as floating
   times (`YYYYMMDDTHHMMSS`), UTC and zero offsets with `Z`, microseconds dropped. `end` of `None`/`"None"` is start plus one
   hour. An unparseable value (None) or an invalid date raises (500).
+- A value with a UTC offset other than zero (events saved by older clients in local time) keeps its wall clock and gets a
+  `TZID` parameter (v2-rest-c). icalendar 6.1.1 names a fixed offset with the first identifier of its equivalent-timezone
+  table (`Africa/Bangui` for `+01:00`, `Africa/Blantyre` for `+02:00`; `service/calendar_export_zones.go`, generated from the
+  package for every whole-minute offset). An offset the table lacks is named by the timezone itself, `UTC+05:45`, quoted
+  because of the colon (`DTSTART;TZID="UTC+05:45":...`). An offset of 24 hours or more is no timezone (500). The default
+  end keeps the start's timezone.
 - icalendar 6.1.1 output: `BEGIN:VCALENDAR`, the events, `END:VCALENDAR` (no PRODID/VERSION), properties in its canonical order
   `SUMMARY`, `DTSTART`, `DTEND`, `DTSTAMP` (the request's `datetime.now()`, UTC with `Z`), `UID`, then `DESCRIPTION`
   (`Instructor: <label>` when `extendedProps.instructor` is a dict with a `label`). Text values are `str()` of the JSON value
@@ -67,11 +73,12 @@ The other routes looked at for this family are not ported (see the end of this p
 
 ## Not ported (refused with the 500 page before any write)
 
-- Calendar export: dates with a non-zero UTC offset (icalendar writes a guessed `TZID`, for example `Africa/Blantyre` for
-  `+02:00`, or a quoted `UTC-05:30`), `fromisoformat` forms outside the ported subset (ISO week dates, a date-time separator
-  other than `T` or a space, offsets with seconds, non-ASCII digits or spaces), and float, list or object values for the title,
-  the event id or the label (Python repr, one property per list item).
-- Wall post: a JSON float message (`str(float)`).
+- Calendar export: `fromisoformat` forms outside the ported subset (ISO week dates, a date-time separator other than `T` or
+  a space, offsets with seconds or with minutes past 59, non-ASCII digits or spaces); an offset outside icalendar's table on a
+  value only `datetime_re` reads (single-digit fields: Django names that timezone `+0545`, and which parser answers decides
+  the name); and list or object values for the title, the event id or the label (one property per list item, Python repr).
+  Float values are ported (v2-rest-c): `str()` of the Python float, also for a JSON float wall message (`1.5`, `1000.0`,
+  `1e-07`, `-inf` beyond the float range).
 - Card GET through the paired server: an `expires_at` whose instant lies outside years 1..9999.
 
 Not authored: the refused inputs above (Django answers 200 there), association-scoped sessions on the card GET, events in
@@ -94,6 +101,11 @@ come from an independent model of the icalendar rendering; contract `TESTS/contr
 the calendar bytes with each `DTSTAMP` checked against the request window; adapter `TESTS/adapters/django/misc_routes_http.py`,
 which checks the message, delivery, configuration and token rows with their auditlog entries and index rows).
 
+- v2-rest-c (times with a UTC offset, float texts): 137 cases. RED (`v2restc-red-r2`): the documented refusals
+  (`v2-refusals.md`, misc-routes), Django 137/137 and the committed Go 500. GREEN (`v2restc-green-r2`): 137/137 on the four
+  transports. Mutation (`v2restc-mutation-r2`): the timezone table read with the
+  offset's sign reversed fails `misc-routes-export-offset-times` (CAUGHT). google-calendar, which reads dates with the same
+  parser, re-runs green natively (`v2restc-rerun-r1`); it keeps refusing the offset forms its own reader does not take.
 - RED (`native-r9`): Django 106/106; Go 404 on the first case, before any Go code.
 - GREEN (`versioned-r2`): 106/106 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
 - Mutation (`mutation-r1`): folding a line one octet later (`size > 75`) fails `misc-routes-export-owner` (CAUGHT).

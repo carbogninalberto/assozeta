@@ -164,6 +164,22 @@ REGISTRIES = {
     'foreign_props_null': {'id': next(ids), 'course': 'foreign_props_null',
                            'events': [event('x', '2026-03-01T10:00:00Z', None, extendedProps=None)]},
 }
+# Appended after the rows above (their ids stay as they were authored).
+ZONED_COURSES = ('foreign_zoned', 'foreign_offset_day_start', 'foreign_offset_day_end', 'foreign_offset_past_year')
+for _label in ZONED_COURSES:
+    COURSES[_label] = course(FOREIGN)
+REGISTRIES['foreign_zoned'] = {'id': next(ids), 'course': 'foreign_zoned', 'events': 'ZONED'}
+# Float values are str() of the Python float (repr).
+COURSES['foreign_floats'] = course(FOREIGN)
+REGISTRIES['foreign_floats'] = {'id': next(ids), 'course': 'foreign_floats', 'events': [
+    event(2.5, '2026-03-07T10:00:00Z', '2026-03-07T11:00:00Z', event_id=0.1, **instructor(1e-07))]}
+# An offset of a whole day or more is no timezone (ValueError); the last hour of year 9999 plus the default hour overflows.
+REGISTRIES['foreign_offset_day_start'] = {'id': next(ids), 'course': 'foreign_offset_day_start',
+                                          'events': [event('x', '2019-06-10T18:00:00+24:00', None)]}
+REGISTRIES['foreign_offset_day_end'] = {'id': next(ids), 'course': 'foreign_offset_day_end',
+                                        'events': [event('x', '2019-06-10T18:00:00+02:00', '2019-6-10 9:05-99:00')]}
+REGISTRIES['foreign_offset_past_year'] = {'id': next(ids), 'course': 'foreign_offset_past_year',
+                                          'events': [event('x', '9999-12-31T23:30:00+02:00', None)]}
 
 
 def escape(text):
@@ -216,7 +232,28 @@ def stamp(value):
     return moment_.strftime('%Y%m%dT%H%M%S') + ('Z' if utc else '')
 
 
+# Events with a UTC offset (older clients saved local times). icalendar names a fixed offset with the first identifier of
+# its equivalent-timezone table (+01:00 Africa/Bangui, +02:00 Africa/Blantyre, ...) and, for an offset the table lacks,
+# with the timezone's own name, quoted because of its colon. label: (start, end, DTSTART and DTEND after the name).
+ZONED = {
+    'Ora legale': ('2019-06-10T18:00:00+02:00', '2019-06-10T19:00:00+02:00',
+                   ';TZID=Africa/Blantyre:20190610T180000', ';TZID=Africa/Blantyre:20190610T190000'),
+    'Ora solare': ('2019-01-10T18:00:00.000+01:00', None, ';TZID=Africa/Bangui:20190110T180000', ';TZID=Africa/Bangui:20190110T190000'),
+    'Compatto': ('20190610T180000+0200', '2019-06-10 19:00-03:30',
+                 ';TZID=Africa/Blantyre:20190610T180000', ';TZID=America/Paramaribo:20190610T190000'),
+    'Nepal': ('2019-06-10T18:00:00+05:45', '2019-06-10T19:00:00Z', ';TZID="UTC+05:45":20190610T180000', ':20190610T190000Z'),
+    'Solo ore': ('2019-06-10T18+02', '2019-06-10T19:00:00-00:30', ';TZID=Africa/Blantyre:20190610T180000', ';TZID="UTC-00:30":20190610T190000'),
+    'Forma breve': ('2019-6-10 9:05+02:00', '2019-06-10T10:00:00 +0100', ';TZID=Africa/Blantyre:20190610T090500', ';TZID=Africa/Bangui:20190610T100000'),
+    'Ovest': ('2019-06-10T18:00:00-05:00', 'None', ';TZID=America/Atikokan:20190610T180000', ';TZID=America/Atikokan:20190610T190000'),
+    'Mezzanotte': ('2019-12-31T23:30:00+09:00', None, ';TZID=Asia/Jayapura:20191231T233000', ';TZID=Asia/Jayapura:20200101T003000'),
+}
+
+
 def vevent(row):
+    if row['title'] in ZONED:
+        zoned = ZONED[row['title']]
+        return [fold(line) for line in ('BEGIN:VEVENT', 'SUMMARY:' + row['title'], 'DTSTART' + zoned[2], 'DTEND' + zoned[3],
+                                        'DTSTAMP:$dtstamp', 'UID:' + row['event_id'], 'END:VEVENT')]
     start = moment(row['start'])
     end = moment(row['end']) if row['end'] is not None and row['end'] != 'None' else (start[0] + timedelta(hours=1), start[1])
     lines = ['BEGIN:VEVENT', 'SUMMARY:' + escape(text(row['title'])), 'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
@@ -245,6 +282,12 @@ def export(query=''):
 
 
 ALL_OWN = calendar('main', 'grouped')
+REGISTRIES['foreign_zoned']['events'] = [event(title, start, end) for title, (start, end, _, _) in ZONED.items()]
+add('export-offset-times', 'foreign_owner', 'GET', export(f'?course_id={COURSES["foreign_zoned"]["id"]}'), 200, calendar('foreign_zoned'))
+add('export-float-texts', 'foreign_owner', 'GET', export(f'?course_id={COURSES["foreign_floats"]["id"]}'), 200, calendar('foreign_floats'))
+for label in ZONED_COURSES[1:]:
+    add('export-' + label.replace('_', '-') + '-server-error', 'foreign_owner', 'GET', export(f'?course_id={COURSES[label]["id"]}'),
+        500, SERVER)
 add('export-owner', 'owner', 'GET', export(), 200, ALL_OWN)
 add('export-full-collaborator', 'full_collaborator', 'GET', export(), 200, ALL_OWN)
 add('export-admin-impersonating-owner', 'admin', 'GET', export(), 200, ALL_OWN, headers=ADMIN_OWNER)
@@ -293,6 +336,11 @@ add('post-owner', 'owner', 'POST', POST, 200, {'msg': 'post sent.'}, body={'mess
 add('post-trimmed', 'owner', 'POST', POST, 200, {'msg': 'post sent.'}, body={'message': '  Ciao a tutti \n', 'subject': 'ignorato'},
     effect=posted('Ciao a tutti'))
 add('post-number', 'owner', 'POST', POST, 200, {'msg': 'post sent.'}, body={'message': 12345}, effect=posted('12345'))
+# A JSON float is str() of the Python float.
+for label, literal, stored in (('float', '1.50', '1.5'), ('float-exponent', '1E+3', '1000.0'), ('float-small', '1e-7', '1e-07'),
+                               ('float-beyond-range', '-1e999', '-inf')):
+    add('post-' + label, 'owner', 'POST', POST, 200, {'msg': 'post sent.'}, raw_body='{"message": %s}' % literal,
+        content_type='application/json', effect=posted(stored))
 add('post-max-length', 'owner', 'POST', POST, 200, {'msg': 'post sent.'}, body={'message': 'à' * 10000}, effect=posted('à' * 10000))
 add('post-form', 'owner', 'POST', POST, 200, {'msg': 'post sent.'}, raw_body='message=Ciao+dal+form&message=secondo',
     content_type='application/x-www-form-urlencoded', effect=posted('secondo'))
