@@ -320,12 +320,16 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-lo
 | Family | Route | Was refused | Evidence |
 |---|---|---|---|
 | instance-logo | `GET instance/logo.png` | not a refusal: logo responses carry a restrictive content policy (`Content-Security-Policy: sandbox; default-src 'none'; style-src 'unsafe-inline'`, `X-Content-Type-Options: nosniff`) for every logo type, in Django and Go | Django test first (`instance.tests.test_logo`); 76 cases GREEN on 4 transports (`instance-logo-v2doc4-versioned-r1`); mutation `instance-logo-v2doc4-mutation-r1` (header dropped) CAUGHT |
-| document-views | `GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes): the first tutor relation is saved as primary with its audit entry, for signed-in requests | 162 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r1` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
+| document-views | `GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes): the first tutor relation is saved as primary with its audit entry, for signed-in requests | 162 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 | document-views | same | `HEAD` (B): the views' 405 without a body. The slash-less paths already answered the `APPEND_SLASH` redirect (unknown-paths) | same receipts |
-| documents-writes | `POST documents/add`, `POST subscription/<uid>/upload-document` | filename with NUL or lone surrogates (B): the driver's text in `documents/add`, the 500 page without writes in upload-document | 147 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r1` 4 transports; mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT |
+| documents-writes | `POST documents/add`, `POST subscription/<uid>/upload-document` | filename with NUL or lone surrogates (B): the driver's text in `documents/add`, the 500 page without writes in upload-document | 147 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT |
 | documents-writes | `PATCH documents/<pk>/update` | boolean primary key (B): `uuid.UUID(int=True)` | same receipts |
-| invoice-views | `GET document/invoice/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes), for signed-in requests | 92 cases; RED `v2doc4-red-r1` (refusal restored); GREEN `v2doc4-final-r1` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
-<!-- v2doc4-rows -->
+| invoice-views | `GET document/invoice/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes), for signed-in requests | 92 cases; RED `v2doc4-red-r1` (refusal restored); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
+
+Left in these families after this change, with the reason:
+- document-views and invoice-views: tutor promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
+- documents-writes: a None filename in `documents/add` (the database error text carries the new row's id and timestamp).
+- Not started in this change: document-views mention keys, `get_signature_base64()` and the template subset; documents-writes files sent as text fields, storage failures and the season error; `medical-appointments/list` with a doc-less appointment; Biella without a primary tutor relation (the promotion has to run after the Document is created); every other invoice and instructor B row (invoice-core, invoice-parties, invoice-generate, invoice-sync-print, instructor-hours, instructor-writes, and the rest of invoice-views).
 
 ### Ported in the v2-rest-a change
 

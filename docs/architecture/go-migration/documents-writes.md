@@ -162,7 +162,7 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 
 ## Evidence (TDD)
 
-`v2doc4`: 147 cases. RED `v2doc4-red-r1` (the refusal restored in Go: Django 147/147, Go 500). GREEN `v2doc4-final-r1` on
+`v2doc4`: 147 cases. RED `v2doc4-red-r1` (the refusal restored in Go: Django 147/147, Go 500). GREEN `v2doc4-final-r2` on
 Django, Go, `/api/v1` and `/api/v2`. Mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT on `add-filename-nul`.
 
 `TESTS/fixtures/documents_writes_http.json` (generator alongside) authors 124 cases: 38 add, 25 update, 20

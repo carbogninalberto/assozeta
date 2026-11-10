@@ -108,7 +108,7 @@ Both call a print task with `.apply(...)`. What that runs in the request:
 ## Evidence (TDD)
 
 `v2doc4`: 92 cases (a receipt whose associate has no primary tutor relation, and the same receipt again). RED
-`v2doc4-red-r1` (the refusal restored in Go: Django 92/92, Go 500). GREEN `v2doc4-final-r1` on Django, Go, `/api/v1`
+`v2doc4-red-r1` (the refusal restored in Go: Django 92/92, Go 500). GREEN `v2doc4-final-r2` on Django, Go, `/api/v1`
 and `/api/v2`. Mutation `v2doc4-mutation-r1` (the last relation promoted instead of the first) CAUGHT.
 
 `TESTS/fixtures/invoice_views_http.json` (generator alongside) authors 76 cases. Invoice HTML expectations are authored template

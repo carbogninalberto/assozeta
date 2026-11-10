@@ -100,7 +100,7 @@ unknown-paths family covers them).
 ## Evidence (TDD)
 
 `v2doc4`: 162 cases (tutor promotion from the subscription and template views, a second request that finds the
-relation primary, `HEAD`). RED `v2doc4-red-r1` (the refusal restored in Go: Django 162/162, Go 500). GREEN `v2doc4-final-r1` on
+relation primary, `HEAD`). RED `v2doc4-red-r1` (the refusal restored in Go: Django 162/162, Go 500). GREEN `v2doc4-final-r2` on
 Django, Go, `/api/v1` and `/api/v2`. Mutation `v2doc4-mutation-r1` (the last relation promoted instead of the first)
 CAUGHT on `subscription-minor-promotes-tutor`. invoice-views has its own case and receipts.
 
