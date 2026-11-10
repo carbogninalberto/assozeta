@@ -39,9 +39,10 @@ const invoicePartyPaymentColumns = `p.payment_id, p.type, p.subject, p.amount::t
  p.custom_accounts_id, p.signature_id, p.deleted, p.group_id, p.course::text AS course, a.account_type, a.name AS account_name,
  c.name AS category_name`
 
-func (r *InvoiceParties) CustomerInvoicesWithoutPDF(ctx context.Context) (bool, error) {
+func (r *InvoiceParties) CustomerInvoicesWithoutPDF(ctx context.Context, association string) (bool, error) {
 	var exists bool
-	err := r.db.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_customerinvoice WHERE pdf_id IS NULL)`)
+	err := r.db.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_customerinvoice
+ WHERE sport_association_id=$1::uuid AND pdf_id IS NULL)`, association)
 	return exists, err
 }
 

@@ -245,7 +245,10 @@ func etreeAttr(text string) string {
 // Int64 for all-integer columns, widths min(max(len(str(value)),
 // len(column)) + 2, 50) for columns A..Z, and df.to_excel(index=False)
 // through openpyxl. ErrDjango is a workbook the function fails on (it
-// returns None and the views raise).
+// returns None and the views raise). A name used by several columns makes
+// df[col] a DataFrame: pd.to_numeric raises TypeError (the loop continues, the
+// columns keep their inferred dtype) and DataFrame.astype(str).apply(len) is
+// the column length, so their width is min(max(rows, len(column)) + 2, 50).
 func PandasOpenpyxl(data [][]Value, columns []string, now time.Time) ([]byte, error) {
 	rows := -1
 	for _, column := range data {
@@ -259,12 +262,9 @@ func PandasOpenpyxl(data [][]Value, columns []string, now time.Time) ([]byte, er
 	if len(data) != len(columns) {
 		return nil, ErrDjango // "N columns passed, passed data had M columns"
 	}
-	seen := map[string]bool{}
+	uses := map[string]int{}
 	for _, name := range columns {
-		if seen[name] {
-			return nil, ErrNotPorted // df[col] is a DataFrame
-		}
-		seen[name] = true
+		uses[name]++
 	}
 	if len(columns) > 26 {
 		return nil, ErrDjango // chr(65 + idx) is not a column name
@@ -275,6 +275,11 @@ func PandasOpenpyxl(data [][]Value, columns []string, now time.Time) ([]byte, er
 		column, err := inferColumn(data[i][:rows])
 		if err != nil {
 			return nil, err
+		}
+		frame[i] = column
+		if uses[columns[i]] > 1 {
+			widths[i] = strconv.Itoa(min(max(rows, pyLen(columns[i]))+2, 50))
+			continue
 		}
 		if column, err = excelUtilsCoerce(column); err != nil {
 			return nil, err

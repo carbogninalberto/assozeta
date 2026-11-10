@@ -540,6 +540,47 @@ class CustomerInvoiceListTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+class CustomerInvoiceListRegenerationTests(TestCase):
+    """The customer list regenerates only the caller's association's documents."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_test_user(role=User.ASSOCIATION)
+        self.sport_association = create_test_sport_association(user=self.user)
+        self.other_association = create_test_sport_association()
+        self.own_invoice = CustomerInvoice.objects.create(
+            sport_association=self.sport_association, number=1, fiscal_year=2026, xml='own-before')
+        self.other_invoice = CustomerInvoice.objects.create(
+            sport_association=self.other_association, number=1, fiscal_year=2026, xml='other-before')
+        self.client.force_authenticate(user=self.user)
+
+    @patch('application.views.invoice_views.generate_invoice_xml', side_effect=lambda invoice: f'xml-{invoice.pk}')
+    @patch('application.views.invoice_views.print_document_customer_invoice')
+    def test_list_regenerates_only_own_association_invoices(self, print_task, _xml):
+        response = self.client.get('/invoice-customers/list', HTTP_AUTHORIZATION='Bearer caller-token')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        printed = [call.kwargs['args'][0] for call in print_task.apply.call_args_list]
+        self.assertEqual(printed, [str(self.own_invoice.pk)])
+        self.assertEqual(print_task.apply.call_args.kwargs['args'][1], 'Bearer caller-token')
+        self.own_invoice.refresh_from_db()
+        self.other_invoice.refresh_from_db()
+        self.assertEqual(self.own_invoice.xml, f'xml-{self.own_invoice.pk}')
+        self.assertEqual(self.other_invoice.xml, 'other-before')
+        listed = [row['customer_invoice_id'] for row in response.json()['data']]
+        self.assertEqual(listed, [str(self.own_invoice.pk)])
+
+    @patch('application.views.invoice_views.generate_invoice_xml', side_effect=lambda invoice: f'xml-{invoice.pk}')
+    @patch('application.views.invoice_views.print_document_customer_invoice')
+    def test_list_without_association_regenerates_nothing(self, print_task, _xml):
+        athlete = create_test_user(role=User.ATHLETE)
+        self.client.force_authenticate(user=athlete)
+        response = self.client.get('/invoice-customers/list')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        print_task.apply.assert_not_called()
+        self.other_invoice.refresh_from_db()
+        self.assertEqual(self.other_invoice.xml, 'other-before')
+
+
 class InvoiceListEdgeCaseTests(TestCase):
     """Edge case tests for invoice_list endpoint."""
 

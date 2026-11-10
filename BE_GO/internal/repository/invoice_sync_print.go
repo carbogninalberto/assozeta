@@ -190,15 +190,16 @@ func (r *InvoiceSyncPrint) SaveCustomerInvoice(ctx context.Context, id, associat
 	})
 }
 
-// PendingCustomerInvoices reads every customer invoice without a PDF (no
-// ORDER BY, like the unordered queryset) with invoice-views' row loader.
-func (r *InvoiceSyncPrint) PendingCustomerInvoices(ctx context.Context) ([]domain.PendingCustomerInvoice, error) {
+// PendingCustomerInvoices reads the association's customer invoices without a
+// PDF, newest first then by id, with invoice-views' row loader.
+func (r *InvoiceSyncPrint) PendingCustomerInvoices(ctx context.Context, association string) ([]domain.PendingCustomerInvoice, error) {
 	var keys []struct {
 		ID          string `db:"customer_invoice_id"`
 		Association string `db:"sport_association_id"`
 	}
 	if err := r.db.SelectContext(ctx, &keys, `SELECT customer_invoice_id::text, sport_association_id::text
- FROM application_customerinvoice WHERE pdf_id IS NULL`); err != nil {
+ FROM application_customerinvoice WHERE sport_association_id=$1::uuid AND pdf_id IS NULL
+ ORDER BY creation_date DESC, customer_invoice_id`, association); err != nil {
 		return nil, err
 	}
 	views := NewInvoiceViews(r.db)

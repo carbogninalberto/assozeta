@@ -23,6 +23,7 @@ SOURCES = ('TESTS/fixtures/balance_sheet_http.json', 'TESTS/contracts/test_balan
            'TESTS/adapters/django/balance_sheet_http.py', 'TESTS/contracts/test_balance_archived_http.py',
            'TESTS/adapters/django/carnet_replace_http.py', 'TESTS/adapters/django/carnet_subscription_topup_http.py',
            'BE/application/views/balance_sheet_views.py', 'BE/application/utils/balance_sheet_utils.py',
+           'BE/application/utils/printing.py', 'BE/application/utils/excel_utils.py', 'TESTS/contracts/xlsx.py',
            'BE/application/utils/api_utils.py', 'BE/application/serializers/balance_sheet.py',
            'BE/application/serializers/auth_serializers.py', 'BE/application/models/balance_sheet_models.py',
            'BE/application/models/payment_models.py', 'BE/application/mixin.py', 'BE/application/permissions.py',
