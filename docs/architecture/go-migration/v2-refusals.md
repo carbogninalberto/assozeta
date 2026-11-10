@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create and 5 in v2-misc (one v2-misc row duplicated a v2-documents port), below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 5 in v2-misc (one v2-misc row duplicated a v2-documents port) and 4 in v2-payments-3, below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -119,6 +119,16 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family 
 | workflow-update | `PATCH communications/workflows/<id>/update` | `enabled: true` with a future cron time (`check_workflows_trigger_cron` with a countdown) | 63 cases; RED `v2misc-red-r3` Django 63/63, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (ambiguous wall time on the summer offset) CAUGHT |
 | subscription-reads | `GET subscription/<uid>/info` | course subscription with a membership payment that has an invoice (or an instructor, B) | 261 cases; RED `v2misc-red-r1` Django 261/261, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (nested invoice not loaded) CAUGHT |
 
+### Ported in the v2-payments-3 change
+
+Receipts are `quality-reports/go-migration/<family>-http-v2pay3-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| payment-state | `POST payment/<id>/cancel`, `DELETE payment/<id>/delete` | payment with an invoice (invoice meta, cancel's published print, delete's eager print) | 153 cases; RED `v2pay3-state-red-r2` Django 153/153, Go 500; GREEN `v2pay3-state-final-r1` 4 transports; mutation `v2pay3-state-mutation-r1` CAUGHT |
+| payment-writes | `POST payment/add` | owner setting `auto_paid_payment` on (paid payment, invoice numbering, invoice, eager print) | 152 cases; RED `v2pay3-add-red-r1` Django 152/152, Go 500; GREEN `v2pay3-add-versioned-r1` 4 transports; mutation `v2pay3-add-mutation-r1` (no invoice without an associate) CAUGHT |
+| payment-misc | `GET payment/simulation/partial-quotes-apply` | a member's own account while the association has an SMTP `CommunicationConfiguration` (delayed send in the web process) | 96 cases; RED `v2pay3-misc-red-r1` Django 96/96, Go 500; GREEN `v2pay3-misc-versioned-r1` 4 transports; mutation `v2pay3-misc-mutation-r1` (message sent to the owner) CAUGHT |
+
 ## Remaining A items, per family
 
 UI paths under `UI/src/`, Go under `BE_GO/internal/`. Cost: cheap (hours), medium (a family change with new
@@ -127,22 +137,14 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 ### payment-writes / payment-state / payment-reads / payment-misc
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| POST payment/add | owner setting `auto_paid_payment` on | `routes/profile/sections/Settings.svelte:1013`, `AddEditModal.svelte:102` | `service/payment_writes.go:570` | medium-expensive |
-| payment cancel / delete | payment has an invoice | `PaymentList.svelte:575,689`, `partials/payment-overview.svelte:187` | `service/payment_state.go:322,363` | medium-expensive |
 | GET payment/list | athlete session (no `mode=compressed`) | `routes/activities/payment/PaymentList.svelte:36-38` | `service/payment_reads.go:349` | medium-expensive |
-| GET partial-quotes-apply | a member's own account and the association has an SMTP `CommunicationConfiguration` (Timer-thread send) | `components/modals/SubscriptionFeesPlanModal.svelte:46` | `service/payment_misc.go` (`Apply`, `CommunicationConfigured`) | medium |
 
-Notes for the remaining payment items:
-- Cancel/delete of an invoiced payment: `invoice.meta` holds `str()` of the nested `user` (UserSerializer: a plain dict in
-  DRF 3.17, `role` an int) and `associate` (AssociateSerializer: `sport_association` and `family` primary key
-  relations render `UUID('...')`, `associate_id` and `user` are str). `dto.PythonRepr` covers dicts, lists, str, numbers, None, bool and
-  `dto.PythonUUID`, so the meta needs an ordered nested value built from the PaymentSerializer port, not new repr code.
-  Cancel then publishes `print_document_invoice` (`apply_async`, portable with `internal/celery`); delete prints it eagerly
-  (`InvoiceSyncPrint`, as payment update does) before the payment delete cascade.
-- partial-quotes-apply with SMTP: deterministic in the oracle by patching `application.tasks.random.randint` (the Timer
-  delay) for the run and waiting, with a timeout, for the message on a per-run fake SMTP server, as the celery
-  consumer-email harness does for `send_email_html` (`TESTS/adapters/go/celery_consumer_email_process.py`). Go needs the
-  configuration send of `service/consumer_email.go` (`configSend`) in the web process with a fixture-controlled delay.
+Notes for the remaining payment item:
+- Athlete `payment/list`: its own query (the athlete's and the athlete's associates' income payments, the course
+  subscription variant, the installment and zero-amount exclusions), `PaymentCompressedSerializer` with `get_meta`, the
+  online payment flags, a response keyed by index, and `document_invoice` called in-process for each paid invoiced payment
+  without a PDF (Document, renderer request, `save_to_storage`, the invoice link: `DocumentRender.Render` with the
+  `invoice` route covers it). The fixture needs athlete-owned rows and document-render's renderer stub and Celery broker.
 
 ### subscription-create / subscription-import-upload / subscription-memberships
 | Route | Condition | UI call | Go site | Cost |
@@ -696,7 +698,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### payment-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
+| GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A (ported in v2-payments-3) | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
 | partial-quotes(-apply) | non-ASCII-digit dates, odd fee/plan types, non-canonical X-Group-Id | `service/payment_misc.go:103,115,250-284,345,489`; `service/quote_assign.go:301-309` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
 | POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | B | Exotic. |
 
@@ -748,7 +750,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | PATCH payment/<id>/update | body contains `payment_id` (or `user`) | `service/payment_writes.go:508` | **A** | The edit form has `<input type="hidden" name="payment_id">` (`routes/accounting/payment/modals/AddEditModal.svelte:482`). `getDataFromForm` includes it, and `update()` sends it (`:142-150`). Every UI payment edit is refused. Cost: cheap (accept an unchanged pk). |
 | POST payment/add, PATCH update | `attachments_data` filename over 255 characters, non-string values, a rejected storage name or an existing key without overwrite | `service/payment_writes.go` (`attachmentsStored`) | B | `AddEditModal.svelte:66-89` sends the browser's file name and a base64 string. legacy: no. Cost: cheap. |
-| POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
+| POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** (ported in v2-payments-3) | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
 | PATCH payment/<id>/update | payment has an invoice | `service/payment_writes.go:766` | **A** | Any edit of an invoiced (receipted) payment from `AddEditModal.svelte:142`. Cost: medium (invoice re-print dispatch). |
 | add/update | form/multipart bodies | `service/payment_writes.go:722` | B | The UI sends JSON. |
 | add | non-canonical X-Group-Id; non-ASCII-digit dates | `service/payment_writes.go:534,59` | B | See the X-Group-ID note. The UI sends `DD/MM/YYYY` ASCII. |
@@ -762,8 +764,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### payment-state.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST payment/<id>/cancel | paid payment with an invoice | `service/payment_state.go:322` | **A** | `routes/accounting/payment/PaymentList.svelte:575`, `partials/payment-overview.svelte:187`. Receipted payments are normal. Cost: medium (invoice cancellation + PDF task). |
-| DELETE payment/<id>/delete | payment with an invoice | `service/payment_state.go:363` | **A** | `PaymentList.svelte:689`. Cost: medium–expensive (synchronous PDF). |
+| POST payment/<id>/cancel | paid payment with an invoice | `service/payment_state.go:322` | **A** (ported in v2-payments-3) | `routes/accounting/payment/PaymentList.svelte:575`, `partials/payment-overview.svelte:187`. Receipted payments are normal. Cost: medium (invoice cancellation + PDF task). |
+| DELETE payment/<id>/delete | payment with an invoice | `service/payment_state.go:363` | **A** (ported in v2-payments-3) | `PaymentList.svelte:689`. Cost: medium–expensive (synchronous PDF). |
 | approve paid flow | non-canonical X-Group-Id; float fee tie; odd `meta.subscription_data.name`; user without association id | `service/payment_state.go:52-60` and paid flow | B | Exotic or legacy data. Fee ties are rare. legacy: yes (old meta). Cost: cheap. |
 | approve/date | non-ASCII-digit `payment_date` | `service/payment_state.go:133` | B | |
 | approve | task dispatcher missing / tx type | `service/payment_state.go:227,254` | C | Wiring only. |

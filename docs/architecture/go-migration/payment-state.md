@@ -148,3 +148,14 @@ with `payment_date_equal_invoice_date` (and a token) is seeded for the invoice d
 - Invoiced cancel and delete (v2-payments-3): see below.
 - Re-run green natively: `payment-misc` (85) and `invoice-generate` (50) (shared approve), `subscription-transfer` (29)
   (`SubscriptionNotifier` gained `DeliverValidated`); `stripe-routes` shares the paid flow (98 on four transports).
+
+## Invoiced cancel and delete (v2-payments-3)
+
+Fixture 153 cases: seeded invoices linked to their payments, the cancel of a paid invoiced payment (response with the
+in-memory cancelled invoice, the stored meta, the published `print_document_invoice`) and the delete of invoiced payments
+(meta, eager print through the CURRENT_HOST stub, cascade). RED `v2pay3-state-red-r2`: Django 153/153, Go 500 on
+`cancel-invoiced-publishes-print`. GREEN `v2pay3-state-final-r1` (after merging `codex/go-backend-parity` `074a5dba`):
+153/153 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2pay3-state-mutation-r2` (the response
+rendering the stored invoice instead of the cancelled in-memory one) CAUGHT; an earlier control
+(`v2pay3-state-mutation-r1`) was caught on the stored invoice columns. Re-run after the merge: `invoice-generate`,
+`stripe-routes` (`v2pay3-rerun-r2`, shared `PaymentStates`) and `payment-misc` (`v2pay3-misc-versioned-r1`).
