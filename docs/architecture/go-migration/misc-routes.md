@@ -72,8 +72,7 @@ The other routes looked at for this family are not ported (see the end of this p
   other than `T` or a space, offsets with seconds, non-ASCII digits or spaces), and float, list or object values for the title,
   the event id or the label (Python repr, one property per list item).
 - Wall post: a JSON float message (`str(float)`).
-- Card GET with an unknown canonical token and a canonical subscription id while a self-hosted Bakney pairing is pending or
-  paired: `source_token` asks the paired authority.
+- Card GET through the paired server: an `expires_at` whose instant lies outside years 1..9999.
 
 Not authored: the refused inputs above (Django answers 200 there), association-scoped sessions on the card GET, events in
 registries of equal physical order.
@@ -101,3 +100,28 @@ which checks the message, delivery, configuration and token rows with their audi
 - `go test ./internal/service -run TestCalendarExport` pins `parse_datetime` vectors and icalendar's escaping and folding.
 - Shared code: none changed (new files and a route block in `main.go`); course-calendar (whose store the export reuses)
   re-runs green natively, and misc-exports re-runs green on four transports.
+
+### API v2: unknown tokens while a pairing is active (v2-misc-3)
+
+`instance.sso.public_links.source_token` (`service/bakney_public_links.go`): only canonical UUIDs are asked. In one
+transaction the first pairing is locked with its configuration; a self-hosted instance whose pairing is pending or paired, has a
+remote pairing id and still matches the settings (`check_binding`), a live paired association with an active association user
+(and, for a card, a subscription of that association) lead to `POST <BAKNEY_SSO_API_BASE>/pairing/v1/public-token` with the kind,
+the token, the resource id, the remote pairing id and the pairing secret. The answer is used when it carries the protocol
+version, the pairing's binding (instance, pairing, association, origin, callback), the kind, a canonical generation and an aware
+`expires_at` in the future (plus the same resource id for a card, a string `gym_name` of at most 255 characters for a link);
+the capability is never stored. Any other answer, status or failure means the token is unknown. The card then renders as with a stored token (nothing to delete).
+
+The fixture has 128 cases (22 new). `TESTS/adapters/django/bakney_public_links.py` owns a stub of the paired server for the run;
+only the cases with a `pairing` entry see the configuration and pairing rows and, on Django, the development settings an HTTP
+origin needs (the Go server has them in its environment for the whole run). Every case checks the exact outbound requests (path,
+JSON bytes, the requests library's headers); cases without a pairing must send none. Authored: a vouched token (paired and
+pending), 401, 410, 503, a non-JSON body, another protocol, resource, kind or origin, a generation that is not canonical, an
+expired, naive, unparsable or numeric expiry, and the lookups that ask nothing (another association's subscription, an
+upper-case token, a disconnected pairing, a changed origin or association, an instance that is not self-hosted, a stored token).
+
+- RED (`v2misc3-red-r1`): Django 128/128; Go 500 on `misc-routes-card-paired-server-vouches`.
+- GREEN (`v2misc3-versioned-r1`): 128/128 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2misc3-mutation-r1`): accepting an expiry without an offset fails Go on
+  `misc-routes-card-paired-server-naive-expiry` (CAUGHT).
+- sso-pairing re-runs green natively (`v2misc3-rerun-r1`): the port reuses its binding check and upstream call.

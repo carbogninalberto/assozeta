@@ -25,6 +25,14 @@ type SubscriptionMisc struct {
 	reads *SubscriptionReads
 	now   func() time.Time
 	ids   func() string
+	// links asks the paired server about unknown link tokens (nil: such lookups are refused).
+	links PublicTokenSource
+}
+
+// WithPublicLinks sets the paired server lookup for unknown link tokens.
+func (s *SubscriptionMisc) WithPublicLinks(links PublicTokenSource) *SubscriptionMisc {
+	s.links = links
+	return s
 }
 
 func NewSubscriptionMisc(store domain.SubscriptionMiscStore, reads *SubscriptionReads, now func() time.Time, ids func() string) *SubscriptionMisc {
@@ -308,8 +316,8 @@ func (s *SubscriptionMisc) ValidateLink(ctx context.Context, identity domain.Res
 	if err != nil {
 		return nil, err
 	}
-	if link == nil && subscriptionMiscCanonical(token) {
-		// source_token asks the paired authority for unknown tokens.
+	if link == nil && subscriptionMiscCanonical(token) && s.links == nil {
+		// source_token asks the paired server for unknown tokens.
 		lookup, err := tx.PairingLookup(ctx)
 		if err != nil {
 			return nil, err
@@ -327,15 +335,22 @@ func (s *SubscriptionMisc) ValidateLink(ctx context.Context, identity domain.Res
 	if err = tx.DeleteExpiredLinks(ctx, now, actorAssociation, subscriptionMiscAudit(identity, audit), now); err != nil {
 		return nil, err
 	}
-	if link == nil {
-		if err = tx.Commit(); err != nil {
-			return nil, err
-		}
-		return domain.RequestObject{{Name: "expired", Value: true}}, nil
-	}
 	// Requests are not atomic: the deletions stay whatever happens next.
 	if err = tx.Commit(); err != nil {
 		return nil, err
+	}
+	if link == nil && s.links != nil {
+		granted, err := s.links.SourceToken(ctx, "cumulative", token, "", nil)
+		if err != nil {
+			return nil, err
+		}
+		if granted != nil {
+			// An unsaved CumulativeSubscriptionGymLinks.
+			link = &domain.SubscriptionMiscLink{AssociationID: granted.AssociationID, GymName: &granted.GymName}
+		}
+	}
+	if link == nil {
+		return domain.RequestObject{{Name: "expired", Value: true}}, nil
 	}
 	if link.GymName == nil {
 		return nil, domain.ErrSubscriptionMiscServer // len(None)

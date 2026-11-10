@@ -27,7 +27,7 @@
 
 - `subscription/associates-draft/list/approve`: every successful draft goes through `create_subscription` (users, associates, subscriptions, payments, documents, emails). It stays on Django (see `associates-draft.md`).
 - calculate-tax-code inputs outside the ported subset are refused with a 500 (no write happens either way): characters whose NFKD form leaves the embedded transliteration ranges (U+0001-U+052F, U+1E00-U+1EFF, U+2000-U+206F, U+20A0-U+20CF; astral characters are dropped as in text-unidecode), lone surrogates, HTML entity or numeric character references, runs of more than 30 combining marks, and date slugs containing letters (month names, ISO `T` times). The port covers every date written with digits and separators. If the `Unidecode` package were installed next to python-slugify, Django would transliterate differently.
-- validate-token-link for an unknown canonical token while a self-hosted Bakney pairing is pending or paired: `source_token` asks the paired authority. Go answers 500 before any write.
+- validate-token-link through the paired server: an `expires_at` whose instant lies outside years 1..9999. Go answers 500 (the expired links are already deleted, as in Django).
 - delete-document when another row (another file, a certificate, an invoice, a many-to-many attachment) references the same Document: Django's collector cascades or nulls those rows. Go answers 500 before any write.
 - generate-token-link with an uploaded file as `gym_name` (multipart): 500 before any write.
 
@@ -40,3 +40,24 @@
 - Mutation (`mutation-r1`): dropping `associate_id IS NOT NULL` from the candidates' exclusion (so subscriptions without associate disappear) fails Go on `subscription-misc-validate-anonymous` (CAUGHT).
 - `subscription-reads` (253 cases; `SubscriptionReads.Serialized` added, SubscriptionSerializer's empty payments sums now render as 0) re-runs green natively.
 - `go test ./internal/codicefiscale/` pins golden vectors from the Python library; a scratch differential run of 600k random inputs found no difference outside the refused subset.
+
+### API v2: unknown link tokens while a pairing is active (v2-misc-3)
+
+`instance.sso.public_links.source_token` (`service/bakney_public_links.go`): only canonical UUIDs are asked. In one
+transaction the first pairing is locked with its configuration; a self-hosted instance whose pairing is pending or paired, has a
+remote pairing id and still matches the settings (`check_binding`), a live paired association with an active association user
+(and, for a card, a subscription of that association) lead to `POST <BAKNEY_SSO_API_BASE>/pairing/v1/public-token` with the kind,
+the token, the resource id, the remote pairing id and the pairing secret. The answer is used when it carries the protocol
+version, the pairing's binding (instance, pairing, association, origin, callback), the kind, a canonical generation and an aware
+`expires_at` in the future (plus the same resource id for a card, a string `gym_name` of at most 255 characters for a link);
+the capability is never stored. Any other answer, status or failure means the token is unknown. validate-token-link deletes the expired links first, then asks, and continues with the paired association
+and the answered gym name.
+
+157 cases (14 new, same stub and checks as `misc-routes.md`): a vouched token (paired; pending with a group header), 401, 500, a
+card answer, a missing, numeric or 256-character gym name, an expired grant, another association in the answer, and the lookups
+that ask nothing (upper-case token, disconnected pairing, an instance that is not self-hosted, a stored token).
+
+- RED (`v2misc3-red-r1`): Django 157/157; Go 500 on `subscription-misc-validate-paired-server-vouches`.
+- GREEN (`v2misc3-versioned-r1`): 157/157 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`v2misc3-mutation-r1`): a gym name limit of 256 fails Go on
+  `subscription-misc-validate-paired-server-gym-name-too-long` (CAUGHT).

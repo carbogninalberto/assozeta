@@ -24,6 +24,7 @@ import re
 import time
 
 from TESTS.contracts import test_misc_routes_http as contract
+from TESTS.adapters.django import bakney_public_links as links
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django.workflow_writes_http import keyed
 
@@ -35,7 +36,8 @@ SOURCES = ('TESTS/fixtures/misc_routes_http.json', 'TESTS/contracts/test_misc_ro
            'BE/application/models/user_models.py', 'BE/application/audit_resolvers.py', 'BE/application/signals.py',
            'BE/application/permissions.py', 'BE/application/permissions_registry.py', 'BE/application/impersonation.py',
            'BE/application/impersonation_scope.py', 'BE/application/mixin.py', 'BE/application/utils/api_utils.py',
-           'BE/instance/sso/public_links.py', 'BE/instance/sso/protocol.py', 'BE/application/urls.py') + harness.SOURCES
+           'BE/instance/sso/public_links.py', 'BE/instance/sso/service.py', 'BE/instance/sso/models.py',
+           'TESTS/adapters/django/bakney_public_links.py', 'TESTS/adapters/django/sso_pairing_http.py', 'BE/instance/sso/protocol.py', 'BE/application/urls.py') + harness.SOURCES
 MESSAGE, DELIVERY = 'communications.Message', 'communications.MessageTransaction'
 CONFIGURATION, TOKEN = 'application.SportAssociationMembershipCardConfiguration', 'application.SubscriptionToken'
 MANAGED = (MESSAGE, DELIVERY, CONFIGURATION, TOKEN, harness.AUDIT, harness.INDEX)
@@ -250,4 +252,6 @@ def assert_effect(case, before, after, source, context):
         contract.require(False, 'effect.kind')
 
 
-run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)
+run_workload = harness.run_workload_for(links.Contract(contract, 'own_association'), assert_effect, prepare=prepare)
+# The paired-server stub of the cases with a 'pairing' entry (public_links.source_token).
+service_context = links.service_context

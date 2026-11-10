@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, below), **B 218** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2, 1 in v2-athlete-payments and 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts), below), **B 218** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -171,6 +171,8 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc3-*`; each family
 |---|---|---|---|
 | personas-writes | `POST personas/add`, `PATCH personas/<pk>/update` | `picture_path` data URL (the photo widget): decoded, stored as `associates/<id>/picture_<timestamp>.jpg`, ACL `public-read`, CDN URL saved | 188 cases with a private MinIO; RED `v2misc3-red-r4` Django 188/188, Go 500; GREEN `v2misc3-versioned-r3` 4 transports; mutation `v2misc3-mutation-r3` (ACL key without the location) CAUGHT; subscription-sign 47/47, router-personas 51/51 and router-persona-subscriptions 73/73 re-run |
 | communications-smtp | `GET communications/settings/smtp/verify` | `SSL` chosen for a port that speaks plain SMTP first (`[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1032)`); a host name the resolver does not know (`socket.gaierror` text of the platform) | 88 cases; RED `v2misc3-red-r2` Django 88/88, Go 500; GREEN `v2misc3-versioned-r1` 4 transports; mutation `v2misc3-mutation-r1` (call site of another CPython release) CAUGHT |
+| misc-routes | `GET subscription/<uid>/card` | unknown token while a Bakney pairing is pending or paired (`source_token` asks the paired server, `public-token`) | 128 cases with a paired-server stub; RED `v2misc3-red-r1` Django 128/128, Go 500; GREEN `v2misc3-versioned-r1` 4 transports; mutation `v2misc3-mutation-r1` (expiry without an offset accepted) CAUGHT; sso-pairing re-run |
+| subscription-misc | `GET subscription/validate-token-link-and-get-subscriptions` | unknown token while a Bakney pairing is pending or paired | 157 cases; RED `v2misc3-red-r1` Django 157/157, Go 500; GREEN `v2misc3-versioned-r1` 4 transports; mutation `v2misc3-mutation-r1` (gym name limit 256) CAUGHT |
 
 ## Remaining A items, per family
 
@@ -196,7 +198,6 @@ No A item remains.
 | list, list/all, info, calendar | staff impersonating an athlete with an association scope | athlete pages while impersonating | `service/subscription_reads.go:252,547,800,1054` | medium |
 | POST .../medical-certificate/set-certificate-expiration | member without a certificate | `Members/detail/sections/modals/AddMedicalCertificate.svelte:51` | `service/subscription_medical.go:389` | medium |
 | POST subscription/renew | member with courses (pre-filled) | `Members/modals/RenewalModal.svelte:58` | `service/subscription_renew.go:96` | medium-expensive |
-| GET subscription card, validate-token-link | unknown token while a Bakney pairing is active | `Tessera.svelte:54`, `SubscribeMultiple.svelte:222` | `service/subscription_card.go:61`, `service/subscription_misc.go:318` | medium |
 
 Why these stay (v2-subscriptions):
 - POST subscription/list export: the PDF is a synchronous render and stays refused; the Excel export is ported (subscription-reads.md, "Excel export").
@@ -205,7 +206,6 @@ Why these stay (v2-subscriptions):
 - set-certificate-expiration without a certificate: Django draws a PNG with PIL/FreeType; not byte-reproducible, refused before any write.
 - renew with courses: add_course_to_subscription inside the renewal transaction; the course-enrolment port has its own
   transaction and data handling, so it needs a shared refactor.
-- card / validate-token-link: source_token asks the paired authority (`public-token`); needs a stub authority in both fixtures.
 
 ### course-subscriptions / course-enrolment / course-writes / course-list / course-locations / course-calendar
 | Route | Condition | UI call | Go site | Cost |
@@ -260,7 +260,13 @@ Why these stay (v2-misc):
   (v2-misc-3). What stays: connect timeouts (Python reports the last error of every address in the C library's order), an
   unreachable resolver and handshake timeouts; Go answers the 500 page instead of a `verified: false` body
   (`communications-smtp.md`, "Platform texts").
-- oauth2/signup with providers: needs stubbed Google/Apple token verification in the oauth-accounts adapter.
+- oauth2/signup with providers (not started in v2-misc-3): Google is `google.oauth2.id_token.verify_oauth2_token` (the X.509
+  certificates of `https://www.googleapis.com/oauth2/v1/certs`, RS256, `iat`/`exp` without skew, `aud` equal to the client id, then
+  the issuer), with every `ValueError` falling back to `oauth2.googleapis.com/tokeninfo` and `oauth2/v3/userinfo`; Apple is the JWKS
+  of `appleid.apple.com/auth/keys` and PyJWT (`RS256`, audience, issuer). Both go through `requests` with the process proxy
+  settings, so instance-outbound's HTTPS proxy stub and private certificate authority fit the oauth-accounts adapter. After the
+  verification the view saves `role` on an existing user with that e-mail (`UserSerializer`, audited) or creates the user without a
+  usable password, then issues the tokens and the welcome e-mail as the password path does.
 
 Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
 
@@ -706,7 +712,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | GET calendar/events/export | stored event `start`/`end` with a non-zero UTC offset, ISO week dates, separators other than `T`/space, non-ASCII digits | `service/calendar_export.go:315,362,373,390,401,410,493` (`ErrMiscRoutesNotPorted`) | B | The current UI writes `toISOString()` (Z) (`utils/eventCalendar.js:66-79`), and the BE writers write UTC (`application/utils/instructors_utils.py:104`). legacy: yes (events saved by older clients with local offsets). Cost: medium (needs icalendar TZID naming). |
 | GET calendar/events/export | float/list/object `title`, `event_id`, instructor `label` | `service/calendar_export.go:257,261` | B | The UI sends string titles and ids. legacy: low. Cost: cheap. |
 | POST communications/send/post | JSON float `message` | `service/communications_post.go:59` | B | `Messages.svelte:96-100` sends form strings. |
-| GET subscription/<uid>/card?token= | unknown canonical token while a self-hosted Bakney pairing is pending/paired | `service/subscription_card.go:61` | A (conditional on pairing) | `routes/association/Members/detail/sections/subcomponents/Tessera.svelte:54-55` (public route `/card/:subscriptionId/:token`, `routes.js:249`). Pairing is set up from `routes/profile/sections/BakneyPairing.svelte`. Old card QR links issued before a migration or token rotation hit `source_token` (`BE/instance/sso/public_links.py:15`). |
+| GET subscription/<uid>/card?token= | unknown canonical token while a self-hosted Bakney pairing is pending/paired | `service/bakney_public_links.go` | ported | Ported in v2-misc-3 (`misc-routes.md`, `v2misc3-versioned-r1`). |
 
 ### misc-exports.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -869,7 +875,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET subscription/validate-token-link-and-get-subscriptions | unknown canonical token while pairing pending/paired | `service/subscription_misc.go:318` | A (conditional on pairing) | `routes/subscribe-multiple/SubscribeMultiple.svelte:222`. Same `source_token` mechanism as the card. |
+| GET subscription/validate-token-link-and-get-subscriptions | unknown canonical token while pairing pending/paired | `service/bakney_public_links.go` | ported | Ported in v2-misc-3 (`subscription-misc.md`, `v2misc3-versioned-r1`). |
 | POST subscription/calculate-tax-code | NFKD outside ranges, entities, >30 combining marks, lettered date slugs | `service/subscription_misc.go:119` | B | Exotic names. The UI sends `DD/MM/YYYY`-type dates. |
 | DELETE subscription/<uid>/delete-document/<id> | Document referenced by another row | `service/subscription_misc.go:492` | B | `upload-document` creates a fresh Document per file (`subscriptions_views.py:2779-2792`). legacy: yes (imports). Cost: medium. |
 | POST subscription/generate-token-link | multipart `gym_name` file | `service/subscription_misc.go:250` | B | `components/modals/ShareModuleMultipleSubscriptionLink.svelte:37` sends JSON. |

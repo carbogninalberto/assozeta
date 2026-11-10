@@ -272,3 +272,58 @@ func (t *BakneySSOTransaction) PairingNeedsSync(ctx context.Context) (bool, erro
 func (t *BakneySSOTransaction) CompleteJob(ctx context.Context, id, token uuid.UUID) error {
 	return completeJob(ctx, t.tx.tx, id, token, nil)
 }
+
+// BakneyPublicLinkTransaction is the atomic block of public_links.source_token.
+type BakneyPublicLinkTransaction struct{ tx *ownedTransaction }
+
+// BeginPublicLink opens that block.
+func (r *BakneySSO) BeginPublicLink(ctx context.Context) (*BakneyPublicLinkTransaction, error) {
+	tx, err := beginOwnedTransaction(ctx, r.db, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &BakneyPublicLinkTransaction{tx: tx}, nil
+}
+
+func (t *BakneyPublicLinkTransaction) Commit() error   { return t.tx.Commit() }
+func (t *BakneyPublicLinkTransaction) Rollback() error { return t.tx.Rollback() }
+
+// LockFirstPairing is BakneyPairing.objects.select_for_update().select_related('config').first().
+func (t *BakneyPublicLinkTransaction) LockFirstPairing(ctx context.Context) (*domain.BakneyPairing, *domain.BakneyConfiguration, error) {
+	var id int64
+	err := t.tx.tx.GetContext(ctx, &id, `SELECT p.id FROM instance_bakneypairing p
+ JOIN instance_instanceconfiguration c ON c.id=p.config_id ORDER BY p.id LIMIT 1 FOR UPDATE`)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil, nil
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	var pairing domain.BakneyPairing
+	if err = t.tx.tx.GetContext(ctx, &pairing, `SELECT `+bakneyPairingColumns+` FROM instance_bakneypairing WHERE id=$1`, id); err != nil {
+		return nil, nil, err
+	}
+	var config domain.BakneyConfiguration
+	if err = t.tx.tx.GetContext(ctx, &config, `SELECT id,self_hosted,primary_association_id::text AS primary_association_id
+ FROM instance_instanceconfiguration WHERE id=$1`, pairing.ConfigID); err != nil {
+		return nil, nil, err
+	}
+	return &pairing, &config, nil
+}
+
+// PairedAssociation is the association filter of source_token: live, with an
+// active, live association user.
+func (t *BakneyPublicLinkTransaction) PairedAssociation(ctx context.Context, association string) (bool, error) {
+	var found bool
+	err := t.tx.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_sportassociation sa JOIN bakney_user u ON u.user_id=sa.user_id
+ WHERE sa.sport_association_id=$1::uuid AND NOT sa.deleted AND u.is_active AND NOT u.deleted AND u.role=1)`, association)
+	return found, err
+}
+
+// AssociationSubscription is Subscription.objects (group-aware) filtered by pk and association.
+func (t *BakneyPublicLinkTransaction) AssociationSubscription(ctx context.Context, subscription, association string, group *string) (bool, error) {
+	var found bool
+	err := t.tx.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_subscription
+ WHERE subscription_id=$1::uuid AND sport_association_id=$2::uuid AND ($3::uuid IS NULL OR group_id=$3::uuid))`, subscription, association, group)
+	return found, err
+}
