@@ -6,12 +6,14 @@ import (
 	"net/http"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
 
 type StatisticReadsService interface {
-	Dashboard(ctx context.Context, identity domain.ResolvedIdentity, widget any, present bool, group *string) (service.StatisticResult, error)
+	Dashboard(ctx context.Context, identity domain.ResolvedIdentity, widget any, present bool, group *string,
+		audit domain.LoginAuditContext) (service.StatisticResult, error)
 	Report(ctx context.Context, identity domain.ResolvedIdentity, currentDate any, present bool, group *string) (service.StatisticResult, error)
 	Athlete(ctx context.Context, identity domain.ResolvedIdentity, group *string) (service.StatisticResult, error)
 }
@@ -22,10 +24,15 @@ type StatisticReadsHandler struct {
 	statistics StatisticReadsService
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
+	audit      LoginAuditReader
+	operations *paymentcategorylifecycle.Lifecycle
 }
 
-func NewStatisticReadsHandler(statistics StatisticReadsService, actors *service.ActorAuthentication, identities *service.IdentityResolver) *StatisticReadsHandler {
-	return &StatisticReadsHandler{statistics: statistics, actors: actors, identities: identities}
+// NewStatisticReadsHandler: audit and operations serve the todaylessons
+// widget, which can save the attendance days it links.
+func NewStatisticReadsHandler(statistics StatisticReadsService, actors *service.ActorAuthentication, identities *service.IdentityResolver,
+	audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *StatisticReadsHandler {
+	return &StatisticReadsHandler{statistics: statistics, actors: actors, identities: identities, audit: audit, operations: operations}
 }
 
 func (h *StatisticReadsHandler) admit(c echo.Context, operation, name string, association bool) (*domain.ResolvedIdentity, bool, error) {
@@ -65,7 +72,26 @@ func (h *StatisticReadsHandler) Dashboard(c echo.Context) error {
 	}
 	request := c.Request()
 	widget, present := parseReferenceForm(request.URL.RawQuery).Lookup("widget")
-	result, err := h.statistics.Dashboard(request.Context(), *identity, widget, present, service.StatisticGroup(request.Header.Get("X-Group-Id")))
+	group := service.StatisticGroup(request.Header.Get("X-Group-Id"))
+	if name, _ := widget.(string); present && name == "todaylessons" {
+		// A GET that may write: tracked and admitted like the attendance views.
+		tracked, err := h.operations.Track(request.Context())
+		if err != nil {
+			return paymentCategoryError(c, err)
+		}
+		defer tracked.Release()
+		audit, err := h.audit(request)
+		if err != nil {
+			return restError(c, err)
+		}
+		ctx, err := tracked.Admit()
+		if err != nil {
+			return paymentCategoryError(c, err)
+		}
+		result, err := h.statistics.Dashboard(ctx, *identity, widget, present, group, audit)
+		return h.respond(c, result, err)
+	}
+	result, err := h.statistics.Dashboard(request.Context(), *identity, widget, present, group, domain.LoginAuditContext{})
 	return h.respond(c, result, err)
 }
 

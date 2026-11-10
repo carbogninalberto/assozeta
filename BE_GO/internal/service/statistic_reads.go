@@ -37,6 +37,7 @@ type statisticStore interface {
 
 type StatisticReads struct {
 	store    statisticStore
+	lessons  StatisticTodayLessons
 	now      func() time.Time
 	location *time.Location
 	rome     *time.Location
@@ -48,6 +49,12 @@ func NewStatisticReads(store statisticStore, now func() time.Time, location *tim
 		panic(err)
 	}
 	return &StatisticReads{store: store, now: now, location: location, rome: rome}
+}
+
+// WithTodayLessons sets the todaylessons widget's renderer.
+func (s *StatisticReads) WithTodayLessons(lessons StatisticTodayLessons) *StatisticReads {
+	s.lessons = lessons
+	return s
 }
 
 // aware is timezone.now(); naive is datetime.now() read as UTC (USE_TZ, TZ setting of the process).
@@ -108,9 +115,10 @@ func statisticData(value any) StatisticResult {
 	return StatisticResult{Status: 200, Body: map[string]any{"data": value}}
 }
 
-// Dashboard follows statistic_dashboard for every widget except todaylessons
-// and expiredPayments, which are refused (not ported).
-func (s *StatisticReads) Dashboard(ctx context.Context, identity domain.ResolvedIdentity, widget any, present bool, group *string) (StatisticResult, error) {
+// Dashboard follows statistic_dashboard. audit is the request's audit
+// context: todaylessons can save the days it links.
+func (s *StatisticReads) Dashboard(ctx context.Context, identity domain.ResolvedIdentity, widget any, present bool, group *string,
+	audit domain.LoginAuditContext) (StatisticResult, error) {
 	association, err := s.store.ScopedAssociation(ctx, identity.ScopeUser.ID, paymentCategoryAssociationScope(identity))
 	if err != nil {
 		return StatisticResult{}, err
@@ -137,8 +145,10 @@ func (s *StatisticReads) Dashboard(ctx context.Context, identity domain.Resolved
 		return s.approvals(ctx, scope)
 	case "incomeAndExpenses":
 		return s.incomeAndExpenses(ctx, scope)
-	case "todaylessons", "expiredPayments":
-		return StatisticResult{}, domain.ErrStatisticNotPorted
+	case "todaylessons":
+		return s.todayLessons(ctx, identity, association, audit)
+	case "expiredPayments":
+		return s.expiredPayments(ctx, scope)
 	}
 	return StatisticResult{Status: 404, Body: []string{"error: widget not found."}}, nil
 }
@@ -919,4 +929,203 @@ func statisticListed(text *string, id string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// todayLessons: rome_today_start/end are the naive datetime.now() day padded
+// by 121 minutes (USE_TZ reads them as UTC).
+func (s *StatisticReads) todayLessons(ctx context.Context, identity domain.ResolvedIdentity, association string,
+	audit domain.LoginAuditContext) (StatisticResult, error) {
+	if s.lessons == nil {
+		return StatisticResult{}, domain.ErrStatisticNotPorted
+	}
+	now := s.naive()
+	day := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	from := day.Add(-121 * time.Minute)
+	to := day.Add(23*time.Hour + 59*time.Minute + 59*time.Second + 121*time.Minute)
+	body, err := s.lessons.TodayLessons(ctx, identity, audit, association, from, to)
+	if err != nil {
+		return StatisticResult{}, todayLessonsError(err)
+	}
+	return StatisticResult{Status: 200, Body: json.RawMessage(dto.PythonJSONDumpsCompact(body))}, nil
+}
+
+type statisticSpanKey struct {
+	associate  string
+	start, end time.Time
+}
+
+// expiredPayments: unpaid, non-archived, non-expense payments with an associate
+// and a positive amount created in [now - 30 days, now + 7 days] (newest
+// first, at most 100), each kept when a subscription matches: the view's dict
+// of (associate, start, end) -> subscription over the subscriptions with a
+// payment of the associate dated inside them, ordered by -creation_date (the
+// last row of a key wins, the first keeps its position), searched in order
+// for the payment's date (payment_date, else creation_date).
+func (s *StatisticReads) expiredPayments(ctx context.Context, scope domain.StatisticScope) (StatisticResult, error) {
+	now := s.aware()
+	today := statisticDate(now)
+	payments, err := s.store.ExpiredPayments(ctx, scope, now.Add(-30*24*time.Hour), now.Add(7*24*time.Hour))
+	if err != nil {
+		return StatisticResult{}, err
+	}
+	associates, seen := []string{}, map[string]bool{}
+	for _, payment := range payments {
+		if !seen[payment.AssociateID] {
+			seen[payment.AssociateID] = true
+			associates = append(associates, payment.AssociateID)
+		}
+	}
+	spans := []domain.StatisticSubscriptionSpan{}
+	if len(associates) > 0 {
+		if spans, err = s.store.ExpiredPaymentSubscriptions(ctx, scope, associates); err != nil {
+			return StatisticResult{}, err
+		}
+	}
+	order, chosen := []statisticSpanKey{}, map[statisticSpanKey]string{}
+	for _, span := range spans {
+		key := statisticSpanKey{span.AssociateID, statisticDate(span.Start), statisticDate(span.End)}
+		if _, ok := chosen[key]; !ok {
+			order = append(order, key)
+		}
+		chosen[key] = span.SubscriptionID
+	}
+	out := []map[string]any{}
+	days := []int{}
+	for _, payment := range payments {
+		effective := payment.CreationDate
+		if payment.PaymentDate != nil {
+			effective = *payment.PaymentDate
+		}
+		date := statisticDate(effective.UTC())
+		match := ""
+		for _, key := range order {
+			if key.associate == payment.AssociateID && !key.start.After(date) && !date.After(key.end) {
+				match = chosen[key]
+				break
+			}
+		}
+		if match == "" {
+			continue
+		}
+		title, err := s.paymentTitle(ctx, payment, scope.Group)
+		if err != nil {
+			return StatisticResult{}, err
+		}
+		amount, err := strconv.ParseFloat(payment.Amount, 64)
+		if err != nil {
+			return StatisticResult{}, err
+		}
+		var paid any
+		if payment.PaymentDate != nil {
+			paid = dto.DRFUTCDateTime(*payment.PaymentDate)
+		}
+		expired := int(today.Sub(statisticDate(payment.CreationDate.UTC())).Hours() / 24)
+		days = append(days, expired)
+		out = append(out, map[string]any{"payment_id": payment.PaymentID, "expired_days": expired, "amount": dto.PythonFloat(amount),
+			"payment_date": paid, "creation_date": dto.DRFUTCDateTime(payment.CreationDate),
+			"title":           json.RawMessage(dto.PythonJSONDumpsCompact(title)),
+			"date":            effective.UTC().Format("02/01/2006"),
+			"associate":       statisticPerson{AssociateID: &payment.AssociateID, FirstName: payment.FirstName, LastName: payment.LastName},
+			"subscription_id": match})
+	}
+	index := make([]int, len(out))
+	for i := range index {
+		index[i] = i
+	}
+	sort.SliceStable(index, func(a, b int) bool { return days[index[a]] < days[index[b]] })
+	sorted := make([]map[string]any, len(out))
+	for i, j := range index {
+		sorted[i] = out[j]
+	}
+	return statisticData(map[string]any{"expired_payments": sorted}), nil
+}
+
+// paymentTitle is Payment.get_course_carnet_name() as a JSON value.
+func (s *StatisticReads) paymentTitle(ctx context.Context, payment domain.StatisticExpiredPayment, group *string) (any, error) {
+	parse := func(text *string) (any, error) {
+		if text == nil {
+			return nil, nil
+		}
+		value, err := dto.ParseReferenceJSON([]byte(*text))
+		if err != nil {
+			return nil, domain.ErrStatisticNotPorted
+		}
+		return value, nil
+	}
+	// `key in container` then container[key], with Python's errors as the 500 page.
+	lookup := func(container any, key string) (any, bool, error) {
+		if !dto.PythonTruthy(container) {
+			return nil, false, nil
+		}
+		found, err := dto.PythonContains(container, key)
+		if err != nil {
+			return nil, false, ErrStatisticPythonError
+		}
+		if !found {
+			return nil, false, nil
+		}
+		value, err := dto.PythonIndex(container, key)
+		if err != nil {
+			return nil, false, ErrStatisticPythonError
+		}
+		return value, true, nil
+	}
+	switch payment.Subject {
+	case 2:
+		link, err := s.store.PaymentLink(ctx, payment.PaymentID, group)
+		if err != nil {
+			return nil, err
+		}
+		if link.Slot >= 0 {
+			meta, err := parse(payment.Meta)
+			if err != nil {
+				return nil, err
+			}
+			if description, found, err := lookup(meta, "description"); err != nil || found {
+				return description, err
+			}
+			if link.MissingCarnet {
+				return nil, ErrStatisticPythonError // None.title
+			}
+			return statisticJSONText(link.Title), nil
+		}
+		course, err := parse(payment.Course)
+		if err != nil {
+			return nil, err
+		}
+		label, found, err := lookup(course, "label")
+		if err != nil {
+			return nil, err
+		}
+		if found {
+			text, ok := label.(string)
+			if !ok {
+				return nil, ErrStatisticPythonError // str.join
+			}
+			description := ""
+			if payment.Description != nil {
+				description = *payment.Description
+			}
+			return text + ", " + description, nil
+		}
+		return statisticJSONText(payment.Description), nil
+	case 1:
+		return "Iscrizione", nil
+	case 0:
+		if !payment.HasCategory {
+			return nil, nil
+		}
+		return statisticJSONText(payment.CategoryName), nil
+	case 3:
+		// custom_accounts.destination_account_name is not a field: AttributeError.
+		return nil, ErrStatisticPythonError
+	}
+	return nil, nil
+}
+
+func statisticJSONText(value *string) any {
+	if value == nil {
+		return nil
+	}
+	return *value
 }

@@ -4,8 +4,7 @@
 (`statistic_athlete_dashboard`) and `GET statistic/report` (`statistic_report`) in
 `BE/application/views/statistic_views.py` are implemented in Go
 (`BE_GO/internal/{domain,dto,repository,service,handler}/statistic_reads.go`).
-Two dashboard widgets are not ported (below). Django remains the production
-execution owner.
+Every dashboard widget is ported. Django remains the production execution owner.
 
 ## Common behavior
 
@@ -67,6 +66,34 @@ empty) `404 ["error: widget not found."]`.
   1 January. pytz keeps the current Rome offset for every bound (Go uses a
   fixed zone with the offset of now). Sums are `null` when nothing matches.
 
+- `todaylessons`: attendance days of the association's courses dated within
+  the naive `datetime.now()` day padded by 121 minutes (read as UTC), ordered
+  by date, each rendered by `get_extended_prop_for_attendance_day` (the
+  CourseAttendance helper in Go): the registry event in the same hour (with the
+  linked `event_id` when the day is linked) gives `allDay`, `start`, `end` and
+  `extendedProps` with instructor labels from the course owner's instructors;
+  `potential_attendees` are the course's live course subscriptions;
+  `expected_absences` is always `[]` (the view's subscription map is keyed by
+  UUID and looked up by str). An unlinked day is linked to its event and saved
+  (whole row, `expected_absences` `None` becomes `[]`, auditlog update entry),
+  committed even when a later day raises (no atomic request). When the acting
+  person is some instructor's `associated_user_id` (the view reads
+  `is_collaborator` without calling it, so owners count too), only days of
+  registries whose `events::text` matches the instructor id case-insensitively
+  are listed. Go tracks and admits this widget like the attendance writes.
+- `expiredPayments`: unpaid, non-archived, non-expense payments with an
+  associate and `amount > 0` created in `[now - 30 days, now + 7 days]`, newest
+  first, at most 100. Subscriptions (not archived, the payments' associates)
+  are joined to every payment of the associate whose `payment_date` lies in
+  `[start_date, end_date]` compared as timestamps (dates at 00:00 UTC, so a
+  payment later on the end day is outside); the view's dict keyed by
+  (associate, start, end) keeps the last row of the `-creation_date` order and
+  the first position, and a payment matches the first key whose dates contain
+  `(payment_date or creation_date).date()`. Matched payments render
+  `get_course_carnet_name()` (course subscription, installment, carnet
+  subscription, `course.label`, `Iscrizione`, category name; account transfers
+  raise), sorted by `expired_days`.
+
 ## statistic/athlete-dashboard
 
 Non-athletes get `403 ["error: forbidden."]`. Inside the view's `try`: without an
@@ -106,10 +133,11 @@ without an associate is a 500.
 
 ## Not ported (refused before any work)
 
-- `statistic/dashboard?widget=todaylessons` (attendance extended properties,
-  which can save `AttendanceDay.associated_event` during a GET) and
-  `widget=expiredPayments` (course/carnet payment titles): the Go handler answers
-  the stable 500 page.
+- `todaylessons` refuses what the CourseAttendance helper refuses: an
+  unlinked day whose event has a non-string or non-UUID `event_id`, and
+  instructor entries that are neither dicts nor lists of dicts.
+- `expiredPayments`: stored `meta`/`course` JSON that the reference parser
+  does not accept.
 - Non-ASCII decimal digits in event start or lesson registry dates (Python's
   `\d` accepts them), non-finite JSON numbers in rendered carnet metadata or
   event fields, and `currentDate` years below 1000 are refused with the stable
@@ -119,6 +147,21 @@ without an associate is a 500.
   same day, several course titles in the report) is not pinned.
 
 ## Evidence (TDD)
+
+v2 gaps (todaylessons, expiredPayments): the fixture adds a fourth association
+with an owner and a full collaborator who is an instructor's associated user,
+seven attendance days around the window edges (linked, unlinked, linked to an
+unlisted event, an event without `event_id`, an upper-case instructor id),
+unpaid payments for every title path and filter, subscriptions sharing a key
+and one ending on the payment day. 9 new cases (86 in all); the first
+todaylessons case checks the day save and its auditlog entry exactly. RED
+`v2gaps-red-r1`: Django 86/86, Go 500 on the first new case. GREEN
+`v2gaps-versioned-r1`: 86/86 on native Django, native Go, Caddy `/api/v1` and
+`/api/v2`. Mutation `mutation-r1`: matching registry events case-sensitively
+fails Go on the instructor collaborator case. course-attendance re-run
+(`v2gaps-rerun-r1`) 99/99 on Django and Go.
+
+Original port:
 
 `TESTS/fixtures/statistic_reads_http.json` (generator alongside) seeds the
 family's own users, a third association, the owner's 1 September balance-sheet
