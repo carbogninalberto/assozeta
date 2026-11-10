@@ -168,6 +168,12 @@ type SubscriptionCreateTransaction interface {
 	AuditEntry(ctx context.Context, entry SubscriptionCreateAudit) error
 	// QuickAssociate is Associate.objects.get(associate_id=id): a live row (nil when none).
 	QuickAssociate(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
+	// InsertFamily is Family.objects.create(type=kind) with its create entry.
+	InsertFamily(ctx context.Context, id, kind string, audit LoginAuditContext, at time.Time) error
+	// RenderPayment is what PaymentSerializer reads for a stored payment.
+	RenderPayment(ctx context.Context, id string) (PaymentStateRender, error)
+	// QuickAssociationExists is SportAssociation.objects.get(sport_association_id=id) finding a row.
+	QuickAssociationExists(ctx context.Context, id string) (bool, error)
 	// QuickCertificates are the certificates of Subscription.objects.filter(associate=...), one per subscription.
 	QuickCertificates(ctx context.Context, associate string) ([]SubscriptionQuickCertificate, error)
 	// InsertSignature is Signature.objects.create(signature=data, user=user) with its create entry.

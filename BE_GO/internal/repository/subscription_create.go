@@ -207,6 +207,10 @@ func (t *subscriptionCreateTransaction) QuickAssociate(ctx context.Context, id s
 	return t.oneAssociate(ctx, `associate_id=$1 AND NOT deleted`, id)
 }
 
+func (t *subscriptionCreateTransaction) QuickAssociationExists(ctx context.Context, id string) (bool, error) {
+	return t.exists(ctx, `SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1 AND NOT deleted`, id)
+}
+
 func (t *subscriptionCreateTransaction) QuickCertificates(ctx context.Context, associate string) ([]domain.SubscriptionQuickCertificate, error) {
 	rows := []domain.SubscriptionQuickCertificate{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT m.medical_id, m.expiration_date FROM application_subscription s
@@ -383,6 +387,34 @@ func (t *subscriptionCreateTransaction) InsertSignature(ctx context.Context, id,
 		return err
 	}
 	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func (t *subscriptionCreateTransaction) InsertFamily(ctx context.Context, id, kind string, audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_family (family_id, type) VALUES ($1, $2)`, id, kind); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_family", "family_id", id)
+	if err != nil {
+		return err
+	}
+	// Family has no association to resolve: the actor's own association, if any.
+	entry := modelAuditEntry{Model: "family", Key: id, Representation: "Family object (" + id + ")", Action: 0, Changes: changes,
+		Context: audit, At: at}
+	if err = actorIndex(ctx, t.tx, audit, &entry); err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func (t *subscriptionCreateTransaction) RenderPayment(ctx context.Context, id string) (domain.PaymentStateRender, error) {
+	courses := &courseSubscriptionTransaction{paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: t.ownedTransaction}}
+	payment, err := courses.payment(ctx, id, nil)
+	if err != nil {
+		return domain.PaymentStateRender{}, err
+	}
+	render := domain.PaymentStateRender{Payment: payment}
+	render.Instructor, render.Invoice, err = paymentNestedRows(ctx, t.tx, payment.InvoicePartyPayment)
+	return render, err
 }
 
 func (t *subscriptionCreateTransaction) SaveSubscriptionSignature(ctx context.Context, id, association string, url, key *string,

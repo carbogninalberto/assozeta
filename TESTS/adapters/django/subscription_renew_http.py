@@ -55,19 +55,21 @@ LABELS = {
     'membership': 'application.SubscriptionMembership', 'medical': 'application.MedicalCertificate',
     'broadcast': 'notifications.NotificationsBroadcast', 'user_broadcast': 'notifications.UserNotificationsBroadcast',
     'draft': 'application.AssociateImportDraft', 'status': 'application.AssociateImportDraftStatus', 'link': 'application.Subscription_tags',
+    'family': 'application.Family',
 }
 MANAGED = (*LABELS.values(), harness.AUDIT, harness.INDEX)
 KEYS = {'application.Associate': 'associate_id', 'application.Payment': 'payment_id', 'application.Subscription': 'subscription_id',
         'application.SubscriptionMembership': 'subscription_membership_id', 'application.MedicalCertificate': 'medical_id',
         'notifications.NotificationsBroadcast': 'broadcast_id', 'notifications.UserNotificationsBroadcast': 'user_broadcast_id',
         'application.AssociateImportDraft': 'associate_import_draft_id',
-        'application.AssociateImportDraftStatus': 'associate_import_draft_status_id', 'application.Subscription_tags': 'id'}
+        'application.AssociateImportDraftStatus': 'associate_import_draft_status_id', 'application.Subscription_tags': 'id',
+        'application.Family': 'family_id'}
 # Seed sections by row label (for references by name).
 SECTIONS = {'associate': 'associates', 'payment': 'payments', 'subscription': 'subscriptions', 'medical': 'certificates',
             'draft': 'drafts', 'status': 'statuses', 'tag': 'tags'}
 AUDIT_MODELS = {'associate': 'associate', 'payment': 'payment', 'subscription': 'subscription', 'subscriptionmembership': 'membership',
                 'medicalcertificate': 'medical', 'associateimportdraft': 'draft', 'associateimportdraftstatus': 'status',
-                'notificationsbroadcast': 'broadcast', 'usernotificationsbroadcast': 'user_broadcast'}
+                'notificationsbroadcast': 'broadcast', 'usernotificationsbroadcast': 'user_broadcast', 'family': 'family'}
 STATE = {}
 
 
@@ -319,7 +321,8 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
     contract.require(len(added) == len(authored), f'audit.count:{len(added)}')
     types = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
     users = keyed(before['application.User'], 'user_id')
-    actor = ids[effect['actor']]
+    # The public form has no actor.
+    actor = None if effect['actor'] == 'anonymous' else ids[effect['actor']]
     session = case['headers'].get('X-Impersonation-Id', '')
     additional = None
     if session.startswith('$session:'):
@@ -366,7 +369,8 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
         contract.require(event['changes'] == expected, 'audit.changes' + where + json.dumps(
             {k: [expected.get(k), event['changes'].get(k)] for k in set(expected) | set(event['changes'])
              if expected.get(k) != event['changes'].get(k)}, ensure_ascii=False))
-        contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor' + where)
+        contract.require(event['actor_id'] == actor and event['actor_email'] == (users[actor]['email'] if actor else None),
+                         'audit.actor' + where)
         contract.require(event['cid'] == case['name'] and event['additional_data'] == additional and event['changes_text'] == '',
                          'audit.context' + where)
         contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote' + where)

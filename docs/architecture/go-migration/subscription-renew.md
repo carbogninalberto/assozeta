@@ -87,6 +87,25 @@ before the `try` block: a non-dict body or association, a missing key, a malform
 update entry, since the serializer's `user` is read-only); the audit actor stays the athlete (the notification broadcast rows are
 indexed through the athlete's association: none), and the notification goes to the owner.
 
+A member account renews its own subscriptions and those of its family, in the association they belong to
+(`_member_renewal_association`). After the association lookup, the named association must have a subscription
+
+- of the requester, or
+- of a person with the tax code of one of the requester's subscriptions, or
+- of a person in the family of one of the requester's subscriptions,
+
+for the associate of the request: by `associate_data.associate_id` when it is a non-empty string (through `uuid.UUID`), else, when
+`associate_id` is missing or null, by `associate_data.tax_code` (a non-empty string, case-insensitive). Anything else is 403
+`{"detail": "User not allowed."}` before any write, the shape the quick re-subscription already uses. Go: `renewMemberAllowed`
+and `MemberRenewable`.
+
+`data['user']['email']` sets the renewed subscription's account only for an association account (owners and collaborators
+acting as the owner, whose renewal is always in their own association); a member account's body does not choose it, and the key
+is not read at all for such a requester.
+
+The certificate named by `medical_certificate.medical_id` follows
+[subscription-create](subscription-create.md#the-certificate-a-registration-links) with the member as requester.
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:
