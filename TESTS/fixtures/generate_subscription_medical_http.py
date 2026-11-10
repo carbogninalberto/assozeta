@@ -7,9 +7,10 @@ association: 500). list reads the group-aware Subscription manager (deleted
 subscriptions included), renders the appointments ordered by ``-date``
 (NULLs first) as ``{'data': {idx: MedicalAppointmentsSerializer}}`` and
 ``appointment_region`` is ``REGIONS[region]`` (an unknown region is a 500).
-A row without a document would be printed synchronously
-(``print_document_medical_appointment``): the Go port refuses it, so the
-sequence only lists appointments that have their document. delete filters
+A row without a document is printed synchronously
+(``print_document_medical_appointment``: a GET to CURRENT_HOST with the
+request's Authorization, every error swallowed) and serialized as read (no
+document). delete filters
 MedicalAppointments through the subscription join (no manager filters) and
 answers ``{'data': 'medical appointment created.'}``.
 
@@ -165,9 +166,19 @@ SUBSCRIPTIONS['bare_collaborator'] = subscription(OWN, associate='niccolo')
 SUBSCRIPTIONS['bare_bad_date'] = subscription(OWN, associate='dario')
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+SUBSCRIPTIONS['nodoc'] = subscription(OWN)
+DOCUMENTS['nd2'] = document('nd2')
+APPOINTMENTS['nd1'] = appointment('nodoc', 'agonistica', None, '2026-06-02', notes='Senza documento')
+APPOINTMENTS['nd2'] = appointment('nodoc', 'non-agonistica', 'nd2', '2026-06-01')
+APPOINTMENTS['nd3'] = appointment('nodoc', 'agonistica-toscana', None, '2026-05-30')
+
+
+def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        prints=()):
     case = {'name': f'subscription-medical-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
+    if prints:
+        case['prints'] = [f'/document/medical-appointment/{APPOINTMENTS[label]["id"]}' for label in prints]
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -202,7 +213,7 @@ REGIONS = {'agonistica': 'Visita Agonistica', 'non-agonistica-sicilia': 'Visita 
 
 def rendered(label):
     row = APPOINTMENTS[label]
-    doc = DOCUMENTS[row['document']]
+    doc = DOCUMENTS[row['document']] if row['document'] else {'token': None, 'id': None}
     return {'medical_appointments_id': row['id'], 'document_token': doc['token'], 'appointment_region': REGIONS[row['region']],
             'region': row['region'], 'date': row['date'], 'notes': row['notes'], 'sport': row['sport'], 'meta': row['meta'],
             'address': row['address'], 'creation_date': row['created'], 'subscription': SUBSCRIPTIONS[row['subscription']]['id'],
@@ -213,6 +224,9 @@ listed = lambda *labels: {'data': {str(i): rendered(label) for i, label in enume
 NO_SUB = {'data': 'no subscription found.'}
 
 # ---------------------------------------------------------------- list
+# Appointments stored without a document (a print that never completed): each is printed, in list order.
+add('list-prints-appointments-without-document', 'owner', LIST('nodoc'), 200, listed('nd1', 'nd2', 'nd3'), method='GET', prints=('nd1', 'nd3'))
+add('list-prints-again-collaborator', 'full_collaborator', LIST('nodoc'), 200, listed('nd1', 'nd2', 'nd3'), method='GET', prints=('nd1', 'nd3'))
 add('list-owner', 'owner', LIST('main'), 200, listed('a3', 'a2', 'a1'), method='GET')
 add('list-full-collaborator', 'full_collaborator', LIST('main'), 200, listed('a3', 'a2', 'a1'), method='GET')
 add('list-admin-impersonating-owner', 'admin', LIST('main'), 200, listed('a3', 'a2', 'a1'), method='GET', headers=ADMIN_OWNER)

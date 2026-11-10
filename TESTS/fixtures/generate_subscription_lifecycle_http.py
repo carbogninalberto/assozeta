@@ -254,12 +254,46 @@ STATE['cs'].update(copy.deepcopy({key: CS[key] for key in ('acs_inv', 'acs_inst'
 RELATED['rel_carnet'] = related('application.CarnetSubscription', 'carnet_subscription_id', user_id_id=OWNER, subscription_id=REL,
                                 carnet_id_id=None, disabled=False, meta=None)
 
+# Rare stored data. Empty dates: the owner's duration setting selects no rule (a case's `setup`), so save() leaves
+# them empty. A payment without an association. Payments whose save() raises (an account transfer without a
+# description). One unpaid payment on two links of the subscription being deleted.
+for name in ('nora', 'ugo', 'rita', 'dino', 'lea', 'tito'):
+    ASSOCIATES[name] = {'id': next(ids), 'association': OWN, 'first': name.title(), 'last': 'Fixture'}
+NO_RULE = {'owner': {'subscription_duration': 0}}
+SUBSCRIPTIONS['a_nodate'] = subscription('nora', start=None, end=None)
+PAYMENTS['and_p'] = payment(associate='nora', subject=0)
+PAYMENTS['dnd_sp'] = payment(subject=1)
+PAYMENTS['dnd_r'] = payment(associate='ugo', subject=0)
+SUBSCRIPTIONS['d_nodate'] = subscription('ugo', start=None, end=None, payment='dnd_sp')
+PAYMENTS['orph'] = {**payment(subject=1), 'association': None}
+SUBSCRIPTIONS['a_orphan'] = subscription('rita', payment='orph', start='2020-01-01', end='2020-12-31')
+PAYMENTS['bad_cp'] = payment()
+PAYMENTS['bad_sp'] = {**payment(subject=3), 'description': None}
+SUBSCRIPTIONS['a_badsave'] = subscription('dino', payment='bad_sp', start='2020-01-01', end='2020-12-31')
+CS['bad_cs'] = course_subscription('a_badsave', payment='bad_cp')
+PAYMENTS['rng_ok'] = payment(associate='lea', created='2021-03-01T10:00:00Z', subject=0)
+PAYMENTS['rng_bad'] = {**payment(associate='lea', created='2021-03-02T10:00:00Z', subject=3), 'description': None}
+PAYMENTS['rng_after'] = payment(associate='lea', created='2021-03-03T10:00:00Z', subject=0)
+SUBSCRIPTIONS['a_badrange'] = subscription('lea', start='2021-01-01', end='2021-12-31')
+PAYMENTS['sh_p'] = payment()
+SUBSCRIPTIONS['d_shared'] = subscription('tito', start='2019-01-01', end='2019-12-31')
+CS['sh1'] = course_subscription('d_shared', payment='sh_p')
+CS['sh2'] = course_subscription('d_shared', payment='sh_p')
+PAYMENTS['shs_p'] = payment()
+SUBSCRIPTIONS['d_shared_sub'] = subscription('tito', payment='shs_p', start='2018-01-01', end='2018-12-31')
+CS['shs'] = course_subscription('d_shared_sub', payment='shs_p')
+PAYMENTS['shi_p'] = payment()
+SUBSCRIPTIONS['d_shared_inst'] = subscription('tito', start='2017-01-01', end='2017-12-31')
+CS['shi'] = course_subscription('d_shared_inst', payment='shi_p', multi_payments=True)
+INSTALLMENTS['shi_i'] = installment('shi', 0, 'shi_p')
+STATE['cs'].update(copy.deepcopy({key: CS[key] for key in ('bad_cs', 'sh1', 'sh2', 'shs', 'shi')}))
+
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='POST', headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='POST', headers=None, effect=None, setup=None):
     cases.append({'name': f'subscription-lifecycle-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-                  'status': status, 'response': response, 'effect': effect})
+                  'status': status, 'response': response, 'effect': effect, 'setup': setup})
 
 
 def route(label, verb):
@@ -566,6 +600,56 @@ add('delete-anonymous', 'anonymous', route('d_cs', 'delete'), 401, {'detail': 'A
 add('delete-wrong-method', 'owner', route('d_cs', 'delete'), 405, {'detail': 'Method "GET" not allowed.'}, method='GET')
 add('delete-options', 'owner', route('d_cs', 'delete'), 200, {'name': 'Subscription Delete', 'description': '', 'renders': ['application/json'],
     'parses': ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']}, method='OPTIONS')
+
+# ---------------------------------------------------------------- rare stored data
+# creation_date__range with empty bounds compares with NULL: no payment of the period is archived.
+add('archive-empty-dates', 'owner', route('a_nodate', 'archive'), 200, ARCHIVED, setup=NO_RULE,
+    effect=effect('owner', [updated('subscription', 'a_nodate', FLIP, DIRECT)], subscriptions={'changed': {'a_nodate': {'archived': True}}}))
+# creation_date__gte=None is a ValueError (the HTML 500 page) after the payment delete and the archived save.
+add('delete-empty-dates-server-error', 'owner', route('d_nodate', 'delete'), 500, SERVER, setup=NO_RULE, effect=effect('owner', [
+    removed('payment', 'dnd_sp', CHANGES_JSON),
+    updated('subscription', 'd_nodate', FLIP, DIRECT),
+], subscriptions={'changed': {'d_nodate': {'archived': True}}}, payments={'deleted': ['dnd_sp']}))
+# A payment without an association: its entry is indexed through the actor.
+add('archive-payment-without-association', 'owner', route('a_orphan', 'archive'), 200, ARCHIVED, effect=effect('owner', [
+    updated('payment', 'orph', FLIP, ACTOR),
+    updated('subscription', 'a_orphan', FLIP, DIRECT),
+], subscriptions={'changed': {'a_orphan': {'archived': True}}}, payments={'changed': {'orph': {'archived': True}}}))
+# Payment.save() raises for the subscription's payment: the course subscription's saves stay.
+STATE['cs']['bad_cs']['archived'] = True
+add('archive-payment-save-server-error', 'owner', route('a_badsave', 'archive'), 500, SERVER, effect=effect('owner', [
+    updated('payment', 'bad_cp', FLIP, DIRECT),
+    updated('coursesubscription', 'bad_cs', FLIP, COURSE_INDEX),
+], payments={'changed': {'bad_cp': {'archived': True}}}, cs={'changed': {'bad_cs': {'archived': True}}}))
+# ... and for a payment of the period: the subscription and the payments before it stay archived.
+add('archive-period-payment-save-server-error', 'owner', route('a_badrange', 'archive'), 500, SERVER, effect=effect('owner', [
+    updated('subscription', 'a_badrange', FLIP, DIRECT),
+    updated('payment', 'rng_ok', FLIP, DIRECT),
+], subscriptions={'changed': {'a_badrange': {'archived': True}}}, payments={'changed': {'rng_ok': {'archived': True}}}))
+# The second course subscription's payment was deleted with the first: Payment.DoesNotExist (the HTML 500 page).
+STATE['cs']['sh1'].update(payment=None, deleted=True)
+sh1_saved = cs_repr('sh1')
+add('delete-payment-on-two-course-subscriptions-server-error', 'owner', route('d_shared', 'delete'), 500, SERVER, effect=effect('owner', [
+    removed('payment', 'sh_p', CHANGES_JSON),
+    dict(updated('coursesubscription', 'sh1', {'deleted': ['False', 'True']}, COURSE_INDEX), repr=sh1_saved),
+], payments={'deleted': ['sh_p']}, cs={'changed': {'sh1': {'deleted': True}}}))
+STATE['cs']['shs'].update(payment=None, deleted=True)
+shs_saved = cs_repr('shs')
+add('delete-payment-shared-with-subscription-server-error', 'owner', route('d_shared_sub', 'delete'), 500, SERVER, effect=effect('owner', [
+    removed('payment', 'shs_p', CHANGES_JSON),
+    dict(updated('coursesubscription', 'shs', {'deleted': ['False', 'True']}, COURSE_INDEX), repr=shs_saved),
+], payments={'deleted': ['shs_p']}, cs={'changed': {'shs': {'deleted': True}}}))
+# The course subscription's payment is also its installment's: the payment delete removes the installment
+# (nested), the installments read afterwards are none and the delete completes.
+STATE['cs']['shi'].update(payment=None, deleted=True)
+shi_saved = cs_repr('shi')
+add('delete-payment-shared-with-installment', 'owner', route('d_shared_inst', 'delete'), 200, DELETED, effect=effect('owner', [
+    removed('payment', 'shi_p', CHANGES_JSON), removed('coursesubscriptioninstallment', 'shi_i', ACTOR), removed('payment', 'shi_p', CHANGES_JSON),
+    dict(updated('coursesubscription', 'shi', {'deleted': ['False', 'True']}, COURSE_INDEX), repr=shi_saved),
+    updated('subscription', 'd_shared_inst', FLIP, DIRECT),
+    removed('subscription', 'd_shared_inst', CHANGES_JSON, GONE),
+    dict(removed('coursesubscription', 'shi', ACTOR, {'deleted': ['True', 'None'], **NULL_PAYMENT}), repr=shi_saved),
+], subscriptions={'deleted': ['d_shared_inst']}, payments={'deleted': ['shi_p']}, cs={'deleted': ['shi']}, installments={'deleted': ['shi_i']}))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Subscription reject, archive and delete authored sequence with audit effects',
