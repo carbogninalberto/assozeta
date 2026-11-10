@@ -509,6 +509,20 @@ run('export-pdf-footer-number', 'export_data', {**NUOTO_PDF, 'footer_text': 7}, 
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': '7'}))
 run('export-pdf-footer-list', 'export_data', {**NUOTO_PDF, 'footer_text': [1, 'a', None]}, 200,
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': "[1, 'a', None]"}))
+# Labels and texts are reportlab paragraphs: '&', entities, tags and soft hyphens go through its markup parser, and a text
+# longer than a page is cut where it stands, inside a long word too. Markup the parser raises on fails the export.
+MARKUP_LABELS = {'tag_name': 'Nome & <b>tag</b>', 'creation_date': 'A < B &lt;data&gt;'}
+MARKUP_TABLE = {**NUOTO_TABLE, 'headers': list(MARKUP_LABELS.values())}
+run('export-pdf-markup', 'export_data', {**NUOTO_PDF, 'column_labels': MARKUP_LABELS, 'text_before': 'Sport &amp; Fun<br/>R&D <i>club</i>',
+    'text_after': 'poli\xadsportiva 1<2 &euro;'}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**MARKUP_TABLE, 'text_before': 'Sport &amp; Fun<br/>R&D <i>club</i>',
+                                                 'text_after': 'poli\xadsportiva 1<2 &euro;'}))
+MARKUP_TEXT = ' '.join(['il <b>corso</b> di nuoto &amp; pallanuoto <i>agonistico</i> R&D per adulti della poli\xadsportiva'] * 120)
+WORD_TEXT = 'prima ' * 30 + 'X' * 9000 + ' dopo'
+run('export-pdf-markup-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': MARKUP_TEXT, 'text_after': WORD_TEXT}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': MARKUP_TEXT, 'text_after': WORD_TEXT}))
+run('export-pdf-markup-unclosed-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <b>b'}, 500, FAILED)
+run('export-pdf-label-markup-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': 'A<B'}}, 500, FAILED)
 
 run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
 run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})

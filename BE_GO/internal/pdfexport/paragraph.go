@@ -1,6 +1,7 @@
 package pdfexport
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -19,27 +20,176 @@ func styleNormal() paraStyle {
 	return paraStyle{fontName: "Helvetica", fontSize: 10, leading: 12}
 }
 
-type paraWord struct {
-	text  string
-	split bool // a _SplitWord piece of a long word
+// paraFailure is an exception reportlab raises while it lays a paragraph
+// out; docTemplate.build answers it as ErrLayout.
+type paraFailure struct{ reason string }
+
+const (
+	softHyphen = '­'
+	fsNever    = float64(0x7fffffff)
+)
+
+// simpleWord is a word of a one-font paragraph: a str, a _SplitWord piece of
+// a long word (the last one a _SplitWordEnd) or a _SHYStr with the places of
+// its soft hyphens.
+type simpleWord struct {
+	text  []rune
+	split bool
+	end   bool
+	shy   bool
+	sp    []int
+	fsww  float64
 }
 
-type paraLine struct {
+func plainWords(texts []string) []*simpleWord {
+	words := make([]*simpleWord, len(texts))
+	for i, text := range texts {
+		words[i] = &simpleWord{text: []rune(text)}
+	}
+	return words
+}
+
+// newSHYStr is _SHYStr(s).
+func newSHYStr(s []rune) *simpleWord {
+	word := &simpleWord{shy: true}
+	var ends []int
+	for _, r := range s {
+		if r == softHyphen {
+			ends = append(ends, len(word.text))
+			continue
+		}
+		word.text = append(word.text, r)
+	}
+	word.sp = ends
+	return word
+}
+
+// shySplit is _SHYStr.__shysplit__: the longest head ending at a soft hyphen
+// that fits with its '-', and the rest.
+func (w *simpleWord) shySplit(f *font, size, baseWidth, limWidth float64) []*simpleWord {
+	w.fsww = fsNever
+	for i := len(w.sp) - 1; i >= 0; i-- {
+		sp := w.sp[i]
+		head := w.text[:sp]
+		width := stringWidth(string(head), f, size)
+		if i == 0 {
+			w.fsww = width
+		}
+		if baseWidth+width <= limWidth {
+			first := &simpleWord{text: append(append([]rune{}, head...), '-'), shy: true, sp: append([]int{}, w.sp[:i]...)}
+			var rest []rune
+			bounds := append(append([]int{}, w.sp[i:]...), len(w.text))
+			for j := 0; j+1 < len(bounds); j++ {
+				if j > 0 {
+					rest = append(rest, softHyphen)
+				}
+				rest = append(rest, w.text[bounds[j]:bounds[j+1]]...)
+			}
+			return []*simpleWord{first, newSHYStr(rest)}
+		}
+	}
+	return nil
+}
+
+type simpleLine struct {
 	extra float64
-	words []string
+	words []*simpleWord
 }
 
-// paragraph is platypus.Paragraph for text without markup: one fragment in
-// the style's font (reportlab's "kind 0" lines).
+// shyText is a str of a frag word, or a _SHYIndexedStr with the places of
+// its soft hyphens.
+type shyText struct {
+	s       []rune
+	indexed bool
+	idx     []int
+}
+
+// newSHYIndexed is _SHYIndexedStr(u, X).
+func newSHYIndexed(u []rune, x []int) shyText {
+	if len(x) > 0 {
+		return shyText{s: u, indexed: true, idx: x}
+	}
+	out := shyText{indexed: true}
+	var ends []int
+	for _, r := range u {
+		if r == softHyphen {
+			ends = append(ends, len(out.s))
+			continue
+		}
+		out.s = append(out.s, r)
+	}
+	out.idx = ends
+	return out
+}
+
+// shyUnsplit is _shyUnsplit, with the exceptions reportlab raises.
+func shyUnsplit(s shyText, ss *shyText) shyText {
+	u := append([]rune{}, s.s...)
+	for len(u) > 0 && u[len(u)-1] == '-' {
+		u = u[:len(u)-1]
+	}
+	if s.indexed {
+		if len(s.idx) == 0 {
+			panic(paraFailure{"list index out of range"})
+		}
+		x := append([]int{}, s.idx...)
+		last := x[len(x)-1]
+		if ss != nil && len(ss.s) > 0 {
+			if ss.indexed {
+				for _, v := range ss.idx {
+					x = append(x, v+last)
+				}
+			}
+			u = append(u, ss.s...)
+		}
+		return newSHYIndexed(u, x)
+	}
+	if ss != nil && len(ss.s) > 0 {
+		u = append(u, ss.s...)
+		if ss.indexed {
+			panic(paraFailure{"X is not defined"})
+		}
+	}
+	return shyText{s: u}
+}
+
+type fragPart struct {
+	f    *frag
+	text shyText
+}
+
+// fragWord is a frag word of _getFragWords: its width and its parts, with
+// the classes of paragraph.py as flags (_HSFrag, _InjectedFrag, _SplitFrag,
+// _SplitFragH, _SplitFragHY, _SHYWord).
+type fragWord struct {
+	width                                     float64
+	parts                                     []fragPart
+	hs, injected, split, splitH, splitHY, shy bool
+	fsww                                      float64
+}
+
+type fragLine struct {
+	extra     float64
+	wordCount int
+	words     []*frag
+	fontSize  float64
+	sFW       int
+}
+
+// paragraph is platypus.Paragraph: the fragments of the parser, laid out as
+// lines of one font (kind 0) or of several fragments (kind 1).
 type paragraph struct {
-	style paraStyle
-	text  string
-	// words are the words of a part of a split paragraph (text is unused).
-	words  []string
-	broken bool // a line ends inside a long word
-	lines  []paraLine
-	width  float64
-	height float64
+	style     paraStyle
+	frags     []*frag
+	processed []*fragWord // self.frags once it is a frag word list
+	isWords   bool
+	wrapped   bool
+	kind      int
+	lines     []simpleLine
+	fragLines []*fragLine
+	lineFont  *font
+	width     float64
+	height    float64
 }
 
 // Python's str.isspace() characters and reportlab's _wsc (which has U+200B
@@ -47,6 +197,8 @@ type paragraph struct {
 const (
 	pySpaces = "\t\n\v\f\r\x1c\x1d\x1e\x1f \u0085                 　"
 	rlSpaces = "\t\n\v\f\r\x1c\x1d\x1e\x1f \u0085            ​    　"
+	// string.whitespace
+	asciiSpaces = " \t\n\r\v\f"
 )
 
 // paraSplit is paragraph.split(text): str.split(), or a split on reportlab's
@@ -92,101 +244,572 @@ func paraClean(text string) string {
 	return strings.Join(lines, " ")
 }
 
-// newParagraph is Paragraph(text, style). Markup ('<'), entities ('&') and
-// soft hyphens take reportlab's parser and multi-fragment layout, which are
-// not ported.
+// newParagraph is Paragraph(text, style): the text cleaned and parsed.
 func newParagraph(text string, style paraStyle) (*paragraph, error) {
-	if strings.ContainsAny(text, "<&­") {
-		return nil, ErrNotPorted
+	frags, err := parseParagraph(paraClean(text), style)
+	if err != nil {
+		return nil, err
 	}
-	return &paragraph{style: style, text: paraClean(text)}, nil
+	return &paragraph{style: style, frags: frags}, nil
 }
 
 func (p *paragraph) spaceBefore() float64 { return p.style.spaceBefore }
 func (p *paragraph) spaceAfter() float64  { return p.style.spaceAfter }
 func (p *paragraph) hAlign() string       { return "LEFT" }
 
-// splitWord is paragraph._splitWord.
-func (p *paragraph) splitWord(word string, lineWidth float64, maxWidth float64) []paraWord {
-	f := fontsByName[p.style.fontName]
-	var out []paraWord
-	var current strings.Builder
-	for _, r := range word {
-		cw := stringWidth(string(r), f, p.style.fontSize)
-		newWidth := lineWidth + cw
-		if newWidth > maxWidth {
-			out = append(out, paraWord{text: current.String(), split: true})
-			newWidth = cw
-			current.Reset()
-		}
-		current.WriteRune(r)
-		lineWidth = newWidth
+func (p *paragraph) count() int {
+	if p.processed != nil {
+		return len(p.processed)
 	}
-	return append(out, paraWord{text: current.String(), split: true})
+	return len(p.frags)
 }
 
-// breakLines is Paragraph.breakLines for one fragment (both line widths are
-// the available width: the styles have no indents).
-func (p *paragraph) breakLines(maxWidth float64) {
-	p.lines, p.broken = nil, false
-	var words []paraWord
-	if p.words != nil {
-		for _, word := range p.words {
-			words = append(words, paraWord{text: word})
+// splitWord is paragraph._splitWord.
+func splitWord(word []rune, lineWidth, maxWidth float64, f *font, size float64) []*simpleWord {
+	var out []*simpleWord
+	var current []rune
+	for _, r := range word {
+		cw := stringWidth(string(r), f, size)
+		newWidth := lineWidth + cw
+		if newWidth > maxWidth {
+			out = append(out, &simpleWord{text: current, split: true})
+			newWidth = cw
+			current = nil
 		}
+		current = append(current, r)
+		lineWidth = newWidth
+	}
+	return append(out, &simpleWord{text: current, split: true, end: true})
+}
+
+func hasSoftHyphen(text []rune) bool {
+	for _, r := range text {
+		if r == softHyphen {
+			return true
+		}
+	}
+	return false
+}
+
+// breakSimple is Paragraph.breakLines for one fragment (both line widths are
+// the available width: the styles have no indents).
+func (p *paragraph) breakSimple(maxWidth float64) {
+	f := p.frags[0]
+	p.kind, p.lines, p.lineFont = 0, nil, f.font
+	var words []*simpleWord
+	if f.hasWords {
+		blank := true
+		for _, word := range f.words {
+			if strings.Trim(string(word.text), rlSpaces) != "" {
+				blank = false
+				break
+			}
+		}
+		if blank {
+			return
+		}
+		words = append(words, f.words...)
 	} else {
-		text := strings.Trim(p.text, rlSpaces)
+		text := strings.Trim(f.text, rlSpaces)
 		if text == "" {
 			return
 		}
-		for _, word := range paraSplit(text) {
-			words = append(words, paraWord{text: word})
-		}
+		words = plainWords(paraSplit(text))
 	}
-	f := fontsByName[p.style.fontName]
 	size := p.style.fontSize
-	spaceWidth := stringWidth(" ", f, size)
+	spaceWidth := stringWidth(" ", f.font, size)
 	shrink := 0.05 * spaceWidth
-	var line []string
+	hyphenWidth := stringWidth("-", f.font, size)
+	var line []*simpleWord
 	currentWidth := -spaceWidth
 	forced := false
 	for len(words) > 0 {
 		word := words[0]
 		words = words[1:]
-		if word.text == "" && word.split {
+		if len(word.text) == 0 && word.split {
 			forced = true
+		} else if hasSoftHyphen(word.text) {
+			word = newSHYStr(word.text)
 		}
-		wordWidth := stringWidth(word.text, f, size)
+		wordWidth := stringWidth(string(word.text), f.font, size)
 		newWidth := currentWidth + spaceWidth + wordWidth
 		limWidth := maxWidth + shrink*float64(len(line))
+		dropped := false
 		if newWidth > limWidth && !forced {
-			if !word.split && wordWidth > maxWidth {
-				words = append(p.splitWord(word.text, currentWidth+spaceWidth, maxWidth), words...)
-				forced, p.broken = true, true
+			if word.shy {
+				if parts := word.shySplit(f.font, size, currentWidth+spaceWidth+hyphenWidth-1e-8, limWidth); parts != nil {
+					words = append(parts, words...)
+					forced = true
+					continue
+				} else if len(line) > 0 && word.fsww+hyphenWidth+1e-8 <= maxWidth {
+					if word.shySplit(f.font, size, hyphenWidth-1e-8, maxWidth) != nil {
+						words = append([]*simpleWord{word}, words...)
+						forced, dropped = true, true
+						newWidth = currentWidth
+					}
+				}
+			}
+			if !word.split && !forced && wordWidth > maxWidth {
+				words = append(splitWord(word.text, currentWidth+spaceWidth, maxWidth, f.font, size), words...)
+				forced = true
 				continue
 			}
 		}
 		if newWidth <= limWidth || len(line) == 0 || forced {
-			if word.text != "" {
-				line = append(line, word.text)
+			if !dropped && len(word.text) > 0 {
+				line = append(line, word)
 			}
 			if forced {
 				forced = false
-				p.lines = append(p.lines, paraLine{maxWidth - newWidth, line})
+				p.lines = append(p.lines, simpleLine{maxWidth - newWidth, line})
 				line = nil
 				currentWidth = -spaceWidth
 			} else {
 				currentWidth = newWidth
 			}
 		} else {
-			p.lines = append(p.lines, paraLine{maxWidth - currentWidth, line})
-			line = []string{word.text}
+			p.lines = append(p.lines, simpleLine{maxWidth - currentWidth, line})
+			line = []*simpleWord{word}
 			currentWidth = wordWidth
 		}
 	}
 	if len(line) > 0 {
-		p.lines = append(p.lines, paraLine{maxWidth - currentWidth, line})
+		p.lines = append(p.lines, simpleLine{maxWidth - currentWidth, line})
 	}
+}
+
+func fragWidth(text []rune, f *frag, size float64) float64 {
+	return stringWidth(string(text), f.font, size)
+}
+
+// rejoinSplitFragWords is _rejoinSplitFragWords.
+func rejoinSplitFragWords(pieces []*fragWord, size float64) *fragWord {
+	out := &fragWord{}
+	length := 0.0
+	var previous *frag
+	for _, piece := range pieces {
+		length += piece.width
+		for i, part := range piece.parts {
+			text := part.text
+			if piece.splitHY && i == len(piece.parts)-1 {
+				if len(text.s) == 0 {
+					panic(paraFailure{"string index out of range"})
+				}
+				length -= fragWidth(text.s[len(text.s)-1:], part.f, size) + 1e-8
+				text = shyUnsplit(text, nil)
+			}
+			if previous == part.f {
+				last := &out.parts[len(out.parts)-1]
+				last.text = shyUnsplit(last.text, &text)
+			} else {
+				out.parts = append(out.parts, fragPart{part.f, text})
+				previous = part.f
+			}
+		}
+	}
+	out.width = length
+	last := pieces[len(pieces)-1]
+	switch {
+	case last.shy && last.hs:
+		out.shy, out.split, out.hs = true, true, true
+	case last.shy:
+		out.shy = true
+	case last.hs:
+		out.hs = true
+	}
+	return out
+}
+
+// fragWords is _getFragWords.
+func (p *paragraph) fragWords() []*fragWord {
+	size := p.style.fontSize
+	var out []*fragWord
+	if p.processed != nil {
+		var pieces []*fragWord
+		for _, word := range p.processed {
+			if word.injected {
+				continue
+			}
+			if word.split {
+				pieces = append(pieces, word)
+				if word.hs {
+					out = append(out, rejoinSplitFragWords(pieces, size))
+					pieces = nil
+				}
+				continue
+			}
+			if len(pieces) > 0 {
+				out = append(out, rejoinSplitFragWords(pieces, size))
+				pieces = nil
+			}
+			out = append(out, word)
+		}
+		if len(pieces) > 0 {
+			out = append(out, rejoinSplitFragWords(pieces, size))
+		}
+		if len(out) == 0 {
+			panic(paraFailure{"no frag words"})
+		}
+		return out
+	}
+	word := &fragWord{}
+	n := 0.0
+	hangingStrip, shy := true, false
+	add := func(f *frag, text string) {
+		part := shyText{s: []rune(text)}
+		if hasSoftHyphen(part.s) {
+			part = newSHYIndexed(part.s, nil)
+			shy = true
+		}
+		word.parts = append(word.parts, fragPart{f, part})
+		n += fragWidth(part.s, f, size)
+	}
+	flush := func(set func(w *fragWord)) {
+		word.width = n
+		set(word)
+		out = append(out, word)
+		word, n, shy = &fragWord{}, 0, false
+	}
+	for _, f := range p.frags {
+		text := f.text
+		switch {
+		case text != "":
+			f.kind = fragText
+			if hangingStrip {
+				text = strings.TrimLeft(text, rlSpaces)
+				if text == "" {
+					continue
+				}
+				hangingStrip = false
+			}
+			pieces := paraSplit(text)
+			if strings.ContainsRune(asciiSpaces, []rune(text)[0]) || len(pieces) == 0 {
+				followed := false
+				if len(word.parts) > 0 {
+					wasShy := shy
+					flush(func(w *fragWord) { w.shy = wasShy })
+				} else {
+					followed = len(out) > 0 && out[len(out)-1].hs
+				}
+				if !followed {
+					pieces = append([]string{""}, pieces...)
+				} else if len(pieces) == 0 {
+					continue
+				}
+			}
+			for _, piece := range pieces[:len(pieces)-1] {
+				add(f, piece)
+				wasShy := shy
+				flush(func(w *fragWord) {
+					if wasShy {
+						w.shy, w.split = true, true
+					}
+					w.hs = true
+				})
+			}
+			add(f, pieces[len(pieces)-1])
+			runes := []rune(text)
+			if strings.ContainsRune(asciiSpaces, runes[len(runes)-1]) {
+				wasShy := shy
+				flush(func(w *fragWord) {
+					if wasShy {
+						w.shy = true
+					} else {
+						w.hs = true
+					}
+				})
+			}
+		case f.lineBreak:
+			if len(word.parts) > 0 {
+				flush(func(*fragWord) {})
+			}
+			f.kind = fragBreak
+			out = append(out, &fragWord{parts: []fragPart{{f, shyText{}}}})
+			hangingStrip = true
+		}
+	}
+	if len(word.parts) > 0 {
+		wasShy := shy
+		flush(func(w *fragWord) { w.shy = wasShy })
+	}
+	if len(out) == 0 && len(p.frags) > 0 {
+		p.frags[0].kind = fragText
+		out = []*fragWord{{parts: []fragPart{{p.frags[0], shyText{}}}}}
+	}
+	return out
+}
+
+// shyphenate is _SHYWord.shyphenate: the word cut at its last soft hyphen
+// that fits, as a head ending in '-' and the rest.
+func (w *fragWord) shyphenate(newWidth, maxWidth, size float64) []*fragWord {
+	ww := w.width
+	w.fsww = fsNever
+	if ww == 0 {
+		return nil
+	}
+	type cut struct {
+		i, j, x     int
+		leftWidth   float64
+		left, right []rune
+		hyphen      float64
+	}
+	var possible *cut
+	exceeded := false
+	baseWidth := newWidth - ww
+	baseWidth0 := baseWidth
+	first, hasFirst := 0.0, false
+	for i, part := range w.parts {
+		if part.text.indexed {
+			hyphen := fragWidth([]rune{'-'}, part.f, size)
+			bw := baseWidth + hyphen
+			for j, x := range part.text.idx {
+				left, right := part.text.s[:min(x, len(part.text.s))], part.text.s[min(x, len(part.text.s)):]
+				leftWidth := bw + fragWidth(left, part.f, size)
+				if !hasFirst {
+					first, hasFirst = leftWidth, true
+				}
+				exceeded = leftWidth > maxWidth
+				if exceeded {
+					break
+				}
+				possible = &cut{i, j, x, leftWidth, left, right, hyphen}
+			}
+			baseWidth += fragWidth(part.text.s, part.f, size)
+		} else {
+			baseWidth += fragWidth(part.text.s, part.f, size)
+			exceeded = baseWidth > maxWidth
+		}
+		if exceeded && hasFirst {
+			break
+		}
+	}
+	if hasFirst {
+		w.fsww = first - baseWidth0
+	}
+	if possible == nil {
+		return nil
+	}
+	part := w.parts[possible.i]
+	indices := part.text.idx
+	lefts := newSHYIndexed(append(append([]rune{}, possible.left...), '-'), append([]int{}, indices[:possible.j+1]...))
+	head := &fragWord{width: possible.leftWidth - baseWidth0, shy: true, split: true, splitH: true, splitHY: true}
+	head.parts = append(append([]fragPart{}, w.parts[:possible.i]...), fragPart{part.f, lefts})
+	tail := &fragWord{width: ww - head.width + possible.hyphen, shy: true, split: true, hs: true}
+	if len(possible.right) > 0 {
+		var rest []int
+		for _, v := range indices[possible.j+1:] {
+			rest = append(rest, v-possible.x)
+		}
+		tail.parts = append(tail.parts, fragPart{part.f, newSHYIndexed(append([]rune{}, possible.right...), rest)})
+	}
+	tail.parts = append(tail.parts, w.parts[possible.i+1:]...)
+	return []*fragWord{head, tail}
+}
+
+// splitFragWord is _splitFragWord: a frag word too long for a line cut
+// character by character.
+func splitFragWord(w *fragWord, maxWidth, lineWidthMax, size float64) []*fragWord {
+	var out []*fragWord
+	var parts []fragPart
+	lineWidth, wordWidth := 0.0, 0.0
+	var text []rune
+	f := w.parts[0].f
+	step := func(g *frag, cw float64, c []rune) {
+		newLineWidth := lineWidth + cw
+		tooLong := newLineWidth > maxWidth
+		if g != f || tooLong {
+			f = f.clone()
+			f.text = string(text)
+			parts = append(parts, fragPart{f, shyText{s: text}})
+			if tooLong {
+				out = append(out, &fragWord{width: wordWidth, parts: parts, split: true})
+				maxWidth = lineWidthMax
+				parts = nil
+				newLineWidth = cw
+				wordWidth = 0
+			}
+			text = nil
+			f = g
+		}
+		wordWidth += cw
+		text = append(append([]rune{}, text...), c...)
+		lineWidth = newLineWidth
+	}
+	for _, part := range w.parts {
+		if len(part.text.s) == 0 {
+			step(part.f, 0, nil)
+			continue
+		}
+		for _, r := range part.text.s {
+			step(part.f, fragWidth([]rune{r}, part.f, size), []rune{r})
+		}
+	}
+	parts = append(parts, fragPart{f, shyText{s: text}})
+	last := &fragWord{width: wordWidth, parts: parts, split: true}
+	if w.hs {
+		last.hs = true
+	} else {
+		last.splitH = true
+	}
+	return append(out, last)
+}
+
+func sameFrag(f, g *frag) bool {
+	return !f.lineBreak && !g.lineBreak && f.font == g.font
+}
+
+// breakFrags is Paragraph.breakLines for several fragments or a frag word
+// list.
+func (p *paragraph) breakFrags(maxWidth float64) {
+	size := p.style.fontSize
+	p.kind, p.fragLines = 1, nil
+	pending := p.fragWords()
+	var words []*frag
+	var done []*fragWord
+	var g *frag
+	sFW, n := 0, 0
+	spaceWidth, currentWidth := 0.0, 0.0
+	injected := func(f *frag) *fragWord {
+		broken := f.clone()
+		broken.kind, broken.text = fragBreak, ""
+		return &fragWord{injected: true, parts: []fragPart{{broken, shyText{}}}}
+	}
+	for len(pending) > 0 {
+		w := pending[0]
+		pending = pending[1:]
+		done = append(done, w)
+		if len(w.parts) == 0 {
+			panic(paraFailure{"'float' object is not subscriptable"})
+		}
+		lastFont := w.parts[len(w.parts)-1].f.font
+		if len(words) == 0 {
+			n, spaceWidth, currentWidth = 0, 0, 0
+		}
+		wordWidth := w.width
+		f := w.parts[0].f
+		newWidth := currentWidth
+		if wordWidth > 0 {
+			newWidth = currentWidth + spaceWidth + wordWidth
+		}
+		lineBreak := f.kind == fragBreak
+		spaceShrink := spaceWidth
+		for _, wi := range words {
+			if wi.kind == fragText {
+				if ns := strings.Count(wi.text, " "); ns > 0 {
+					spaceShrink += float64(ns) * stringWidth(" ", wi.font, size)
+				}
+			}
+		}
+		limWidth := maxWidth + spaceShrink*0.05
+		if !lineBreak && newWidth > limWidth && !w.splitH {
+			if w.shy {
+				if cut := w.shyphenate(newWidth, limWidth, size); cut != nil {
+					pending = append([]*fragWord{cut[0], injected(f), cut[1]}, pending...)
+					done = done[:len(done)-1]
+					continue
+				} else if len(done) > 1 && w.fsww+1e-8 <= maxWidth {
+					if w.shyphenate(wordWidth, maxWidth, size) != nil {
+						pending = append([]*fragWord{injected(f), w}, pending...)
+						done = done[:len(done)-1]
+						continue
+					}
+				}
+			}
+			if !w.split && wordWidth > maxWidth {
+				cut := splitFragWord(w, maxWidth-spaceWidth-currentWidth, maxWidth, size)
+				pending = append(append([]*fragWord{cut[0], injected(f)}, cut[1:]...), pending...)
+				done = done[:len(done)-1]
+				continue
+			}
+		}
+		follow := func() float64 {
+			if w.hs {
+				return stringWidth(" ", lastFont, size)
+			}
+			return 0
+		}
+		if !(newWidth > limWidth && n > 0) && !lineBreak {
+			text := string(w.parts[0].text.s)
+			if text != "" {
+				n++
+			}
+			switch {
+			case len(words) == 0:
+				g = f.clone()
+				words = []*frag{g}
+				g.text = text
+			case !sameFrag(g, f):
+				if spaceWidth != 0 {
+					for i := len(words) - 1; i >= 0; i-- {
+						if words[i].kind == fragText {
+							if !strings.HasSuffix(words[i].text, " ") {
+								words[i].text += " "
+							}
+							break
+						}
+					}
+				}
+				g = f.clone()
+				words = append(words, g)
+				g.text = text
+			case spaceWidth != 0:
+				if !strings.HasSuffix(g.text, " ") {
+					g.text += " " + text
+				} else {
+					g.text += text
+				}
+			default:
+				g.text += text
+			}
+			spaceWidth = follow()
+			more := false
+			for _, part := range w.parts[1:] {
+				g = part.f.clone()
+				g.text = string(part.text.s)
+				if g.text != "" {
+					more = true
+				}
+				words = append(words, g)
+			}
+			if text == "" && more {
+				n++
+			}
+			currentWidth = newWidth
+			continue
+		}
+		if lineBreak {
+			g = f.clone()
+			words = append(words, g)
+		}
+		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: size, sFW: sFW})
+		sFW = len(done) - 1
+		if lineBreak {
+			words = nil
+			continue
+		}
+		spaceWidth = follow()
+		currentWidth = wordWidth
+		n = 1
+		g = f.clone()
+		words = []*frag{g}
+		g.text = string(w.parts[0].text.s)
+		for _, part := range w.parts[1:] {
+			g = part.f.clone()
+			g.text = string(part.text.s)
+			words = append(words, g)
+		}
+	}
+	if len(words) > 0 {
+		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: size, sFW: sFW})
+	}
+	p.processed = done
+}
+
+func (p *paragraph) lineCount() int {
+	if p.kind == 1 {
+		return len(p.fragLines)
+	}
+	return len(p.lines)
 }
 
 func (p *paragraph) wrap(c *canvas, availWidth, availHeight float64) (float64, float64) {
@@ -194,95 +817,257 @@ func (p *paragraph) wrap(c *canvas, availWidth, availHeight float64) (float64, f
 		return 0, 0x7fffffff
 	}
 	p.width = availWidth
-	p.breakLines(availWidth)
-	p.height = float64(len(p.lines)) * p.style.leading
+	p.wrapped = true
+	switch {
+	case p.count() == 0:
+		p.kind, p.lines, p.fragLines, p.lineFont = 0, nil, nil, fontsByName[p.style.fontName]
+	case p.processed == nil && len(p.frags) == 1:
+		p.breakSimple(availWidth)
+	default:
+		p.breakFrags(availWidth)
+	}
+	p.height = float64(p.lineCount()) * p.style.leading
 	return p.width, p.height
+}
+
+// simplePart is _split_blParaSimple: the words of some lines, the pieces of
+// a long word joined again.
+func (p *paragraph) simplePart(lines []simpleLine) *paragraph {
+	part := &frag{font: p.lineFont, hasWords: true, words: []*simpleWord{}}
+	var pieces []*simpleWord
+	join := func() {
+		joined := &simpleWord{}
+		for _, piece := range pieces {
+			joined.text = append(joined.text, piece.text...)
+		}
+		part.words = append(part.words, joined)
+		pieces = nil
+	}
+	for _, line := range lines {
+		for _, word := range line.words {
+			if word.split {
+				pieces = append(pieces, word)
+				if word.end {
+					join()
+				}
+				continue
+			}
+			if len(pieces) > 0 {
+				join()
+			}
+			part.words = append(part.words, word)
+		}
+	}
+	if len(pieces) > 0 {
+		join()
+	}
+	return &paragraph{style: p.style, frags: []*frag{part}}
+}
+
+// processedPart is Paragraph._split_blParaProcessed.
+func (p *paragraph) processedPart(start, stop int) *paragraph {
+	from, to := p.fragLines[start].sFW, len(p.processed)
+	if stop != len(p.fragLines) {
+		to = p.fragLines[stop].sFW
+	}
+	words := append([]*fragWord{}, p.processed[from:to]...)
+	for len(words) > 0 && words[len(words)-1].injected {
+		words = words[:len(words)-1]
+	}
+	if len(words) == 0 {
+		panic(paraFailure{"list index out of range"})
+	}
+	if last := words[len(words)-1]; last.splitHY {
+		// _SHYWordHS (hyphenation, the other source of this class, is off).
+		last.shy, last.split, last.hs, last.splitH, last.splitHY = true, true, true, false, false
+	}
+	return &paragraph{style: p.style, processed: words}
 }
 
 // split is Paragraph.split: nothing when fewer than two lines fit, the whole
 // paragraph when all do, else the lines that fit and the rest as two
-// paragraphs of those words (no orphan line; a last line alone is allowed).
-// A paragraph with a long word cut over several lines is not split here.
+// paragraphs (no orphan line; a last line alone is allowed).
 func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable {
-	if (p.text == "" && p.words == nil) || availWidth < fuzz || availHeight < fuzz {
+	if p.count() == 0 || availWidth < fuzz || availHeight < fuzz {
 		return nil
 	}
-	p.wrap(c, availWidth, availHeight)
+	if !p.wrapped {
+		p.wrap(c, availWidth, availHeight)
+	}
 	s := int(availHeight / p.style.leading)
 	if s <= 1 {
+		p.wrapped = false
 		return nil
 	}
-	if len(p.lines) <= s {
+	n := p.lineCount()
+	if n <= s {
 		return []flowable{p}
 	}
-	if p.broken {
-		c.err = ErrNotPorted
-		return nil
+	if p.kind == 1 {
+		return []flowable{p.processedPart(0, s), p.processedPart(s, n)}
 	}
-	first, rest := &paragraph{style: p.style, words: []string{}}, &paragraph{style: p.style, words: []string{}}
-	for i, line := range p.lines {
-		if i < s {
-			first.words = append(first.words, line.words...)
-		} else {
-			rest.words = append(rest.words, line.words...)
-		}
-	}
-	return []flowable{first, rest}
+	return []flowable{p.simplePart(p.lines[:s]), p.simplePart(p.lines[s:])}
 }
 
 // minWidth is Paragraph.minWidth: the widest word.
 func (p *paragraph) minWidth() float64 {
-	if p.text == "" {
+	if p.count() == 0 {
 		return 0
 	}
-	f := fontsByName[p.style.fontName]
 	widest := 0.0
-	for i, word := range strings.Split(p.text, " ") {
-		if w := stringWidth(word, f, p.style.fontSize); i == 0 || w > widest {
-			widest = w
+	if p.processed == nil && len(p.frags) == 1 {
+		f := p.frags[0]
+		var words []string
+		if f.hasWords {
+			for _, word := range f.words {
+				words = append(words, string(word.text))
+			}
+		} else {
+			words = strings.Split(f.text, " ")
+		}
+		for i, word := range words {
+			if w := stringWidth(word, f.font, p.style.fontSize); i == 0 || w > widest {
+				widest = w
+			}
+		}
+		return widest
+	}
+	for i, word := range p.fragWords() {
+		if i == 0 || word.width > widest {
+			widest = word.width
 		}
 	}
 	return widest
 }
 
-func xPos(parts []string, dx float64) []string {
-	if dx > 1e-6 || dx < -1e-6 {
-		return append(parts, fpStr(dx)+" 0 Td")
-	}
-	return parts
+// textObject is the part of PDFTextObject a paragraph uses.
+type textObject struct {
+	c        *canvas
+	code     []string
+	font     *font
+	fontSize float64
+	leading  float64
 }
+
+// moveCursor is PDFTextObject.moveCursor(dx, 0): a move right after another
+// one replaces it.
+func (t *textObject) moveCursor(dx float64) {
+	dy := 0.0
+	if n := len(t.code); n > 0 && strings.HasSuffix(t.code[n-1], " Td") {
+		if fields := strings.Fields(t.code[n-1]); len(fields) == 3 {
+			lastDx, _ := strconv.ParseFloat(fields[0], 64)
+			lastDy, _ := strconv.ParseFloat(fields[1], 64)
+			t.code = t.code[:n-1]
+			dx += lastDx
+			dy -= lastDy
+		}
+	}
+	t.code = append(t.code, fpStrs(dx, -dy)+" Td")
+}
+
+// setXPos is paragraph.setXPos.
+func (t *textObject) setXPos(dx float64) {
+	if dx > 1e-6 || dx < -1e-6 {
+		t.moveCursor(dx)
+	}
+}
+
+// textOut is PDFTextObject._textOut.
+func (t *textObject) textOut(text string, newLine bool) {
+	out := t.c.formatText(text, t.font, t.fontSize, t.leading)
+	if newLine {
+		out += " T*"
+	}
+	t.code = append(t.code, out)
+}
+
+func nbspCount(text string) int { return strings.Count(text, " ") }
 
 // draw is Paragraph.drawPara for left-aligned and centred lines.
 func (p *paragraph) draw(c *canvas) {
-	if len(p.lines) == 0 {
+	if p.lineCount() == 0 {
 		return
 	}
 	c.saveState()
-	c.setFillColor(colorBlack)
-	f := fontsByName[p.style.fontName]
 	size, leading := p.style.fontSize, p.style.leading
-	parts := []string{"BT", "1 0 0 1 " + fpStrs(0, p.height-size) + " Tm", c.fontRef(f) + " " + fpStr(size) + " Tf " + fpStr(leading) + " TL"}
-	for _, line := range p.lines {
-		text := strings.Join(line.words, " ")
-		simple := line.extra > -1e-8
-		spaces := 0
-		if !simple {
-			spaces = len(line.words) + strings.Count(text, " ") - 1
-			simple = spaces <= 0
-		}
-		out := c.formatText(text, f, size, leading) + " T*"
-		if simple {
-			m := 0.0
-			if p.style.centred {
-				m = 0 + 0.5*line.extra
+	tx := &textObject{c: c}
+	if p.kind == 0 {
+		c.setFillColor(colorBlack)
+		f := p.lineFont
+		tx.font, tx.fontSize, tx.leading = f, size, leading
+		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, p.height-size) + " Tm", c.fontRef(f) + " " + fpStr(size) + " Tf " + fpStr(leading) + " TL"}
+		for _, line := range p.lines {
+			texts := make([]string, len(line.words))
+			for i, word := range line.words {
+				texts[i] = string(word.text)
 			}
-			parts = xPos(parts, m)
-			parts = append(parts, out)
-			parts = xPos(parts, -m)
-			continue
+			text := strings.Join(texts, " ")
+			simple := line.extra > -1e-8
+			spaces := 0
+			if !simple {
+				spaces = len(line.words) + nbspCount(text) - 1
+				simple = spaces <= 0
+			}
+			if simple {
+				m := 0.0
+				if p.style.centred {
+					m = 0 + 0.5*line.extra
+				}
+				tx.setXPos(m)
+				tx.textOut(text, true)
+				tx.setXPos(-m)
+				continue
+			}
+			tx.code = append(tx.code, fpStr(line.extra/float64(spaces))+" Tw")
+			tx.textOut(text, true)
+			tx.code = append(tx.code, "0 Tw")
 		}
-		parts = append(parts, fpStr(line.extra/float64(spaces))+" Tw", out, "0 Tw")
+	} else {
+		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, p.height-p.fragLines[0].fontSize) + " Tm"}
+		leadingSet, coloured := false, false
+		put := func(line *fragLine) {
+			if !leadingSet {
+				leadingSet = true
+				tx.leading = leading
+				tx.code = append(tx.code, fpStr(leading)+" TL")
+			}
+			for i, f := range line.words {
+				if tx.font != f.font || tx.fontSize != size {
+					tx.font, tx.fontSize = f.font, size
+					tx.code = append(tx.code, c.fontRef(f.font)+" "+fpStr(size)+" Tf")
+				}
+				if !coloured {
+					coloured = true
+					tx.code = append(tx.code, fpStrs(0, 0, 0)+" rg")
+				}
+				tx.textOut(f.text, i == len(line.words)-1)
+			}
+		}
+		for _, line := range p.fragLines {
+			simple := line.extra > -1e-8
+			spaces := 0
+			if !simple {
+				spaces = line.wordCount - 1
+				for _, word := range line.words {
+					spaces += nbspCount(word.text)
+				}
+				simple = spaces <= 0
+			}
+			m := 0.0
+			if simple {
+				if p.style.centred {
+					m = 0 + 0.5*line.extra
+				}
+				tx.setXPos(m)
+				put(line)
+			} else {
+				tx.code = append(tx.code, fpStr(line.extra/float64(spaces))+" Tw")
+				put(line)
+				tx.code = append(tx.code, "0 Tw")
+			}
+			tx.setXPos(-m)
+		}
 	}
-	c.add(strings.Join(append(parts, "ET"), " "))
+	c.add(strings.Join(append(tx.code, "ET"), " "))
 	c.restoreState()
 }

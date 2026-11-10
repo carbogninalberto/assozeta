@@ -687,6 +687,18 @@
    "data": null
   }
  },
+ "profiles": {
+  "foreign_association": {
+   "denomination": "Sport & Fun <i>club</i> A.S.D.",
+   "address_city": "Città di Ca­stello &amp; dintorni",
+   "address_cap": "06012",
+   "address": "Via <b>Roma</b> 1 – R&D <3",
+   "logo": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k="
+  },
+  "deleted_association": {
+   "address": "Via <b>Roma 1"
+  }
+ },
  "cases": [
   {
    "name": "balance-sheet-anonymous",
@@ -4979,6 +4991,334 @@
    }
   },
   {
+   "name": "balance-sheet-pdf-logo-address-markup",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2024-02-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "rows": [
+       [
+        "A) ENTRATE",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Entrate Generali",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Totale entrate",
+        "0,00",
+        "0,00",
+        "0,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "B) USCITE",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Spese generali",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Totale uscite",
+        "0,00",
+        "0,00",
+        "0,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "ENTRATE",
+        "USCITE",
+        "BILANCIO FINALE"
+       ],
+       [
+        "C) RENDICONTO DELLA GESTIONE",
+        "0,00",
+        "-0,00",
+        "0,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "D) LIQUIDITÀ",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Banca",
+        "",
+        "",
+        "1,00"
+       ],
+       [
+        "Cassa",
+        "",
+        "",
+        "0,00"
+       ],
+       [
+        "Altro",
+        "",
+        "",
+        "0,00"
+       ],
+       [
+        "Totale",
+        "",
+        "",
+        "1,00"
+       ]
+      ],
+      "title": "Bilancio 2024 al 31/12/2024",
+      "align": [
+       "LEFT",
+       "RIGHT",
+       "RIGHT",
+       "RIGHT"
+      ],
+      "header": "\n        <div style=\"text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;\">\n            <div style=\"text-align: center;\">\n                <img src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k=\" style=\"height: 1000px;\"/>\n            </div>\n            <div style=\"text-align: center;\">\n                <h1 style=\"font-size: 20px;\">Sport & Fun <i>club</i> A.S.D.</h1>\n                <h2 style=\"font-size: 16px;\">Città di Ca­stello &amp; dintorni, 06012, Via <b>Roma</b> 1 – R&D <3</h2>\n                <h3 style=\"font-size: 16px;\">Approvato il ____/____/______</h3>\n            </div>\n        </div>\n        ",
+      "is_a3": true,
+      "landscape": false,
+      "additional": [
+       [
+        "balance_at_date",
+        "I saldi sono riportati al 31/12/2024."
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2024 - Sport & Fun <i>club</i> A.S.D..pdf"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "foreign",
+    "actor": "foreign_owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 1.0,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 1.0
+     },
+     "year": 2024,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
+   "name": "balance-sheet-pdf-logo-address-markup-group-header",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2024-12-31",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Descrizione",
+       "Istituzionale (€)",
+       "Commerciale (€)",
+       "Totale (€)"
+      ],
+      "rows": [
+       [
+        "A) ENTRATE",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Entrate Generali",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Totale entrate",
+        "0,00",
+        "0,00",
+        "0,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "B) USCITE",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Spese generali",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Totale uscite",
+        "0,00",
+        "0,00",
+        "0,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "",
+        "ENTRATE",
+        "USCITE",
+        "BILANCIO FINALE"
+       ],
+       [
+        "C) RENDICONTO DELLA GESTIONE",
+        "0,00",
+        "-0,00",
+        "0,00"
+       ],
+       [
+        "",
+        "",
+        "",
+        ""
+       ],
+       [
+        "D) LIQUIDITÀ",
+        "",
+        "",
+        ""
+       ],
+       [
+        "Banca",
+        "",
+        "",
+        "1,00"
+       ],
+       [
+        "Cassa",
+        "",
+        "",
+        "0,00"
+       ],
+       [
+        "Altro",
+        "",
+        "",
+        "0,00"
+       ],
+       [
+        "Totale",
+        "",
+        "",
+        "1,00"
+       ]
+      ],
+      "title": "Bilancio 2024 al 31/12/2024",
+      "align": [
+       "LEFT",
+       "RIGHT",
+       "RIGHT",
+       "RIGHT"
+      ],
+      "header": "\n        <div style=\"text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;\">\n            <div style=\"text-align: center;\">\n                <img src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k=\" style=\"height: 1000px;\"/>\n            </div>\n            <div style=\"text-align: center;\">\n                <h1 style=\"font-size: 20px;\">Sport & Fun <i>club</i> A.S.D.</h1>\n                <h2 style=\"font-size: 16px;\">Città di Ca­stello &amp; dintorni, 06012, Via <b>Roma</b> 1 – R&D <3</h2>\n                <h3 style=\"font-size: 16px;\">Approvato il ____/____/______</h3>\n            </div>\n        </div>\n        ",
+      "is_a3": true,
+      "landscape": false,
+      "additional": [
+       [
+        "balance_at_date",
+        "I saldi sono riportati al 31/12/2024."
+       ]
+      ]
+     }
+    },
+    "filename": "[$today] Bilancio 2024 - Sport & Fun <i>club</i> A.S.D..pdf"
+   },
+   "effect": {
+    "kind": "update",
+    "sheet": "foreign",
+    "actor": "foreign_owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 1.0,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 1.0
+     },
+     "year": 2024,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "pdf"
+   }
+  },
+  {
    "name": "balance-sheet-delete-resets-data",
    "actor": "full_collaborator",
    "method": "DELETE",
@@ -5140,6 +5480,101 @@
      "draft": true,
      "year": 2024
     }
+   }
+  },
+  {
+   "name": "balance-sheet-deleted-association-owner-creates-sheet",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/balance-sheet?currentDate=2020-06-01",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "available_years": "$available_years",
+     "balance_sheet": {
+      "data": {
+       "incoming": {
+        "generalIncome": []
+       },
+       "outgoing": {
+        "generalExpenses": []
+       },
+       "cash": 0,
+       "bank": 0,
+       "other": 0,
+       "draft": true,
+       "version": 1,
+       "total": 0
+      },
+      "creation_date": "$now",
+      "year": 2020,
+      "draft": true
+     },
+     "sport_association": {
+      "$profile": "a1000000-0000-4000-8000-000000701003"
+     }
+    }
+   },
+   "effect": {
+    "kind": "create",
+    "sheet": "deleted",
+    "actor": "deleted_association_owner",
+    "association": "deleted_association",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 0,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 0
+     },
+     "year": 2020,
+     "status": 1
+    }
+   }
+  },
+  {
+   "name": "balance-sheet-pdf-unclosed-markup-server-error",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/balance-sheet?currentDate=2020-06-01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "sheet": "deleted",
+    "actor": "deleted_association_owner",
+    "row": {
+     "data": {
+      "incoming": {
+       "generalIncome": []
+      },
+      "outgoing": {
+       "generalExpenses": []
+      },
+      "cash": 0,
+      "bank": 0,
+      "other": 0,
+      "draft": true,
+      "version": 1,
+      "total": 0
+     },
+     "year": 2020,
+     "status": 1
+    },
+    "changes": {}
+   },
+   "body": {
+    "format": "pdf"
    }
   },
   {

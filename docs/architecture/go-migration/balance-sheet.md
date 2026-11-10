@@ -98,12 +98,17 @@ An exception of the export is the same 500 after the save as for `excel`.
 - In the exports: a non-finite amount, a description that is not text or
   null, and the workbook inputs `xlsxexport` does not reproduce
   (`xlsx-exports.md`).
-- In the `pdf` export: a denomination, city, postal code or address containing
-  `&`, `<` or a soft hyphen (reportlab parses paragraph text as markup; only
-  plain text is ported), and a `data:image/jpeg;base64,` logo that is not a
-  grey or colour 8-bit JPEG in strict base64 (reportlab would decode other
-  images to pixels, or fall back to `[LOGO]` when PIL cannot open the data).
-  Go answers 500 before generating.
+- In the `pdf` export: a denomination, city, postal code or address with a
+  paragraph tag whose drawing is not ported (`<u>`, `<a>`, `<font>` and the
+  others listed in pdf-exports.md, "Paragraph markup"), and
+  `data:image/jpeg;base64,` logo data that Python's base64 accepts and Go's JPEG
+  decoder does not read (reportlab would decode another image to pixels, or
+  fall back to `[LOGO]` when PIL cannot open it). Go answers 500 before
+  generating. Text with `&`, `<`, entities, `<b>`, `<i>`, `<br/>` or soft
+  hyphens is drawn as reportlab draws it, markup its parser raises on fails
+  the export after the save, a logo in base64 with line breaks or other
+  characters is read, and one Python's base64 refuses is the `[LOGO]`
+  paragraph (`v2rep3-*` receipts).
 - `CustomAccountSerializer.save` / `CustomAccountTransferSerializer.save` are not
   reached by these routes; they are exercised by the balance-account-writes and
   balance-transfer-writes families (account/transfer add and update).
@@ -160,3 +165,16 @@ and a payment fails `account-with-transfers-refused`. Re-run green
 (`v2doc2-rerun-r1`): balance-accounts 25/25, balance-account-writes 29/29,
 balance-transfer-writes 30/30. Final run on the current base, with the PDF export
 cases (`v2doc2-final-r1`): 93/93 on the four transports.
+
+Logo, address and markup (`v2rep3-*` receipts): 97 cases. The adapter writes a
+JPEG logo (base64 with line breaks), an address and a denomination with `&`,
+tags, an entity and a soft hyphen on the second association, and an address
+with an unclosed tag on a third one: `pdf-logo-address-markup`,
+`pdf-logo-address-markup-group-header`, `deleted-association-owner-creates-sheet`
+and `pdf-unclosed-markup-server-error`. RED: the documented refusal
+(v2-refusals.md, "Still refused in the balance-sheet PDF"); the third
+association also showed that Go read the profile of the response by owner
+among the active associations, where Django's reverse accessor resolves the
+row by its owner alone (`sheetRun.profile` now reads the association the run
+holds). GREEN and mutation: see v2-refusals.md, "Ported in the v2-reports-3
+change".

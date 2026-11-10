@@ -179,6 +179,86 @@ CASES += [
 ]
 
 
+# Paragraph markup, entities and soft hyphens (reportlab's parser and its several-fragment layout), and paragraphs cut
+# between two pages inside a long word.
+SHY = 'Associa\xadzione Sporti\xadva Dilet\xadtan\xadti\xadsti\xadca Poli\xadsportiva'
+MARKUP = 'il <b>corso</b> di nuoto &amp; pallanuoto <i>agonistico</i> per adulti R&D si tiene <b><i>ogni</i></b> settimana'
+MARKUP_CELLS = [
+    'Yoga & Pilates', 'Sport &amp; Fun', 'A < B', '1<2 e 3>2', '<b>grassetto</b>', '<i>corsivo</i> e <b><i>entrambi</i></b>',
+    'a<br/>b', 'a<br/><br/>b', '<br/>inizio', 'fine<br/>', MARKUP, 'poli\xadsportiva', SHY, SHY + ' &amp; ' + SHY,
+    'Supercalifragilistiche&amp;spiralidoso' * 3, 'Super\xadcali\xadfragi\xadlisti\xadche\xadspirali\xaddoso' * 2,
+    '<b>Supercalifragilistiche</b>spiralidoso<i>precipitevolissimevolmente</i>', '&lt;b&gt;', '&nbsp;x&nbsp;', 'a &amp;&amp; b',
+    '&alpha;&beta;&gamma; &Omega; &rarr; &euro;', '&#65;&#x42;&#955;', '&foo; &bar', '<h1>Titolo</h1> <div>x</div>', '<!-- nota -->visibile',
+    'a - b -- c', 'tratti---&amp;---uniti-' * 6, 'fine con trattino\xad', '\xadinizio', 'a\xad\xadb ' * 12, '&#32;spazio&#32;', '<b> </b>',
+    'parola&#32;&#32;doppia', 'x <b>y</b>z <i>w</i>', '<b>a </b>b', 'a<b> b</b>', 'è &egrave; € &#8364;', 'Ω &amp; ✔ <b>αβγ</b>', '',
+]
+CASES += [
+    balance('bs-ampersand', header(None, 'Sport & Fun', city='Roma & dintorni', address='Via R&D 1')),
+    balance('bs-entities', header(None, 'Sport &amp; Fun &lt;1990&gt;', city='Citt&agrave;', address='&#86;ia &foo; 1')),
+    balance('bs-less-than', header(None, 'A < B', address='via 1<2 e 3>2')),
+    balance('bs-markup', header(None, 'ASD <b>Aurora</b> <i>club</i>', city='Roma<br/>Lazio', address='<strong>Via</strong> Roma 1')),
+    balance('bs-markup-long', header(None, ' '.join([MARKUP] * 4), city=MARKUP, address=LONG + ' &amp; ' + LONG)),
+    balance('bs-markup-unbroken', header(None, 'Poli&amp;sportiva' * 12, city='<b>Poli</b>sportiva' * 14)),
+    balance('bs-soft-hyphen', header(None, 'Poli\xadsportiva Città', city='Ro\xadma')),
+    balance('bs-soft-hyphen-long', header(None, ' '.join([SHY] * 5), city=''.join([SHY.replace(' ', '\xad')] * 4))),
+    balance('bs-soft-hyphen-frags', header(None, ' &amp; '.join([SHY] * 5), city='<b>' + SHY.replace(' ', '\xad') * 4 + '</b> x')),
+    balance('bs-markup-unclosed', header(None, 'ASD <b>Aurora')),
+    balance('bs-markup-mismatch', header(None, 'ASD Aurora', address='via </b> Roma')),
+    balance('bs-entity-number', header(None, 'ASD &#1114112; Aurora')),
+    balance('bs-logo-and-markup', header('data:image/jpeg;base64,' + jpeg(30, 30, (20, 160, 60)), 'Sport & <b>Fun</b>')),
+]
+CASES[-13]['spec']['additional'] = [['balance_at_date', 'I saldi <b>sono</b> riportati al 31/12/2025 &amp; oltre.']]
+CASES[-12]['spec']['additional'] = [['balance_at_date', ' '.join(['I saldi sono riportati al 31/12/2025.'] * 9)],
+                                    ['altro', ' '.join(['I saldi <b>sono</b> riportati &amp; al 31/12/2025.'] * 9)]]
+JPEG_RED = jpeg(40, 20, (200, 30, 30))
+CASES += [
+    # A logo in base64 Python accepts and Go's strict decoder does not, four-component JPEG data, and data the view
+    # answers with the '[LOGO]' paragraph.
+    balance('bs-logo-jpeg-cmyk', header('data:image/jpeg;base64,' + jpeg(24, 12, (10, 200, 30, 5), 'CMYK'), 'ASD Aurora')),
+    balance('bs-logo-base64-lines', header('data:image/jpeg;base64,' + '\n'.join(JPEG_RED[i:i + 60] for i in range(0, len(JPEG_RED), 60)),
+                                           'ASD Aurora')),
+    balance('bs-logo-base64-noise', header('data:image/jpeg;base64, ' + JPEG_RED.rstrip('=').replace('A', 'A!', 3) + '====', 'ASD Aurora')),
+    balance('bs-logo-base64-padding', header('data:image/jpeg;base64,' + JPEG_RED.rstrip('=')[:-1], 'ASD Aurora')),
+    balance('bs-logo-base64-one-over', header('data:image/jpeg;base64,QUJDR', 'ASD Aurora')),
+    balance('bs-logo-base64-not-ascii', header('data:image/jpeg;base64,' + JPEG_RED[:40] + 'è' + JPEG_RED[40:], 'ASD Aurora')),
+    balance('bs-logo-no-data', header('data:image/jpeg;base64,!!!', 'ASD Aurora')),
+    balance('bs-logo-padding-only', header('data:image/jpeg;base64,=', 'ASD Aurora')),
+    # A substitution font first used on a later page is numbered after the pages before it.
+    table('late-symbols', ['Nome', 'Nota'], [['Persona %d' % i, 'x'] for i in range(70)] + [['Ω', '✔']] + [['fine', 'y']] * 60),
+]
+CASES += [
+    report('rt-markup-cells', ['Nome & Cognome', 'A < B', '<b>Note</b>'],
+           [[MARKUP_CELLS[i], MARKUP_CELLS[(i + 13) % len(MARKUP_CELLS)], MARKUP_CELLS[(i + 27) % len(MARKUP_CELLS)]]
+            for i in range(len(MARKUP_CELLS))], 'Marcatura'),
+    report('rt-markup-squeezed', ['<i>Colonna</i> &amp; %d' % i for i in range(12)],
+           [[MARKUP_CELLS[(i * 5 + j) % len(MARKUP_CELLS)] for j in range(12)] for i in range(len(MARKUP_CELLS))], 'Marcatura stretta'),
+    report('rt-markup-pages', ['N', 'Testo &amp; <b>note</b> ' + SHY], [[str(i), ' '.join([MARKUP_CELLS[i % len(MARKUP_CELLS)]] * (1 + i % 5))]
+                                                                   for i in range(140)], 'Marcatura su pagine'),
+    report('rt-markup-title', ['A'], [['x']], 'Titolo & <b>non</b> letto', footer_text='piede &amp; <i>x</i>'),
+    report('rt-markup-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([MARKUP] * 130),
+           text_after=' '.join([MARKUP + '<br/>'] * 70)),
+    report('rt-markup-text-cut-pages', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([MARKUP, SHY] * 400)),
+    report('rt-long-word-cut', ['Nome'], [['x']], 'Parola', text_before='X' * 40000),
+    report('rt-long-word-cut-words', ['Nome'], [['x']], 'Parola', text_before='prima ' * 40 + 'X' * 9000 + ' dopo' * 30,
+           text_after='W' * 11000 + ' fine'),
+    report('rt-long-word-cut-frags', ['Nome'], [['x']], 'Parola', text_before='prima &amp; ' * 40 + 'X' * 9000 + '<b>Y</b>' * 300 + ' dopo'),
+    report('rt-soft-hyphen-cut', ['Nome'], [['x']], 'Sillabe', text_before=' '.join([SHY] * 500),
+           text_after=''.join([SHY.replace(' ', '\xad')] * 300)),
+    report('rt-soft-hyphen-cut-frags', ['Nome'], [['x']], 'Sillabe', text_before=' &amp; '.join([SHY] * 500),
+           text_after='<i>' + ''.join([SHY.replace(' ', '\xad')] * 300) + '</i> &amp; fine'),
+    report('rt-break-cut', ['Nome'], [['x']], 'A capo', text_before='<br/>'.join(['riga %d' % i for i in range(120)])),
+    report('rt-markup-cell-unclosed', ['A'], [['<b>x']], 'Errore'),
+    report('rt-markup-header-error', ['a</i>'], [['x']], 'Errore'),
+    report('rt-markup-header-tag-open', ['A<B', 'x'], [['x', 'y']], 'Errore'),
+    report('rt-markup-text-error', ['A'], [['x']], 'Errore', text_after='a <br> b'),
+    attendance('at-markup', ('Yoga & Pilates <b>adulti</b>', ['01/01/2026', '<b>x</b>'],
+                             [('Rossi & Bianchi', ['P', 'A &amp; B']), ('<i>Verdi</i> Anna', ['presente con nota lunga', 'P<br/>A']),
+                              ('Poli\xadsportiva ' * 6, ['', 'assente & giustificato'])]),
+               ('Nuoto &lt;agonisti&gt;', ['02/01/2026'], [('Neri', ['P'])])),
+    attendance('at-markup-error', ('Yoga <b>', ['01/01/2026'], [('Rossi', ['P'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:

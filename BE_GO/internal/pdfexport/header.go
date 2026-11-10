@@ -3,11 +3,11 @@ package pdfexport
 import (
 	"bytes"
 	"crypto/md5"
-	"encoding/base64"
 	"encoding/hex"
 	imagecolor "image/color"
 	"image/jpeg"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -30,16 +30,58 @@ func (i *imageFlowable) spaceBefore() float64                              { ret
 func (i *imageFlowable) spaceAfter() float64                               { return 0 }
 func (i *imageFlowable) hAlign() string                                    { return "CENTER" }
 
+// pythonB64Decode is base64.b64decode(text) without validation: characters
+// outside the alphabet are skipped, a complete padding ends the data, and an
+// unfinished group is binascii.Error (false).
+func pythonB64Decode(text string) ([]byte, bool) {
+	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	var out []byte
+	position, pads := 0, 0
+	left := byte(0)
+	for _, r := range text {
+		if r >= 0x80 {
+			return nil, false // string argument should contain only ASCII characters
+		}
+		if r == '=' {
+			if position >= 2 {
+				if pads++; position+pads >= 4 {
+					return out, true
+				}
+			}
+			continue
+		}
+		value := strings.IndexRune(alphabet, r)
+		if value < 0 {
+			continue
+		}
+		pads = 0
+		ch := byte(value)
+		switch position {
+		case 0:
+			position, left = 1, ch
+		case 1:
+			position, left, out = 2, ch&0x0f, append(out, left<<2|ch>>4)
+		case 2:
+			position, left, out = 3, ch&0x03, append(out, left<<4|ch>>2)
+		case 3:
+			position, left, out = 0, 0, append(out, left<<6|ch)
+		}
+	}
+	return out, position == 0
+}
+
 // loadJPEG reads the logo reportlab embeds as it is (DCTDecode). reportlab
 // names the image object after a digest of the pixels PIL decodes, which
 // another decoder does not reproduce bit for bit: the name here is a digest
 // of the file, and the parity standard compares image names by position.
-// Anything but a baseline or progressive 8-bit grey or colour JPEG in strict
-// base64 is not ported.
+// A nil image is data Django's view answers with the '[LOGO]' paragraph
+// (base64 Python refuses, or no data at all). Data that is not a baseline or
+// progressive 8-bit JPEG this decoder reads is not ported: whether PIL reads
+// it, and as what, is not reproduced.
 func loadJPEG(encoded string) (*jpegImage, error) {
-	data, err := base64.StdEncoding.Strict().DecodeString(encoded)
-	if err != nil {
-		return nil, ErrNotPorted
+	data, ok := pythonB64Decode(encoded)
+	if !ok || len(data) == 0 {
+		return nil, nil
 	}
 	config, err := jpeg.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
@@ -48,12 +90,15 @@ func loadJPEG(encoded string) (*jpegImage, error) {
 	if _, err := jpeg.Decode(bytes.NewReader(data)); err != nil {
 		return nil, ErrNotPorted
 	}
-	space := ""
+	space, inverted := "", false
 	switch config.ColorModel {
 	case imagecolor.GrayModel:
 		space = "DeviceGray"
-	case imagecolor.YCbCrModel:
+	case imagecolor.YCbCrModel, imagecolor.RGBAModel:
 		space = "DeviceRGB"
+	case imagecolor.CMYKModel:
+		// Four components: reportlab adds the inverting /Decode array.
+		space, inverted = "DeviceCMYK", true
 	default:
 		return nil, ErrNotPorted
 	}
@@ -62,7 +107,7 @@ func loadJPEG(encoded string) (*jpegImage, error) {
 	}
 	digest := md5.Sum(data)
 	return &jpegImage{name: "FormXob." + hex.EncodeToString(digest[:]), data: data, width: config.Width, height: config.Height,
-		colorSpace: space}, nil
+		colorSpace: space, inverted: inverted}, nil
 }
 
 func headerText(pattern *regexp.Regexp, header, fallback string) string {
@@ -81,8 +126,11 @@ func balanceHeader(header string) (flowable, error) {
 		if err != nil {
 			return nil, err
 		}
-		logo = &imageFlowable{image: image, height: 100, width: 100 * (float64(image.width) / float64(image.height))}
-	} else {
+		if image != nil {
+			logo = &imageFlowable{image: image, height: 100, width: 100 * (float64(image.width) / float64(image.height))}
+		}
+	}
+	if logo == nil {
 		paragraph, err := newParagraph("[LOGO]", styleNormal())
 		if err != nil {
 			return nil, err
