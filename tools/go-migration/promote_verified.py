@@ -4,7 +4,7 @@
   promote_verified.py --sweep SUMMARY.json [--components SUMMARY.json ...] [--patch PATCH.json] [--apply]
 
 Inputs (all required to exist and be non-empty):
-  --sweep       summary.json of a full sweep (sweep.py): results keyed http:<family> / process:<module>;
+  --sweep       one or more summary.json files of a full sweep (sweep.py), later ones winning per key: results keyed http:<family> / process:<module>;
                 a hand-written summary for one family re-run adds "family_label" (the family.py run label)
   --components  summary.json of run_components.py: results keyed component:<name>, each listing its entries
   --patch       docs/architecture/go-migration/ledger-verified-patch.json: null contract fields to fill,
@@ -15,8 +15,11 @@ TESTS/adapters/go/<x>_process.py -> process:<x>) plus every component listing it
 it has at least one result, every result passed and its receipt checks out, it is not held, and go, tests,
 source_present and the five contract fields are set. Its prior evidence moves to notes; the new evidence is one
 {command, revision, result: 'passed', artifact, receipt_sha256, scope} item per result. Results recorded at a
-revision whose product files differ from the working tree are refused. --apply writes the ledger; without it
-nothing is written.
+revision whose product files differ from the working tree are refused unless the patch's revision_changes
+records that revision -> the tree's revision with a reason and rerun_keys covering every key the changed files
+can affect (entry go/tests/source files, family and process harness files, component command files); those keys
+then need results at the newer revision. Verified entries are re-evaluated too and demoted when they no longer
+pass. --apply writes the ledger; without it nothing is written.
 """
 import argparse
 import collections
@@ -207,33 +210,94 @@ def prior_evidence_note(item):
     return 'Implementing evidence: ' + ' '.join(str(part) for part in (text, f'({where})' if where else '') if part)
 
 
-def promote(document, patch, sweep, components, root=ROOT):
-    entries = document['entries']
-    filled, dropped = apply_patch(entries, patch)
-    results, component_entries, heads = {}, collections.defaultdict(list), set()
-    if sweep is not None:
-        head, found = sweep_results(sweep, root)
-        heads.add(head)
-        results.update(found)
-    for summary in components:
-        head, found, listed = component_results(summary, root)
-        heads.add(head)
-        results.update(found)
-        for identifier, keys in listed.items():
-            component_entries[identifier].extend(k for k in keys if k not in component_entries[identifier])
-    if not results:
-        raise PromotionError('no results to promote from')
+def family_key(path):
+    """The sweep key a family or process harness file belongs to, if any."""
+    for pattern in (r'TESTS/fixtures/(?:generate_)?(\w+)_http\.(?:json|py)', r'TESTS/contracts/test_(\w+)_http\.py',
+                    r'TESTS/adapters/django/(\w+)_http\.py'):
+        match = re.fullmatch(pattern, path)
+        if match:
+            return 'http:' + match.group(1).replace('_', '-')
+    match = re.fullmatch(r'TESTS/adapters/go/(\w+_process)\.py', path)
+    return 'process:' + match.group(1) if match else None
+
+
+def command_files(command):
+    """Repository files a recorded component command runs (script paths and -m modules)."""
+    files = set()
+    for token in command.split():
+        if token.endswith('.py') and '/' in token:
+            files.add(token)
+        elif re.fullmatch(r'TESTS(\.\w+)+', token):
+            files.add(token.replace('.', '/') + '.py')
+    return files
+
+
+def impacted_keys(changed, entries, entry_keys, component_commands):
+    """Result keys whose evidence a set of changed files can invalidate (a floor; reviewers may add more)."""
+    changed = set(changed)
+    keys = set()
+    for entry in entries:
+        if changed & set(entry['go'] + entry['tests'] + [entry['django']['file']]):
+            keys.update(entry_keys(entry))
+    keys.update(k for k in (family_key(path) for path in changed) if k)
+    keys.update(key for key, files in component_commands.items() if files & changed)
+    return keys
+
+
+def check_revisions(heads, patch, root, entries, entry_keys, component_commands):
+    """Return {head: rerun keys} for heads older than the tree, refusing any change no record covers."""
+    stale = {}
     for head in heads:
         changed = changed_product_files(root, head)
-        if changed:
+        if not changed:
+            continue
+        record = next((r for r in patch.get('revision_changes') or [] if head.startswith(r.get('from', '-'))), None)
+        if record is None or not record.get('to') or not record.get('reason'):
             raise PromotionError(f'results recorded at {head[:12]} but product files changed since: ' + ', '.join(changed[:10]))
+        if changed_product_files(root, record['to']):
+            raise PromotionError(f'revision record {head[:12]} -> {record["to"][:12]} does not match the tree')
+        between = subprocess.run(['git', 'diff', '--name-only', head, record['to'], '--'], cwd=root,
+                                 capture_output=True, text=True, check=True).stdout.split()
+        floor = impacted_keys(set(between) - NON_PRODUCT, entries, entry_keys, component_commands)
+        rerun = set(record.get('rerun_keys') or [])
+        missing = sorted(floor - rerun)
+        if missing:
+            raise PromotionError(f'revision record {head[:12]} -> {record["to"][:12]} omits impacted keys: ' + ', '.join(missing))
+        stale[head] = rerun
+    return stale
+
+
+def promote(document, patch, sweeps, components, root=ROOT):
+    """Re-evaluate every implementing and verified entry from the given results (later summaries win)."""
+    entries = document['entries']
+    filled, dropped = apply_patch(entries, patch)
+    results, heads, component_entries, component_commands = {}, {}, collections.defaultdict(list), {}
+    for sweep in sweeps:
+        head, found = sweep_results(sweep, root)
+        results.update(found)
+        heads.update({key: head for key in found})
+    for summary in components:
+        head, found, listed = component_results(summary, root)
+        results.update(found)
+        heads.update({key: head for key in found})
+        for identifier, keys in listed.items():
+            component_entries[identifier].extend(k for k in keys if k not in component_entries[identifier])
+        for key, result in (summary.get('results') or {}).items():
+            component_commands[key] = set().union(*[command_files(c.get('command', '')) for c in result.get('commands') or []] or [set()])
+    if not results:
+        raise PromotionError('no results to promote from')
+    entry_keys = lambda entry: result_keys(entry) + component_entries.get(entry['id'], [])
+    stale = check_revisions(set(heads.values()), patch, root, entries, entry_keys, component_commands)
+    for key, head in heads.items():
+        if key in stale.get(head, ()):
+            results[key] = f'{key} recorded at {head[:12]} needs a re-run after the reviewed revision change'
     hold = patch.get('hold') or {}
-    promoted, blocked = [], {}
+    promoted, refreshed, demoted, blocked = [], [], [], {}
     for entry in entries:
-        if entry['status'] != 'implementing':
+        if entry['status'] not in ('implementing', 'verified'):
             continue
         identifier = entry['id']
-        keys = result_keys(entry) + component_entries.get(identifier, [])
+        keys = entry_keys(entry)
         reasons = []
         if identifier in hold:
             reasons.append('held: ' + hold[identifier])
@@ -251,23 +315,30 @@ def promote(document, patch, sweep, components, root=ROOT):
             reasons.append('go, tests or source_present missing')
         if reasons:
             blocked[identifier] = reasons
+            if entry['status'] == 'verified':
+                entry['status'] = 'implementing'
+                demoted.append(identifier)
             continue
         evidence = []
         for key in keys:
             value = results[key]
             evidence.extend(value if isinstance(value, list) else [value])
-        entry['notes'] = entry['notes'] + [n for n in (prior_evidence_note(i) for i in entry['evidence']) if n not in entry['notes']]
+        if entry['status'] == 'implementing':
+            entry['notes'] = entry['notes'] + [n for n in (prior_evidence_note(i) for i in entry['evidence']) if n not in entry['notes']]
+            promoted.append(identifier)
+        elif entry['evidence'] != evidence:
+            refreshed.append(identifier)
         entry['evidence'] = evidence
         entry['status'] = 'verified'
-        promoted.append(identifier)
     validate(entries)
-    return {'filled_contract_fields': filled, 'dropped': dropped, 'promoted': promoted, 'blocked': blocked,
+    return {'filled_contract_fields': filled, 'dropped': dropped, 'promoted': promoted, 'refreshed': refreshed,
+            'demoted': demoted, 'blocked': blocked,
             'status': dict(sorted(collections.Counter(e['status'] for e in entries).items()))}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--sweep', type=Path, required=True)
+    parser.add_argument('--sweep', type=Path, nargs='+', required=True)
     parser.add_argument('--components', type=Path, nargs='*', default=[])
     parser.add_argument('--patch', type=Path, default=PATCH)
     parser.add_argument('--ledger', type=Path, default=LEDGER)
@@ -276,11 +347,12 @@ def main():
     try:
         document = read_json(args.ledger, 'ledger')
         patch = read_json(args.patch, 'patch')
-        sweep = read_json(args.sweep, 'sweep summary')
-        if args.apply and len(sweep.get('results') or {}) != sweep.get('total'):
-            raise PromotionError(f'sweep incomplete: {len(sweep.get("results") or {})}/{sweep.get("total")} jobs recorded')
+        sweeps = [read_json(path, 'sweep summary') for path in args.sweep]
+        for sweep in sweeps:
+            if args.apply and len(sweep.get('results') or {}) != sweep.get('total'):
+                raise PromotionError(f'sweep incomplete: {len(sweep.get("results") or {})}/{sweep.get("total")} jobs recorded')
         components = [read_json(path, 'component summary') for path in args.components]
-        report = promote(document, patch, sweep, components)
+        report = promote(document, patch, sweeps, components)
     except PromotionError as exc:
         print('GUARD: ' + str(exc), file=sys.stderr)
         return 97

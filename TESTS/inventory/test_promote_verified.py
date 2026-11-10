@@ -67,7 +67,8 @@ class PromoteVerifiedTests(unittest.TestCase):
         return path
 
     def run_promote(self, document=None, patch=None, sweep=None, components=None):
-        return promote_verified.promote(document or self.document, patch or self.patch, sweep or self.sweep,
+        sweeps = sweep if isinstance(sweep, list) else [sweep or self.sweep]
+        return promote_verified.promote(document or self.document, patch or self.patch, sweeps,
                                         [self.components] if components is None else components, root=self.root)
 
     def by_id(self, identifier):
@@ -163,6 +164,43 @@ class PromoteVerifiedTests(unittest.TestCase):
                    '{"success": true}\n{"success": false, "errors": ["x"]}\nwarning\n')
         report = self.run_promote()
         self.assertIn('not successful', ' '.join(report['blocked']['route:BE/x.py:foo']))
+
+    def commit_change(self, relative, content):
+        self.write(relative, content)
+        self.git('add', '-A')
+        self.git('-c', 'user.name=t', '-c', 'user.email=t@example.test', 'commit', '-qm', 'change')
+        return self.git('rev-parse', 'HEAD')
+
+    def test_revision_change_needs_a_record_covering_every_impacted_key(self):
+        new = self.commit_change('TESTS/adapters/go/baz_process.py', 'print(1)\n')
+        self.patch['revision_changes'] = [{'from': self.head, 'to': new, 'reason': 'merge', 'rerun_keys': []}]
+        with self.assertRaisesRegex(promote_verified.PromotionError, 'omits impacted keys: http:foo-bar, process:baz_process'):
+            self.run_promote(document=copy.deepcopy(self.document))
+        self.patch['revision_changes'][0]['rerun_keys'] = ['http:foo-bar', 'process:baz_process']
+        report = self.run_promote(document=copy.deepcopy(self.document))
+        self.assertIn('needs a re-run', ' '.join(report['blocked']['route:BE/x.py:foo']))
+        self.assertIn('command:BE/x.py:cmd', report['promoted'])
+        rerun = {'head': new, 'label': 'R', 'family_label': 'verified-R', 'total': 2,
+                 'results': {'http:foo-bar': {'ok': True}, 'process:baz_process': {'ok': True}}}
+        self.write('quality-reports/go-migration/sweep-R/process-baz_process.log', '{"success": true}\n')
+        self.write('quality-reports/go-migration/foo-bar-http-verified-R/results.json',
+                   {'success': True, 'workloads': [{'label': t, 'cases': [{'case': 'a'}, {'case': 'b'}]} for t in TRANSPORTS]})
+        document = copy.deepcopy(self.document)
+        report = self.run_promote(document=document, sweep=[self.sweep, rerun])
+        self.assertIn('route:BE/x.py:foo', report['promoted'])
+        revisions = {e['artifact']: e['revision'] for e in document['entries'][0]['evidence']}
+        self.assertEqual(revisions['quality-reports/go-migration/sweep-R/process-baz_process.log'], new)
+        self.assertEqual(set(revisions.values()), {new})
+        command = next(e for e in document['entries'] if e['id'] == 'command:BE/x.py:cmd')
+        self.assertEqual(command['evidence'][0]['revision'], self.head)
+
+    def test_verified_entries_are_re_evaluated_and_demoted_on_failure(self):
+        self.run_promote()
+        self.assertEqual(self.by_id('route:BE/x.py:foo')['status'], 'verified')
+        failed = {**self.sweep, 'results': {**self.sweep['results'], 'http:foo-bar': {'ok': False, 'last': 'boom'}}}
+        report = self.run_promote(sweep=failed)
+        self.assertEqual(report['demoted'], ['route:BE/x.py:foo'])
+        self.assertEqual(self.by_id('route:BE/x.py:foo')['status'], 'implementing')
 
     def test_cli_refuses_empty_inputs_dry_runs_and_requires_a_complete_sweep(self):
         ledger = self.write('ledger.json', self.document)
