@@ -165,10 +165,6 @@ func (s *AssociationTransfer) taskReady(ctx context.Context, task string) (bool,
 	if err != nil || row == nil {
 		return false, err
 	}
-	switch row.Status {
-	case "FAILURE", "REVOKED", "RETRY":
-		return false, domain.ErrAssociationTransferNotPorted
-	}
 	if row.Encoding != "utf-8" {
 		return false, domain.ErrAssociationTransferNotPorted
 	}
@@ -186,6 +182,14 @@ func (s *AssociationTransfer) taskReady(ctx context.Context, task string) (bool,
 		if status || len(children) > 0 || (object["children"] != nil && children == nil) {
 			return false, domain.ErrAssociationTransferNotPorted
 		}
+	}
+	switch row.Status {
+	case "FAILURE", "REVOKED", "RETRY":
+		// The exception is rebuilt for these states (see ImportStatus).
+		if _, err := celeryExceptionText(row.Result); err != nil {
+			return false, err
+		}
+		return row.Status != "RETRY", nil
 	}
 	if row.Result != nil && *row.Result != "" {
 		if _, err := celeryJSON(*row.Result); err != nil {

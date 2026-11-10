@@ -156,7 +156,10 @@ ASSOCIATES = {
     'luca': {'id': uid(23), 'first': 'Luca', 'last': 'Verdi', 'tax_code': None, 'sex': 'A', 'born': '2016-02-02', 'born_city': None,
              'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None, 'is_minor': True},
 }
-TUTORS = [('giulia', 'paolo', True)]
+# sara's tutor relations have no primary one: get_main_tutor() promotes the first.
+ASSOCIATES['sara'] = {'id': uid(24), 'first': 'Sara', 'last': 'Neri', 'tax_code': None, 'sex': 'F', 'born': '2014-04-04',
+                      'born_city': None, 'address': None, 'city': None, 'cap': None, 'phone': None, 'email': None, 'is_minor': False}
+TUTORS = [('giulia', 'paolo', True), ('sara', 'paolo', False), ('sara', 'mario', False)]
 # The athlete's record: the payment of the 'nobody' receipt.
 PAYMENT_USERS = {'nobody': 'athlete'}
 # Another member of the association (an athlete account without records).
@@ -233,6 +236,7 @@ INVOICES = {
     'listcustom': invoice(22),
     'untitled': invoice(23),
     'badplans': invoice(24, association='fallback'),
+    'promote': invoice(25, association='fallback', activity='0.00', membership='5.00'),
 }
 PAYMENTS = [
     payment(1, 'supplier', supplier='acme', category='kit', notes='Nota 1\nNota <2>'),
@@ -262,6 +266,7 @@ PAYMENTS = [
     payment(23, 'listcustom', subject=1, associate='mario'),
     payment(24, 'untitled', subject=1, associate='mario'),
     payment(25, 'badplans', association='fallback', subject=1, associate='mario'),
+    payment(26, 'promote', association='fallback', associate='sara', description='X & Y'),
 ]
 # Subscriptions linked by payment (Subscription.payment), course subscriptions, installments, carnet subscriptions.
 SUBSCRIPTION_PAYMENTS = {'subplan': uid(105), 'listcustom': uid(123), 'untitled': uid(124), 'badplans': uid(125)}
@@ -285,9 +290,10 @@ method = lambda verb: {'detail': f'Method "{verb}" not allowed.'}
 unmapped = lambda path: {'detail': f"Access denied: No permission mapping for endpoint '{path.strip('/')}'. Contact administrator to grant access."}
 
 
-def add(name, actor, path, status, response, *, headers=None, html=None, einvoice=None, method_='GET', language='en'):
+def add(name, actor, path, status, response, *, headers=None, html=None, einvoice=None, method_='GET', language='en', promoted=()):
+    # promoted: [associate, actor] pairs whose first tutor relation the case saves as primary.
     case = {'name': f'invoice-views-{name}', 'actor': actor, 'method': method_, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'content_language': language}
+            'status': status, 'response': response, 'content_language': language, 'promoted': [list(pair) for pair in promoted]}
     if html is not None:
         case['html'] = html
     if einvoice is not None:
@@ -446,6 +452,12 @@ add('invoice-carnet', 'owner', INV('carnet'), 200, HTML, html=invoice_html(
 add('invoice-fallback-template', 'owner', INV('fallback'), 200, HTML, html=invoice_html(
     'fallback', description=s(f"Ricevuta di pagamento con causale <b>{ESC('X & Y')}</b> per l'associazione <b>{ESC('Ripiego <srl>')}</b>."),
     associate='mario', membership_period=NULL_MEMBERSHIP, header='<p><br/></p>', footer='', extra=''))
+# get_main_tutor() without a primary relation: the first relation is saved as primary while the page renders.
+PROMOTE_HTML = invoice_html(
+    'promote', description=s(f"Ricevuta di pagamento con causale <b>{ESC('X & Y')}</b> per l'associazione <b>{ESC('Ripiego <srl>')}</b>."),
+    associate='sara', tutor='paolo', membership_period=NULL_MEMBERSHIP, header='<p><br/></p>', footer='', extra='')
+add('invoice-promotes-tutor', 'owner', INV('promote'), 200, HTML, html=PROMOTE_HTML, promoted=[('sara', 'owner')])
+add('invoice-promoted-tutor-again', 'owner', INV('promote'), 200, HTML, html=PROMOTE_HTML)
 add('invoice-plans-stop-at-exception', 'owner', INV('badplans'), 200, HTML, html=invoice_html(
     'badplans', description=s('Salvata'), associate='mario', stamp_free=True, sub_type=2, sub_period='2026',
     plans=('-', '-', True, True), custom=dct(('is_multiple', b(False))), header='<p><br/></p>', footer='', extra=''))

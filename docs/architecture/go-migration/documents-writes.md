@@ -134,16 +134,26 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
     is saved (the `data` update entry). The answer is `{'msg': 'updated draft', 'expiring_date': None}`. Data or entries
     that are not dicts raise after the certificate exists, for example `'list' object has no attribute 'keys'`.
 
+## Filenames the driver refuses, boolean primary key (`v2doc4`)
+
+- psycopg2 refuses a filename while quoting it, before any row exists: a lone surrogate fails the UTF-8 encode
+  (`'utf-8' codec can't encode character '\ud800' in position N: surrogates not allowed`, consecutive surrogates as
+  one `characters in position A-B` range), then a NUL character (`A string literal cannot contain NUL (0x00)
+  characters.`). `documents/add` answers 400 `{'exception': <text>}` like its other pre-create errors;
+  upload-document answers the 500 page without writes.
+- A boolean `sport_association_documents_archive_id` in the archive update is an int for UUIDField
+  (`uuid.UUID(int=True)` is `00000000-0000-0000-0000-000000000001`): the update inserts a row under that key, as with
+  any new primary key.
+
 ## Not ported (refused with the 500 page before any write unless noted)
 
-- Filenames whose database error text is not modelled: None in `documents/add`, NUL characters, lone surrogates. A
-  None filename in upload-document is a 500 without writes in both.
+- A None filename in `documents/add`: the database error text carries the new row's id and timestamp. A None
+  filename in upload-document is a 500 without writes in both.
 - `documents/add` items reached after an unmodelled item are never run. The request is refused when the loop would
   reach such an item.
 - Multipart bodies with `Content-Transfer-Encoding`, filenames with invalid UTF-8, RFC 2231 names in other charsets, and bodies over 250 MiB.
 - Uploaded files as values of fields the views read as text (upload-document's `document`/`filename`, the archive
   update fields).
-- A UUID primary key given as a boolean in the archive update (`uuid.UUID(int=True)`).
 - After the Document exists (the earlier writes are kept, and Go answers the 500 page):
   - a storage key that already exists, where `get_available_name` would pick a random alternative;
   - storage provider failures, which Django answers with botocore's text in `documents/add` and in the medical upload;
@@ -151,6 +161,9 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 - Image compression, thumbnails and PDF rendering: none of these views run them.
 
 ## Evidence (TDD)
+
+`v2doc4`: 147 cases. RED `v2doc4-red-r1` (the refusal restored in Go: Django 147/147, Go 500). GREEN `v2doc4-final-r2` on
+Django, Go, `/api/v1` and `/api/v2`. Mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT on `add-filename-nul`.
 
 `TESTS/fixtures/documents_writes_http.json` (generator alongside) authors 124 cases: 38 add, 25 update, 20
 upload-document, 15 medical/certificate and 26 medical-certificate/upload.

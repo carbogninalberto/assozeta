@@ -24,6 +24,7 @@ from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, Response
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/document_views_http.json'
 RUNTIME = {}
 ALLOWED = {'GET', 'OPTIONS'}
+# 'promoted' cases save a tutor relation: the adapter checks the effect.
 
 
 def load_source(path=SOURCE):
@@ -77,6 +78,10 @@ def assert_case(case, base_url, *, token, sessions):
         expected = RUNTIME['render'](case['html'])
         check(received.get('Content-Type') == 'text/html; charset=utf-8', 'html.content-type')
         check(raw == expected, 'html.body')
+        return status
+    if case['method'] == 'HEAD':
+        # The answer's headers without its body.
+        check(raw == b'' and received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.head')
         return status
     try:
         actual = json.loads(raw)

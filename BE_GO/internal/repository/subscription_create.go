@@ -391,6 +391,37 @@ func notificationAudit(ctx context.Context, tx *sqlx.Tx, model, representation, 
 		Context: audit, At: at})
 }
 
+// insertPlaceholderDocument is Document.objects.create(filename=...) of a
+// generated placeholder certificate, with its create entry.
+func insertPlaceholderDocument(ctx context.Context, tx *sqlx.Tx, document domain.NewDocument, actorAssociation *string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := tx.ExecContext(ctx, `INSERT INTO docmanager_document (document_id, creation_date, filepath, filename, file_size_bytes, token)
+ VALUES ($1, $2, NULL, $3, NULL, $4)`, document.ID, document.Created, document.Filename, document.Token); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, tx, "docmanager_document", "document_id", document.ID)
+	if err != nil {
+		return err
+	}
+	for name, rendered := range documentReverse {
+		changes[name] = [2]string{"None", rendered}
+	}
+	return appendModelAuditForApp(ctx, tx, "docmanager", documentAudit(document.ID, 0, changes, actorAssociation, audit, at))
+}
+
+func (t *subscriptionCreateTransaction) CreatePlaceholderDocument(ctx context.Context, document domain.NewDocument, actorAssociation *string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	return insertPlaceholderDocument(ctx, t.tx, document, actorAssociation, audit, at)
+}
+
+func (t *subscriptionCreateTransaction) InsertPlaceholderCertificate(ctx context.Context, id, user, document string, expiration,
+	created time.Time) error {
+	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_medicalcertificate (medical_id, document_id, user_id, creation_date,
+ expiration_date, competitive_medical_certificate, notes) VALUES ($1, $2, $3, $4, $5::date, FALSE, NULL)`, id, document, user, created,
+		expiration.Format("2006-01-02"))
+	return err
+}
+
 // --- signatures and new member accounts (subscription-create.md) ---
 
 func (t *subscriptionCreateTransaction) InsertSignature(ctx context.Context, id, user, data string, audit domain.LoginAuditContext,

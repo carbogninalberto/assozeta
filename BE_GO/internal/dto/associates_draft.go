@@ -2,6 +2,7 @@ package dto
 
 import (
 	"encoding/json"
+	"errors"
 	"math"
 	"regexp"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
 )
 
 // associateDraftTextFields are AssociateSerializer's model CharFields (null,
@@ -92,71 +94,89 @@ func AssociateDraftFields(value any) (ok bool, association, family *string) {
 	return ok, association, family
 }
 
-// DateutilResult classifies dateutil.parser.parse(value) on the ported subset.
+// DateutilResult classifies dateutil.parser.parse(value).
 type DateutilResult int
 
 const (
 	DateutilParsed DateutilResult = iota
-	// DateutilFailed: parse raises (TypeError for a non-string, ParserError for
-	// an empty or impossible date).
+	// DateutilFailed: parse raises (TypeError for a non-string, ParserError or
+	// OverflowError for a text that is no date).
 	DateutilFailed
-	// DateutilUnsupported: a format outside the ported subset (refused).
+	// DateutilUnsupported: a reading Go does not reproduce (refused): a year
+	// before 1000, or a text internal/pydateutil refuses.
 	DateutilUnsupported
 )
 
-var (
-	dateutilISODate     = regexp.MustCompile(`^([0-9]{4})-([0-9]{2})-([0-9]{2})$`)
-	dateutilISODateTime = regexp.MustCompile(`^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(\.[0-9]{1,6})?(Z|[+-]([0-9]{2}):([0-9]{2}))?$`)
-	dateutilSlashes     = regexp.MustCompile(`^([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})$`)
-)
-
-// DateutilDate is the calendar date of dateutil.parser.parse(value) (default
-// dayfirst=False, yearfirst=False) for YYYY-MM-DD, YYYY-MM-DDTHH:MM:SS[.f][Z|±HH:MM]
-// (the date as written) and A/B/YYYY (A is the month unless it exceeds 12).
-// Years before 1000 are unsupported: the views round-trip the date through
-// strftime('%d/%m/%Y'), whose year width is platform dependent there.
-func DateutilDate(value any) (time.Time, DateutilResult) { return dateutilDate(value, false) }
-
-// PersonDate is the calendar date of person_date(value)
-// (BE/application/utils/person_dates.py): dateutil's reading with the day
-// first unless the text starts with the year, on DateutilDate's forms. A/B/YYYY
-// is day A of month B unless B exceeds 12 (then month A, day B).
-func PersonDate(value any) (time.Time, DateutilResult) { return dateutilDate(value, true) }
-
-func dateutilDate(value any, dayFirst bool) (time.Time, DateutilResult) {
+// DateutilDate is the calendar date of dateutil.parser.parse(value) (dayfirst
+// and yearfirst False) evaluated at now, through internal/pydateutil: fields
+// the text leaves out come from the current date, as in Python. Django runs
+// with TZ=UTC (TIME_ZONE), so the local zone is UTC; a two-digit year is placed
+// around the year of now. Years before 1000 are unsupported: the views
+// round-trip the date through strftime('%d/%m/%Y'), whose year width is platform
+// dependent there.
+func DateutilDate(value any, now time.Time) (time.Time, DateutilResult) {
 	text, ok := value.(string)
 	if !ok {
 		return time.Time{}, DateutilFailed
 	}
-	if strings.TrimFunc(text, unicode.IsSpace) == "" {
+	date, result, _ := DateutilText(text, false, now)
+	return date, result
+}
+
+// PersonDate is the calendar date of person_date(value)
+// (BE/application/utils/person_dates.py): dateutil's reading with the day
+// first unless the text starts with the year.
+func PersonDate(value any, now time.Time) (time.Time, DateutilResult) {
+	text, ok := value.(string)
+	if !ok {
 		return time.Time{}, DateutilFailed
 	}
-	number := func(digits string) int { n, _ := strconv.Atoi(digits); return n }
-	var year, month, day int
-	if match := dateutilISODate.FindStringSubmatch(text); match != nil {
-		year, month, day = number(match[1]), number(match[2]), number(match[3])
-	} else if match := dateutilISODateTime.FindStringSubmatch(text); match != nil {
-		year, month, day = number(match[1]), number(match[2]), number(match[3])
-		if number(match[4]) > 23 || number(match[5]) > 59 || number(match[6]) > 59 || match[9] != "" && (number(match[9]) > 23 || number(match[10]) > 59) {
-			return time.Time{}, DateutilUnsupported
+	date, result, _ := PersonDateText(text, now)
+	return date, result
+}
+
+// PersonDateText is PersonDate for a text; message is str() of the exception
+// when the parse fails.
+func PersonDateText(text string, now time.Time) (date time.Time, result DateutilResult, message string) {
+	return DateutilText(text, !personDateYearFirst(text), now)
+}
+
+// personDateYearFirst is YEAR_FIRST.match(text) is not None for
+// re.compile(r'\s*\d{4}\D'): leading whitespace, four decimal digits (any
+// script), then a character that is no decimal digit.
+func personDateYearFirst(text string) bool {
+	rest := strings.TrimLeftFunc(text, PythonIsSpace)
+	digits := 0
+	for _, r := range rest {
+		if digits == 4 {
+			return !unicode.IsDigit(r)
 		}
-	} else if match := dateutilSlashes.FindStringSubmatch(text); match != nil {
-		first, second := number(match[1]), number(match[2])
-		year, month, day = number(match[3]), first, second
-		if first > 12 || dayFirst && second <= 12 {
-			month, day = second, first
+		if !unicode.IsDigit(r) {
+			return false
 		}
-	} else {
-		return time.Time{}, DateutilUnsupported
+		digits++
 	}
-	if year < 1000 {
-		return time.Time{}, DateutilUnsupported
+	return false
+}
+
+// DateutilText is dateutil.parser.parse(text, dayfirst=dayFirst).date() at now.
+func DateutilText(text string, dayFirst bool, now time.Time) (date time.Time, result DateutilResult, message string) {
+	parse := pydateutil.Parse
+	if dayFirst {
+		parse = pydateutil.ParseDayFirst
 	}
-	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-	if month < 1 || month > 12 || date.Day() != day || int(date.Month()) != month {
-		return time.Time{}, DateutilFailed
+	parsed, err := parse(text, now, time.UTC)
+	if err != nil {
+		var raised *pydateutil.Error
+		if errors.As(err, &raised) {
+			return time.Time{}, DateutilFailed, raised.Message
+		}
+		return time.Time{}, DateutilUnsupported, ""
 	}
-	return date, DateutilParsed
+	if parsed.Year < 1000 {
+		return time.Time{}, DateutilUnsupported, ""
+	}
+	return time.Date(parsed.Year, time.Month(parsed.Month), parsed.Day, 0, 0, 0, 0, time.UTC), DateutilParsed, ""
 }
 
 // associateDraftWalk reports whether every string, key and number of value
