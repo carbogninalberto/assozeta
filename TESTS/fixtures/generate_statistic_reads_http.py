@@ -131,6 +131,20 @@ SUBSCRIPTIONS = {
 for label in SUBSCRIPTIONS:
     rid(label)
 
+# Members stored with a blank tax code (fixed ids: the generated sequence stays as it was). A blank tax code is not
+# a family link: the athlete's dashboard keeps to the athlete's own subscription. Only a removed member can share
+# a tax code inside one association.
+USERS['athlete_blank'] = {'role': 'athlete'}
+ASSOCIATES['as_e1'] = {'association': OWN, 'first': 'Vuoto', 'last': 'Uno', 'sex': 'F', 'born': None, 'age': 0,
+                       'user': 'athlete_blank', 'tax': ''}
+ASSOCIATES['as_e2'] = {'association': OWN, 'first': 'Vuoto', 'last': 'Due', 'sex': 'F', 'born': None, 'age': 0, 'tax': '',
+                       'deleted': True}
+SUBSCRIPTIONS['sub_e1'] = sub(status=5, start=day(-10), end=day(10), created=OLD, associate='as_e1', user='athlete_blank')
+SUBSCRIPTIONS['sub_e2'] = sub(status=5, start=day(-10), end=day(10), created=OLD, associate='as_e2')
+for number, label in enumerate(('athlete_blank', 'as_e1', 'as_e2', 'sub_e1', 'sub_e2'), 939001):
+    assert label not in R, label
+    R[label] = f'a1000000-0000-4000-8000-{number:012d}'
+
 
 # ---------------------------------------------------------------------------
 # Payments. subject: 0 other, 1 subscription, 2 course.
@@ -1008,6 +1022,7 @@ add('athlete', 'athlete', A, 200, ATHLETE_BODY)
 add('athlete-admin-impersonating', 'admin', A, 200, ATHLETE_BODY, headers={'X-Impersonation-Id': '$session:admin_athlete', 'User-Id': ATHLETE})
 add('athlete-owner-impersonating', 'owner', A, 200, ATHLETE_SCOPED_BODY, headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': ATHLETE})
 add('athlete-without-subscriptions', 'athlete_two', A, 200, athlete_body(0, []))
+add('athlete-blank-tax-code', 'athlete_blank', A, 200, athlete_body(1, []))
 add('athlete-invalid-event-json-error', 'athlete_broken', A, 500, {'error': 'An error occurred while loading the dashboard'})
 add('athlete-no-primary-association', 'athlete', A, 503, {'error': 'Primary sport association is not configured.'},
     setup={'primary_association': None})
