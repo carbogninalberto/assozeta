@@ -61,6 +61,19 @@ func (t *subscriptionCreateTransaction) AssociationCount(ctx context.Context, us
 
 // --- subscription/renew ---
 
+func (t *subscriptionRenewTransaction) RenewAssociationOwner(ctx context.Context, id string) (*domain.Account, error) {
+	var owner domain.Account
+	err := t.tx.GetContext(ctx, &owner, `SELECT u.user_id, u.role FROM application_sportassociation a
+ JOIN bakney_user u ON u.user_id=a.user_id WHERE a.sport_association_id=$1 AND NOT a.deleted`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &owner, nil
+}
+
 type SubscriptionRenewals struct{ db *sqlx.DB }
 
 func NewSubscriptionRenewals(db *sqlx.DB) *SubscriptionRenewals { return &SubscriptionRenewals{db: db} }

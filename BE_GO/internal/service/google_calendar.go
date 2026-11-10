@@ -125,8 +125,24 @@ func (s *GoogleCalendar) Check(ctx context.Context, identity domain.ResolvedIden
 
 // ConfigGet is google_calendar_config GET: the authorization URL; the state
 // is saved on the acting user and in a new session.
-func (s *GoogleCalendar) ConfigGet(ctx context.Context, identity domain.ResolvedIdentity, audit domain.LoginAuditContext) (*GoogleConfigAnswer, error) {
+// sessionKey is the request's sessionid cookie ("" without one): a key the
+// cache holds is saved again with the new state (only a session holding just
+// a state is supported); any other key gets a new session.
+func (s *GoogleCalendar) ConfigGet(ctx context.Context, identity domain.ResolvedIdentity, audit domain.LoginAuditContext, sessionKey string) (*GoogleConfigAnswer, error) {
 	audit = paymentCategoryAuditContext(identity, audit)
+	reuse := false
+	// _validate_session_key: a key shorter than 8 characters is no session.
+	if len(sessionKey) >= 8 {
+		found, other, err := s.store.SessionState(ctx, sessionKey)
+		if err != nil {
+			return nil, err
+		}
+		if other {
+			// Another session's contents (not written by this view): not ported.
+			return nil, domain.ErrGoogleServer
+		}
+		reuse = found
+	}
 	config, err := googleapi.LoadClientSecrets(s.settings.ClientSecretFile)
 	if err != nil {
 		return nil, googleFailure(err)
@@ -143,6 +159,17 @@ func (s *GoogleCalendar) ConfigGet(ctx context.Context, identity domain.Resolved
 	fields.State = &state
 	if err := s.store.SaveUser(ctx, user.ID, fields, audit, s.now()); err != nil {
 		return nil, err
+	}
+	if reuse {
+		saved, err := s.store.SaveSession(ctx, sessionKey, state)
+		if err != nil {
+			return nil, err
+		}
+		if !saved {
+			// UpdateError: the session expired during the request.
+			return nil, domain.ErrGoogleServer
+		}
+		return &GoogleConfigAnswer{Body: map[string]string{"authorization_url": location}, SessionKey: sessionKey}, nil
 	}
 	key, err := s.store.CreateSession(ctx, state)
 	if err != nil {

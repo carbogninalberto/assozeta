@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -111,12 +112,12 @@ func (h *GoogleCalendarHandler) Config(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Google Calendar Config", "")
 	case http.MethodGet:
-		if _, err := request.Cookie("sessionid"); err == nil {
-			// Adding the state to an existing session is not ported.
+		sessionKey, ok := googleCalendarSessionCookie(request)
+		if !ok {
 			return h.failure(c, domain.ErrGoogleServer)
 		}
 		return h.admit(c, func(ctx context.Context, audit domain.LoginAuditContext) error {
-			answer, err := h.google.ConfigGet(ctx, *identity, audit)
+			answer, err := h.google.ConfigGet(ctx, *identity, audit, sessionKey)
 			if err != nil {
 				return h.failure(c, err)
 			}
@@ -214,4 +215,36 @@ func (h *GoogleCalendarHandler) Export(c echo.Context) error {
 		})
 	}
 	return methodNotAllowed(c)
+}
+
+// googleCalendarSessionCookie is SessionMiddleware's
+// request.COOKIES.get('sessionid') (django.http.parse_cookie: chunks split on
+// ';', the last sessionid wins). ok is false for what this port does not
+// reproduce: several Cookie headers carrying a sessionid, and values that
+// are not plain session-key characters (Python's strip and unquoting).
+func googleCalendarSessionCookie(request *http.Request) (string, bool) {
+	headers := request.Header.Values("Cookie")
+	key, seen := "", 0
+	for _, header := range headers {
+		for _, chunk := range strings.Split(header, ";") {
+			name, value, found := strings.Cut(chunk, "=")
+			if !found {
+				continue
+			}
+			if strings.TrimSpace(name) != "sessionid" {
+				continue
+			}
+			seen++
+			key = strings.Trim(value, " \t")
+		}
+	}
+	if seen > 0 && len(headers) > 1 {
+		return "", false
+	}
+	for _, r := range key {
+		if !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9') {
+			return "", false
+		}
+	}
+	return key, true
 }

@@ -192,7 +192,7 @@ func run() (runErr error) {
 		service.NewMembershipCardConfigurations(repository.NewMembershipCardConfigurations(db), time.Now), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	messageMutationsHandler := handler.NewMessageMutationsHandler(service.NewMessageMutations(repository.NewMessageMutations(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
-	workflowWritesHandler := handler.NewAutomationWorkflowWritesHandler(service.NewAutomationWorkflowWrites(repository.NewAutomationWorkflows(db), time.Now), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+	workflowWritesHandler := handler.NewAutomationWorkflowWritesHandler(service.NewAutomationWorkflowWrites(repository.NewAutomationWorkflows(db), time.Now).WithTasks(tasks), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	workflowReadsHandler := handler.NewAutomationWorkflowReadsHandler(service.NewAutomationWorkflowReads(repository.NewAutomationWorkflows(db)), service.NewActorAuthentication(accounts, tokens), identities)
 	profileMiscHandler := handler.NewProfileMiscHandler(service.NewProfileMisc(repository.NewProfileMisc(db), repository.NewProfileMisc(db), time.Now),
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
@@ -437,7 +437,7 @@ func run() (runErr error) {
 	e.Any("/camps-and-retreats/:uid/subscriptions/update", campsSubscriptionsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/camps-and-retreats/:uid/subscriptions/delete", campsSubscriptionsHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionMembershipsHandler := handler.NewSubscriptionMembershipsHandler(service.NewSubscriptionMemberships(repository.NewSubscriptionMemberships(db),
-		time.Now, uuid.NewString), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		time.Now, uuid.NewString).WithUploads(composeMembershipDocumentUploads(cfg, db)), service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/memberships/list", subscriptionMembershipsHandler.List, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/memberships/add", subscriptionMembershipsHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/subscription/memberships/:pk/update", subscriptionMembershipsHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -914,7 +914,12 @@ func run() (runErr error) {
 	paymentPaidFlows := repository.NewPaymentPaidFlows(repository.NewPaymentStates(db))
 	paymentStates.WithPaidFlow(paymentPaidFlows, subscriptionNotifier)
 	stripeRoutes.WithPaidFlow(paymentPaidFlows, subscriptionNotifier, tasks, os.Getenv("DOCUMENT_BYPASS_TOKEN"))
-	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil)
+	subscriptionCreates := service.NewSubscriptionCreates(repository.NewSubscriptionCreates(db), tasks, subscriptionNotifier, time.Now, nil).
+		WithSignatures(composeSubscriptionSignatureUploads(cfg, db, tasks)).
+		WithAccounts(service.SubscriptionCreateAccounts{Passwords: passwordcrypto.NewPasswordVerifier(passwordcrypto.DefaultPasswordLimits()),
+			Settings: service.OAuthAccountSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName,
+				DefaultFromEmail: cfg.DefaultFromEmail, IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug},
+			InstanceConfig: repository.NewEmailRenderRoutes(db).InstanceConfig})
 	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
 		identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))

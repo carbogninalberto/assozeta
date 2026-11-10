@@ -190,3 +190,36 @@ func (t *subscriptionMembershipTransaction) DeleteMembership(ctx context.Context
 	}
 	return appendModelAudit(ctx, t.tx, subscriptionMembershipAudit(id, 2, changes, association, "changes_json.sport_association", audit, at))
 }
+
+func (t *subscriptionMembershipTransaction) CreateMembershipDocument(ctx context.Context, document domain.NewDocument,
+	audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO docmanager_document (document_id, creation_date, filepath, filename, file_size_bytes, token)
+ VALUES ($1, $2, NULL, $3, NULL, $4)`, document.ID, document.Created, document.Filename, document.Token); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "docmanager_document", "document_id", document.ID)
+	if err != nil {
+		return err
+	}
+	for name, rendered := range documentReverse {
+		changes[name] = [2]string{"None", rendered}
+	}
+	var actorAssociation *string
+	if audit.ActorID != nil {
+		var id string
+		err := t.tx.GetContext(ctx, &id, `SELECT sport_association_id::text FROM application_sportassociation
+ WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1`, *audit.ActorID)
+		if err == nil {
+			actorAssociation = &id
+		} else if !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+	}
+	return appendModelAuditForApp(ctx, t.tx, "docmanager", documentAudit(document.ID, 0, changes, actorAssociation, audit, at))
+}
+
+func (t *subscriptionMembershipTransaction) LinkMembershipDocument(ctx context.Context, membership, document string) error {
+	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_subscriptionmembership_attached_membership_docu749f
+ (subscriptionmembership_id, document_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, membership, document)
+	return err
+}

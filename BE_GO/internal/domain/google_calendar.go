@@ -57,6 +57,12 @@ type GoogleCalendarStore interface {
 	FirstRegistry(ctx context.Context, course string) (*GoogleRegistry, error)
 	// CreateSession is SessionStore.create() of the cache backend for {'state': state}: the new session key.
 	CreateSession(ctx context.Context, state string) (string, error)
+	// SessionState is the cache backend's load() of an existing key: found is false for a key the cache does
+	// not hold; other reports a stored session that is not exactly {'state': <str>}.
+	SessionState(ctx context.Context, key string) (found, other bool, err error)
+	// SaveSession is save() of a loaded session holding {'state': state}: cache.set of the same key for
+	// SESSION_COOKIE_AGE. saved is false when the key is gone (Django's UpdateError).
+	SaveSession(ctx context.Context, key, state string) (saved bool, err error)
 }
 
 var (

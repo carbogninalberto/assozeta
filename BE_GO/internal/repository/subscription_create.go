@@ -38,7 +38,7 @@ func (t *subscriptionCreateTransaction) Settings(ctx context.Context, user strin
  a.subscription_fee_plans::text AS subscription_fee_plans, a.membership_fee_plans::text AS membership_fee_plans,
  u.subscription_start_day, u.subscription_start_month, u.custom_end_date, u.subscription_end_day, u.subscription_end_month,
  u.subscription_duration, u.membership_duration, u.membership_starting_number, u.default_membership_type, u.show_zero_payments,
- u.default_payment_category_id
+ u.default_payment_category_id, u.default_payment_category_courses_id, a.denomination, u.email AS owner_email
  FROM application_sportassociation a JOIN bakney_user u ON u.user_id=$1
  WHERE a.user_id=$1 AND NOT a.deleted ORDER BY a.sport_association_id`, user); err != nil {
 		return nil, 0, err
@@ -177,9 +177,28 @@ func (t *subscriptionCreateTransaction) InsertPayment(ctx context.Context, row d
  expense, description, payment_category_id, meta_payment_categories, invoice_id, user_id, associate_id, supplier_id, instructor_id,
  sport_association_id, payment_intent_id, archived, invoice_fiscal_code, meta, notes, custom_accounts_id, signature_id, deleted, group_id,
  course) VALUES ($1,'default',1,$2::numeric,$3,$4,false,false,'Iscrizione',$5,$6::jsonb,NULL,$7,$8,NULL,NULL,$9,NULL,false,NULL,$10::jsonb,NULL,
- $11,NULL,false,NULL,NULL)`, row.ID, row.Amount, row.Created, row.PaymentDate, row.CategoryID, row.MetaCategories, row.UserID, row.AssociateID,
+ $11,NULL,false,NULL,NULL)`, row.ID, row.Amount, row.Created, subscriptionCreatePaymentDate(row.PaymentDate), row.CategoryID, row.MetaCategories, row.UserID, row.AssociateID,
 		row.AssociationID, row.Meta, row.AccountID)
 	return err
+}
+
+// subscriptionCreatePaymentDate stores a zero payment date as NULL (no payment_date given).
+func subscriptionCreatePaymentDate(value time.Time) any {
+	if value.IsZero() {
+		return nil
+	}
+	return value
+}
+
+func (t *subscriptionCreateTransaction) QuickAssociate(ctx context.Context, id string) (*domain.SubscriptionEditAssociate, error) {
+	return t.oneAssociate(ctx, `associate_id=$1 AND NOT deleted`, id)
+}
+
+func (t *subscriptionCreateTransaction) QuickCertificates(ctx context.Context, associate string) ([]domain.SubscriptionQuickCertificate, error) {
+	rows := []domain.SubscriptionQuickCertificate{}
+	err := t.tx.SelectContext(ctx, &rows, `SELECT m.medical_id, m.expiration_date FROM application_subscription s
+ JOIN application_medicalcertificate m ON m.medical_id=s.medical_id WHERE s.associate_id=$1`, associate)
+	return rows, err
 }
 
 func (t *subscriptionCreateTransaction) LatestNumber(ctx context.Context, association string) (*string, error) {
@@ -330,4 +349,118 @@ func notificationAudit(ctx context.Context, tx *sqlx.Tx, model, representation, 
 	return appendSubscriptionCreateAudit(ctx, tx, domain.SubscriptionCreateAudit{App: "notifications", Model: model, Representation: representation,
 		Table: table, Column: column, Key: id, Action: 0, Created: true, Association: association, Path: "actor.sport_association",
 		Context: audit, At: at})
+}
+
+// --- signatures and new member accounts (subscription-create.md) ---
+
+func (t *subscriptionCreateTransaction) InsertSignature(ctx context.Context, id, user, data string, audit domain.LoginAuditContext,
+	at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_signature (signature_id, user_id, signature) VALUES ($1, $2, $3)`,
+		id, user, data); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_signature", "signature_id", id)
+	if err != nil {
+		return err
+	}
+	// Signature has no association to resolve: the actor's own association, if any.
+	entry := modelAuditEntry{Model: "signature", Key: id, Representation: "Signature object (" + id + ")", Action: 0, Changes: changes,
+		Context: audit, At: at}
+	if err = actorIndex(ctx, t.tx, audit, &entry); err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, entry)
+}
+
+func (t *subscriptionCreateTransaction) SaveSubscriptionSignature(ctx context.Context, id, association string, url, key *string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `UPDATE application_subscription SET signature_url=$2, signature_storage_key=$3 WHERE subscription_id=$1`,
+		id, url, key); err != nil {
+		return err
+	}
+	changes := map[string][2]string{}
+	if url != nil {
+		changes["signature_url"] = [2]string{"None", *url}
+	}
+	if key != nil {
+		changes["signature_storage_key"] = [2]string{"None", *key}
+	}
+	if len(changes) == 0 {
+		return nil
+	}
+	direct := "direct"
+	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "subscription", Key: id, Representation: "Subscription object (" + id + ")",
+		Action: 1, Changes: changes, Context: audit, AssociationID: &association, ResolutionPath: &direct, At: at})
+}
+
+const subscriptionCreateMemberColumns = `user_id, role, subscription_start_day, subscription_start_month, custom_end_date, subscription_end_day,
+ subscription_end_month`
+
+func (t *subscriptionCreateTransaction) oneMember(ctx context.Context, query string, arg any) (*domain.SubscriptionCreateMember, error) {
+	var member domain.SubscriptionCreateMember
+	err := t.tx.GetContext(ctx, &member, `SELECT `+subscriptionCreateMemberColumns+` FROM bakney_user WHERE `+query, arg)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &member, nil
+}
+
+func (t *subscriptionCreateTransaction) MemberByEmail(ctx context.Context, email string) (*domain.SubscriptionCreateMember, error) {
+	return t.oneMember(ctx, `email=$1 AND NOT deleted ORDER BY user_id LIMIT 1`, email)
+}
+
+func (t *subscriptionCreateTransaction) Member(ctx context.Context, id string) (*domain.SubscriptionCreateMember, error) {
+	return t.oneMember(ctx, `user_id=$1`, id)
+}
+
+// InsertNewUser is User.objects.create_user(**validated_data, username=token_hex(10)) with every other field at its model
+// default (create entry), then user.username = ...; user.set_password(...); user.save() (the username update entry; the
+// password is not audited). The new user has no association: both entries are indexed through the actor.
+func (t *subscriptionCreateTransaction) InsertNewUser(ctx context.Context, user domain.SubscriptionCreateNewUser, audit domain.LoginAuditContext) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO bakney_user
+ (password,last_login,is_superuser,username,first_name,last_name,email,is_staff,is_active,date_joined,user_id,role,two_fa,
+  stripe_on_boarding_completed,enumerate_invoices,online_payments,balance_sheet_year,balance_sheet_start_day,balance_sheet_start_month,
+  temporary_invoice_deletion,auto_archive,auto_mark_attendance,full_installments_plan,payment_date_equal_invoice_date,
+  starting_number_invoices,auto_paid_payment,tables_settings,deleted,collaborator_role,dark_mode,integration_google_auto_sync,
+  subscription_duration_equal_sport_year,subscription_duration,membership_duration,subscription_start_day,subscription_start_month,
+  custom_end_date,subscription_end_day,subscription_end_month,membership_starting_number,default_membership_type,
+  disable_account_creation,force_account_creation,medical_certificate_notifications,hide_category_name,show_zero_payments,
+  imported_from_associami,connected_user_id,collaborator_permissions,phone)
+ VALUES ($1,NULL,FALSE,$2,$3,$4,$5,FALSE,TRUE,$6,$7,$8,FALSE,FALSE,FALSE,TRUE,1,1,1,TRUE,FALSE,FALSE,FALSE,FALSE,0,FALSE,'{}'::jsonb,
+  FALSE,1,FALSE,FALSE,TRUE,2,2,1,1,FALSE,31,12,0,'',FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,NULL,NULL,$9)`,
+		user.PasswordHash, user.TokenUsername, user.FirstName, user.LastName, user.Email, user.Joined, user.ID, user.Role, user.Phone); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "bakney_user", "user_id", user.ID)
+	if err != nil {
+		return err
+	}
+	// auditlog.register(User, exclude_fields=['last_login', 'password']); reverse foreign keys with a related_name render as their managers.
+	delete(changes, "password")
+	delete(changes, "last_login")
+	for name, manager := range map[string]string{"requester": "application.SubscriptionTransfer.None", "recipient": "application.SubscriptionTransfer.None",
+		"saved_reports": "application.SavedReport.None", "social_auth": "social_django.UserSocialAuth.None"} {
+		changes[name] = [2]string{"None", manager}
+	}
+	representation := "name: " + user.FirstName + " " + user.LastName
+	entry := modelAuditEntry{Model: "user", Key: user.ID, Representation: representation, Action: 0, Changes: changes, Context: audit,
+		At: user.Joined}
+	if err = actorIndex(ctx, t.tx, audit, &entry); err != nil {
+		return err
+	}
+	if err = appendModelAudit(ctx, t.tx, entry); err != nil {
+		return err
+	}
+	if _, err = t.tx.ExecContext(ctx, `UPDATE bakney_user SET username=$2 WHERE user_id=$1`, user.ID, user.Username); err != nil {
+		return err
+	}
+	update := modelAuditEntry{Model: "user", Key: user.ID, Representation: representation, Action: 1,
+		Changes: map[string][2]string{"username": {user.TokenUsername, user.Username}}, Context: audit, At: user.Joined}
+	if err = actorIndex(ctx, t.tx, audit, &update); err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, update)
 }
