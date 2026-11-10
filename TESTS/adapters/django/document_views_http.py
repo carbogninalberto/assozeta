@@ -48,7 +48,7 @@ def _assert_case(case, base_url, *, token, sessions):
         STUB['log'] = []
         STUB['script'] = [item['reply'] for item in case['renders']]
     status = base_contract.assert_case(case, base_url, token=token, sessions=sessions)
-    check_renderer(case)
+    check_renderer(case, token)
     return status
 
 
@@ -56,7 +56,7 @@ contract = types.SimpleNamespace(load_source=base_contract.load_source, require=
                                  ResponseFailure=base_contract.ResponseFailure)
 
 
-def check_renderer(case):
+def check_renderer(case, token):
     import requests
     from django.conf import settings
     require = contract.require
@@ -76,7 +76,10 @@ def check_renderer(case):
                 and headers['accept'] == '*/*' and headers['connection'] == 'keep-alive'
                 and headers['content-type'] == 'application/json' and headers['content-length'] == str(len(sent['body'])),
                 'renderer.headers' + where)
-        require(sent['body'] == base_contract.renderer_payload(settings.CURRENT_HOST_PUPPETEER, spec['url']), 'renderer.body' + where)
+        # The renderer opens the page with the request's own Authorization header.
+        require(spec['authorization'] == '$bearer' and token, 'fixture.renderer-authorization' + where)
+        require(sent['body'] == base_contract.renderer_payload(settings.CURRENT_HOST_PUPPETEER, spec['url'], 'Bearer ' + token),
+                'renderer.body' + where)
 
 
 # ---------------------------------------------------------------------------
