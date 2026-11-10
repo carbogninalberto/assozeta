@@ -26,12 +26,18 @@ from application.services.validators import ImportValidator
 from application.export_progress import (
     EXPORT_ACTIVE_CACHE_TIMEOUT,
     EXPORT_TASK_CACHE_TIMEOUT,
+    IMPORT_TASK_CACHE_TIMEOUT,
+    IMPORT_TASK_NAME,
+    TASK_FAILED_MESSAGE,
+    TASK_READY_STATES,
     build_export_snapshot,
     clear_active_export,
     export_active_cache_key,
     export_task_cache_key,
     get_active_export,
     get_last_export,
+    import_task_cache_key,
+    stored_task,
 )
 from application.tasks import (
     EXPORT_MAX_COUNT,
@@ -258,7 +264,11 @@ class AssociationExportViewSet(ViewSet):
             if result.successful():
                 response_data['result'] = result.result
             else:
-                response_data['error'] = str(result.result)
+                logger.error(
+                    'Export task did not complete: %s', result.result,
+                    extra={'task_id': task_id, 'task_status': result.status},
+                )
+                response_data['error'] = TASK_FAILED_MESSAGE
 
         return Response(response_data)
 
@@ -296,8 +306,8 @@ class AssociationExportViewSet(ViewSet):
         ):
             return Response({'active': False})
 
-        result = AsyncResult(snapshot['task_id'])
-        if result.ready():
+        task_row = stored_task(snapshot['task_id'])
+        if task_row and task_row['status'] in TASK_READY_STATES:
             clear_active_export(
                 sport_association.sport_association_id,
                 snapshot['task_id'],
@@ -554,26 +564,37 @@ class AssociationImportViewSet(ViewSet):
         temp_filename = f"import_{uuid_module.uuid4()}.zip"
         temp_path = f"temp/imports/{temp_filename}"
         saved_path = None
+        task_id = str(uuid_module.uuid4())
+        task_key = import_task_cache_key(task_id)
 
         try:
             # Save to default storage (S3/local)
             saved_path = default_storage.save(temp_path, uploaded_file)
 
-            # Start the import task
-            task = import_association_data.delay(
-                zip_file_path=saved_path,
-                owner_password=owner_password,
+            # Register the task before dispatch: import/status answers for
+            # registered imports only.
+            cache.set(
+                task_key,
+                {'task': IMPORT_TASK_NAME},
+                timeout=IMPORT_TASK_CACHE_TIMEOUT,
+            )
+            import_association_data.apply_async(
+                kwargs={
+                    'zip_file_path': saved_path,
+                    'owner_password': owner_password,
+                },
+                task_id=task_id,
             )
 
             logger.info(
                 f"Import task started",
                 extra={
-                    'task_id': task.id,
+                    'task_id': task_id,
                 }
             )
 
             return Response({
-                'task_id': task.id,
+                'task_id': task_id,
                 'status': 'started',
                 'message': 'Import avviato. Controlla lo stato con task_id.',
             }, status=status.HTTP_202_ACCEPTED)
@@ -584,6 +605,10 @@ class AssociationImportViewSet(ViewSet):
                     default_storage.delete(saved_path)
                 except Exception:
                     pass
+            try:
+                cache.delete(task_key)
+            except Exception:
+                pass
             logger.error(f"Error starting import: {e}", exc_info=True)
             return Response(
                 {'error': f'Errore durante avvio import: {str(e)}'},
@@ -614,6 +639,34 @@ class AssociationImportViewSet(ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # A task id that start_import did not register, or whose stored row
+        # belongs to another task, answers like an id without a result row.
+        pending = {'task_id': task_id, 'status': 'PENDING', 'ready': False}
+        if cache.get(import_task_cache_key(task_id)) is None:
+            return Response(pending)
+        task_row = stored_task(task_id)
+        if task_row is None or task_row['task_name'] not in (None, IMPORT_TASK_NAME):
+            return Response(pending)
+
+        if task_row['status'] in ('FAILURE', 'REVOKED', 'RETRY'):
+            ready = task_row['status'] in TASK_READY_STATES
+            response_data = {
+                'task_id': task_id,
+                'status': task_row['status'],
+                'ready': ready,
+            }
+            if ready:
+                logger.error(
+                    'Import task did not complete: %s', task_row['result'],
+                    extra={
+                        'task_id': task_id,
+                        'task_status': task_row['status'],
+                        'task_traceback': task_row['traceback'],
+                    },
+                )
+                response_data['error'] = TASK_FAILED_MESSAGE
+            return Response(response_data)
+
         result = AsyncResult(task_id)
 
         response_data = {
@@ -626,6 +679,7 @@ class AssociationImportViewSet(ViewSet):
             if result.successful():
                 response_data['result'] = result.result
             else:
-                response_data['error'] = str(result.result)
+                # The row changed state after the read above.
+                response_data['error'] = TASK_FAILED_MESSAGE
 
         return Response(response_data)
