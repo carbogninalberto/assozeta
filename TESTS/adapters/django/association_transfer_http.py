@@ -27,7 +27,9 @@ Around each request:
   content types. '$upload' is the single new temp/imports/import_<uuid4>.zip
   object; the bucket is emptied afterwards.
 The effect check: without an effect, or with no deleted rows, the complete
-model state is unchanged; a delete removes exactly the authored archive and
+model state is unchanged; a size saved on a document changes only that field,
+with one auditlog update entry indexed through the actor's association; a
+delete removes exactly the authored archive and
 document rows, each with one auditlog delete entry and its index row
 (archives through changes_json.sport_association, documents through the
 actor's association). Every case checks the Celery messages it published
@@ -278,10 +280,42 @@ def celery_specs(effect):
     return specs
 
 
+def check_size_saved(case, before, after, ids, context):
+    """doc.save(update_fields=['file_size_bytes']): the field, one update entry and its index row."""
+    effect = case['effect']
+    harness.require_unmanaged_unchanged(base_contract, before, after, (DOCUMENT, AUDIT, INDEX))
+    old_d, new_d = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
+    require(set(old_d) == set(new_d), 'state.documents')
+    changed = {str(key) for key in new_d if new_d[key] != old_d[key]}
+    require(changed == set(effect['documents_updated']), 'state.documents-changed')
+    added, indexes = harness.audit_delta(base_contract, before, after)
+    require(len(added) == len(changed) and len(indexes) == len(changed), 'audit.entries')
+    types_ = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
+    users = keyed(before['application.User'], 'user_id')
+    actor = ids[case['actor']]
+    for key, fields in effect['documents_updated'].items():
+        row = next(new_d[k] for k in new_d if str(k) == key)
+        previous = next(old_d[k] for k in old_d if str(k) == key)
+        require(all(row[name] == value for name, value in fields.items())
+                and {k: v for k, v in row.items() if k not in fields} == {k: v for k, v in previous.items() if k not in fields},
+                'state.document-fields')
+        (event,) = [e for e in added if e['content_type_id'] == types_[('docmanager', 'document')] and e['object_pk'] == key]
+        require(event['action'] == 1 and event['object_repr'] == f'Document object ({key})', 'audit.repr')
+        require(event['changes'] == {name: [str(previous[name]), str(value)] for name, value in fields.items()}, 'audit.changes')
+        require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
+        require(event['cid'] == case['name'] and event['additional_data'] is None, 'audit.context')
+        require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
+        index = indexes.get(str(event['id']))
+        require(index is not None and str(index['sport_association_id']) == ids[effect['actor_association']]
+                and index['resolution_path'] == 'actor.sport_association', 'index.fields')
+
+
 def assert_effect(case, before, after, source, context):
     effect = case['effect']
     ids = source['ids']
-    if not effect or not effect.get('archives'):
+    if effect and effect.get('documents_updated'):
+        check_size_saved(case, before, after, ids, context)
+    elif not effect or not effect.get('archives'):
         require(before == after, 'state.unchanged')
     else:
         managed = (ARCHIVE, DOCUMENT, AUDIT, INDEX)

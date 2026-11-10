@@ -249,3 +249,22 @@ func (r *AssociationTransfer) ImportConflicts(ctx context.Context, association, 
 	}
 	return result, nil
 }
+
+// SetExportSize is doc.save(update_fields=['file_size_bytes']) of
+// list_exports with its update entry, indexed through the actor's association.
+func (r *AssociationTransfer) SetExportSize(ctx context.Context, id string, size int64, actorAssociation *string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, `UPDATE docmanager_document SET file_size_bytes=$2 WHERE document_id=$1::uuid`, id, size); err != nil {
+		return err
+	}
+	changes := map[string][2]string{"file_size_bytes": {"None", strconv.FormatInt(size, 10)}}
+	if err = appendModelAuditForApp(ctx, tx, "docmanager", documentAudit(id, 1, changes, actorAssociation, audit, at)); err != nil {
+		return err
+	}
+	return tx.Commit()
+}

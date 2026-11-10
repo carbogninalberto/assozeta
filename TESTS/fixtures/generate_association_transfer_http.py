@@ -64,6 +64,10 @@ for day in range(1, 22):
 document('own_report', 'own_association', 'report.pdf', day=25, created='2026-01-25T10:00:00+00:00')
 document('own_upper', 'own_association', 'Export_upper.zip', day=26, created='2026-01-26T10:00:00+00:00')
 document('foreign1', 'foreign_association', 'export_foreign.zip', day=3, created='2026-01-03T09:00:00+00:00', size=77)
+# An export created before Document.file_size_bytes existed: no size, a stored path.
+document('foreign_legacy', 'foreign_association', 'export_foreign_legacy.zip', day=2, created='2025-12-20T09:00:00+00:00',
+         filepath='exports/foreign/export_legacy.zip', size=None)
+DOCUMENTS['foreign_legacy']['token'] = uid(720)
 
 # The foreign association's export in progress: its active cache key, set for the cases that need it.
 FOREIGN_ACTIVE = {'task_id': uid(900), 'sport_association_id': FOREIGN, 'user_id': IDS['foreign_owner'],
@@ -199,9 +203,10 @@ add('list-owner-without-association', 'owner_without_association', LIST, 404, NO
 add('list-owner-latest-twenty', 'owner', LIST, 200, {'exports': OWN_LIST, 'count': 20}, association='own_association')
 add('list-admin-impersonating-owner', 'admin', LIST, 200, {'exports': OWN_LIST, 'count': 20}, headers=ADMIN_OWNER,
     association='own_association')
-add('list-foreign-owner', 'foreign_owner', LIST, 200, {'exports': [export_row('foreign1')], 'count': 1},
+add('list-foreign-owner', 'foreign_owner', LIST, 200, {'exports': [export_row('foreign1'), export_row('foreign_legacy')], 'count': 2},
     association='foreign_association')
-add('list-admin-impersonating-foreign', 'admin', LIST, 200, {'exports': [export_row('foreign1')], 'count': 1},
+add('list-admin-impersonating-foreign', 'admin', LIST, 200, {'exports': [export_row('foreign1'), export_row('foreign_legacy')],
+                                                              'count': 2},
     headers=ADMIN_FOREIGN, association='foreign_association')
 add('list-deleted-association-owner', 'deleted_association_owner', LIST, 404, NO_ASSOCIATION)
 add('list-group-header-ignored', 'owner', LIST, 200, {'exports': OWN_LIST, 'count': 20},
@@ -659,6 +664,18 @@ import_started('setup-token-archive', valid, 'è segreta', actor='anonymous', he
 import_started('windows-zip-type', not_zip, '', kind='application/x-zip-compressed')
 import_started('archive-without-type', valid, '', kind=None, stored='application/zip', filename='export')
 import_started('admin-impersonating-owner-archive', valid, '', actor='admin', headers=ADMIN_OWNER)
+
+# === export/list of an export without a stored size ============================================
+# default_storage.size(filepath) is saved on the document (an update entry); a missing object leaves it null.
+LEGACY_BODY = 'PK legacy export archive'
+LEGACY_SIZED = {**export_row('foreign_legacy'), 'file_size_bytes': len(LEGACY_BODY)}
+add('list-foreign-legacy-size', 'foreign_owner', LIST, 200, {'exports': [export_row('foreign1'), LEGACY_SIZED], 'count': 2},
+    association='foreign_association',
+    setup={'objects': {DOCUMENTS['foreign_legacy']['filepath']: {'body': LEGACY_BODY, 'content_type': 'application/zip'}}},
+    effect={'documents_updated': {DOCUMENTS['foreign_legacy']['id']: {'file_size_bytes': len(LEGACY_BODY)}},
+            'actor_association': 'foreign_association', 'additional_data': None, 'celery': []})
+add('list-foreign-legacy-size-saved', 'foreign_owner', LIST, 200, {'exports': [export_row('foreign1'), LEGACY_SIZED], 'count': 2},
+    association='foreign_association')
 
 import collections; assert len({c['name'] for c in cases}) == len(cases), [k for k, v in collections.Counter(c['name'] for c in cases).items() if v > 1]
 OUTPUT.write_text(json.dumps({

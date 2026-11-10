@@ -92,7 +92,13 @@ func (h *AssociationTransferHandler) ExportActive(c echo.Context) error {
 
 // ExportList mirrors list_exports.
 func (h *AssociationTransferHandler) ExportList(c echo.Context) error {
-	return h.export(c, http.MethodGet, "list_exports", h.transfer.List)
+	return h.export(c, http.MethodGet, "list_exports", func(ctx context.Context, identity domain.ResolvedIdentity) (*service.AssociationTransferReply, error) {
+		audit, err := h.audit(c.Request())
+		if err != nil {
+			return nil, err
+		}
+		return h.transfer.List(ctx, identity, audit)
+	})
 }
 
 // ExportStatus mirrors export_status.

@@ -118,8 +118,9 @@ func (s *AssociationTransfer) Status(ctx context.Context, identity domain.Resolv
 	return transferError(404, exportNotFound), nil
 }
 
-// List mirrors list_exports with django.core.signing download tokens.
-func (s *AssociationTransfer) List(ctx context.Context, identity domain.ResolvedIdentity) (*AssociationTransferReply, error) {
+// List mirrors list_exports with django.core.signing download tokens; audit
+// is the request's auditlog context (a size saved on a legacy export).
+func (s *AssociationTransfer) List(ctx context.Context, identity domain.ResolvedIdentity, audit domain.LoginAuditContext) (*AssociationTransferReply, error) {
 	association, reply, err := s.exportOwner(ctx, identity, exportViewDenied)
 	if reply != nil || err != nil {
 		return reply, err
@@ -132,8 +133,12 @@ func (s *AssociationTransfer) List(ctx context.Context, identity domain.Resolved
 	exports := make([]map[string]any, 0, len(rows))
 	for _, row := range rows {
 		if row.FileSize == nil && row.Filepath != nil && *row.Filepath != "" {
-			// default_storage.size() and the file_size_bytes save are not ported.
-			return nil, domain.ErrAssociationTransferNotPorted
+			if s.options.Writes == nil {
+				return nil, domain.ErrAssociationTransferNotPorted
+			}
+			if row.FileSize, err = s.exportSize(ctx, row.DocumentID, *row.Filepath, paymentCategoryAuditContext(identity, audit)); err != nil {
+				return nil, err
+			}
 		}
 		var size any
 		if row.FileSize != nil {

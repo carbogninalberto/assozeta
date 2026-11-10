@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 2 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 11 ported below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -36,6 +36,7 @@ Cross-cutting facts used for the classes:
 | association-transfer | `POST association/export/start` | always | same run |
 | association-transfer | `POST association/import/validate`, `start` | with a file | same run |
 | association-transfer | `association/import/*` with `X-Setup-Token` | before an instance exists | same run |
+| association-transfer | `GET association/export/list` (B, legacy: yes) | export without a stored size | 212 cases; RED Django 212/212, Go 500; GREEN 4 transports (`v2-admin-legacy-green`); mutation (size answered as 0) CAUGHT |
 | instance-setup | `POST instance/configure` | `type: import` with a finished task | fixture `instance_setup_http.json` 99 cases; RED Django 99/99, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (`association_id` key ignored) CAUGHT |
 | data-restore | `POST instance/admin/data-restore` | every upload | fixture `data_restore_http.json` 150 cases; RED Django 150/150, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (summary record count) CAUGHT |
 | instance-updates | `GET/POST admin/updates`, `POST admin/restarts` | production mode | fixture `instance_updates_http.json` 40 cases; RED Django 40/40, Go 500; GREEN 4 transports (`v2-admin-green`); mutation (version check) CAUGHT |
@@ -133,6 +134,15 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 |---|---|---|---|---|
 | POST admin/diagnostics | every run | `SelfInstance.svelte:155` | `service/instance_admin.go:1227` | expensive |
 
+Still refused: running the diagnostics needs the worker probe (`app.control.inspect().ping()`, Celery's remote
+control over the broker's pidbox fanout and reply queues, which the Go producer does not implement), the `api` probe
+fixed to `http://127.0.0.1:8000/healthz` (the Django process's own port, not the Go server's) and the probe
+subprocess semantics (10 s deadline, sanitized results). Every run executes all ten probes, so no partial port is
+possible. The other B items of these families that a long-lived dataset may hit and that stay refused: import/status
+and export/active on `FAILURE`/`REVOKED` task rows (Celery's exception reconstruction), data-restore archives with
+legacy Bakney invoices or tutors that would be reassigned (refused by the validation port), and a
+`WHITELABEL_NAME` that is not a plain atom list (`email.utils.parseaddr`).
+
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
@@ -171,7 +181,7 @@ Written from the family docs and the Go sources; `file:line` refer to `BE_GO/int
 |---|---|---|---|---|
 | GET association/export/active | active or last-export snapshot key exists in Django cache | ported (`service/association_transfer_writes.go` activeExport) | ported | `src/utils/NotificationService.js:177` calls it for each owner session; the last-export key is set by every completed export, so it stays set after any export. |
 | GET association/export/status | task owner key exists | service/association_transfer.go:112 | B | Route not called by UI (`EXPORT.STATUS` defined in `endpoints.js:498`, no caller in `src/`). Key only exists after a start, which is itself refused. Cost: medium (cached progress + AsyncResult). |
-| GET association/export/list | row with `file_size_bytes` NULL and non-empty `filepath` | service/association_transfer.go:132 | B (legacy: yes) | UI calls list (`src/routes/profile/sections/DataExports.svelte:96`), but the export writer always sets the size (`application/services/export_service.py:1102`); NULL only for exports created before `docmanager/migrations/0006_document_file_size_bytes.py`. Cost: medium (storage size + save). |
+| GET association/export/list | row with `file_size_bytes` NULL and non-empty `filepath` | ported (`exportSize`, v2-admin-legacy-green) | ported (was B, legacy: yes) | UI calls list (`src/routes/profile/sections/DataExports.svelte:96`), but the export writer always sets the size (`application/services/export_service.py:1102`); NULL only for exports created before `docmanager/migrations/0006_document_file_size_bytes.py`. Cost: medium (storage size + save). |
 | DELETE association/export/delete | existing export found | ported (deleteExport); a document other rows reference stays refused | ported | `DataExports.svelte:154` sends `{"document_id": <uuid from list>}` as JSON. |
 | POST association/export/start | past the count (<3) and active-key checks | ported (startExport) | ported | `DataExports.svelte:119` (POST, no body). Cost: expensive (Celery dispatch + cache registration). |
 | GET association/import/status | TaskResult row FAILURE/REVOKED/RETRY, non-utf-8 encoding, meta with `status`/children | service/association_transfer.go:300,303,312,317 | B | UI polls it (`src/store/instanceStore.js:535`), but rows only exist after an import start, which Go refuses; a FAILURE row could survive from a Django-era import that failed (legacy: yes, transient). Cost: medium (Celery exception reconstruction). |

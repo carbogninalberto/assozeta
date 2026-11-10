@@ -31,12 +31,12 @@
 - **start** past the checks: `cache.add` of the active snapshot (`PENDING`, queued progress, `updated_at` from `timezone.now().isoformat()`, 2 h), `cache.set` of the task owner entry (24 h), then `export_association_data.apply_async(kwargs={sport_association_id, user_id}, task_id=<uuid4>)`. A failed publish removes both keys. The answer is `202` with the task id, queued progress and `updated_at`.
 - **import/validate** writes the upload to `<tempfile.mkdtemp()>/<name>` and runs `ImportValidator.validate_all()`: ZIP check (`Not a valid ZIP file: <path>`), file size (`round(size / 1 MiB, 2)`), manifest fields and format, declared data files (missing ones are warnings), the archived owner identity (one association, owner by `user_id`, `requires_recovery_password` from `is_restorable_password_hash`) and the UUID conflicts (association, owner owning another association, existing users not linked to the owner). The temporary directory is removed afterwards.
 - **import/start** saves the upload to `temp/imports/import_<uuid4>.zip` in the default storage (content type from the part, else guessed from the name) and calls `import_association_data.delay(zip_file_path=..., owner_password=...)`; `owner_password` is the last form value (empty when absent). The answer is `202` with the task id.
+- **list** of an export without `file_size_bytes` but with a `filepath` (exports created before the column existed): the storage size (`HeadObject`) is saved on the document with an auditlog update entry indexed through the actor's association; any storage failure leaves the size null, as Django logs and continues.
 - **Setup wizard**: without an `InstanceConfiguration`, `X-Setup-Token` must equal `INSTANCE_SETUP_TOKEN` (constant-time, header decoded as Django reads it); an empty setting denies. Anonymous requests with the token reach the import views.
 
 ## Not ported (explicit refusals, 500 page, before any write)
 
 - **status** when the task owner key exists. Django renders cached progress and the Celery result.
-- **list** when a row has no `file_size_bytes` but has a `filepath`. Django asks the storage backend for the size and saves it on the document.
 - **active** when the snapshot's task row is `FAILURE`, `REVOKED` or `RETRY`, has a non-`utf-8` encoding or metadata Celery would merge (as for import/status), when a cached value is outside the unpickled subset, or when `task_id` is not a string.
 - **delete** of a document that other rows reference (Document.delete()'s collector), or whose `filepath` the storage key builder does not reproduce.
 - **import/status** for `FAILURE`, `REVOKED` and `RETRY` rows (Celery rebuilds the exception), for non-`utf-8` content encodings, and for metadata with a `status` key or children. Results that Celery's JSON decoder would transform are also refused: `__type__` objects, lone surrogate escapes, and floats beyond float64.
@@ -51,3 +51,8 @@
 RED: Django 146/146, Go 404 (`red`). GREEN: 146/146 on native Django, native Go, Caddy `/api/v1` and `/api/v2` (`green`). Mutation controls: resolving soft-deleted associations fails `association-transfer-active-deleted-association-owner` on Go (`mutation-deleted-association`). Changing the token signing salt fails `association-transfer-list-admin-without-session` on its download token (`mutation-token-salt`).
 
 v2 admin change: the fixture has 210 cases (snapshot reads, deletes with storage and audit, export dispatch, setup-token permission, import validation over authored archives and import dispatch). The adapter now owns a private MinIO and the run's Celery broker; per case it can remove the `InstanceConfiguration`, preset cache entries and objects, and checks the exact cache keys (values unpickled, TTLs), objects (bytes and content type) and Celery messages afterwards. `TESTS/contracts/http_family.py` gained an additive `raw_b64` body. RED: Django 210/210, Go 500 on `association-transfer-active-owner-running` (`v2-admin-red`). GREEN: 210/210 on the four transports (`v2-admin-green`). Mutation: accepting a snapshot of another user fails `association-transfer-active-owner-snapshot-other-user` (`v2-admin-mutation-snapshot-owner`).
+
+Legacy export sizes: 212 cases (a foreign export without a stored size, listed without and with its object). RED
+(`v2-admin-legacy-red`): Django 212/212, Go 500 on `association-transfer-list-foreign-owner`. GREEN
+(`v2-admin-legacy-green`): 212/212 on the four transports. Mutation (`v2-admin-mutation-size-save`): answering 0
+instead of the read size fails `association-transfer-list-foreign-legacy-size`.

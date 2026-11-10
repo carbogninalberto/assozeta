@@ -31,6 +31,7 @@ type AssociationTransferWrites interface {
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 	DeleteArchive(ctx context.Context, id, association string, audit domain.LoginAuditContext, at time.Time) error
 	DeleteDocument(ctx context.Context, id string, actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error
+	SetExportSize(ctx context.Context, id string, size int64, actorAssociation *string, audit domain.LoginAuditContext, at time.Time) error
 	CacheValue(ctx context.Context, key string) (any, bool, error)
 	CacheAdd(ctx context.Context, key string, value associationexport.Dict, timeout time.Duration) (bool, error)
 	CacheSet(ctx context.Context, key string, value associationexport.Dict, timeout time.Duration) error
@@ -44,6 +45,7 @@ type AssociationTransferObjects interface {
 	Exists(ctx context.Context, key string) (bool, error)
 	Put(ctx context.Context, key string, body []byte, contentType, contentEncoding string) error
 	Delete(ctx context.Context, key string) error
+	Size(ctx context.Context, key string) (int64, error)
 }
 
 // AssociationTransferOptions are the dependencies of the dispatching paths.
@@ -838,4 +840,33 @@ func (s *AssociationTransfer) validateConflicts(ctx context.Context, identity *i
 		result.fail("User UUID collision: " + user + " already exists and is not linked to the archive owner")
 	}
 	return result, rows.OwnerExists, nil
+}
+
+// exportSize is list_exports' default_storage.size(filepath) and the save of
+// the size; any storage failure is logged by Django and leaves the size null.
+func (s *AssociationTransfer) exportSize(ctx context.Context, document, filepath string, audit domain.LoginAuditContext) (*int64, error) {
+	key, err := documentkey.S3Key(filepath, s.options.Objects.Location())
+	if err != nil {
+		return nil, nil
+	}
+	size, err := s.options.Objects.Size(ctx, key)
+	if err != nil {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		return nil, nil
+	}
+	if size < 0 {
+		return nil, domain.ErrAssociationTransferNotPorted // PositiveBigIntegerField rejects it in the database
+	}
+	var actorAssociation *string
+	if audit.ActorID != nil {
+		if actorAssociation, err = s.options.Writes.ActorAssociation(ctx, *audit.ActorID); err != nil {
+			return nil, err
+		}
+	}
+	if err := s.options.Writes.SetExportSize(ctx, document, size, actorAssociation, audit, s.now()); err != nil {
+		return nil, err
+	}
+	return &size, nil
 }

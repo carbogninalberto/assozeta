@@ -208,8 +208,16 @@
    "size": 77,
    "created": "2026-01-03T09:00:00+00:00"
   },
-  "olda": {
+  "foreign_legacy": {
    "id": "a1000000-0000-4000-8000-000000976025",
+   "filename": "export_foreign_legacy.zip",
+   "filepath": "exports/foreign/export_legacy.zip",
+   "size": null,
+   "created": "2025-12-20T09:00:00+00:00",
+   "token": "a1000000-0000-4000-8000-000000976720"
+  },
+  "olda": {
+   "id": "a1000000-0000-4000-8000-000000976026",
    "filename": "export_old_a.zip",
    "filepath": "exports/own/export_old_a.zip",
    "size": 10,
@@ -217,7 +225,7 @@
    "token": "a1000000-0000-4000-8000-000000976701"
   },
   "oldb": {
-   "id": "a1000000-0000-4000-8000-000000976026",
+   "id": "a1000000-0000-4000-8000-000000976027",
    "filename": "export_old_b.zip",
    "filepath": null,
    "size": null,
@@ -225,7 +233,7 @@
    "token": "a1000000-0000-4000-8000-000000976702"
   },
   "oldc": {
-   "id": "a1000000-0000-4000-8000-000000976027",
+   "id": "a1000000-0000-4000-8000-000000976028",
    "filename": "export_old_c.zip",
    "filepath": "exports/own/export_old_c.zip",
    "size": 30,
@@ -233,7 +241,7 @@
    "token": "a1000000-0000-4000-8000-000000976703"
   },
   "oldd": {
-   "id": "a1000000-0000-4000-8000-000000976028",
+   "id": "a1000000-0000-4000-8000-000000976029",
    "filename": "export_old_d.zip",
    "filepath": "exports/own/export_old_d.zip",
    "size": 40,
@@ -241,7 +249,7 @@
    "token": "a1000000-0000-4000-8000-000000976704"
   },
   "olde": {
-   "id": "a1000000-0000-4000-8000-000000976029",
+   "id": "a1000000-0000-4000-8000-000000976030",
    "filename": "export_old_e.zip",
    "filepath": "exports/own/export_old_e.zip",
    "size": 50,
@@ -394,32 +402,38 @@
    "document": "foreign1",
    "date": "2026-01-03"
   },
-  "olda": {
+  "foreign_legacy": {
    "id": "a1000000-0000-4000-8000-000000976525",
+   "association": "foreign_association",
+   "document": "foreign_legacy",
+   "date": "2026-01-02"
+  },
+  "olda": {
+   "id": "a1000000-0000-4000-8000-000000976526",
    "association": "own_association",
    "document": "olda",
    "date": "2025-06-01"
   },
   "oldb": {
-   "id": "a1000000-0000-4000-8000-000000976526",
+   "id": "a1000000-0000-4000-8000-000000976527",
    "association": "own_association",
    "document": "oldb",
    "date": "2025-06-02"
   },
   "oldc": {
-   "id": "a1000000-0000-4000-8000-000000976527",
+   "id": "a1000000-0000-4000-8000-000000976528",
    "association": "own_association",
    "document": "oldc",
    "date": "2025-06-03"
   },
   "oldd": {
-   "id": "a1000000-0000-4000-8000-000000976528",
+   "id": "a1000000-0000-4000-8000-000000976529",
    "association": "own_association",
    "document": "oldd",
    "date": "2025-06-04"
   },
   "olde": {
-   "id": "a1000000-0000-4000-8000-000000976529",
+   "id": "a1000000-0000-4000-8000-000000976530",
    "association": "own_association",
    "document": "olde",
    "date": "2025-06-05"
@@ -1527,9 +1541,18 @@
       "download_token": "$download-token",
       "date": "2026-01-03",
       "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
      }
     ],
-    "count": 1
+    "count": 2
    },
    "effect": null,
    "setup": {
@@ -1561,9 +1584,18 @@
       "download_token": "$download-token",
       "date": "2026-01-03",
       "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": null,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
      }
     ],
-    "count": 1
+    "count": 2
    },
    "effect": null,
    "setup": {
@@ -5209,15 +5241,15 @@
    },
    "effect": {
     "archives": [
-     "a1000000-0000-4000-8000-000000976525"
+     "a1000000-0000-4000-8000-000000976526"
     ],
     "documents": [
-     "a1000000-0000-4000-8000-000000976025"
+     "a1000000-0000-4000-8000-000000976026"
     ],
     "archive_changes": {
-     "a1000000-0000-4000-8000-000000976525": {
+     "a1000000-0000-4000-8000-000000976526": {
       "sport_association_documents_archive_id": [
-       "a1000000-0000-4000-8000-000000976525",
+       "a1000000-0000-4000-8000-000000976526",
        "None"
       ],
       "sport_association": [
@@ -5225,7 +5257,7 @@
        "None"
       ],
       "document": [
-       "a1000000-0000-4000-8000-000000976025",
+       "a1000000-0000-4000-8000-000000976026",
        "None"
       ],
       "date": [
@@ -5239,9 +5271,9 @@
      }
     },
     "document_changes": {
-     "a1000000-0000-4000-8000-000000976025": {
+     "a1000000-0000-4000-8000-000000976026": {
       "document_id": [
-       "a1000000-0000-4000-8000-000000976025",
+       "a1000000-0000-4000-8000-000000976026",
        "None"
       ],
       "creation_date": [
@@ -5296,7 +5328,7 @@
     }
    },
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000976025"
+    "document_id": "a1000000-0000-4000-8000-000000976026"
    }
   },
   {
@@ -5312,15 +5344,15 @@
    },
    "effect": {
     "archives": [
-     "a1000000-0000-4000-8000-000000976526"
+     "a1000000-0000-4000-8000-000000976527"
     ],
     "documents": [
-     "a1000000-0000-4000-8000-000000976026"
+     "a1000000-0000-4000-8000-000000976027"
     ],
     "archive_changes": {
-     "a1000000-0000-4000-8000-000000976526": {
+     "a1000000-0000-4000-8000-000000976527": {
       "sport_association_documents_archive_id": [
-       "a1000000-0000-4000-8000-000000976526",
+       "a1000000-0000-4000-8000-000000976527",
        "None"
       ],
       "sport_association": [
@@ -5328,7 +5360,7 @@
        "None"
       ],
       "document": [
-       "a1000000-0000-4000-8000-000000976026",
+       "a1000000-0000-4000-8000-000000976027",
        "None"
       ],
       "date": [
@@ -5342,9 +5374,9 @@
      }
     },
     "document_changes": {
-     "a1000000-0000-4000-8000-000000976026": {
+     "a1000000-0000-4000-8000-000000976027": {
       "document_id": [
-       "a1000000-0000-4000-8000-000000976026",
+       "a1000000-0000-4000-8000-000000976027",
        "None"
       ],
       "creation_date": [
@@ -5377,7 +5409,7 @@
    "cache_after": null,
    "objects_after": null,
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000976026"
+    "document_id": "a1000000-0000-4000-8000-000000976027"
    }
   },
   {
@@ -5393,15 +5425,15 @@
    },
    "effect": {
     "archives": [
-     "a1000000-0000-4000-8000-000000976527"
+     "a1000000-0000-4000-8000-000000976528"
     ],
     "documents": [
-     "a1000000-0000-4000-8000-000000976027"
+     "a1000000-0000-4000-8000-000000976028"
     ],
     "archive_changes": {
-     "a1000000-0000-4000-8000-000000976527": {
+     "a1000000-0000-4000-8000-000000976528": {
       "sport_association_documents_archive_id": [
-       "a1000000-0000-4000-8000-000000976527",
+       "a1000000-0000-4000-8000-000000976528",
        "None"
       ],
       "sport_association": [
@@ -5409,7 +5441,7 @@
        "None"
       ],
       "document": [
-       "a1000000-0000-4000-8000-000000976027",
+       "a1000000-0000-4000-8000-000000976028",
        "None"
       ],
       "date": [
@@ -5423,9 +5455,9 @@
      }
     },
     "document_changes": {
-     "a1000000-0000-4000-8000-000000976027": {
+     "a1000000-0000-4000-8000-000000976028": {
       "document_id": [
-       "a1000000-0000-4000-8000-000000976027",
+       "a1000000-0000-4000-8000-000000976028",
        "None"
       ],
       "creation_date": [
@@ -5466,7 +5498,7 @@
    "cache_after": null,
    "objects_after": null,
    "body": {
-    "document_id": "A1000000-0000-4000-8000-000000976027"
+    "document_id": "A1000000-0000-4000-8000-000000976028"
    }
   },
   {
@@ -5485,15 +5517,15 @@
    },
    "effect": {
     "archives": [
-     "a1000000-0000-4000-8000-000000976528"
+     "a1000000-0000-4000-8000-000000976529"
     ],
     "documents": [
-     "a1000000-0000-4000-8000-000000976028"
+     "a1000000-0000-4000-8000-000000976029"
     ],
     "archive_changes": {
-     "a1000000-0000-4000-8000-000000976528": {
+     "a1000000-0000-4000-8000-000000976529": {
       "sport_association_documents_archive_id": [
-       "a1000000-0000-4000-8000-000000976528",
+       "a1000000-0000-4000-8000-000000976529",
        "None"
       ],
       "sport_association": [
@@ -5501,7 +5533,7 @@
        "None"
       ],
       "document": [
-       "a1000000-0000-4000-8000-000000976028",
+       "a1000000-0000-4000-8000-000000976029",
        "None"
       ],
       "date": [
@@ -5515,9 +5547,9 @@
      }
     },
     "document_changes": {
-     "a1000000-0000-4000-8000-000000976028": {
+     "a1000000-0000-4000-8000-000000976029": {
       "document_id": [
-       "a1000000-0000-4000-8000-000000976028",
+       "a1000000-0000-4000-8000-000000976029",
        "None"
       ],
       "creation_date": [
@@ -5568,7 +5600,7 @@
    "cache_after": null,
    "objects_after": {},
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000976028"
+    "document_id": "a1000000-0000-4000-8000-000000976029"
    }
   },
   {
@@ -5584,15 +5616,15 @@
    },
    "effect": {
     "archives": [
-     "a1000000-0000-4000-8000-000000976529"
+     "a1000000-0000-4000-8000-000000976530"
     ],
     "documents": [
-     "a1000000-0000-4000-8000-000000976029"
+     "a1000000-0000-4000-8000-000000976030"
     ],
     "archive_changes": {
-     "a1000000-0000-4000-8000-000000976529": {
+     "a1000000-0000-4000-8000-000000976530": {
       "sport_association_documents_archive_id": [
-       "a1000000-0000-4000-8000-000000976529",
+       "a1000000-0000-4000-8000-000000976530",
        "None"
       ],
       "sport_association": [
@@ -5600,7 +5632,7 @@
        "None"
       ],
       "document": [
-       "a1000000-0000-4000-8000-000000976029",
+       "a1000000-0000-4000-8000-000000976030",
        "None"
       ],
       "date": [
@@ -5614,9 +5646,9 @@
      }
     },
     "document_changes": {
-     "a1000000-0000-4000-8000-000000976029": {
+     "a1000000-0000-4000-8000-000000976030": {
       "document_id": [
-       "a1000000-0000-4000-8000-000000976029",
+       "a1000000-0000-4000-8000-000000976030",
        "None"
       ],
       "creation_date": [
@@ -5661,7 +5693,7 @@
    },
    "cache_after": null,
    "objects_after": {},
-   "raw_body": "document_id=a1000000000040008000000000976029",
+   "raw_body": "document_id=a1000000000040008000000000976030",
    "content_type": "application/x-www-form-urlencoded"
   },
   {
@@ -5683,7 +5715,7 @@
    "cache_after": null,
    "objects_after": null,
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000976025"
+    "document_id": "a1000000-0000-4000-8000-000000976026"
    }
   },
   {
@@ -7259,6 +7291,100 @@
    },
    "raw_b64": "LS1hc3NvY2lhdGlvbi10cmFuc2Zlci1ib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImV4cG9ydC56aXAiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3ppcA0KDQpQSwMEFAAAAAgAAFAvXNb2Exz0AAAA4gEAAA0AAABtYW5pZmVzdC5qc29uZU/BSsQwEP2Vkqu2Toq7unsTwaOX1ZNIGNtZiG4SSdJFKf0X/8UfM5N2sUtDGJj35r1504sj+aCdFdtCyAoqEJeFoK9P56PaO28wMvOGH5a+VcjwxB7lbLTFSDxYQ70uQZZy9SRhC/wvcuVZDME1GuO4rhej3QxVumUTlJBfmcs1l9tTC7C5WW9W2a8l64y2J0OxSz4Uf38KbdgZI44Jo8dEyyE1xrV0CNMJxNteemHR5PA7Bu9mIZNgrw+ZSwfiFUi1yFy9h3GycZ2N055/z+dAfu4DteoSFBay+kx27zofaBFAgmoys9TDmf7RPbBueB3+AFBLAwQUAAAACAAAUC9cYWmhmHMAAAC2AAAAHgAAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvbouuViouyC8qiU8sLs5PzkwsyczPi89MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTAyUdBaXS4tQi4rUYgrSkpObl52bmgW0D6QsGWp1acniBQmYuyDGJJYkgVSWJFfHJ+SmpIBUGhkbGJqZm5haWBkq1sQBQSwMEFAAAAAgAAFAvXD3y643RAAAAcQEAABIAAABkYXRhLzAyX3VzZXJzLmpzb26LrlYqLU4tis9MUbJSUEo0NAADXTBhAiIsYFwDA0tzM0tTQyUdBbCWvMTcVJCezNyC/KKS1BTd/PK81CKQbGpuYmYOSAos4gBToJdakZhbkJOqV5JaXAJSV5BYXFyeXwS2uSApOyXNKL44I9HI1EzFDGyfimOSc4prmnuGZ5Z3jm+ef0FgUXBJaJmKo6Ors2N5oJtTerKnc2C+j4ujgb9LhWOQa4ZvqFtQZIS7U3aie0V5ikeGha1SrY4CqV40wunF3NTcJDQ/QoSI86SiUm0sAFBLAQIUAxQAAAAIAABQL1zW9hMc9AAAAOIBAAANAAAAAAAAAAAAAACAAQAAAABtYW5pZmVzdC5qc29uUEsBAhQDFAAAAAgAAFAvXGFpoZhzAAAAtgAAAB4AAAAAAAAAAAAAAIABHwEAAGRhdGEvMDFfc3BvcnRfYXNzb2NpYXRpb24uanNvblBLAQIUAxQAAAAIAABQL1w98uuN0QAAAHEBAAASAAAAAAAAAAAAAACAAc4BAABkYXRhLzAyX3VzZXJzLmpzb25QSwUGAAAAAAMAAwDHAAAAzwIAAAAADQotLWFzc29jaWF0aW9uLXRyYW5zZmVyLWJvdW5kYXJ5LS0NCg==",
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
+   "name": "association-transfer-list-foreign-legacy-size",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976524",
+      "document_id": "a1000000-0000-4000-8000-000000976024",
+      "filename": "export_foreign.zip",
+      "file_size_bytes": 77,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": 24,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
+     }
+    ],
+    "count": 2
+   },
+   "effect": {
+    "documents_updated": {
+     "a1000000-0000-4000-8000-000000976025": {
+      "file_size_bytes": 24
+     }
+    },
+    "actor_association": "foreign_association",
+    "additional_data": null,
+    "celery": []
+   },
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {
+     "exports/foreign/export_legacy.zip": {
+      "body": "PK legacy export archive",
+      "content_type": "application/zip"
+     }
+    }
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  {
+   "name": "association-transfer-list-foreign-legacy-size-saved",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/association/export/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "exports": [
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976524",
+      "document_id": "a1000000-0000-4000-8000-000000976024",
+      "filename": "export_foreign.zip",
+      "file_size_bytes": 77,
+      "download_token": "$download-token",
+      "date": "2026-01-03",
+      "created_at": "2026-01-03T09:00:00+00:00"
+     },
+     {
+      "archive_id": "a1000000-0000-4000-8000-000000976525",
+      "document_id": "a1000000-0000-4000-8000-000000976025",
+      "filename": "export_foreign_legacy.zip",
+      "file_size_bytes": 24,
+      "download_token": "$download-token",
+      "date": "2026-01-02",
+      "created_at": "2025-12-20T09:00:00+00:00"
+     }
+    ],
+    "count": 2
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
   }
  ]
 }
