@@ -7693,7 +7693,7 @@
         "target": "camps_and_retreats_periods_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -7738,21 +7738,28 @@
         "TESTS/adapters/django/camps_periods_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
         {
-          "command": "python tools/go-migration/family.py run camps-periods --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "78af5772a632c731a6883e6521d4b02fbdd65b344f655c4b4b705ae25c6ed9af",
-          "scope": "HTTP family camps-periods: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
+          "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+        },
+        {
+          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
+          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
         }
       ],
       "notes": [
-        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject.",
-        "Implementing evidence: docs/architecture/go-migration/camps-periods.md",
-        "Implementing evidence: RED: Django 108/108; Go 404 on the first case. (quality-reports/go-migration/camps-periods-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-periods-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count). (quality-reports/go-migration/camps-periods-http-mutation-r2/results.json)"
+        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
       ]
     },
     {
@@ -7770,7 +7777,7 @@
         "target": "camps_and_retreats_periods_info",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -7815,21 +7822,28 @@
         "TESTS/adapters/django/camps_periods_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
         {
-          "command": "python tools/go-migration/family.py run camps-periods --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "78af5772a632c731a6883e6521d4b02fbdd65b344f655c4b4b705ae25c6ed9af",
-          "scope": "HTTP family camps-periods: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
+          "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+        },
+        {
+          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
+          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
         }
       ],
       "notes": [
-        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject.",
-        "Implementing evidence: docs/architecture/go-migration/camps-periods.md",
-        "Implementing evidence: RED: Django 108/108; Go 404 on the first case. (quality-reports/go-migration/camps-periods-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-periods-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count). (quality-reports/go-migration/camps-periods-http-mutation-r2/results.json)"
+        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
       ]
     },
     {
@@ -7847,7 +7861,7 @@
         "target": "camps_and_retreats_periods_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -7892,21 +7906,28 @@
         "TESTS/adapters/django/camps_periods_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
         {
-          "command": "python tools/go-migration/family.py run camps-periods --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "78af5772a632c731a6883e6521d4b02fbdd65b344f655c4b4b705ae25c6ed9af",
-          "scope": "HTTP family camps-periods: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
+          "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+        },
+        {
+          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
+          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
         }
       ],
       "notes": [
-        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject.",
-        "Implementing evidence: docs/architecture/go-migration/camps-periods.md",
-        "Implementing evidence: RED: Django 108/108; Go 404 on the first case. (quality-reports/go-migration/camps-periods-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-periods-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count). (quality-reports/go-migration/camps-periods-http-mutation-r2/results.json)"
+        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
       ]
     },
     {
@@ -7924,7 +7945,7 @@
         "target": "camps_and_retreats_periods_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -7969,21 +7990,28 @@
         "TESTS/adapters/django/camps_periods_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
         {
-          "command": "python tools/go-migration/family.py run camps-periods --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "78af5772a632c731a6883e6521d4b02fbdd65b344f655c4b4b705ae25c6ed9af",
-          "scope": "HTTP family camps-periods: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
+          "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+        },
+        {
+          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
+          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
         }
       ],
       "notes": [
-        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject.",
-        "Implementing evidence: docs/architecture/go-migration/camps-periods.md",
-        "Implementing evidence: RED: Django 108/108; Go 404 on the first case. (quality-reports/go-migration/camps-periods-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-periods-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count). (quality-reports/go-migration/camps-periods-http-mutation-r2/results.json)"
+        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
       ]
     },
     {
@@ -8001,7 +8029,7 @@
         "target": "camps_and_retreats_periods_services_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -8046,21 +8074,28 @@
         "TESTS/adapters/django/camps_periods_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
         {
-          "command": "python tools/go-migration/family.py run camps-periods --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "78af5772a632c731a6883e6521d4b02fbdd65b344f655c4b4b705ae25c6ed9af",
-          "scope": "HTTP family camps-periods: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
+          "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+        },
+        {
+          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
+          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
         }
       ],
       "notes": [
-        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject.",
-        "Implementing evidence: docs/architecture/go-migration/camps-periods.md",
-        "Implementing evidence: RED: Django 108/108; Go 404 on the first case. (quality-reports/go-migration/camps-periods-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-periods-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count). (quality-reports/go-migration/camps-periods-http-mutation-r2/results.json)"
+        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
       ]
     },
     {
@@ -8078,7 +8113,7 @@
         "target": "camps_and_retreats_periods_services_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -8123,21 +8158,28 @@
         "TESTS/adapters/django/camps_periods_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
         {
-          "command": "python tools/go-migration/family.py run camps-periods --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "78af5772a632c731a6883e6521d4b02fbdd65b344f655c4b4b705ae25c6ed9af",
-          "scope": "HTTP family camps-periods: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
+          "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+        },
+        {
+          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
+          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
         }
       ],
       "notes": [
-        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject.",
-        "Implementing evidence: docs/architecture/go-migration/camps-periods.md",
-        "Implementing evidence: RED: Django 108/108; Go 404 on the first case. (quality-reports/go-migration/camps-periods-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-periods-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count). (quality-reports/go-migration/camps-periods-http-mutation-r2/results.json)"
+        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
       ]
     },
     {
@@ -8155,7 +8197,7 @@
         "target": "camps_and_retreats_periods_services_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -8200,21 +8242,28 @@
         "TESTS/adapters/django/camps_periods_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/camps-periods.md",
         {
-          "command": "python tools/go-migration/family.py run camps-periods --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/camps-periods-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "78af5772a632c731a6883e6521d4b02fbdd65b344f655c4b4b705ae25c6ed9af",
-          "scope": "HTTP family camps-periods: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 110/110; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-red-r2/results.json",
+          "receipt_sha256": "a9d359b99cdbd61288833ce1a45c847b25e1469ff04d44b0251f7887ae1a8654"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 110/110 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "de921c3475ca405f1a7bea1746106914ca63413923f914d88f987ddd2e55ed9b"
+        },
+        {
+          "revision": "committing change rendering the final entry's amount from the stored decimal instead of the float",
+          "result": "Mutation control: fails Go on camps-periods-services-update-deleted-payment (audit.changes).",
+          "artifact": "quality-reports/go-migration/camps-periods-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "d7160a96ffac1d6be9be2df91cc86a3be320be94d3afbe368ed9b972a646ef29"
         }
       ],
       "notes": [
-        "Implementing: camps periods add/info/update/delete and period services add/update/delete (camp_and_retreats_views.py) with the CampsAndRetreatsPeriodSerializer hooks and the services update payment walk. Not ported (500 before any write): a changed primary key on update, form input with the many-to-many services key or file parts, payment walks with deleted or other-group payments, a failure among several subscription periods, Payment.save description failures and amounts/notes PostgreSQL would reject.",
-        "Implementing evidence: docs/architecture/go-migration/camps-periods.md",
-        "Implementing evidence: RED: Django 108/108; Go 404 on the first case. (quality-reports/go-migration/camps-periods-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact period, service, subscription period, payment, link, audit and index effects. (quality-reports/go-migration/camps-periods-http-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on services-update-null-metas-server-error (state.updated of the service); a second control dropping the period re-save fee audit (mutation-r3) fails add-owner (audit.count). (quality-reports/go-migration/camps-periods-http-mutation-r2/results.json)"
+        "Implementing: Camp periods and period services writes. API v2 (v2-misc-2): the service update's payment walk over a soft-deleted payment or one outside the request's X-Group-Id is ported: the payment is saved and each save is audited as an update of every field against None, indexed through changes_json.sport_association. Still refused before any write: such a payment without an association, a changed primary key on update, form input with the services key or file parts, failures with more than one subscription period in the walk, Payment.save() description failures and amounts or notes PostgreSQL would reject."
       ]
     },
     {
@@ -18990,25 +19039,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 101/101; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+          "result": "RED: Django 107/107; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
+          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
-          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
+          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
         },
         {
-          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
-          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
+          "revision": "committing change taking the row id from the body",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
+          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
       ]
     },
     {
@@ -22041,25 +22090,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 101/101; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+          "result": "RED: Django 107/107; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
+          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
-          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
+          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
         },
         {
-          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
-          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
+          "revision": "committing change taking the row id from the body",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
+          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
       ]
     },
     {
@@ -22124,25 +22173,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 101/101; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+          "result": "RED: Django 107/107; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
+          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
-          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
+          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
         },
         {
-          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
-          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
+          "revision": "committing change taking the row id from the body",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
+          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
       ]
     },
     {
@@ -22207,25 +22256,25 @@
         "docs/architecture/go-migration/profile-misc.md",
         {
           "revision": "committing change, before Go code",
-          "result": "RED: Django 101/101; Go 500 on the first case.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-red-r1/results.json",
-          "receipt_sha256": "7f11e060c3fb309d9dcc2a1e16b2e9a6555498c467017e8816e290a0b770414c"
+          "result": "RED: Django 107/107; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-red-r1/results.json",
+          "receipt_sha256": "a139caf3c0c14956382e6a38355988b8b72bfde18fc8808af7758bf6a5b7b284"
         },
         {
           "revision": "committing change",
-          "result": "GREEN: 101/101 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-green-r1/results.json",
-          "receipt_sha256": "08e1d48804cc04502a2e27e00dde850636852b3a86aab1f13f53d848daf332d5"
+          "result": "GREEN: 107/107 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-green-r2/results.json",
+          "receipt_sha256": "11a272052e88a0c8d4f98cc906c1d246ba50c7b8d6a66d2c24fd5718b296f902"
         },
         {
-          "revision": "committing change comparing users_onboarding_id and user as raw strings instead of uuid.UUID values",
-          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (response.status).",
-          "artifact": "quality-reports/go-migration/profile-misc-http-v2misc-mutation-r2/results.json",
-          "receipt_sha256": "98d012f94207dbb0a3f97a2887218979ba5938f60d754e3bf51b68c4bf05f71e"
+          "revision": "committing change taking the row id from the body",
+          "result": "Mutation control: fails Go on profile-misc-onboarding-flags-ui-row-uppercase-ids (audit.identity).",
+          "artifact": "quality-reports/go-migration/profile-misc-http-seconb-mutation-r1/results.json",
+          "receipt_sha256": "d1adbf717ab9ffaed161816903d6f5bb8dfcde3ee59c2a3bd1c264f771d2d1c0"
         }
       ],
       "notes": [
-        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values, and onboarding_data carrying users_onboarding_id or user. API v2 (v2-misc): onboarding_data carrying the row's own users_onboarding_id and user (the checklist's whole row) is ported; other values stay refused."
+        "Implementing: Associates-by-course, associates-by-association and avatar reads plus onboarding/update (four branches, atomic membership with fresh self-host validation and float-fee second audit). profile/update/subscription/template is not in this family (BeautifulSoup prettify and 590x130 Pillow compression have no Go implementation). onboarding/update refuses before any committed write: multipart uploads, soft-deleted associations, non-integer or out-of-range season/fiscal values, exponent-repr fees, container or over-length lead values. onboarding_data: users_onboarding_id and user are read-only serializer fields; the update only changes the checklist fields of the caller's own row and Go reads only the flags."
       ]
     },
     {
@@ -30661,7 +30710,7 @@
         "target": "configuration_smtp_info",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -30669,14 +30718,18 @@
         "BE_GO/internal/repository/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp_test.go",
-        "BE_GO/internal/handler/communications_smtp.go"
+        "BE_GO/internal/handler/communications_smtp.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/verify_send.go"
       ],
       "dependencies": [
         "Existing identity resolution, unmapped-route registry rule and User.sport_association scope (email-logs)",
         "communications_communicationconfiguration",
         "application_sportassociation",
         "auditlog_logentry",
-        "application_auditlogindex"
+        "application_auditlogindex",
+        "internal/smtpsend (smtplib dialogue, VerifySend, PythonMessage)",
+        "bakney_user (association user's email)"
       ],
       "contract": {
         "methods": [
@@ -30705,21 +30758,28 @@
         "TESTS/adapters/django/communications_smtp_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/communications-smtp.md",
         {
-          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44a2d2f4926d3a469e282409e8bb9b88b318a151eb3000fc34f6886a290592ed",
-          "scope": "HTTP family communications-smtp: 73/73 cases on native Django and native Go, 73/73 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-red-r1/results.json",
+          "receipt_sha256": "b6c3693cce8bad7420ebea8de87455495c2bad432769fb348384499319eb2fd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "194a1124d8cd9d561be56288c5fcad9ebea1c7deafaee2b49e5ae957857421d8"
+        },
+        {
+          "revision": "committing change addressing the test email to the SMTP user instead of the association user's email",
+          "result": "Mutation control: fails Go on communications-smtp-verify-starttls-sends-test-email (smtp.transcripts).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "207f8bf4664726108979ccd893f81ddc503c2b8f7cadf65f3726048ead11bcb4"
         }
       ],
       "notes": [
-        "Implementing: IsAuthenticated function views scoped by request.user.sport_association; info creates the default configuration (587/TLS, audited create without the password), update validates the partial patch serializer (generic 400) and audits changed fields except the password, verify answers the smtplib paths that fail before any socket (empty host, nonnumeric port), on four transports; verify of a connectable configuration (SMTP connection, login and test email) is refused with 500 before any network I/O.",
-        "Implementing evidence: docs/architecture/go-migration/communications-smtp.md",
-        "Implementing evidence: RED: Django 73/73; Go 404 on the first case. (quality-reports/go-migration/communications-smtp-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 73/73 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact CommunicationConfiguration, auditlog and index effects. (quality-reports/go-migration/communications-smtp-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-smtp-info-foreign-owner-lowest-key (response.body:email_smtp_host). (quality-reports/go-migration/communications-smtp-http-mutation-r1/results.json)"
+        "Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). Refused with the 500 page before any effect: TLS handshake errors, name resolution failures, connect timeouts, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
       ]
     },
     {
@@ -30737,7 +30797,7 @@
         "target": "configuration_smtp_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -30745,14 +30805,18 @@
         "BE_GO/internal/repository/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp_test.go",
-        "BE_GO/internal/handler/communications_smtp.go"
+        "BE_GO/internal/handler/communications_smtp.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/verify_send.go"
       ],
       "dependencies": [
         "Existing identity resolution, unmapped-route registry rule and User.sport_association scope (email-logs)",
         "communications_communicationconfiguration",
         "application_sportassociation",
         "auditlog_logentry",
-        "application_auditlogindex"
+        "application_auditlogindex",
+        "internal/smtpsend (smtplib dialogue, VerifySend, PythonMessage)",
+        "bakney_user (association user's email)"
       ],
       "contract": {
         "methods": [
@@ -30781,21 +30845,28 @@
         "TESTS/adapters/django/communications_smtp_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/communications-smtp.md",
         {
-          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44a2d2f4926d3a469e282409e8bb9b88b318a151eb3000fc34f6886a290592ed",
-          "scope": "HTTP family communications-smtp: 73/73 cases on native Django and native Go, 73/73 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-red-r1/results.json",
+          "receipt_sha256": "b6c3693cce8bad7420ebea8de87455495c2bad432769fb348384499319eb2fd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "194a1124d8cd9d561be56288c5fcad9ebea1c7deafaee2b49e5ae957857421d8"
+        },
+        {
+          "revision": "committing change addressing the test email to the SMTP user instead of the association user's email",
+          "result": "Mutation control: fails Go on communications-smtp-verify-starttls-sends-test-email (smtp.transcripts).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "207f8bf4664726108979ccd893f81ddc503c2b8f7cadf65f3726048ead11bcb4"
         }
       ],
       "notes": [
-        "Implementing: IsAuthenticated function views scoped by request.user.sport_association; info creates the default configuration (587/TLS, audited create without the password), update validates the partial patch serializer (generic 400) and audits changed fields except the password, verify answers the smtplib paths that fail before any socket (empty host, nonnumeric port), on four transports; verify of a connectable configuration (SMTP connection, login and test email) is refused with 500 before any network I/O.",
-        "Implementing evidence: docs/architecture/go-migration/communications-smtp.md",
-        "Implementing evidence: RED: Django 73/73; Go 404 on the first case. (quality-reports/go-migration/communications-smtp-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 73/73 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact CommunicationConfiguration, auditlog and index effects. (quality-reports/go-migration/communications-smtp-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-smtp-info-foreign-owner-lowest-key (response.body:email_smtp_host). (quality-reports/go-migration/communications-smtp-http-mutation-r1/results.json)"
+        "Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). Refused with the 500 page before any effect: TLS handshake errors, name resolution failures, connect timeouts, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
       ]
     },
     {
@@ -30813,7 +30884,7 @@
         "target": "configuration_smtp_verify",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/communications_smtp.go",
@@ -30821,14 +30892,18 @@
         "BE_GO/internal/repository/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp.go",
         "BE_GO/internal/service/communications_smtp_test.go",
-        "BE_GO/internal/handler/communications_smtp.go"
+        "BE_GO/internal/handler/communications_smtp.go",
+        "BE_GO/internal/smtpsend/smtpsend.go",
+        "BE_GO/internal/smtpsend/verify_send.go"
       ],
       "dependencies": [
         "Existing identity resolution, unmapped-route registry rule and User.sport_association scope (email-logs)",
         "communications_communicationconfiguration",
         "application_sportassociation",
         "auditlog_logentry",
-        "application_auditlogindex"
+        "application_auditlogindex",
+        "internal/smtpsend (smtplib dialogue, VerifySend, PythonMessage)",
+        "bakney_user (association user's email)"
       ],
       "contract": {
         "methods": [
@@ -30841,13 +30916,13 @@
           "/api/communications/settings/smtp/verify"
         ],
         "request": "No body.",
-        "response": "200 {'verified': false, 'msg': 'please run connect() first' | 'nonnumeric port'}.",
-        "errors": "401; 403 as info; 404 {'msg': 'info not found.'}; 405; 500 missing or soft-deleted association; 500 (Go) for a configuration that would open an SMTP connection.",
+        "response": "200 {'verified': true, 'msg': 'Ok'} after connect, login, test email and quit; 200 {'verified': false, 'msg': str(exception)} for 'please run connect() first', 'nonnumeric port', smtplib reply exceptions, fixed-text smtplib errors and a refused connection.",
+        "errors": "401; 403 as info; 404 {'msg': 'info not found.'}; 405; 500 missing or soft-deleted association; 500 (Go) for connection failures whose Python text depends on the platform libraries and for inputs outside the supported subset.",
         "authentication": "DRF IsAuthenticated (JWT/session).",
         "permissions": "IsAuthenticated; unmapped in permissions_registry (FULL collaborators only).",
         "resource_scope": "request.user.sport_association; first configuration.",
-        "side_effects": "None in Go (Django's SMTP connection, login and test email are not ported).",
-        "transaction": "Read only.",
+        "side_effects": "One SMTP connection to the configured host: login and a test email to the association user's address. No database write.",
+        "transaction": "The row and the owner email are read in one transaction that ends before the connection is opened.",
         "execution_owner": "django"
       },
       "tests": [
@@ -30857,21 +30932,28 @@
         "TESTS/adapters/django/communications_smtp_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/communications-smtp.md",
         {
-          "command": "python tools/go-migration/family.py run communications-smtp --versioned --label sweep-final-2f3bc171",
-          "revision": "2f3bc17190345125c132e66da0e7d27ce86af093",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/communications-smtp-http-sweep-final-2f3bc171/results.json",
-          "receipt_sha256": "44a2d2f4926d3a469e282409e8bb9b88b318a151eb3000fc34f6886a290592ed",
-          "scope": "HTTP family communications-smtp: 73/73 cases on native Django and native Go, 73/73 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 83/83; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-red-r1/results.json",
+          "receipt_sha256": "b6c3693cce8bad7420ebea8de87455495c2bad432769fb348384499319eb2fd2"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 83/83 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-green-r2/results.json",
+          "receipt_sha256": "194a1124d8cd9d561be56288c5fcad9ebea1c7deafaee2b49e5ae957857421d8"
+        },
+        {
+          "revision": "committing change addressing the test email to the SMTP user instead of the association user's email",
+          "result": "Mutation control: fails Go on communications-smtp-verify-starttls-sends-test-email (smtp.transcripts).",
+          "artifact": "quality-reports/go-migration/communications-smtp-http-v2misc2-mutation-r1/results.json",
+          "receipt_sha256": "207f8bf4664726108979ccd893f81ddc503c2b8f7cadf65f3726048ead11bcb4"
         }
       ],
       "notes": [
-        "Implementing: IsAuthenticated function views scoped by request.user.sport_association; info creates the default configuration (587/TLS, audited create without the password), update validates the partial patch serializer (generic 400) and audits changed fields except the password, verify answers the smtplib paths that fail before any socket (empty host, nonnumeric port), on four transports; verify of a connectable configuration (SMTP connection, login and test email) is refused with 500 before any network I/O.",
-        "Implementing evidence: docs/architecture/go-migration/communications-smtp.md",
-        "Implementing evidence: RED: Django 73/73; Go 404 on the first case. (quality-reports/go-migration/communications-smtp-http-native-r1/results.json)",
-        "Implementing evidence: GREEN: 73/73 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact CommunicationConfiguration, auditlog and index effects. (quality-reports/go-migration/communications-smtp-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on communications-smtp-info-foreign-owner-lowest-key (response.body:email_smtp_host). (quality-reports/go-migration/communications-smtp-http-mutation-r1/results.json)"
+        "Implementing: SMTP configuration info, update and verify. API v2 (v2-misc-2): verify against a connectable host is ported (connect, STARTTLS or implicit TLS, login, test email as bytes, quit; smtplib reply and fixed-text failures and a refused connection as verified false). Refused with the 500 page before any effect: TLS handshake errors, name resolution failures, connect timeouts, resets, a falsy port with a plain host, a missing user or password, envelope addresses outside smtpsend.CheckEnvelope and sender names outside letters, digits, spaces and . - _ &."
       ]
     },
     {
