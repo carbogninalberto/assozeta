@@ -449,7 +449,7 @@ class SocialAuthLoginTests(AuthViewsTestCase):
     @patch('application.services.social_auth_service.SocialAuthService.verify_google_token')
     def test_login_google_email_mismatch(self, mock_verify):
         """Test login with mismatched email fails."""
-        mock_verify.return_value = (True, {'email': 'different@test.com'})
+        mock_verify.return_value = (True, {'email': 'different@test.com', 'email_verified': True})
 
         response = self.client.post('/oauth2/login', {
             'username': 'testassoc',
@@ -463,7 +463,7 @@ class SocialAuthLoginTests(AuthViewsTestCase):
     @patch('application.services.social_auth_service.SocialAuthService.verify_google_token')
     def test_login_google_success(self, mock_verify):
         """Test successful Google login."""
-        mock_verify.return_value = (True, {'email': 'assoc@test.com'})
+        mock_verify.return_value = (True, {'email': 'assoc@test.com', 'email_verified': True})
 
         response = self.client.post('/oauth2/login', {
             'username': 'testassoc',
@@ -477,7 +477,7 @@ class SocialAuthLoginTests(AuthViewsTestCase):
     @patch('application.services.social_auth_service.SocialAuthService.verify_apple_token')
     def test_login_apple_success(self, mock_verify):
         """Test successful Apple login."""
-        mock_verify.return_value = (True, {'email': 'assoc@test.com'})
+        mock_verify.return_value = (True, {'email': 'assoc@test.com', 'email_verified': 'true'})
 
         response = self.client.post('/oauth2/login', {
             'username': 'testassoc',
@@ -487,6 +487,34 @@ class SocialAuthLoginTests(AuthViewsTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('access_token', response.data)
+
+    def _social_login(self, provider, backend, info):
+        with patch(f'application.services.social_auth_service.SocialAuthService.{provider}', return_value=(True, info)):
+            return self.client.post('/oauth2/login', {'username': 'testassoc', 'token': 'valid_token', 'backend': backend},
+                                    format='json')
+
+    def test_login_requires_a_verified_email(self):
+        """Social login continues only when the provider marks the e-mail as verified."""
+        for provider, backend in (('verify_google_token', 'google-oauth2'), ('verify_apple_token', 'apple-id')):
+            for info in ({'email': 'assoc@test.com'}, {'email': 'assoc@test.com', 'email_verified': False},
+                         {'email': 'assoc@test.com', 'email_verified': 'false'}, {'email': 'assoc@test.com', 'email_verified': None},
+                         {'email': 'assoc@test.com', 'email_verified': 1}, {'email': None, 'email_verified': True},
+                         {'email': 17, 'email_verified': True}, {'email_verified': True}):
+                with self.subTest(backend=backend, info=info):
+                    response = self._social_login(provider, backend, info)
+                    self.assertEqual(response.status_code, 401, response.content)
+                    self.assertEqual(response.data, {'error': 'Invalid social token'})
+                    self.assertNotIn('BKN_AUTH', response.cookies)
+        self.assoc_user.refresh_from_db()
+        self.assertIsNone(self.assoc_user.last_login)
+
+    def test_login_accepts_the_boolean_and_text_claim(self):
+        """Apple sends the verification claim as text or as a boolean."""
+        for value in (True, 'true'):
+            with self.subTest(email_verified=value):
+                response = self._social_login('verify_apple_token', 'apple', {'email': 'ASSOC@test.com', 'email_verified': value})
+                self.assertEqual(response.status_code, 200, response.content)
+                self.assertIn('access_token', response.data)
 
 
 class SignupTests(AuthViewsTestCase):

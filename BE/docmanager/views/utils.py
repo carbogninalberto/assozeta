@@ -1,6 +1,8 @@
 import hmac
 
+from django.apps import apps
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from rest_framework.permissions import BasePermission
 
 from docmanager.models import Document
@@ -232,17 +234,36 @@ def get_pdf_fields(pdf_path) -> List[Dict[str, str]]:
 
 
 class HasDocumentToken(BasePermission):
+    """?token is the token of a document of the record the route's uid names."""
+    # (model, the lookup the uid is matched on, the field holding the document)
+    records = None
+
     def has_permission(self, request, view):
-        # check if token exists
         token = request.query_params.get('token', None)
-        if token is None:
+        if token is None or self.records is None:
             return False
-        # check if token is valid
+        model, lookup, field = self.records
         try:
-            Document.objects.get(token=token)
-            return True
-        except Document.DoesNotExist:
+            records = apps.get_model(model)._base_manager.filter(**{lookup: view.kwargs.get('uid')})
+            return Document.objects.filter(token=token, pk__in=records.values(field)).exists()
+        except (ValidationError, ValueError):
             return False
+
+
+class HasInvoiceDocumentToken(HasDocumentToken):
+    records = ('application.Invoice', 'invoice_id', 'document_pdf')
+
+
+class HasCustomerInvoiceDocumentToken(HasDocumentToken):
+    records = ('application.CustomerInvoice', 'customer_invoice_id', 'pdf')
+
+
+class HasCompensationDocumentToken(HasDocumentToken):
+    records = ('application.InstructorHours', 'payment_id', 'document')
+
+
+class HasMedicalAppointmentDocumentToken(HasDocumentToken):
+    records = ('application.MedicalAppointments', 'medical_appointments_id', 'document')
 
 
 class HasBypassAuthorizationHeader(BasePermission): # pragma: no cover

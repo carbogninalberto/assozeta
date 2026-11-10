@@ -45,7 +45,7 @@ def run(work, log, tool_env):
             owner_association=SportAssociation.original_objects.create(sport_association_id=uid(620000),user=owner,denomination='Fixture ASD',tax_code='12345678901',additional_sections=[])
             SportAssociationMembershipCardConfiguration.objects.create(sport_association=owner_association)
         def add(name,*,role=2,admin=False,active=True,deleted=False,otp=None,present=False,two_fa=False,
-                outcome='',supplied=password,delete_days=None,missing_association=False,create_card=False,uppercase=False,queries=8,mode="password",backend="google",social_valid=True):
+                outcome='',supplied=password,delete_days=None,missing_association=False,create_card=False,uppercase=False,queries=8,mode="password",backend="google",social_valid=True,social_verified=True):
             n=len(cases);id=uid(611000+n);username=f'Session-{n}';username=username.upper() if uppercase else username
             delete_on=None if delete_days is None else now.date()+datetime.timedelta(days=delete_days)
             with disable_auditlog():
@@ -73,7 +73,7 @@ def run(work, log, tool_env):
                     expected['user_data']['preview_and_custom_features']=[{'name':'Iscrizione per famiglia','description':''}]
                     expected['tables_settings']={}
             cases.append({'name':name,'id':id,'identifier':user.email,'password':supplied,'otp':otp,'present':present,'role':role,
-                'queries':queries,'mode':mode,'backend':backend,'token':f'synthetic-social-session-{n}','social_valid':social_valid,
+                'queries':queries,'mode':mode,'backend':backend,'token':f'synthetic-social-session-{n}','social_valid':social_valid,'social_verified':social_verified,
                 'outcome':outcome,'before':username,'after':username.upper() if changed else username,'changed':changed,
                 'delete_before':delete_on.isoformat() if delete_on else None,
                 'delete_after':None if not outcome and delete_days is not None and delete_days>=0 else delete_on.isoformat() if delete_on else None,
@@ -104,6 +104,8 @@ def run(work, log, tool_env):
         add('social token denial prevents normalization',mode='social',social_valid=False,outcome='social_token',queries=1)
         add('social Apple administrator session',mode='social',backend='apple',role=1,admin=True)
         add('social finalization fails after card creation',mode='social',backend='apple',role=1,create_card=True,outcome='finalization',queries=18)
+        add('social unverified e-mail prevents normalization',mode='social',social_verified=False,outcome='social_token',queries=1)
+        add('social Apple text verification session',mode='social',backend='apple-id',social_verified='true')
         with connection.cursor() as cursor:
             cursor.execute("""CREATE FUNCTION session_reject_finalization() RETURNS trigger LANGUAGE plpgsql AS $$
                 BEGIN IF NEW.user_id IN ('00000000-0000-4000-8000-000000611017'::uuid,'00000000-0000-4000-8000-000000611025'::uuid) AND NEW.last_login IS NOT NULL THEN
@@ -160,7 +162,7 @@ def run(work, log, tool_env):
                 google.reset_mock();apple.reset_mock()
                 def verify(token):
                     assert token==case['token'],(case['name'],'social token altered')
-                    return case['social_valid'],{'email':case['identifier'],'email_verified':False}
+                    return case['social_valid'],{'email':case['identifier'],'email_verified':case['social_verified']}
                 google.side_effect=verify;apple.side_effect=verify
                 payload={'username':case['identifier'],'password':case['password']}
                 if case['mode']=='social':payload.update(token=case['token'],backend=case['backend'])

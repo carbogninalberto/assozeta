@@ -16,13 +16,16 @@ removed from the selected value.
 The five existing aliases map to Google or Apple. Unsupported backend values use
 the original Python string representation in the 400 response. Provider calls
 receive the original token value unchanged. A failed verification is rejected
-before checking email; a successful result requires a string email. Comparison
+before checking email; a successful result requires a verified email
+(`SocialAuthService.has_verified_email` / `SocialIdentity.VerifiedEmail`: a
+non-empty string whose `email_verified` is true or the text `true`, as Apple
+sends either), with the invalid-token answer otherwise. Comparison
 uses Unicode full lowercase, not casefold: sharp-s must not authorize a different
 address, while dotted-I and final-sigma behavior matches Python. Account active/
 deleted state is checked after provider and email results, as in Django.
-The current view does not require `email_verified` or match a stored provider
-subject; controlled fixtures explicitly retain that behavior. This is a record of
-the existing contract, not new provider-token validation evidence.
+The view does not match a stored provider subject. Controlled fixtures carry the
+verification claim of each case (48 admission cases, 28 session cases); this is
+a record of the contract, not new provider-token validation evidence.
 
 One constructor-supplied admission bound covers candidate lookup and provider I/O.
 The repository releases its database connection before provider verification; no
@@ -83,3 +86,17 @@ verifying session orchestration and verifying provider credentials remotely.
 The separate `SocialClientIDs` component now reads live instance overrides; see
 `social_configuration.md`. It is not yet connected to a concrete verifier or the
 composition root.
+
+## Verified e-mail on login (sec-oauth-signup)
+
+Django and Go changed together. `TESTS/adapters/django/accounts.py --only login-social` runs the social admission and
+session adapters alone; `--only login-http` runs the public route against the provider stub, whose tokens and user
+info now carry the claim a case asks for.
+
+- Django tests first: `application.tests.test_auth_views.SocialAuthLoginTests` (two new tests, failing before the change).
+- RED (`login-social-secoauth-login-red-r1`): Django 48 admission cases; Go fails the eight cases without a verified e-mail.
+- GREEN: `login-social-secoauth-login-green-r2` (48 admission and 28 session cases per backend) and
+  `login-http-secoauth-login-green-r2` (19 contracts, 49 credential scenarios per backend).
+- Mutation (skipping the check in `SocialLogin.Select`): `login-social-secoauth-login-mutation-r1` fails Go on the eight
+  admission cases and `login-http-secoauth-login-mutation-r1` on nine HTTP cases (200 instead of 401) — CAUGHT.
+- oauth-accounts re-run on four transports (`secoauth-login-versioned-r1`, 159/159).

@@ -121,6 +121,10 @@ def oauth2_login(request):
             logger.warning("Social auth verification failed", extra={'backend': backend})
             return Response({'error': 'Invalid social token'}, status=status.HTTP_401_UNAUTHORIZED)
 
+        if not SocialAuthService.has_verified_email(user_info):
+            logger.warning("Social login without a verified email", extra={'backend': backend})
+            return Response({'error': 'Invalid social token'}, status=status.HTTP_401_UNAUTHORIZED)
+
         # Verify email matches the user
         if user_info['email'].lower() != user.email.lower():
             logger.warning("Social auth email mismatch",

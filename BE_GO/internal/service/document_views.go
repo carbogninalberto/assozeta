@@ -98,7 +98,7 @@ func (s *DocumentViews) render(ctx context.Context, identity domain.ResolvedIden
 	case ViewTemplate:
 		return s.template(ctx, identity, request)
 	case ViewMedical:
-		return s.medical(ctx, request)
+		return s.medical(ctx, identity, request)
 	case ViewCompensation:
 		return s.compensation(ctx, identity, request)
 	case ViewSubscription:
@@ -278,6 +278,10 @@ func (s *DocumentViews) template(ctx context.Context, identity domain.ResolvedId
 	if err != nil {
 		return nil, lookupError(err)
 	}
+	// Served to the association's staff.
+	if err := memberDocumentStaffAccess(ctx, s.store, identity); err != nil {
+		return nil, err
+	}
 	association, err := s.store.Association(ctx, template.Association)
 	if err != nil {
 		return nil, lookupError(err)
@@ -363,16 +367,22 @@ func renderOptionalEmpty(value *string) string {
 	return *value
 }
 
-// medical is document_medical_appointment_view (AllowAny).
-func (s *DocumentViews) medical(ctx context.Context, request DocumentViewRequest) (*DocumentViewReply, error) {
+// medical is document_medical_appointment_view (IsAuthenticated | HasBypassAuthorizationHeader).
+func (s *DocumentViews) medical(ctx context.Context, identity domain.ResolvedIdentity, request DocumentViewRequest) (*DocumentViewReply, error) {
 	id, err := paymentInfoParseUUID(request.UID)
 	if err != nil {
 		return nil, err
 	}
 	appointment, err := s.store.Appointment(ctx, id.String())
 	if err != nil {
-		// .first() is None: None.region raises AttributeError.
+		// .first() is None: None.subscription raises AttributeError.
 		return nil, lookupError(err)
+	}
+	// Served to the association's staff and to the member of the appointment's subscription.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberSubscription(ctx, member, appointment.Subscription)
+	}); err != nil {
+		return nil, err
 	}
 	if appointment.Region != "agonistica" && appointment.Region != "non-agonistica" {
 		return &DocumentViewReply{Status: 303, JSON: map[string]string{
@@ -449,6 +459,12 @@ func (s *DocumentViews) compensation(ctx context.Context, identity domain.Resolv
 	payment, err := s.store.Compensation(ctx, id, renderScope(identity, request.Group))
 	if err != nil {
 		return nil, lookupError(err)
+	}
+	// Served to the association's staff and to the account tied to the instructor.
+	if err := memberDocumentAccess(ctx, s.store, identity, identity.ScopeUser, func(ctx context.Context, member string) (bool, error) {
+		return s.store.MemberCompensation(ctx, member, payment.ID)
+	}); err != nil {
+		return nil, err
 	}
 	hours, err := s.store.Hours(ctx, payment.ID)
 	if err != nil {

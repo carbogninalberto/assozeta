@@ -158,6 +158,9 @@ account's e-mail, username conflicts and the transfer path. A `signin` effect re
   `oauth-accounts-signup-social-google-existing-owner` (`state.no-effect`, `secoauth-mutation-role-r1`, CAUGHT).
 - `go test ./internal/service ./internal/handler ./internal/repository ./pkg/social ./cmd/...`.
 
+- Re-run after the login route gained the same verified e-mail rule and the provider stub its per-token claim
+  (`secoauth-login-versioned-r1`): 159/159 on four transports; see `BE_GO/internal/service/social_login.md`.
+
 ### First port
 
 - RED (`native-r1`): Django 109/109; Go 404 on the first case.
