@@ -83,6 +83,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2misc-*`; each family 
 | profile-misc | `PATCH onboarding/update` | `onboarding_data` carrying the row's own `users_onboarding_id` and `user` (every checklist step) | 101 cases; RED `v2misc-red-r1` Django 101/101, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r2` (ids compared as raw strings) CAUGHT |
 | google-calendar | `GET google/calendar/config` | request carrying a `sessionid` cookie (a second "Connetti a Google" in the same browser) | 89 cases; RED `v2misc-red-r2` Django 89/89, Go 500; GREEN `v2misc-green-r2` 4 transports; mutation `v2misc-mutation-r1` (session saved with SET NX) CAUGHT |
 | modules-responses | `POST modules/response/<id>/add-attachment` | filename with a compression suffix (`archive.tar.gz`, ...) | 145 cases; RED `v2misc-red-r1` Django 145/145, Go 500; GREEN `v2misc-green-r3` 4 transports; mutation `v2misc-mutation-r1` (encoding guessed on the lower-cased name) CAUGHT |
+| workflow-update | `PATCH communications/workflows/<id>/update` | `enabled: true` with a future cron time (`check_workflows_trigger_cron` with a countdown) | 63 cases; RED `v2misc-red-r3` Django 63/63, Go 500; GREEN `v2misc-green-r1` 4 transports; mutation `v2misc-mutation-r1` (ambiguous wall time on the summer offset) CAUGHT |
 
 ## Remaining A items, per family
 
@@ -176,7 +177,6 @@ legacy Bakney invoices or tutors that would be reassigned (refused by the valida
 ### communications, camps, profile, personas, modules, oauth, google
 | Route | Condition | UI call | Go site | Cost |
 |---|---|---|---|---|
-| PATCH communications/workflows/<id>/update | `enabled: true` with a future cron trigger (editor default) | `communication/automation/Automation.svelte:271-281` | `service/automation_workflow_update.go:98,119,200` | cheap-medium |
 | GET communications/settings/smtp/verify | a real SMTP host | `communication/settings/sections/EmailSMTP.svelte:155` | `service/communications_smtp.go:224` | medium |
 | GET camps-and-retreats/<uid>/subscriptions/list | camp payment with an invoice | `CampsAndRetreatsOverview.svelte:308` | `service/camps_subscriptions.go:143` | medium |
 | PATCH camps-and-retreats/periods/services/<uid>/update | walks a soft-deleted/other-group unpaid payment | `EditServiceModal.svelte:29-35` | `service/camps_periods.go:755` | medium |
@@ -293,7 +293,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### automation-workflows.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH communications/workflows/<uid>/update | enabling (disabled -> enabled) a workflow whose trigger is `cron` with a future time, or a time text outside the parsed form | service/automation_workflow_update.go:200 (`ErrAutomationWorkflowUpdateNotPorted`) | A | `association/communication/automation/Automation.svelte:271-281` sends `{"enabled": true}`; the editor's default trigger is `cron` (`automation/editor/AutomationEditor.svelte:35`) with a `datetime-local` time (:368-369), i.e. a future date. |
+| PATCH communications/workflows/<uid>/update | enabling a cron workflow whose time text is outside the parsed form (`20200101`, hour-only) | service/automation_workflow_update.go (`automationWorkflowEnablePlan`) | B | Future times ported in v2-misc (Celery eta). The editor's `datetime-local` gives `YYYY-MM-DDTHH:MM`, a parsed form. |
 | PATCH communications/workflows/<uid>/update | body with a new `automation_workflow_id` not yet used | service/automation_workflow_update.go:169 | B | UI update bodies carry only `automation_tree`/`name` (`AutomationEditor.svelte:148-155`), `automation_tree` (`components/inputs/email-builder/EmailBuilder.svelte:32-36`) or `enabled`. Cost: medium. |
 | PATCH communications/workflows/<uid>/update | form-encoded `automation_tree` | dto/automation_workflow_write.go:145 (`ErrAutomationWorkflowFormTreeNotPorted`) | B | UI sends JSON. Cost: cheap. |
 
@@ -923,7 +923,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### workflow-update.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH communications/workflows/<id>/update | enabling a cron workflow whose time is in the future or within 2 h, or a time Go does not classify | `service/automation_workflow_update.go:98,119` → `:199-200`, `ErrAutomationWorkflowUpdateNotPorted` | **A** | The editor offers a cron trigger "Data e ora specifica" as `datetime-local` (`automation/editor/AutomationEditor.svelte:349-369`, `YYYY-MM-DDTHH:MM`, a classified format). Activating sends `{enabled: true}` (`automation/Automation.svelte:271-279`). A future time is the normal case. Django `communications/views.py:331` sends `check_workflows_trigger_cron` with a countdown |
+| PATCH communications/workflows/<id>/update | a cron time Go does not classify | `service/automation_workflow_update.go` | B | Future times ported in v2-misc (see workflow-update.md). |
 | same | time string not starting with 4 ASCII digits / out-of-range field | (500 after saves, Django too) | — | parity, not a refusal |
 | same | new `automation_workflow_id` | `:169` | B | UI PATCH bodies carry only `enabled`, or `automation_tree` and `name` (`AutomationEditor.svelte:145-156`, `EmailBuilder.svelte:32`). legacy: no |
 | same | form-encoded `automation_tree` | `dto/automation_workflow_write.go:145` | B | UI sends JSON |

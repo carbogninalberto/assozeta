@@ -352,6 +352,124 @@
    "enabled": false,
    "created_at": "2026-10-20T09:00:00.250000Z",
    "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_future": {
+   "id": "a1000000-0000-4000-8000-000000962017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2027-01-15T10:30",
+      "triggered": true,
+      "target": "all"
+     }
+    },
+    {
+     "id": "message",
+     "value": "email",
+     "data": {
+      "subject": "Ciao à"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_future_summer": {
+   "id": "a1000000-0000-4000-8000-000000962018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2027-07-01 08:00:00.250",
+      "triggered": false
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_future_ambiguous": {
+   "id": "a1000000-0000-4000-8000-000000962019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2027-10-31T02:30"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_future_skipped": {
+   "id": "a1000000-0000-4000-8000-000000962020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2027-03-28T02:30:15"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_future_after_table": {
+   "id": "a1000000-0000-4000-8000-000000962021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2038-07-01T10:00"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
+  },
+  "cron_future_date_only": {
+   "id": "a1000000-0000-4000-8000-000000962022",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Flusso",
+   "description": null,
+   "tree": [
+    {
+     "id": "trigger",
+     "value": "cron",
+     "data": {
+      "time": "2030-05-04"
+     }
+    }
+   ],
+   "enabled": false,
+   "created_at": "2026-10-20T09:00:00.250000Z",
+   "updated_at": "2026-10-21T10:00:00Z"
   }
  },
  "cases": [
@@ -1414,6 +1532,363 @@
       }
      }
     ]
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-future-schedules",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962017/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_future",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2027-01-15T10:30",
+        "triggered": false,
+        "target": "all"
+       }
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Ciao à"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     },
+     {
+      "changes": {
+       "automation_tree": [
+        "[{\"data\": {\"target\": \"all\", \"time\": \"2027-01-15T10:30\", \"triggered\": true}, \"id\": \"trigger\", \"value\": \"cron\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]",
+        "[{\"data\": {\"target\": \"all\", \"time\": \"2027-01-15T10:30\", \"triggered\": false}, \"id\": \"trigger\", \"value\": \"cron\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]"
+       ]
+      }
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger_cron",
+      "args": [
+       {
+        "uuid": "a1000000-0000-4000-8000-000000962017"
+       }
+      ],
+      "kwargs": [],
+      "args_list": true,
+      "eta_from": "2027-01-15T09:30:00+00:00"
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-future-summer-schedules",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "session": null,
+    "label": "cron_future_summer",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2027-07-01 08:00:00.250",
+        "triggered": false
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger_cron",
+      "args": [
+       {
+        "uuid": "a1000000-0000-4000-8000-000000962018"
+       }
+      ],
+      "kwargs": [],
+      "args_list": true,
+      "eta_from": "2027-07-01T06:00:00.250000+00:00"
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-future-ambiguous-standard-offset",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962019/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_future_ambiguous",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2027-10-31T02:30"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger_cron",
+      "args": [
+       {
+        "uuid": "a1000000-0000-4000-8000-000000962019"
+       }
+      ],
+      "kwargs": [],
+      "args_list": true,
+      "eta_from": "2027-10-31T01:30:00+00:00"
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-future-skipped-standard-offset",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962020/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "admin",
+    "session": "admin_owner",
+    "label": "cron_future_skipped",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2027-03-28T02:30:15"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger_cron",
+      "args": [
+       {
+        "uuid": "a1000000-0000-4000-8000-000000962020"
+       }
+      ],
+      "kwargs": [],
+      "args_list": true,
+      "eta_from": "2027-03-28T01:30:15+00:00"
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-future-after-pytz-table",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962021/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_future_after_table",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2038-07-01T10:00"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger_cron",
+      "args": [
+       {
+        "uuid": "a1000000-0000-4000-8000-000000962021"
+       }
+      ],
+      "kwargs": [],
+      "args_list": true,
+      "eta_from": "2038-07-01T09:00:00+00:00"
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-enable-cron-future-date-only",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962022/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "cron_future_date_only",
+    "row": {
+     "name": "Flusso",
+     "description": null,
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "cron",
+       "data": {
+        "time": "2030-05-04"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger_cron",
+      "args": [
+       {
+        "uuid": "a1000000-0000-4000-8000-000000962022"
+       }
+      ],
+      "kwargs": [],
+      "args_list": true,
+      "eta_from": "2030-05-03T22:00:00+00:00"
+     }
+    ]
+   },
+   "body": {
+    "enabled": true
    }
   },
   {

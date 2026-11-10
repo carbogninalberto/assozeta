@@ -68,6 +68,13 @@ WORKFLOWS = {
     'missing_value': workflow([{'id': 'trigger'}]),
     'string_node': workflow(['testo']),
     'foreign': workflow(TREE_PLAIN, association=FOREIGN, name='Estero'),
+    # Future times (the editor's datetime-local): pytz localizes to Europe/Rome with is_dst=False.
+    'cron_future': workflow(cron({'time': '2027-01-15T10:30', 'triggered': True, 'target': 'all'}, MESSAGE)),
+    'cron_future_summer': workflow(cron({'time': '2027-07-01 08:00:00.250', 'triggered': False})),
+    'cron_future_ambiguous': workflow(cron({'time': '2027-10-31T02:30'})),
+    'cron_future_skipped': workflow(cron({'time': '2027-03-28T02:30:15'})),
+    'cron_future_after_table': workflow(cron({'time': '2038-07-01T10:00'})),
+    'cron_future_date_only': workflow(cron({'time': '2030-05-04'})),
 }
 STATE = copy.deepcopy(WORKFLOWS)
 cases = []
@@ -189,6 +196,26 @@ add('enable-cron-past-untriggered', 'owner', path('cron_past_untriggered'), 200,
 NEW_CRON = cron({'time': '2019-05-06T07:08:09', 'triggered': True, 'target': 'approved'}, MESSAGE)
 add('enable-with-new-cron-tree', 'owner', path('enabled'), 200, UPDATED, body={'enabled': True, 'automation_tree': NEW_CRON},
     effect=saved('owner', 'enabled', {'enabled': True, 'automation_tree': NEW_CRON}, reset=True))
+# A future time: trigger() sends check_workflows_trigger_cron(args=[workflow UUID], countdown=time - now); Celery's eta
+# is the localized time in UTC (plus the microseconds between the two clock reads).
+def scheduled(label, eta_from):
+    return [{'task': 'check_workflows_trigger_cron', 'args': [{'uuid': WORKFLOWS[label]['id']}], 'kwargs': [], 'args_list': True,
+             'eta_from': eta_from}]
+
+
+def enable_future(name, actor, label, eta_from, *, reset=False, headers=None, session=None):
+    effect = saved(actor, label, {'enabled': True}, reset=reset, session=session)
+    effect['celery'] = scheduled(label, eta_from)
+    add(name, actor, path(label), 200, UPDATED, body={'enabled': True}, headers=headers, effect=effect)
+
+
+enable_future('enable-cron-future-schedules', 'owner', 'cron_future', '2027-01-15T09:30:00+00:00', reset=True)
+enable_future('enable-cron-future-summer-schedules', 'full_collaborator', 'cron_future_summer', '2027-07-01T06:00:00.250000+00:00')
+enable_future('enable-cron-future-ambiguous-standard-offset', 'owner', 'cron_future_ambiguous', '2027-10-31T01:30:00+00:00')
+enable_future('enable-cron-future-skipped-standard-offset', 'admin', 'cron_future_skipped', '2027-03-28T01:30:15+00:00',
+              headers=ADMIN_OWNER, session='admin_owner')
+enable_future('enable-cron-future-after-pytz-table', 'owner', 'cron_future_after_table', '2038-07-01T09:00:00+00:00')
+enable_future('enable-cron-future-date-only', 'owner', 'cron_future_date_only', '2030-05-03T22:00:00+00:00')
 add('enable-cron-invalid-time-server-error', 'owner', path('cron_bad_time'), 500, SERVER, body={'enabled': True},
     effect=saved('owner', 'cron_bad_time', {'enabled': True}, reset=True))
 add('enabled-after-error-no-trigger', 'owner', path('cron_bad_time'), 200, UPDATED, body={'enabled': True},
