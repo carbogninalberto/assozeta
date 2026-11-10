@@ -832,6 +832,16 @@ add('renew-athlete-scoped-session-another-association', 'renew', 'owner', 403, H
     body=renewal(member_body('session_member'), sport_association={'sport_association_id': FOREIGN}))
 add('renew-athlete-scoped-session-another-member', 'renew', 'owner', 403, HIDDEN, headers=SCOPED_ATHLETE,
     body=renewal(member_body('stranger'), sport_association=HERE))
+# The session's guard accepts the association's own username as `sport_association`; the view then looks the value up
+# as an id inside the session, so a username spelled like another association's id answers the 500 page and writes nothing.
+add('renew-athlete-scoped-session-username-is-another-association-id', 'renew', 'owner', 500, SERVER, headers=SCOPED_ATHLETE,
+    setup={'accounts': {'usernames': {'owner': FOREIGN}}},
+    body=renewal({k: v for k, v in member_body('coded_earlier').items() if k != 'associate_id'},
+                 sport_association={'sport_association_id': FOREIGN}))
+add('renew-athlete-scoped-session-username-is-another-association-id-own-member', 'renew', 'owner', 500, SERVER, headers=SCOPED_ATHLETE,
+    setup={'accounts': {'usernames': {'owner': FOREIGN}}},
+    body=renewal({k: v for k, v in member_body('session_member').items() if k != 'associate_id'},
+                 sport_association={'sport_association_id': FOREIGN}))
 payment, subscription = '$session_member_payment', '$session_member_subscription'
 add('renew-athlete-scoped-session', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'}, headers=SCOPED_ATHLETE,
     body=renewal(member_body('session_member'), sport_association=HERE),

@@ -595,6 +595,10 @@ func googleParseDatetime(text string) (*googleMoment, error) {
 	if err != nil || moment == nil {
 		return nil, err
 	}
+	if moment.zone != "" {
+		// An offset in a form googleOffset does not read (the calendar export names it).
+		return nil, domain.ErrMiscRoutesNotPorted
+	}
 	result := &googleMoment{at: moment.at}
 	if moment.utc {
 		zero := time.Duration(0)

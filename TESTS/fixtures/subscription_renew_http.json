@@ -7437,6 +7437,104 @@
    "setup": null
   },
   {
+   "name": "subscription-renew-renew-athlete-scoped-session-username-is-another-association-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Carla",
+     "last_name": "Codice",
+     "tax_code": "CDCCRL85A41H501Q",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+    }
+   },
+   "setup": {
+    "accounts": {
+     "usernames": {
+      "owner": "a1000000-0000-4000-8000-000000701002"
+     }
+    }
+   }
+  },
+  {
+   "name": "subscription-renew-renew-athlete-scoped-session-username-is-another-association-id-own-member",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Silvia",
+     "last_name": "Sessione",
+     "tax_code": "SSSSLV85A41H501V",
+     "born_date": "01/01/1985",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701002"
+    }
+   },
+   "setup": {
+    "accounts": {
+     "usernames": {
+      "owner": "a1000000-0000-4000-8000-000000701002"
+     }
+    }
+   }
+  },
+  {
    "name": "subscription-renew-renew-athlete-scoped-session",
    "actor": "owner",
    "method": "POST",

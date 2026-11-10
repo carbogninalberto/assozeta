@@ -32,9 +32,7 @@ func ParseArchiveUpdate(object domain.RequestObject) (ArchiveUpdate, map[string]
 	}
 	if value, present := object.Lookup("sport_association_documents_archive_id"); present {
 		update.IDPresent = true
-		if _, isBool := value.(bool); isBool {
-			return update, nil, domain.ErrDocumentWritesNotPorted // uuid.UUID(int=bool)
-		}
+		// A boolean is an int for UUIDField: uuid.UUID(int=True) is ...0001.
 		if id, codes := drfUUIDField(value); codes != nil {
 			invalid["sport_association_documents_archive_id"] = codes
 		} else {

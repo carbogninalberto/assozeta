@@ -484,6 +484,96 @@
    "task_id": "a1000000-0000-4000-8000-000000976804",
    "status": "SUCCESS",
    "result": "{not json"
+  },
+  "failed_value": {
+   "task_id": "a1000000-0000-4000-8000-000000976840",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"ValueError\", \"exc_message\": [\"Archivio non valido: manca manifest.json\"], \"exc_module\": \"builtins\"}"
+  },
+  "failed_two_arguments": {
+   "task_id": "a1000000-0000-4000-8000-000000976841",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"Exception\", \"exc_message\": [\"Import fallito\", 3], \"exc_module\": \"builtins\"}"
+  },
+  "failed_no_arguments": {
+   "task_id": "a1000000-0000-4000-8000-000000976842",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"RuntimeError\", \"exc_message\": [], \"exc_module\": \"builtins\"}"
+  },
+  "failed_key": {
+   "task_id": "a1000000-0000-4000-8000-000000976843",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"KeyError\", \"exc_message\": [\"users\"], \"exc_module\": \"builtins\"}"
+  },
+  "failed_key_two_arguments": {
+   "task_id": "a1000000-0000-4000-8000-000000976844",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"KeyError\", \"exc_message\": [\"users\", null], \"exc_module\": \"builtins\"}"
+  },
+  "failed_integrity": {
+   "task_id": "a1000000-0000-4000-8000-000000976845",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"IntegrityError\", \"exc_message\": [\"duplicate key value violates unique constraint \\\"application_user_pkey\\\"\\nDETAIL:  Key (user_id) already exists.\\n\"], \"exc_module\": \"django.db.utils\"}"
+  },
+  "failed_scalar_arguments": {
+   "task_id": "a1000000-0000-4000-8000-000000976846",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"TypeError\", \"exc_message\": [true, \"l'archivio\", 7], \"exc_module\": \"builtins\"}"
+  },
+  "failed_null_argument": {
+   "task_id": "a1000000-0000-4000-8000-000000976847",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"AssertionError\", \"exc_message\": [null], \"exc_module\": \"builtins\"}"
+  },
+  "failed_text_message": {
+   "task_id": "a1000000-0000-4000-8000-000000976848",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"ValueError\", \"exc_message\": \"testo, non lista\", \"exc_module\": \"builtins\"}"
+  },
+  "failed_without_module": {
+   "task_id": "a1000000-0000-4000-8000-000000976849",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"ArchivioNonValido\", \"exc_message\": [\"è rotto\"]}"
+  },
+  "failed_null_module_no_message": {
+   "task_id": "a1000000-0000-4000-8000-000000976850",
+   "status": "FAILURE",
+   "result": "{\"exc_type\": \"ArchivioNonValido\", \"exc_module\": null}"
+  },
+  "failed_null_result": {
+   "task_id": "a1000000-0000-4000-8000-000000976851",
+   "status": "FAILURE",
+   "result": null
+  },
+  "failed_empty_object": {
+   "task_id": "a1000000-0000-4000-8000-000000976852",
+   "status": "FAILURE",
+   "result": "{}"
+  },
+  "failed_without_type": {
+   "task_id": "a1000000-0000-4000-8000-000000976853",
+   "status": "FAILURE",
+   "result": "{\"exc_message\": [\"x\"], \"exc_module\": \"builtins\"}"
+  },
+  "failed_text_result": {
+   "task_id": "a1000000-0000-4000-8000-000000976854",
+   "status": "FAILURE",
+   "result": "\"boom\""
+  },
+  "failed_number_result": {
+   "task_id": "a1000000-0000-4000-8000-000000976855",
+   "status": "FAILURE",
+   "result": "7"
+  },
+  "retry_value": {
+   "task_id": "a1000000-0000-4000-8000-000000976856",
+   "status": "RETRY",
+   "result": "{\"exc_type\": \"ValueError\", \"exc_message\": [\"riprovo\"], \"exc_module\": \"builtins\"}"
+  },
+  "retry_without_type": {
+   "task_id": "a1000000-0000-4000-8000-000000976857",
+   "status": "RETRY",
+   "result": "{\"exc_message\": [\"x\"]}"
   }
  },
  "setup_token": "contract-setup-token",
@@ -3634,6 +3724,403 @@
    "objects_after": null
   },
   {
+   "name": "association-transfer-import-status-owner-failed-value",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976840",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976840",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "Archivio non valido: manca manifest.json"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-two-arguments",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976841",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976841",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "('Import fallito', 3)"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-no-arguments",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976842",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976842",
+    "status": "FAILURE",
+    "ready": true,
+    "error": ""
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-key",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976843",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976843",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "'users'"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-key-two-arguments",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976844",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976844",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "('users', None)"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-integrity",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976845",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976845",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "duplicate key value violates unique constraint \"application_user_pkey\"\nDETAIL:  Key (user_id) already exists.\n"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-scalar-arguments",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976846",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976846",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "(True, \"l'archivio\", 7)"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-null-argument",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976847",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976847",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "None"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-text-message",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976848",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976848",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "testo, non lista"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-without-module",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976849",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976849",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "è rotto"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-null-module-no-message",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976850",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976850",
+    "status": "FAILURE",
+    "ready": true,
+    "error": ""
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-null-result",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976851",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976851",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "None"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-empty-object",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976852",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976852",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "None"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-without-type",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976853",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-text-result",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976854",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-failed-number-result",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976855",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-retry-value",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976856",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976856",
+    "status": "RETRY",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-retry-without-type",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976857",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-revoked",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976812",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976812",
+    "status": "REVOKED",
+    "ready": true,
+    "error": "revoked"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
    "name": "association-transfer-import-status-post-not-allowed",
    "actor": "owner",
    "method": "POST",
@@ -5188,6 +5675,167 @@
        "document_id": "a1000000-0000-4000-8000-000000976930",
        "filename": "export_x.zip"
       }
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-failed-value-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976840",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {},
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-export-revoked-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976812",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": {},
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-retry-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "active": true,
+    "task_id": "a1000000-0000-4000-8000-000000976856",
+    "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+    "user_id": "a1000000-0000-4000-8000-000000700001",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976856",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-active-owner-failed-row-without-type",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/active",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976853",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
      }
     },
     "objects": {}

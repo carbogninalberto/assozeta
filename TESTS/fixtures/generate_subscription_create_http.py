@@ -241,6 +241,14 @@ add('associate-invalid-fields', 'owner', 400, {
     'address_cap': ['Enter exactly 5 digits'], 'born_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.'],
     'email': ['Enter a valid email address.'], 'sex': ['"X" is not a valid choice.']},
     body=request(person('Rita', 'Errata', 'RRTRTI90C41H501K', born='1990-03-15', sex='X', email='non-valida', address_cap='12a')))
+# The birth date is first read by dateutil (the age), day first unless the text starts with the year; the serializer then
+# takes DD/MM/YYYY only. Text dateutil does not read is the 500 page.
+BORN_FORMAT = {'born_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.']}
+for label, born in (('dashed', '15-03-1990'), ('dotted', '15.03.1990'), ('month-name', 'March 15, 1990'), ('with-time', '1990-03-15 10:30'),
+                    ('integer', 19900315), ('year-only', '1990')):
+    add(f'born-date-{label}-serializer-rejects', 'owner', 400, BORN_FORMAT, body=request(person('Rita', 'Formato', 'FRMRTI90C41H501K', born=born)))
+for label, born in (('italian-month', '15 marzo 1990'), ('five-numbers', '1 2 3 4 5'), ('false', False)):
+    add(f'born-date-{label}-server-error', 'owner', 500, SERVER, body=request(person('Rita', 'Formato', 'FRMRTI90C41H501K', born=born)))
 add('signature-data-required', 'owner', 400, {'data': ['This field is required.']},
     body=request(person('Rita', 'Firma', 'FRMRTI90C41H501K'), signature={'there_is_signature': False}))
 add('signature-blank-when-signed', 'owner', 400, {'data': ['La firma è obbligatoria.']},
@@ -470,6 +478,51 @@ wizard('wizard-uploaded-certificate-italian-date', person('Dina', 'Datata', 'DTT
 wizard('wizard-uploaded-certificate-invalid-date-kept', person('Kai', 'Tenuto', 'TNTKAI90C01H501K'), 'Kai Tenuto',
        {'medical_id': CERTIFICATES['kept']['id'], 'filename': 'c.pdf', 'certificate_expring_date': 'Invalid date'},
        medical={'label': 'kept', 'columns': {}, 'audit': {}, 'index': None}, medical_id=CERTIFICATES['kept']['id'])
+
+
+# A typed date without an upload: the view draws the placeholder certificate (generate_image_with_text, saved as PNG),
+# stores it as <timestamp>/<document id>/medical_certificate_<first>_<last>.png (the names as sent), creates the Document
+# and a MedicalCertificate of the association's account with the date, and links it to the subscription. 'text' is the
+# view's f-string; the adapter draws it with Pillow and compares the stored bytes.
+def placeholder_text(first, last, moment):
+    return f'''
+            {first} {last}\n
+            \n
+            Questa certificazione è valida fino al {moment}\n
+            \n
+            \n
+            Attenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.
+                        '''
+
+
+def placeholder(name, data, full_name, medical_certificate, iso, *, first=None, last=None):
+    first, last = first or data['first_name'], last or data['last_name']
+    # auditlog also renders the Document's reverse accessor that declares a related_name.
+    extra = [{'model': 'document', 'action': 0, 'ref': 'placeholder_document',
+              'changes': {'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}, 'app': 'docmanager',
+              'index': [OWN, 'actor.sport_association']},
+             {'model': 'medicalcertificate', 'action': 0, 'ref': 'placeholder_medical',
+              'changes': {'expiration_date': ['None', iso + ' 00:00:00']}, 'index': [OWN, 'actor.sport_association']}]
+    effect = success('owner', full_name, associate=created_associate(data), payment=new_payment('25.00', audit_amount='25.0'),
+                     subscription={**PLAIN, 'medical_id': '$placeholder_medical'}, membership=dict(MEMBER), extra_audit=extra)
+    effect['placeholder'] = {'filename': f'medical_certificate_{first}_{last}.png', 'expiration': iso,
+                             'text': placeholder_text(first, last, iso + ' 00:00:00+00:00')}
+    add(name, 'owner', 200, SUCCESS(25.0), body=request(data, medical_certificate=medical_certificate), effect=effect)
+
+
+placeholder('wizard-certificate-placeholder', person('Pia', 'Segnaposto', 'SGNPIA90C41H501K'), 'Pia Segnaposto',
+            {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31')
+placeholder('wizard-certificate-placeholder-italian-date', person('Italo', 'Segnaposto', 'SGNTLI90C01H501K'), 'Italo Segnaposto',
+            {'medical_id': None, 'filename': '', 'certificate_expring_date': '5/4/2027'}, '2027-04-05')
+# Letters the embedded font lacks are drawn as its missing-glyph box; no medical_id key reads like None.
+placeholder('wizard-certificate-placeholder-accented-name', person('Niccolò', 'Però', 'PRENCL90C01H501K'), 'Niccolò Però',
+            {'certificate_expring_date': '2031-12-01'}, '2031-12-01')
+# A date in the past is drawn and stored like any other.
+placeholder('wizard-certificate-placeholder-past-date', person('Remo', 'Scaduto', 'SCDRME90C01H501K'), 'Remo Scaduto',
+            {'medical_id': None, 'filename': None, 'certificate_expring_date': '01/02/2020'}, '2020-02-01')
+# A value that is not text fails inside the view's try block: no certificate.
+wizard('wizard-certificate-number-date-skipped', person('Nino', 'Numero', 'NMRNNI90C01H501K'), 'Nino Numero',
+       {'medical_id': None, 'filename': '', 'certificate_expring_date': 20270331})
 
 
 # --- The wizard in a modal: sport_association names an association by its owner's username ----------------

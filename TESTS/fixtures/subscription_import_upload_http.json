@@ -2626,6 +2626,178 @@
    }
   },
   {
+   "name": "subscription-import-upload-xlsx-date-forms",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "Nascita",
+     "Tesseramento"
+    ],
+    "map": {
+     "nome": "Nome",
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "date.xlsx",
+    "body_b64": "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",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "association": "own_association",
+    "expired": [],
+    "keep": "date_forms"
+   },
+   "raw_b64": "LS1JbXBvcnRCb3VuZGFyeTdkMWYNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0iYXNzb2NpYXRlc19maWxlIjsgZmlsZW5hbWU9ImRhdGUueGxzeCINCkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vdm5kLm9wZW54bWxmb3JtYXRzLW9mZmljZWRvY3VtZW50LnNwcmVhZHNoZWV0bWwuc2hlZXQNCg0KUEsDBBQAAAAIAAAAIVzzkNG1FgEAADADAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbK1SzU4CMRC++xRNr4QWPBhjWDigHtVEfICxnWUb+pfOgPD2lgWNMSgXTpP2+81kJrNt8GKDhVyKjRyrkRQYTbIuLhv5tngc3kpBDNGCTxEbuUOSs+nVZLHLSKKKIzWyY853WpPpMACplDFWpE0lANdnWeoMZgVL1Nej0Y02KTJGHvLeQ04n99jC2rN42NbvQ5GCnqSYH4j7rEZCzt4Z4IrrTbS/UobHBFWVPYc6l2lQCVKfTNgjfwccdc91M8VZFC9Q+AlCZemt1x+prN5TWqn/TU60TG3rDNpk1qFKFOWCYKlD5OBVP1UAFwfn83sy6X6ML1zk2/9MD+KdR7r0FnrTc8kdFLSvXOqdXrzAT++vHro/+OknUEsDBBQAAAAIAAAAIVwGWceCsQAAACgBAAALAAAAX3JlbHMvLnJlbHONz7EOgjAQBuDdp2hul4KDMYbCYkxYDT5AbY9CgF7TVoW3t6MaB8fL/ff9ubJe5ok90IeBrIAiy4GhVaQHawRc2/P2ACxEabWcyKKAFQPU1aa84CRjugn94AJLiA0C+hjdkfOgepxlyMihTZuO/CxjGr3hTqpRGuS7PN9z/25A9WGyRgvwjS6AtavDf2zqukHhidR9Rht/VHwlkiy9wShgmfiT/HgjGrOEAq9K/vFg9QJQSwMEFAAAAAgAAAAhXBiihRG8AAAAGgEAAA8AAAB4bC93b3JrYm9vay54bWyNj02OwjAMhfecIvIeUlggVLVlg5BYM3OATOLSiMau7MAwtyfAsGflP73P7zXbWxrNFUUjUwvLRQUGyXOIdGrh+2s/34DR7Ci4kQlb+EOFbTdrflnOP8xnU/SkLQw5T7W16gdMThc8IZVLz5JcLqOcrE6CLuiAmNNoV1W1tslFghehlk8Y3PfR4479JSHlF0RwdLm41yFOCl3z/KD/1ZBLxfWRfSw5HptDKDHBSB1LI4ewBNs19i2y71zdHVBLAwQUAAAACAAAACFccz6UAdkAAAA1AgAAGgAAAHhsL19yZWxzL3dvcmtib29rLnhtbC5yZWxzrZHBasMwDIbvewqj+6KkgzFGnV7KoNetewBjK3FoYhtL7Za3n9lYSaGMHXoSktH3f1jrzec0qhNlHmLQ0FQ1KAo2uiH0Gt73L/dPoFhMcGaMgTTMxLBp79avNBopO+yHxKpAAmvwIukZka2nyXAVE4Xy0sU8GSlt7jEZezA94aquHzEvGdBeMNXOacg714Daz4n+w45dN1jaRnucKMiVCPyI+cCeSArU5J5Ew3nE+F2aqlABr8usbinDMo/lM88mP/1f8Q83jfcmk3uTXC69tFiOf2Xw4trtF1BLAwQUAAAACAAAACFcMil6mgwBAAAOAwAAGAAAAHhsL3dvcmtzaGVldHMvc2hlZXQxLnhtbG2S3U7EIBBG730Kwr0LpT9uDWXj1vgE+gCkZbeNLTRAuvr24mrIlPQO5nwzh0zgp695QquybjS6wdmBYqR0Z/pRXxv88f72eMTIeal7ORmtGvytHD6JB34z9tMNSnkUBmjX4MH75ZkQ1w1qlu5gFqUDuRg7Sx+u9krcYpXs703zRBilFZnlqLHg99qr9FJwa27IhoeEavd7eMkw8g124b4KyskqOOn+2RmybMtayFhkJMyPEhYlDITzRAJZkUggK/cleZTkIFwlEsieEglkx31JESUFCNeJBLIs2WW7gdm+poyaEqZZ4in/ynVNKaPJOttNZ77vqaKngulk++cNLBPPBlaJh4AfR+JXFj9QSwMEFAAAAAgAAAAhXHV9nlhXAQAALwMAAA0AAAB4bC9zdHlsZXMueG1srZJNT8MwDIbv/Iood5Z1IIRQ2x2QKnHZZUPimrZpGylfStxp5dfjtB20iAuIk+03eR/FjtP9RStyFj5IazKabLaUCFPZWpo2o6+n4vaRkgDc1FxZIzI6iED3+U0aYFDi2AkBBAkmZLQDcE+MhaoTmoeNdcLgSWO95oClb1lwXvA6RJNWbLfdPjDNpaF52lgDgVS2N4CPmIU8De/kzBUqCWV5argWU/3MlSy9jCKbbo4hoE8qtQahkKeOAwhvCizInJ8Gh+0YbGrCjPfGgJjS+hpnsgRNUp4q0QAavGy7GME6Fg8BrMaklry1hquIvDrmBLGVUOoYB/fWrNiXhpheFxpe6oziD8Rmrik+aE4nzFRE/pI2sRfYuz9hyaX55K/cyf2v7IQ7p4ZDr0vhi3EDYqPfobvkf6Bs7n0x4NV4P1USVyijh2hWC3DZSwXS/DBaZLKvVc8/AFBLAwQUAAAACAAAACFctUvm6xcBAACNAwAAFAAAAHhsL3NoYXJlZFN0cmluZ3MueG1slZPBToUwEEX3fkXTtdAW8OVBgBcTNXGhLnzvAxoYoQltSach+k/+hT9mcefGjLs2Pffm3pm0Pb3bhW0Q0HjXcZVLzsANfjRu6vjl/JAdOcOo3agX76DjH4D81F+1iJElqcOOzzGujRA4zGA15n4Fl17efLA6pmuYBK4B9IgzQLSLKKQ8CKuN432Lpm9/jBpc9ZD8E4kQNuD9s7fQiti3Yof+AjUOJmoSewZMJ23BRU8S3BlHc5ZlJotM1bUk4Sqv80IWBxJ8u4y0tE86DDOrrpmqjzckRcVeYWXkJI8OkNYvBchklcmSKdmUtKFMxm8wfn2yNXhEY2ml7xdDA/eWQtZCKhL+sky01av/rX5ny+z3yEX6T/03UEsBAhQDFAAAAAgAAAAhXPOQ0bUWAQAAMAMAABMAAAAAAAAAAAAAAIABAAAAAFtDb250ZW50X1R5cGVzXS54bWxQSwECFAMUAAAACAAAACFcBlnHgrEAAAAoAQAACwAAAAAAAAAAAAAAgAFHAQAAX3JlbHMvLnJlbHNQSwECFAMUAAAACAAAACFcGKKFEbwAAAAaAQAADwAAAAAAAAAAAAAAgAEhAgAAeGwvd29ya2Jvb2sueG1sUEsBAhQDFAAAAAgAAAAhXHM+lAHZAAAANQIAABoAAAAAAAAAAAAAAIABCgMAAHhsL19yZWxzL3dvcmtib29rLnhtbC5yZWxzUEsBAhQDFAAAAAgAAAAhXDIpepoMAQAADgMAABgAAAAAAAAAAAAAAIABGwQAAHhsL3dvcmtzaGVldHMvc2hlZXQxLnhtbFBLAQIUAxQAAAAIAAAAIVx1fZ5YVwEAAC8DAAANAAAAAAAAAAAAAACAAV0FAAB4bC9zdHlsZXMueG1sUEsBAhQDFAAAAAgAAAAhXLVL5usXAQAAjQMAABQAAAAAAAAAAAAAAIAB3wYAAHhsL3NoYXJlZFN0cmluZ3MueG1sUEsFBgAAAAAHAAcAwgEAACgIAAAAAA0KLS1JbXBvcnRCb3VuZGFyeTdkMWYtLQ0K",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-date-forms",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "Nome",
+     "Nascita",
+     "Tesseramento"
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    }
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [
+     {
+      "data": {
+       "associate": {
+        "first_name": "Dina",
+        "born_date": "03/02/1990",
+        "membership_start_date": "01/09/2026"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Aldo",
+        "born_date": "04/03/1985",
+        "membership_start_date": "04/09/2026"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Ines",
+        "born_date": "03/04/1985"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Elio",
+        "born_date": "02/03/1990",
+        "membership_start_date": "01/09/2026"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Olga",
+        "born_date": "13/02/1990",
+        "membership_start_date": "13/02/2026"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     }
+    ],
+    "document": "date_forms",
+    "failed": false
+   },
+   "body": {
+    "document_id": "$document:date_forms",
+    "map": {
+     "nome": "Nome",
+     "data di nascita": "Nascita",
+     "data tesseramento": "Tesseramento"
+    }
+   }
+  },
+  {
    "name": "subscription-import-upload-csv-import-members",
    "actor": "owner",
    "method": "POST",

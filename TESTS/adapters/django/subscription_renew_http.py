@@ -117,6 +117,20 @@ def apply_settings(ids, settings):
             Associate._base_manager.filter(pk=STATE['source']['associates'][label]['id']).update(user_id=ids[account])
         for label, account in (accounts.get('subscriptions') or {}).items():
             Subscription._base_manager.filter(pk=STATE['source']['subscriptions'][label]['id']).update(user_id=ids[account])
+        # An account's username for one case (restored by restore_usernames after the case).
+        from application.models import User
+        for label, username in (accounts.get('usernames') or {}).items():
+            original = User._base_manager.values_list('username', flat=True).get(pk=ids[label])
+            STATE.setdefault('usernames', {}).setdefault(label, original)
+            contract.require(User._base_manager.filter(pk=ids[label]).update(username=username) == 1, 'setup.username')
+
+
+def restore_usernames(ids):
+    from auditlog.context import disable_auditlog
+    from application.models import User
+    with disable_auditlog():
+        for label, username in (STATE.pop('usernames', None) or {}).items():
+            contract.require(User._base_manager.filter(pk=ids[label]).update(username=username) == 1, 'setup.username-restore')
 
 
 def seed_rows(source, created):
@@ -513,6 +527,8 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
         except BaseException as error:
             error.case = f'{label}:{case["name"]}'
             raise
+        finally:
+            restore_usernames(ids)
         results.append({'case': case['name'], 'status': status})
     raw.delete(create.cache_key(ids))
     shared.assert_cache_unchanged(fixture['baseline_cache'], snapshot_historical_read_cache(raw), fixture['contrasts'])

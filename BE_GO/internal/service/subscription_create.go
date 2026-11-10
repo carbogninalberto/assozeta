@@ -9,7 +9,6 @@ import (
 	"math/big"
 	"strings"
 	"time"
-	"unicode"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -62,6 +61,13 @@ type SubscriptionCreates struct {
 	logger        *slog.Logger
 	accounts      *SubscriptionCreateAccounts
 	signatures    *SubscriptionSigns
+	placeholders  *SubscriptionPlaceholders
+}
+
+// WithPlaceholders enables the placeholder certificate of a typed expiration date.
+func (s *SubscriptionCreates) WithPlaceholders(placeholders *SubscriptionPlaceholders) *SubscriptionCreates {
+	s.placeholders = placeholders
+	return s
 }
 
 func NewSubscriptionCreates(store domain.SubscriptionCreateStore, tasks celery.Publisher, notifications *SubscriptionNotifier,
@@ -197,6 +203,18 @@ func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
 	if value, _ := data.Lookup("preregistration"); value == true {
 		return domain.ErrSubscriptionCreateNotPorted
 	}
+	// Nor the placeholder certificate image of a typed date without a medical_id
+	// (subscription/add draws it: createPlaceholder).
+	if medical, ok := data.Lookup("medical_certificate"); ok {
+		if object, isObject := medical.(domain.RequestObject); isObject {
+			id, _ := object.Lookup("medical_id")
+			if expiration, present := object.Lookup("certificate_expring_date"); present && id == nil {
+				if date, parsed, _ := subscriptionMedicalDate(expiration); parsed && date.Format("2006-01-02") != today {
+					return domain.ErrSubscriptionCreateNotPorted
+				}
+			}
+		}
+	}
 	return subscriptionCreateRefuseInputs(data, today)
 }
 
@@ -205,14 +223,9 @@ func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
 func subscriptionCreateRefuseInputs(data domain.RequestObject, today string) error {
 	if medical, ok := data.Lookup("medical_certificate"); ok {
 		if object, isObject := medical.(domain.RequestObject); isObject {
-			// Without a medical_id the view draws a placeholder certificate image
-			// (not ported) for a valid date other than today; today's date (the
-			// wizard's default) and unparseable values raise inside its try block
-			// and change nothing.
-			id, _ := object.Lookup("medical_id")
+			// Digits strptime accepts beyond ASCII are not ported.
 			if expiration, present := object.Lookup("certificate_expring_date"); present {
-				date, parsed, refused := subscriptionMedicalDate(expiration)
-				if refused || (id == nil && parsed && date.Format("2006-01-02") != today) {
+				if _, _, refused := subscriptionMedicalDate(expiration); refused {
 					return domain.ErrSubscriptionCreateNotPorted
 				}
 			}
@@ -399,22 +412,35 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if !present {
 		return nil, pythonKeyError("born_date")
 	}
-	if _, isText := bornValue.(string); !isText && bornValue != nil {
-		// str() of numbers and containers through dateutil is not ported.
+	// person_date(str(born_date)): str() of None, a boolean or an integer; that of
+	// floats and containers is not ported.
+	var bornText string
+	switch typed := bornValue.(type) {
+	case string:
+		bornText = typed
+	case nil:
+		bornText = "None"
+	case bool:
+		bornText = "False"
+		if typed {
+			bornText = "True"
+		}
+	case json.Number:
+		integer, isInteger := new(big.Int).SetString(string(typed), 10)
+		if !isInteger {
+			return nil, domain.ErrSubscriptionCreateNotPorted
+		}
+		bornText = integer.String()
+	default:
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
-	born, result := dto.PersonDate(bornValue)
+	born, result, failure := dto.PersonDateText(bornText, now)
 	if result == dto.DateutilUnsupported {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	if result != dto.DateutilParsed {
-		if bornValue == nil {
-			return nil, &domain.SubscriptionCreateFailure{Text: "Unknown string format: None"}
-		}
-		if text := bornValue.(string); strings.TrimFunc(text, unicode.IsSpace) == "" {
-			return nil, &domain.SubscriptionCreateFailure{Text: "String does not contain a date: " + text}
-		}
-		return nil, server
+		// str() of dateutil's exception.
+		return nil, &domain.SubscriptionCreateFailure{Text: failure}
 	}
 	age := relativeYears(calendarTime(today), born)
 	tutorValue, _ := data.Lookup("associate_tutor_data")
@@ -706,6 +732,11 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 					return nil, err
 				}
 			}
+		}
+	}
+	if medicalID == nil {
+		if medical, err = s.createPlaceholder(ctx, tx, audit, data, associate, settings.OwnerID, request); err != nil {
+			return nil, err
 		}
 	}
 	subscriptionType := int64(2)
@@ -1094,6 +1125,9 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 			bornError = []string{dto.SubscriptionCreateDateFormat}
 		}
 		born = parsed
+	case json.Number, bool:
+		// DateField: strptime of a number or a boolean raises TypeError, the same 'invalid' error.
+		bornError = []string{dto.SubscriptionCreateDateFormat}
 	default:
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}

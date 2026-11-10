@@ -180,11 +180,14 @@ def assert_effect(case, before, after, source, context):
         contract.require(old_l == new_l, 'state.links')
         file_row = source['files'][effect['file']]
         key, document = file_row['id'], source['documents'][file_row['document']]['id']
-        contract.require(set(new_f) == set(old_f) - {key} and all(new_f[k] == old_f[k] for k in new_f), 'state.files')
+        cascade = [source['files'][label]['id'] for label in effect.get('cascade', ())]
+        contract.require(set(new_f) == set(old_f) - {key, *cascade} and all(new_f[k] == old_f[k] for k in new_f), 'state.files')
         removed = {document} if effect['document'] else set()
         contract.require(set(new_d) == set(old_d) - removed and all(new_d[k] == old_d[k] for k in new_d), 'state.documents')
         association, path = effect['association'], 'actor.sport_association'
-        expected = [('application', 'SubscriptionFile', key, 2, prepared[key], association, path)]
+        # The collector deletes the files of one document in descending key order.
+        expected = [('application', 'SubscriptionFile', item, 2, prepared[item], association, path)
+                    for item in sorted({key, *cascade}, reverse=True)]
         if effect['document']:
             expected += [('docmanager', 'Document', document, 2, prepared[document], association, path),
                          ('application', 'SubscriptionFile', key, 2, prepared[key], association, path)]

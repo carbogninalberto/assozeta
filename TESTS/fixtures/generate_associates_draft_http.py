@@ -244,7 +244,15 @@ for label, associate_born, tutor, valid in (
         ('day-first-minor-minor-tutor-invalid', '$day_first_minor', MINOR_TUTOR, False),
         ('day-first-adult-tutor-not-read', '$day_first_adult', MINOR_TUTOR, True),
         ('minor-day-first-minor-tutor-invalid', '2015-06-01', {'born_date': '$day_first_minor'}, False),
-        ('minor-day-first-adult-tutor', '2015-06-01', {'born_date': '$day_first_adult'}, True)):
+        ('minor-day-first-adult-tutor', '2015-06-01', {'born_date': '$day_first_adult'}, True),
+        # Every form dateutil reads: dashes and dots (day first), month names, a year alone (the rest from today).
+        ('dashed-adult-tutor-not-read', '01-02-1980', MINOR_TUTOR, True),
+        ('dotted-adult-tutor-not-read', '13.03.1980', MINOR_TUTOR, True),
+        ('month-name-adult-tutor-not-read', '3 March 1980', MINOR_TUTOR, True),
+        ('year-only-adult-tutor-not-read', '1980', MINOR_TUTOR, True),
+        ('minor-month-name-minor-tutor-invalid', '2015-06-01', {'born_date': 'June 1, 2012'}, False),
+        ('minor-dashed-adult-tutor', '2015-06-01', {'born_date': '01-06-1980'}, True),
+        ('minor-unreadable-tutor-ignored', '1 June 2015', {'born_date': '1 giugno 1980'}, True)):
     edit_data = {'associate': {**ADULT, 'born_date': associate_born}, 'associate_tutor': tutor, 'medical_certificate': {'medical_id': None}}
     edited(f'edit-{label}', 'owner', 'partial', {'edit_data': edit_data},
            {'data': {'edit_data': {**edit_data, 'medical_certificate': {'medical_id': '$new'}}}}, valid=valid,
@@ -273,6 +281,8 @@ for label, value in (('malformed-medical-id', {'associate': ADULT, 'medical_cert
                      ('number-born-date', {'associate': {**ADULT, 'born_date': 19800101}}),
                      ('impossible-born-date', {'associate': {**ADULT, 'born_date': '1980-02-30'}}),
                      ('day-first-overflow', {'associate': {**ADULT, 'born_date': '13/13/1980'}}),
+                     ('italian-month-born-date', {'associate': {**ADULT, 'born_date': '3 marzo 1980'}}),
+                     ('five-numbers-born-date', {'associate': {**ADULT, 'born_date': '1 2 3 4 5'}}),
                      ('blank-born-date', {'associate': {**ADULT, 'born_date': ''}})):
     add(f'edit-{label}-server-error', 'owner', EDIT('complete'), 500, SERVER, body={'edit_data': value})
 add('edit-string-edit-data-server-error', 'owner', EDIT('complete'), 500, SERVER, body={'edit_data': 'x'})

@@ -240,6 +240,15 @@ add('add-base64-non-ascii', 'owner', ADD, 400, {'exception': 'string argument sh
     body={'files': [{'document': 'è', 'filename': 'a.pdf'}]})
 add('add-filename-too-long', 'owner', ADD, 400, {'exception': 'value too long for type character varying(255)\n'},
     body={'files': [{'document': B64('x'), 'filename': 'a' * 252 + '.pdf'}]})
+# psycopg2 refuses the filename while quoting it, before the Document exists.
+add('add-filename-nul', 'owner', ADD, 400, {'exception': 'A string literal cannot contain NUL (0x00) characters.'},
+    body={'files': [{'document': B64('x'), 'filename': 'a\x00b.pdf'}]})
+add('add-filename-lone-surrogate', 'owner', ADD, 400,
+    {'exception': "'utf-8' codec can't encode character '\\ud800' in position 2: surrogates not allowed"},
+    raw_body='{"files": [{"document": "' + B64('x') + '", "filename": "\\ud83d\\ude00a\\ud800.pdf"}]}', content_type='application/json')
+add('add-filename-surrogate-run-before-nul', 'owner', ADD, 400,
+    {'exception': "'utf-8' codec can't encode characters in position 1-2: surrogates not allowed"},
+    raw_body='{"files": [{"document": "' + B64('x') + '", "filename": "è\\udfff\\ud800\\u0000.pdf"}]}', content_type='application/json')
 add('add-owner-one-root-file', 'owner', ADD, 201, added((0, 'statuto è.pdf', None)),
     body={'files': [{'document': B64(PDF), 'filename': 'statuto è.pdf'}]},
     effect=effect('owner', documents=[stored('statuto è.pdf', PDF, 'application/pdf')], archives=[{'document': 0, 'folder': None}],
@@ -324,6 +333,13 @@ add('update-new-primary-key-inserts-row', 'owner', UPDATE('upk'), 500, SERVER, m
                   # (through changes_json), then post_save logs the create.
                   audit=[entry('SportAssociationDocumentsArchive', NEW_PK, 1, '$inserted', 'changes'),
                          entry('SportAssociationDocumentsArchive', NEW_PK, 0, '$inserted', 'direct')]))
+# A boolean primary key is an int for UUIDField: uuid.UUID(int=True).
+BOOLEAN_PK = '00000000-0000-0000-0000-000000000001'
+add('update-boolean-primary-key-inserts-row', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
+    body={'sport_association_documents_archive_id': True},
+    effect=effect('owner', archive_inserted={'from': 'upk', 'id': BOOLEAN_PK},
+                  audit=[entry('SportAssociationDocumentsArchive', BOOLEAN_PK, 1, '$inserted', 'changes'),
+                         entry('SportAssociationDocumentsArchive', BOOLEAN_PK, 0, '$inserted', 'direct')]))
 add('update-route-delete', 'owner', UPDATE('ud'), 204, '<empty>', method='DELETE',
     effect=effect('owner', archive_deleted=['ud'], audit=[entry('SportAssociationDocumentsArchive', 'ud', 2, '$deleted', 'changes')]))
 
@@ -341,6 +357,9 @@ add('upload-grouped-foreign-group-server-error', 'owner', UPLOAD('grouped'), 500
     headers={'X-Group-Id': IDS['foreign_group']})
 add('upload-missing-filename', 'owner', UPLOAD('files'), 400, {'exception': 'document key not present'}, body={'document': B64('x')})
 add('upload-list-body-server-error', 'owner', UPLOAD('files'), 500, SERVER, body=[])
+add('upload-filename-nul-server-error', 'owner', UPLOAD('files'), 500, SERVER, body={'document': B64('x'), 'filename': 'a\x00b.pdf'})
+add('upload-filename-lone-surrogate-server-error', 'owner', UPLOAD('files'), 500, SERVER,
+    raw_body='{"document": "' + B64('x') + '", "filename": "a\\udc00.pdf"}', content_type='application/json')
 add('upload-malformed-json', 'owner', UPLOAD('files'), 400,
     {'detail': 'JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)'},
     raw_body='{bad', content_type='application/json')

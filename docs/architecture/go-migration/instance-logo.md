@@ -19,6 +19,11 @@ falls through to the next candidate, matching the Django exception boundary.
 Go prepares a seekable S3 body before sending response headers, including HEAD.
 Selected filenames, content types and `no-cache` behavior come from the service;
 provider metadata cannot replace them. Stored bytes are delivered unchanged.
+Logo responses carry a restrictive content policy: every served logo (PNG, JPG, SVG and WebP alike) has
+`Content-Security-Policy: sandbox; default-src 'none'; style-src 'unsafe-inline'` and `X-Content-Type-Options: nosniff`,
+in Django and Go. Logos are used in `<img>` tags, CSS and the manifest, which the policy does not affect. Evidence:
+`instance.tests.test_logo` (written first), `instance-logo-v2doc4-versioned-r1` (76 cases on Django, Go, `/api/v1` and
+`/api/v2`), mutation `instance-logo-v2doc4-mutation-r1` (header dropped in Go) CAUGHT.
 Streaming gzip retains the characterized tiny/empty-body, HEAD, randomized
 padding and `gzip;q=0` behavior. Authentication is disabled for this public view;
 global session, locale, CORS, security and restore admission still apply.

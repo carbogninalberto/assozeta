@@ -11,6 +11,8 @@ CONTENT_TYPES = {'png': 'image/png', 'jpg': 'image/jpeg', 'svg': 'image/svg+xml'
 PAYLOADS = {'png': b'\x89PNG\r\n\x1a\nprivate fixture PNG\x00', 'jpg': b'\xff\xd8\xffprivate fixture JPG\x00',
             'svg': b'<svg xmlns="http://www.w3.org/2000/svg"><text>logo</text></svg>',
             'webp': b'RIFF\x10\x00\x00\x00WEBPprivate fixture'}
+# Every logo response carries a restrictive content policy.
+CONTENT_POLICY = "sandbox; default-src 'none'; style-src 'unsafe-inline'"
 DESCRIPTION = 'GET /instance/logo.png (or .jpg, .svg, .webp)\nServe the instance logo.'
 
 
@@ -22,6 +24,7 @@ def cases():
         configuration = {'files': files if files is not None else {'png': 'png'}, **(setup or {})}
         expected_headers = {'Allow': ALLOW, 'Content-Language': 'en', 'WWW-Authenticate': None,
                             'Cache-Control': None, 'Content-Disposition': None, 'ETag': None,
+                            'Content-Security-Policy': None,
                             'Last-Modified': None, 'Accept-Ranges': None, 'Content-Range': None,
                             'Content-Encoding': 'gzip' if gzip_response else None,
                             'Access-Control-Allow-Origin':None,'Access-Control-Allow-Credentials':None,'Retry-After':None,
@@ -32,6 +35,7 @@ def cases():
         if status == 200 and method in ('GET', 'HEAD'):
             payload = payload_bytes(configuration['files'][selected])
             expected_headers.update({'Content-Type': CONTENT_TYPES[selected], 'Cache-Control': 'no-cache',
+                                     'Content-Security-Policy': CONTENT_POLICY,
                                      'Content-Disposition': f'inline; filename="logo.{selected}"',
                                      'Content-Length': None if gzip_response else str(len(payload))})
             vary.append('accept-encoding'); vary.sort()
