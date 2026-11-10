@@ -12,7 +12,7 @@ the Go sources.
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 18 ported below), **B 217** (54 with
+Counts (table rows, appendix): **A 76** (about 70 distinct after duplicates; 19 ported below), **B 217** (54 with
 `legacy: yes`), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
@@ -46,9 +46,10 @@ Cross-cutting facts used for the classes:
 | course-enrolment | quote payments (add, overview add) | quote amount not `\d{1,7}([.,]\d{1,2})?` (`1.000`, ` 50 `, `2,675`, ...) | same run |
 | course-subscriptions | `PATCH course-subscriptions/<pk>/update` | body has `events` (the edit form always sends it) | fixture `course_subscriptions_http.json` 114 cases; RED Django 114/114, Go 500 (`v2c-red`); GREEN 4 transports 114/114 (`v2c-green`); mutation (instalment label numbered from 0) CAUGHT |
 | course-subscriptions | `GET course-subscriptions/list` (and update responses) | membership payment with an invoice or an instructor (the latter B, legacy: yes) | same run |
+| course-calendar | `GET calendar/events?get_lesson=true` (opening an event) | event matches an attendance day | fixture `course_calendar_http.json` 164 cases; RED Django 164/164, Go 500 (`v2c-red`); GREEN 4 transports 164/164 (`v2c-green`); mutation (lesson without the registry events) CAUGHT |
 | course-writes | course add/update/delete, overview update/delete | association-scoped impersonation session | fixture `course_writes_http.json` 119 cases; RED Django 119/119, Go 500 (`v2c-red`); GREEN 4 transports 119/119 (`v2c-green`); mutation (session filter inverted) CAUGHT |
 
-Details in `course-subscriptions.md`, `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
+Details in `course-calendar.md`, `course-subscriptions.md`, `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
 ## Remaining A items, per family
 
@@ -103,7 +104,6 @@ helpers), expensive (new subsystem: PDF/XLSX layout, archive validation, cascade
 | POST course-subscriptions/list | export pdf/excel | `course-subscriptions-list.svelte:575-588` | `service/course_subscriptions.go:177` | medium |
 | POST course/list | print pdf/excel | `course/CourseList.svelte:806-812` | `handler/course_list.go:69` | expensive |
 | course/locations add/update | with `documents_data` | `course/modals/AddModal.svelte:30-50` | `service/course_location_writes.go:111,120` | medium-expensive |
-| GET calendar/events?get_lesson=true | event matches an attendance day | `routes/calendar/Calendar.svelte:539` | `service/course_calendar.go:1618` | medium (the todaylessons port reuses the same helper) |
 
 ### documents / docmanager / document-views
 | Route | Condition | UI call | Go site | Cost |
@@ -301,7 +301,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 ### course-calendar.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET calendar/events?event_id=...&get_lesson=true | `get_lesson` true and the event matches an attendance day (`get_extended_prop_for_attendance_day`) | service/course_calendar.go:1618 (`ErrCalendarNotPorted`) | A | Opening an event in the global calendar sends `get_lesson=true` (`src/routes/calendar/Calendar.svelte:539`, `src/routes/calendar/modals/AddCalendarEvent.svelte:445`); any course lesson whose register has a day for it matches. |
+| GET calendar/events?event_id=...&get_lesson=true | `get_lesson` true and the event matches an attendance day (`get_extended_prop_for_attendance_day`) | service/course_calendar.go:1618 (`ErrCalendarNotPorted`) | ported | Ported (`course-calendar.md`, `v2c-green`). |
 | POST course/<uid>/calendar/update, calendar/events/update | non-string `event_id`, list/string `extendedProps`, non-string `start`; stored events not a list or list/dict starts | service/course_calendar.go:114,128,762,775,782,1102 | B | UI sends `serializeCalendarEvents` output (string ids, dict props, string starts) (`association/course/overview/components/Calendar.svelte:59`, `src/routes/calendar/Calendar.svelte:77-85,664`). Cost: cheap-medium. |
 | GET course/<uid>/calendar, calendar/events | datetimes whose UTC instant falls outside years 1..9999 | service/course_calendar.go:435,1326 | B | Needs year 0001/9999 boundary dates. Cost: cheap. |
 | GET course/<uid>/calendar | collaborator scope user | service/course_calendar.go:341 | C | Scope user is never a collaborator (doc). |

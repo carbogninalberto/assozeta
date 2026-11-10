@@ -1456,7 +1456,7 @@ func (s *CourseCalendars) Events(ctx context.Context, identity domain.ResolvedId
 		}
 		listed, err := w.registryEvents(ctx, registry, instructor, query.EventID, start, end, colors, titles[registry.CourseID], getLesson, scope)
 		if err != nil {
-			return nil, err
+			return nil, calendarEventsLate(w.tx, err)
 		}
 		events = append(events, listed...)
 	}
@@ -1512,6 +1512,19 @@ func (s *CourseCalendars) Events(ctx context.Context, identity domain.ResolvedId
 		return nil, err
 	}
 	return calendarObject("data", calendarObject("events", events)), nil
+}
+
+// calendarEventsLate keeps the work full_events_calendar (not atomic) has
+// already saved (a lesson linking its day) when a later event raises; a
+// refused input rolls back.
+func calendarEventsLate(tx domain.CalendarTransaction, err error) error {
+	var validation *domain.CalendarValidation
+	if errors.Is(err, errCalendarRaised) || errors.As(err, &validation) {
+		if commit := tx.Commit(); commit != nil {
+			return commit
+		}
+	}
+	return err
 }
 
 func (w *calendarWrite) registryEvents(ctx context.Context, registry domain.CalendarRegistry, instructor, eventID *string, start, end *time.Time,
@@ -1614,8 +1627,12 @@ func (w *calendarWrite) registryEvents(ctx context.Context, registry domain.Cale
 		if day != nil {
 			props = dto.PythonSet(props, "attendace_day_id", *day)
 			if getLesson {
-				// get_extended_prop_for_attendance_day is not ported.
-				return nil, errCalendarNotPorted
+				lesson, err := (&CourseAttendance{now: w.s.now}).CalendarLesson(ctx, w.tx.Attendance(), w.identity, w.audit,
+					domain.AttendanceRegistryRow{ID: registry.ID, CourseID: registry.CourseID, Events: registry.Events}, *day, scope)
+				if err != nil {
+					return nil, err
+				}
+				props = dto.PythonSet(props, "lesson", lesson)
 			}
 		}
 		props = dto.PythonSet(props, "course", registry.CourseID)
