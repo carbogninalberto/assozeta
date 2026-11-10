@@ -1,6 +1,6 @@
 {
  "matrix_version": 1,
- "scope": "printing/generate excel reports, tutor promotion and request validation",
+ "scope": "printing/generate excel and pdf reports, tutor promotion and request validation",
  "ids": {
   "owner": "a1000000-0000-4000-8000-000000700001",
   "full_collaborator": "a1000000-0000-4000-8000-000000700002",
@@ -5695,6 +5695,1707 @@
    "body": {
     "type": "subscriptions_with_all_payments",
     "format": "excel",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expiring-medical-certificates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Scadenza certificato medico",
+       "Giorni rimanenti"
+      ],
+      "rows": [
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-2192",
+        {
+         "int": "6"
+        },
+        "$date:0",
+        {
+         "int": "0"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "$date:-11000",
+        {
+         "int": "30"
+        },
+        "$date:10",
+        {
+         "int": "10"
+        }
+       ]
+      ],
+      "title": "Certificati medici in scadenza (entro 30 giorni dal $today)"
+     }
+    },
+    "filename": "[$today] Certificati medici in scadenza (entro 30 giorni) - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "expiring_medical_certificates",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expired-medical-certificates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Scadenza certificato medico",
+       "Giorni rimanenti"
+      ],
+      "rows": [
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-3000",
+        {
+         "int": "8"
+        },
+        "$date:-5",
+        {
+         "int": "-5"
+        }
+       ]
+      ],
+      "title": "Certificati medici scaduti (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Certificati medici scaduti - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "expired_medical_certificates",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-empty-medical-certificates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età"
+      ],
+      "rows": [
+       [
+        "Tobia",
+        "Neri",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "$date:-9000",
+        {
+         "int": "24"
+        }
+       ]
+      ],
+      "title": "Certificati medici non presenti esclusi soggetti esenti (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Certificati medici non presenti (esclusi soggetti esenti) - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "empty_medical_certificates",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-exempt-medical-certificates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Scadenza certificato medico",
+       "Giorni rimanenti"
+      ],
+      "rows": [
+       [
+        "Lia",
+        "Verdi",
+        "lia@example.test",
+        "0451234",
+        "-",
+        "Socio",
+        "$date:-2000",
+        {
+         "int": "5"
+        },
+        "-",
+        "-"
+       ]
+      ],
+      "title": "Atleti esenti dai certificati medici (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Atleti esenti dai certificati medici - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "exempt_medical_certificates",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expiring-subscriptions",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Giorni rimanenti"
+      ],
+      "rows": [
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "$date:-11000",
+        {
+         "int": "30"
+        },
+        {
+         "int": "20"
+        }
+       ],
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-2192",
+        {
+         "int": "6"
+        },
+        {
+         "int": "0"
+        }
+       ]
+      ],
+      "title": "Iscrizioni in scadenza entro 30gg (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni in scadenza (entro 30gg) - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "expiring_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expiring-memberships",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Tesseramento",
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Giorni rimanenti"
+      ],
+      "rows": [
+       [
+        "UISP",
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "$date:-11000",
+        {
+         "int": "30"
+        },
+        {
+         "int": "-400"
+        }
+       ],
+       [
+        "FIDAL",
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "$date:-11000",
+        {
+         "int": "30"
+        },
+        {
+         "int": "15"
+        }
+       ],
+       [
+        null,
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-3000",
+        {
+         "int": "8"
+        },
+        {
+         "int": "-3"
+        }
+       ]
+      ],
+      "title": "Tesseramenti in scadenza entro 30gg o scaduti (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Tesseramenti in scadenza (entro 30gg o scaduti) - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "expiring_memberships",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-all-subscriptions",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Nome tutore",
+       "Cognome tutore"
+      ],
+      "rows": [
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "$date:-11000",
+        {
+         "int": "30"
+        },
+        "-",
+        "-"
+       ],
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-3000",
+        {
+         "int": "8"
+        },
+        "Paolo",
+        "Bianchi"
+       ],
+       [
+        "Lia",
+        "Verdi",
+        "lia@example.test",
+        "0451234",
+        "-",
+        "Socio",
+        "$date:-2000",
+        {
+         "int": "5"
+        },
+        "Sara",
+        "Verdi"
+       ],
+       [
+        "Tobia",
+        "Neri",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "$date:-9000",
+        {
+         "int": "24"
+        },
+        "-",
+        "-"
+       ],
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-2192",
+        {
+         "int": "6"
+        },
+        "Paolo",
+        "Bianchi"
+       ],
+       [
+        "Paolo",
+        "Bianchi",
+        "-",
+        "3470001111",
+        "-",
+        "Socio",
+        "$date:-14000",
+        {
+         "int": "38"
+        },
+        "-",
+        "-"
+       ]
+      ],
+      "title": "Iscrizioni"
+     }
+    },
+    "filename": "[$today] Iscrizioni - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "all_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-not-paid-quotes-subscriptions",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "rows": [
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "50,00",
+        "$date:-40",
+        {
+         "int": "40"
+        }
+       ],
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "40,00",
+        "$date:-2",
+        {
+         "int": "2"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "20,00",
+        "$date:-25",
+        {
+         "int": "25"
+        }
+       ]
+      ],
+      "title": "Quote associative non pagate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Quote associative non pagate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "not_paid_quotes_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-not-paid-courses-subscriptions",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "corso/carnet",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "rows": [
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "120,50",
+        "Nuoto",
+        "$date:-20",
+        {
+         "int": "20"
+        }
+       ],
+       [
+        "Tobia",
+        "Neri",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "30,00",
+        "Rata 1 Yoga",
+        "$date:-12",
+        {
+         "int": "12"
+        }
+       ],
+       [
+        "Lia",
+        "Verdi",
+        "lia@example.test",
+        "0451234",
+        "-",
+        "Socio",
+        "45,00",
+        "Danza, Mensile",
+        "$date:-8",
+        {
+         "int": "8"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "10,00",
+        "Carnet 10 ingressi",
+        "$date:-30",
+        {
+         "int": "30"
+        }
+       ]
+      ],
+      "title": "Quote corso/carnet non pagate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Quote/Carnet corso non pagate - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "not_paid_courses_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expired-payments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "attività",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "rows": [
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "40,00",
+        "Iscrizione",
+        "$date:-2",
+        {
+         "int": "2"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "25,00",
+        "Quota extra",
+        "$date:-5",
+        {
+         "int": "5"
+        }
+       ],
+       [
+        "Lia",
+        "Verdi",
+        "lia@example.test",
+        "0451234",
+        "-",
+        "Socio",
+        "45,00",
+        "Danza, Mensile",
+        "$date:-8",
+        {
+         "int": "8"
+        }
+       ],
+       [
+        "Tobia",
+        "Neri",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "30,00",
+        "Rata 1 Yoga",
+        "$date:-12",
+        {
+         "int": "12"
+        }
+       ],
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "120,50",
+        "Nuoto",
+        "$date:-20",
+        {
+         "int": "20"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "20,00",
+        "Iscrizione",
+        "$date:-25",
+        {
+         "int": "25"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "50,00",
+        "Iscrizione",
+        "$date:-40",
+        {
+         "int": "40"
+        }
+       ]
+      ],
+      "title": "Pagamenti scaduti (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Pagamenti scaduti - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "expired_payments",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-subscriptions-with-all-payments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Data nascita",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Tipo iscrizione",
+       "Oggetto pagamento",
+       "Descrizione",
+       "Importo (€)",
+       "Stato",
+       "Data creazione",
+       "Data pagamento",
+       "N. Ricevuta"
+      ],
+      "rows": [
+       [
+        "Rossi",
+        "Anna",
+        "$date:-11000",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "associato e tesserato",
+        "Altro",
+        "Extra",
+        "25.00",
+        "Non pagato",
+        "$date:-5",
+        "-",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Anna",
+        "$date:-11000",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "associato e tesserato",
+        "Iscrizione",
+        "-",
+        "20.00",
+        "Non pagato",
+        "$date:-25",
+        "-",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Anna",
+        "$date:-11000",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "associato e tesserato",
+        "Iscrizione",
+        "-",
+        "50.00",
+        "Non pagato",
+        "$date:-40",
+        "-",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Anna",
+        "$date:-11000",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "associato e tesserato",
+        "Iscrizione",
+        "-",
+        "50.00",
+        "Pagato",
+        "$date:-60",
+        "$date:-59",
+        "12"
+       ],
+       [
+        "Bianchi",
+        "Marco",
+        "$date:-3000",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "tesserato",
+        "Corso",
+        "-",
+        "0.00",
+        "Non pagato",
+        "$date:-15",
+        "-",
+        "-"
+       ],
+       [
+        "Bianchi",
+        "Marco",
+        "$date:-3000",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "tesserato",
+        "Corso",
+        "-",
+        "120.50",
+        "Non pagato",
+        "$date:-20",
+        "-",
+        "-"
+       ],
+       [
+        "Verdi",
+        "Lia",
+        "$date:-2000",
+        "lia@example.test",
+        "0451234",
+        "-",
+        "Socio",
+        "associato e tesserato",
+        "Corso",
+        "Mensile",
+        "45.00",
+        "Non pagato",
+        "$date:-8",
+        "-",
+        "-"
+       ],
+       [
+        "Neri",
+        "Tobia",
+        "$date:-9000",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "associato e tesserato",
+        "Corso",
+        "-",
+        "30.00",
+        "Non pagato",
+        "$date:-10",
+        "$date:-12",
+        "-"
+       ],
+       [
+        "Gialli",
+        "Gina",
+        "$date:-2192",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "associato e tesserato",
+        "Iscrizione",
+        "-",
+        "40.00",
+        "Non pagato",
+        "$date:-2",
+        "-",
+        "-"
+       ]
+      ],
+      "title": "Iscrizioni con tutti i pagamenti (stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni con tutti i pagamenti - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "subscriptions_with_all_payments",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-all-subscriptions-control-character",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Nome tutore",
+       "Cognome tutore"
+      ],
+      "rows": [
+       [
+        "Tobia",
+        "Neri",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "$date:-9000",
+        {
+         "int": "24"
+        },
+        "-",
+        "-"
+       ],
+       [
+        "Ugo",
+        "Ro\u0007ssi",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "$date:-10000",
+        {
+         "int": "27"
+        },
+        "-",
+        "-"
+       ]
+      ],
+      "title": "Iscrizioni"
+     }
+    },
+    "filename": "[$today] Iscrizioni - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "all_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      3
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-all-subscriptions-no-rows",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Nome tutore",
+       "Cognome tutore"
+      ],
+      "rows": [],
+      "title": "Iscrizioni"
+     }
+    },
+    "filename": "[$today] Iscrizioni - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "all_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": []
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-all-subscriptions-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Nome tutore",
+       "Cognome tutore"
+      ],
+      "rows": [
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-2192",
+        {
+         "int": "6"
+        },
+        "Paolo",
+        "Bianchi"
+       ]
+      ],
+      "title": "Iscrizioni"
+     }
+    },
+    "filename": "[$today] Iscrizioni - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "all_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-all-subscriptions-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Nome tutore",
+       "Cognome tutore"
+      ],
+      "rows": [
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "$date:-11000",
+        {
+         "int": "30"
+        },
+        "-",
+        "-"
+       ],
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-3000",
+        {
+         "int": "8"
+        },
+        "Paolo",
+        "Bianchi"
+       ],
+       [
+        "Lia",
+        "Verdi",
+        "lia@example.test",
+        "0451234",
+        "-",
+        "Socio",
+        "$date:-2000",
+        {
+         "int": "5"
+        },
+        "Sara",
+        "Verdi"
+       ],
+       [
+        "Tobia",
+        "Neri",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "$date:-9000",
+        {
+         "int": "24"
+        },
+        "-",
+        "-"
+       ],
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-2192",
+        {
+         "int": "6"
+        },
+        "Paolo",
+        "Bianchi"
+       ],
+       [
+        "Paolo",
+        "Bianchi",
+        "-",
+        "3470001111",
+        "-",
+        "Socio",
+        "$date:-14000",
+        {
+         "int": "38"
+        },
+        "-",
+        "-"
+       ]
+      ],
+      "title": "Iscrizioni"
+     }
+    },
+    "filename": "[$today] Iscrizioni - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "all_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-all-subscriptions-without-birth-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Errore nella generazione della stampa."
+   },
+   "effect": null,
+   "body": {
+    "type": "all_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      5
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expired-payments-period",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "attività",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "rows": [
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "40,00",
+        "Iscrizione",
+        "$date:-2",
+        {
+         "int": "2"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "25,00",
+        "Quota extra",
+        "$date:-5",
+        {
+         "int": "5"
+        }
+       ],
+       [
+        "Lia",
+        "Verdi",
+        "lia@example.test",
+        "0451234",
+        "-",
+        "Socio",
+        "45,00",
+        "Danza, Mensile",
+        "$date:-8",
+        {
+         "int": "8"
+        }
+       ],
+       [
+        "Tobia",
+        "Neri",
+        "-",
+        "-",
+        "-",
+        "Socio",
+        "30,00",
+        "Rata 1 Yoga",
+        "$date:-12",
+        {
+         "int": "12"
+        }
+       ],
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "120,50",
+        "Nuoto",
+        "$date:-20",
+        {
+         "int": "20"
+        }
+       ]
+      ],
+      "title": "Pagamenti scaduti (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Pagamenti scaduti - Message reads own.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "expired_payments",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ],
+     "period": {
+      "from_date": "$date:-21",
+      "to_date": "$date:-1"
+     }
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expired-payments-account-transfer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Errore nella generazione della stampa."
+   },
+   "effect": null,
+   "body": {
+    "type": "expired_payments",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      4,
+      5
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-with-all-payments-foreign",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Cognome",
+       "Nome",
+       "Data nascita",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Tipo iscrizione",
+       "Oggetto pagamento",
+       "Descrizione",
+       "Importo (€)",
+       "Stato",
+       "Data creazione",
+       "Data pagamento",
+       "N. Ricevuta"
+      ],
+      "rows": [
+       [
+        "Muller",
+        "Hans",
+        "$date:-4000",
+        "-",
+        "-",
+        "0049123",
+        "Tutore",
+        "associato e tesserato",
+        "Iscrizione",
+        "-",
+        "60.00",
+        "Non pagato",
+        "$date:-6",
+        "-",
+        "-"
+       ]
+      ],
+      "title": "Iscrizioni con tutti i pagamenti (stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni con tutti i pagamenti - Message reads foreign.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "subscriptions_with_all_payments",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      1,
+      2,
+      4
+     ]
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-not-paid-courses-foreign",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "quota (€)",
+       "corso/carnet",
+       "data",
+       "ritardo pagamento (gg)"
+      ],
+      "rows": [],
+      "title": "Quote corso/carnet non pagate (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Quote/Carnet corso non pagate - Message reads foreign.pdf"
+   },
+   "effect": null,
+   "body": {
+    "type": "not_paid_courses_subscriptions",
+    "format": "pdf",
+    "filters": {
+     "status": [
+      4
+     ],
+     "year": "corrente"
+    }
+   }
+  },
+  {
+   "name": "printing-generate-pdf-expiring-subscriptions-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "file": {
+     "$pdf": {
+      "engine": "data_table",
+      "columns": [
+       "Nome",
+       "Cognome",
+       "Email",
+       "Telefono",
+       "Tel. Tutore",
+       "Contatto",
+       "Data di nascita",
+       "età",
+       "Giorni rimanenti"
+      ],
+      "rows": [
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "$date:-11000",
+        {
+         "int": "30"
+        },
+        {
+         "int": "20"
+        }
+       ],
+       [
+        "Gina",
+        "Gialli",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "$date:-2192",
+        {
+         "int": "6"
+        },
+        {
+         "int": "0"
+        }
+       ]
+      ],
+      "title": "Iscrizioni in scadenza entro 30gg (giorno stampa $today)"
+     }
+    },
+    "filename": "[$today] Iscrizioni in scadenza (entro 30gg) - Message reads own.pdf"
+   },
+   "effect": null,
+   "raw_body": "type=expiring_subscriptions&format=pdf&filters=tutti",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "printing-generate-pdf-format-case",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/printing/generate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Errore nella generazione della stampa."
+   },
+   "effect": null,
+   "body": {
+    "type": "all_subscriptions",
+    "format": "PDF",
     "filters": {
      "status": [
       1,
