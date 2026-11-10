@@ -91,7 +91,8 @@ A member account renews its own subscriptions and those of its family, in the as
 (`_member_renewal_association`). After the association lookup, the named association must have a subscription
 
 - of the requester, or
-- of a person with the tax code of one of the requester's subscriptions, or
+- of a person with the filled-in tax code of one of the requester's subscriptions (`family_tax_codes`: null and blank tax codes
+  link nothing), or
 - of a person in the family of one of the requester's subscriptions,
 
 for the associate of the request: by `associate_data.associate_id` when it is a non-empty string (through `uuid.UUID`), else, when
@@ -161,3 +162,11 @@ A member account renews its own subscriptions (74 cases). Cases `subscription-re
 - Mutation (`secsub2-mutation-r1`): skipping the member check fails `subscription-renew-renew-athlete-in-another-association`
   (CAUGHT); (`secsub2-mutation-r2`): setting the account from the body's e-mail for every requester fails
   `subscription-renew-renew-athlete-keeps-the-account` (CAUGHT).
+
+Family matching by filled-in tax codes (75 cases; the seed adds two members stored with a blank tax code, one of the requester in
+the other association and one of this association):
+
+- RED (`secaw-red`): Django 75/75; Go 200 on `subscription-renew-renew-athlete-blank-tax-code-member`.
+- GREEN (`secaw-green`): 75/75 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+- Mutation (`secaw-mutation`): the member check without `familyTaxCodeFilled`'s blank filter fails
+  `subscription-renew-renew-athlete-blank-tax-code-member` (CAUGHT).

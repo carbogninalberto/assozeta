@@ -197,7 +197,7 @@ def _member_renewal_association(request, data):
 
     A member account renews its own subscriptions and those of its family, in
     the association they belong to: the named association must have a
-    subscription of the account (or of a person sharing a tax code or a family
+    subscription of the account (or of a person sharing a filled-in tax code or a family
     with one of the account's subscriptions) for the associate of the request.
     """
     association = scoped_queryset(request, SportAssociation.objects).get(
@@ -205,7 +205,7 @@ def _member_renewal_association(request, data):
     own = Subscription._base_manager.filter(user=request.user)
     renewable = Subscription._base_manager.filter(sport_association=association).filter(
         Q(user=request.user)
-        | Q(associate__tax_code__in=own.filter(associate__tax_code__isnull=False).values('associate__tax_code'))
+        | Q(associate__tax_code__in=family_tax_codes(own))
         | Q(associate__family__in=own.filter(associate__family__isnull=False).values('associate__family'))
     )
     associate = data.get('associate_data')
