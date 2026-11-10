@@ -312,8 +312,11 @@ func run() (runErr error) {
 		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 
 	apiSchemaHandler := handler.NewAPISchemaHandler(service.NewActorAuthentication(accounts, tokens), identities, cfg.CSRFCookieSecure)
-	documentUploadsHandler := composeDocumentUploads(cfg, db, sessions, service.NewActorAuthentication(accounts, tokens), identities,
+	documentUploadsHandler, err := composeDocumentUploads(cfg, db, cache, sessions, service.NewActorAuthentication(accounts, tokens), identities,
 		middleware.SessionAuditContext, paymentCategoryOperations)
+	if err != nil {
+		return err
+	}
 	healthService := service.NewHealthService(repository.NewDatabaseProbe(db), repository.NewRedisProbe(cache), 2*time.Second)
 	healthHandler := handler.NewHealthHandler(healthService, cfg.Version)
 	restoreAdmission := service.NewRestoreAdmission(repository.NewRestoreFileLock(cfg.RestoreLockPath), repository.NewRestoreStates(db), cfg.RestoreLockPath != "")

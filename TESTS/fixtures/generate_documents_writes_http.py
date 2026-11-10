@@ -17,7 +17,12 @@ content type and encoding, ``AWS_S3_OBJECT_PARAMETERS``) and links it:
   rendering the nested ``many=True`` document raises (500 after the save);
 - upload-document: a SubscriptionFile, resolved with ``scoped_queryset``;
 - medical/certificate: AllowAny, a MedicalCertificate for the requester
-  (``None`` when anonymous), remembered for an association-scoped session;
+  (``None`` when anonymous), remembered for an association-scoped session.
+  MedicalCertificateUploadThrottle (AnonRateThrottle, per address,
+  MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR) runs before the method dispatch for
+  requests without an account: 429 with Retry-After. A file name whose type is
+  no PDF and no image is 400 {'error'}, a file above
+  MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES is 413 {'error'}, both before any write;
 - medical-certificate/upload: ``_medical_certificate_targets`` (404), then the
   certificate attached with a full ``Subscription.save()`` or written into the
   draft's ``medical_certificate`` entry.
@@ -91,9 +96,15 @@ SUBSCRIPTIONS['ampersand'] = subscription(OWN)
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        throttle=None, retry_after=None):
+    """throttle: {'preload': n, 'age': seconds}: the address's upload history holds n entries of that age before the request."""
     case = {'name': f'documents-writes-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
+    if throttle is not None:
+        case['throttle'] = throttle
+    if retry_after is not None:
+        case['retry_after'] = retry_after
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -374,6 +385,7 @@ add('upload-traversal-filename-keeps-document', 'owner', UPLOAD('files'), 400, B
 
 # ---------------------------------------------------------------- document/medical/certificate/
 CERT = '/document/medical/certificate/'
+CERT_LIMIT = 4096
 CERT_BODY = multipart(('medical_certificate', 'certificato medico.pdf', 'application/pdf', '%PDF-1.4 certificato'))
 created_cert = lambda: {'msg': 'success!', 'uid': '$cert0', 'expiring_date': None}
 add('certificate-wrong-method', 'owner', CERT, 405, {'detail': 'Method "GET" not allowed.'}, method='GET')
@@ -393,10 +405,41 @@ add('certificate-anonymous', 'anonymous', CERT, 200, created_cert(),
     effect=effect(None, documents=[stored('visita.png', 'png', 'image/png')], certificates=[{'document': 0, 'user': None}],
                   audit=[entry('Document', '$doc0', 0, '$created', None), entry('MedicalCertificate', '$cert0', 0, '$created', None)]))
 add('certificate-collaborator-path-filename', 'full_collaborator', CERT, 200, created_cert(),
-    raw_body=multipart(('medical_certificate', 'cartella/primo.pdf', None, 'uno'), ('medical_certificate', 'cartella/ultimo.txt', None, 'due'))[0],
+    raw_body=multipart(('medical_certificate', 'cartella/primo.pdf', None, 'uno'), ('medical_certificate', 'cartella/ultimo.JPG', None, 'due'))[0],
     content_type=CERT_BODY[1],
-    effect=effect('full_collaborator', documents=[stored('ultimo.txt', 'due', 'text/plain')], certificates=[{'document': 0, 'user': 'owner'}],
+    effect=effect('full_collaborator', documents=[stored('ultimo.JPG', 'due', 'image/jpeg')], certificates=[{'document': 0, 'user': 'owner'}],
                   audit=[doc_create(0), cert_create(0)]))
+# A PDF or an image, by the type of the file name: anything else is refused before any write.
+NOT_ACCEPTED = {'error': 'Seleziona un file PDF o un’immagine.'}
+for label, actor, filename, kind in (('text', 'owner', 'note.txt', 'text/plain'), ('declared-pdf', 'owner', 'referto.html', 'application/pdf'),
+                                     ('no-extension', 'anonymous', 'certificato', 'image/png'), ('archive', 'full_collaborator', 'scan.pdf.zip', None)):
+    add(f'certificate-{label}-not-accepted', actor, CERT, 400, NOT_ACCEPTED,
+        raw_body=multipart(('medical_certificate', filename, kind, 'contenuto'))[0], content_type=CERT_BODY[1])
+# The size limit (MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES of the run): a file of exactly the limit is stored, one byte more is refused.
+AT_LIMIT = '%PDF-1.4 ' + 'x' * (CERT_LIMIT - 9)
+add('certificate-at-the-limit', 'owner', CERT, 200, created_cert(),
+    raw_body=multipart(('medical_certificate', 'limite.pdf', 'application/pdf', AT_LIMIT))[0], content_type=CERT_BODY[1],
+    effect=effect('owner', documents=[stored('limite.pdf', AT_LIMIT, 'application/pdf')], certificates=[{'document': 0, 'user': 'owner'}],
+                  audit=[doc_create(0), cert_create(0)]))
+add('certificate-above-the-limit', 'anonymous', CERT, 413, {'error': f'Il file supera la dimensione massima consentita ({CERT_LIMIT} byte).'},
+    raw_body=multipart(('medical_certificate', 'grande.png', 'image/png', AT_LIMIT + 'x'))[0], content_type=CERT_BODY[1])
+# Requests without an account are counted per address and hour (60): the next one is asked to wait, before the body is read.
+FULL = {'preload': 60, 'age': 10.2}
+THROTTLED = {'detail': 'Request was throttled. Expected available in 3590 seconds.'}
+add('certificate-anonymous-over-the-rate', 'anonymous', CERT, 429, THROTTLED, raw_body=CERT_BODY[0], content_type=CERT_BODY[1],
+    throttle=FULL, retry_after='3590')
+add('certificate-anonymous-wrong-method-over-the-rate', 'anonymous', CERT, 429, THROTTLED, method='GET', throttle=FULL, retry_after='3590')
+add('certificate-anonymous-below-the-rate', 'anonymous', CERT, 200, created_cert(),
+    raw_body=multipart(('medical_certificate', 'visita.png', 'image/png', 'png'))[0], content_type=CERT_BODY[1],
+    throttle={'preload': 59, 'age': 10.2},
+    effect=effect(None, documents=[stored('visita.png', 'png', 'image/png')], certificates=[{'document': 0, 'user': None}],
+                  audit=[entry('Document', '$doc0', 0, '$created', None), entry('MedicalCertificate', '$cert0', 0, '$created', None)]))
+add('certificate-anonymous-old-history', 'anonymous', CERT, 405, {'detail': 'Method "GET" not allowed.'}, method='GET',
+    throttle={'preload': 60, 'age': 3601})
+# A signed-in account is not counted.
+add('certificate-owner-full-history', 'owner', CERT, 200, created_cert(), raw_body=CERT_BODY[0], content_type=CERT_BODY[1], throttle=FULL,
+    effect=effect('owner', documents=[stored('certificato medico.pdf', '%PDF-1.4 certificato', 'application/pdf')],
+                  certificates=[{'document': 0, 'user': 'owner'}], audit=[doc_create(0), cert_create(0)]))
 add('certificate-owner-full-session-remembered', 'owner', CERT, 200, created_cert(), raw_body=CERT_BODY[0], content_type=CERT_BODY[1],
     headers=OWNER_FULL,
     effect=effect('owner', documents=[stored('certificato medico.pdf', '%PDF-1.4 certificato', 'application/pdf')],
@@ -494,5 +537,5 @@ assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Document uploads: archive add/update, subscription files and medical certificates',
                               'ids': IDS, 'location': LOCATION, 'folders': FOLDERS, 'documents': DOCUMENTS, 'archives': ARCHIVES,
                               'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS, 'drafts': DRAFTS, 'unknown': UNKNOWN,
-                              'extra_users': EXTRA_USERS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'extra_users': EXTRA_USERS, 'certificate_limit': CERT_LIMIT, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

@@ -92,7 +92,16 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 
 - `AllowAny`, default parsers, `Allow: POST, OPTIONS` (`Medical Certificate Document`). Admin denials come from identity
   resolution.
+- `MedicalCertificateUploadThrottle` (DRF `AnonRateThrottle`, rate `MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR`/hour, 60 by
+  default): requests without an account are counted per address (`get_ident`) in the cache key
+  `throttle_medical-certificate-upload_<ident>`, before the method dispatch and before the body is read. A full history is
+  `429 {"detail": "Request was throttled. Expected available in N seconds."}` with `Retry-After: N`; signed-in accounts are
+  not counted. Go: `certificateAllow` on `repository.DRFThrottleCache` (the same cache entries).
 - A missing `medical_certificate` key, a non-dict body or a value that is not a file is a 500.
+- The file must be a PDF or an image by the type of its name (`mimetypes.guess_type`, the type the stored object is served
+  with; Go `pymime.GuessType`): anything else is `400 {"error": "Seleziona un file PDF o un’immagine."}`. A file above
+  `MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES` (`core.settings`, `env.int`, 10 MiB by default; the forms accept 5 MB) is
+  `413 {"error": "Il file supera la dimensione massima consentita (<n> MB)."}`. Both before any write.
 - Multipart parsing follows Django's `MultiPartParser`:
   - Content-Disposition parameters are read the way `parse_header_parameters` reads them: quoted values only unescape
     `\\` and `\"`, and `filename*` is decoded as UTF-8;
@@ -191,3 +200,16 @@ get the 403; the athlete's own subscription, collaborators and owners are unchan
 200 on `documents-writes-upload-athlete-other-subscription` with the check switched off. GREEN `secdoc-versioned-final`
 (after merging the base; `secdoc-versioned-r1` before): 130/130 on the four transports with exact effects. Mutation
 `secdoc-mutation-r1` (every subscription counted as the member's) CAUGHT. The other routes are unchanged.
+
+### Certificate upload limits (`imphard`)
+
+`document/medical/certificate/` accepts PDFs and images up to the configured size and counts requests without an account per
+address and hour. The fixture has 141 cases (11 new; the run sets the size limit to 4,096 bytes on both servers): four file
+names that are refused (text, HTML declared as PDF, no extension, an archive), a file at the limit and one byte above it, a
+full history (POST and GET: 429 with `Retry-After`), a history one below the rate, an expired history and a signed-in
+account with a full history. Every case checks the address's cache entry (recorded, unchanged or absent).
+`BE/docmanager/test_medical_certificate_upload.py` (5 tests) covers the view. RED (`imphard-red-r1`): Django 141/141; Go
+fails `throttle.recorded` on `documents-writes-certificate-anonymous`. GREEN (`imphard-versioned-r1`): 141/141 on native
+Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation (`imphard-mutation-r1`): counting signed-in accounts too fails Go
+on `documents-writes-certificate-wrong-method` (`throttle.not-reached`). Not ported: a file name `mimetypes` reads as a URL
+(refused with the 500 page before any write).

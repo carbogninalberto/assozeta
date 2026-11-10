@@ -66,6 +66,7 @@ type Config struct {
 	RedisRootCertificate      string
 	InstanceAdmin             InstanceAdminSettings
 	SubscriptionImport        SubscriptionImportSettings
+	MedicalCertificateUpload  MedicalCertificateUploadSettings
 	// DefaultFromEmail and DefaultTeamEmail are core.settings'
 	// f"{WHITELABEL_NAME} <{EMAIL_HOST_USER}>" and
 	// f"Il Team di {WHITELABEL_NAME} <{EMAIL_HOST_USER}>" (EMAIL_HOST_USER is
@@ -295,6 +296,10 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	medicalCertificateUpload, err := parseMedicalCertificateUpload(values)
+	if err != nil {
+		return Config{}, err
+	}
 	instanceAdmin, err := parseInstanceAdmin(values)
 	if err != nil {
 		return Config{}, err
@@ -307,7 +312,7 @@ func Parse(values map[string]string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	return Config{GoTaskQueueTasks: values["GO_TASK_QUEUE_TASKS"], InstanceAdmin: instanceAdmin, SubscriptionImport: subscriptionImport, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, DataRestoreArchiveLimits: archiveLimits, DataRestoreRecoveryBackups: dataRestoreRecoveryBackups(values), Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
+	return Config{GoTaskQueueTasks: values["GO_TASK_QUEUE_TASKS"], InstanceAdmin: instanceAdmin, SubscriptionImport: subscriptionImport, MedicalCertificateUpload: medicalCertificateUpload, DataRestoreMaxUploadBytes: dataRestoreMaxUpload, DataRestoreArchiveLimits: archiveLimits, DataRestoreRecoveryBackups: dataRestoreRecoveryBackups(values), Manual: manualSettings, AIEnabled: bootstrap[0] != "", StripePublicKey: bootstrap[1], StripeSecretConfigured: bootstrap[2] != "", StripeEnabled: bootstrap[1] != "" || bootstrap[2] != "" || bootstrap[3] != "", WhitelabelName: whitelabelName, IsWhitelabel: isWhitelabel, DefaultFromEmail: whitelabelName + " <" + emailHostUser + ">", DefaultTeamEmail: "Il Team di " + whitelabelName + " <" + emailHostUser + ">", EmailHostSupport: supportEmail, ProviderCABundle: providerCABundle, Storage: storage, LogoSpoolDirectory: logoSpoolDirectory, MessageListSpoolDirectory: messageListSpoolDirectory, SessionSecret: sessionSecret, SenjaWebhookSecret: senjaSecret, Debug: debug, RateLimitEnabled: rateEnabled, GoogleClientID: providerValues[0], GoogleClientSecret: providerValues[1], AppleClientID: providerValues[2], AppleTeamID: providerValues[3], AppleKeyID: providerValues[4], AppleSecret: environmentMultiline(providerValues[5]),
 		FamilyRegistrationEnabled: family, FederationRegistrationEnabled: federation, MultipleRegistrationEnabled: multiple, JWTSigningKey: privateKey, JWTVerifyingKey: publicKey,
 		CSRFTrustedOrigins: origins, CSRFCookieSecure: csrfCookieSecure, CORSAllowAll: corsAll, CORSAllowedOrigins: corsOrigins, RestoreLockPath: restoreLockPath, ListenAddress: address, Version: get("RUNNING_VERSION", "v0.0.0"), databaseURL: dsn.String(), migrationDatabaseURL: migrationDSN.String(),
 		RedisAddress:  net.JoinHostPort(get("REDIS_HOST", "localhost"), redisPort),
