@@ -135,5 +135,5 @@ HasBypassAuthorizationHeader`, as the template page): the PDF route hands the re
 the PDF-form regions never fetch the page. A caller without either gets the 401, also for `?token` and a malformed uid.
 
 The fixture has 152 cases (29 new or changed). RED `secdoc2-red-r1`: Django 152/152, Go 200 on
-`document-views-compensation-instructor-account-other`. GREEN `secdoc2-versioned-r1`: 152/152 on the four transports.
+`document-views-compensation-instructor-account-other`. GREEN `secdoc2-versioned-final` (after merging the base; `secdoc2-versioned-r1` before): 152/152 on the four transports.
 Mutation `secdoc2-mutation-r1` (the appointment page counting every subscription as the member's) CAUGHT.

@@ -205,7 +205,7 @@ The fixture has 193 cases (38 new or changed): token cases on their own rows (ac
 documents' tokens, malformed values, a malformed uid), member accounts on customer invoices, compensations and
 appointments (GET and POST), the instructor's account generating its own compensation with the hours linked, the athlete
 generating the appointment of its own subscription. RED `secdoc2-red-r1`: Django 193/193, Go differs on
-`document-render-invoice-document-token-other-document`. GREEN `secdoc2-versioned-r1`: 193/193 on the four transports with
+`document-render-invoice-document-token-other-document`. GREEN `secdoc2-versioned-final` (after merging the base; `secdoc2-versioned-r1` before): 193/193 on the four transports with
 exact effects. Mutations `secdoc2-mutation-r1` (the token matched against every document) and `secdoc2-mutation-r2` (every
 compensation counted as the account's) CAUGHT.
 

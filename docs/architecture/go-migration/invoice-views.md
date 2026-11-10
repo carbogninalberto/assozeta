@@ -131,5 +131,5 @@ member's) CAUGHT. `document/einvoice/<uid>/view/` is unchanged.
 Customer invoice page (`secdoc2-*`). `document/einvoice/<uid>/view/` is served to the association's staff and to the
 renderer header: after the row lookup (a missing row is still the 500 page) and before `generate_invoice_html`, a member
 account gets the 403 of `docmanager.access` (`memberDocumentStaffAccess` in Go). The fixture has 90 cases (5 new or changed).
-RED `secdoc2-red-r1`: Django 90/90, Go 200 on `invoice-views-einvoice-athlete`. GREEN `secdoc2-versioned-r1`: 90/90 on the
+RED `secdoc2-red-r1`: Django 90/90, Go 200 on `invoice-views-einvoice-athlete`. GREEN `secdoc2-versioned-final` (after merging the base; `secdoc2-versioned-r1` before): 90/90 on the
 four transports. Mutation `secdoc2-mutation-r1` (the check dropped from the page) CAUGHT.
