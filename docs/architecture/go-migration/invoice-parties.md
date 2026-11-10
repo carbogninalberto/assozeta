@@ -154,7 +154,7 @@ owners without an association regenerate nothing). Django: the view resolves the
 it (`CustomerInvoiceListRegenerationTests` in `BE/application/tests/test_invoice_views.py`).
 
 - RED (`secinv-red-r1`): Django 138/138; Go fails `invoice-parties-customer-list-athlete-not-association` (`print.request-count`).
-- GREEN (`secinv-green-r1`): 138/138 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
-- Mutation (`secinv-mutation-r1`): the pending query without its association filter fails
+- GREEN (`secinv-green-final`): 138/138 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact effects.
+- Mutation (`secinv-mutation-final`): the pending query without its association filter fails
   `invoice-parties-customer-list-owner` (`print.request-count`, CAUGHT).
 - Re-run for shared code: invoice-sync-print (`secinv-rerun-r1`, 70/70).

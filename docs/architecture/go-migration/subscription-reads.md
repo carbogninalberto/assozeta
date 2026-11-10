@@ -185,6 +185,6 @@ three membership payments of one course subscription (invoiced, open, invoiced w
 `v2misc-red-r1`: Django 261/261, Go 500. GREEN `v2misc-green-r1`: 261/261 on the four transports. Mutation `v2misc-mutation-r1`
 (the nested invoice not loaded) fails `info-hyphenless-uuid` on Go.
 - Excel export: 33 more cases (294 in all). RED `v2xlsx-red-r1`: Django 294/294, Go answers 500 on the first export case.
-  GREEN `v2xlsx-green-r1`: 294/294 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
-  `v2xlsx-mutation-r1`: `precedente` decided by an end date after today fails Go on `list-excel-owner` (sheet1.xml
+  GREEN `v2xlsx-green-final`: 294/294 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation
+  `v2xlsx-mutation-final`: `precedente` decided by an end date after today fails Go on `list-excel-owner` (sheet1.xml
   differs).

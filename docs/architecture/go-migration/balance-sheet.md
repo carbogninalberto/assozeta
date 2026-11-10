@@ -83,7 +83,7 @@ Mutation: including archived payments in the generation fails
 balance-archived, balance-account-writes, balance-transfer-writes, testimonials.
 
 Excel export: 11 more cases (77 in all). RED `v2xlsx-red-r2`: Django 77/77, Go
-500 on `excel-draft`. GREEN `v2xlsx-green-r1`: 77/77 on native Django, native
+500 on `excel-draft`. GREEN `v2xlsx-green-final`: 77/77 on native Django, native
 Go, Caddy `/api/v1` and `/api/v2` with exact effects. Mutation
-`v2xlsx-mutation-r1`: the expenses of the management statement without their
+`v2xlsx-mutation-final`: the expenses of the management statement without their
 minus sign fail `excel-draft` (sheet1.xml differs).
