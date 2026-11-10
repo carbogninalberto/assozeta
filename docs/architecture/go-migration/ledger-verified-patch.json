@@ -69,11 +69,11 @@
       "transaction": "No atomic block of its own: the installment delete (one Collector transaction) and the soft-delete save run in the caller's transaction or autocommit."
     },
     "model_hook:BE/application/models/payment_models.py:Payment.save": {
-      "authentication": "None of its own: runs inside the calling view or task, which authenticates.",
+      "authentication": "None of its own: runs inside the calling view, task or command, which authenticates.",
       "permissions": "Inherited from the caller; the hook checks none."
     },
     "model_hook:BE/application/models/subscriptions_models.py:Subscription.save": {
-      "authentication": "None of its own: runs inside the calling view or task, which authenticates.",
+      "authentication": "None of its own: runs inside the calling view, task or command, which authenticates.",
       "permissions": "Inherited from the caller; the hook checks none."
     },
     "model_hook:BE/instance/models.py:InstanceConfiguration.save": {
