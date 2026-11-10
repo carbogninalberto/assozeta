@@ -44,14 +44,15 @@ func (r *IdentityRelations) EligibleTarget(ctx context.Context, actor, associati
  )`
 	args := []any{target}
 	if association != "" {
-		// An owner selects its live members and the athletes with a non-deleted
-		// subscription of the association whose memberships are all within the
-		// owner's associations.
+		// The instance owner selects every athlete, as the administrator does.
+		// The owner of another association selects its live members and the
+		// athletes with a non-deleted subscription of the association whose
+		// memberships are all within the owner's associations.
 		predicate = `AND u.user_id<>$3 AND (
-   (role=2 AND (
+   (role=2 AND (` + impersonationInstanceOwner("$3::uuid") + ` OR ((
     EXISTS(SELECT 1 FROM application_associate member WHERE member.user_id=u.user_id AND member.sport_association_id=$2 AND NOT member.deleted) OR
     EXISTS(SELECT 1 FROM application_subscription subscriber WHERE subscriber.user_id=u.user_id AND subscriber.sport_association_id=$2 AND NOT subscriber.deleted))
-    AND ` + impersonationLinksOwned("u.user_id", "$3::uuid") + `) OR
+    AND ` + impersonationLinksOwned("u.user_id", "$3::uuid") + `))) OR
    (role=3 AND connected_user_id=$3)
   )`
 		args = append(args, association, actor)

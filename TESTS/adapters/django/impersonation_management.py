@@ -300,6 +300,38 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
         add(actor + '-delete-again', actor, alias=alias, method='DELETE', suffix='', status=204,
             headers={'X-Impersonation-Id': '$session:' + last_key}, response='')
 
+    # The instance owner: the identity fixture's owner, whose association is the installation's primary one,
+    # selects every athlete as the administrator does, plus its own collaborators.
+    from instance.permissions import is_instance_owner
+    instance_owner = User.objects.get(pk=uid(8))
+    assert is_instance_owner(instance_owner) and not is_instance_owner(users['owner']), 'fixture.instance-owner'
+    users['instance-owner'] = instance_owner
+    token = AccessToken(); token['user_id'] = str(instance_owner.pk)
+    tokens['instance-owner'] = str(token)
+    associations['instance-owner'] = {'id': uid(80), 'name': 'Identity owner'}
+    instance_association = associations['instance-owner']
+    instance_rows = [{**descriptions[name], 'association': instance_association} for name in ('athlete', 'unrelated')]
+    add('instance-owner-list-every-athlete', 'instance-owner', suffix='/users?' + urlencode({'q': prefix}),
+        response={'users': instance_rows, 'next_page': None, 'meta': {'page': 1, 'perpage': 25, 'total': 2, 'pages': 1}})
+    for target in ('instance-owner', 'foreign', 'owner', 'staff', 'foreign-staff', 'admin', 'inactive', 'deleted'):
+        add('instance-owner-denied-target-' + target, 'instance-owner', method='POST', suffix='', status=403,
+            body={'target_user_id': str(users[target].pk)}, response={'detail': 'Utente non disponibile per l’impersonificazione.'})
+    for target in ('unrelated', 'athlete'):
+        key = 'instance-owner-' + target
+        described = {**descriptions[target], 'association': instance_association}
+        add(key + '-start', 'instance-owner', method='POST', suffix='', status=201,
+            body={'target_user_id': str(users[target].pk)}, save_session=key, target_name=target, actor_name='instance-owner',
+            response={'session_id': '$session:' + key, 'target': described, 'expires_in': 3600,
+                      'actor_role': 'association', 'association': instance_association})
+        add(key + '-get', 'instance-owner', suffix='', headers={'X-Impersonation-Id': '$session:' + key},
+            response={'target': described})
+        if target == 'athlete':
+            # The athlete's member rows belong to another association: the session does not depend on them.
+            add(key + '-get-without-memberships', 'instance-owner', suffix='', headers={'X-Impersonation-Id': '$session:' + key},
+                response={'target': described}, mutation={'model': 'member', 'name': target, 'changes': {'deleted': True}})
+        add(key + '-delete', 'instance-owner', method='DELETE', suffix='', status=204,
+            headers={'X-Impersonation-Id': '$session:' + key}, response='', end_session=key, actor_name='instance-owner')
+
     add('audit-insert-failure', method='POST', suffix='', status=500,
         body={'target_user_id': str(users['athlete'].pk)}, fault='audit')
     add('index-insert-failure-retains-session', method='POST', suffix='', status=201,
@@ -490,7 +522,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
                     record = cache.get(session_key(sessions[key]))
                     expected_record = {'actor_id': str(users[case['actor_name']].pk),
                         'target_id': str(users[case['target_name']].pk),
-                        'association_id': associations['owner']['id'] if case['actor_name'] == 'owner' else None}
+                        'association_id': associations[case['actor_name']]['id'] if case['actor_name'] in ('owner', 'instance-owner') else None}
                     assert_json_equal(unittest.TestCase(), record, expected_record if case.get('start_cache', True) else None, case['name'] + '.cache')
                     if record is not None:
                         assert 3590 <= cache.ttl(session_key(sessions[key])) <= 3600
@@ -513,7 +545,7 @@ def run(work, log, tool_env, address, *, go_server_factory=None, redis_fault_fac
                     assert event.content_type.model == 'user' and event.object_repr == 'name: ' + target.first_name + ' ' + target.last_name
                     assert_json_equal(unittest.TestCase(), event.additional_data, {'impersonation_session': sessions[key], 'actor_id': str(actor.pk),
                         'administrator_id': str(actor.pk) if source['actor_name'] == 'admin' else None,
-                        'association_id': associations['owner']['id'] if source['actor_name'] == 'owner' else None,
+                        'association_id': associations[source['actor_name']]['id'] if source['actor_name'] in ('owner', 'instance-owner') else None,
                         'target_user_id': str(target.pk), 'target_role': target.role}, case['name'] + '.audit')
                     assert event.cid == case['name'] and event.actor_email is None, (case['name'], event.cid, event.actor_email)
                     indexes = list(AuditLogIndex.objects.filter(log_entry=event))
