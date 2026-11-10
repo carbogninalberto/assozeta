@@ -2635,7 +2635,8 @@
         "JSON uses ordered RequestObject/exact json.Number. HTTP actor/group admission, mutation locking, decode/size/field validation, custom-account defaults, writes/audits and archive remain open.",
         "See BE_GO/internal/service/payment_description.md.",
         "See BE_GO/internal/service/payment_save_inputs.md. The complete production-Python accounts rerun passes with all eight reader groups and existing suites; evidence: quality-reports/go-migration/payment-save-inputs/full-accounts-results.json. It started before the automatic-archive fixture was added; that task has separate thirteen-group and combined five-task evidence.",
-        "Automatic archive now composes the existing-record save defaults with scoped atomic writes/audits in BE_GO/internal/service/subscription_auto_archive.go. General model-hook/create/update and manual archive/delete parity remain incomplete."
+        "Automatic archive now composes the existing-record save defaults with scoped atomic writes/audits in BE_GO/internal/service/subscription_auto_archive.go. General model-hook/create/update and manual archive/delete parity remain incomplete.",
+        "Closed by the model-hooks work: every Go writer of application_payment inventoried and traced (model_hooks_process.py, model-hooks.md). Fixed: supplier-invoice update now derives a NULL description and the quota corso override; the Stripe paid check rolls back a payment whose save() calculation fails and goes on."
       ]
     },
     {
@@ -2735,7 +2736,8 @@
       "notes": [
         "See BE_GO/internal/service/subscription_dates.md. UTC is the current configured timezone. The source civil year is retained for boundary selection; outputs are midnight, not end-of-day.",
         "Complete save semantics, input string parsing, caller/resource authorization, mutation/audit/transaction orchestration, historical data rehearsal and production wiring remain open. Do not mark this model hook verified from calendar-only evidence.",
-        "Automatic archive now composes the existing-record save defaults with scoped atomic writes/audits in BE_GO/internal/service/subscription_auto_archive.go. General model-hook/create/update and manual archive/delete parity remain incomplete."
+        "Automatic archive now composes the existing-record save defaults with scoped atomic writes/audits in BE_GO/internal/service/subscription_auto_archive.go. General model-hook/create/update and manual archive/delete parity remain incomplete.",
+        "Closed by the model-hooks work: every Go writer of application_subscription inventoried and traced (model_hooks_process.py, model-hooks.md). Fixed: sign, transfer and the subscription PDF link now raise for invalid season settings where Django does."
       ]
     },
     {
