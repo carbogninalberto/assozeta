@@ -138,6 +138,10 @@ jobs:
           # the application image: the runner's copy is set aside.
           if [ -d /usr/share/fonts/truetype/dejavu ]; then sudo mv /usr/share/fonts/truetype/dejavu /usr/share/fonts/truetype/dejavu.host; fi
           test ! -e /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
+          # Pillow loads libfribidi at run time and then lays text out with Raqm; the application image has no
+          # libfribidi, so text is laid out with the basic engine there. The runner's copy is set aside.
+          find /usr/lib /lib -name 'libfribidi.so*' ! -name '*.host' 2>/dev/null | while read -r file; do sudo mv "$file" "$file.host"; done
+          test -z "$(find /usr/lib /lib -name 'libfribidi.so*' ! -name '*.host' 2>/dev/null)"
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
           python -m pip install -r TESTS/adapters/django/requirements-credentials.txt
           python -m pip install -r docs/manuale/requirements-offline.txt
