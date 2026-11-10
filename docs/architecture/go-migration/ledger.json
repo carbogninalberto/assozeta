@@ -18092,8 +18092,8 @@
         {
           "revision": "committing change",
           "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-login-versioned-r1/results.json",
+          "receipt_sha256": "30b303f37f5e5178fb1147eb272e14c258efd814bc79c907fd20de47d8974f07"
         },
         {
           "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
@@ -18103,7 +18103,7 @@
         }
       ],
       "notes": [
-        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English. Re-run after oauth2/login gained the same verified e-mail rule (SocialLogin.Select uses SocialIdentity.VerifiedEmail) and the provider stub serves the verification claim per token and in user info."
       ]
     },
     {
@@ -18692,8 +18692,8 @@
         {
           "revision": "committing change",
           "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-login-versioned-r1/results.json",
+          "receipt_sha256": "30b303f37f5e5178fb1147eb272e14c258efd814bc79c907fd20de47d8974f07"
         },
         {
           "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
@@ -18703,7 +18703,7 @@
         }
       ],
       "notes": [
-        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English. Re-run after oauth2/login gained the same verified e-mail rule (SocialLogin.Select uses SocialIdentity.VerifiedEmail) and the provider stub serves the verification claim per token and in user info."
       ]
     },
     {
@@ -18959,8 +18959,8 @@
         {
           "revision": "committing change",
           "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-login-versioned-r1/results.json",
+          "receipt_sha256": "30b303f37f5e5178fb1147eb272e14c258efd814bc79c907fd20de47d8974f07"
         },
         {
           "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
@@ -18970,7 +18970,7 @@
         }
       ],
       "notes": [
-        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English. Re-run after oauth2/login gained the same verified e-mail rule (SocialLogin.Select uses SocialIdentity.VerifiedEmail) and the provider stub serves the verification claim per token and in user info."
       ]
     },
     {
@@ -19078,8 +19078,8 @@
         {
           "revision": "committing change",
           "result": "GREEN: 159/159 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects and provider requests.",
-          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-versioned-r1/results.json",
-          "receipt_sha256": "e58c53680eaa5fff4af8f93cc7bf29ef530348d2bfea80e1fc8aa3fa7aa6a8a1"
+          "artifact": "quality-reports/go-migration/oauth-accounts-http-secoauth-login-versioned-r1/results.json",
+          "receipt_sha256": "30b303f37f5e5178fb1147eb272e14c258efd814bc79c907fd20de47d8974f07"
         },
         {
           "revision": "committing change with SocialIdentity.VerifiedEmail accepting any email_verified value",
@@ -19089,7 +19089,7 @@
         }
       ],
       "notes": [
-        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English."
+        "Implementing: signup (password and social paths), partial-signup, reset and delete-account in Django's order with their non-atomic writes (each row write commits with its auditlog entry and index row). E-mails: reset, reset confirmation and welcome rendered with BE_GO/internal/emailrender (three templates added) and queued as core.tasks.send_mail_async.apply_async(kwargs=...); partial signup and deletion queue send_email_text.delay; all published after the commit. Reset tokens live in Redis DB 2 (own client). Passwords are PBKDF2-SHA256 at 1,000,000 iterations (pkg/crypto). Signup responses use jwt.Manager.Issue and service.LoginResponses (build_login_response) plus the view's collaborator override. The disposable e-mail list is embedded (service/oauth_disposable_domains.txt) and checked against custom_email_domain_loader() by the runner. Social signup verifies Google and Apple tokens with the login route's provider clients (pkg/social through service.SocialProviders), requires a verified e-mail (email_verified True or 'true'), signs an existing account in under the login rules (one active account, its second factor) without changing it, and otherwise consumes the collaborator invite and creates the account without a usable password. Refused before any write (500): non-ASCII signup e-mails and usernames, social names that are not strings, reset passwords with NUL or lone surrogates. HTTP cases run in English. Re-run after oauth2/login gained the same verified e-mail rule (SocialLogin.Select uses SocialIdentity.VerifiedEmail) and the provider stub serves the verification claim per token and in user info."
       ]
     },
     {
