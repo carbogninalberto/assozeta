@@ -7,21 +7,18 @@ import (
 )
 
 // BalanceAccountWrite is CustomAccountSerializer's validated data; nil
-// pointers are absent fields.
+// pointers are absent fields. custom_account_id is read-only: a key in the
+// body is ignored.
 type BalanceAccountWrite struct {
-	ID                *string
 	Enabled, Editable *bool
 	Name, AccountCode *string
 	InitialBalance    *string
 	AccountType       *int
 }
 
-// BalanceAccountUnique is the custom_account_id UniqueValidator message code.
-const BalanceAccountUnique = "unique-custom-account"
-
-// ParseBalanceAccountWrite ports CustomAccountSerializer field validation
-// (uniqueness is checked by the service). A form body without enabled or
-// editable sends False unless partial (BooleanField.default_empty_html).
+// ParseBalanceAccountWrite ports CustomAccountSerializer field validation. A
+// form body without enabled or editable sends False unless partial
+// (BooleanField.default_empty_html).
 func ParseBalanceAccountWrite(body any, partial, form bool) (BalanceAccountWrite, map[string]any) {
 	object, ok := body.(domain.RequestObject)
 	if !ok {
@@ -29,15 +26,6 @@ func ParseBalanceAccountWrite(body any, partial, form bool) (BalanceAccountWrite
 	}
 	var write BalanceAccountWrite
 	errors := map[string]any{}
-	if value, present := object.Lookup("custom_account_id"); present {
-		if value == nil {
-			errors["custom_account_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := supplierUUID(value); ok {
-			write.ID = &id
-		} else {
-			errors["custom_account_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	for _, field := range []struct {
 		name   string
 		target **bool
@@ -111,9 +99,9 @@ func ParseBalanceAccountWrite(body any, partial, form bool) (BalanceAccountWrite
 	return write, nil
 }
 
-// BalanceTransferWrite is CustomAccountTransferSerializer's field data.
+// BalanceTransferWrite is CustomAccountTransferSerializer's field data
+// (custom_account_transfer_id is read-only: a key in the body is ignored).
 type BalanceTransferWrite struct {
-	ID                     *string
 	FromPresent, ToPresent bool
 	From, To               *string
 	FromRaw, ToRaw         string
@@ -122,12 +110,9 @@ type BalanceTransferWrite struct {
 	Date                   *time.Time
 }
 
-// BalanceTransferUnique is the custom_account_transfer_id UniqueValidator code.
-const BalanceTransferUnique = "unique-custom-account-transfer"
-
 // ParseBalanceTransferWrite ports the transfer serializer's field validation;
-// the related querysets (the association's accounts) and uniqueness are
-// checked by the service.
+// the related querysets (the association's accounts) are checked by the
+// service.
 func ParseBalanceTransferWrite(body any, partial bool) (BalanceTransferWrite, map[string]any) {
 	object, ok := body.(domain.RequestObject)
 	if !ok {
@@ -135,15 +120,6 @@ func ParseBalanceTransferWrite(body any, partial bool) (BalanceTransferWrite, ma
 	}
 	var write BalanceTransferWrite
 	errors := map[string]any{}
-	if value, present := object.Lookup("custom_account_transfer_id"); present {
-		if value == nil {
-			errors["custom_account_transfer_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := supplierUUID(value); ok {
-			write.ID = &id
-		} else {
-			errors["custom_account_transfer_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	for _, field := range []struct {
 		name    string
 		present *bool

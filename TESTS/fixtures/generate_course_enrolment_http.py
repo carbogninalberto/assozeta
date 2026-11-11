@@ -649,8 +649,6 @@ add('add-text-body', 'owner', CA, 400, {'non_field_errors': ['Invalid data. Expe
 add('add-list-item-errors', 'owner', CA, 400, [{}, {'course': REQUIRED, 'subscription_id': REQUIRED}],
     body=[{'course': cid('fee'), 'subscription_id': sid('luisa')}, {}])
 add('add-empty-list', 'owner', CA, 201, [], body=[], result=effect('owner'))
-add('add-duplicate-key', 'owner', CA, 400, {'course_subscription_id': ['course subscription with this course subscription id already exists.']},
-    body={'course_subscription_id': csid('mp'), 'course': cid('fee'), 'subscription_id': sid('luisa')})
 add('add-unknown-subscription', 'owner', CA, 500, SERVER, body={'course': cid('fee'), 'subscription_id': UNKNOWN})
 add('add-group-header-hides-subscription', 'owner', CA, 500, SERVER, body={'course': cid('fee'), 'subscription_id': sid('luisa')},
     headers=GROUP('own_group'))
@@ -687,13 +685,14 @@ def link_save(cs_sym, label, sub, pay, association, **memory):
                  cs_repr(cs_sym, label, sub, payment=pay, **memory))
 
 
-# Default course with a fee: the association owner's payment, then the link save.
+# Default course with a fee: the association owner's payment, then the link save. course_subscription_id is
+# read-only: another row's key in the body is ignored and the row gets a new key.
 actor = 'owner'
 row = new_cs('@ca1', 'fee', 'luisa', payment='@ca1p')
 text = f"Quota corso del {today('%d/%m/%y')} Nuoto"
 pay = new_payment('@ca1p', '50.00', user=OWNER, associate=aid('luisa'), meta=fee_meta('fee', text),
                   course_json={'label': 'Nuoto', 'value': cid('fee')})
-add('add-course-fee', actor, CA, 201, [overview_item(row, 'luisa')], body={'course': cid('fee'), 'subscription_id': sid('luisa'), 'ignored': 1},
+add('add-course-fee', actor, CA, 201, [overview_item(row, 'luisa')], body={'course': cid('fee'), 'subscription_id': sid('luisa'), 'ignored': 1, 'course_subscription_id': csid('mp')},
     result=effect(actor, created={CSM: [row], PAYMENT: [pay]}, audit=[
         entry(CSM, '@ca1', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
               cs_repr('@ca1', 'fee', 'luisa')),

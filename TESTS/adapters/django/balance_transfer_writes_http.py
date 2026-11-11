@@ -93,19 +93,14 @@ def assert_effect(case, before, after, source, remote, fixture, window, rows):
     ids = source['ids']
     own = ids['own_association']
     old_t, new_t = keyed(before[TRANSFER], 'custom_account_transfer_id'), keyed(after[TRANSFER], 'custom_account_transfer_id')
-    action, path = {'add': (0, 'direct'), 'copy': (0, 'direct'), 'update': (1, 'direct'),
+    action, path = {'add': (0, 'direct'), 'update': (1, 'direct'),
                     'delete': (2, 'changes_json.sport_association')}[effect['kind']]
     if effect['kind'] == 'delete':
         key = source['transfers'][effect['label']]['id']
         contract.require(set(new_t) == set(old_t) - {key} and all(new_t[k] == old_t[k] for k in new_t), 'state.deleted')
         changes = rows[key]
     else:
-        if effect['kind'] == 'copy':
-            # An update naming an unused custom_account_transfer_id: Model.save() inserts a copy, the named row stays.
-            key = effect['id']
-            contract.require(key not in old_t and set(new_t) == set(old_t) | {key} and all(new_t[k] == old_t[k] for k in old_t),
-                             'state.kept')
-        elif effect['kind'] == 'add':
+        if effect['kind'] == 'add':
             keys = set(new_t) - set(old_t)
             contract.require(len(keys) == 1 and all(new_t[k] == old_t[k] for k in old_t), 'state.created')
             key = keys.pop()
@@ -123,20 +118,19 @@ def assert_effect(case, before, after, source, remote, fixture, window, rows):
                          and (str(row.custom_account_to_id) if row.custom_account_to_id else None) == view['custom_account_to']
                          and row.amount == Decimal(view['amount']) and str(row.sport_association_id) == own, 'state.transfer')
         changes = effect.get('changes')
-        if effect['kind'] in ('add', 'copy'):
+        if effect['kind'] == 'add':
             changes = topup.created_changes(CustomAccountsTransfer, row, {'date': topup.auditlog_moment(row.date)})
     old_a, new_a = keyed(before[AUDIT], 'id'), keyed(after[AUDIT], 'id')
     old_i, new_i = keyed(before[INDEX], 'audit_log_index_id'), keyed(after[INDEX], 'audit_log_index_id')
     added = [new_a[k] for k in set(new_a) - set(old_a)]
     indexes = {str(new_i[k]['log_entry_id']): new_i[k] for k in set(new_i) - set(old_i)}
     contract.require(all(new_a[k] == old_a[k] for k in old_a) and all(new_i[k] == old_i[k] for k in old_i), 'audit.kept')
-    copied = effect['kind'] == 'copy'
     added.sort(key=lambda r: int(r['id']))
-    contract.require(len(added) == ((2 if copied else 1) if changes else 0) and len(indexes) == len(added), 'audit.count')
+    contract.require(len(added) == (1 if changes else 0) and len(indexes) == len(added), 'audit.count')
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
     users = keyed(before['application.User'], 'user_id')
     actor = ids[effect['actor']]
-    for event, (action, path) in zip(added, [(1, 'changes_json.sport_association'), (0, 'direct')] if copied else [(action, path)]):
+    for event in added:
         contract.require(event['content_type_id'] == types['customaccountstransfer'] and event['action'] == action
                          and event['object_pk'] == key and event['object_repr'] == f'CustomAccountsTransfer object ({key})', 'audit.identity')
         contract.require(event['changes'] == changes, 'audit.changes')

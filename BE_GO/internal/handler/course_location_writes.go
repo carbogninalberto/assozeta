@@ -41,7 +41,7 @@ var courseLocationAddActions = func() map[string]any {
 		return value
 	}
 	return map[string]any{"POST": map[string]any{
-		"course_location_id": field("string", "Course location id", nil),
+		"course_location_id": field("string", "Course location id", map[string]any{"read_only": true}),
 		"documents": field("field", "Documents", map[string]any{"read_only": true, "child": map[string]any{"type": "nested object",
 			"required": false, "read_only": true, "children": map[string]any{
 				"document_id": field("string", "Document id", nil), "creation_date": field("datetime", "Creation date", nil),

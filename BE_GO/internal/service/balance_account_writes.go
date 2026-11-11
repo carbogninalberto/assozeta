@@ -58,53 +58,18 @@ func (s *BalanceAccountWrites) write(ctx context.Context, identity domain.Resolv
 		}
 	}
 	write, invalid := dto.ParseBalanceAccountWrite(body, row != nil, form)
-	if write.ID != nil {
-		var exclude *string
-		if row != nil {
-			exclude = &row.ID
-		}
-		taken, err := tx.AccountIDTaken(ctx, *write.ID, exclude)
-		if err != nil {
-			return item, err
-		}
-		if taken {
-			if invalid == nil {
-				invalid = map[string]any{}
-			}
-			invalid["custom_account_id"] = []string{dto.BalanceAccountUnique}
-		}
-	}
 	if invalid != nil {
 		return item, &BalanceAccountValidationError{Fields: invalid}
 	}
 	auditContext, at := paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond)
 	if row == nil {
 		created := domain.BalanceAccountRow{ID: s.ids(), Enabled: true, AccountType: 1, Editable: true, AssociationID: association}
-		if write.ID != nil {
-			created.ID = *write.ID
-		}
 		applyBalanceAccountWrite(&created, write)
 		if err = tx.InsertAccount(ctx, created, auditContext, at); err != nil {
 			return item, err
 		}
 		row = &created
 	} else {
-		if write.ID != nil && *write.ID != row.ID {
-			// Model.save() under a key no row has inserts a copy; the named row stays as it was.
-			applyBalanceAccountWrite(row, write)
-			row.ID = *write.ID
-			if err = tx.InsertAccountCopy(ctx, *row, auditContext, at); err != nil {
-				return item, err
-			}
-			serialized, err := tx.SerializedAccount(ctx, association, row.ID, supplierGroup(group))
-			if err != nil {
-				return item, err
-			}
-			if item, err = dto.BalanceAccountItemFrom(serialized); err != nil {
-				return item, err
-			}
-			return item, tx.Commit()
-		}
 		old := *row
 		applyBalanceAccountWrite(row, write)
 		changes := map[string][2]string{}
@@ -255,19 +220,6 @@ func (s *BalanceTransferWrites) write(ctx context.Context, identity domain.Resol
 		if write.To != nil && !owned[*write.To] {
 			invalid["custom_account_to"] = []string{"related-does-not-exist:" + write.ToRaw}
 		}
-		if write.ID != nil {
-			var exclude *string
-			if row != nil {
-				exclude = &row.ID
-			}
-			taken, err := tx.TransferIDTaken(ctx, *write.ID, exclude)
-			if err != nil {
-				return nil, err
-			}
-			if taken {
-				invalid["custom_account_transfer_id"] = []string{dto.BalanceTransferUnique}
-			}
-		}
 	}
 	if len(invalid) > 0 {
 		return nil, &BalanceAccountValidationError{Fields: invalid}
@@ -275,9 +227,6 @@ func (s *BalanceTransferWrites) write(ctx context.Context, identity domain.Resol
 	auditContext, at := paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond)
 	if row == nil {
 		created := domain.BalanceTransferRow{ID: s.ids(), From: write.From, To: write.To, Amount: *write.Amount, Date: at, AssociationID: &association}
-		if write.ID != nil {
-			created.ID = *write.ID
-		}
 		if write.Date != nil {
 			created.Date = *write.Date
 		}
@@ -286,7 +235,6 @@ func (s *BalanceTransferWrites) write(ctx context.Context, identity domain.Resol
 		}
 		return balanceTransferItem(created), tx.Commit()
 	}
-	copying := write.ID != nil && *write.ID != row.ID
 	old := *row
 	if write.FromPresent {
 		row.From = write.From
@@ -301,14 +249,6 @@ func (s *BalanceTransferWrites) write(ctx context.Context, identity domain.Resol
 		row.Date = *write.Date
 	}
 	row.AssociationID = &association
-	if copying {
-		// Model.save() under a key no row has inserts a copy; the named row stays as it was.
-		row.ID = *write.ID
-		if err = tx.InsertTransferCopy(ctx, *row, auditContext, at); err != nil {
-			return nil, err
-		}
-		return balanceTransferItem(*row), tx.Commit()
-	}
 	changes := map[string][2]string{}
 	diff := func(name, before, after string) {
 		if before != after {

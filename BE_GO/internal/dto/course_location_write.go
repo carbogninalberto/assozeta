@@ -17,9 +17,9 @@ var CourseLocationTextFields = []SupplierField{
 }
 
 // CourseLocationWrite is CourseLocationSerializer's validated data before the
-// related-field lookups: Text holds present text fields (nil for None).
+// related-field lookups: Text holds present text fields (nil for None). The
+// primary key is read-only: a course_location_id in the body is ignored.
 type CourseLocationWrite struct {
-	ID                 *string
 	Text               map[string]*string
 	AssociationPresent bool
 	AssociationID      *string
@@ -28,14 +28,13 @@ type CourseLocationWrite struct {
 }
 
 const (
-	CourseLocationUnique = "unique:course location:course location id"
-	courseLocationList   = "not-a-list:"
-	courseLocationDict   = "not-a-dict:"
+	courseLocationList = "not-a-list:"
+	courseLocationDict = "not-a-dict:"
 )
 
 // ParseCourseLocationWrite ports CourseLocationSerializer(data=...,
-// partial=...) field validation; uniqueness and the sport_association
-// queryset and tenant scope are checked by the service.
+// partial=...) field validation; the sport_association queryset and tenant
+// scope are checked by the service.
 func ParseCourseLocationWrite(body any, form, partial bool) (CourseLocationWrite, map[string]any) {
 	object, ok := body.(domain.RequestObject)
 	if !ok {
@@ -43,15 +42,6 @@ func ParseCourseLocationWrite(body any, form, partial bool) (CourseLocationWrite
 	}
 	write := CourseLocationWrite{Text: map[string]*string{}}
 	errors := map[string]any{}
-	if value, present := object.Lookup("course_location_id"); present {
-		if value == nil {
-			errors["course_location_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := supplierUUID(value); ok {
-			write.ID = &id
-		} else {
-			errors["course_location_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	var items any
 	var present bool
 	if form {

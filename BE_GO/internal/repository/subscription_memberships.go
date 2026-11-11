@@ -78,13 +78,6 @@ func (t *subscriptionMembershipTransaction) Memberships(ctx context.Context, ass
 	return result, nil
 }
 
-func (t *subscriptionMembershipTransaction) MembershipIDTaken(ctx context.Context, id string, exclude *string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_subscriptionmembership
- WHERE subscription_membership_id=$1 AND ($2::uuid IS NULL OR subscription_membership_id<>$2::uuid))`, id, exclude)
-	return taken, err
-}
-
 func (t *subscriptionMembershipTransaction) reference(ctx context.Context, query string, args ...any) (*domain.SubscriptionMembershipReference, error) {
 	var association *string
 	err := t.tx.GetContext(ctx, &association, query, args...)
@@ -142,13 +135,6 @@ func subscriptionMembershipAudit(id string, action int, changes map[string][2]st
 func (t *subscriptionMembershipTransaction) CreateMembership(ctx context.Context, row domain.SubscriptionMembership, audit domain.LoginAuditContext,
 	at time.Time) error {
 	return t.insertMembership(ctx, row, audit, at, false)
-}
-
-// CopyMembership is Model.save() under a new primary key: auditlog's pre_save finds no old row and logs an update against
-// None, then post_save logs the creation.
-func (t *subscriptionMembershipTransaction) CopyMembership(ctx context.Context, row domain.SubscriptionMembership, audit domain.LoginAuditContext,
-	at time.Time) error {
-	return t.insertMembership(ctx, row, audit, at, true)
 }
 
 func (t *subscriptionMembershipTransaction) insertMembership(ctx context.Context, row domain.SubscriptionMembership, audit domain.LoginAuditContext,

@@ -87,8 +87,6 @@ type CourseEnrolmentTransaction interface {
 	// SubscriptionInAssociation is Subscription.objects (group-aware).filter(pk=id,
 	// sport_association_id=association).exists().
 	SubscriptionInAssociation(ctx context.Context, id string, association, group *string) (bool, error)
-	// RowIDLive is the UniqueValidator on the default manager.
-	RowIDLive(ctx context.Context, id string) (bool, error)
 
 	CreateRow(ctx context.Context, row CourseSubscriptionRow, overrides map[string][2]string, representation string, audit CourseSubscriptionAudit) error
 	SaveRow(ctx context.Context, save CourseEnrolmentRowSave, audit CourseSubscriptionAudit) error

@@ -265,18 +265,38 @@
    }
   },
   {
-   "name": "balance-account-writes-add-existing-id",
+   "name": "balance-account-writes-add-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/balance-sheet/accounts/add",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "custom_account_id": [
-     "custom accounts with this custom account id already exists."
-    ]
+    "custom_account_id": "$new",
+    "enabled": true,
+    "name": "Copia",
+    "current_balance": 1.0,
+    "initial_balance": "1.00",
+    "account_type": 1,
+    "account_code": "C",
+    "deletable": true,
+    "editable": true
    },
-   "effect": null,
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "account": {
+     "custom_account_id": "$new",
+     "enabled": true,
+     "name": "Copia",
+     "current_balance": 1.0,
+     "initial_balance": "1.00",
+     "account_type": 1,
+     "account_code": "C",
+     "deletable": true,
+     "editable": true
+    }
+   },
    "body": {
     "custom_account_id": "a1000000-0000-4000-8000-000000910001",
     "name": "Copia",
@@ -431,14 +451,14 @@
    }
   },
   {
-   "name": "balance-account-writes-add-full-collaborator-explicit",
+   "name": "balance-account-writes-add-full-collaborator-explicit-id-ignored",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/balance-sheet/accounts/add",
    "headers": {},
    "status": 200,
    "response": {
-    "custom_account_id": "a1000000-0000-4000-8000-000000930001",
+    "custom_account_id": "$new",
     "enabled": false,
     "name": "Banca 2",
     "current_balance": 7.0,
@@ -452,7 +472,7 @@
     "kind": "add",
     "actor": "full_collaborator",
     "account": {
-     "custom_account_id": "a1000000-0000-4000-8000-000000930001",
+     "custom_account_id": "$new",
      "enabled": false,
      "name": "Banca 2",
      "current_balance": 7.0,
@@ -875,37 +895,42 @@
    }
   },
   {
-   "name": "balance-account-writes-update-new-id-copies-row",
+   "name": "balance-account-writes-update-new-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000000910001/update",
    "headers": {},
    "status": 200,
    "response": {
-    "custom_account_id": "a1000000-0000-4000-8000-000000930002",
+    "custom_account_id": "a1000000-0000-4000-8000-000000910001",
     "enabled": true,
     "name": "Banca copia",
-    "current_balance": 100.0,
+    "current_balance": 110.25,
     "initial_balance": "100.00",
     "account_type": 2,
     "account_code": "IT60X",
-    "deletable": true,
+    "deletable": false,
     "editable": true
    },
    "effect": {
-    "kind": "copy",
+    "kind": "update",
     "actor": "owner",
     "label": "bank",
-    "id": "a1000000-0000-4000-8000-000000930002",
+    "changes": {
+     "name": [
+      "Banca nuova",
+      "Banca copia"
+     ]
+    },
     "account": {
-     "custom_account_id": "a1000000-0000-4000-8000-000000930002",
+     "custom_account_id": "a1000000-0000-4000-8000-000000910001",
      "enabled": true,
      "name": "Banca copia",
-     "current_balance": 100.0,
+     "current_balance": 110.25,
      "initial_balance": "100.00",
      "account_type": 2,
      "account_code": "IT60X",
-     "deletable": true,
+     "deletable": false,
      "editable": true
     }
    },
@@ -924,7 +949,7 @@
    "response": {
     "custom_account_id": "a1000000-0000-4000-8000-000000910001",
     "enabled": true,
-    "name": "Banca nuova",
+    "name": "Banca copia",
     "current_balance": 110.25,
     "initial_balance": "100.00",
     "account_type": 2,
@@ -945,7 +970,7 @@
     "account": {
      "custom_account_id": "a1000000-0000-4000-8000-000000910001",
      "enabled": true,
-     "name": "Banca nuova",
+     "name": "Banca copia",
      "current_balance": 110.25,
      "initial_balance": "100.00",
      "account_type": 2,
@@ -960,20 +985,81 @@
    }
   },
   {
-   "name": "balance-account-writes-update-id-of-another-row-rejected",
+   "name": "balance-account-writes-update-id-of-another-row-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000000910001/update",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "custom_account_id": [
-     "custom accounts with this custom account id already exists."
-    ]
+    "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+    "enabled": true,
+    "name": "Banca copia",
+    "current_balance": 110.25,
+    "initial_balance": "100.00",
+    "account_type": 2,
+    "account_code": "Z",
+    "deletable": false,
+    "editable": true
    },
-   "effect": null,
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "bank",
+    "changes": {},
+    "account": {
+     "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+     "enabled": true,
+     "name": "Banca copia",
+     "current_balance": 110.25,
+     "initial_balance": "100.00",
+     "account_type": 2,
+     "account_code": "Z",
+     "deletable": false,
+     "editable": true
+    }
+   },
    "body": {
     "custom_account_id": "a1000000-0000-4000-8000-000000910002"
+   }
+  },
+  {
+   "name": "balance-account-writes-update-null-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000000910001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+    "enabled": true,
+    "name": "Banca copia",
+    "current_balance": 110.25,
+    "initial_balance": "100.00",
+    "account_type": 2,
+    "account_code": "Z",
+    "deletable": false,
+    "editable": true
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "bank",
+    "changes": {},
+    "account": {
+     "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+     "enabled": true,
+     "name": "Banca copia",
+     "current_balance": 110.25,
+     "initial_balance": "100.00",
+     "account_type": 2,
+     "account_code": "Z",
+     "deletable": false,
+     "editable": true
+    }
+   },
+   "body": {
+    "custom_account_id": null
    }
   }
  ]

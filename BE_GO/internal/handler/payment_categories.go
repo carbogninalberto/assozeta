@@ -356,16 +356,6 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return "Invalid data. Expected a dictionary, but got " + kind + "."
 		}
 		return "Dati non validi. Era atteso un dizionario, ma si è ricevuto " + kind + "."
-	case code == dto.BalanceTransferUnique:
-		if english {
-			return "custom accounts transfer with this custom account transfer id already exists."
-		}
-		return "custom accounts transfer con questo custom account transfer id esiste già."
-	case code == dto.BalanceAccountUnique:
-		if english {
-			return "custom accounts with this custom account id already exists."
-		}
-		return "custom accounts con questo custom account id esiste già."
 	case code == dto.SupplierValidationEmail:
 		if english {
 			return "Enter a valid email address."

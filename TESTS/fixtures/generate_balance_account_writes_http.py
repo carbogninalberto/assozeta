@@ -79,8 +79,10 @@ add('add-invalid-fields', 'owner', ADD, 400, {'name': ['Ensure this field has no
     body={'name': 'x' * 101, 'initial_balance': 'abc', 'account_type': 9, 'account_code': 'C'})
 add('add-too-many-digits', 'owner', ADD, 400, {'initial_balance': ['Ensure that there are no more than 10 digits in total.']},
     body={'name': 'Grande', 'initial_balance': '123456789.00', 'account_code': 'C'})
-add('add-existing-id', 'owner', ADD, 400, {'custom_account_id': ['custom accounts with this custom account id already exists.']},
-    body={'custom_account_id': ACCOUNTS['bank']['id'], 'name': 'Copia', 'initial_balance': '1', 'account_code': 'C'})
+# custom_account_id is read-only: a key in the body is ignored and the account gets a new one.
+add('add-existing-id-ignored', 'owner', ADD, 200, new('Copia', '1', 'C'),
+    body={'custom_account_id': ACCOUNTS['bank']['id'], 'name': 'Copia', 'initial_balance': '1', 'account_code': 'C'},
+    effect=created('owner', new('Copia', '1', 'C')))
 add('add-list-body', 'owner', ADD, 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']}, body=[])
 add('add-owner-scoped-athlete-denied', 'owner', ADD, 403, {'detail': 'Operazione non disponibile nel contesto dell’associazione.'},
     body={'name': 'X'}, headers=SCOPED)
@@ -94,10 +96,10 @@ add('add-options', 'owner', ADD, 200, {'name': 'Balance Sheet Accounts Add', 'de
 add('add-minimal', 'owner', ADD, 200, new('Nuovo è', '10.5', 'X1'), body={'name': 'Nuovo è', 'initial_balance': '10.5', 'account_code': 'X1'},
     effect=created('owner', new('Nuovo è', '10.5', 'X1')))
 FIXED = 'a1000000-0000-4000-8000-000000930001'
-add('add-full-collaborator-explicit', 'full_collaborator', ADD, 200, new('Banca 2', 7, 'IT7', kind=2, enabled=False, editable=False, ident=FIXED),
+add('add-full-collaborator-explicit-id-ignored', 'full_collaborator', ADD, 200, new('Banca 2', 7, 'IT7', kind=2, enabled=False, editable=False),
     body={'custom_account_id': FIXED, 'name': 'Banca 2', 'initial_balance': 7, 'account_code': 'IT7', 'account_type': '2', 'enabled': False,
           'editable': False},
-    effect=created('full_collaborator', new('Banca 2', 7, 'IT7', kind=2, enabled=False, editable=False, ident=FIXED)))
+    effect=created('full_collaborator', new('Banca 2', 7, 'IT7', kind=2, enabled=False, editable=False)))
 # BooleanField.default_empty_html: a form without enabled/editable sends False.
 add('add-form', 'owner', ADD, 200, new('Modulo', '0', 'F', enabled=False, editable=False), raw_body='name=Modulo&initial_balance=0&account_code=F',
     content_type='application/x-www-form-urlencoded', effect=created('owner', new('Modulo', '0', 'F', enabled=False, editable=False)))
@@ -126,20 +128,19 @@ add('update-group-header-balance', 'owner', update('grouped'), 200, account('gro
     body={'account_code': 'G'}, headers={'X-Group-Id': IDS['foreign_group']},
     effect=changed('owner', 'grouped', {'account_code': ['C', 'G']}, account('grouped', group='foreign_group', code='G')))
 
-# An update naming a custom_account_id no row has: Model.save() inserts a copy with the validated values, the named row stays.
-COPY_ID = 'a1000000-0000-4000-8000-000000930002'
-# The copy has no transfers or payments: its balance is its initial balance.
+# custom_account_id is read-only: a key in the body is ignored and the account the path names is updated in place.
+NEW_ID = 'a1000000-0000-4000-8000-000000930002'
 B = ACCOUNTS['bank']
-COPIED = new('Banca copia', B['initial'], B['code'], kind=B['type'], enabled=B['enabled'], editable=B['editable'], ident=COPY_ID)
-add('update-new-id-copies-row', 'owner', update('bank'), 200, COPIED, method='PATCH',
-    body={'custom_account_id': COPY_ID, 'name': 'Banca copia'},
-    effect={'kind': 'copy', 'actor': 'owner', 'label': 'bank', 'id': COPY_ID, 'account': COPIED})
-add('update-own-id-is-plain-update', 'owner', update('bank'), 200, account('bank', name='Banca nuova', code='Z'), method='PATCH',
+add('update-new-id-ignored', 'owner', update('bank'), 200, account('bank', name='Banca copia'), method='PATCH',
+    body={'custom_account_id': NEW_ID, 'name': 'Banca copia'},
+    effect=changed('owner', 'bank', {'name': ['Banca nuova', 'Banca copia']}, account('bank', name='Banca copia')))
+add('update-own-id-is-plain-update', 'owner', update('bank'), 200, account('bank', name='Banca copia', code='Z'), method='PATCH',
     body={'custom_account_id': ACCOUNTS['bank']['id'], 'account_code': 'Z'},
-    effect=changed('owner', 'bank', {'account_code': [B['code'], 'Z']}, account('bank', name='Banca nuova', code='Z')))
-add('update-id-of-another-row-rejected', 'owner', update('bank'), 400,
-    {'custom_account_id': ['custom accounts with this custom account id already exists.']}, method='PATCH',
-    body={'custom_account_id': ACCOUNTS['cash']['id']})
+    effect=changed('owner', 'bank', {'account_code': [B['code'], 'Z']}, account('bank', name='Banca copia', code='Z')))
+add('update-id-of-another-row-ignored', 'owner', update('bank'), 200, account('bank', name='Banca copia', code='Z'), method='PATCH',
+    body={'custom_account_id': ACCOUNTS['cash']['id']}, effect=changed('owner', 'bank', {}, account('bank', name='Banca copia', code='Z')))
+add('update-null-id-ignored', 'owner', update('bank'), 200, account('bank', name='Banca copia', code='Z'), method='PATCH',
+    body={'custom_account_id': None}, effect=changed('owner', 'bank', {}, account('bank', name='Banca copia', code='Z')))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'},

@@ -622,7 +622,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### balance-accounts.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH balance-sheet/accounts/<uid>/update | body carries a new `custom_account_id` | service/balance_account_writes.go (was `ErrBalanceAccountPrimaryKeyChange`) | ported (tailpay) | `src/routes/accounting/accounts/modals/EditModal.svelte:62-76` sends the form fields `name`, `account_type`, `enabled`, `initial_balance`, `account_code` only. Go inserts the copy under the new key as `Model.save()` does (two audit entries, the named row stays); the transfer update with a new `custom_account_transfer_id` is ported the same way (balance-accounts.md). |
+| PATCH balance-sheet/accounts/<uid>/update | body carries a new `custom_account_id` | service/balance_account_writes.go | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go, so the body's key is ignored and the named row is updated in place; the same for `custom_account_transfer_id` on the transfer update (balance-accounts.md, cases `update-*-id-*`). |
 
 ### camps-subscriptions.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -719,7 +719,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | ported | Ported (`course-locations.md`, `v2c-green`); indexed form keys ported in t3courses (`dto.courseLocationFormDocuments`: the repeated key, DRF's `parse_html_list` / `parse_html_dict` notation, ignored by a partial update). |
-| PATCH course/locations/<pk>/update | changed `course_location_id` | service/course_location_writes.go (`CopyLocation`) | ported (tailcourses) | The row the path names stays; the validated values are inserted under the new key, audited as the pre-save update then the create (`course-locations.md`, cases `update-primary-key-*`). |
+| PATCH course/locations/<pk>/update | changed `course_location_id` | service/course_location_writes.go | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the path's row is updated in place (`course-locations.md`, cases `update-primary-key-*`). |
 
 ### course-enrolment.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -780,11 +780,11 @@ Coordination/status doc; no refusals. Nothing to classify.
 | POST course-subscriptions/add | "not routed in Go" | — | n/a | Superseded: now routed (`BE_GO/cmd/server/main.go:588`, `courseEnrolmentHandler.Add`, another family). |
 | POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions_export.go`, `ErrCourseSubscriptionExportUnsupported` | ported: `excel` (famwiz), `pdf` (v2-pdf) | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
 | PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | ported | Ported (`course-subscriptions.md`, `v2c-green`). |
-| PATCH …/update | changed primary key | `repository/course_subscriptions.go` (`copyCourseSubscription`) | ported (t4l3) | Ported in t4l3: the instance is saved under the new key (insert with the pre-save and create entries, or over a soft-deleted row with that key); cases `update-primary-key-*` (`course-subscriptions.md`). UI never sends `course_subscription_id` in the body. |
+| PATCH …/update | changed primary key | `service/course_subscription_update.go` | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the path's row is saved in place (cases `update-primary-key-*`, `course-subscriptions.md`). |
 | PATCH …/update | HTML-form input for `multiple_quote`/`events` | `dto/course_subscriptions.go` (`ParseCourseSubscriptionWrite`) | ported (t3courses) | The form text goes through json.loads (a file part's text is its name); invalid text answers "Value must be valid JSON.". A document the jsonb column rejects (lone surrogates, nesting past the parser limit) stays refused (C: database error text). Cases `update-form-*`, `update-multipart-multiple-quote-file-invalid-json`. |
 | GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | ported | Ported for GET and update renders (`v2c-green`); the export does not render payments. |
 | same | a rendered membership payment with `instructor_id` | same site | ported | Ported with the invoice case (`v2c-green`). |
-| DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go` (`Delete`) | ported (t4l3) | Ported in t4l3: the deletes and the save's entry stay, the row is not saved, 500 (cases `delete-shared-*`). No current writer shares one payment (`BE/application/views/course_views.py:118-148,985-1038` create separate payments). legacy: possible but unproven; medium. |
+| DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go` (`Delete`) | ported (t5pk) | Ported in t5pk: the delete is one transaction in Django and Go; the installments, the shared payment and the soft delete complete together, 204 (cases `delete-shared-*`, router `destroy-shared-payment`). |
 
 ### document-views.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1212,7 +1212,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | ported (v2-sub-create) | **ported** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
-| update | changed `subscription_membership_id` | | ported | Ported in t2subsa (the copy under the new key, `subscription-memberships.md`). |
+| update | changed `subscription_membership_id` | | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the path's row is updated in place (`subscription-memberships.md`). |
 | add | multipart with files | | ported | Ported in t2subsa (files merged into the mutable data, read per field). Form keys for `documents_data` stay refused: the UI sends JSON, and a repeated plain key is read as its last value by this API's form parser. |
 
 ### stripe-routes.md

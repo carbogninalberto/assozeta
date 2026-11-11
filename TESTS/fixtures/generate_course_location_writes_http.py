@@ -1,8 +1,8 @@
 """Author the course/locations add, update and delete HTTP sequence (course-locations.md).
 
 Builds on the course-locations list seed. CourseLocationViewSet validates
-CourseLocationSerializer (fields '__all__': a writable course_location_id
-with UniqueValidator, title CharField(255, null, not blank), description
+CourseLocationSerializer (fields '__all__': a read-only course_location_id,
+so a key in the body is ignored and the add generates one; title CharField(255, null, not blank), description
 (2048) and address (255) nullable and blank, a tenant-scoped
 sport_association relation and a write-only documents_data list of dicts)
 before SportAssociation.objects.get(user=request.user) (a 500 for athletes
@@ -85,7 +85,7 @@ field = lambda kind, label, required=False, read_only=False, **extra: {'type': k
                                                                     **({'label': label} if label else {}), **extra}
 # DRF SimpleMetadata describes the serializer for POST, the only PUT/POST method allowed on add.
 ADD_OPTIONS = {**OPTIONS, 'actions': {'POST': {
-    'course_location_id': field('string', 'Course location id'),
+    'course_location_id': field('string', 'Course location id', read_only=True),
     'documents': field('field', 'Documents', read_only=True, child={'type': 'nested object', 'required': False, 'read_only': True, 'children': {
         'document_id': field('string', 'Document id'), 'creation_date': field('datetime', 'Creation date'),
         'filepath': field('string', 'Filepath', max_length=1000), 'filename': field('string', 'Filename', required=True, max_length=255),
@@ -104,13 +104,14 @@ add('add-owner-scoped-athlete-denied', 'owner', ADD, 403, SCOPED_DENIED, body={'
 add('add-wrong-method', 'owner', ADD, 405, {'detail': 'Method "GET" not allowed.'}, method='GET')
 add('add-options', 'owner', ADD, 200, ADD_OPTIONS, method='OPTIONS')
 add('add-route-delete-without-pk-server-error', 'owner', ADD, 500, SERVER, method='DELETE')
-add('add-invalid-fields', 'owner', ADD, 400, {'course_location_id': ['Must be a valid UUID.'], 'title': ['This field may not be blank.'],
+add('add-invalid-fields', 'owner', ADD, 400, {'title': ['This field may not be blank.'],
     'description': ['Ensure this field has no more than 2048 characters.']},
     body={'course_location_id': 'abc', 'title': '', 'description': 'x' * 2049})
 add('add-invalid-types', 'owner', ADD, 400, {'title': ['Not a valid string.'], 'address': ['Ensure this field has no more than 255 characters.']},
     body={'title': True, 'address': 'y' * 256})
-add('add-existing-id', 'owner', ADD, 400, {'course_location_id': ['course location with this course location id already exists.']},
-    body={'course_location_id': LOCATIONS['gym']['id']})
+# The body's key is ignored: another location's key still creates a location under a new key.
+response, effect = created('owner', {})
+add('add-existing-id-ignored', 'owner', ADD, 201, response, body={'course_location_id': LOCATIONS['gym']['id']}, effect=effect)
 add('add-unknown-association', 'owner', ADD, 400, {'sport_association': [f'Invalid pk "{UNKNOWN}" - object does not exist.']},
     body={'sport_association': UNKNOWN})
 add('add-foreign-association-forbidden', 'owner', ADD, 403, FORBIDDEN, body={'sport_association': FOREIGN, 'title': ''})
@@ -126,8 +127,8 @@ response, effect = created('owner', {'title': 'Campo è', 'description': 'Erba',
 add('add-owner', 'owner', ADD, 201, response, body={'title': 'Campo è', 'description': 'Erba', 'address': 'Via 2'}, effect=effect)
 response, effect = created('full_collaborator', {})
 add('add-full-collaborator-empty', 'full_collaborator', ADD, 201, response, body={}, effect=effect)
-response, effect = created('owner', {'title': '5'}, NEW_ID)
-add('add-explicit-id-and-own-association', 'owner', ADD, 201, response,
+response, effect = created('owner', {'title': '5'})
+add('add-explicit-id-ignored-and-own-association', 'owner', ADD, 201, response,
     body={'course_location_id': NEW_ID, 'sport_association': OWN, 'title': 5, 'documents': ['ignored']}, effect=effect)
 response, effect = created('owner', {'description': ''})
 add('add-form-blank-title-is-null', 'owner', ADD, 201, response, raw_body='title=&description=',
@@ -184,18 +185,16 @@ add('update-same-values-no-audit', 'full_collaborator', one('gym', 'update'), 20
     body={'title': 'Palestra', 'sport_association': OWN}, effect=effect)
 response, effect = changed('owner', 'pool', title=None, address='')
 add('update-null-title', 'owner', one('pool', 'update'), 200, response, method='PATCH', body={'title': None, 'address': ''}, effect=effect)
-# A changed course_location_id passing validation: Model.save() inserts a copy under the new key; the path's row stays.
-COPY_ID = 'a1000000-0000-4000-8000-000000989002'
-copy_row = {**{key: STATE['pool'][key] for key in ('title', 'description', 'address')}, 'title': 'Copia'}
-response = item(copy_row, COPY_ID)
-add('update-primary-key-change-inserts-copy', 'owner', one('pool', 'update'), 200, response, method='PATCH',
-    body={'course_location_id': COPY_ID, 'title': 'Copia'},
-    effect={'kind': 'copy', 'actor': 'owner', 'id': COPY_ID, 'stored': copy_row})
-add('update-primary-key-taken', 'owner', one('pool', 'update'), 400,
-    {'course_location_id': ['course location with this course location id already exists.']}, method='PATCH',
-    body={'course_location_id': LOCATIONS['gym']['id']})
-add('update-primary-key-malformed', 'owner', one('pool', 'update'), 400, {'course_location_id': ['Must be a valid UUID.']}, method='PATCH',
-    body={'course_location_id': 'abc'})
+# course_location_id is read-only: a key in the body is ignored and the path's row is updated in place.
+response, effect = changed('owner', 'pool', title='Copia')
+add('update-primary-key-ignored', 'owner', one('pool', 'update'), 200, response, method='PATCH',
+    body={'course_location_id': 'a1000000-0000-4000-8000-000000989002', 'title': 'Copia'}, effect=effect)
+response, effect = changed('owner', 'pool')
+add('update-primary-key-of-other-row-ignored', 'owner', one('pool', 'update'), 200, response, method='PATCH',
+    body={'course_location_id': LOCATIONS['gym']['id']}, effect=effect)
+response, effect = changed('owner', 'pool')
+add('update-primary-key-malformed-ignored', 'owner', one('pool', 'update'), 200, response, method='PATCH',
+    body={'course_location_id': 'abc'}, effect=effect)
 FORM = 'application/x-www-form-urlencoded'
 quote = __import__('urllib.parse', fromlist=['quote']).quote
 NOT_DICT = lambda kind: [f'Expected a dictionary of items but got type "{kind}".']
