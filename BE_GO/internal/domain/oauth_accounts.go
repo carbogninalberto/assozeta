@@ -32,10 +32,14 @@ type OAuthInvite struct {
 type OAuthNewUser struct {
 	ID, Username, Email, PasswordHash string
 	FirstName, LastName               string
-	Role, CollaboratorRole            int
-	ConnectedUserID                   *string
-	Permissions                       json.RawMessage // nil: SQL NULL
-	Joined                            time.Time
+	// MailFirstName/MailLastName are the welcome mail's values when a name came
+	// from a float: Django's template localises the float object while the
+	// column and the response hold str(float). nil: the stored text is used.
+	MailFirstName, MailLastName any
+	Role, CollaboratorRole      int
+	ConnectedUserID             *string
+	Permissions                 json.RawMessage // nil: SQL NULL
+	Joined                      time.Time
 }
 
 // OAuthDeletion is the outcome of oauth2_delete_account's save().

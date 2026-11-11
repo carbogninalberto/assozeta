@@ -177,3 +177,8 @@ the welcome mail and the login response write the same text. None fails the NOT 
 column length: the 500 page. A float name is still handed off (the mail writes it in the locale's number format). Cases
 `signup-social-name-null`, `signup-social-name-too-long-list`, `signup-social-names-not-strings`,
 `signup-social-names-boolean-and-object` (168 cases). Mutation control: accepting a null name fails `signup-social-name-null` on Go.
+
+## t6x2
+
+**Ported in t6x2**: a float name is stored and answered as its `str()` and the welcome mail writes it in the language's number
+format (`emailrender.Localize`); cases `names-float`, `names-float-from-claims`.
