@@ -73,10 +73,9 @@ The other routes looked at for this family are not ported (see the end of this p
 
 ## Not ported (refused with the 500 page before any write)
 
-- Calendar export: `fromisoformat` forms outside the ported subset (ISO week dates, a date-time separator other than `T` or
-  a space, offsets with seconds or with minutes past 59, non-ASCII digits or spaces); an offset outside icalendar's table on a
-  value only `datetime_re` reads (single-digit fields: Django names that timezone `+0545`, and which parser answers decides
-  the name); and list or object values for the title, the event id or the label (one property per list item, Python repr).
+- Calendar export: ported in t4l2 through `internal/pydatetime` (CPython 3.13 `fromisoformat`: week dates, any one-character
+  separator, offsets with seconds; Django's Unicode `datetime_re`, with the timezone named `+0545` where only the regex reads
+  the value). List and object values for the title, the event id and the label were ported earlier (Python repr).
   Float values are ported (v2-rest-c): `str()` of the Python float, also for a JSON float wall message (`1.5`, `1000.0`,
   `1e-07`, `-inf` beyond the float range).
 - Card GET through the paired server: an `expires_at` whose instant lies outside years 1..9999.
