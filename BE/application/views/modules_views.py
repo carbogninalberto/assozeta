@@ -3,7 +3,10 @@
 """
 import base64
 import datetime
+import hashlib
+import hmac
 import os
+import secrets
 import uuid
 
 import pandas
@@ -24,6 +27,7 @@ from core.middleware import IsAuthenticated
 
 import logging
 
+from application.utils.xlsx_text import xlsx_safe_frame
 from application.utils.api_utils import is_valid_uuid
 
 from core.settings import STORAGE_DIR
@@ -210,6 +214,34 @@ def modules_overview(request, module_id):
     return Response({'data': ModulesSerializerWithResponses(module).data}, status=status.HTTP_200_OK)
 
 
+def _attachment_token_hash(token):
+    return hashlib.sha256(token.encode('utf-8')).hexdigest()
+
+
+def _can_manage_response_attachments(request, module_response):
+    """Who may attach to, or remove from, a response's attachments.
+
+    The respondent proves it with the token returned when the response was
+    created; signed-in callers act through their association or as the
+    response's own user.
+    """
+    user = request.user
+    if user is not None and user.is_authenticated:
+        if module_response.user_id is not None and module_response.user_id == user.pk:
+            return True
+        try:
+            association_id = user.sport_association.pk
+        except Exception:
+            association_id = None
+        if association_id is not None and module_response.module.sport_association_id == association_id:
+            return True
+
+    token = request.data.get('attachment_token') if isinstance(request.data, dict) else None
+    if not isinstance(token, str) or not token or not module_response.attachment_token_hash:
+        return False
+    return hmac.compare_digest(_attachment_token_hash(token), module_response.attachment_token_hash)
+
+
 @api_view(['POST'])
 @throttle_classes([PublicModuleResponseThrottle])
 def modules_response_add(request, module_id):
@@ -267,13 +299,15 @@ def modules_response_add(request, module_id):
         else:
             queue_position = last_queue_position.queue_position + 1
 
+    attachment_token = secrets.token_urlsafe(32)
     module_response = ModuleResponses.objects.create(
         module=module,
         response=request.data,
         payment=None,
         approved=not module.require_approval,
         progressive_response_number=progressive_response_number,
-        queue_position=queue_position
+        queue_position=queue_position,
+        attachment_token_hash=_attachment_token_hash(attachment_token)
     )
 
     if request.user and request.user.is_authenticated:
@@ -285,7 +319,11 @@ def modules_response_add(request, module_id):
         update_queue(module)
 
     logger.info("Module response added successfully", extra={'module_id': module_id, 'module_response_id': str(module_response.module_response_id), 'queue_position': queue_position, 'requires_approval': module.require_approval})
-    return Response({'msg': 'response added', 'module_response_id': module_response.module_response_id}, status=status.HTTP_200_OK)
+    return Response({
+        'msg': 'response added',
+        'module_response_id': module_response.module_response_id,
+        'attachment_token': attachment_token,
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -361,13 +399,17 @@ def modules_response_add_attachment(request, module_response_id):
 
     module_response = ModuleResponses.objects.filter(
         module_response_id=module_response_id
-    ).first()
+    ).select_related('module').first()
+
+    if module_response is None or not _can_manage_response_attachments(request, module_response):
+        return Response({'error': 'response not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # if DELETE
     if request.method == 'DELETE':
         # get document_id from request
         if 'document_id' in request.data:
-            document = Document.objects.filter(document_id=request.data['document_id']).first()
+            # only a document attached to this response can be removed
+            document = module_response.attachments.filter(document_id=request.data['document_id']).first()
             if document:
                 # remove the document from the module response
                 module_response.attachments.remove(document)
@@ -477,7 +519,7 @@ def modules_response_export(request, module_id):
     data['type'] = 'xlsx'
     f = io.BytesIO()
     writer = pandas.ExcelWriter(f, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='Risposte', index=False)
+    xlsx_safe_frame(df).to_excel(writer, sheet_name='Risposte', index=False)
     worksheet = writer.sheets['Risposte']
     for i, col in enumerate(df.columns):
         column_len = len(col) + 10

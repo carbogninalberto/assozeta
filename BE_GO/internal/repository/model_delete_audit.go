@@ -49,6 +49,12 @@ func deleteModelWithAuditReverse(ctx context.Context, tx *sqlx.Tx, table, key, i
 	return changes, stored, nil
 }
 
+// auditExcludedColumns are the columns of models registered with
+// exclude_fields: they never appear in an audit entry.
+var auditExcludedColumns = map[string]map[string]bool{
+	"application_moduleresponses": {"attachment_token_hash": true},
+}
+
 // storedModelChanges renders the stored row as auditlog's delete changes
 // (value against 'None') or, when created, its create changes ('None'
 // against the value). Null foreign keys and DateTimeFields render 'None' on
@@ -83,6 +89,9 @@ func storedModelChanges(ctx context.Context, tx *sqlx.Tx, table, key, id string,
 	}
 	changes := map[string][2]string{}
 	for _, column := range columns {
+		if auditExcludedColumns[table][column.Name] {
+			continue
+		}
 		value := stored[column.Name]
 		name := column.Name
 		if column.ForeignKey {

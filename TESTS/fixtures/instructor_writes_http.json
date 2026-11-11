@@ -942,7 +942,7 @@
    ]
   },
   "reg_report": {
-   "id": "a1000000-0000-4000-8000-000000967417",
+   "id": "a1000000-0000-4000-8000-000000967425",
    "course": "ca",
    "status": 2,
    "events": [
@@ -1138,59 +1138,163 @@
      },
      "title": "Id negativo",
      "event_id": "a1000000-0000-4000-8000-000000967415"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "=1+1"
+     },
+     "title": "Formula",
+     "event_id": "a1000000-0000-4000-8000-000000967417"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "=SEQUENCE(3)"
+     },
+     "title": "Dinamica",
+     "event_id": "a1000000-0000-4000-8000-000000967418"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "=1+FILTER(A1:A3,B1:B3)+SORT(C1)+XSORT(D1)"
+     },
+     "title": "Dinamiche annidate",
+     "event_id": "a1000000-0000-4000-8000-000000967419"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "{=SUM(1,2)}"
+     },
+     "title": "Matrice",
+     "event_id": "a1000000-0000-4000-8000-000000967420"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "<r><t>grassetto</t></r>"
+     },
+     "title": "Testo ricco",
+     "event_id": "a1000000-0000-4000-8000-000000967421"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "https://example.test/lezione#sezione"
+     },
+     "title": "Ancora",
+     "event_id": "a1000000-0000-4000-8000-000000967422"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "=_xlfn.UNIQUE(A1)"
+     },
+     "title": "Espansa",
+     "event_id": "a1000000-0000-4000-8000-000000967423"
+    },
+    {
+     "start": "2026-09-01",
+     "end": "2026-09-02",
+     "allDay": true,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000967003"
+      },
+      "description": "=IF(1<2,\"a&b\",\">\")"
+     },
+     "title": "Con simboli",
+     "event_id": "a1000000-0000-4000-8000-000000967424"
     }
    ]
   }
  },
  "people": {
   "mario": {
-   "id": "a1000000-0000-4000-8000-000000967418",
+   "id": "a1000000-0000-4000-8000-000000967426",
    "first_name": "Mario",
    "last_name": "Rossi"
   },
   "luisa": {
-   "id": "a1000000-0000-4000-8000-000000967419",
+   "id": "a1000000-0000-4000-8000-000000967427",
    "first_name": "Luisa",
    "last_name": null
   },
   "paolo": {
-   "id": "a1000000-0000-4000-8000-000000967420",
+   "id": "a1000000-0000-4000-8000-000000967428",
    "first_name": "Paolo",
    "last_name": "Bianchi"
   }
  },
  "course_subscriptions": {
   "cs_mario": {
-   "id": "a1000000-0000-4000-8000-000000967421",
+   "id": "a1000000-0000-4000-8000-000000967429",
    "person": "mario",
    "deleted": false
   },
   "cs_luisa": {
-   "id": "a1000000-0000-4000-8000-000000967422",
+   "id": "a1000000-0000-4000-8000-000000967430",
    "person": "luisa",
    "deleted": false
   },
   "cs_deleted": {
-   "id": "a1000000-0000-4000-8000-000000967423",
+   "id": "a1000000-0000-4000-8000-000000967431",
    "person": "paolo",
    "deleted": true
   },
   "cs_nosub": {
-   "id": "a1000000-0000-4000-8000-000000967424",
+   "id": "a1000000-0000-4000-8000-000000967432",
    "person": null,
    "deleted": false
   }
  },
  "days": {
   "r1": {
-   "id": "a1000000-0000-4000-8000-000000967425",
+   "id": "a1000000-0000-4000-8000-000000967433",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967401",
    "date": "2026-09-14T22:30:00Z",
    "title": "Lezione doppia",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967421"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967429"
     },
     {
      "course_subscription_id": "a1000000-0000-4000-8000-000000967499"
@@ -1198,25 +1302,25 @@
    ],
    "expected_absences": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967422"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967430"
     }
    ]
   },
   "r1b": {
-   "id": "a1000000-0000-4000-8000-000000967426",
+   "id": "a1000000-0000-4000-8000-000000967434",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967401",
    "date": "2026-09-14T21:59:00Z",
    "title": "Prima",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967424"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967432"
     }
    ],
    "expected_absences": []
   },
   "r2": {
-   "id": "a1000000-0000-4000-8000-000000967427",
+   "id": "a1000000-0000-4000-8000-000000967435",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967402",
    "date": "2026-09-16T06:00:00Z",
@@ -1225,7 +1329,7 @@
    "expected_absences": null
   },
   "r3": {
-   "id": "a1000000-0000-4000-8000-000000967428",
+   "id": "a1000000-0000-4000-8000-000000967436",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967403",
    "date": "2026-09-17T06:00:00Z",
@@ -1234,14 +1338,14 @@
    "expected_absences": null
   },
   "r4": {
-   "id": "a1000000-0000-4000-8000-000000967429",
+   "id": "a1000000-0000-4000-8000-000000967437",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967404",
    "date": "2026-09-18T06:00:00Z",
    "title": "Lista",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967423"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967431"
     },
     {
      "course_subscription_id": null
@@ -1250,20 +1354,20 @@
    "expected_absences": null
   },
   "r5": {
-   "id": "a1000000-0000-4000-8000-000000967430",
+   "id": "a1000000-0000-4000-8000-000000967438",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967405",
    "date": "2026-09-19T06:00:00Z",
    "title": "Maiuscolo",
    "attendees": [
     {
-     "course_subscription_id": "A1000000-0000-4000-8000-000000967421"
+     "course_subscription_id": "A1000000-0000-4000-8000-000000967429"
     }
    ],
    "expected_absences": null
   },
   "r10": {
-   "id": "a1000000-0000-4000-8000-000000967431",
+   "id": "a1000000-0000-4000-8000-000000967439",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967410",
    "date": "2026-09-20T06:00:00Z",
@@ -1272,7 +1376,7 @@
    "expected_absences": null
   },
   "nothing": {
-   "id": "a1000000-0000-4000-8000-000000967432",
+   "id": "a1000000-0000-4000-8000-000000967440",
    "registry": "reg_report",
    "event": null,
    "date": "2026-09-20T07:00:00Z",
@@ -1281,23 +1385,23 @@
    "expected_absences": null
   },
   "b1": {
-   "id": "a1000000-0000-4000-8000-000000967433",
+   "id": "a1000000-0000-4000-8000-000000967441",
    "registry": "reg_b",
    "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-09-21T15:00:00Z",
    "title": "Basket",
    "attendees": [
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967422"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967430"
     },
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967421"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967429"
     }
    ],
    "expected_absences": null
   },
   "err6": {
-   "id": "a1000000-0000-4000-8000-000000967434",
+   "id": "a1000000-0000-4000-8000-000000967442",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967406",
    "date": "2026-10-05T06:00:00Z",
@@ -1306,7 +1410,7 @@
    "expected_absences": null
   },
   "err7": {
-   "id": "a1000000-0000-4000-8000-000000967435",
+   "id": "a1000000-0000-4000-8000-000000967443",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967407",
    "date": "2026-10-06T06:00:00Z",
@@ -1315,7 +1419,7 @@
    "expected_absences": null
   },
   "err8": {
-   "id": "a1000000-0000-4000-8000-000000967436",
+   "id": "a1000000-0000-4000-8000-000000967444",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967408",
    "date": "2026-10-07T06:00:00Z",
@@ -1324,7 +1428,7 @@
    "expected_absences": null
   },
   "ids_mixed": {
-   "id": "a1000000-0000-4000-8000-000000967437",
+   "id": "a1000000-0000-4000-8000-000000967445",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967411",
    "date": "2026-10-15T06:00:00Z",
@@ -1337,7 +1441,7 @@
      "course_subscription_id": true
     },
     {
-     "course_subscription_id": "a1000000-0000-4000-8000-000000967421"
+     "course_subscription_id": "a1000000-0000-4000-8000-000000967429"
     }
    ],
    "expected_absences": [
@@ -1347,7 +1451,7 @@
    ]
   },
   "err_float": {
-   "id": "a1000000-0000-4000-8000-000000967438",
+   "id": "a1000000-0000-4000-8000-000000967446",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967412",
    "date": "2026-10-16T06:00:00Z",
@@ -1360,7 +1464,7 @@
    "expected_absences": null
   },
   "err_list": {
-   "id": "a1000000-0000-4000-8000-000000967439",
+   "id": "a1000000-0000-4000-8000-000000967447",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967413",
    "date": "2026-10-17T06:00:00Z",
@@ -1375,7 +1479,7 @@
    "expected_absences": null
   },
   "err_huge": {
-   "id": "a1000000-0000-4000-8000-000000967440",
+   "id": "a1000000-0000-4000-8000-000000967448",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967414",
    "date": "2026-10-18T06:00:00Z",
@@ -1388,7 +1492,7 @@
    "expected_absences": null
   },
   "err_negative": {
-   "id": "a1000000-0000-4000-8000-000000967441",
+   "id": "a1000000-0000-4000-8000-000000967449",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967415",
    "date": "2026-10-19T06:00:00Z",
@@ -1401,7 +1505,7 @@
    "expected_absences": null
   },
   "err9": {
-   "id": "a1000000-0000-4000-8000-000000967442",
+   "id": "a1000000-0000-4000-8000-000000967450",
    "registry": "reg_report",
    "event": "a1000000-0000-4000-8000-000000967409",
    "date": "2026-10-08T06:00:00Z",
@@ -1413,8 +1517,80 @@
    ],
    "expected_absences": null
   },
+  "w16": {
+   "id": "a1000000-0000-4000-8000-000000967451",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967417",
+   "date": "2026-10-21T06:00:00Z",
+   "title": "Giorno 16",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "w17": {
+   "id": "a1000000-0000-4000-8000-000000967452",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967418",
+   "date": "2026-10-22T06:00:00Z",
+   "title": "Giorno 17",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "w18": {
+   "id": "a1000000-0000-4000-8000-000000967453",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967419",
+   "date": "2026-10-23T06:00:00Z",
+   "title": "Giorno 18",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "w19": {
+   "id": "a1000000-0000-4000-8000-000000967454",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967420",
+   "date": "2026-10-24T06:00:00Z",
+   "title": "Giorno 19",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "w20": {
+   "id": "a1000000-0000-4000-8000-000000967455",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967421",
+   "date": "2026-10-25T06:00:00Z",
+   "title": "Giorno 20",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "w21": {
+   "id": "a1000000-0000-4000-8000-000000967456",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967422",
+   "date": "2026-10-26T06:00:00Z",
+   "title": "Giorno 21",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "w22": {
+   "id": "a1000000-0000-4000-8000-000000967457",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967423",
+   "date": "2026-10-27T06:00:00Z",
+   "title": "Giorno 22",
+   "attendees": null,
+   "expected_absences": null
+  },
+  "w23": {
+   "id": "a1000000-0000-4000-8000-000000967458",
+   "registry": "reg_report",
+   "event": "a1000000-0000-4000-8000-000000967424",
+   "date": "2026-10-28T06:00:00Z",
+   "title": "Giorno 23",
+   "attendees": null,
+   "expected_absences": null
+  },
   "err_b2": {
-   "id": "a1000000-0000-4000-8000-000000967443",
+   "id": "a1000000-0000-4000-8000-000000967459",
    "registry": "reg_b",
    "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-10-12T06:00:00Z",
@@ -1423,7 +1599,7 @@
    "expected_absences": null
   },
   "err_e14": {
-   "id": "a1000000-0000-4000-8000-000000967444",
+   "id": "a1000000-0000-4000-8000-000000967460",
    "registry": "reg_a",
    "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-10-13T06:00:00Z",
@@ -1432,7 +1608,7 @@
    "expected_absences": null
   },
   "err_dict": {
-   "id": "a1000000-0000-4000-8000-000000967445",
+   "id": "a1000000-0000-4000-8000-000000967461",
    "registry": "reg_dict",
    "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-10-14T06:00:00Z",
@@ -1441,7 +1617,7 @@
    "expected_absences": null
   },
   "foreign": {
-   "id": "a1000000-0000-4000-8000-000000967446",
+   "id": "a1000000-0000-4000-8000-000000967462",
    "registry": "reg_foreign",
    "event": "a1000000-0000-4000-8000-000000967416",
    "date": "2026-09-25T06:00:00Z",
@@ -5663,6 +5839,566 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-formula",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=21/10/2026&end_date=21/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 16",
+       "description": "=1+1",
+       "date": "21/10/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 16",
+         "=1+1",
+         "21/10/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        13,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-dynamic-formula",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=22/10/2026&end_date=22/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 17",
+       "description": "=SEQUENCE(3)",
+       "date": "22/10/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 17",
+         "=SEQUENCE(3)",
+         "22/10/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        14,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-nested-dynamic-formulas",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=23/10/2026&end_date=23/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 18",
+       "description": "=1+FILTER(A1:A3,B1:B3)+SORT(C1)+XSORT(D1)",
+       "date": "23/10/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 18",
+         "=1+FILTER(A1:A3,B1:B3)+SORT(C1)+XSORT(D1)",
+         "23/10/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        43,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-array-formula",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=24/10/2026&end_date=24/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 19",
+       "description": "{=SUM(1,2)}",
+       "date": "24/10/2026 08:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 19",
+         "{=SUM(1,2)}",
+         "24/10/2026 08:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        13,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-rich-text",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=25/10/2026&end_date=25/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 20",
+       "description": "<r><t>grassetto</t></r>",
+       "date": "25/10/2026 07:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 20",
+         "<r><t>grassetto</t></r>",
+         "25/10/2026 07:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        25,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-link-with-anchor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=26/10/2026&end_date=26/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 21",
+       "description": "https://example.test/lezione#sezione",
+       "date": "26/10/2026 07:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 21",
+         "https://example.test/lezione#sezione",
+         "26/10/2026 07:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        38,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-expanded-dynamic-formula",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=27/10/2026&end_date=27/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 22",
+       "description": "=_xlfn.UNIQUE(A1)",
+       "date": "27/10/2026 07:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 22",
+         "=_xlfn.UNIQUE(A1)",
+         "27/10/2026 07:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        19,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "instructor-writes-report-workbook-formula-with-symbols",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/report?start_date=28/10/2026&end_date=28/10/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "results": [
+      {
+       "first_name": "Anna è",
+       "last_name": "Rossi",
+       "course": "Corso A",
+       "title": "Giorno 23",
+       "description": "=IF(1<2,\"a&b\",\">\")",
+       "date": "28/10/2026 07:00",
+       "attendees_count": 0,
+       "attendees": "",
+       "expected_absences": ""
+      }
+     ],
+     "report_file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Sheet1",
+       "columns": [
+        "Nome",
+        "Cognome",
+        "Corso",
+        "Titolo",
+        "Descrizione",
+        "Data",
+        "Numero di partecipanti",
+        "Partecipanti",
+        "Assenti previsti"
+       ],
+       "rows": [
+        [
+         "Anna è",
+         "Rossi",
+         "Corso A",
+         "Giorno 23",
+         "=IF(1<2,\"a&b\",\">\")",
+         "28/10/2026 07:00",
+         {
+          "int": "0"
+         },
+         "",
+         ""
+        ]
+       ],
+       "index": false,
+       "widths": [
+        8,
+        9,
+        9,
+        11,
+        20,
+        18,
+        24,
+        14,
+        18
+       ]
+      }
+     }
+    }
+   },
    "effect": null
   },
   {

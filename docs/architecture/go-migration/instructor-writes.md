@@ -76,7 +76,7 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 `200 {'data': {'results': [...], 'report_file': base64}}`.
 
 ## Not ported
-- report: workbook inputs the writer refuses (cells starting with `=`, rich strings, links with `#`: the writer's formula and URL
+- report: workbook inputs the writer refuses (cells starting with `=`, links with `#`: the writer's formula and URL
   handling is not ported).
 - Refused with a 500 before any write: calculation amounts whose product falls in the subnormal range (below the context's
   smallest exponent) and NaN diagnostics of 28 digits or more.
@@ -114,3 +114,7 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 
 `GET instructor/report`: a date text that carries a zone is a 500 (the view keeps the zone and `localize` raises), years
 1-999 are valid dates, and the first minutes of year 1 overflow `astimezone(UTC)` (500).
+
+## Round t3courses
+
+The report workbook writes dynamic array formulas (`cm="1"`, expanded `_xlfn.` names, `xl/metadata.xml`); the golden `sub-dynamic` case now matches Python byte for byte. 177 cases GREEN natively. Mutation (`cm` value) CAUGHT.

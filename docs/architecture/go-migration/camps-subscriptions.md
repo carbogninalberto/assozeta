@@ -76,3 +76,7 @@ render PaymentSerializer's nested invoice and instructor. The fixture seeds both
 (the nested instructor dropped) fails `list-owner` on Go.
 
 tailcourses: the generated payment's INSERT refusals answer the driver's text: `numeric field overflow` (amount past numeric(9,2)) and `value too long for type character varying(5120)` (notes); the add is atomic so nothing stays. A malformed `X-Group-Id` raises the UUID field error. Cases `add-amount-overflow-rolls-back`, `add-notes-too-long-rolls-back`, `add-malformed-group-payment` (114 cases). Still refused: negative amounts (the check-constraint message dumps the new row) and a group that vanishes mid-request. GREEN CI `tailcourses-2`. Mutation `tc-mut5` (overflow text changed) CAUGHT.
+
+## Round t3courses
+
+Multipart/form bodies with file parts and a `periods` file or text part (file iteration yields bytes lines). 122 cases GREEN on four transports (run 43085954222). Mutation (error text) CAUGHT.

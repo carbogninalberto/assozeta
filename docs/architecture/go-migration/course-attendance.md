@@ -145,3 +145,7 @@ caller cannot see):
 - GREEN (`versioned-sync1`): 99/99 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`mutation-sync1`): dropping the `request.user` association filter from the check-in lookups fails
   `mark-today` (207 instead of 200, CAUGHT).
+
+## Round t3courses
+
+Integer and boolean ids read as `uuid.UUID(int=...)`, float and boolean carnet counters (`lessons_left` keeps float/int type), lesson dates of year below 1000, and full-width digits in event starts are ported. 141 cases GREEN on native Django, native Go, Caddy v1 and v2 (run 43085954222, label t3courses-3). Mutation (float counter turned into an int) CAUGHT by `update-float-carnet-consumed`. Kept refused: an infinite float counter (`1e999`), whose save fails inside jsonb.

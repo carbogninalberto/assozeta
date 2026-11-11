@@ -42,6 +42,15 @@ type ModuleResponseRef struct {
 	AssociationID *string `db:"sport_association_id"`
 }
 
+// ModuleResponseAccess is what the attachment view reads of a response to
+// decide who may change its attachments.
+type ModuleResponseAccess struct {
+	ID               string  `db:"module_response_id"`
+	UserID           *string `db:"user_id"`
+	AssociationID    *string `db:"sport_association_id"`
+	AttachmentSecret string  `db:"attachment_token_hash"`
+}
+
 // ModuleResponseCreate is the ModuleResponses.objects.create(...) row.
 type ModuleResponseCreate struct {
 	ID, ModuleID      string
@@ -50,6 +59,8 @@ type ModuleResponseCreate struct {
 	QueuePosition     *int64
 	Response          string
 	Approved          bool
+	// AttachmentSecretHash is the SHA-256 (hex) of the secret returned to the respondent.
+	AttachmentSecretHash string
 }
 
 // ModuleDocumentCreate is the Document.objects.create(filename=...) row.
@@ -79,11 +90,13 @@ type ModulesResponsesTransaction interface {
 	CreateResponse(ctx context.Context, row ModuleResponseCreate, association *string, audit ModuleResponseAudit) error
 	SaveResponseUser(ctx context.Context, id, user string, association *string, audit ModuleResponseAudit) error
 	ResponseInAssociation(ctx context.Context, id, association string) (*ModuleResponseRef, error)
-	ResponseExists(ctx context.Context, id string) (bool, error)
+	// ResponseAccess is filter(module_response_id=...).select_related('module').first().
+	ResponseAccess(ctx context.Context, id string) (*ModuleResponseAccess, error)
+	// ResponseHasDocument is module_response.attachments.filter(document_id=...).exists().
+	ResponseHasDocument(ctx context.Context, response, document string) (bool, error)
 	ApproveResponse(ctx context.Context, ref ModuleResponseRef, audit ModuleResponseAudit) error
 	DeleteResponse(ctx context.Context, id string, audit ModuleResponseAudit) error
 	UpdateQueue(ctx context.Context, module string, association *string, audit ModuleResponseAudit) error
-	DocumentExists(ctx context.Context, id string) (bool, error)
 	DocumentReferencedElsewhere(ctx context.Context, id string) (bool, error)
 	DeleteDocument(ctx context.Context, response, document string, audit ModuleResponseAudit) error
 	// DeleteReferencedDocument is DeleteDocument for a document rows of other

@@ -90,7 +90,11 @@ func parseReferenceForm(raw string) domain.RequestObject {
 		key = decode(key)
 		value = decode(value)
 		if i, ok := positions[key]; ok {
+			if result[i].All == nil {
+				result[i].All = []any{result[i].Value}
+			}
 			result[i].Value = value
+			result[i].All = append(result[i].All, value)
 		} else {
 			positions[key] = len(result)
 			result = append(result, domain.RequestField{Name: key, Value: value})
@@ -119,6 +123,10 @@ func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error))
 		put := func(object *domain.RequestObject, name string, value any) {
 			for i, f := range *object {
 				if f.Name == name {
+					if (*object)[i].All == nil {
+						(*object)[i].All = []any{f.Value}
+					}
+					(*object)[i].All = append((*object)[i].All, value)
 					(*object)[i].Value = value
 					return
 				}
@@ -158,8 +166,15 @@ func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error))
 				return nil, &restInputError{Status: 413, Detail: "Request body exceeded settings.DATA_UPLOAD_MAX_MEMORY_SIZE."}
 			}
 		}
+		// The view's request.data is the form's QueryDict updated with the files: text values first, then files.
 		for _, file := range files {
-			put(&fields, file.Name, file.Value)
+			values := file.All
+			if values == nil {
+				values = []any{file.Value}
+			}
+			for _, value := range values {
+				put(&fields, file.Name, value)
+			}
 		}
 		return fields, nil
 	}

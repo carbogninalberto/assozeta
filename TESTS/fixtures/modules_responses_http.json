@@ -1000,6 +1000,7 @@
    "id": "a1000000-0000-4000-8000-000000643022",
    "module": "open",
    "number": 0,
+   "token": "respondent-token-b",
    "export_user": null,
    "payment": null
   },
@@ -1018,6 +1019,7 @@
    "id": "a1000000-0000-4000-8000-000000643023",
    "module": "open",
    "number": 1,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1028,11 +1030,15 @@
    "approved": true,
    "user": null,
    "attachments": [
-    "d4"
+    "d4",
+    "d3",
+    "d9",
+    "d42"
    ],
    "id": "a1000000-0000-4000-8000-000000643024",
    "module": "open",
    "number": 2,
+   "token": "respondent-token-a",
    "export_user": null,
    "payment": null
   },
@@ -1048,6 +1054,7 @@
    "id": "a1000000-0000-4000-8000-000000643025",
    "module": "full",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1063,6 +1070,7 @@
    "id": "a1000000-0000-4000-8000-000000643026",
    "module": "queue",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1078,6 +1086,7 @@
    "id": "a1000000-0000-4000-8000-000000643027",
    "module": "queue",
    "number": 1,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1089,10 +1098,13 @@
    },
    "approved": false,
    "user": null,
-   "attachments": [],
+   "attachments": [
+    "d5"
+   ],
    "id": "a1000000-0000-4000-8000-000000643028",
    "module": "queue",
    "number": 2,
+   "token": "respondent-token-c",
    "export_user": null,
    "payment": null
   },
@@ -1106,6 +1118,7 @@
    "id": "a1000000-0000-4000-8000-000000643029",
    "module": "queue",
    "number": 3,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1121,6 +1134,7 @@
    "id": "a1000000-0000-4000-8000-000000643030",
    "module": "foreign",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1136,6 +1150,7 @@
    "id": "a1000000-0000-4000-8000-000000643031",
    "module": "foreign",
    "number": 1,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1149,6 +1164,7 @@
    "id": "a1000000-0000-4000-8000-000000643032",
    "module": "orphan",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1162,6 +1178,7 @@
    "id": "a1000000-0000-4000-8000-000000643033",
    "module": "nullnum",
    "number": null,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1195,7 +1212,8 @@
    "module": "export",
    "number": 0,
    "export_user": "export_a",
-   "payment": "paid"
+   "payment": "paid",
+   "token": ""
   },
   "e2": {
    "created": "2026-09-04T23:59:00Z",
@@ -1214,6 +1232,7 @@
    "module": "export",
    "number": 1,
    "payment": "unpaid",
+   "token": "",
    "export_user": null
   },
   "e3": {
@@ -1231,6 +1250,7 @@
    "id": "a1000000-0000-4000-8000-000000643119",
    "module": "export",
    "number": null,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1245,7 +1265,8 @@
    "module": "export",
    "number": 3,
    "export_user": "export_b",
-   "payment": "gone"
+   "payment": "gone",
+   "token": ""
   },
   "e5": {
    "created": "2026-09-02T10:00:00Z",
@@ -1263,6 +1284,7 @@
    "id": "a1000000-0000-4000-8000-000000643121",
    "module": "export",
    "number": 4,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1281,6 +1303,7 @@
    "id": "a1000000-0000-4000-8000-000000643122",
    "module": "export_plain",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1294,6 +1317,7 @@
    "id": "a1000000-0000-4000-8000-000000643123",
    "module": "export_noname",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1307,6 +1331,7 @@
    "id": "a1000000-0000-4000-8000-000000643124",
    "module": "export_nolabel",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1320,6 +1345,7 @@
    "id": "a1000000-0000-4000-8000-000000643125",
    "module": "export_dict",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1335,6 +1361,7 @@
    "id": "a1000000-0000-4000-8000-000000643126",
    "module": "export_foreign",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1348,6 +1375,7 @@
    "id": "a1000000-0000-4000-8000-000000643810",
    "module": "export_props_text",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1361,6 +1389,7 @@
    "id": "a1000000-0000-4000-8000-000000643811",
    "module": "export_props_list",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1374,6 +1403,7 @@
    "id": "a1000000-0000-4000-8000-000000643812",
    "module": "export_props_number",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1387,6 +1417,7 @@
    "id": "a1000000-0000-4000-8000-000000643813",
    "module": "export_label_list",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   },
@@ -1400,6 +1431,7 @@
    "id": "a1000000-0000-4000-8000-000000643814",
    "module": "export_label_dict",
    "number": 0,
+   "token": "",
    "export_user": null,
    "payment": null
   }
@@ -2527,7 +2559,7 @@
          "-",
          "-",
          "Non approvata",
-         ""
+         "anonimo.txt"
         ],
         [
          "-",
@@ -3271,6 +3303,18 @@
       {
        "document_id": "a1000000-0000-4000-8000-000000643018",
        "filename": "condiviso.pdf"
+      },
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643016",
+       "filename": "libero.txt"
+      },
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643807",
+       "filename": "da form.txt"
+      },
+      {
+       "document_id": "00000000-0000-0000-0000-00000000002a",
+       "filename": "numerato.txt"
       }
      ]
     }
@@ -3680,7 +3724,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -3773,7 +3818,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -3859,7 +3905,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -3945,7 +3992,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4027,7 +4075,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4102,7 +4151,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4184,7 +4234,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4264,7 +4315,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4354,7 +4406,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4422,7 +4475,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4496,7 +4550,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -4579,7 +4634,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -5439,7 +5495,8 @@
    },
    "effect": null,
    "body": {
-    "filename": "a.txt"
+    "filename": "a.txt",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -5448,16 +5505,16 @@
    "method": "POST",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
    "headers": {},
-   "status": 200,
+   "status": 404,
    "response": {
-    "msg": "attachment added"
+    "error": "response not found"
    },
    "effect": null,
    "body": {}
   },
   {
    "name": "modules-responses-attach-list-body",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "POST",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
@@ -5472,7 +5529,7 @@
   },
   {
    "name": "modules-responses-attach-string-body-server-error",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "POST",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
@@ -5536,7 +5593,8 @@
    },
    "body": {
     "filename": "nota.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -5712,7 +5770,8 @@
    },
    "body": {
     "filename": "archivio.tar.gz",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -5771,7 +5830,8 @@
    },
    "body": {
     "filename": "Backup.TGZ",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -5830,7 +5890,8 @@
    },
    "body": {
     "filename": "dati.gz",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -5889,7 +5950,8 @@
    },
    "body": {
     "filename": "soci.csv.bz2",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -5948,7 +6010,8 @@
    },
    "body": {
     "filename": "foto.txz",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6007,7 +6070,8 @@
    },
    "body": {
     "filename": "logo.svgz",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6066,7 +6130,8 @@
    },
    "body": {
     "filename": "modulo.pdf.br",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6125,7 +6190,8 @@
    },
    "body": {
     "filename": "vecchio.tar.Z",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6183,60 +6249,21 @@
    },
    "body": {
     "filename": "nota.z",
-    "base64": "H4sIAAAAAAAAA0vOz0nJBAA="
+    "base64": "H4sIAAAAAAAAA0vOz0nJBAA=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
-   "name": "modules-responses-attach-unknown-response-server-error",
+   "name": "modules-responses-attach-unknown-response-not-found",
    "actor": "athlete",
    "method": "POST",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "effect": {
-    "kind": "document",
-    "actor": "athlete",
-    "filename": "orfano.txt",
-    "link": null,
-    "audit": [
-     {
-      "model": "Document",
-      "key": "$new",
-      "action": 0,
-      "changes": {
-       "document_id": [
-        "None",
-        "$id"
-       ],
-       "creation_date": [
-        "None",
-        "$created"
-       ],
-       "filename": [
-        "None",
-        "orfano.txt"
-       ],
-       "token": [
-        "None",
-        "$token"
-       ],
-       "customer_invoice_pdf": [
-        "None",
-        "application.CustomerInvoice.None"
-       ]
-      },
-      "index": "$actor",
-      "path": "actor.sport_association"
-     }
-    ],
-    "object": {
-     "size": 6,
-     "sha256": "a92b0ec45df06c01cb2aa5e53691ccbe0a4a7c67ef92a81e0cb8d6e8ebdf5000",
-     "content_type": "text/plain",
-     "cache_control": "max-age=86400"
-    }
+   "status": 404,
+   "response": {
+    "error": "response not found"
    },
+   "effect": null,
    "body": {
     "filename": "orfano.txt",
     "base64": "b3JmYW5v"
@@ -6290,7 +6317,8 @@
    },
    "body": {
     "filename": "rotto.txt",
-    "base64": "abcde"
+    "base64": "abcde",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6399,7 +6427,8 @@
    },
    "body": {
     "filename": "cartella/nota.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6517,7 +6546,8 @@
    },
    "body": {
     "filename": "./doppia//barra.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6575,7 +6605,8 @@
    },
    "body": {
     "filename": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6589,7 +6620,8 @@
    "effect": null,
    "body": {
     "filename": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6603,7 +6635,8 @@
    "effect": null,
    "body": {
     "filename": "nul\u0000.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6617,7 +6650,8 @@
    "effect": null,
    "body": {
     "filename": null,
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6668,7 +6702,8 @@
    },
    "body": {
     "filename": "",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6719,7 +6754,8 @@
    },
    "body": {
     "filename": "..",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6770,7 +6806,8 @@
    },
    "body": {
     "filename": "a/../b.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6821,7 +6858,8 @@
    },
    "body": {
     "filename": "a\\..\\b.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6872,7 +6910,8 @@
    },
    "body": {
     "filename": "/assoluto.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6923,7 +6962,8 @@
    },
    "body": {
     "filename": "cartella/",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -6974,7 +7014,8 @@
    },
    "body": {
     "filename": "",
-    "base64": "abcde"
+    "base64": "abcde",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7286,7 +7327,8 @@
    },
    "body": {
     "filename": "dati-integer.txt",
-    "base64": 5
+    "base64": 5,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7337,7 +7379,8 @@
    },
    "body": {
     "filename": "dati-null.txt",
-    "base64": null
+    "base64": null,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7390,7 +7433,8 @@
     "filename": "dati-list.txt",
     "base64": [
      "Y2lh"
-    ]
+    ],
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7441,7 +7485,8 @@
    },
    "body": {
     "filename": "dati-object.txt",
-    "base64": {}
+    "base64": {},
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7492,7 +7537,8 @@
    },
    "body": {
     "filename": "dati-boolean.txt",
-    "base64": false
+    "base64": false,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7548,7 +7594,7 @@
      "cache_control": "max-age=86400"
     }
    },
-   "raw_body": "filename=modulo.txt&base64=Y2lhbw%3D%3D&filename=ultimo.txt",
+   "raw_body": "filename=modulo.txt&base64=Y2lhbw%3D%3D&filename=ultimo.txt&attachment_token=respondent-token-a",
    "content_type": "application/x-www-form-urlencoded"
   },
   {
@@ -7562,7 +7608,7 @@
     "msg": "attachment added"
    },
    "effect": null,
-   "raw_body": "filename=modulo.txt",
+   "raw_body": "filename=modulo.txt&attachment_token=respondent-token-a",
    "content_type": "application/x-www-form-urlencoded"
   },
   {
@@ -7667,7 +7713,7 @@
     ],
     "object": null
    },
-   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\ncaricato.txt\r\n--moduli\r\nContent-Disposition: form-data; name=\"base64\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nY2lhbw==\r\n--moduli--\r\n",
+   "raw_body": "--moduli\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\ncaricato.txt\r\n--moduli\r\nContent-Disposition: form-data; name=\"attachment_token\"\r\n\r\nrespondent-token-a\r\n--moduli\r\nContent-Disposition: form-data; name=\"base64\"; filename=\"a.txt\"\r\nContent-Type: application/octet-stream\r\n\r\nY2lhbw==\r\n--moduli--\r\n",
    "content_type": "multipart/form-data; boundary=moduli"
   },
   {
@@ -7681,7 +7727,9 @@
     "error": "document not found"
    },
    "effect": null,
-   "body": {}
+   "body": {
+    "attachment_token": "respondent-token-a"
+   }
   },
   {
    "name": "modules-responses-attach-delete-null-document",
@@ -7695,7 +7743,8 @@
    },
    "effect": null,
    "body": {
-    "document_id": null
+    "document_id": null,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7721,7 +7770,7 @@
    "headers": {},
    "status": 404,
    "response": {
-    "error": "document not found"
+    "error": "response not found"
    },
    "effect": null,
    "body": {
@@ -7730,7 +7779,7 @@
   },
   {
    "name": "modules-responses-attach-delete-list-without-key",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "DELETE",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
@@ -7745,7 +7794,7 @@
   },
   {
    "name": "modules-responses-attach-delete-list-key-server-error",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "DELETE",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
    "headers": {},
@@ -7770,20 +7819,22 @@
    }
   },
   {
-   "name": "modules-responses-attach-delete-unknown-response-server-error",
+   "name": "modules-responses-attach-delete-unknown-response-not-found",
    "actor": "owner",
    "method": "DELETE",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
    "effect": null,
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000643012"
    }
   },
   {
-   "name": "modules-responses-attach-delete-owner-unlinked",
+   "name": "modules-responses-attach-delete-owner-own-document",
    "actor": "owner",
    "method": "DELETE",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
@@ -7798,7 +7849,12 @@
     "deleted_documents": [
      "d3"
     ],
-    "removed_links": [],
+    "removed_links": [
+     [
+      "att_r",
+      "d3"
+     ]
+    ],
     "audit": [
      {
       "model": "Document",
@@ -7871,7 +7927,7 @@
    }
   },
   {
-   "name": "modules-responses-attach-delete-anonymous-other-response",
+   "name": "modules-responses-attach-delete-anonymous-own-response",
    "actor": "anonymous",
    "method": "DELETE",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643028/add-attachment",
@@ -7886,7 +7942,12 @@
     "deleted_documents": [
      "d5"
     ],
-    "removed_links": [],
+    "removed_links": [
+     [
+      "q3",
+      "d5"
+     ]
+    ],
     "audit": [
      {
       "model": "Document",
@@ -7899,7 +7960,8 @@
     ]
    },
    "body": {
-    "document_id": "a1000000-0000-4000-8000-000000643020"
+    "document_id": "a1000000-0000-4000-8000-000000643020",
+    "attachment_token": "respondent-token-c"
    }
   },
   {
@@ -7914,7 +7976,8 @@
    },
    "effect": null,
    "body": {
-    "document_id": true
+    "document_id": true,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7927,7 +7990,8 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
-    "document_id": -1
+    "document_id": -1,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7940,7 +8004,8 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
-    "document_id": 340282366920938463463374607431768211456
+    "document_id": 340282366920938463463374607431768211456,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7953,7 +8018,8 @@
    "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
-    "document_id": 42.0
+    "document_id": 42.0,
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7968,7 +8034,8 @@
    "body": {
     "document_id": [
      "00000000-0000-0000-0000-00000000002a"
-    ]
+    ],
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -7987,7 +8054,12 @@
     "deleted_documents": [
      "d42"
     ],
-    "removed_links": [],
+    "removed_links": [
+     [
+      "att_r",
+      "d42"
+     ]
+    ],
     "audit": [
      {
       "model": "Document",
@@ -8019,7 +8091,12 @@
     "deleted_documents": [
      "d9"
     ],
-    "removed_links": [],
+    "removed_links": [
+     [
+      "att_r",
+      "d9"
+     ]
+    ],
     "audit": [
      {
       "model": "Document",
@@ -8031,7 +8108,7 @@
      }
     ]
    },
-   "raw_body": "document_id=a1000000-0000-4000-8000-000000643807",
+   "raw_body": "document_id=a1000000-0000-4000-8000-000000643807&attachment_token=respondent-token-a",
    "content_type": "application/x-www-form-urlencoded"
   },
   {
@@ -8069,6 +8146,479 @@
    },
    "body": {
     "document_id": "a1000000-0000-4000-8000-000000643805"
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-anonymous-no-secret",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-anonymous-wrong-secret",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-x"
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-anonymous-empty-secret",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw==",
+    "attachment_token": ""
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-anonymous-secret-not-text",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw==",
+    "attachment_token": 5
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-anonymous-other-response-secret",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-b"
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-anonymous-response-without-secret",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-athlete-not-respondent",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "filename": "nota.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-no-secret",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-wrong-secret",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014",
+    "attachment_token": "respondent-token-x"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-empty-secret",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014",
+    "attachment_token": ""
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-secret-not-text",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014",
+    "attachment_token": 5
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-other-response-secret",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014",
+    "attachment_token": "respondent-token-b"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-response-without-secret",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643023/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014",
+    "attachment_token": "respondent-token-a"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-athlete-not-respondent",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-other-response-document",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643014"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-anonymous-other-response-document",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643012",
+    "attachment_token": "respondent-token-a"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-unlinked-document",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "document not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643805"
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-foreign-owner-other-response",
+   "actor": "foreign_owner",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643028/add-attachment",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "response not found"
+   },
+   "effect": null,
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643020"
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-foreign-owner-with-secret",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643024/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": "foreign_owner",
+    "filename": "ospite.txt",
+    "link": "att_r",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "ospite.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "ospite.txt",
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
+   }
+  },
+  {
+   "name": "modules-responses-attach-post-athlete-respondent",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643022/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment added"
+   },
+   "effect": {
+    "kind": "document",
+    "actor": "athlete",
+    "filename": "mio.txt",
+    "link": "open_r1",
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "document_id": [
+        "None",
+        "$id"
+       ],
+       "creation_date": [
+        "None",
+        "$created"
+       ],
+       "filename": [
+        "None",
+        "mio.txt"
+       ],
+       "token": [
+        "None",
+        "$token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ],
+    "object": {
+     "size": 4,
+     "sha256": "b133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+     "content_type": "text/plain",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "filename": "mio.txt",
+    "base64": "Y2lhbw=="
+   }
+  },
+  {
+   "name": "modules-responses-attach-delete-athlete-respondent",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/modules/response/a1000000-0000-4000-8000-000000643022/add-attachment",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "attachment deleted"
+   },
+   "effect": {
+    "kind": "rows",
+    "actor": "athlete",
+    "deleted_documents": [
+     "d1"
+    ],
+    "removed_links": [
+     [
+      "open_r1",
+      "d1"
+     ]
+    ],
+    "audit": [
+     {
+      "model": "Document",
+      "key": "d1",
+      "action": 2,
+      "changes": "$prepared",
+      "index": "$actor",
+      "path": "actor.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "document_id": "a1000000-0000-4000-8000-000000643012"
    }
   },
   {
@@ -8117,7 +8667,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -8210,7 +8761,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -8330,7 +8882,8 @@
    "status": 200,
    "response": {
     "msg": "response added",
-    "module_response_id": "$new"
+    "module_response_id": "$new",
+    "attachment_token": "$new"
    },
    "effect": {
     "kind": "response",
@@ -8425,7 +8978,8 @@
    "retry_after": "590",
    "body": {
     "filename": "nota.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -8444,7 +8998,9 @@
     "age": 10.2
    },
    "retry_after": "590",
-   "body": {}
+   "body": {
+    "attachment_token": "respondent-token-a"
+   }
   },
   {
    "name": "modules-responses-attach-anonymous-below-the-rate",
@@ -8505,7 +9061,8 @@
    },
    "body": {
     "filename": "nota.txt",
-    "base64": "Y2lhbw=="
+    "base64": "Y2lhbw==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -8583,7 +9140,8 @@
    "effect": null,
    "body": {
     "filename": "grande.bin",
-    "base64": "enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eno="
+    "base64": "enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eno=",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -8592,9 +9150,9 @@
    "method": "POST",
    "path": "/modules/response/a1000000-0000-4000-8000-000000643999/add-attachment",
    "headers": {},
-   "status": 413,
+   "status": 404,
    "response": {
-    "error": "Il file supera la dimensione massima consentita (4096 byte)."
+    "error": "response not found"
    },
    "effect": null,
    "body": {
@@ -8657,7 +9215,8 @@
    },
    "body": {
     "filename": "limite.bin",
-    "base64": "enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eg=="
+    "base64": "enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6enp6eg==",
+    "attachment_token": "respondent-token-a"
    }
   },
   {
@@ -8708,7 +9267,8 @@
    },
    "body": {
     "filename": "rotto.bin",
-    "base64": "abcde"
+    "base64": "abcde",
+    "attachment_token": "respondent-token-a"
    }
   }
  ]

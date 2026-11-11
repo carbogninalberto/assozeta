@@ -20,15 +20,8 @@ var CampFieldOrder = []string{"camps_and_retreats_id", "title", "description", "
 // request.data['sport_association'] = association before validation: a form
 // QueryDict is immutable and only a mapping supports item assignment.
 func CampAssignAssociation(body any, form bool, association string) (domain.RequestObject, error) {
-	if form {
-		if object, ok := body.(domain.RequestObject); ok {
-			for _, field := range object {
-				// With files DRF merges them into a mutable copy (not ported).
-				if _, upload := field.Value.(domain.RequestUpload); upload {
-					return nil, ErrCampsFormNotPorted
-				}
-			}
-		}
+	// A form without files is the immutable QueryDict; with files DRF merges them into a mutable copy.
+	if object, ok := body.(domain.RequestObject); form && !(ok && object.HasUpload()) {
 		return nil, &CampsPythonError{Message: "This QueryDict instance is immutable"}
 	}
 	switch data := body.(type) {
