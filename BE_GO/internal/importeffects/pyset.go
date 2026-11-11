@@ -106,3 +106,7 @@ func pyUUIDHash(key string) uint64 {
 	n, _ := new(big.Int).SetString(strings.ReplaceAll(key, "-", ""), 16)
 	return new(big.Int).Mod(n, pyHashModulus).Uint64()
 }
+
+// PySetOrder is pySetOrder for other packages: the iteration order of the
+// set Django's many-to-many add() builds from the new target ids.
+func PySetOrder(keys []string) []string { return pySetOrder(keys) }

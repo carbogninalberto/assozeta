@@ -40,7 +40,7 @@ func ParseMedicalAppointmentAdd(object domain.RequestObject) (MedicalAppointment
 		} else if id, ok := medicalAppointmentAddUUID(value); ok {
 			input.ID = &id
 		} else {
-			fields["medical_appointments_id"] = []string{"related-invalid-uuid:" + PythonStr(value)}
+			fields["medical_appointments_id"] = []string{PaymentCategoryValidationUUID}
 		}
 	}
 	if value, present := object.Lookup("document"); present && value != "" && value != nil {
@@ -126,3 +126,7 @@ func medicalAppointmentAddUUID(value any) (string, bool) {
 	}
 	return "", false
 }
+
+// UUIDFieldValue is UUIDField.to_python / to_internal_value for a request
+// value: an int (a bool is one) or a string in uuid.UUID's reading.
+func UUIDFieldValue(value any) (string, bool) { return medicalAppointmentAddUUID(value) }

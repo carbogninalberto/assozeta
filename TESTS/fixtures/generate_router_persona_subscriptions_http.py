@@ -216,6 +216,26 @@ STATE['future']['tags'] = []
 add('partial-update-format-json-tags-cleared', 'full_collaborator', 'PATCH', detail('future', '.json'), 200, current('future'),
     body={'tags': [], 'payment': None, 'document_pdf': None, 'supplier': None, 'instructor': None, 'group': None},
     effect=updated('full_collaborator', 'future', {}, tags=[]))
+# tags.set() with several new links: bulk_create follows the iteration order of the set of ids (the through rows' serial
+# ids), which the serializer's tags list reflects.
+import uuid
+TAGS_EXTRA = [{'id': f'a1000000-0000-4000-8000-{990101 + n:012d}', 'name': f'Extra {n}'} for n in range(3)]
+new_tags = [TAG['id']] + [tag['id'] for tag in TAGS_EXTRA]
+target_ids = set()
+for tag_id in new_tags:
+    target_ids.add(uuid.UUID(tag_id))
+ordered_tags = [str(tag_id) for tag_id in target_ids.difference([])]
+STATE['future']['tags'] = ordered_tags
+add('partial-update-several-new-tags', 'owner', 'PATCH', detail('future'), 200, current('future'), body={'tags': new_tags},
+    effect=updated('owner', 'future', {}, tags=ordered_tags))
+STATE['future']['tags'] = []
+add('partial-update-tags-cleared-again', 'owner', 'PATCH', detail('future'), 200, current('future'), body={'tags': []},
+    effect=updated('owner', 'future', {}, tags=[]))
+# jsonb text PostgreSQL rejects: the UPDATE fails (500 page), nothing is written.
+add('partial-update-nul-in-json-server-error', 'owner', 'PATCH', detail('future'), 500, '<stable-server-error-page>',
+    body={'custom_data': {'a': 'x\u0000y'}})
+add('partial-update-infinity-in-json-server-error', 'owner', 'PATCH', detail('future'), 500, '<stable-server-error-page>',
+    raw_body='{"meta": {"n": 1e999}}')
 STATE['future']['user'] = IDS['athlete']
 add('partial-update-user-without-association', 'owner', 'PATCH', detail('future'), 200, current('future'), body={'user': IDS['athlete']},
     effect=updated('owner', 'future', {'user_id': IDS['athlete']}, changes={'user': [OWNER, IDS['athlete']]}))
@@ -261,7 +281,7 @@ add('legacy-delete-full-collaborator', 'full_collaborator', 'DELETE', LEGACY('lo
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'DefaultRouter personas-subscriptions routes with Collector delete effects',
-    'ids': IDS, 'families': [F1, F2], 'associates': SEED, 'relations': RELATIONS, 'medical': MEDICAL, 'tag': TAG,
+    'ids': IDS, 'families': [F1, F2], 'associates': SEED, 'relations': RELATIONS, 'medical': MEDICAL, 'tag': TAG, 'tags_extra': TAGS_EXTRA,
     'subscriptions': {label: {'id': SUB_IDS[label], 'associate': A[a], 'start': s, 'end': e, 'created': c, **x}
                       for label, (a, s, e, c, x) in SUBSCRIPTIONS.items()},
     'reverse': REVERSE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')

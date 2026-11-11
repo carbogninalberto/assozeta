@@ -2648,12 +2648,14 @@
    "status": 201,
    "response": {
     "token": "$new",
-    "gym_name": "dopo",
+    "gym_name": [
+     "x"
+    ],
     "expires_at": "$later"
    },
    "effect": {
     "kind": "link",
-    "gym_name": "dopo",
+    "gym_name": "bin.dat",
     "association": "a1000000-0000-4000-8000-000000701001"
    },
    "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"bin.dat\"\r\nContent-Type: application/octet-stream\r\n\r\nx\r\n--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"\r\n\r\ndopo\r\n--submiscboundary--\r\n",

@@ -8,6 +8,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/importeffects"
 )
 
 type personaSubsRenderStore interface {
@@ -211,9 +212,9 @@ func pythonBoolText(value bool) string {
 // (partial for PATCH), setattr of each validated field, Subscription.save()
 // (missing dates from the owner's settings, auditlog's update entry, every
 // column), tags.set(), then the serializer over the in-memory instance.
-// Refused before any write: form bodies, a different primary key (Model.save
-// would insert a copy), JSON values PostgreSQL rejects, and more than one new
-// tag link at once (bulk_create's order follows a Python set).
+// Refused before any write: form bodies and a different primary key (Model.save
+// would insert a copy). JSON values PostgreSQL rejects are the 500 page; several
+// new tag links are created in the iteration order of Django's set of ids.
 func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain.ResolvedIdentity, id, header string, body any, form, partial bool,
 	login domain.LoginAuditContext) (any, error) {
 	if form {
@@ -242,7 +243,8 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 	}
 	for _, value := range write.JSON {
 		if !dto.TextStorable(value) || !jsonFinite(value) {
-			return nil, ErrPersonaNotPorted
+			// PostgreSQL rejects the jsonb text (NUL escape, NaN): the UPDATE fails, the 500 page, nothing written.
+			return nil, ErrPersonaUnhandled
 		}
 	}
 	row := *stored
@@ -357,8 +359,9 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 				added = append(added, tag)
 			}
 		}
+		// bulk_create follows the iteration order of the set of new target ids.
 		if len(added) > 1 {
-			return nil, ErrPersonaNotPorted
+			added = importeffects.PySetOrder(added)
 		}
 	}
 	changes, err := personaSubsChanges(*stored, row, write.JSON)

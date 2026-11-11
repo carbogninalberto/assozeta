@@ -443,6 +443,21 @@ add('renew-user-email-in-text', 'renew', 'owner', 400, error("string indices mus
     body=renewal(basic, user='email'))
 add('renew-tags-none', 'renew', 'owner', 400, error("object of type 'NoneType' has no len()"), body=renewal(basic, tags=None))
 add('renew-tag-malformed', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"), body=renewal(basic, tags=['x']))
+add('renew-tags-text', 'renew', 'owner', 400, error("['“a” is not a valid UUID.']"), body=renewal(basic, tags='abc'))
+add('renew-tags-text-unicode', 'renew', 'owner', 400, error("['“è” is not a valid UUID.']"), body=renewal(basic, tags='èa'))
+add('renew-tags-float-item', 'renew', 'owner', 400, error("['“1.5” is not a valid UUID.']"),
+    body=renewal(basic, tags=[{'tag_id': 5}, {'tag_id': 1.5}]))
+add('renew-tags-bool-then-bad-item', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
+    body=renewal(basic, tags=[{'tag_id': True}, {'tag_id': 'x'}]))
+add('renew-tags-list-item', 'renew', 'owner', 400, error("['“[1, 2]” is not a valid UUID.']"), body=renewal(basic, tags=[{'tag_id': [1, 2]}]))
+add('renew-tags-negative-item', 'renew', 'owner', 400, error("['“-1” is not a valid UUID.']"), body=renewal(basic, tags=[{'tag_id': -1}]))
+add('renew-tags-first-text-then-number', 'renew', 'owner', 400, error("['“2.0” is not a valid UUID.']"),
+    body=renewal(basic, tags=[TAGS['tag_a']['id'], 7, 2.0]))
+# data['user']['email'] as a list or a dict is searched as its text: no account, the renewal goes on (to the tags error).
+add('renew-user-email-list', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
+    body=renewal(basic, user={'email': ['a@example.test']}, tags=['x']))
+add('renew-user-email-dict', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
+    body=renewal(basic, user={'email': {'a': 1}}, tags=['x']))
 add('renew-tag-without-id', 'renew', 'owner', 400, error("'tag_id'"), body=renewal(basic, tags=[{'id': TAGS['tag_a']['id']}]))
 add('renew-courses-none', 'renew', 'owner', 400, error("object of type 'NoneType' has no len()"), body=renewal(basic, courses=None))
 
@@ -963,6 +978,31 @@ add('renew-preregistration', 'renew', 'owner', 200, {'status': 'success', 'payme
                                {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']})],
                   celery=tasks('$early_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pietro Prenotato.', 'association': OWN}]))
+
+# A preregistration that names the subscription it renews (fill_data_preregisration, as in subscription/add): the person,
+# certificate, custom data, role and number are the renewed subscription's, the type is the request's. An unknown or
+# foreign subscription is the 400 below (APIException: it propagates).
+NOT_RENEWABLE = {'msg': 'Iscrizione da rinnovare non trovata.', 'code': '400'}
+SENT = person('Altro', 'Nome', 'LTRNMO90C01H501K', type=1)
+add('renew-preregistration-renewal-unknown', 'renew', 'owner', 400, NOT_RENEWABLE,
+    body=renewal(SENT, preregistration=True, subscription_id=NEW_ID))
+add('renew-preregistration-renewal-malformed-id', 'renew', 'owner', 400, NOT_RENEWABLE,
+    body=renewal(SENT, preregistration=True, subscription_id='non-un-id'))
+add('renew-preregistration-renewal-foreign-association', 'renew', 'foreign_owner', 400, NOT_RENEWABLE,
+    body=renewal(SENT, preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']))
+add('renew-preregistration-renewal-without-type', 'renew', 'owner', 500, SERVER,
+    body=renewal(person('Altro', 'Nome', 'LTRNMO90C01H501K'), preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']))
+RENEWING = ASSOCIATES['renewing']['id']
+rows = [new_payment('$pre_payment', RENEWING),
+        *subscription_rows('$pre_subscription', RENEWING, kind=1, payment='$pre_payment', number='12', season=NEXT)]
+add('renew-preregistration-renewal', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(SENT, preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']),
+    effect=effect('owner', new=rows,
+                  audit=[entry('payment', 0, '$pre_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$pre_subscription',
+                               {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']})],
+                  celery=tasks('$pre_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Rino Rinnovo.', 'association': OWN}]))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

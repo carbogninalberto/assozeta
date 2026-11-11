@@ -348,8 +348,9 @@ body, content_type = multipart(('gym_name', 'a/b/../percorso.csv', 'text/csv', '
 add('generate-file-path-name', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': ['x'], 'expires_at': '$later'}, method='POST',
     raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'percorso.csv', 'association': OWN})
 body, content_type = multipart(('gym_name', 'bin.dat', 'application/octet-stream', 'x'), ('gym_name', None, None, 'dopo'))
-add('generate-file-then-text', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': 'dopo', 'expires_at': '$later'}, method='POST',
-    raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'dopo', 'association': OWN})
+# request.data adds the files after the text values: the file is the last value of the key.
+add('generate-file-then-text', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': ['x'], 'expires_at': '$later'}, method='POST',
+    raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'bin.dat', 'association': OWN})
 body, content_type = multipart(('other', 'a.txt', 'text/plain', 'x'))
 add('generate-file-other-key', 'owner', GENERATE, 400, {'error': 'gym_name is required'}, method='POST', raw_body=body,
     content_type=content_type)

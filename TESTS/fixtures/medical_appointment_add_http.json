@@ -1744,7 +1744,7 @@
    "status": 400,
    "response": {
     "medical_appointments_id": [
-     "“abc” is not a valid UUID."
+     "Must be a valid UUID."
     ]
    },
    "effect": null,
@@ -1765,7 +1765,7 @@
    "status": 400,
    "response": {
     "medical_appointments_id": [
-     "“1.5” is not a valid UUID."
+     "Must be a valid UUID."
     ]
    },
    "effect": null,

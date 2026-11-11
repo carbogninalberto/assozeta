@@ -218,9 +218,9 @@ add('id-supplied', 'owner', 200, CREATED, body={**BASIC, 'medical_appointments_i
 add('id-taken', 'owner', 400, {'medical_appointments_id': [UNIQUE]}, body={**BASIC, 'medical_appointments_id': TAKEN})
 add('id-null', 'owner', 400, {'medical_appointments_id': ['This field may not be null.']},
     body={**BASIC, 'medical_appointments_id': None})
-add('id-malformed', 'owner', 400, {'medical_appointments_id': ['\u201cabc\u201d is not a valid UUID.']},
+add('id-malformed', 'owner', 400, {'medical_appointments_id': ['Must be a valid UUID.']},
     body={**BASIC, 'medical_appointments_id': 'abc'})
-add('id-float', 'owner', 400, {'medical_appointments_id': ['\u201c1.5\u201d is not a valid UUID.']},
+add('id-float', 'owner', 400, {'medical_appointments_id': ['Must be a valid UUID.']},
     body={**BASIC, 'medical_appointments_id': 1.5})
 add('id-integer', 'owner', 200, CREATED, body={**BASIC, 'medical_appointments_id': 12345},
     effect=created('owner', region='non-agonistica', date=DATE, ident='00000000-0000-0000-0000-000000003039'),

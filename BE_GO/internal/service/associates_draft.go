@@ -286,6 +286,10 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 	case dto.DateutilUnsupported:
 		return false, ErrAssociateDraftNotPorted
 	}
+	if date.Year() < 1000 {
+		// strftime('%d/%m/%Y') leaves the year unpadded and strptime rejects it.
+		return false, ErrAssociateDraftFailed
+	}
 	today := s.today()
 	if dto.RelativeYears(today, date) >= 18 {
 		return valid, nil
@@ -309,6 +313,9 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 		return valid, nil
 	case dto.DateutilUnsupported:
 		return false, ErrAssociateDraftNotPorted
+	}
+	if date.Year() < 1000 {
+		return valid, nil // the same round trip fails: logged and ignored
 	}
 	if dto.RelativeYears(today, date) < 18 {
 		valid = false
