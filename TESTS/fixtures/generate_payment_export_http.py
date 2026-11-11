@@ -309,7 +309,7 @@ def searched(labels, raw):
         number = float(term.replace(',', '.'))
     except ValueError:
         number = None
-    if number is not None and number == number:
+    if number is not None and number == number and abs(number) != float('inf'):
         exact = Context(prec=9).create_decimal_from_float(number)
         return [k for k in labels if repr(number).upper() in PAYMENTS[k]['amount'].upper() or Decimal(PAYMENTS[k]['amount']) == exact]
     return [k for k in labels if smart_match(join_row(PAYMENTS[k]), term)]
@@ -614,7 +614,7 @@ add('range-and-filter', 'owner', R + '2024/01/01%20al%202024/12/31&query[expense
 # --- general search ---
 S = EXPORT + '?query[generalSearch]='
 for name, raw, query in (('last-name', 'rossi', 'rossi'), ('supplier', 'riunite', 'riunite'), ('words', 'mario rossi', 'mario%20rossi'),
-                         ('date-dmy', '10/02/2024', '10/02/2024'), ('nan-is-text', 'nan', 'nan'), ('amount', '50', '50'),
+                         ('date-dmy', '10/02/2024', '10/02/2024'), ('nan-is-text', 'nan', 'nan'), ('inf-is-text', 'inf', 'inf'), ('infinity-is-text', '-Infinity', '-Infinity'), ('amount', '50', '50'),
                          ('amount-comma', '15,5', '15,5'), ('amount-cents', '0.1', '0.1'), ('nothing', 'zzzz', 'zzzz')):
     add(f'search-{name}', 'owner', S + query, 200, body(export_csv(listed(search=raw))))
 add('search-empty-ignored', 'owner', S, 200, DEFAULT)

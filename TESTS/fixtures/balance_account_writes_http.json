@@ -873,6 +873,108 @@
    "body": {
     "account_code": "G"
    }
+  },
+  {
+   "name": "balance-account-writes-update-new-id-copies-row",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000000910001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_id": "a1000000-0000-4000-8000-000000930002",
+    "enabled": true,
+    "name": "Banca copia",
+    "current_balance": 100.0,
+    "initial_balance": "100.00",
+    "account_type": 2,
+    "account_code": "IT60X",
+    "deletable": true,
+    "editable": true
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "owner",
+    "label": "bank",
+    "id": "a1000000-0000-4000-8000-000000930002",
+    "account": {
+     "custom_account_id": "a1000000-0000-4000-8000-000000930002",
+     "enabled": true,
+     "name": "Banca copia",
+     "current_balance": 100.0,
+     "initial_balance": "100.00",
+     "account_type": 2,
+     "account_code": "IT60X",
+     "deletable": true,
+     "editable": true
+    }
+   },
+   "body": {
+    "custom_account_id": "a1000000-0000-4000-8000-000000930002",
+    "name": "Banca copia"
+   }
+  },
+  {
+   "name": "balance-account-writes-update-own-id-is-plain-update",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000000910001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+    "enabled": true,
+    "name": "Banca nuova",
+    "current_balance": 110.25,
+    "initial_balance": "100.00",
+    "account_type": 2,
+    "account_code": "Z",
+    "deletable": false,
+    "editable": true
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "bank",
+    "changes": {
+     "account_code": [
+      "IT60X",
+      "Z"
+     ]
+    },
+    "account": {
+     "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+     "enabled": true,
+     "name": "Banca nuova",
+     "current_balance": 110.25,
+     "initial_balance": "100.00",
+     "account_type": 2,
+     "account_code": "Z",
+     "deletable": false,
+     "editable": true
+    }
+   },
+   "body": {
+    "custom_account_id": "a1000000-0000-4000-8000-000000910001",
+    "account_code": "Z"
+   }
+  },
+  {
+   "name": "balance-account-writes-update-id-of-another-row-rejected",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts/a1000000-0000-4000-8000-000000910001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "custom_account_id": [
+     "custom accounts with this custom account id already exists."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "custom_account_id": "a1000000-0000-4000-8000-000000910002"
+   }
   }
  ]
 }

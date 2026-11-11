@@ -8,7 +8,6 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type BalanceAccountWrites struct {
@@ -24,10 +23,6 @@ func NewBalanceAccountWrites(store domain.BalanceAccountWriteStore, accounts *Ba
 
 // ErrBalanceAccountMissing is {'exception': 'CustomAccounts matching query does not exist.'}.
 var ErrBalanceAccountMissing = errors.New("custom account does not exist")
-
-// ErrBalanceAccountPrimaryKeyChange refuses a new custom_account_id on update:
-// Model.save() would insert a copy under the new key (not ported).
-var ErrBalanceAccountPrimaryKeyChange = refusal.New("custom account primary key change is not ported")
 
 // BalanceAccountValidationError is DRF's 400 field map.
 type BalanceAccountValidationError struct{ Fields map[string]any }
@@ -95,7 +90,20 @@ func (s *BalanceAccountWrites) write(ctx context.Context, identity domain.Resolv
 		row = &created
 	} else {
 		if write.ID != nil && *write.ID != row.ID {
-			return item, ErrBalanceAccountPrimaryKeyChange
+			// Model.save() under a key no row has inserts a copy; the named row stays as it was.
+			applyBalanceAccountWrite(row, write)
+			row.ID = *write.ID
+			if err = tx.InsertAccountCopy(ctx, *row, auditContext, at); err != nil {
+				return item, err
+			}
+			serialized, err := tx.SerializedAccount(ctx, association, row.ID, supplierGroup(group))
+			if err != nil {
+				return item, err
+			}
+			if item, err = dto.BalanceAccountItemFrom(serialized); err != nil {
+				return item, err
+			}
+			return item, tx.Commit()
 		}
 		old := *row
 		applyBalanceAccountWrite(row, write)
@@ -278,9 +286,7 @@ func (s *BalanceTransferWrites) write(ctx context.Context, identity domain.Resol
 		}
 		return balanceTransferItem(created), tx.Commit()
 	}
-	if write.ID != nil && *write.ID != row.ID {
-		return nil, ErrBalanceAccountPrimaryKeyChange
-	}
+	copying := write.ID != nil && *write.ID != row.ID
 	old := *row
 	if write.FromPresent {
 		row.From = write.From
@@ -295,6 +301,14 @@ func (s *BalanceTransferWrites) write(ctx context.Context, identity domain.Resol
 		row.Date = *write.Date
 	}
 	row.AssociationID = &association
+	if copying {
+		// Model.save() under a key no row has inserts a copy; the named row stays as it was.
+		row.ID = *write.ID
+		if err = tx.InsertTransferCopy(ctx, *row, auditContext, at); err != nil {
+			return nil, err
+		}
+		return balanceTransferItem(*row), tx.Commit()
+	}
 	changes := map[string][2]string{}
 	diff := func(name, before, after string) {
 		if before != after {

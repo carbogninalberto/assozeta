@@ -96,7 +96,15 @@ def assert_effect(case, before, after, source, remote, fixture):
     ids = source['ids']
     own = ids['own_association']
     old_c, new_c = keyed(before[ACCOUNT], 'custom_account_id'), keyed(after[ACCOUNT], 'custom_account_id')
-    if effect['kind'] == 'add':
+    entries = [(0 if effect['kind'] == 'add' else 1, 'direct')]
+    if effect['kind'] == 'copy':
+        # An update naming an unused custom_account_id: Model.save() inserts a copy, the named row stays. auditlog's pre_save finds
+        # no row under the new key (an update against nothing), then post_save logs the create.
+        key = effect['id']
+        contract.require(key not in old_c and set(new_c) == set(old_c) | {key} and all(new_c[k] == old_c[k] for k in old_c), 'state.kept')
+        changes = None
+        entries = [(1, 'changes_json.sport_association'), (0, 'direct')]
+    elif effect['kind'] == 'add':
         keys = set(new_c) - set(old_c)
         contract.require(len(keys) == 1 and len(new_c) == len(old_c) + 1 and all(new_c[k] == old_c[k] for k in old_c), 'state.created')
         key = keys.pop()
@@ -119,12 +127,13 @@ def assert_effect(case, before, after, source, remote, fixture):
     added = [new_a[k] for k in set(new_a) - set(old_a)]
     indexes = {str(new_i[k]['log_entry_id']): new_i[k] for k in set(new_i) - set(old_i)}
     contract.require(all(new_a[k] == old_a[k] for k in old_a) and all(new_i[k] == old_i[k] for k in old_i), 'audit.kept')
-    contract.require(len(added) == (1 if changes else 0) and len(indexes) == len(added), 'audit.count')
+    added.sort(key=lambda r: int(r['id']))
+    contract.require(len(added) == (len(entries) if changes else 0) and len(indexes) == len(added), 'audit.count')
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
     users = keyed(before['application.User'], 'user_id')
     actor = ids[effect['actor']]
-    for event in added:
-        contract.require(event['content_type_id'] == types['customaccounts'] and event['action'] == (0 if effect['kind'] == 'add' else 1)
+    for event, (action, path) in zip(added, entries):
+        contract.require(event['content_type_id'] == types['customaccounts'] and event['action'] == action
                          and event['object_pk'] == key and event['object_repr'] == f'CustomAccounts object ({key})', 'audit.identity')
         contract.require(event['changes'] == changes, 'audit.changes')
         contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
@@ -132,7 +141,7 @@ def assert_effect(case, before, after, source, remote, fixture):
         ipaddress.ip_address(event['remote_addr'])
         contract.require(remote.setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
         index = indexes[str(event['id'])]
-        contract.require(index['sport_association_id'] == own and index['resolution_path'] == 'direct', 'index.fields')
+        contract.require(index['sport_association_id'] == own and index['resolution_path'] == path, 'index.fields')
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):

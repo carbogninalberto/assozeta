@@ -699,6 +699,95 @@
    }
   },
   {
+   "name": "balance-transfer-writes-update-new-id-copies-row",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000940001",
+    "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+    "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+    "amount": "32.00",
+    "date": "2026-09-01T10:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000940001",
+    "transfer": {
+     "custom_account_transfer_id": "a1000000-0000-4000-8000-000000940001",
+     "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+     "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+     "amount": "32.00",
+     "date": "2026-09-01T10:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000940001",
+    "amount": "32"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-own-id-is-plain-update",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+    "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+    "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+    "amount": "33.00",
+    "date": "2026-09-01T10:00:00Z",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "t1",
+    "changes": {
+     "amount": [
+      "31.00",
+      "33.00"
+     ]
+    },
+    "transfer": {
+     "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+     "custom_account_from": "a1000000-0000-4000-8000-000000910001",
+     "custom_account_to": "a1000000-0000-4000-8000-000000910003",
+     "amount": "33.00",
+     "date": "2026-09-01T10:00:00Z",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910007",
+    "amount": "33"
+   }
+  },
+  {
+   "name": "balance-transfer-writes-update-id-of-another-row-rejected",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/balance-sheet/accounts-transfer/a1000000-0000-4000-8000-000000910007/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "custom_account_transfer_id": [
+     "custom accounts transfer with this custom account transfer id already exists."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "custom_account_transfer_id": "a1000000-0000-4000-8000-000000910009"
+   }
+  },
+  {
    "name": "balance-transfer-writes-delete-malformed-not-found",
    "actor": "owner",
    "method": "DELETE",

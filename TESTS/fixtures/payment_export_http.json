@@ -1651,6 +1651,40 @@
    }
   },
   {
+   "name": "payment-export-search-inf-is-text",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?query[generalSearch]=inf",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads own.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-search-infinity-is-text",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?query[generalSearch]=-Infinity",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads own.csv"
+    }
+   }
+  },
+  {
    "name": "payment-export-search-amount",
    "actor": "owner",
    "method": "GET",

@@ -126,6 +126,21 @@ add('update-group-header-balance', 'owner', update('grouped'), 200, account('gro
     body={'account_code': 'G'}, headers={'X-Group-Id': IDS['foreign_group']},
     effect=changed('owner', 'grouped', {'account_code': ['C', 'G']}, account('grouped', group='foreign_group', code='G')))
 
+# An update naming a custom_account_id no row has: Model.save() inserts a copy with the validated values, the named row stays.
+COPY_ID = 'a1000000-0000-4000-8000-000000930002'
+# The copy has no transfers or payments: its balance is its initial balance.
+B = ACCOUNTS['bank']
+COPIED = new('Banca copia', B['initial'], B['code'], kind=B['type'], enabled=B['enabled'], editable=B['editable'], ident=COPY_ID)
+add('update-new-id-copies-row', 'owner', update('bank'), 200, COPIED, method='PATCH',
+    body={'custom_account_id': COPY_ID, 'name': 'Banca copia'},
+    effect={'kind': 'copy', 'actor': 'owner', 'label': 'bank', 'id': COPY_ID, 'account': COPIED})
+add('update-own-id-is-plain-update', 'owner', update('bank'), 200, account('bank', name='Banca nuova', code='Z'), method='PATCH',
+    body={'custom_account_id': ACCOUNTS['bank']['id'], 'account_code': 'Z'},
+    effect=changed('owner', 'bank', {'account_code': [B['code'], 'Z']}, account('bank', name='Banca nuova', code='Z')))
+add('update-id-of-another-row-rejected', 'owner', update('bank'), 400,
+    {'custom_account_id': ['custom accounts with this custom account id already exists.']}, method='PATCH',
+    body={'custom_account_id': ACCOUNTS['cash']['id']})
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'},
                               'scope': 'Balance-sheet account add and update authored sequence with audit effects', 'cases': cases},
