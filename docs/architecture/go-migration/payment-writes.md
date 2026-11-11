@@ -210,3 +210,5 @@ digits) fails `payment-writes-add-other-script-dates` (CAUGHT).
   `os.path.join` raises: the 500 page after the payment's own changes (the adapter's `unlinked` document specs). A name the
   storage refuses (`../x`, a trailing `/`) is Django's 400 SuspiciousOperation page and stays refused.
 Cases: 180 (add and update variants). Form bodies of an update and a `payment_id` key on add stay refused.
+
+GREEN `t3pay-5` (run 43084300494) 180/180; mutation (nested user field dropped) CAUGHT, run 43084305252.

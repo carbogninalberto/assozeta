@@ -223,3 +223,5 @@ the Django reference corrected the update entry's index path.
 pre_delete cascade (the same code as carnet replace): the first installment deletes the payment (audited), every installment
 is audited, then the outer delete audits the payment again, then the holding. The request's `X-Group-Id` limits the
 installments as the group-aware manager does. The fixture is built on the carnet-replace seed and has one cascade case (two installments sharing one payment stay unported: the order Django visits them in is not fixed); the adapter checks the ordered entries and the removed rows.
+
+GREEN `t3pay-5` (run 43084300494) carnet-unassign 16/16; mutation (cascade skipped) CAUGHT, run 43084305252. All on the four transports; mutation runs are on a throwaway branch.

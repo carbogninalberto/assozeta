@@ -130,3 +130,5 @@ relations repeat rows in an order only the planner fixes, and paths through the 
 those stay refused (they reach the Django 500 or list as before). Nine more cases (57 in all): one grouped row with the
 header (ordered), the other paths compared as sets because every row of the association shares one related row. GREEN
 `t3pay-1` on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+
+GREEN `t3pay-5` (run 43084300494) 57/57; mutation (a column dropped from the map) CAUGHT, run 43082154506.

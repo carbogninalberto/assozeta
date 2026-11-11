@@ -109,3 +109,5 @@ booleans alone becomes `1`), an integer beyond 64 bits is a numeric cell (`"%.16
 raises `OverflowError` (the 500 page); a list or object is written as its Python repr text (pandas stringifies it; Django answers 200). A column of big integers alone stays
 refused (pandas' uint64/float promotion). The label cannot be non-finite: jsonb has no NaN or Infinity and a huge exponent is
 stored as an exact integer.
+
+GREEN `t3pay-5` (run 43084300494) 104/104; mutation (boolean label written as text) CAUGHT, run 43084305252.

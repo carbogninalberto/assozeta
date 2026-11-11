@@ -186,3 +186,5 @@ fee raises in `DecimalField.to_python` and does the same; a null fee matches `am
 and makes the apply's insert fail (nothing is created); a boolean fee converts to 1 or 0 (the audit keeps `True`). A fee
 beyond numeric(9, 2) matches no row (simulation lists it) and fails the apply's insert. The worker-run apply
 (`association_quote_assign`) keeps refusing null and out-of-range fees. GREEN `t3pay-1`: 120/120 on the four transports.
+
+GREEN `t3pay-5` (run 43084300494) 120/120; mutation (booleans refused) CAUGHT, run 43082154506.
