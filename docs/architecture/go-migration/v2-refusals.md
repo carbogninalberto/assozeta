@@ -1225,11 +1225,11 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/edit | non-empty `associate_id` in tutor data | `service/subscription_writes.go:253`, `ErrSubscriptionEditNotPorted` | B | Only UI caller is `routes/update-tutors/TutorData.svelte:23`. `UpdateTutors.svelte:7-11` has `inconsistencies = []` hard-coded and redirects to `/` on mount. Every `sessionStorage.setItem('inconsistencies', …)` is commented out (`Login.svelte:660-663`, `EditData.svelte:136-139`), so the page never renders. Effectively the route is not called by the UI. legacy: no. cheap |
-| same | tutor `born_date` with non-ASCII digits / unparsable by Go | `:219`, `:223` | B | as above, plus exotic input. legacy: no |
-| same | non-ASCII tax code | `:262` | B | route not reachable from UI. legacy: no |
-| same | several tax-code matches with equal latest `creation_date` | `:272` | B | route not reachable; data needs identical timestamps. legacy: yes (bulk imports). cheap |
-| same | tax-code match / main tutor is the edited associate | `:277`, `:311` | B | route not reachable. legacy: yes. medium |
-| same | main tutor referenced by other tables | `:318` | B | route not reachable. legacy: yes. expensive (cascade) |
+| same | tutor `born_date` with non-ASCII digits / unparsable by Go | `:219`, `:223` | ported | Ported in t2subsa (strptime reads the digits of other scripts). |
+| same | non-ASCII tax code | `:262` | ported | Ported in t2subsa (`dto.PythonUpper`, the full `str.upper()` mapping; the lookup stays `UPPER()` in the database). |
+| same | several tax-code matches with equal latest `creation_date` | `:272` | ported | Ported in t2subsa (the same `ORDER BY creation_date DESC LIMIT 1` query Django runs, so the database breaks the tie in both). |
+| same | tax-code match / main tutor is the edited associate | `:277`, `:311` | ported | Ported in t2subsa (the stale instance's `save()` writes the old values back; a deleted self tutor is inserted again). |
+| same | main tutor referenced by other tables | `:318` | ported | Ported in t2subsa (deleted through the Collector port: SET_NULL references and payments with their receivers). |
 | same | `X-Group-Id` not a UUID / not a group on the create path | (ErrSubscriptionEditServer, Django also fails) | C | Django fails too; not a parity gap |
 | (doc) subscription/add, renew, transfer "not routed in Go" | — | — | — | Stale text: renew and transfer are now ported (subscription-renew.md, subscription-transfer.md) and add is in subscription-create.md |
 

@@ -410,12 +410,14 @@ for suffix, filename in (('null-filename', None), ('nul-filename', 'a\u0000b.pdf
 COPY_ID, COPY_DOCS_ID = 'a1000000-0000-4000-8000-000000659101', 'a1000000-0000-4000-8000-000000659102'
 copy_row = {**STATE['m3'], 'description': 'Copia', 'documents': []}
 response, effect = created('owner', {key: copy_row[key] for key in STORED if key != 'subscription'} | {'subscription': None}, COPY_ID)
+effect['kind'] = 'copy'
 add('update-new-id-inserts-copy', 'owner', one('m3', 'update'), 200, response, method='PATCH',
     body={'subscription_membership_id': COPY_ID, 'description': 'Copia'}, effect=effect)
 copy_row = {**STATE['m3'], 'documents': [{'filename': 'copia.pdf'}]}
 response, effect = created('full_collaborator', {key: copy_row[key] for key in STORED if key != 'subscription'} | {'subscription': None,
                                                                                                                     'documents': copy_row['documents']}, COPY_DOCS_ID)
 effect['documents'] = [{'filename': 'copia.pdf', 'content': UPLOADS[0]['content']}]
+effect['kind'] = 'copy'
 add('update-new-id-with-document', 'full_collaborator', one('m3', 'update'), 200, response, method='PATCH',
     body={'subscription_membership_id': COPY_DOCS_ID.upper(),
           'documents_data': [{'document': UPLOADS[0]['content'], 'filename': 'copia.pdf'}]}, effect=effect)

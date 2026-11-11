@@ -33,7 +33,7 @@ timestamp)>/<document id>/<filename>', bytes)` through the documents-writes uplo
 ## Pk change and multipart bodies (t2subsa)
 
 - `update` with a different `subscription_membership_id`: `Model.save()` updates nothing and inserts a copy under the new key. The old
-  row and its document links stay, the copy has no links of its own (new `documents_data` attach to it), and auditlog records a creation
+  row and its document links stay, the copy has no links of its own (new `documents_data` attach to it), and auditlog logs an update against None, then the creation
   (not an update) for the copy.
 - A multipart `add` with at least one file part: DRF merges the files into a mutable copy of the data, so `sport_association` can be
   assigned and the request goes through the form path. A file is read by each field as `str(name)` for the related fields (`“x.txt” is not

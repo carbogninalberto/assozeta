@@ -85,9 +85,22 @@ ASSOCIATES = {
     'group_match': associate('Gruppoabbina', group='own_group'),
     'group_target': associate('Bersaglio', born='1966-06-06', tax='GRPTGT66H06H501B'),
     'multi_home': associate('Casa', user='multi_athlete', born='1990-01-01'),
+    # t2subsa
+    'unicode_born': associate('Cifre'),
+    'sharp_create': associate('Esse'),
+    'sharp_match': associate('Essematch'),
+    'sharp_target': associate('Bersaglio2', born='1960-05-05', tax='sstutor2'),
+    'tie_assoc': associate('Pareggio'),
+    'tie_a': associate('Pari', born='1963-03-03', association=None, tax='TIETAX01'),
+    'tie_b': associate('Pari', born='1964-04-04', association=None, tax='tietax01'),
+    'self_match': associate('Selfie', tax='SELFTAX1'),
+    'self_tutor': associate('Autotutore'),
+    'ref_child': associate('Referente'),
+    'ref_tutor': associate('Referenziato', born='1970-02-02'),
 }
 # Creation dates order the MultipleObjectsReturned pick.
-CREATED = {'twin_old': '2025-01-01T08:00:00Z', 'twin_new': '2025-06-01T08:00:00Z'}
+CREATED = {'twin_old': '2025-01-01T08:00:00Z', 'twin_new': '2025-06-01T08:00:00Z', 'tie_a': '2025-04-01T08:00:00Z',
+           'tie_b': '2025-04-01T08:00:00Z'}
 
 
 def relation(associate_label, tutor_label, primary):
@@ -101,7 +114,11 @@ RELATIONS = {
     'web_link': relation('web', 'web_tutor', True),
     'web_other': relation('web_sibling', 'web_tutor', True),
     'web_up': relation('web_tutor', 'web_grand', True),
+    'self_link': relation('self_tutor', 'self_tutor', True),
+    'ref_link': relation('ref_child', 'ref_tutor', True),
 }
+# Other rows pointing at a tutor (SET_NULL): a membership.
+MEMBERSHIPS = {'ref_membership': {'id': next(ids), 'associate': 'ref_tutor'}}
 # promoted_first must have the lower key: first() orders by pk.
 RELATIONS['promoted_second']['id'], RELATIONS['promoted_first']['id'] = RELATIONS['promoted_first']['id'], RELATIONS['promoted_second']['id']
 
@@ -129,9 +146,9 @@ def tutor(**fields):
     return {'associate_tutor_data': {**TUTOR, **fields}}
 
 
-def effect(actor, audit, *, created=None, changed=None, deleted=(), relations_changed=None, relations_deleted=()):
+def effect(actor, audit, *, created=None, changed=None, deleted=(), relations_changed=None, relations_deleted=(), detached=()):
     return {'actor': actor, 'audit': audit, 'created': created, 'changed': changed or {}, 'deleted': list(deleted),
-            'relations_changed': relations_changed or {}, 'relations_deleted': list(relations_deleted)}
+            'relations_changed': relations_changed or {}, 'relations_deleted': list(relations_deleted), 'detached': list(detached)}
 
 
 def new_row(*, association=None, group=None, tax=None, born='1975-04-12', **text):
@@ -365,8 +382,68 @@ add('group-tax-code-create-without-group', 'owner', 'group_match', 200, EDITED, 
 add('tax-code-match-outside-group-server-error', 'owner', 'grouped', 500, SERVER, headers={'X-Group-Id': IDS['own_group']},
     body=tutor(tax_code='GRPTGT66H06H501B', sport_association=OWN))
 
+# ---------------------------------------------------------------- t2subsa
+# strptime('%d/%m/%Y') reads the decimal digits of other scripts: the same tutor as the ASCII date.
+row = new_row()
+add('tutor-born-date-other-script-digits', 'owner', 'unicode_born', 200, EDITED, body=tutor(born_date='\u0661\u0662/\u0660\u0664/\u0661\u0669\u0667\u0665'),
+    effect=effect('owner', [
+        created(row, ACTOR_OWN),
+        updated('associate', 'unicode_born', MINOR, DIRECT),
+    ], created=row, changed={'unicode_born': {'is_minor': True}}))
+# str.upper() expands 'ß' to 'SS' (SpecialCasing); the case-insensitive lookup and the stored code use the upper-cased text.
+row = new_row(association=OWN, tax='SSTUTOR1')
+add('tax-code-sharp-s-creates', 'owner', 'sharp_create', 200, EDITED, body=tutor(tax_code='\u00dftutor1', sport_association=OWN), effect=effect('owner', [
+    created(row, DIRECT),
+    updated('associate', 'sharp_create', MINOR, DIRECT),
+], created=row, changed={'sharp_create': {'is_minor': True}}))
+add('tax-code-sharp-s-matches', 'owner', 'sharp_match', 200, EDITED, body=tutor(tax_code='\u00dftutor2', sport_association=OWN), effect=effect('owner', [
+    updated('associate', 'sharp_target', {'first_name': ['Bersaglio2', 'Giulia'], 'last_name': ['Fixture', 'Tutrice'], 'sex': ['M', 'F'],
+                                          'tax_code': ['sstutor2', 'SSTUTOR2'], 'born_date': ['1960-05-05', '1975-04-12']}, DIRECT),
+    updated('associate', 'sharp_match', MINOR, DIRECT),
+], changed={'sharp_target': {'first_name': 'Giulia', 'last_name': 'Tutrice', 'sex': 'F', 'tax_code': 'SSTUTOR2', 'born_date': '1975-04-12'},
+            'sharp_match': {'is_minor': True}}))
+# Several matches with the same creation date: order_by('-creation_date').first() is the database's pick (the same query).
+add('updates-first-of-tied-matches', 'owner', 'tie_assoc', 200, EDITED, body=tutor(tax_code='tietax01'), effect=effect('owner', [
+    updated('associate', 'tie_a', {'first_name': ['Pari', 'Giulia'], 'last_name': ['Fixture', 'Tutrice'], 'sex': ['M', 'F'],
+                                   'born_date': ['1963-03-03', '1975-04-12']}, ACTOR_OWN),
+    updated('associate', 'tie_assoc', MINOR, DIRECT),
+], changed={'tie_a': {'first_name': 'Giulia', 'last_name': 'Tutrice', 'sex': 'F', 'born_date': '1975-04-12'}, 'tie_assoc': {'is_minor': True}}))
+# The tax code names the associate itself: the serializer saves the tutor data into its row, then the stale instance's
+# save() writes the loaded values back (a second entry) with is_minor set.
+add('tax-code-names-the-associate', 'owner', 'self_match', 200, EDITED, body=tutor(tax_code='selftax1', sport_association=OWN), effect=effect('owner', [
+    updated('associate', 'self_match', {'first_name': ['Selfie', 'Giulia'], 'last_name': ['Fixture', 'Tutrice'], 'sex': ['M', 'F'],
+                                        'born_date': ['2015-03-10', '1975-04-12']}, DIRECT),
+    updated('associate', 'self_match', {'first_name': ['Giulia', 'Selfie'], 'last_name': ['Tutrice', 'Fixture'], 'sex': ['F', 'M'],
+                                        'born_date': ['1975-04-12', '2015-03-10'], 'is_minor': ['False', 'True']}, DIRECT),
+], changed={'self_match': {'is_minor': True}}))
+# The associate is its own main tutor: the delete removes its row (and the relation); the final save() inserts it again.
+SELF_ROW = new_row(association=OWN, first_name='Autotutore', last_name='Fixture', sex='M', tax=None, born='2015-03-10', is_minor=True,
+                   user_id=IDS['owner'], creation_date='2025-03-01T08:00:00Z')
+SELF_ROW['associate_id'] = ASSOCIATES['self_tutor']['id']
+row = new_row()
+self_created = created_changes({**SELF_ROW})
+self_created['associate_id'] = ['None', ASSOCIATES['self_tutor']['id']]
+self_created['creation_date'] = ['None', '2025-03-01 08:00:00']
+add('own-main-tutor-is-recreated', 'owner', 'self_tutor', 200, EDITED, body=tutor(), effect=effect('owner', [
+    created(row, ACTOR_OWN),
+    removed('associatetutorrelation', 'self_link', ACTOR_OWN),
+    removed('associate', 'self_tutor', [OWN, 'changes_json.sport_association']),
+    # auditlog's pre_save finds no old row: an update against None (resolved through the changes), then the creation
+    {'model': 'associate', 'label': 'self_tutor', 'action': 1, 'changes': self_created, 'index': [OWN, 'changes_json.sport_association']},
+    {'model': 'associate', 'label': 'self_tutor', 'action': 0, 'changes': self_created, 'index': DIRECT},
+], created=row, relations_deleted=['self_link'], changed={'self_tutor': {'is_minor': True}}))
+
+# The deleted tutor is referenced by a membership: the Collector clears the column (no entry) and deletes the rest.
+row = new_row()
+add('deletes-referenced-tutor', 'owner', 'ref_child', 200, EDITED, body=tutor(), effect=effect('owner', [
+    created(row, ACTOR_OWN),
+    removed('associatetutorrelation', 'ref_link', ACTOR_OWN),
+    removed('associate', 'ref_tutor', [OWN, 'changes_json.sport_association']),
+    updated('associate', 'ref_child', MINOR, DIRECT),
+], created=row, deleted=['ref_tutor'], relations_deleted=['ref_link'], changed={'ref_child': {'is_minor': True}}, detached=['ref_membership']))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription/<uid>/edit authored sequence with associate, tutor relation and audit effects',
-                              'ids': IDS, 'extra_users': EXTRA_USERS, 'family': FAMILY, 'associates': ASSOCIATES, 'created': CREATED, 'relations': RELATIONS,
+                              'ids': IDS, 'extra_users': EXTRA_USERS, 'family': FAMILY, 'associates': ASSOCIATES, 'created': CREATED, 'relations': RELATIONS, 'memberships': MEMBERSHIPS,
                               'reverse': REVERSE, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

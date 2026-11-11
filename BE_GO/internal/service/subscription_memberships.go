@@ -450,9 +450,9 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 	at := s.now().UTC().Truncate(time.Microsecond)
 	if write.ID != nil && *write.ID != current.ID {
 		// Model.save() with a new primary key: the UPDATE matches nothing, so the row is inserted under the new key
-		// (the old row and its document links stay) and auditlog records a creation.
+		// (the old row and its document links stay); auditlog logs an update against None, then the creation.
 		row.ID = *write.ID
-		if err = tx.CreateMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
+		if err = tx.CopyMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
 			return nil, err
 		}
 	} else if err = tx.SaveMembership(ctx, row, subscriptionMembershipChanges(old, row), paymentCategoryAuditContext(identity, audit), at); err != nil {

@@ -3004,7 +3004,7 @@
     "attached_membership_documents": []
    },
    "effect": {
-    "kind": "add",
+    "kind": "copy",
     "actor": "owner",
     "id": "a1000000-0000-4000-8000-000000659101",
     "stored": {
@@ -3059,7 +3059,7 @@
     ]
    },
    "effect": {
-    "kind": "add",
+    "kind": "copy",
     "actor": "full_collaborator",
     "id": "a1000000-0000-4000-8000-000000659102",
     "stored": {

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"strconv"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/jmoiron/sqlx"
@@ -91,6 +92,45 @@ func (t *subscriptionEditTransaction) TaxCodeMatches(ctx context.Context, taxCod
 	return rows, err
 }
 
+func (t *subscriptionEditTransaction) NewestTaxCodeMatch(ctx context.Context, taxCode string, association, group *string) (*domain.SubscriptionEditAssociate, error) {
+	var row domain.SubscriptionEditAssociate
+	err := t.tx.GetContext(ctx, &row, `SELECT `+subscriptionEditColumns+` FROM application_associate
+ WHERE UPPER(tax_code::text)=UPPER($1) AND sport_association_id IS NOT DISTINCT FROM $2::uuid AND NOT deleted
+ AND ($3::uuid IS NULL OR group_id=$3::uuid) ORDER BY creation_date DESC LIMIT 1`, taxCode, association, group)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+// DeleteTutorCollected is Associate.delete() through the Collector port (collaborator-delete-go): the SET_NULL updates, the CASCADE
+// rows (payments and their receivers included) and every auditlog entry.
+func (t *subscriptionEditTransaction) DeleteTutorCollected(ctx context.Context, tutor string, audit domain.LoginAuditContext, group *string,
+	now func() time.Time) error {
+	run := &collaboratorDeleteRun{tx: t.tx, graph: collaboratorDeleteGraphLoaded, audit: audit, group: group, now: now}
+	model := collaboratorDeleteGraphLoaded.Models["application.Associate"]
+	rows, err := run.load(ctx, model, `t.associate_id = $1`, tutor)
+	if err != nil {
+		return err
+	}
+	return run.Delete(ctx, "application.Associate", rows)
+}
+
+func (t *subscriptionEditTransaction) AssociateSnapshot(ctx context.Context, associate string) (string, error) {
+	var snapshot string
+	err := t.tx.GetContext(ctx, &snapshot, `SELECT to_jsonb(a)::text FROM application_associate a WHERE associate_id=$1`, associate)
+	return snapshot, err
+}
+
+func (t *subscriptionEditTransaction) RestoreAssociate(ctx context.Context, snapshot string) error {
+	_, err := t.tx.ExecContext(ctx, `INSERT INTO application_associate SELECT * FROM jsonb_populate_record(NULL::application_associate,
+ jsonb_set($1::jsonb, '{is_minor}', 'true'))`, snapshot)
+	return err
+}
+
 func (t *subscriptionEditTransaction) Relations(ctx context.Context, associate string) ([]domain.SubscriptionEditRelation, error) {
 	rows := []domain.SubscriptionEditRelation{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT id, associate_id, tutor_id, is_primary FROM application_associatetutorrelation
@@ -98,9 +138,8 @@ func (t *subscriptionEditTransaction) Relations(ctx context.Context, associate s
 	return rows, err
 }
 
-// OtherReferences: the tutor relations are the only references the delete
-// cascade is ported for; any other row (SET_NULL subscriptions, memberships
-// and invoices, CASCADE payments, unknown tables) refuses the request.
+// OtherReferences reports a row outside the tutor relations that references the associate (SET_NULL subscriptions, memberships
+// and invoices, CASCADE payments): the delete then goes through the Collector port.
 func (t *subscriptionEditTransaction) OtherReferences(ctx context.Context, associate string) (bool, error) {
 	refs, err := modelReferences(ctx, t.tx, "application_associate", "associate_id")
 	if err != nil {

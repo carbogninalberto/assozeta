@@ -203,7 +203,9 @@ def assert_effect(case, before, after, source, context):
     ids = source['ids']
     own = ids['own_association']
     old_m, new_m = keyed(before[MEMBERSHIP], 'subscription_membership_id'), keyed(after[MEMBERSHIP], 'subscription_membership_id')
-    if effect['kind'] == 'add':
+    # A new primary key on update: auditlog finds no old row (pre_save logs an update against None), then post_save logs the create.
+    copy = effect['kind'] == 'copy'
+    if effect['kind'] in ('add', 'copy'):
         keys = set(new_m) - set(old_m)
         contract.require(len(keys) == 1 and set(old_m) <= set(new_m) and all(new_m[k] == old_m[k] for k in old_m), 'state.created')
         key = keys.pop()
@@ -232,13 +234,15 @@ def assert_effect(case, before, after, source, context):
     added = sorted(added, key=lambda event: int(event['id']))
     # Document has no association: its entries are indexed through the actor's own association (a collaborator has none).
     actor_association = {'owner': own}.get(effect['actor'])
-    indexed = len(added) if actor_association else (1 if changes else 0)
-    contract.require(len(added) == (1 if changes else 0) + len(documents) and len(indexes) == indexed, 'audit.count')
-    if changes:
-        harness.check_audit_event(contract, case, added[0], indexes, before=before, ids=ids, model='SubscriptionMembership', key=key,
-                                  action=action, changes=changes, actor=effect['actor'], association=own, path=path, context=context)
+    leading = 2 if copy else (1 if changes else 0)
+    indexed = len(added) if actor_association else leading
+    contract.require(len(added) == leading + len(documents) and len(indexes) == indexed, f'audit.count:{len(added)}:{len(indexes)}')
+    for position in range(leading):
+        harness.check_audit_event(contract, case, added[position], indexes, before=before, ids=ids, model='SubscriptionMembership', key=key,
+                                  action=1 if copy and position == 0 else action, changes=changes, actor=effect['actor'], association=own,
+                                  path=path, context=context)
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'docmanager'}
-    for event in added[1 if changes else 0:]:
+    for event in added[leading:]:
         ident = event['object_pk']
         contract.require(event['content_type_id'] == types['document'] and event['action'] == 0 and ident in documents
                          and event['object_repr'] == f'Document object ({ident})' and event['changes'] == documents.pop(ident),
