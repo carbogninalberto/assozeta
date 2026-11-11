@@ -110,22 +110,75 @@ func sameFrag(f, g *frag) bool {
 		sameLinks(f.links, g.links) && sameBack(f.back, g.back) && f.nobr == g.nobr
 }
 
+// dim is the width or height of an image: points, or a percentage (of the
+// paragraph width for a width, of the font size for a height).
+type dim struct {
+	v   float64
+	pct bool
+}
+
+// norm is imgNormV: a percentage of nv, computed as _PCT.normalizedValue.
+func (d dim) norm(nv float64) float64 {
+	if d.pct {
+		return (nv * d.v) * 0.01
+	}
+	return d.v
+}
+
+// valign is the vertical alignment of an image: a name, a percentage of the
+// font size or a number of points.
+type valign struct {
+	name string
+	pct  bool
+	v    float64
+}
+
+// imgVRange is imgVRange: the bottom and top offsets from the baseline.
+func imgVRange(h float64, va valign, fontSize float64) (float64, float64) {
+	var iyo float64
+	switch {
+	case va.pct:
+		iyo = (fontSize * va.v) * 0.01
+	case va.name == "":
+		iyo = va.v
+	case va.name == "baseline":
+	case va.name == "text-top" || va.name == "top":
+		iyo = fontSize - h
+	case va.name == "middle":
+		iyo = fontSize - (1.2*fontSize+h)*0.5
+	case va.name == "text-bottom" || va.name == "bottom":
+		iyo = fontSize - 1.2*fontSize
+	case va.name == "super":
+		iyo = 0.5 * fontSize
+	case va.name == "sub":
+		iyo = -0.5 * fontSize
+	}
+	return iyo, iyo + h
+}
+
 // imgDefn is the cbDefn of an <img> fragment.
 type imgDefn struct {
 	src           string
 	image         *jpegImage
-	width, height float64
-	valign        string
+	width, height dim
+	valign        valign
+}
+
+// imgAttrs are the attributes of an <img> tag, inherited by the tags inside.
+type imgAttrs struct {
+	src           string
+	width, height *dim
+	valign        *valign
 }
 
 // paraPorted are the tags whose effect on the layout is reproduced. Every
 // other tag ParaParser has a handler for is refused; tags it does not know
 // are ignored, as it does.
 var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true,
-	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true}
+	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true, "img": true}
 
 // paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"bullet": true, "greek": true, "img": true, "index": true,
+var paraNotPortedTags = map[string]bool{"bullet": true, "greek": true, "index": true,
 	"link": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true, "seqformat": true,
 	"seqreset": true, "unichar": true}
 
@@ -157,6 +210,7 @@ type paraTag struct {
 	line         [2]lineAttr
 	supr, sups   supSpec
 	nobr         bool
+	imgAttrs     *imgAttrs
 	selfClosing  string
 	lineBreak    bool
 	img          *imgDefn
@@ -439,6 +493,8 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		return p.push(tag, func(t *paraTag) { t.nobr = true })
 	case "sup", "super", "sub":
 		return p.startSup(tag, attrs)
+	case "img":
+		return p.startImg(attrs)
 	case "link":
 		return p.startLink(tag, attrs)
 	case "a":
@@ -593,6 +649,8 @@ func (p *paraParser) endTag(tag string) bool {
 	case "u", "strike", "font", "span", "nobr":
 		_, ok := p.pop(tag)
 		return ok
+	case "img":
+		return p.endImg()
 	case "link":
 		_, ok := p.pop("link")
 		return ok
@@ -1019,4 +1077,159 @@ func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
 		return p.newLine(lineUnderline)
 	}
 	return true
+}
+
+// numPct is _numpct(s, allowRelative=False): points or a percentage.
+func numPct(s string) (dim, attrStatus) {
+	if strings.HasSuffix(s, "%") {
+		v, st := paraConvNum(s[:len(s)-1], 1, false)
+		return dim{v: v.v, pct: true}, st
+	}
+	v, st := paraNum(s, false)
+	return dim{v: v.v}, st
+}
+
+// valignPct is _valignpc.
+func valignPct(s string) (valign, attrStatus) {
+	if !asciiOnly(s) {
+		return valign{}, attrUnsupported
+	}
+	lower := strings.ToLower(s)
+	switch lower {
+	case "baseline", "sub", "super", "top", "text-top", "middle", "bottom", "text-bottom":
+		return valign{name: lower}, attrOK
+	}
+	if strings.HasSuffix(lower, "%") {
+		n, st := paraConvNum(lower[:len(lower)-1], 1, true)
+		return valign{pct: true, v: n.v}, st
+	}
+	n, st := paraNum(s, true)
+	return valign{v: n.v}, st
+}
+
+// startImg is start_img.
+func (p *paraParser) startImg(attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	order, values := dedupeAttrs(attrs)
+	img := &imgAttrs{}
+	have := map[string]bool{}
+	for _, name := range order {
+		attr := values[name]
+		switch name {
+		case "src":
+			if attr.has {
+				img.src = attr.value
+			}
+			have["src"] = attr.has
+		case "width", "height":
+			if !attr.has {
+				return p.fail("invalid %s", name)
+			}
+			d, st := numPct(attr.value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid "+name)
+			}
+			if name == "width" {
+				img.width = &d
+			} else {
+				img.height = &d
+			}
+		case "valign":
+			if !attr.has {
+				return p.fail("invalid valign")
+			}
+			v, st := valignPct(attr.value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid valign")
+			}
+			img.valign = &v
+		default:
+			return p.fail("invalid attribute name %s", name)
+		}
+	}
+	if img.src == "" {
+		return p.fail("<img> needs src attribute")
+	}
+	inherited := p.stack[len(p.stack)-1].imgAttrs
+	if inherited != nil {
+		if img.width == nil {
+			img.width = inherited.width
+		}
+		if img.height == nil {
+			img.height = inherited.height
+		}
+		if img.valign == nil {
+			img.valign = inherited.valign
+		}
+	}
+	return p.push("img", func(t *paraTag) { t.imgAttrs, t.selfClosing = img, "img" })
+}
+
+// loadDataImage is ImageReader(src) for a data: URL with base64 data: the
+// image, an exception of reportlab (ok false), or a refusal (files, URLs,
+// other encodings and formats).
+func loadDataImage(src string) (image *jpegImage, st attrStatus) {
+	if len(src) < 5 || !strings.EqualFold(src[:5], "data:") {
+		return nil, attrUnsupported
+	}
+	typ, data, found := strings.Cut(src, ",")
+	if !found {
+		return nil, attrInvalid
+	}
+	encoding := ""
+	if semi := strings.LastIndex(typ, ";"); semi >= 0 && !strings.Contains(typ[semi:], "=") {
+		encoding = typ[semi+1:]
+	}
+	if encoding != "base64" {
+		return nil, attrUnsupported
+	}
+	if !asciiOnly(data) {
+		return nil, attrInvalid
+	}
+	raw, ok := pythonB64Decode(data)
+	if !ok || len(raw) == 0 {
+		return nil, attrInvalid
+	}
+	if len(raw) < 3 || raw[0] != 0xFF || raw[1] != 0xD8 || raw[2] != 0xFF {
+		return nil, attrUnsupported
+	}
+	image, err := loadJPEG(data)
+	if err != nil || image == nil {
+		return nil, attrUnsupported
+	}
+	return image, attrOK
+}
+
+// endImg is end_img.
+func (p *paraParser) endImg() bool {
+	if len(p.stack) == 0 || p.stack[len(p.stack)-1].selfClosing != "img" {
+		return p.fail("Parser failure in <img/>")
+	}
+	top := &p.stack[len(p.stack)-1]
+	image, st := loadDataImage(top.imgAttrs.src)
+	if st != attrOK {
+		return p.attrFailure(st, "Cannot open resource")
+	}
+	defn := &imgDefn{src: top.imgAttrs.src, image: image, width: dim{v: float64(image.width)}, height: dim{v: float64(image.height)},
+		valign: valign{name: "bottom"}}
+	if a := top.imgAttrs; a != nil {
+		if a.width != nil {
+			defn.width = *a.width
+		}
+		if a.height != nil {
+			defn.height = *a.height
+		}
+		if a.valign != nil {
+			defn.valign = *a.valign
+		}
+	}
+	top.img = defn
+	top.selfClosing = ""
+	if !p.data("") {
+		return false
+	}
+	_, ok := p.pop("img")
+	return ok
 }

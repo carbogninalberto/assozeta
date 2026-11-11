@@ -440,7 +440,7 @@ func rejoinSplitFragWords(pieces []*fragWord) *fragWord {
 }
 
 // fragWords is _getFragWords.
-func (p *paragraph) fragWords() []*fragWord {
+func (p *paragraph) fragWords(maxWidth float64, hasMax bool) []*fragWord {
 	var out []*fragWord
 	if p.processed != nil {
 		var pieces []*fragWord
@@ -536,6 +536,27 @@ func (p *paragraph) fragWords() []*fragWord {
 						w.hs = true
 					}
 				})
+			}
+		case f.img != nil:
+			width := f.img.width.norm(maxWidth)
+			if f.img.width.pct && !hasMax {
+				panic(paraFailure{"unsupported operand type(s) for *: 'NoneType' and 'float'"})
+			}
+			if f.img.width.v != 0 {
+				if len(word.parts) > 0 {
+					flush(func(*fragWord) {})
+				}
+				f.kind = fragImage
+				out = append(out, &fragWord{width: width, parts: []fragPart{{f, shyText{}}}})
+				hangingStrip = false
+			} else {
+				f.kind = fragAppend
+				if len(word.parts) == 0 && len(out) > 0 && out[len(out)-1].hs {
+					last := out[len(out)-1]
+					last.parts = append(last.parts, fragPart{f, shyText{}})
+				} else {
+					word.parts = append(word.parts, fragPart{f, shyText{}})
+				}
 			}
 		case f.lineBreak:
 			if len(word.parts) > 0 {
@@ -676,7 +697,7 @@ func splitFragWord(w *fragWord, maxWidth, lineWidthMax float64) []*fragWord {
 // list.
 func (p *paragraph) breakFrags(maxWidth float64) {
 	p.kind, p.fragLines = 1, nil
-	pending := p.fragWords()
+	pending := p.fragWords(maxWidth, true)
 	var words []*frag
 	var done []*fragWord
 	var g *frag
@@ -945,7 +966,7 @@ func (p *paragraph) minWidth() float64 {
 		return 0
 	}
 	widest := 0.0
-	if p.processed == nil && p.simpleKind() {
+	if p.processed == nil && len(p.frags) == 1 {
 		f := p.frags[0]
 		var words []string
 		if f.hasWords {
@@ -962,7 +983,7 @@ func (p *paragraph) minWidth() float64 {
 		}
 		return widest
 	}
-	for i, word := range p.fragWords() {
+	for i, word := range p.fragWords(0, false) {
 		if i == 0 || word.width > widest {
 			widest = word.width
 		}

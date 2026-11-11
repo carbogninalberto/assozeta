@@ -30,7 +30,6 @@ func (t *textObject) moveCursor(dx float64) {
 			t.code = t.code[:n-1]
 			dx += lastDx
 			dy -= lastDy
-			t.x0 -= lastDx
 		}
 	}
 	t.code = append(t.code, fpStrs(dx, -dy)+" Td")
@@ -225,11 +224,33 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		tx.code = append(tx.code, fpStr(leading)+" TL")
 	}
 	ws := tx.wordSpace
+	x0 := tx.x0
 	nSpaces := 0
 	var live []usLine
 	var liveLinks []linkRef
 	words := line.words
 	for i, f := range words {
+		if f.img != nil {
+			size := tx.fontSize
+			if tx.font == nil {
+				size = p.style.fontSize
+			}
+			w, h := f.img.width.norm(p.width), f.img.height.norm(size)
+			iy0, _ := imgVRange(h, f.img.valign, size)
+			curXS := curX + float64(nSpaces)*ws
+			c.drawImageAt(f.img.image, curXS, xs.curY+iy0, w, h)
+			curX += w
+			curXS += w
+			tx.setXPos(curXS - tx.x0)
+			if i == len(words)-1 {
+				if tx.font == nil {
+					tx.font, tx.fontSize, tx.leading, tx.hasLeading = fontsByName[p.style.fontName], p.style.fontSize, p.style.fontSize*1.2, true
+					tx.code = append(tx.code, c.fontRef(tx.font)+" "+fpStr(tx.fontSize)+" Tf "+fpStr(tx.leading)+" TL")
+				}
+				tx.textOut("", true)
+			}
+			continue
+		}
 		curXS := curX + float64(nSpaces)*ws
 		endX := curXS
 		size := f.size
@@ -318,6 +339,9 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 	}
 	if xs.backColor != nil {
 		xs.backColors = append(xs.backColors, backRect{xs.backX, curXS, *xs.backColor})
+	}
+	if tx.x0 != x0 {
+		tx.setXPos(x0 - tx.x0)
 	}
 }
 

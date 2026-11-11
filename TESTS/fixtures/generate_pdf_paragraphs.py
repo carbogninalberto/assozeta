@@ -25,8 +25,20 @@ from reportlab.platypus.paraparser import known_entities
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / 'BE_GO/internal/pdfexport'
-REFUSED = ('bullet', 'greek', 'img', 'index', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat', 'seqreset', 'unichar')
+REFUSED = ('bullet', 'greek', 'index', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat', 'seqreset', 'unichar')
 FONTS = ('Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique')
+
+def image_data(width=4, height=3, colour=(200, 30, 30)):
+    import base64
+    import io
+    from PIL import Image
+    out = io.BytesIO()
+    Image.new('RGB', (width, height), colour).save(out, 'JPEG')
+    return 'data:image/jpeg;base64,' + base64.b64encode(out.getvalue()).decode()
+
+
+IMAGE = image_data()
+
 
 TEXTS = [
     '', 'ASD Aurora', 'Sport & Fun', 'Sport &amp; Fun', 'A < B', 'A <b>B</b>', 'A > B', '&', '<', '&amp;', 'a&b', 'a &b c', 'a&b;c',
@@ -67,6 +79,13 @@ TEXTS = [
     '<a href="y"><b>a</b> b <i>c</i></a>', '<a href="y">a</a> <a href="z">b</a>', '<a href="y"><a href="z">a</a></a>', '<a href="y">',
     '<a href="\u00e9">a</a>', '<a href="\t">a</a>', '<link>a</link>', '<link href="y" dest="z">a</link>', '<a href="y" size="12" bgcolor="yellow">a</a>',
     '<a href="y" fg="#ff0000" fontsize="10">a b</a>', '<a href="y" backcolor="red" textcolor="blue" underlinekind="triple" underline="true">a</a>',
+    'a <img src="%s" width="20" height="10"/> b' % IMAGE, '<img src="%s"/>' % IMAGE, 'x<img src="%s" valign="middle"/>y' % IMAGE,
+    '<img src="%s" width="50%%"/>' % IMAGE, '<img src="%s" height="200%%" valign="50%%"/>' % IMAGE, '<img/>', '<img src=""/>',
+    '<img src="/nonexistent.jpg"/>', '<img src="%s">x</img>' % IMAGE, '<img src="%s" width="x"/>' % IMAGE, '<img src="%s" foo="1"/>' % IMAGE,
+    '<img src="data:image/png;base64,iVBORw0KGgo="/>', 'a<img src="%s" width="0"/>b' % IMAGE, '<b><img src="%s"/></b>' % IMAGE,
+    '<u><img src="%s"/>a</u>' % IMAGE, '<img src="%s" valign="top" width="2mm" height="1in"/>' % IMAGE, '<img src="%s" valign="bogus"/>' % IMAGE,
+    '<img src="%s" valign="+3"/>' % IMAGE, '<img src="%s" valign="Sub"/>' % IMAGE, '<img src="%s"/><img src="%s"/>' % (IMAGE, IMAGE),
+    '<img src="%s" width="10"/> texto <img src="%s" width="10"/>' % (IMAGE, IMAGE), '<img src="%s"/>' % IMAGE + '<br/>' + 'x',
     '<u>a</u>', '<u>a b</u> c', '<u color="red">a</u>', '<u width="2">a</u>', '<u offset="-1">x</u>', '<u kind="double">a</u>',
     '<u kind="triple" gap="2">a</u>', '<u width="0.5*f">a</u>', '<u width="2*P">a</u>', '<u width=" 1.5 ">a</u>', '<u width="2mm">a</u>',
     '<u offset="0.1*F">a</u>', '<u offset="">a</u>', '<u gap="3">a</u>', '<strike>a</strike>', '<strike color="#ff0000" width="1">a</strike>',
@@ -89,7 +108,7 @@ TOKENS = [
     '<x y="1">', "<x y='>'>", '<x y="', '<!-- c -->', '<!--', '<?pi?>', '<!DOCTYPE x>', '<![CDATA[x]]>', '<para>', '</para>',
     '<title>', '</title>', '<script>', '</script>', '<b/>', '</>', '< b>', '<b >', '<B>', '</B >', '<a href="x">', '</a>', '<u>',
     '</u>', '<strike>', '</strike>', '<u color="red">', '<strike kind="double">', '<font size="12">', '</font>', '<font color="red">',
-    '<a href="x">', '</a>', '<link href="y">', '</link>', '<a href="https://example.test/p?q=1&amp;r=2">', '<sup>', '</sup>', '<sub>', '</sub>', '<span>', '</span>', '<nobr>', '</nobr>', '<font name="Symbol">', '<font size="+2">',
+    '<img src="%s" width="12"/>' % IMAGE, '<a href="x">', '</a>', '<link href="y">', '</link>', '<a href="https://example.test/p?q=1&amp;r=2">', '<sup>', '</sup>', '<sub>', '</sub>', '<span>', '</span>', '<nobr>', '</nobr>', '<font name="Symbol">', '<font size="+2">',
     '<font bgcolor="yellow">', '\xad', 'é', '"', "'", '=', '/', '<x/>', '<x a=b c>', '<3', '&&', '&;', '&#', '&#x;', '-', '.', ';',
     '<plaintext>', '<textarea>', '</textarea>', '<b', '</b', '<x "a">', "<x 'a>", '\n', '\t', '\xa0', '<br />', '<BR/>', '&AMP;',
     '&Alpha;', '&#0;', '&#55296;', '&#1114112;', '&#955;', 'x= "y', '<x y= "z', '<x/y>', '<x//>', '<!>', '<!->', '-->', ']]>',
@@ -98,6 +117,8 @@ TOKENS = [
 
 def refusable(text):
     lowered = text.lower()
+    if '<img' in lowered and not ('src="%s"' % IMAGE) in text:
+        return True
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or '<para' in lowered or 'blacker(' in lowered
             or 'whiter(' in lowered or (('<a' in lowered or '<link' in lowered) and ('#' in text or 'document:' in lowered or 'name' in lowered))
             or ('<' in text and (not text.isascii() or 'inf' in lowered or 'nan' in lowered
@@ -123,13 +144,29 @@ def us_value(value):
     return finite(value) if isinstance(value, (str, int, float)) else repr(value)
 
 
+def dimension(value):
+    if hasattr(value, 'normalizedValue'):
+        return ['pct', finite(value._value)]
+    return finite(value)
+
+
 def describe(frag):
     """What the Go writer compares: font, text, line break, size, colour, rise, lines, links, background and nobr."""
     lines = []
     for n, kind, colour, width, offset, rise, repeats, gap in frag.us_lines:
         lines.append([n, kind, rgb(colour), us_value(width), us_value(offset), finite(rise), repeats, us_value(gap)])
     return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), finite(frag.fontSize), rgb(frag.textColor), finite(frag.rise), lines,
-            [list(link) for link in frag.link], rgb(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False))]
+            [list(link) for link in frag.link], rgb(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False)),
+            describe_image(frag)]
+
+
+def describe_image(frag):
+    defn = getattr(frag, 'cbDefn', None)
+    if defn is None:
+        return None
+    if defn.kind != 'img':
+        raise TypeError('callback')
+    return ['img', defn.src, dimension(defn.width), dimension(defn.height), dimension(defn.valign)]
 
 
 def outcome(text, font):
@@ -146,7 +183,7 @@ def outcome(text, font):
     other = paragraph.style is not style or bool(paragraph.bulletText)
     frags = []
     for frag in paragraph.frags:
-        if frag.greek or hasattr(frag, 'cbDefn') or frag.fontName not in FONTS + ('Symbol', 'ZapfDingbats'):
+        if frag.greek or frag.fontName not in FONTS + ('Symbol', 'ZapfDingbats'):
             other = True
             continue
         try:

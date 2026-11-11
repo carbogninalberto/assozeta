@@ -324,6 +324,11 @@ func (c *canvas) transform(a, b, cc, d, e, f float64) {
 
 // drawImage is canvas.drawImage(image, 0, 0, width, height) of a JPEG.
 func (c *canvas) drawImage(image *jpegImage, width, height float64) {
+	c.drawImageAt(image, 0, 0, width, height)
+}
+
+// drawImageAt is canvas.drawImage(image, x, y, width, height) of a JPEG.
+func (c *canvas) drawImageAt(image *jpegImage, x, y, width, height float64) {
 	if !c.imageNames[image.name] {
 		c.imageNames[image.name] = true
 		c.sequence = append(c.sequence, -len(c.resources)-1)
@@ -331,7 +336,7 @@ func (c *canvas) drawImage(image *jpegImage, width, height float64) {
 	}
 	c.pageImages = append(c.pageImages, image.name)
 	c.saveState()
-	c.translate(0, 0)
+	c.translate(x, y)
 	c.scale(width, height)
 	c.add("/" + image.name + " Do")
 	c.restoreState()

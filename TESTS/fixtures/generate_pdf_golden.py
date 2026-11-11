@@ -382,6 +382,48 @@ CASES += [
 ]
 
 
+# Inline images (img with a JPEG data URL): in the line, sized and aligned, wrapped and cut between pages.
+PIX = 'data:image/jpeg;base64,' + jpeg(30, 20, (200, 30, 30))
+TALL = 'data:image/jpeg;base64,' + jpeg(8, 40, (20, 160, 60))
+GREY = 'data:image/jpeg;base64,' + jpeg(12, 12, 90, 'L')
+CMYK = 'data:image/jpeg;base64,' + jpeg(16, 8, (10, 200, 30, 5), 'CMYK')
+PICTURED_CELLS = [
+    '<img src="%s"/>' % PIX, 'a <img src="%s" width="12" height="8"/> b' % PIX, 'testo <img src="%s"/> altro testo ancora' % TALL,
+    '<img src="%s" valign="middle"/> <img src="%s" valign="top"/> <img src="%s" valign="baseline"/>' % (PIX, PIX, PIX),
+    '<img src="%s" valign="text-top"/>x<img src="%s" valign="sub"/>y<img src="%s" valign="super"/>z' % (GREY, GREY, GREY),
+    '<img src="%s" width="50%%"/>' % PIX, '<img src="%s" height="200%%" valign="30%%"/>' % PIX, 'x<img src="%s" width="0"/>y' % PIX,
+    ' '.join(['parola <img src="%s" width="9" height="6"/>' % PIX] * 14), '<b>grassetto <img src="%s"/></b> <u>sotto <img src="%s"/></u>' % (GREY, GREY),
+    '<a href="https://example.test/i"><img src="%s"/></a> link' % GREY, '<img src="%s"/><br/><img src="%s"/>' % (PIX, TALL),
+    '<img src="%s" valign="3" width="2mm" height="0.1in"/>' % CMYK, 'poli\xadsportiva <img src="%s"/> ' % PIX + SHY,
+    '<font size="16">grande <img src="%s" valign="middle"/></font> <sub><img src="%s"/></sub>' % (PIX, GREY),
+]
+CASES += [
+    balance('bs-image', header(None, 'ASD <img src="%s" width="14" height="10"/> Aurora' % PIX, city='<img src="%s"/>' % GREY,
+                               address='Via <img src="%s" valign="middle"/> Roma 1' % TALL)),
+    balance('bs-image-logo', header('data:image/jpeg;base64,' + jpeg(30, 30, (20, 160, 60)), 'ASD <img src="%s" width="20" height="10"/> Aurora' % PIX)),
+    balance('bs-image-long', header(None, ' '.join(['ASD <img src="%s" width="14" height="10"/> Aurora' % PIX] * 6), city=PICTURED_CELLS[8])),
+    balance('bs-image-error', header(None, 'ASD <img src="%s" width="x"/> Aurora' % PIX)),
+    balance('bs-image-no-src', header(None, 'ASD <img/> Aurora')),
+    balance('bs-image-content-error', header(None, 'ASD <img src="%s">x</img> Aurora' % PIX)),
+    balance('bs-image-bad-base64', header(None, 'ASD <img src="data:image/jpeg;base64,QUJDR"/> Aurora')),
+    with_additional(balance('bs-image-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <img src="%s" width="10" height="7"/> riportati.' % PIX],
+                     ['altro', ' '.join(['x <img src="%s" width="10" height="7"/>' % GREY] * 40)], ['solo', '<img src="%s"/>' % PIX]]),
+    report('rt-image-cells', ['<img src="%s" width="10" height="7"/> Nome' % PIX, 'Testo', 'Note'],
+           [[PICTURED_CELLS[i], PICTURED_CELLS[(i + 5) % len(PICTURED_CELLS)], PICTURED_CELLS[(i + 9) % len(PICTURED_CELLS)]]
+            for i in range(len(PICTURED_CELLS))], 'Immagini'),
+    report('rt-image-pages', ['N', 'Testo'], [[str(i), ' '.join([PICTURED_CELLS[i % len(PICTURED_CELLS)]] * (1 + i % 4))] for i in range(100)],
+           'Immagini su pagine'),
+    report('rt-image-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join(['parola <img src="%s" width="9" height="6"/>' % PIX] * 700),
+           text_after=' '.join(['riga <img src="%s"/><br/>' % GREY] * 70)),
+    report('rt-image-text-pct', ['Nome'], [['x']], 'Percentuale', text_before=' '.join(['x <img src="%s" width="20%%"/> y' % PIX] * 80)),
+    report('rt-image-cell-pct', ['A', 'B'], [['<img src="%s" width="50%%"/>' % PIX, 'y']], 'Percentuale in cella'),
+    report('rt-image-cell-error', ['A'], [['<img src="%s" valign="bogus"/>' % PIX]], 'Errore'),
+    attendance('at-image', ('Yoga <img src="%s" width="8" height="6"/>' % PIX, ['01/01/2026', '<img src="%s"/>' % GREY],
+                            [('<img src="%s" width="6" height="4"/> Rossi' % PIX, ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:

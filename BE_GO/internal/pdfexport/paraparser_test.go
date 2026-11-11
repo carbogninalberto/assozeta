@@ -39,7 +39,25 @@ func describeFrag(f *frag) []any {
 	for _, l := range f.links {
 		links = append(links, []any{l.n, l.target})
 	}
-	return []any{f.font.name, f.text, f.lineBreak, f.size, rgbOf(&f.color), f.rise, lines, links, rgbOf(f.back), f.nobr}
+	var img any
+	if f.img != nil {
+		dimOf := func(d dim) any {
+			if d.pct {
+				return []any{"pct", d.v}
+			}
+			return d.v
+		}
+		va := f.img.valign
+		var vaValue any = va.name
+		switch {
+		case va.pct:
+			vaValue = []any{"pct", va.v}
+		case va.name == "":
+			vaValue = va.v
+		}
+		img = []any{"img", f.img.src, dimOf(f.img.width), dimOf(f.img.height), vaValue}
+	}
+	return []any{f.font.name, f.text, f.lineBreak, f.size, rgbOf(&f.color), f.rise, lines, links, rgbOf(f.back), f.nobr, img}
 }
 
 // The corpus comes from reportlab's own Paragraph
