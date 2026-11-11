@@ -828,7 +828,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### export-all-data.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST export-all-data | control characters in the denomination header | `service/export_all_data.go:76-77` (`ErrExportAllDataServer`) | B | Same 500 as Django (BadHeaderError); not a gap. UI: `routes/profile/sections/Account.svelte:1018`. |
+| POST export-all-data | control characters in the denomination header | `service/export_all_data.go:76-77` (`ErrExportAllDataServer`) | B (not a refusal: the Go service answers the same 500 page as Django; no fixture case exercises it, not re-checked in taildocs) | Same 500 as Django (BadHeaderError); not a gap. UI: `routes/profile/sections/Account.svelte:1018`. |
 | POST export-all-data | `xlsxexport.ErrNotPorted` | `service/export_all_data.go:81-82` | C | Rows are all `str()` values; the string path of `OpenpyxlRowsResponse` has no `ErrNotPorted`. |
 
 ### docmanager-reads.md
