@@ -118,8 +118,11 @@ type InstructorHoursTransaction interface {
 	DeletedChanges(ctx context.Context, id string) (map[string][2]string, error)
 	DeleteHour(ctx context.Context, id string) error
 	// DocumentDeletable reports whether Document.delete() would only null
-	// SET_NULL references (other references are not ported).
+	// SET_NULL references; otherwise DeleteDocumentCascade runs the collector.
 	DocumentDeletable(ctx context.Context, id string) (bool, error)
+	// DeleteDocumentCascade is Document.delete() through the shared deletion collector
+	// (cascaded rows, links, SET_NULL updates, one audit entry per deleted row).
+	DeleteDocumentCascade(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
 	// DeleteDocument nulls its SET_NULL references and deletes it, returning its delete diff.
 	DeleteDocument(ctx context.Context, id string) (map[string][2]string, error)
 	AppendAudit(ctx context.Context, event InstructorHoursAudit, association *string, audit LoginAuditContext, at time.Time) error
