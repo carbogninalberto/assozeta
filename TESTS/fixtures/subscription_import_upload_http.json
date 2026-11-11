@@ -570,6 +570,63 @@
    "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
   },
   {
+   "name": "subscription-import-upload-csv-dotted-i-and-sigma-columns",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     "NOMİ",
+     "COGNOMİ",
+     "ΟΔΟΣ",
+     "ΣΕΣΣΟ",
+     "İndirizzo"
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": "İndirizzo",
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "greco.csv",
+    "body_b64": "Tk9NxLA7Q09HTk9NxLA7zp/OlM6fzqM7zqPOlc6jzqPOnzvEsG5kaXJpenpvCkE7QjtDO0Q7RQo=",
+    "content_type": "text/csv",
+    "association": "own_association",
+    "expired": []
+   },
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"associates_file\"; filename=\"greco.csv\"\r\nContent-Type: text/csv\r\n\r\nNOMİ;COGNOMİ;ΟΔΟΣ;ΣΕΣΣΟ;İndirizzo\nA;B;C;D;E\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
    "name": "subscription-import-upload-csv-header-only",
    "actor": "admin",
    "method": "POST",

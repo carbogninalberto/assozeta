@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
@@ -102,14 +103,9 @@ func subscriptionImportDistance(left, right []rune) int {
 	return previous[len(right)]
 }
 
-// subscriptionImportLower is str.lower() for text without İ (full case
-// mapping) and Σ (final sigma), which callers refuse.
-func subscriptionImportLower(text string) ([]rune, bool) {
-	if strings.ContainsAny(text, "İΣ") {
-		return nil, false
-	}
-	return []rune(strings.ToLower(text)), true
-}
+// subscriptionImportLower is str.lower(): U+0130 lowers to 'i' with a
+// combining dot and a final sigma to its own form (dto.PythonLower).
+func subscriptionImportLower(text string) []rune { return []rune(dto.PythonLower(text)) }
 
 // subscriptionImportAutoMap is auto_map_columns(columns, map) on the
 // request's own copy of SubscriptionMaps.MAP, rendered.
@@ -117,7 +113,7 @@ func subscriptionImportAutoMap(columns []string) domain.RequestObject {
 	mapped := make(map[string]string, len(columns))
 	keys := append([]string(nil), subscriptionImportKeys...)
 	for _, column := range columns {
-		lowered, _ := subscriptionImportLower(column)
+		lowered := subscriptionImportLower(column)
 		lowest, chosen := float64(utf8.RuneCountInString(column))*0.25, -1
 		for index, key := range keys {
 			distance := float64(subscriptionImportDistance(lowered, []rune(key)))
@@ -453,11 +449,6 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 		}
 		if parseErr == nil {
 			columns = frame.Columns
-		}
-	}
-	for _, column := range columns {
-		if _, ok := subscriptionImportLower(column); !ok {
-			return nil, ErrSubscriptionImportNotPorted
 		}
 	}
 	document, err := s.uploads.storeImportFile(ctx, identity, association, file, audit)

@@ -216,6 +216,10 @@ upload('csv-maps-its-own-columns', 'owner', 'altri.csv', SIMPLE, columns=['Nome'
 upload('csv-bom-crlf-quoted-unnamed-duplicates', 'full_collaborator', 'Esportazione.CSV',
        b'\xef\xbb\xbf"Nome";;"Note;varie";Note;\r\nMario;;x;y;\r\n"Anna\r\nMaria";;;;\r\n', content_type='text/csv',
        columns=['Nome', 'Unnamed: 1', 'Note;varie', 'Note', 'Unnamed: 4'])
+# t4l1: columns with a dotted capital I or a capital sigma are lower-cased as str.lower() does ('i' with a combining dot, the
+# final sigma) before the distance to each key is measured.
+upload('csv-dotted-i-and-sigma-columns', 'owner', 'greco.csv', 'NOMİ;COGNOMİ;ΟΔΟΣ;ΣΕΣΣΟ;İndirizzo\nA;B;C;D;E\n'.encode(),
+       columns=['NOMİ', 'COGNOMİ', 'ΟΔΟΣ', 'ΣΕΣΣΟ', 'İndirizzo'])
 upload('csv-header-only', 'admin', 'vuoto.csv', b'Telefono;Altro\n', headers=ADMIN_OWNER, session='admin_owner',
        columns=['Telefono', 'Altro'])
 upload('csv-implicit-index', 'owner', 'indice.csv', b'a;b\n1;2;3\n4;5;6\n', columns=['a', 'b'])
