@@ -158,3 +158,12 @@ case's objects are removed so the run reports that case.
 Rest-prof: 240 cases (46 added). RED: documented refusals, see the v2-refusals row; the added cases were 500 pages in Go before. Django 240/240 and Go 240/240
 natively on the first run. Two tutor seeds have the ids `UUID(int=4242)` and `UUID(int=1)`; five associates with a seeded relation carry the flag and update cases.
 Mutation (an entry only when the stored flag changes) fails the `update-primary-int-text-pair` case on Go.
+
+## Ported in taildocs
+
+`born_date` with the digits `strptime` accepts in other scripts (the day's second digit after an ASCII 1 or 2, and the
+year) is stored as the date, on add, update and for new tutors. An `X-Group-Id` in any spelling `UUID()` reads (upper
+case, braces, no hyphens, urn) is stored as the uuid, while the create audit entry and the 201 body show the text as
+sent (the manager hands the raw value to the instance). A header that is not a UUID, or an unknown group, is the 500
+after the writes already made. `DELETE personas-subscriptions/<pk>/list` on a found subscription is the soft delete
+through `Subscription.save()` (season fill, audit entry), 204; its cases are in router-persona-subscriptions.

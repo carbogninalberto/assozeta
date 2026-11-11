@@ -225,6 +225,9 @@ func supplierRelated(value any) (id string, code string) {
 			return id, ""
 		}
 	case []any, domain.RequestObject:
+	case domain.RequestUpload:
+		// UUIDField.to_python(file): invalid, quoting str(file) (the name).
+		return "", "related-invalid-uuid:" + v.Name
 	default:
 		return "", "related-incorrect-type:" + pythonTypeName(value)
 	}

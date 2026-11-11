@@ -1856,6 +1856,635 @@
    "family": null,
    "id": "a1000000-0000-4000-8000-000000677051",
    "created": "2024-02-22T07:00:00Z"
+  },
+  "pic_upd": {
+   "picture_path": "https://cdn.example.test/fosca-old.jpg",
+   "first_name": "Fosca",
+   "last_name": "Fotografata",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677052",
+   "created": "2024-02-23T07:00:00Z"
+  },
+  "pic_collab": {
+   "picture_path": null,
+   "first_name": "Fulvio",
+   "last_name": "Fotocollaborato",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677053",
+   "created": "2024-02-24T07:00:00Z"
+  },
+  "pic_form": {
+   "picture_path": null,
+   "first_name": "Flora",
+   "last_name": "Fotomodulo",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677054",
+   "created": "2024-02-25T07:00:00Z"
+  },
+  "pic_keep": {
+   "picture_path": "https://cdn.example.test/fabio.jpg",
+   "first_name": "Fabio",
+   "last_name": "Fotofallita",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677055",
+   "created": "2024-02-26T07:00:00Z"
+  },
+  "pic_denied": {
+   "picture_path": "https://cdn.example.test/fermo.jpg",
+   "first_name": "Fermo",
+   "last_name": "Fotonegata",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677056",
+   "created": "2024-02-27T07:00:00Z"
+  },
+  "pic_other": {
+   "picture_path": "https://cdn.example.test/fedra.jpg",
+   "first_name": "Fedra",
+   "last_name": "Fotoaltrui",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677057",
+   "created": "2024-02-28T07:00:00Z"
+  },
+  "pic_text": {
+   "picture_path": null,
+   "first_name": "Folco",
+   "last_name": "Fototesto",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677058",
+   "created": "2024-03-01T07:00:00Z"
+  },
+  "int_tutor": {
+   "picture_path": null,
+   "first_name": "Ivo",
+   "last_name": "Intero",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1971-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "00000000-0000-0000-0000-000000001092",
+   "created": "2024-03-02T07:00:00Z"
+  },
+  "one_tutor": {
+   "picture_path": null,
+   "first_name": "Ugo",
+   "last_name": "Uno",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1972-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "00000000-0000-0000-0000-000000000001",
+   "created": "2024-03-03T07:00:00Z"
+  },
+  "prim": {
+   "picture_path": null,
+   "first_name": "Prima",
+   "last_name": "Flag",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2010-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677061",
+   "created": "2024-03-04T07:00:00Z"
+  },
+  "prim_t1": {
+   "picture_path": null,
+   "first_name": "Pino",
+   "last_name": "Primo",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1980-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677062",
+   "created": "2024-03-05T07:00:00Z"
+  },
+  "prim_t2": {
+   "picture_path": null,
+   "first_name": "Pina",
+   "last_name": "Seconda",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1981-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677063",
+   "created": "2024-03-06T07:00:00Z"
+  },
+  "idu": {
+   "picture_path": null,
+   "first_name": "Ida",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677064",
+   "created": "2024-03-07T07:00:00Z"
+  },
+  "idu2": {
+   "picture_path": null,
+   "first_name": "Ines",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-02-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677065",
+   "created": "2024-03-08T07:00:00Z"
+  },
+  "idu3": {
+   "picture_path": null,
+   "first_name": "Ivana",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-03-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677066",
+   "created": "2024-03-09T07:00:00Z"
+  },
+  "idu4": {
+   "picture_path": null,
+   "first_name": "Irma",
+   "last_name": "Intera",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "2011-04-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677067",
+   "created": "2024-03-10T07:00:00Z"
+  },
+  "idu_t": {
+   "picture_path": null,
+   "first_name": "Iris",
+   "last_name": "Vecchia",
+   "sex": "A",
+   "tax_code": null,
+   "born_date": "1982-01-01",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "nationality": "Italiana",
+   "nationality_residence": "Italia",
+   "email": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "is_minor": false,
+   "disabled": false,
+   "draft": false,
+   "deleted": false,
+   "family_role": null,
+   "id_number": null,
+   "migrated": false,
+   "notes": null,
+   "user": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "family": null,
+   "id": "a1000000-0000-4000-8000-000000677068",
+   "created": "2024-03-11T07:00:00Z"
   }
  },
  "relations": {
@@ -1906,19 +2535,49 @@
    "associate": "promote",
    "tutor": "promote_t",
    "primary": false
+  },
+  "prim_r1": {
+   "id": 677009,
+   "associate": "prim",
+   "tutor": "prim_t1",
+   "primary": true
+  },
+  "prim_r2": {
+   "id": 677010,
+   "associate": "prim",
+   "tutor": "prim_t2",
+   "primary": false
+  },
+  "idu_r": {
+   "id": 677011,
+   "associate": "idu",
+   "tutor": "idu_t",
+   "primary": true
+  },
+  "idu_r2": {
+   "id": 677012,
+   "associate": "idu2",
+   "tutor": "idu_t",
+   "primary": true
+  },
+  "idu_r3": {
+   "id": 677013,
+   "associate": "idu3",
+   "tutor": "idu_t",
+   "primary": true
   }
  },
  "medical": {
-  "id": "a1000000-0000-4000-8000-000000677052",
+  "id": "a1000000-0000-4000-8000-000000677069",
   "expiration": "2030-01-31"
  },
  "tag": {
-  "id": "a1000000-0000-4000-8000-000000677053",
+  "id": "a1000000-0000-4000-8000-000000677070",
   "name": "Agonisti"
  },
  "subscriptions": {
   "cur": {
-   "id": "a1000000-0000-4000-8000-000000677054",
+   "id": "a1000000-0000-4000-8000-000000677071",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -1939,7 +2598,7 @@
    "draft": false
   },
   "old": {
-   "id": "a1000000-0000-4000-8000-000000677055",
+   "id": "a1000000-0000-4000-8000-000000677072",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2019-01-01",
    "end": "2019-12-31",
@@ -1947,7 +2606,7 @@
    "signature_storage_key": "private/key.png"
   },
   "gone": {
-   "id": "a1000000-0000-4000-8000-000000677056",
+   "id": "a1000000-0000-4000-8000-000000677073",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2018-01-01",
    "end": "2018-12-31",
@@ -1955,7 +2614,7 @@
    "deleted": true
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-000000677057",
+   "id": "a1000000-0000-4000-8000-000000677074",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2017-01-01",
    "end": "2017-12-31",
@@ -1964,7 +2623,7 @@
    "archived": true
   },
   "future": {
-   "id": "a1000000-0000-4000-8000-000000677058",
+   "id": "a1000000-0000-4000-8000-000000677075",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2099-01-01",
    "end": "2099-12-31",
@@ -1972,7 +2631,7 @@
    "trial": true
   },
   "lone_past": {
-   "id": "a1000000-0000-4000-8000-000000677059",
+   "id": "a1000000-0000-4000-8000-000000677076",
    "associate": "a1000000-0000-4000-8000-000000677050",
    "start": "2018-01-01",
    "end": "2018-12-31",
@@ -1986,7 +2645,7 @@
    ]
   },
   "far": {
-   "id": "a1000000-0000-4000-8000-000000677060",
+   "id": "a1000000-0000-4000-8000-000000677077",
    "associate": "a1000000-0000-4000-8000-000000677049",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -1994,7 +2653,7 @@
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   "hilde": {
-   "id": "a1000000-0000-4000-8000-000000677061",
+   "id": "a1000000-0000-4000-8000-000000677078",
    "associate": "a1000000-0000-4000-8000-000000677051",
    "start": "2020-01-01",
    "end": "2099-12-31",
@@ -2132,12 +2791,12 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677054",
+      "subscription_id": "a1000000-0000-4000-8000-000000677071",
       "active": true,
       "is_current": true,
       "is_next_year": false,
       "current_year": "corrente",
-      "medical": "a1000000-0000-4000-8000-000000677052",
+      "medical": "a1000000-0000-4000-8000-000000677069",
       "medical_expiration_date": "2030-01-31",
       "age": {
        "$age": "1990-01-01"
@@ -2213,11 +2872,11 @@
       "payment": null,
       "group": null,
       "tags": [
-       "a1000000-0000-4000-8000-000000677053"
+       "a1000000-0000-4000-8000-000000677070"
       ]
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677059",
+      "subscription_id": "a1000000-0000-4000-8000-000000677076",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -2303,7 +2962,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677055",
+      "subscription_id": "a1000000-0000-4000-8000-000000677072",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -2384,7 +3043,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677057",
+      "subscription_id": "a1000000-0000-4000-8000-000000677074",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -2465,7 +3124,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677058",
+      "subscription_id": "a1000000-0000-4000-8000-000000677075",
       "active": false,
       "is_current": false,
       "is_next_year": true,
@@ -2579,7 +3238,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677055",
+      "subscription_id": "a1000000-0000-4000-8000-000000677072",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -2660,7 +3319,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677057",
+      "subscription_id": "a1000000-0000-4000-8000-000000677074",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -2773,7 +3432,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677057",
+      "subscription_id": "a1000000-0000-4000-8000-000000677074",
       "active": false,
       "is_current": false,
       "is_next_year": false,
@@ -2883,7 +3542,7 @@
    "response": {
     "data": [
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677061",
+      "subscription_id": "a1000000-0000-4000-8000-000000677078",
       "active": true,
       "is_current": true,
       "is_next_year": false,
@@ -2964,7 +3623,7 @@
       "tags": []
      },
      {
-      "subscription_id": "a1000000-0000-4000-8000-000000677060",
+      "subscription_id": "a1000000-0000-4000-8000-000000677077",
       "active": true,
       "is_current": true,
       "is_next_year": false,
@@ -4063,7 +4722,7 @@
    "name": "router-persona-subscriptions-detail-anonymous",
    "actor": "anonymous",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 401,
    "response": {
@@ -4083,11 +4742,11 @@
    "name": "router-persona-subscriptions-detail-restricted-unmapped",
    "actor": "restricted_collaborator",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 403,
    "response": {
-    "detail": "Access denied: No permission mapping for endpoint 'personas-subscriptions/a1000000-0000-4000-8000-000000677054'. Contact administrator to grant access."
+    "detail": "Access denied: No permission mapping for endpoint 'personas-subscriptions/a1000000-0000-4000-8000-000000677071'. Contact administrator to grant access."
    },
    "allow": [
     "DELETE",
@@ -4103,16 +4762,16 @@
    "name": "router-persona-subscriptions-retrieve-owner",
    "actor": "owner",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677054",
+    "subscription_id": "a1000000-0000-4000-8000-000000677071",
     "active": true,
     "is_current": true,
     "is_next_year": false,
     "current_year": "corrente",
-    "medical": "a1000000-0000-4000-8000-000000677052",
+    "medical": "a1000000-0000-4000-8000-000000677069",
     "medical_expiration_date": "2030-01-31",
     "age": {
      "$age": "1990-01-01"
@@ -4188,7 +4847,7 @@
     "payment": null,
     "group": null,
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ]
    },
    "allow": [
@@ -4205,11 +4864,11 @@
    "name": "router-persona-subscriptions-retrieve-renewal",
    "actor": "full_collaborator",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677059.json",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076.json",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677059",
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
     "active": false,
     "is_current": false,
     "is_next_year": false,
@@ -4308,13 +4967,13 @@
    "name": "router-persona-subscriptions-retrieve-own-group",
    "actor": "owner",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677057/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677074/",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677057",
+    "subscription_id": "a1000000-0000-4000-8000-000000677074",
     "active": false,
     "is_current": false,
     "is_next_year": false,
@@ -4408,7 +5067,7 @@
    "name": "router-persona-subscriptions-retrieve-other-group-not-found",
    "actor": "owner",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -4430,7 +5089,7 @@
    "name": "router-persona-subscriptions-retrieve-deleted-not-found",
    "actor": "owner",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677056/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677073/",
    "headers": {},
    "status": 404,
    "response": {
@@ -4450,7 +5109,7 @@
    "name": "router-persona-subscriptions-retrieve-foreign-not-found",
    "actor": "owner",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677060/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677077/",
    "headers": {},
    "status": 404,
    "response": {
@@ -4490,7 +5149,7 @@
    "name": "router-persona-subscriptions-retrieve-athlete-not-association",
    "actor": "athlete",
    "method": "GET",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 403,
    "response": {
@@ -4510,7 +5169,7 @@
    "name": "router-persona-subscriptions-detail-post-not-allowed",
    "actor": "owner",
    "method": "POST",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 405,
    "response": {
@@ -4531,7 +5190,7 @@
    "name": "router-persona-subscriptions-detail-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 200,
    "response": {
@@ -5394,7 +6053,7 @@
    "name": "router-persona-subscriptions-update-anonymous",
    "actor": "anonymous",
    "method": "PUT",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 401,
    "response": {
@@ -5415,11 +6074,11 @@
    "name": "router-persona-subscriptions-partial-update-restricted-unmapped",
    "actor": "restricted_collaborator",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071/",
    "headers": {},
    "status": 403,
    "response": {
-    "detail": "Access denied: No permission mapping for endpoint 'personas-subscriptions/a1000000-0000-4000-8000-000000677054'. Contact administrator to grant access."
+    "detail": "Access denied: No permission mapping for endpoint 'personas-subscriptions/a1000000-0000-4000-8000-000000677071'. Contact administrator to grant access."
    },
    "allow": [
     "DELETE",
@@ -5436,7 +6095,7 @@
    "name": "router-persona-subscriptions-destroy-deleted-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677056/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677073/",
    "headers": {},
    "status": 404,
    "response": {
@@ -5456,7 +6115,7 @@
    "name": "router-persona-subscriptions-destroy-foreign-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677060/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677077/",
    "headers": {},
    "status": 404,
    "response": {
@@ -5496,7 +6155,7 @@
    "name": "router-persona-subscriptions-destroy-athlete-not-association",
    "actor": "athlete",
    "method": "DELETE",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677055/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677072/",
    "headers": {},
    "status": 403,
    "response": {
@@ -5516,7 +6175,7 @@
    "name": "router-persona-subscriptions-destroy-owner",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677055/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677072/",
    "headers": {},
    "status": 204,
    "response": "<empty>",
@@ -5531,14 +6190,14 @@
    "effect": {
     "kind": "destroy",
     "actor": "owner",
-    "subscription": "a1000000-0000-4000-8000-000000677055"
+    "subscription": "a1000000-0000-4000-8000-000000677072"
    }
   },
   {
    "name": "router-persona-subscriptions-destroy-again-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677055/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677072/",
    "headers": {},
    "status": 404,
    "response": {
@@ -5558,7 +6217,7 @@
    "name": "router-persona-subscriptions-destroy-format-json-with-tags",
    "actor": "full_collaborator",
    "method": "DELETE",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677054.json",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677071.json",
    "headers": {},
    "status": 204,
    "response": "<empty>",
@@ -5573,7 +6232,7 @@
    "effect": {
     "kind": "destroy",
     "actor": "full_collaborator",
-    "subscription": "a1000000-0000-4000-8000-000000677054"
+    "subscription": "a1000000-0000-4000-8000-000000677071"
    }
   },
   {
@@ -5794,7 +6453,7 @@
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "user": "a1000000-0000-4000-8000-000000700001",
-    "subscription_id": "a1000000-0000-4000-8000-000000677058"
+    "subscription_id": "a1000000-0000-4000-8000-000000677075"
    }
   },
   {
@@ -5821,7 +6480,7 @@
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "user": "a1000000-0000-4000-8000-000000700001",
     "tags": [
-     "a1000000-0000-4000-8000-000000677053",
+     "a1000000-0000-4000-8000-000000677070",
      "a1000000-0000-4000-8000-000000677999",
      "abc"
     ]
@@ -5850,7 +6509,7 @@
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "user": "a1000000-0000-4000-8000-000000700001",
-    "tags": "a1000000-0000-4000-8000-000000677053"
+    "tags": "a1000000-0000-4000-8000-000000677070"
    }
   },
   {
@@ -5967,7 +6626,7 @@
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "user": "a1000000-0000-4000-8000-000000700001",
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ],
     "group": "a1000000-0000-4000-8000-000000714001",
     "notes": "nuova",
@@ -6019,14 +6678,14 @@
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "user": "a1000000-0000-4000-8000-000000700001",
-    "subscription_id": "a1000000-0000-4000-8000-000000677058"
+    "subscription_id": "a1000000-0000-4000-8000-000000677075"
    }
   },
   {
    "name": "router-persona-subscriptions-update-athlete-not-association",
    "actor": "athlete",
    "method": "PUT",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 403,
    "response": {
@@ -6047,7 +6706,7 @@
    "name": "router-persona-subscriptions-update-owner-without-association-server-error",
    "actor": "owner_without_association",
    "method": "PUT",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -6066,7 +6725,7 @@
    "name": "router-persona-subscriptions-update-deleted-not-found",
    "actor": "owner",
    "method": "PUT",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677056/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677073/",
    "headers": {},
    "status": 404,
    "response": {
@@ -6090,7 +6749,7 @@
    "name": "router-persona-subscriptions-update-foreign-not-found",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677060/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677077/",
    "headers": {},
    "status": 404,
    "response": {
@@ -6134,7 +6793,7 @@
    "name": "router-persona-subscriptions-update-other-group-not-found",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -6157,7 +6816,7 @@
    "name": "router-persona-subscriptions-update-not-found-before-parse",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677056/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677073/",
    "headers": {},
    "status": 404,
    "response": {
@@ -6179,7 +6838,7 @@
    "name": "router-persona-subscriptions-update-put-required",
    "actor": "owner",
    "method": "PUT",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 400,
    "response": {
@@ -6207,7 +6866,7 @@
    "name": "router-persona-subscriptions-update-subscription-id-taken",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 400,
    "response": {
@@ -6225,14 +6884,14 @@
    ],
    "effect": null,
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677059"
+    "subscription_id": "a1000000-0000-4000-8000-000000677076"
    }
   },
   {
    "name": "router-persona-subscriptions-update-validation",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 400,
    "response": {
@@ -6267,7 +6926,7 @@
    "name": "router-persona-subscriptions-update-foreign-association-denied",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 403,
    "response": {
@@ -6291,7 +6950,7 @@
    "name": "router-persona-subscriptions-update-foreign-user-denied",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 403,
    "response": {
@@ -6314,11 +6973,11 @@
    "name": "router-persona-subscriptions-partial-update-owner",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677058",
+    "subscription_id": "a1000000-0000-4000-8000-000000677075",
     "active": false,
     "is_current": false,
     "is_next_year": true,
@@ -6400,7 +7059,7 @@
     "payment": null,
     "group": null,
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ]
    },
    "allow": [
@@ -6414,7 +7073,7 @@
    "effect": {
     "kind": "update",
     "actor": "owner",
-    "subscription": "a1000000-0000-4000-8000-000000677058",
+    "subscription": "a1000000-0000-4000-8000-000000677075",
     "columns": {
      "notes": "Nota nuova",
      "competitive": true,
@@ -6438,14 +7097,14 @@
      ]
     },
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677058",
+    "subscription_id": "a1000000-0000-4000-8000-000000677075",
     "notes": "Nota nuova",
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ],
     "competitive": 1,
     "custom_data": {
@@ -6458,11 +7117,11 @@
    "name": "router-persona-subscriptions-partial-update-unchanged",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677058",
+    "subscription_id": "a1000000-0000-4000-8000-000000677075",
     "active": false,
     "is_current": false,
     "is_next_year": true,
@@ -6544,7 +7203,7 @@
     "payment": null,
     "group": null,
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ]
    },
    "allow": [
@@ -6558,7 +7217,7 @@
    "effect": {
     "kind": "update",
     "actor": "owner",
-    "subscription": "a1000000-0000-4000-8000-000000677058",
+    "subscription": "a1000000-0000-4000-8000-000000677075",
     "columns": {},
     "changes": null,
     "tags": null
@@ -6572,11 +7231,11 @@
    "name": "router-persona-subscriptions-partial-update-format-json-tags-cleared",
    "actor": "full_collaborator",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058.json",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075.json",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677058",
+    "subscription_id": "a1000000-0000-4000-8000-000000677075",
     "active": false,
     "is_current": false,
     "is_next_year": true,
@@ -6670,7 +7329,7 @@
    "effect": {
     "kind": "update",
     "actor": "full_collaborator",
-    "subscription": "a1000000-0000-4000-8000-000000677058",
+    "subscription": "a1000000-0000-4000-8000-000000677075",
     "columns": {},
     "changes": null,
     "tags": []
@@ -6688,11 +7347,11 @@
    "name": "router-persona-subscriptions-partial-update-user-without-association",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677058/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677058",
+    "subscription_id": "a1000000-0000-4000-8000-000000677075",
     "active": false,
     "is_current": false,
     "is_next_year": true,
@@ -6786,7 +7445,7 @@
    "effect": {
     "kind": "update",
     "actor": "owner",
-    "subscription": "a1000000-0000-4000-8000-000000677058",
+    "subscription": "a1000000-0000-4000-8000-000000677075",
     "columns": {
      "user_id": "a1000000-0000-4000-8000-000000700004"
     },
@@ -6806,11 +7465,11 @@
    "name": "router-persona-subscriptions-update-format-json-collaborator",
    "actor": "full_collaborator",
    "method": "PUT",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677059.json",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076.json",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677059",
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
     "active": false,
     "is_current": false,
     "is_next_year": false,
@@ -6892,7 +7551,7 @@
     "payment": null,
     "group": null,
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ]
    },
    "allow": [
@@ -6906,7 +7565,7 @@
    "effect": {
     "kind": "update",
     "actor": "full_collaborator",
-    "subscription": "a1000000-0000-4000-8000-000000677059",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
     "columns": {
      "type": 3,
      "role": 5,
@@ -6947,13 +7606,13 @@
      ]
     },
     "tags": [
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070"
     ]
    },
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "user": "a1000000-0000-4000-8000-000000700001",
-    "subscription_id": "a1000000-0000-4000-8000-000000677059",
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
     "type": "3",
     "role": 5,
     "status_flag": 2,
@@ -6962,8 +7621,8 @@
     "meta": null,
     "creation_date": "2024-03-01T10:30:00.250000+01:00",
     "tags": [
-     "a1000000-0000-4000-8000-000000677053",
-     "a1000000-0000-4000-8000-000000677053"
+     "a1000000-0000-4000-8000-000000677070",
+     "a1000000-0000-4000-8000-000000677070"
     ],
     "trial": "false"
    }
@@ -6972,11 +7631,11 @@
    "name": "router-persona-subscriptions-partial-update-dates-from-settings",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677059/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677059",
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
     "active": false,
     "is_current": false,
     "is_next_year": false,
@@ -7070,7 +7729,7 @@
    "effect": {
     "kind": "update",
     "actor": "owner",
-    "subscription": "a1000000-0000-4000-8000-000000677059",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
     "columns": {
      "start_date": "2024-01-01",
      "end_date": "2024-12-31"
@@ -7097,13 +7756,13 @@
    "name": "router-persona-subscriptions-partial-update-own-group-deleted",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677057/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677074/",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000677057",
+    "subscription_id": "a1000000-0000-4000-8000-000000677074",
     "active": false,
     "is_current": false,
     "is_next_year": false,
@@ -7194,7 +7853,7 @@
    "effect": {
     "kind": "update",
     "actor": "owner",
-    "subscription": "a1000000-0000-4000-8000-000000677057",
+    "subscription": "a1000000-0000-4000-8000-000000677074",
     "columns": {
      "archived": false,
      "deleted": true
@@ -7221,7 +7880,7 @@
    "name": "router-persona-subscriptions-update-deleted-by-patch-not-found",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677057/",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677074/",
    "headers": {},
    "status": 404,
    "response": {
@@ -7237,6 +7896,122 @@
    ],
    "effect": null,
    "body": {}
+  },
+  {
+   "name": "router-persona-subscriptions-legacy-delete-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/list",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS"
+   ],
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677075",
+    "columns": {
+     "deleted": true
+    },
+    "changes": {
+     "deleted": [
+      "False",
+      "True"
+     ]
+    },
+    "tags": null
+   }
+  },
+  {
+   "name": "router-persona-subscriptions-legacy-delete-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/list",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Subscription matches the given query."
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS"
+   ],
+   "effect": null
+  },
+  {
+   "name": "router-persona-subscriptions-legacy-delete-foreign-association-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677077/list",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No Subscription matches the given query."
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS"
+   ],
+   "effect": null
+  },
+  {
+   "name": "router-persona-subscriptions-legacy-delete-other-group-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/list",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "detail": "No Subscription matches the given query."
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS"
+   ],
+   "effect": null
+  },
+  {
+   "name": "router-persona-subscriptions-legacy-delete-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/list",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS"
+   ],
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "columns": {
+     "deleted": true
+    },
+    "changes": {
+     "deleted": [
+      "False",
+      "True"
+     ]
+    },
+    "tags": null
+   }
   }
  ]
 }

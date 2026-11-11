@@ -1794,6 +1794,86 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "profile-settings-post-multipart-file-fields-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "dark_mode": [
+     "Must be a valid boolean."
+    ],
+    "balance_sheet_year": [
+     "\"nota.txt\" is not a valid choice."
+    ],
+    "membership_starting_number": [
+     "A valid integer is required."
+    ],
+    "default_membership_type": [
+     "Not a valid string."
+    ],
+    "default_payment_category": [
+     "“nota.txt” is not a valid UUID."
+    ],
+    "default_payment_category_courses": [
+     "“nota.txt” is not a valid UUID."
+    ]
+   },
+   "effect": null,
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"auto_archive\"\r\n\r\ntrue\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"dark_mode\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_year\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_starting_number\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_membership_type\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category_courses\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-post-multipart-file-saves-user-then-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "enumerate_invoices": false,
+      "online_payments": true,
+      "balance_sheet_year": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "temporary_invoice_deletion": false,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": false,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": false,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": false,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": null,
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977001"
+     }
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_year\"\r\n\r\n3\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_start_day\"\r\n\r\n15\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_start_month\"\r\n\r\n3\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"starting_number_invoices\"\r\n\r\n-5\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_duration\"\r\n\r\n4\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_duration\"\r\n\r\n5\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_starting_number\"\r\n\r\n120\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_membership_type\"\r\n\r\n\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_start_day\"\r\n\r\n1\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_start_month\"\r\n\r\n1\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_end_day\"\r\n\r\n7\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_end_month\"\r\n\r\n12\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category\"\r\n\r\n\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category_courses\"\r\n\r\na1000000-0000-4000-8000-000000977001\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"online_payments\"\r\n\r\ntrue\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"dark_mode\"\r\n\r\nx\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"dark_mode\"\r\n\r\noff\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_card_configuration\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
    "name": "profile-settings-integrations-anonymous",
    "actor": "anonymous",
    "method": "PATCH",
@@ -2234,6 +2314,147 @@
     "review_url_enabled": false
    },
    "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-multipart-unrelated-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": null,
+    "review_url_enabled": false
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "review_url": null,
+      "review_url_enabled": false
+     }
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-multipart-file-url-echoes-lines",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": [
+     "ciao"
+    ],
+    "review_url_enabled": false
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "None",
+       "nota.txt"
+      ]
+     },
+     "stored": {
+      "review_url": "nota.txt",
+      "review_url_enabled": false
+     }
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-multipart-file-url-several-lines",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": [
+     "uno\r\n",
+     "due\r",
+     "tre\n",
+     "quattro"
+    ],
+    "review_url_enabled": false
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "nota.txt",
+       "righe.txt"
+      ]
+     },
+     "stored": {
+      "review_url": "righe.txt",
+      "review_url_enabled": false
+     }
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"righe.txt\"\r\nContent-Type: text/plain\r\n\r\nuno\r\ndue\rtre\nquattro\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-multipart-empty-file-url",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": [],
+    "review_url_enabled": false
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "righe.txt",
+       "vuoto.txt"
+      ]
+     },
+     "stored": {
+      "review_url": "vuoto.txt",
+      "review_url_enabled": false
+     }
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"vuoto.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-multipart-file-enabled-keeps-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url_enabled": [
+       "False",
+       "nota.txt"
+      ]
+     },
+     "stored": null
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url_enabled\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
   }
  ]
 }

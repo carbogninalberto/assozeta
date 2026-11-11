@@ -63,6 +63,7 @@ filters' expectations hold for run dates from 2026-11 to 2030-03. Personal data
 is synthetic. Run with ``python3 -I``.
 """
 import json
+from urllib.parse import quote
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('personas_reads_http.json')
@@ -102,7 +103,7 @@ ASSOCIATES = dict([
     person('bruno', 2, first_name='Bruno', last_name='Bellini', sex='M', tax_code='BLLBRN80L01F205Z', born_date='1980-07-01',
            email='bruno.bellini@example.test', family=F1, family_role='padre'),
     person('carla', 3, first_name='Carla', last_name='Conti', sex='F', tax_code='CNTCRL82B42H501U', born_date='1982-02-02',
-           email='carla.conti@example.test', nationality=None),
+           email='carla.conti@example.test', nationality=None, notes='ελένη σας'),
     person('dario', 4, first_name='Dario', last_name='Esposito', sex='M', tax_code='SPSDRA00A15F839K', born_date='2000-01-15',
            email='dario.esposito@example.test', group=OWN_GROUP, family=F2, draft=True),
     person('elena', 5, first_name='Elena', last_name='Ferri', sex='F', notes='100% presente!', disabled=True),
@@ -401,6 +402,14 @@ add('list-search-blank', 'owner', S + '%20%20%20', 200, page(VISIBLE))
 add('list-search-date-variation', 'owner', S + '99%2012/03/2010', 200, page(['anna']), ordered=True)
 add('list-search-date-variation-short-year', 'owner', S + '99%2012.03.10', 200, page(['anna']), ordered=True)
 add('list-search-accented', 'owner', S + 'FORL%C3%8C', 200, page(['ivo']), ordered=True)
+# Terms outside Latin script: str.lower() and \\w+ in Python's sense, malformed UTF-8 decoded with replacement characters.
+add('list-search-greek-lowercase', 'owner', S + quote('ελένη'), 200, page(['carla']), ordered=True)
+add('list-search-greek-final-sigma', 'owner', S + quote('ΣΑΣ'), 200, page(['carla']), ordered=True)
+add('list-search-dotted-capital-i-splits-word', 'owner', S + 'bassi%20' + quote('İ'), 200, page(['anna']), ordered=True)
+add('list-search-cjk-no-match', 'owner', S + quote('名前'), 200, page([]))
+add('list-search-malformed-utf8-replaced', 'owner', S + 'bassi%FF', 200, page(['anna']), ordered=True)
+add('list-search-truncated-utf8-replaced', 'owner', S + 'bassi%E2%82', 200, page(['anna']), ordered=True)
+add('list-search-unicode-digits-date', 'owner', S + quote('١٢/٠٣/٢٠١٠'), 200, page([]))
 add('list-search-group', 'owner', S + 'galli', 200, page(['galli']), headers={'X-Group-Id': OWN_GROUP}, ordered=True)
 add('list-search-sort-relevance', 'owner', S + 'ferri&sort[field]=relevance&sort[sort]=desc', 200, page(['elena', 'carla']), ordered=True)
 # DISTINCT keeps working: Django adds the RANDOM() ordering to the select list.

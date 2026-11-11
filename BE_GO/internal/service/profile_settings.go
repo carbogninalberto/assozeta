@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -424,9 +425,6 @@ func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domai
 	if err != nil {
 		return ProfileIntegrations{}, err
 	}
-	if dto.ProfileSettingsHasUpload(body) {
-		return ProfileIntegrations{}, ErrProfileSettingsUpload
-	}
 	object, ok := body.(domain.RequestObject)
 	if !ok {
 		// request.data.get on a list, scalar or None: AttributeError.
@@ -451,15 +449,28 @@ func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domai
 	if value, present := object.Lookup("review_url_enabled"); present {
 		enabled = value
 	}
+	// A file part is the QueryDict value: str() is its name and the response
+	// renders it as its lines (File.__iter__), which needs the whole content.
+	var echoed any = url
+	var echoErr error
+	if upload, isUpload := url.(domain.RequestUpload); isUpload {
+		echoed, echoErr = profileUploadLines(upload)
+		if echoErr != nil && !upload.Whole {
+			return ProfileIntegrations{}, ErrProfileSettingsUpload
+		}
+	}
+	if upload, isUpload := enabled.(domain.RequestUpload); isUpload && upload.Temp {
+		return ProfileIntegrations{}, ErrProfileSettingsUpload
+	}
 	changes := map[string][2]string{}
 	oldURL := "None"
 	if review.URL != nil {
 		oldURL = *review.URL
 	}
-	if new := dto.PythonStr(url); new != oldURL {
+	if new := profileText(url); new != oldURL {
 		changes["review_url"] = [2]string{oldURL, new}
 	}
-	if old, new := pythonBool(review.Enabled), dto.PythonStr(enabled); old != new {
+	if old, new := pythonBool(review.Enabled), profileText(enabled); old != new {
 		changes["review_url_enabled"] = [2]string{old, new}
 	}
 	if len(changes) > 0 {
@@ -472,7 +483,7 @@ func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domai
 	}
 	var storedURL *string
 	if url != nil {
-		text := dto.PythonStr(url)
+		text := profileText(url)
 		storedURL = &text
 	}
 	parsed, boolErr := profileBoolean(enabled)
@@ -485,7 +496,49 @@ func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domai
 	if err = tx.SaveReview(ctx, association, storedURL, parsed); err != nil {
 		return ProfileIntegrations{}, err
 	}
-	return ProfileIntegrations{URL: url, Enabled: enabled}, tx.Commit()
+	if err = tx.Commit(); err != nil {
+		return ProfileIntegrations{}, err
+	}
+	if echoErr != nil {
+		// The renderer cannot encode the file's bytes: the data is saved, the answer is the 500 page.
+		return ProfileIntegrations{}, ErrProfileSettingsServer
+	}
+	return ProfileIntegrations{URL: echoed, Enabled: enabled}, nil
+}
+
+// profileText is str(value) for a QueryDict value: a file part is its name.
+func profileText(value any) string {
+	if upload, ok := value.(domain.RequestUpload); ok {
+		return upload.Name
+	}
+	return dto.PythonStr(value)
+}
+
+// profileUploadLines is tuple(file): the lines of File.__iter__ (bytes
+// splitlines(True) over the first chunk) decoded as UTF-8 by DRF's encoder.
+func profileUploadLines(upload domain.RequestUpload) ([]string, error) {
+	if !upload.Whole {
+		return nil, ErrProfileSettingsUpload
+	}
+	lines := []string{}
+	data := upload.Content
+	for len(data) > 0 {
+		end := strings.IndexAny(data, "\r\n")
+		if end < 0 {
+			end = len(data)
+		} else if data[end] == '\r' && end+1 < len(data) && data[end+1] == '\n' {
+			end += 2
+		} else {
+			end++
+		}
+		line := data[:end]
+		if !utf8.ValidString(line) {
+			return nil, ErrProfileSettingsServer
+		}
+		lines = append(lines, line)
+		data = data[end:]
+	}
+	return lines, nil
 }
 
 func containsNUL(text string) bool {

@@ -19,7 +19,18 @@ type RequestObject []RequestField
 type RequestUpload struct {
 	Name string
 	Size int64
+	// Content is the whole file when it fits one 64 KiB chunk (Whole), else empty.
+	Content string
+	Whole   bool
+	// Temp is a request over FILE_UPLOAD_MAX_MEMORY_SIZE: Django spools the file (TemporaryUploadedFile).
+	Temp bool
 }
+
+// RequestUploadHead is the size of the first chunk Django's File.chunks reads.
+const RequestUploadHead = 65536
+
+// RequestUploadMemory is FILE_UPLOAD_MAX_MEMORY_SIZE, tested against the request Content-Length.
+const RequestUploadMemory = 2621440
 
 func (o RequestObject) Lookup(name string) (any, bool) {
 	for _, field := range o {

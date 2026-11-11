@@ -1688,6 +1688,46 @@
    }
   },
   {
+   "name": "email-render-routes-add-nul-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "raw_body": "{\"email\": \"a\\u0000@b.it\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-nul-domain-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "raw_body": "{\"email\": \"a@b.it\\u0000\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-surrogate-email-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"email\": \"a@b\\ud800.it\"}",
+   "content_type": "application/json"
+  },
+  {
    "name": "email-render-routes-add-list-email-without-at",
    "actor": "owner",
    "method": "POST",

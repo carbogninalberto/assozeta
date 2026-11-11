@@ -235,6 +235,7 @@ func (h *PersonasWritesHandler) Add(c echo.Context) error {
 	if err != nil {
 		return personaWriteError(c, err)
 	}
+	body = service.PersonaSentGroup(body, header)
 	return c.Blob(201, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(body))
 }
 
@@ -356,7 +357,15 @@ func (h *PersonasWritesHandler) Subscriptions(c echo.Context) error {
 		return c.JSON(200, map[string]any{"name": "Associate Subscription", "description": "", "renders": []string{"application/json"},
 			"parses": []string{"application/json", "application/x-www-form-urlencoded", "multipart/form-data"}})
 	case http.MethodDelete:
-		return personaWriteError(c, h.subscriptions.Delete(request.Context(), *identity, pk, header))
+		write, release, err := admitRESTWrite(c, h.operations, h.audit)
+		if write == nil {
+			return err
+		}
+		defer release()
+		if err = h.subscriptions.Delete(write.Context, *identity, pk, header, write.Audit); err != nil {
+			return personaWriteError(c, err)
+		}
+		return c.NoContent(204)
 	case http.MethodGet, http.MethodHead:
 	default:
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})

@@ -330,36 +330,8 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 			row.GroupID = value
 		}
 	}
-	// Subscription.save(): the season of creation_date from the association
-	// owner's settings fills a missing start or end date.
-	rule, err := tx.DateRule(ctx, row.AssociationID)
-	if err != nil {
+	if err = personaSubsSeason(ctx, tx, &row); err != nil {
 		return nil, err
-	}
-	existing := domain.SubscriptionDates{}
-	marker := &domain.CalendarDate{Year: 1, Month: 1, Day: 1}
-	if row.StartDate != nil {
-		existing.Start = marker
-	}
-	if row.EndDate != nil {
-		existing.End = marker
-	}
-	filled, err := ResolveSubscriptionDates(ctx, row.CreationDate.UTC(), rule, existing)
-	if err != nil {
-		return nil, err
-	}
-	asTime := func(date *domain.CalendarDate) *time.Time {
-		if date == nil {
-			return nil
-		}
-		value := time.Date(date.Year, time.Month(date.Month), date.Day, 0, 0, 0, 0, time.UTC)
-		return &value
-	}
-	if row.StartDate == nil {
-		row.StartDate = asTime(filled.Start)
-	}
-	if row.EndDate == nil {
-		row.EndDate = asTime(filled.End)
 	}
 	// tags.set(): links not listed are removed, listed ones not linked added.
 	var removed, added []string
@@ -431,4 +403,39 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 		}
 	}
 	return item, nil
+}
+
+// personaSubsSeason is Subscription.save(): the season of creation_date from
+// the association owner's settings fills a missing start or end date.
+func personaSubsSeason(ctx context.Context, tx domain.PersonaSubsWriteTransaction, row *domain.PersonaSubscriptionRow) error {
+	rule, err := tx.DateRule(ctx, row.AssociationID)
+	if err != nil {
+		return err
+	}
+	existing := domain.SubscriptionDates{}
+	marker := &domain.CalendarDate{Year: 1, Month: 1, Day: 1}
+	if row.StartDate != nil {
+		existing.Start = marker
+	}
+	if row.EndDate != nil {
+		existing.End = marker
+	}
+	filled, err := ResolveSubscriptionDates(ctx, row.CreationDate.UTC(), rule, existing)
+	if err != nil {
+		return err
+	}
+	asTime := func(date *domain.CalendarDate) *time.Time {
+		if date == nil {
+			return nil
+		}
+		value := time.Date(date.Year, time.Month(date.Month), date.Day, 0, 0, 0, 0, time.UTC)
+		return &value
+	}
+	if row.StartDate == nil {
+		row.StartDate = asTime(filled.Start)
+	}
+	if row.EndDate == nil {
+		row.EndDate = asTime(filled.End)
+	}
+	return nil
 }

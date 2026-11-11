@@ -109,3 +109,8 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
   subscriptions; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 150/150, Go 404 on
   `report-owner`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r1` (UTC instead of Europe/Rome
   dates fail `report-owner`, CAUGHT).
+
+## Ported in taildocs
+
+`GET instructor/report`: a date text that carries a zone is a 500 (the view keeps the zone and `localize` raises), years
+1-999 are valid dates, and the first minutes of year 1 overflow `astimezone(UTC)` (500).

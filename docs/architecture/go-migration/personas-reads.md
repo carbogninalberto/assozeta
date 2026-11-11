@@ -121,3 +121,11 @@ case before any Go code. GREEN: 201/201 on native Django, native Go, Caddy
 `/api/v1` and `/api/v2` with the model state unchanged. Counting distinct
 relations for `tutors_count` (ignoring the search join) fails
 `personas-reads-list-search-tutors-count-join`.
+
+## Ported in taildocs
+
+`query[generalSearch]` now covers every script: `dto.PythonLower` is `str.lower()` (simple mapping, U+0130 as `i` plus a
+combining dot, the final sigma rule), `dto.PythonUTF8Replace` decodes malformed bytes as Python does with
+`errors='replace'`, and the date patterns read any decimal digit as `\d`. Goldens come from Python 3.13; Go's Unicode
+tables are 15.0 against Python's 15.1. The case data is stored in lower case so the result does not depend on the
+database locale.

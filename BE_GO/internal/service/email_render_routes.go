@@ -125,8 +125,14 @@ func collaboratorEmail(value any) (string, error) {
 	invalid := &EmailInputError{Detail: "Email is not valid."}
 	switch v := value.(type) {
 	case string:
-		if strings.ContainsRune(v, 0) || !utf8.ValidString(v) || wtf8Surrogate(v) {
+		if !utf8.ValidString(v) {
 			return "", ErrEmailRenderNotPorted
+		}
+		if wtf8Surrogate(v) {
+			return "", ErrEmailRenderServer // the request fails on the surrogate (500 page)
+		}
+		if strings.ContainsRune(v, 0) {
+			return "", invalid // validate_email: NUL matches neither the user part, the quoted string nor the domain
 		}
 		if !dto.SupplierEmail(v) {
 			return "", invalid

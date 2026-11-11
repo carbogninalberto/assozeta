@@ -113,3 +113,10 @@ a tree fails the run.
 - Not ported, refused with a 500 before any write: an uploaded file as the `parent` or `sport_association` value (Django reports the file's type), and a float pk that overflows to infinity (`int(inf)`, which is also a 500 in Django). Go runs each write in one transaction under a table lock, where Django autocommits each statement. No authored input reaches a failure after the first write, so the end state is the same.
 
 Evidence: `TESTS/fixtures/folder_writes_http.json` (80 cases, generator alongside). The generator derives every expected tree state from a logical forest model, and the runner seeds fixed folder ids and pins the folder sequence, so new ids are exact. RED: Django 80/80, Go 404 before any Go code. GREEN: 80/80 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, checking the exact state of every fixture folder and that no other model, audit entry or index row changes. Mutation control: re-parenting on update as first child (move's position) instead of last child fails `update-child-within-tree-rightward`. The folders list (17), delete (12) and move (20) families stay green after the move arithmetic was shared.
+
+## Ported in taildocs
+
+A file part sent as `parent` is an incorrect-type error naming `InMemoryUploadedFile`; as `sport_association` it is the
+invalid-UUID error quoting the file name (`supplierRelated`). A request over `FILE_UPLOAD_MAX_MEMORY_SIZE` (2621440
+bytes of Content-Length) keeps the file on disk (`TemporaryUploadedFile`) and stays refused. A float `parent` that
+overflows to infinity is the same 500 page in both (case added).
