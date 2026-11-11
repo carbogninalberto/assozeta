@@ -540,7 +540,7 @@ def check_login_response(case, source):
         claims = token.payload
         require(claims['token_type'] == kind and claims['user_id'] == str(user.pk) and claims['role'] == user.role
                 and claims['email'] == user.email and claims['iss'] == 'https://bakney.com' and claims['aud'] == 'bakney'
-                and claims['exp'] - claims['iat'] == int(span.total_seconds()) and abs(claims['iat'] - time.time()) < 120
+                and 0 <= int(span.total_seconds()) - (claims['exp'] - claims['iat']) <= 1 and abs(claims['iat'] - time.time()) < 120
                 and re.fullmatch(r'[0-9a-f]{32}', claims['jti']), 'login.token:' + kind)
     require(access['jti'] != refresh['jti'], 'login.token-ids')
     tokens = {'access_token': actual['access_token'], 'refresh_token': actual['refresh_token'],

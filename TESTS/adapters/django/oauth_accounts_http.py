@@ -424,12 +424,13 @@ def check_login_response(user):
     actual = contract.RUNTIME['response']
     access, refresh = AccessToken(actual['access_token']), RefreshToken(actual['refresh_token'])
     lifetime = int(settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
+    # simplejwt derives the access token's iat and exp from separate clock reads, so across a second boundary exp - iat is one short.
     for token, kind, span in ((access, 'access', settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']),
                               (refresh, 'refresh', settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'])):
         claims = token.payload
         contract.require(claims['token_type'] == kind and claims['user_id'] == str(user.pk) and claims['role'] == user.role
                          and claims['email'] == user.email and claims['iss'] == 'https://bakney.com' and claims['aud'] == 'bakney'
-                         and claims['exp'] - claims['iat'] == int(span.total_seconds()) and abs(claims['iat'] - time.time()) < 120
+                         and 0 <= int(span.total_seconds()) - (claims['exp'] - claims['iat']) <= 1 and abs(claims['iat'] - time.time()) < 120
                          and re.fullmatch(r'[0-9a-f]{32}', claims['jti']), 'signup.token:' + kind)
     contract.require(access['jti'] != refresh['jti'], 'signup.token-ids')
     tokens = {'access_token': actual['access_token'], 'refresh_token': actual['refresh_token'], 'expires_in': lifetime,
