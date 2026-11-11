@@ -5859,7 +5859,7 @@
         "target": "balance_sheet_accounts_transfer_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -5901,21 +5901,28 @@
         "TESTS/adapters/django/balance_transfer_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run balance-transfer-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "9b373ab3cf358bdd713f8af1104a235415699ed0f3db00a4991b49dc9ef7658b",
-          "scope": "HTTP family balance-transfer-writes: 30/30 cases on native Django and native Go, 30/30 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 33/33; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-tailpay-mut-transfer/results.json",
+          "receipt_sha256": "8c1653291e3ff4a8be8a0cf17faf4437400fa507b67bc24edc2265b00641d49f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 33/33 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "712837be181ebd4e56369963e4f932f0d24bdeb88b8972a5a9cd99a2bde87b65"
+        },
+        {
+          "revision": "dropping the update-against-nothing audit entry of the copy a new custom_account_transfer_id makes",
+          "result": "Mutation control: fails Go on balance-transfer-writes-update-new-id-copies-row (audit.count), CAUGHT",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-tailpay-mut-transfer/results.json",
+          "receipt_sha256": "8c1653291e3ff4a8be8a0cf17faf4437400fa507b67bc24edc2265b00641d49f"
         }
       ],
       "notes": [
-        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md).",
-        "Implementing evidence: docs/architecture/go-migration/balance-accounts.md",
-        "Implementing evidence: RED: Django 30/30; Go 404 on the first case. (quality-reports/go-migration/balance-transfer-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 30/30 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/balance-transfer-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the invalid-fields case. (quality-reports/go-migration/balance-transfer-writes-http-mutation-r1/results.json)"
+        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md). tailpay: a new custom_account_transfer_id on update inserts a copy (RED: documented refusal, see v2-refusals.md row; three more cases)."
       ]
     },
     {
@@ -5933,7 +5940,7 @@
         "target": "balance_sheet_accounts_transfer_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -5975,21 +5982,28 @@
         "TESTS/adapters/django/balance_transfer_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run balance-transfer-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "9b373ab3cf358bdd713f8af1104a235415699ed0f3db00a4991b49dc9ef7658b",
-          "scope": "HTTP family balance-transfer-writes: 30/30 cases on native Django and native Go, 30/30 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 33/33; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-tailpay-mut-transfer/results.json",
+          "receipt_sha256": "8c1653291e3ff4a8be8a0cf17faf4437400fa507b67bc24edc2265b00641d49f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 33/33 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "712837be181ebd4e56369963e4f932f0d24bdeb88b8972a5a9cd99a2bde87b65"
+        },
+        {
+          "revision": "dropping the update-against-nothing audit entry of the copy a new custom_account_transfer_id makes",
+          "result": "Mutation control: fails Go on balance-transfer-writes-update-new-id-copies-row (audit.count), CAUGHT",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-tailpay-mut-transfer/results.json",
+          "receipt_sha256": "8c1653291e3ff4a8be8a0cf17faf4437400fa507b67bc24edc2265b00641d49f"
         }
       ],
       "notes": [
-        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md).",
-        "Implementing evidence: docs/architecture/go-migration/balance-accounts.md",
-        "Implementing evidence: RED: Django 30/30; Go 404 on the first case. (quality-reports/go-migration/balance-transfer-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 30/30 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/balance-transfer-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the invalid-fields case. (quality-reports/go-migration/balance-transfer-writes-http-mutation-r1/results.json)"
+        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md). tailpay: a new custom_account_transfer_id on update inserts a copy (RED: documented refusal, see v2-refusals.md row; three more cases)."
       ]
     },
     {
@@ -6007,7 +6021,7 @@
         "target": "balance_sheet_accounts_transfer_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -6049,21 +6063,28 @@
         "TESTS/adapters/django/balance_transfer_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run balance-transfer-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "9b373ab3cf358bdd713f8af1104a235415699ed0f3db00a4991b49dc9ef7658b",
-          "scope": "HTTP family balance-transfer-writes: 30/30 cases on native Django and native Go, 30/30 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 33/33; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-tailpay-mut-transfer/results.json",
+          "receipt_sha256": "8c1653291e3ff4a8be8a0cf17faf4437400fa507b67bc24edc2265b00641d49f"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 33/33 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "712837be181ebd4e56369963e4f932f0d24bdeb88b8972a5a9cd99a2bde87b65"
+        },
+        {
+          "revision": "dropping the update-against-nothing audit entry of the copy a new custom_account_transfer_id makes",
+          "result": "Mutation control: fails Go on balance-transfer-writes-update-new-id-copies-row (audit.count), CAUGHT",
+          "artifact": "quality-reports/go-migration/balance-transfer-writes-http-tailpay-mut-transfer/results.json",
+          "receipt_sha256": "8c1653291e3ff4a8be8a0cf17faf4437400fa507b67bc24edc2265b00641d49f"
         }
       ],
       "notes": [
-        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md).",
-        "Implementing evidence: docs/architecture/go-migration/balance-accounts.md",
-        "Implementing evidence: RED: Django 30/30; Go 404 on the first case. (quality-reports/go-migration/balance-transfer-writes-http-red-r1/results.json)",
-        "Implementing evidence: GREEN: 30/30 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/balance-transfer-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the invalid-fields case. (quality-reports/go-migration/balance-transfer-writes-http-mutation-r1/results.json)"
+        "Implementing: transfer serializer validation (association-scoped account querysets) and audit semantics on four transports; the instance account recheck in validate() is not repeated (see balance-accounts.md). tailpay: a new custom_account_transfer_id on update inserts a copy (RED: documented refusal, see v2-refusals.md row; three more cases)."
       ]
     },
     {
@@ -6234,7 +6255,7 @@
         "target": "balance_sheet_accounts_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -6275,21 +6296,28 @@
         "TESTS/adapters/django/balance_account_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run balance-account-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/balance-account-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "3f7b5c82caf6c5192ceb77dd513a3d8e00e6ec1bf734d4e050ec58dd0b0c0e74",
-          "scope": "HTTP family balance-account-writes: 29/29 cases on native Django and native Go, 29/29 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 32/32; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-tailpay-mut-accounts/results.json",
+          "receipt_sha256": "5295e1962d8049034474513bf7d1426bdaea8b369650ab6adb06ab155203d213"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "bca26bfee5f08452d6c67059c0d5568276bc196804b64265f67ab5151b391e2d"
+        },
+        {
+          "revision": "dropping the update-against-nothing audit entry of the copy a new custom_account_id makes",
+          "result": "Mutation control: fails Go on balance-account-writes-update-new-id-copies-row (audit.count), CAUGHT",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-tailpay-mut-accounts/results.json",
+          "receipt_sha256": "5295e1962d8049034474513bf7d1426bdaea8b369650ab6adb06ab155203d213"
         }
       ],
       "notes": [
-        "Implementing: CustomAccountSerializer validation, form boolean defaults and audit semantics on four transports.",
-        "Implementing evidence: docs/architecture/go-migration/balance-accounts.md",
-        "Implementing evidence: RED: Django 29/29; Go 404 on the first case. (quality-reports/go-migration/balance-account-writes-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/balance-account-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the form case. (quality-reports/go-migration/balance-account-writes-http-mutation-r1/results.json)"
+        "Implementing: CustomAccountSerializer validation, form boolean defaults and audit semantics on four transports. tailpay: a new custom_account_id on update inserts a copy as Model.save() does (RED: documented refusal, see v2-refusals.md row; three more cases)."
       ]
     },
     {
@@ -6307,7 +6335,7 @@
         "target": "balance_sheet_accounts_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -6348,21 +6376,28 @@
         "TESTS/adapters/django/balance_account_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/balance-accounts.md",
         {
-          "command": "python tools/go-migration/family.py run balance-account-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/balance-account-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "3f7b5c82caf6c5192ceb77dd513a3d8e00e6ec1bf734d4e050ec58dd0b0c0e74",
-          "scope": "HTTP family balance-account-writes: 29/29 cases on native Django and native Go, 29/29 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 32/32; Go fails audit.count on the first case.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-tailpay-mut-accounts/results.json",
+          "receipt_sha256": "5295e1962d8049034474513bf7d1426bdaea8b369650ab6adb06ab155203d213"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 32/32 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "bca26bfee5f08452d6c67059c0d5568276bc196804b64265f67ab5151b391e2d"
+        },
+        {
+          "revision": "dropping the update-against-nothing audit entry of the copy a new custom_account_id makes",
+          "result": "Mutation control: fails Go on balance-account-writes-update-new-id-copies-row (audit.count), CAUGHT",
+          "artifact": "quality-reports/go-migration/balance-account-writes-http-tailpay-mut-accounts/results.json",
+          "receipt_sha256": "5295e1962d8049034474513bf7d1426bdaea8b369650ab6adb06ab155203d213"
         }
       ],
       "notes": [
-        "Implementing: CustomAccountSerializer validation, form boolean defaults and audit semantics on four transports.",
-        "Implementing evidence: docs/architecture/go-migration/balance-accounts.md",
-        "Implementing evidence: RED: Django 29/29; Go 404 on the first case. (quality-reports/go-migration/balance-account-writes-http-red-r2/results.json)",
-        "Implementing evidence: GREEN: 29/29 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/balance-account-writes-http-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on the form case. (quality-reports/go-migration/balance-account-writes-http-mutation-r1/results.json)"
+        "Implementing: CustomAccountSerializer validation, form boolean defaults and audit semantics on four transports. tailpay: a new custom_account_id on update inserts a copy as Model.save() does (RED: documented refusal, see v2-refusals.md row; three more cases)."
       ]
     },
     {
@@ -14837,7 +14872,7 @@
         "target": "invoice_bulk_archive",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
@@ -14880,21 +14915,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2/results.json",
-          "receipt_sha256": "dd13c916f383079d811e8350027e5aaea85d1721316bd9c7c7a71ded6da07016",
-          "scope": "HTTP family invoice-core: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 112/112; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 112/112 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "3f332f282f78b1d95bd74f426c2362063ddfa58b61dc0fc0bc8529a1058bf325"
+        },
+        {
+          "revision": "treating a non-empty uploaded invoice_ids file as empty",
+          "result": "Mutation control: fails Go on invoice-core-bulk-archive-file-line-server-error (response.status), CAUGHT",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 108/108; Go 200 on the first case. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-core-http-sweep-restdocs-2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-search-infinite-server-error. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)"
+        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases. tailpay: an uploaded invoice_ids file is iterated by lines (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -14912,7 +14954,7 @@
         "target": "invoice_bulk_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
@@ -14955,21 +14997,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2/results.json",
-          "receipt_sha256": "dd13c916f383079d811e8350027e5aaea85d1721316bd9c7c7a71ded6da07016",
-          "scope": "HTTP family invoice-core: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 112/112; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 112/112 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "3f332f282f78b1d95bd74f426c2362063ddfa58b61dc0fc0bc8529a1058bf325"
+        },
+        {
+          "revision": "treating a non-empty uploaded invoice_ids file as empty",
+          "result": "Mutation control: fails Go on invoice-core-bulk-archive-file-line-server-error (response.status), CAUGHT",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 108/108; Go 200 on the first case. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-core-http-sweep-restdocs-2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-search-infinite-server-error. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)"
+        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases. tailpay: an uploaded invoice_ids file is iterated by lines (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -15789,7 +15838,7 @@
         "target": "invoice_delete",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
@@ -15832,21 +15881,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2/results.json",
-          "receipt_sha256": "dd13c916f383079d811e8350027e5aaea85d1721316bd9c7c7a71ded6da07016",
-          "scope": "HTTP family invoice-core: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 112/112; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 112/112 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "3f332f282f78b1d95bd74f426c2362063ddfa58b61dc0fc0bc8529a1058bf325"
+        },
+        {
+          "revision": "treating a non-empty uploaded invoice_ids file as empty",
+          "result": "Mutation control: fails Go on invoice-core-bulk-archive-file-line-server-error (response.status), CAUGHT",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 108/108; Go 200 on the first case. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-core-http-sweep-restdocs-2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-search-infinite-server-error. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)"
+        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases. tailpay: an uploaded invoice_ids file is iterated by lines (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -16078,7 +16134,7 @@
         "target": "invoice_list",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
@@ -16121,21 +16177,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2/results.json",
-          "receipt_sha256": "dd13c916f383079d811e8350027e5aaea85d1721316bd9c7c7a71ded6da07016",
-          "scope": "HTTP family invoice-core: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 112/112; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 112/112 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "3f332f282f78b1d95bd74f426c2362063ddfa58b61dc0fc0bc8529a1058bf325"
+        },
+        {
+          "revision": "treating a non-empty uploaded invoice_ids file as empty",
+          "result": "Mutation control: fails Go on invoice-core-bulk-archive-file-line-server-error (response.status), CAUGHT",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 108/108; Go 200 on the first case. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-core-http-sweep-restdocs-2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-search-infinite-server-error. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)"
+        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases. tailpay: an uploaded invoice_ids file is iterated by lines (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -16153,7 +16216,7 @@
         "target": "invoice_list_archived",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/cmd/server/main.go",
         "BE_GO/internal/domain/invoice_core.go",
@@ -16196,21 +16259,28 @@
         "TESTS/adapters/django/invoice_core_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-core.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-core --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-final-2/results.json",
-          "receipt_sha256": "dd13c916f383079d811e8350027e5aaea85d1721316bd9c7c7a71ded6da07016",
-          "scope": "HTTP family invoice-core: 108/108 cases on native Django and native Go, 108/108 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 112/112; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 112/112 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-core-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "3f332f282f78b1d95bd74f426c2362063ddfa58b61dc0fc0bc8529a1058bf325"
+        },
+        {
+          "revision": "treating a non-empty uploaded invoice_ids file as empty",
+          "result": "Mutation control: fails Go on invoice-core-bulk-archive-file-line-server-error (response.status), CAUGHT",
+          "artifact": "quality-reports/go-migration/invoice-core-http-tailpay-mut-core/results.json",
+          "receipt_sha256": "c81ad4f1e9eb58ce05968c266ad4f80b4ce7ed6201426ca6b53262a1227db66e"
         }
       ],
       "notes": [
-        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-core.md",
-        "Implementing evidence: RED: Django 108/108; Go 200 on the first case. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)",
-        "Implementing evidence: GREEN: 108/108 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-core-http-sweep-restdocs-2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-core-list-search-infinite-server-error. (quality-reports/go-migration/invoice-core-http-restdocs-mutation-invoice-core/results.json)"
+        "Implementing: Implementing: Not ported (refused with the 500 page before any write): random and relation orderings, infinite float search terms, smart-search terms outside the supported Latin script; bulk bodies with file parts. invoice/list publishes print_document_invoice (Celery, tuple args) once per listed row without a PDF. invoice/<uid>/update is in invoice-sync-print; invoice-customers/add stays with invoice-parties. v2-rest-docs: an infinite search term is the 500 page like nan. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases. tailpay: an uploaded invoice_ids file is iterated by lines (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -19490,7 +19560,7 @@
         "target": "payment_generate_invoice",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/invoice_generate.go",
         "BE_GO/internal/repository/invoice_generate.go",
@@ -19549,21 +19619,28 @@
         "TESTS/adapters/django/invoice_generate_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/invoice-generate.md",
         {
-          "command": "python tools/go-migration/family.py run invoice-generate --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/invoice-generate-http-sweep-final-2/results.json",
-          "receipt_sha256": "274c8fcaa9cc3c46ff3e7d018911013a1f91606816e824a546b721197bcee079",
-          "scope": "HTTP family invoice-generate: 64/64 cases on native Django and native Go, 64/64 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 67/67; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/invoice-generate-http-tailpay-mut-invgen/results.json",
+          "receipt_sha256": "2ad069b830c79e8ca0b477896bd3cd0e0deae7fa5ff4322023f63dd5112ad42d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 67/67 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/invoice-generate-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "a90dfad302fe6c838b545f89740d62630b16dde96fef01fdf2eb480f7aa80a75"
+        },
+        {
+          "revision": "reading a non-finite fee sum as 0 instead of failing the invoice insert",
+          "result": "Mutation control: fails Go on invoice-generate-meta-sum-infinite-server-error (response.status), CAUGHT",
+          "artifact": "quality-reports/go-migration/invoice-generate-http-tailpay-mut-invgen/results.json",
+          "receipt_sha256": "2ad069b830c79e8ca0b477896bd3cd0e0deae7fa5ff4322023f63dd5112ad42d"
         }
       ],
       "notes": [
-        "Implementing: Implementing: generate-invoice: numbering under pg_advisory_xact_lock with Django's md5 key, generate_invoice_description, audited Invoice create (float fees rendered with str()), optional creation-date save, payment save, then print_document_invoice.apply_async(args=[str(invoice_id), Authorization]) after the commit (list args: Task.ArgsList). approve (payment-misc/payment-state code): a paid invoiced payment with a truthy generate_invoice now publishes print_document_invoice [id, Authorization, send_receipt_email] after the commit (robust). Refused before any write: non-canonical X-Group-Id on generation, float fees at an exact 2-place tie or non-finite, meta subscription_data names other than str/bool/int, approve send_receipt_email other than None/bool/str/int64. Reviewed and not ported: invoice/<uid>/update (print_document_invoice.apply, synchronous), invoice-customers/add (in-process a38 XML and print_document_customer_invoice.apply), approve of unpaid income payments with a party (NotificationService Redis/WebSocket). The payment/<uid>/approve invoiced-dispatch branch is also evidenced by this family (cases under invoice-generate-approve-*); its ledger entry stays with payment-misc. Implementing evidence: docs/architecture/go-migration/invoice-generate.md Implementing evidence: RED: Django 50/50; Go 404 on the first case. (quality-reports/go-migration/invoice-generate-http-red-r2/results.json) Implementing evidence: GREEN: 50/50 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, audit, index and Celery broker effects. (quality-reports/go-migration/invoice-generate-http-versioned-r1/results.json) Implementing evidence: Mutation control: fails Go on invoice-generate-flag-payment-date-invoice-date (response body). (quality-reports/go-migration/invoice-generate-http-mutation-r1/results.json) v2-rest-docs: X-Group-Id spellings kept as sent, float fee ties, meta.subscription_data.name of any type. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases.",
-        "Implementing evidence: docs/architecture/go-migration/invoice-generate.md",
-        "Implementing evidence: RED: Django 64/64; Go fails audit.changes:invoice:1 on the first case. (quality-reports/go-migration/invoice-generate-http-restdocs-mutation3-invoice-generate/results.json)",
-        "Implementing evidence: GREEN: 64/64 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/invoice-generate-http-sweep-restdocs-4/results.json)",
-        "Implementing evidence: Mutation control: fails Go on invoice-generate-flag-payment-date-fee-tie. (quality-reports/go-migration/invoice-generate-http-restdocs-mutation3-invoice-generate/results.json)"
+        "Implementing: Implementing: generate-invoice: numbering under pg_advisory_xact_lock with Django's md5 key, generate_invoice_description, audited Invoice create (float fees rendered with str()), optional creation-date save, payment save, then print_document_invoice.apply_async(args=[str(invoice_id), Authorization]) after the commit (list args: Task.ArgsList). approve (payment-misc/payment-state code): a paid invoiced payment with a truthy generate_invoice now publishes print_document_invoice [id, Authorization, send_receipt_email] after the commit (robust). Refused before any write: non-canonical X-Group-Id on generation, float fees at an exact 2-place tie or non-finite, meta subscription_data names other than str/bool/int, approve send_receipt_email other than None/bool/str/int64. Reviewed and not ported: invoice/<uid>/update (print_document_invoice.apply, synchronous), invoice-customers/add (in-process a38 XML and print_document_customer_invoice.apply), approve of unpaid income payments with a party (NotificationService Redis/WebSocket). The payment/<uid>/approve invoiced-dispatch branch is also evidenced by this family (cases under invoice-generate-approve-*); its ledger entry stays with payment-misc. Implementing evidence: docs/architecture/go-migration/invoice-generate.md Implementing evidence: RED: Django 50/50; Go 404 on the first case. (quality-reports/go-migration/invoice-generate-http-red-r2/results.json) Implementing evidence: GREEN: 50/50 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact payment, invoice, audit, index and Celery broker effects. (quality-reports/go-migration/invoice-generate-http-versioned-r1/results.json) Implementing evidence: Mutation control: fails Go on invoice-generate-flag-payment-date-invoice-date (response body). (quality-reports/go-migration/invoice-generate-http-mutation-r1/results.json) v2-rest-docs: X-Group-Id spellings kept as sent, float fee ties, meta.subscription_data.name of any type. RED: documented refusal, see v2-refusals.md rows. RED: the mutation receipt is the failing Go run; the refusal rows are the RED for new cases. tailpay: non-finite meta payment category sums are the 500 page with nothing kept (RED: documented refusal, see v2-refusals.md row; three more cases)."
       ]
     },
     {
@@ -19778,7 +19855,7 @@
         "target": "payment_update",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
@@ -19820,21 +19897,28 @@
         "TESTS/adapters/django/payment_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
         {
-          "command": "python tools/go-migration/family.py run payment-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "60fda364105c732bcf4e4a21f2c492194a4f79136c3feca8772069e1c4e97f29",
-          "scope": "HTTP family payment-writes: 156/156 cases on native Django and native Go, 156/156 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 160/160; Go fails state.payment:up_attach_long on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-tailpay-mut-pw/results.json",
+          "receipt_sha256": "611b98ad0b2d9adfd194cd0772897b14968849dd843e5c461ad19759b0c6f009"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "f2b8124b531022aced0318f37d7c9726afd420017b6aa517456fc57d369b2d54"
+        },
+        {
+          "revision": "lifting the 255-character limit of an attachments_data filename",
+          "result": "Mutation control: fails Go on payment-writes-update-attachment-long-filename (state.payment), CAUGHT",
+          "artifact": "quality-reports/go-migration/payment-writes-http-tailpay-mut-pw/results.json",
+          "receipt_sha256": "611b98ad0b2d9adfd194cd0772897b14968849dd843e5c461ad19759b0c6f009"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row).",
-        "Implementing evidence: docs/architecture/go-migration/payment-writes.md",
-        "Implementing evidence: RED: Django 156/156; Go 500 on the first case. (quality-reports/go-migration/payment-writes-http-v2resta-red-r1/results.json)",
-        "Implementing evidence: GREEN: 156/156 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/payment-writes-http-v2resta-green-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-writes-add-other-script-dates: CAUGHT. (quality-reports/go-migration/payment-writes-http-v2resta-mutation-r2/results.json)"
+        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row). tailpay: attachments_data items the INSERT rejects are the 500 page after the earlier documents (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -19852,7 +19936,7 @@
         "target": "payment_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
@@ -19894,21 +19978,28 @@
         "TESTS/adapters/django/payment_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
         {
-          "command": "python tools/go-migration/family.py run payment-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "60fda364105c732bcf4e4a21f2c492194a4f79136c3feca8772069e1c4e97f29",
-          "scope": "HTTP family payment-writes: 156/156 cases on native Django and native Go, 156/156 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 160/160; Go fails state.payment:up_attach_long on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-tailpay-mut-pw/results.json",
+          "receipt_sha256": "611b98ad0b2d9adfd194cd0772897b14968849dd843e5c461ad19759b0c6f009"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "f2b8124b531022aced0318f37d7c9726afd420017b6aa517456fc57d369b2d54"
+        },
+        {
+          "revision": "lifting the 255-character limit of an attachments_data filename",
+          "result": "Mutation control: fails Go on payment-writes-update-attachment-long-filename (state.payment), CAUGHT",
+          "artifact": "quality-reports/go-migration/payment-writes-http-tailpay-mut-pw/results.json",
+          "receipt_sha256": "611b98ad0b2d9adfd194cd0772897b14968849dd843e5c461ad19759b0c6f009"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row).",
-        "Implementing evidence: docs/architecture/go-migration/payment-writes.md",
-        "Implementing evidence: RED: Django 156/156; Go 500 on the first case. (quality-reports/go-migration/payment-writes-http-v2resta-red-r1/results.json)",
-        "Implementing evidence: GREEN: 156/156 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/payment-writes-http-v2resta-green-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-writes-add-other-script-dates: CAUGHT. (quality-reports/go-migration/payment-writes-http-v2resta-mutation-r2/results.json)"
+        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row). tailpay: attachments_data items the INSERT rejects are the 500 page after the earlier documents (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -19926,7 +20017,7 @@
         "target": "payment_bulk_add",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/service/payment_writes.go",
         "BE_GO/internal/repository/payment_writes.go",
@@ -19968,21 +20059,28 @@
         "TESTS/adapters/django/payment_writes_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-writes.md",
         {
-          "command": "python tools/go-migration/family.py run payment-writes --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-final-2/results.json",
-          "receipt_sha256": "60fda364105c732bcf4e4a21f2c492194a4f79136c3feca8772069e1c4e97f29",
-          "scope": "HTTP family payment-writes: 156/156 cases on native Django and native Go, 156/156 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 160/160; Go fails state.payment:up_attach_long on the first case.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-tailpay-mut-pw/results.json",
+          "receipt_sha256": "611b98ad0b2d9adfd194cd0772897b14968849dd843e5c461ad19759b0c6f009"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 160/160 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-writes-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "f2b8124b531022aced0318f37d7c9726afd420017b6aa517456fc57d369b2d54"
+        },
+        {
+          "revision": "lifting the 255-character limit of an attachments_data filename",
+          "result": "Mutation control: fails Go on payment-writes-update-attachment-long-filename (state.payment), CAUGHT",
+          "artifact": "quality-reports/go-migration/payment-writes-http-tailpay-mut-pw/results.json",
+          "receipt_sha256": "611b98ad0b2d9adfd194cd0772897b14968849dd843e5c461ad19759b0c6f009"
         }
       ],
       "notes": [
-        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row).",
-        "Implementing evidence: docs/architecture/go-migration/payment-writes.md",
-        "Implementing evidence: RED: Django 156/156; Go 500 on the first case. (quality-reports/go-migration/payment-writes-http-v2resta-red-r1/results.json)",
-        "Implementing evidence: GREEN: 156/156 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects. (quality-reports/go-migration/payment-writes-http-v2resta-green-r3/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-writes-add-other-script-dates: CAUGHT. (quality-reports/go-migration/payment-writes-http-v2resta-mutation-r2/results.json)"
+        "Implementing: API v2 (v2-rest-a): payment/add serves X-Group-Id in any spelling the uuid module accepts (column stores the uuid; create entry, response and later saves keep the text as sent, also on the auto-paid invoice) and auto-paid fees on an exact half cent. Still refused before any write: auto-paid add while the print is deferred by a pending restore; attachments_data outside the ported subset (non-string document/filename, filename over 255 characters, with NUL or invalid UTF-8, a storage name Storage.save rejects, an existing key without AWS_S3_FILE_OVERWRITE); user in the body, payment_id on add, a payment_id other than the row's own on update; update form bodies and add multipart bodies with files. Dates with decimal digits of other scripts are served (RED: documented refusal, see v2-refusals.md row). tailpay: attachments_data items the INSERT rejects are the 500 page after the earlier documents (RED: documented refusal, see v2-refusals.md row; four more cases)."
       ]
     },
     {
@@ -20565,7 +20663,7 @@
         "target": "payment_list_export",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/payment_export.go",
         "BE_GO/internal/repository/payment_export.go",
@@ -20610,21 +20708,28 @@
         "TESTS/adapters/django/payment_export_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/payment-export.md",
         {
-          "command": "python tools/go-migration/family.py run payment-export --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/payment-export-http-sweep-final-2/results.json",
-          "receipt_sha256": "8fb098fa567d2d395543885dc97b02363d3c546eb0b6ac68899642c14cdf419c",
-          "scope": "HTTP family payment-export: 87/87 cases on native Django and native Go, 87/87 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 94/94; Go 200 on the first case.",
+          "artifact": "quality-reports/go-migration/payment-export-http-tailpay-mut-export2/results.json",
+          "receipt_sha256": "7fef4bb11a8f58088ed1afbcfd302cca77d07133448eba2d3e5f8e7dc408da2d"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 94/94 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/payment-export-http-sweep-tailpay-3/results.json",
+          "receipt_sha256": "eecb58e40b37c5a74ce43a07b6afac9b1501a210c483f47beb3e0972572b52d4"
+        },
+        {
+          "revision": "searching an infinite term as an amount instead of as text",
+          "result": "Mutation control: fails Go on payment-export-search-inf-is-text (response.body:data:file), CAUGHT",
+          "artifact": "quality-reports/go-migration/payment-export-http-tailpay-mut-export2/results.json",
+          "receipt_sha256": "7fef4bb11a8f58088ed1afbcfd302cca77d07133448eba2d3e5f8e7dc408da2d"
         }
       ],
       "notes": [
-        "Implementing: Implementing: CSV and m=xlsx (get_excel_base64 workbook, part-by-part XLSX parity, xlsx-exports.md); refused: workbook inputs the writer does not reproduce, bool/list/object/huge-int course labels. See docs/architecture/go-migration/payment-export.md.",
-        "Implementing evidence: docs/architecture/go-migration/payment-export.md",
-        "Implementing evidence: RED: Django 87/87; Go 500 on the first case. (quality-reports/go-migration/payment-export-http-xlsx-red-r1/results.json)",
-        "Implementing evidence: GREEN: 87/87 on native Django, native Go, Caddy /api/v1 and /api/v2. (quality-reports/go-migration/payment-export-http-xlsx-versioned-r1/results.json)",
-        "Implementing evidence: Mutation control: fails Go on payment-export-xlsx (xl/worksheets/sheet1.xml differs) (quality-reports/go-migration/payment-export-http-xlsx-mutation-r2/results.json)"
+        "Implementing: Implementing: CSV and m=xlsx (get_excel_base64 workbook, part-by-part XLSX parity, xlsx-exports.md); refused: workbook inputs the writer does not reproduce, bool/list/object/huge-int course labels. See docs/architecture/go-migration/payment-export.md. tailpay: infinite search terms follow nan into the text search; terms beyond Latin are lower-cased and split as Python does (RED: documented refusal, see v2-refusals.md row; seven more cases)."
       ]
     },
     {
