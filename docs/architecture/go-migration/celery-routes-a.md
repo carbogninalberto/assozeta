@@ -93,3 +93,12 @@ otherwise (kept-entry failures included).
   refused value publishes nothing.
 - `subscription-lifecycle` (52), `subscription-approve` (27), `subscription-medical` (127) and `instance-admin` (141) stay green after the shared
   repository, `config`, Go server environment and `main.go` changes.
+
+## Date forms, NUL text and the tutor promotion
+
+`subscription/<uid>/update` stores any date `parse_date` reads (`date.fromisoformat` basic and week forms, then `date_re`
+with Unicode digits and a final newline). Text fields holding NUL or a lone surrogate answer the 500 with nothing written;
+JSON fields keep the pre-save entry (json.dumps escapes both) before the 500. The medical reminder saves the associate's
+first tutor relation (by key) as primary, with its audit entry indexed through the associate, when the associate has no
+mail and no primary tutor; a deleted or group-hidden associate (another index resolution) is still refused.
+Cases: `celery-routes-a-date-forms-*`, `*-nothing-saved`, `*-kept-entry`, `reminder-promotes-*`.

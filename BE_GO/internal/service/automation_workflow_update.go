@@ -185,6 +185,9 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	if invalid {
 		return dto.ErrAutomationWorkflowInvalid
 	}
+	if patch.TreeRejected {
+		return dto.ErrAutomationWorkflowFormTreeNotPorted
+	}
 	oldTree, err := dto.ParseProfileTablesJSON(old.Tree)
 	if err != nil {
 		return err

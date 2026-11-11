@@ -1369,6 +1369,297 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "workflow-update-form-tree-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Modulo",
+     "description": "",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_payment",
+       "data": {
+        "k": "v",
+        "n": [
+         1,
+         2.5,
+         null,
+         true
+        ]
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "automation_tree": [
+        "[{\"data\": {\"a\": \"primo\", \"z\": \"ultimo\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]",
+        "[{\"data\": {\"k\": \"v\", \"n\": [1, 2.5, null, true]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "automation_tree=%20%5B%7B%22id%22%3A%20%22trigger%22%2C%20%22value%22%3A%20%22new_payment%22%2C%20%22data%22%3A%20%7B%22k%22%3A%20%22v%22%2C%20%22n%22%3A%20%5B1%2C%202.5%2C%20null%2C%20true%5D%7D%7D%5D%20",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-invalid-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5B",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-empty",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-object",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%7B%7D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=null",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-string",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%22%5B%5D%22",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-number",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=12",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-sms-message",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5B%7B%22id%22%3A%20%22message%22%2C%20%22value%22%3A%20%22sms%22%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-huge-integer",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5B99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-trailing-comma",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5B1%2C%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-single-quotes",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5B%27a%27%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-nan-object",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%7B%22a%22%3A%20NaN%7D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-nan-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5BNaN%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-infinity",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5B%7B%22a%22%3A%20-Infinity%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-nested-infinity",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "workflow not valid."
+   },
+   "effect": null,
+   "raw_body": "automation_tree=%5B%7B%22id%22%3A%20%22x%22%2C%20%22value%22%3A%20%22NaN%22%2C%20%22data%22%3A%20%7B%22v%22%3A%20Infinity%7D%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-and-fields",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Misto",
+     "description": "",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "z": "ultimo",
+        "a": "primo"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "name": [
+        "Modulo",
+        "Misto"
+       ],
+       "automation_tree": [
+        "[{\"data\": {\"k\": \"v\", \"n\": [1, 2.5, null, true]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]",
+        "[{\"data\": {\"a\": \"primo\", \"z\": \"ultimo\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "name=Misto&enabled=false&automation_tree=%5B%7B%22id%22%3A%20%22trigger%22%2C%20%22value%22%3A%20%22new_subscription%22%2C%20%22data%22%3A%20%7B%22z%22%3A%20%22ultimo%22%2C%20%22a%22%3A%20%22primo%22%7D%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "workflow-update-admin-impersonating-owner",
    "actor": "admin",
    "method": "PATCH",
@@ -1386,7 +1677,7 @@
     "session": "admin_owner",
     "label": "plain",
     "row": {
-     "name": "Modulo",
+     "name": "Misto",
      "description": "Spazi",
      "automation_tree": [
       {
@@ -1430,7 +1721,7 @@
     "session": null,
     "label": "plain",
     "row": {
-     "name": "Modulo",
+     "name": "Misto",
      "description": "Spazi",
      "automation_tree": [
       {
@@ -1492,7 +1783,7 @@
      {
       "changes": {
        "name": [
-        "Modulo",
+        "Misto",
         "Ancora"
        ]
       }

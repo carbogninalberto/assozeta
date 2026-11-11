@@ -193,6 +193,17 @@ entry('attendance-registry', 'attendanceregistry', R['registry'],
       enriched={'events': ['3 eventi', 'Lezione (15/09/2026), Libera'], 'attendance_registry': [N, 'Registro - Nuoto è']},
       display=[show('Eventi', 'events', '3 eventi', 'Lezione (15/09/2026), Libera'),
                show('Registro presenze', 'attendance_registry', 'N/D', 'Registro - Nuoto è')])
+# datetime.fromisoformat reads more than the editor's text: basic dates, ISO week dates, any separator, longer fractions, offsets.
+for tag, events, text in (
+        ('forms-a', [('Base', '20260916T1830'), ('Settimana', '2026-W38-3 10:00')], 'Base (16/09/2026), Settimana (16/09/2026)'),
+        ('forms-b', [('Frazione', '2026-09-17x18:30:00.1234567+05:30'), ('Fuso', '2026-09-18 18:30+0530')],
+         'Frazione (17/09/2026), Fuso (18/09/2026)'),
+        ('forms-c', [('Mezzanotte', '2026-09-19T24:00'), ('Giorno', '2026-09-31')], 'Mezzanotte, Giorno'),
+        ('forms-d', [('Cifre', '\uff12\uff10\uff12\uff16-09-20'), ('Vuota', '2026-09-21T')], 'Cifre, Vuota')):
+    entry('registry-' + tag, 'attendanceregistry', R['registry'],
+          changes={'events': [N, json.dumps([{'title': t, 'start': st} for t, st in events])]},
+          description='Registro Presenze - Nuoto è', enriched={'events': [N, text]},
+          display=[show('Eventi', 'events', 'N/D', text)])
 entry('calendar', 'globalcalendarevents', R['calendar'],
       changes={'event_id': [R['event_unknown'], R['event_calendar']], 'global_calendar_id': [N, R['calendar']],
                'associated_event': [R['event_untitled'], N]},
@@ -484,6 +495,9 @@ add('list-search-actor-name', 'owner', LIST + '?minimal=true&query[generalSearch
 add('list-search-actor-email', 'owner', LIST + '?minimal=true&query[generalSearch]=BLANK.audit', 200,
     page(by(lambda e: e['actor'] == 'user_blank')))
 add('list-search-backslash-literal', 'owner', LIST + '?minimal=true&query[generalSearch]=%5C', 200, page([]))
+# Malformed UTF-8 in a query parameter decodes with replacement characters (one per ill-formed subpart): no row matches.
+add('list-search-malformed-utf8', 'owner', LIST + '?minimal=true&query[generalSearch]=%FF%E2%82x&pagination[perpage]=50', 200, page([]))
+add('list-search-invalid-sequence', 'owner', LIST + '?minimal=true&query[generalSearch]=%C3%28&pagination[perpage]=50', 200, page([]))
 add('list-search-repr', 'owner', LIST + '?minimal=true&query[generalSearch]=vecchio', 200,
     page(by(lambda e: 'vecchio' in e['repr'].lower())))
 add('list-search-percent-literal', 'owner', LIST + '?minimal=true&query[generalSearch]=0%25_', 200,

@@ -286,6 +286,20 @@ add('delete-owner-malformed-id', 'owner', DELETE, 500, SERVER, method='DELETE', 
 add('delete-owner-dict-id', 'owner', DELETE, 500, SERVER, method='DELETE', body=d({'a': 1}))
 add('delete-owner-float-id', 'owner', DELETE, 500, SERVER, method='DELETE', body=d(1.5))
 add('delete-owner-negative-id', 'owner', DELETE, 500, SERVER, method='DELETE', body=d(-1))
+# UUIDField.to_python: uuid.UUID(hex) keeps 32 characters after dropping braces, hyphens and urn prefixes, then int(hex, 16):
+# whitespace, a plus sign, a 0x prefix, single underscores and any Unicode decimal digit are read (a minus is dropped with the hyphens).
+HEX = UNKNOWN.replace('-', '')
+for label, text, status, answer in (
+        ('plus', '+' + HEX[1:], 404, NOT_FOUND), ('underscore', HEX[:5] + '_' + HEX[6:], 404, NOT_FOUND),
+        ('leading-space', ' ' + HEX[1:], 404, NOT_FOUND), ('trailing-tab', HEX[1:] + '\t', 404, NOT_FOUND),
+        ('hex-prefix', '0x' + HEX[2:], 404, NOT_FOUND), ('hex-prefix-underscore', '0X_' + HEX[3:], 404, NOT_FOUND),
+        ('braces-and-urn', 'urn:uuid:{' + UNKNOWN + '}', 404, NOT_FOUND),
+        ('arabic-digits', HEX.replace('0', '\u0660').replace('9', '\u0669'), 404, NOT_FOUND),
+        ('minus', '-' + HEX[1:], 500, SERVER), ('minus-removed-with-hyphens', '-' + '0' * 31, 500, SERVER),
+        ('too-long-space', ' ' + HEX, 500, SERVER), ('double-underscore', HEX[:10] + '__' + HEX[12:], 500, SERVER),
+        ('leading-underscore', '_' + HEX[1:], 500, SERVER), ('trailing-underscore', HEX[1:] + '_', 500, SERVER),
+        ('sign-after-space', ' -' + HEX[2:], 500, SERVER)):
+    add('delete-owner-int-reading-' + label, 'owner', DELETE, status, answer, method='DELETE', body=d(text))
 add('delete-get-not-allowed', 'owner', DELETE, 405, method('GET'))
 add('delete-options', 'owner', DELETE, 200, EXPORT_OPTIONS, method='OPTIONS')
 

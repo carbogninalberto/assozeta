@@ -33,8 +33,8 @@ func (s *AuditLogs) List(ctx context.Context, identity domain.ResolvedIdentity, 
 		value, present := query.Lookup(name)
 		text, _ := value.(string)
 		if present && !utf8.ValidString(text) {
-			// Django decodes malformed UTF-8 with replacement characters; not ported.
-			return "", false, dto.ErrAuditNotPorted
+			// Django decodes malformed UTF-8 in the query string with replacement characters.
+			text = dto.PythonUTF8Replace(text)
 		}
 		return text, present, nil
 	}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
@@ -23,7 +25,8 @@ func (r *SubscriptionMedical) BeginSubscriptionReminder(ctx context.Context) (do
 func (t *subscriptionMedicalTransaction) ReminderRecipient(ctx context.Context, subscription string) (domain.MedicalReminderRecipient, error) {
 	var result domain.MedicalReminderRecipient
 	err := t.tx.GetContext(ctx, &result, `SELECT s.associate_id::text AS associate, p.first_name AS first, p.last_name AS last, p.email,
- u.email AS useremail, a.denomination
+ u.email AS useremail, a.denomination, p.sport_association_id::text AS associateassociation, COALESCE(p.deleted, false) AS associatedeleted,
+ p.group_id::text AS associategroup
  FROM application_subscription s JOIN application_sportassociation a ON a.sport_association_id=s.sport_association_id
  JOIN bakney_user u ON u.user_id=s.user_id LEFT JOIN application_associate p ON p.associate_id=s.associate_id
  WHERE s.subscription_id=$1`, subscription)
@@ -32,10 +35,11 @@ func (t *subscriptionMedicalTransaction) ReminderRecipient(ctx context.Context, 
 	}
 	// get_main_tutor: the primary relation, otherwise the first relation by key.
 	var relation struct {
+		ID      int64   `db:"id"`
 		Primary bool    `db:"is_primary"`
 		Email   *string `db:"email"`
 	}
-	err = t.tx.GetContext(ctx, &relation, `SELECT r.is_primary, p.email FROM application_associatetutorrelation r
+	err = t.tx.GetContext(ctx, &relation, `SELECT r.id, r.is_primary, p.email FROM application_associatetutorrelation r
  JOIN application_associate p ON p.associate_id=r.tutor_id WHERE r.associate_id=$1 ORDER BY r.is_primary DESC, r.id LIMIT 1`, *result.Associate)
 	if errors.Is(err, sql.ErrNoRows) {
 		return result, nil
@@ -43,6 +47,21 @@ func (t *subscriptionMedicalTransaction) ReminderRecipient(ctx context.Context, 
 	if err != nil {
 		return result, err
 	}
-	result.Tutor, result.TutorEmail, result.TutorUnpromoted = true, relation.Email, !relation.Primary
+	result.Tutor, result.TutorEmail, result.TutorUnpromoted, result.TutorRelation = true, relation.Email, !relation.Primary, relation.ID
 	return result, nil
+}
+
+// PromoteTutorRelation is get_main_tutor's save of the first relation: auditlog's
+// pre_save entry (indexed through the associate's association), then the UPDATE.
+func (t *subscriptionMedicalTransaction) PromoteTutorRelation(ctx context.Context, relation int64, association string,
+	audit domain.LoginAuditContext, at time.Time) error {
+	key := strconv.FormatInt(relation, 10)
+	path := "associate.sport_association"
+	if err := appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "associatetutorrelation", Key: key,
+		Representation: "AssociateTutorRelation object (" + key + ")", Action: 1,
+		Changes: map[string][2]string{"is_primary": {"False", "True"}}, Context: audit, AssociationID: &association, ResolutionPath: &path, At: at}); err != nil {
+		return err
+	}
+	_, err := t.tx.ExecContext(ctx, `UPDATE application_associatetutorrelation SET is_primary=true WHERE id=$1`, relation)
+	return err
 }

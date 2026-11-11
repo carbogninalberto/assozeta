@@ -2980,6 +2980,322 @@
    }
   },
   {
+   "name": "association-transfer-delete-owner-int-reading-plus",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "+1000000000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-underscore",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "a1000_00000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-leading-space",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": " 1000000000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-trailing-tab",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "1000000000040008000000000976999\t"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-hex-prefix",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "0x000000000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-hex-prefix-underscore",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "0X_00000000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-braces-and-urn",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "urn:uuid:{a1000000-0000-4000-8000-000000976999}"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-arabic-digits",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "a1٠٠٠٠٠٠٠٠٠٠4٠٠٠8٠٠٠٠٠٠٠٠٠٩76٩٩٩"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-minus",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "-1000000000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-minus-removed-with-hyphens",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "-0000000000000000000000000000000"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-too-long-space",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": " a1000000000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-double-underscore",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "a100000000__40008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-leading-underscore",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "_1000000000040008000000000976999"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-trailing-underscore",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": "1000000000040008000000000976999_"
+   }
+  },
+  {
+   "name": "association-transfer-delete-owner-int-reading-sign-after-space",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/association/export/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "body": {
+    "document_id": " -000000000040008000000000976999"
+   }
+  },
+  {
    "name": "association-transfer-delete-get-not-allowed",
    "actor": "owner",
    "method": "GET",

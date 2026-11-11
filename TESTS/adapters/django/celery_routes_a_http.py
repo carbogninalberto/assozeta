@@ -28,7 +28,8 @@ SOURCES = ('TESTS/fixtures/celery_routes_a_http.json', 'TESTS/contracts/test_cel
            'BE/application/permissions.py', 'BE/application/impersonation_scope.py', 'BE/application/audit_resolvers.py',
            'BE/application/permissions_registry.py') + harness.SOURCES
 SUB = 'application.Subscription'
-MANAGED = (SUB, harness.AUDIT, harness.INDEX)
+REL = 'application.AssociateTutorRelation'
+MANAGED = (SUB, REL, harness.AUDIT, harness.INDEX)
 
 
 def moment(text):
@@ -126,6 +127,8 @@ def assert_effect(case, before, after, source, context):
     values = bindings(case, before, fixture, ids)
     celery = resolve(effect['celery'], values) if effect else []
     harness.celery_published(contract, fixture, celery, since=since, until=until)
+    if effect and effect.get('promotion'):
+        return assert_promotion(case, before, after, source, context, effect['promotion'])
     if effect is None or effect['kind'] == 'reminder':
         contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
         return
@@ -162,6 +165,34 @@ def assert_effect(case, before, after, source, context):
     index = indexes.get(str(event['id']))
     contract.require(index is not None and index['sport_association_id'] == effect['index'][0]
                      and index['resolution_path'] == effect['index'][1], 'index.fields')
+
+
+def assert_promotion(case, before, after, source, context, spec):
+    """get_main_tutor saves the first relation of an associate without a primary one (is_primary True), audited."""
+    ids, associate = source['ids'], source['associates'][spec['associate']]['id']
+    contract.require(before[SUB] == after[SUB], 'state.subscriptions')
+    old, new = [flat(r) for r in before[REL]], [flat(r) for r in after[REL]]
+    target = [r for r in old if str(r['associate_id']) == associate]
+    contract.require(len(target) == spec['relations'] and not any(r['is_primary'] for r in target), 'state.seed')
+    first = min(target, key=lambda r: r['id'])
+    contract.require(new == [{**r, 'is_primary': True} if r['id'] == first['id'] else r for r in old], 'state.relations')
+    added, indexes = harness.audit_delta(contract, before, after)
+    contract.require(len(added) == 1 and len(indexes) == 1, 'audit.count')
+    event = added[0]
+    types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}
+    users = keyed(before['application.User'], 'user_id')
+    actor = ids[case['actor']]
+    contract.require(event['content_type_id'] == types['associatetutorrelation'] and event['action'] == 1
+                     and event['object_pk'] == str(first['id']) and event['object_repr'] == f"AssociateTutorRelation object ({first['id']})",
+                     'audit.identity')
+    contract.require(event['changes'] == {'is_primary': ['False', 'True']}, 'audit.changes')
+    contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
+    contract.require(event['cid'] == case['name'] and event['additional_data'] is None and event['changes_text'] == '', 'audit.context')
+    ipaddress.ip_address(event['remote_addr'])
+    contract.require(context['remote'].setdefault('addr', event['remote_addr']) == event['remote_addr'], 'audit.remote-consistent')
+    index = indexes.get(str(event['id']))
+    contract.require(index is not None and index['sport_association_id'] == ids['own_association']
+                     and index['resolution_path'] == spec['path'], 'index.fields')
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

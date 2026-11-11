@@ -63,8 +63,17 @@ func TestAuditFromISOFormat(t *testing.T) {
 			t.Errorf("%q: want ValueError, got %v", input, err)
 		}
 	}
-	// Python 3.13 forms outside the ported subset are refused, never guessed.
-	for _, input := range []string{"20261001", "2026-W40-1", "2026-10-01T24:00", "0999-01-01", "2026-10-01T07:05:09.1"} {
+	for input, want := range map[string]string{"20261001": "01/10/2026 00:00", "2026-W40-1": "28/09/2026 00:00",
+		"2026-10-01T07:05:09.1": "01/10/2026 07:05", "2026-10-01x07:05+0530": "01/10/2026 07:05"} {
+		if moment, err := AuditFromISOFormat(input); err != nil || moment.DateTime != want {
+			t.Errorf("%q: %v %v", input, moment, err)
+		}
+	}
+	if _, err := AuditFromISOFormat("2026-10-01T24:00"); !IsAuditISOValueError(err) {
+		t.Errorf("24:00: want ValueError, got %v", err)
+	}
+	// Years below 1000: strftime('%Y') padding depends on the C library, so they stay refused.
+	for _, input := range []string{"0999-01-01"} {
 		if _, err := AuditFromISOFormat(input); !errors.Is(err, ErrAuditNotPorted) {
 			t.Errorf("%q: want refusal, got %v", input, err)
 		}

@@ -92,3 +92,10 @@ RED `v2misc-red-r3`: Django 63/63, Go 500. GREEN `v2misc-green-r1`: 63/63 on the
 four transports. Mutation `v2misc-mutation-r1` (an ambiguous wall time takes the
 summer offset) fails `enable-cron-future-ambiguous-standard-offset` on Go.
 workflow-writes 27/27 and communications-send-email 55/55 re-run green natively.
+
+## Form-encoded `automation_tree`
+
+A form body's `automation_tree` is read like DRF's JSONField reads an HTML value: `json.loads` of the text. A list tree
+updates the workflow; invalid JSON, a non-list value, NaN/Infinity literals and integers over 4300 digits are the generic
+400 (`workflow not valid.`). Documents with lone surrogate escapes or nesting past 500 levels still answer the stable 500
+page, without the pre-save audit entry Django keeps. Cases: `workflow-update-form-tree-*`.

@@ -29,11 +29,12 @@ type SubscriptionMedicalReminders struct {
 	store     domain.SubscriptionReminderStore
 	publisher celery.Publisher
 	settings  MedicalReminderSettings
+	now       func() time.Time
 }
 
 func NewSubscriptionMedicalReminders(store domain.SubscriptionReminderStore, publisher celery.Publisher,
 	settings MedicalReminderSettings) *SubscriptionMedicalReminders {
-	return &SubscriptionMedicalReminders{store: store, publisher: publisher, settings: settings}
+	return &SubscriptionMedicalReminders{store: store, publisher: publisher, settings: settings, now: time.Now}
 }
 
 func (s *SubscriptionMedicalReminders) ParseUUID(raw string) (string, error) {
@@ -43,7 +44,8 @@ func (s *SubscriptionMedicalReminders) ParseUUID(raw string) (string, error) {
 // Send follows subscription_medical_certificate_send_email_reminder after
 // is_valid_uuid: the _medical_certificate_targets lookup, the e-mail data and
 // recipient, then send_email_template.delay(...). Nothing is written.
-func (s *SubscriptionMedicalReminders) Send(ctx context.Context, identity domain.ResolvedIdentity, id, group string) error {
+func (s *SubscriptionMedicalReminders) Send(ctx context.Context, identity domain.ResolvedIdentity, id, group string,
+	login domain.LoginAuditContext) error {
 	tx, err := s.store.BeginSubscriptionReminder(ctx)
 	if err != nil {
 		return err
@@ -68,11 +70,32 @@ func (s *SubscriptionMedicalReminders) Send(ctx context.Context, identity domain
 		return ErrSubscriptionMedicalFailed // attribute access on None
 	}
 	var email *string
+	committed := false
 	switch {
 	case recipient.Email != nil:
 		email = recipient.Email
 	case recipient.Tutor && recipient.TutorUnpromoted:
-		return ErrMedicalReminderNotPorted
+		// The audit index resolves through the associate row as the group-aware manager finds it; the
+		// other resolutions (a deleted or group-hidden associate) stay refused.
+		scope := supplierGroup(group)
+		visible := recipient.AssociateAssociation != nil && !recipient.AssociateDeleted &&
+			(scope == nil || recipient.AssociateGroup != nil && *recipient.AssociateGroup == *scope)
+		if !visible {
+			return ErrMedicalReminderNotPorted
+		}
+		at := s.now().UTC().Truncate(time.Microsecond)
+		if err = tx.PromoteTutorRelation(ctx, recipient.TutorRelation, *recipient.AssociateAssociation,
+			paymentCategoryAuditContext(identity, login), at); err != nil {
+			return err
+		}
+		// The save is autocommitted before the rest of the view runs.
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+		committed = true
+		if email = recipient.TutorEmail; email == nil {
+			email = recipient.UserEmail
+		}
 	case recipient.Tutor && recipient.TutorEmail != nil:
 		email = recipient.TutorEmail
 	default:
@@ -85,8 +108,10 @@ func (s *SubscriptionMedicalReminders) Send(ctx context.Context, identity domain
 	if err != nil {
 		return err
 	}
-	if err = tx.Rollback(); err != nil {
-		return err
+	if !committed {
+		if err = tx.Rollback(); err != nil {
+			return err
+		}
 	}
 	denomination := "None"
 	if recipient.Denomination != nil {

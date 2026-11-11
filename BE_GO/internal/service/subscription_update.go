@@ -237,18 +237,10 @@ func (v *subscriptionUpdateValues) date(value any) (text string, stored *string,
 		if err := storable(typed); err != nil {
 			return "", nil, err
 		}
-		if parsed, ok := asciiISODate(typed); ok {
-			if parsed == nil {
-				v.fails = true // date.fromisoformat fails, date_re matches, date() raises
-			}
-			return typed, parsed, nil
+		if parsed, ok := dto.PythonParseDate(typed); ok {
+			return typed, &parsed, nil
 		}
-		for _, r := range typed {
-			if unicode.Is(unicode.Nd, r) {
-				return "", nil, ErrSubscriptionUpdateNotPorted
-			}
-		}
-		v.fails = true // neither fromisoformat nor date_re parse it
+		v.fails = true // parse_date finds no date: the field refuses the value at save
 		return typed, nil, nil
 	}
 	text = dto.PythonStr(value)
@@ -257,23 +249,6 @@ func (v *subscriptionUpdateValues) date(value any) (text string, stored *string,
 	}
 	v.fails = true // date.fromisoformat(non-str) raises TypeError
 	return text, nil, nil
-}
-
-// asciiISODate: ok for an ASCII YYYY-MM-DD string; the date is nil when the
-// calendar rejects it.
-func asciiISODate(text string) (*string, bool) {
-	if len(text) != 10 || text[4] != '-' || text[7] != '-' {
-		return nil, false
-	}
-	for index := 0; index < 10; index++ {
-		if index != 4 && index != 7 && (text[index] < '0' || text[index] > '9') {
-			return nil, false
-		}
-	}
-	if _, err := time.Parse("2006-01-02", text); err != nil || text[:4] == "0000" {
-		return nil, true
-	}
-	return &text, true
 }
 
 func (v *subscriptionUpdateValues) text(name string, old *string, value any, limit int) (*string, error) {
@@ -322,8 +297,8 @@ func (v *subscriptionUpdateValues) json(name string, old *string, value any) (*s
 	if err != nil {
 		return nil, err
 	}
-	if err := storable(value); err != nil {
-		return nil, err
+	if !dto.TextStorable(value) {
+		v.fails = true // json.dumps escapes NUL and lone surrogates, so the entry is kept; jsonb refuses the column value
 	}
 	v.compare(name, dto.CourseWritesAuditJSON(previous), dto.CourseWritesAuditJSON(value))
 	if !jsonFinite(value) {

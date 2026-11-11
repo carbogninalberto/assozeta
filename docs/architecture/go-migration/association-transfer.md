@@ -72,3 +72,9 @@ instead of the read size fails `association-transfer-list-foreign-legacy-size`.
 
 Task status answers (later change): the fixture now holds the unregistered ids, a registered id whose row is named after another
 task, and failed/revoked/retry rows answering the fixed message. This replaces the stored-exception cases of v2-rest-c.
+
+## `document_id` read as `int(hex, 16)`
+
+`export/delete` resolves `document_id` with `uuid.UUID(hex)`: braces, hyphens and `urn:`/`uuid:` prefixes are dropped, 32
+characters must remain, and `int(hex, 16)` reads surrounding whitespace, a plus sign, a `0x` prefix, single underscores and
+Unicode decimal digits. Cases: `association-transfer-delete-owner-int-reading-*`.

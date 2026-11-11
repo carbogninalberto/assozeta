@@ -119,6 +119,20 @@
    "first": "Hans",
    "last": "Muller",
    "email": "hans@example.test"
+  },
+  "late": {
+   "id": "a1000000-0000-4000-8000-000000680016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Lia",
+   "last": "Neri",
+   "email": null
+  },
+  "late_two": {
+   "id": "a1000000-0000-4000-8000-000000680017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Lea",
+   "last": "Neri",
+   "email": null
   }
  },
  "relations": [
@@ -131,73 +145,98 @@
    "notutor_email",
    "silent_tutor",
    true
+  ],
+  [
+   "late",
+   "tutor",
+   false
+  ],
+  [
+   "late_two",
+   "silent_tutor",
+   false
+  ],
+  [
+   "late_two",
+   "tutor",
+   false
   ]
  ],
  "certificates": {
   "main": {
-   "id": "a1000000-0000-4000-8000-000000680016",
+   "id": "a1000000-0000-4000-8000-000000680018",
    "user": "owner",
    "expiration": "2026-06-30"
   },
   "tutor": {
-   "id": "a1000000-0000-4000-8000-000000680017",
+   "id": "a1000000-0000-4000-8000-000000680019",
    "user": "owner",
    "expiration": "2027-01-05"
   },
   "user": {
-   "id": "a1000000-0000-4000-8000-000000680018",
+   "id": "a1000000-0000-4000-8000-000000680020",
    "user": "owner",
    "expiration": "2026-12-31"
   },
   "empty": {
-   "id": "a1000000-0000-4000-8000-000000680019",
+   "id": "a1000000-0000-4000-8000-000000680021",
    "user": "owner",
    "expiration": "2026-03-01"
   },
   "quoted": {
-   "id": "a1000000-0000-4000-8000-000000680020",
+   "id": "a1000000-0000-4000-8000-000000680022",
    "user": "owner",
    "expiration": "2026-04-15"
   },
   "silent": {
-   "id": "a1000000-0000-4000-8000-000000680021",
+   "id": "a1000000-0000-4000-8000-000000680023",
    "user": "owner",
    "expiration": "2026-05-20"
   },
   "none": {
-   "id": "a1000000-0000-4000-8000-000000680022",
+   "id": "a1000000-0000-4000-8000-000000680024",
    "user": "owner",
    "expiration": null
   },
   "orphan": {
-   "id": "a1000000-0000-4000-8000-000000680023",
+   "id": "a1000000-0000-4000-8000-000000680025",
    "user": "owner",
    "expiration": "2026-07-01"
   },
   "athlete": {
-   "id": "a1000000-0000-4000-8000-000000680024",
+   "id": "a1000000-0000-4000-8000-000000680026",
    "user": "owner",
    "expiration": "2026-08-08"
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-000000680025",
+   "id": "a1000000-0000-4000-8000-000000680027",
    "user": "owner",
    "expiration": "2026-09-09"
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-000000680026",
+   "id": "a1000000-0000-4000-8000-000000680028",
    "user": "owner",
    "expiration": "2026-10-10"
   },
   "deleted": {
-   "id": "a1000000-0000-4000-8000-000000680027",
+   "id": "a1000000-0000-4000-8000-000000680029",
    "user": "owner",
    "expiration": "2026-11-11"
+  },
+  "late": {
+   "id": "a1000000-0000-4000-8000-000000680030",
+   "user": "owner",
+   "expiration": "2027-02-02"
+  },
+  "late_two": {
+   "id": "a1000000-0000-4000-8000-000000680031",
+   "user": "owner",
+   "expiration": "2027-03-03"
   }
  },
  "subscriptions": {
   "full": {
-   "id": "a1000000-0000-4000-8000-000000680028",
+   "id": "a1000000-0000-4000-8000-000000680032",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "associate": "mario",
@@ -222,98 +261,6 @@
    "created": "2026-01-10T09:00:00Z"
   },
   "noop": {
-   "id": "a1000000-0000-4000-8000-000000680029",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "blank_type": {
-   "id": "a1000000-0000-4000-8000-000000680030",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 3,
-   "role": 4,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "bool_type": {
-   "id": "a1000000-0000-4000-8000-000000680031",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "refill": {
-   "id": "a1000000-0000-4000-8000-000000680032",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-03-01",
-   "end": "2026-10-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "bad_date": {
    "id": "a1000000-0000-4000-8000-000000680033",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -336,14 +283,14 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "bad_int": {
+  "blank_type": {
    "id": "a1000000-0000-4000-8000-000000680034",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "associate": "mario",
    "status": 2,
-   "type": 2,
-   "role": 1,
+   "type": 3,
+   "role": 4,
    "start": "2026-01-01",
    "end": "2026-12-31",
    "acceptance": null,
@@ -359,7 +306,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "negative": {
+  "bool_type": {
    "id": "a1000000-0000-4000-8000-000000680035",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -382,7 +329,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "big_status": {
+  "refill": {
    "id": "a1000000-0000-4000-8000-000000680036",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -390,8 +337,8 @@
    "status": 2,
    "type": 2,
    "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
+   "start": "2026-03-01",
+   "end": "2026-10-31",
    "acceptance": null,
    "resignation": null,
    "number": "0",
@@ -405,7 +352,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "string_status": {
+  "bad_date": {
    "id": "a1000000-0000-4000-8000-000000680037",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -428,7 +375,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "bool_status": {
+  "bad_int": {
    "id": "a1000000-0000-4000-8000-000000680038",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -451,7 +398,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "bad_acceptance": {
+  "negative": {
    "id": "a1000000-0000-4000-8000-000000680039",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -474,7 +421,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "int_acceptance": {
+  "big_status": {
    "id": "a1000000-0000-4000-8000-000000680040",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -497,7 +444,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "stringified": {
+  "string_status": {
    "id": "a1000000-0000-4000-8000-000000680041",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -520,7 +467,7 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "long_kind": {
+  "bool_status": {
    "id": "a1000000-0000-4000-8000-000000680042",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -543,8 +490,376 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "clear_json": {
+  "bad_acceptance": {
    "id": "a1000000-0000-4000-8000-000000680043",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "int_acceptance": {
+   "id": "a1000000-0000-4000-8000-000000680044",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_basic": {
+   "id": "a1000000-0000-4000-8000-000000680045",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_short": {
+   "id": "a1000000-0000-4000-8000-000000680046",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_unicode": {
+   "id": "a1000000-0000-4000-8000-000000680047",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_week": {
+   "id": "a1000000-0000-4000-8000-000000680048",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "nul_text": {
+   "id": "a1000000-0000-4000-8000-000000680049",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "surrogate_text": {
+   "id": "a1000000-0000-4000-8000-000000680050",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "nul_key": {
+   "id": "a1000000-0000-4000-8000-000000680051",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "surrogate_json": {
+   "id": "a1000000-0000-4000-8000-000000680052",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_newline": {
+   "id": "a1000000-0000-4000-8000-000000680053",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_space": {
+   "id": "a1000000-0000-4000-8000-000000680054",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_month": {
+   "id": "a1000000-0000-4000-8000-000000680055",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "dates_start": {
+   "id": "a1000000-0000-4000-8000-000000680056",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "stringified": {
+   "id": "a1000000-0000-4000-8000-000000680057",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "long_kind": {
+   "id": "a1000000-0000-4000-8000-000000680058",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "clear_json": {
+   "id": "a1000000-0000-4000-8000-000000680059",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "associate": "mario",
@@ -575,374 +890,6 @@
    "created": "2026-01-10T09:00:00Z"
   },
   "infinite_json": {
-   "id": "a1000000-0000-4000-8000-000000680044",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "list_body": {
-   "id": "a1000000-0000-4000-8000-000000680045",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": "kept",
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "form": {
-   "id": "a1000000-0000-4000-8000-000000680046",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "athlete_own": {
-   "id": "a1000000-0000-4000-8000-000000680047",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "athlete",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "grouped": {
-   "id": "a1000000-0000-4000-8000-000000680048",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": "own_group",
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "flagged": {
-   "id": "a1000000-0000-4000-8000-000000680049",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": true,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "collaborator": {
-   "id": "a1000000-0000-4000-8000-000000680050",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "admin": {
-   "id": "a1000000-0000-4000-8000-000000680051",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "stripped": {
-   "id": "a1000000-0000-4000-8000-000000680052",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "abroad": {
-   "id": "a1000000-0000-4000-8000-000000680053",
-   "association": "a1000000-0000-4000-8000-000000701002",
-   "user": "foreign_owner",
-   "associate": "hans",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": null,
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "r_main": {
-   "id": "a1000000-0000-4000-8000-000000680054",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "mario",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": "main",
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "r_tutor": {
-   "id": "a1000000-0000-4000-8000-000000680055",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "luca",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": "tutor",
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "r_user": {
-   "id": "a1000000-0000-4000-8000-000000680056",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "sara",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": "user",
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "r_empty": {
-   "id": "a1000000-0000-4000-8000-000000680057",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "empty",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": "empty",
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "r_quoted": {
-   "id": "a1000000-0000-4000-8000-000000680058",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "quoted",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": "quoted",
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "r_silent": {
-   "id": "a1000000-0000-4000-8000-000000680059",
-   "association": "a1000000-0000-4000-8000-000000701001",
-   "user": "owner",
-   "associate": "notutor_email",
-   "status": 2,
-   "type": 2,
-   "role": 1,
-   "start": "2026-01-01",
-   "end": "2026-12-31",
-   "acceptance": null,
-   "resignation": null,
-   "number": "0",
-   "kind": null,
-   "custom": null,
-   "additional": null,
-   "notes": null,
-   "document": null,
-   "medical": "silent",
-   "group": null,
-   "deleted": false,
-   "created": "2026-01-10T09:00:00Z"
-  },
-  "r_no_certificate": {
    "id": "a1000000-0000-4000-8000-000000680060",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
@@ -965,8 +912,376 @@
    "deleted": false,
    "created": "2026-01-10T09:00:00Z"
   },
-  "r_no_expiration": {
+  "list_body": {
    "id": "a1000000-0000-4000-8000-000000680061",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": "kept",
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "form": {
+   "id": "a1000000-0000-4000-8000-000000680062",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "athlete_own": {
+   "id": "a1000000-0000-4000-8000-000000680063",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000680064",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": "own_group",
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "flagged": {
+   "id": "a1000000-0000-4000-8000-000000680065",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": true,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "collaborator": {
+   "id": "a1000000-0000-4000-8000-000000680066",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "admin": {
+   "id": "a1000000-0000-4000-8000-000000680067",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "stripped": {
+   "id": "a1000000-0000-4000-8000-000000680068",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000680069",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "associate": "hans",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_main": {
+   "id": "a1000000-0000-4000-8000-000000680070",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "main",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_tutor": {
+   "id": "a1000000-0000-4000-8000-000000680071",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "luca",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "tutor",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_user": {
+   "id": "a1000000-0000-4000-8000-000000680072",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "sara",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "user",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_empty": {
+   "id": "a1000000-0000-4000-8000-000000680073",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "empty",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "empty",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_quoted": {
+   "id": "a1000000-0000-4000-8000-000000680074",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "quoted",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "quoted",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_silent": {
+   "id": "a1000000-0000-4000-8000-000000680075",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "notutor_email",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "silent",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_no_certificate": {
+   "id": "a1000000-0000-4000-8000-000000680076",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "mario",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": null,
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_no_expiration": {
+   "id": "a1000000-0000-4000-8000-000000680077",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "associate": "mario",
@@ -989,7 +1304,7 @@
    "created": "2026-01-10T09:00:00Z"
   },
   "r_no_associate": {
-   "id": "a1000000-0000-4000-8000-000000680062",
+   "id": "a1000000-0000-4000-8000-000000680078",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "associate": null,
@@ -1012,7 +1327,7 @@
    "created": "2026-01-10T09:00:00Z"
   },
   "r_athlete": {
-   "id": "a1000000-0000-4000-8000-000000680063",
+   "id": "a1000000-0000-4000-8000-000000680079",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "athlete",
    "associate": "sara",
@@ -1035,7 +1350,7 @@
    "created": "2026-01-10T09:00:00Z"
   },
   "r_abroad": {
-   "id": "a1000000-0000-4000-8000-000000680064",
+   "id": "a1000000-0000-4000-8000-000000680080",
    "association": "a1000000-0000-4000-8000-000000701002",
    "user": "foreign_owner",
    "associate": "hans",
@@ -1058,7 +1373,7 @@
    "created": "2026-01-10T09:00:00Z"
   },
   "r_grouped": {
-   "id": "a1000000-0000-4000-8000-000000680065",
+   "id": "a1000000-0000-4000-8000-000000680081",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "associate": "mario",
@@ -1081,7 +1396,7 @@
    "created": "2026-01-10T09:00:00Z"
   },
   "r_deleted": {
-   "id": "a1000000-0000-4000-8000-000000680066",
+   "id": "a1000000-0000-4000-8000-000000680082",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "associate": "mario",
@@ -1102,6 +1417,52 @@
    "group": null,
    "deleted": true,
    "created": "2026-01-10T09:00:00Z"
+  },
+  "r_promote": {
+   "id": "a1000000-0000-4000-8000-000000680083",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "late",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "late",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
+  },
+  "r_promote_first": {
+   "id": "a1000000-0000-4000-8000-000000680084",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "associate": "late_two",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "acceptance": null,
+   "resignation": null,
+   "number": "0",
+   "kind": null,
+   "custom": null,
+   "additional": null,
+   "notes": null,
+   "document": null,
+   "medical": "late_two",
+   "group": null,
+   "deleted": false,
+   "created": "2026-01-10T09:00:00Z"
   }
  },
  "cases": [
@@ -1109,7 +1470,7 @@
    "name": "celery-routes-a-full-update",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680028/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680032/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1200,7 +1561,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680028",
+       "a1000000-0000-4000-8000-000000680032",
        "$authorization"
       ],
       "kwargs": []
@@ -1233,7 +1594,7 @@
    "name": "celery-routes-a-empty-body-saves",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1255,7 +1616,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680029",
+       "a1000000-0000-4000-8000-000000680033",
        "$authorization"
       ],
       "kwargs": []
@@ -1268,7 +1629,7 @@
    "name": "celery-routes-a-blank-type-and-role-defaults",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680030/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680034/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1302,7 +1663,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680030",
+       "a1000000-0000-4000-8000-000000680034",
        "$authorization"
       ],
       "kwargs": []
@@ -1318,7 +1679,7 @@
    "name": "celery-routes-a-bool-and-float-int",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680031/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680035/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1357,7 +1718,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680031",
+       "a1000000-0000-4000-8000-000000680035",
        "$authorization"
       ],
       "kwargs": []
@@ -1374,7 +1735,7 @@
    "name": "celery-routes-a-null-start-refilled",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680032/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680036/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1403,7 +1764,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680032",
+       "a1000000-0000-4000-8000-000000680036",
        "$authorization"
       ],
       "kwargs": []
@@ -1419,7 +1780,7 @@
    "name": "celery-routes-a-invalid-start-date",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -1435,7 +1796,7 @@
    "name": "celery-routes-a-non-string-end-date",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -1451,7 +1812,7 @@
    "name": "celery-routes-a-type-not-a-number",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680034/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680038/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1465,7 +1826,7 @@
    "name": "celery-routes-a-role-list",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680034/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680038/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1480,7 +1841,7 @@
    "name": "celery-routes-a-calendar-invalid-start-kept-entry",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680037/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1509,7 +1870,7 @@
    "name": "celery-routes-a-negative-type-kept-entry",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680035/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680039/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1538,7 +1899,7 @@
    "name": "celery-routes-a-status-out-of-range-kept-entry",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680036/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680040/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1572,7 +1933,7 @@
    "name": "celery-routes-a-string-status",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680037/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680041/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1601,7 +1962,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680037",
+       "a1000000-0000-4000-8000-000000680041",
        "$authorization"
       ],
       "kwargs": []
@@ -1616,7 +1977,7 @@
    "name": "celery-routes-a-bool-status",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680038/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680042/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1645,7 +2006,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680038",
+       "a1000000-0000-4000-8000-000000680042",
        "$authorization"
       ],
       "kwargs": []
@@ -1660,7 +2021,7 @@
    "name": "celery-routes-a-text-acceptance-kept-entry",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680039/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680043/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1689,7 +2050,7 @@
    "name": "celery-routes-a-int-resignation-kept-entry",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680040/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680044/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1715,10 +2076,416 @@
    }
   },
   {
+   "name": "celery-routes-a-date-forms-basic",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680045/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription updated."
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_basic",
+    "columns": {
+     "acceptance_date": "2026-02-03"
+    },
+    "audit": {
+     "acceptance_date": [
+      "None",
+      "20260203"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000680045",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "acceptance_date": "20260203"
+   }
+  },
+  {
+   "name": "celery-routes-a-date-forms-short",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680046/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription updated."
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_short",
+    "columns": {
+     "resignation_date": "2026-02-03"
+    },
+    "audit": {
+     "resignation_date": [
+      "None",
+      "2026-2-3"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000680046",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "resignation_date": "2026-2-3"
+   }
+  },
+  {
+   "name": "celery-routes-a-date-forms-unicode",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680047/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription updated."
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_unicode",
+    "columns": {
+     "acceptance_date": "2026-02-03"
+    },
+    "audit": {
+     "acceptance_date": [
+      "None",
+      "٢٠٢٦-٠٢-٠٣"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000680047",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "acceptance_date": "٢٠٢٦-٠٢-٠٣"
+   }
+  },
+  {
+   "name": "celery-routes-a-date-forms-week",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680048/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription updated."
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_week",
+    "columns": {
+     "resignation_date": "2026-02-03"
+    },
+    "audit": {
+     "resignation_date": [
+      "None",
+      "2026-W06-2"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000680048",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "resignation_date": "2026-W06-2"
+   }
+  },
+  {
+   "name": "celery-routes-a-date-forms-newline",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680053/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription updated."
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_newline",
+    "columns": {
+     "acceptance_date": "2026-02-03"
+    },
+    "audit": {
+     "acceptance_date": [
+      "None",
+      "2026-02-03\n"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000680053",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "acceptance_date": "2026-02-03\n"
+   }
+  },
+  {
+   "name": "celery-routes-a-date-forms-start-unicode",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680056/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription updated."
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_start",
+    "columns": {
+     "start_date": "2026-02-03"
+    },
+    "audit": {
+     "start_date": [
+      "2026-01-01",
+      "٢٠٢٦-٠٢-٠٣"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": [
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "a1000000-0000-4000-8000-000000680056",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ]
+   },
+   "body": {
+    "start_date": "٢٠٢٦-٠٢-٠٣"
+   }
+  },
+  {
+   "name": "celery-routes-a-date-forms-space-kept-entry",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680054/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_space",
+    "columns": {},
+    "audit": {
+     "acceptance_date": [
+      "None",
+      " 2026-02-03"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": []
+   },
+   "body": {
+    "acceptance_date": " 2026-02-03"
+   }
+  },
+  {
+   "name": "celery-routes-a-date-forms-month-kept-entry",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680055/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "dates_month",
+    "columns": {},
+    "audit": {
+     "resignation_date": [
+      "None",
+      "2026-13-03"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": []
+   },
+   "body": {
+    "resignation_date": "2026-13-03"
+   }
+  },
+  {
+   "name": "celery-routes-a-nul-notes-nothing-saved",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680049/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "notes": "a\u0000b"
+   }
+  },
+  {
+   "name": "celery-routes-a-lone-surrogate-notes-nothing-saved",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680050/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"notes\": \"\\ud800\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "celery-routes-a-nul-json-key-kept-entry",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680051/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "nul_key",
+    "columns": {},
+    "audit": {
+     "custom_data": [
+      "null",
+      "{\"a\\u0000b\": 1}"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": []
+   },
+   "body": {
+    "custom_data": {
+     "a\u0000b": 1
+    }
+   }
+  },
+  {
+   "name": "celery-routes-a-lone-surrogate-json-kept-entry",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680052/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "surrogate_json",
+    "columns": {},
+    "audit": {
+     "additional_fields": [
+      "null",
+      "[\"\\ud800\"]"
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "direct"
+    ],
+    "celery": []
+   },
+   "raw_body": "{\"additional_fields\": [\"\\ud800\"]}",
+   "content_type": "application/json"
+  },
+  {
    "name": "celery-routes-a-stringified-values",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680041/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680057/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1757,7 +2524,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680041",
+       "a1000000-0000-4000-8000-000000680057",
        "$authorization"
       ],
       "kwargs": []
@@ -1780,7 +2547,7 @@
    "name": "celery-routes-a-long-subscription-type-kept-entry",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680042/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680058/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1809,7 +2576,7 @@
    "name": "celery-routes-a-json-cleared",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680043/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680059/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1843,7 +2610,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680043",
+       "a1000000-0000-4000-8000-000000680059",
        "$authorization"
       ],
       "kwargs": []
@@ -1861,7 +2628,7 @@
    "name": "celery-routes-a-infinite-json-kept-entry",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680044/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680060/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1889,7 +2656,7 @@
    "name": "celery-routes-a-list-body-saves",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680045/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680061/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1918,7 +2685,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680045",
+       "a1000000-0000-4000-8000-000000680061",
        "$authorization"
       ],
       "kwargs": []
@@ -1933,7 +2700,7 @@
    "name": "celery-routes-a-list-body-with-key",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1946,7 +2713,7 @@
    "name": "celery-routes-a-string-body-substring",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1957,7 +2724,7 @@
    "name": "celery-routes-a-string-body-saves",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -1979,7 +2746,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680029",
+       "a1000000-0000-4000-8000-000000680033",
        "$authorization"
       ],
       "kwargs": []
@@ -1992,7 +2759,7 @@
    "name": "celery-routes-a-null-body",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2004,7 +2771,7 @@
    "name": "celery-routes-a-malformed-json",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 400,
    "response": {
@@ -2032,7 +2799,7 @@
    "name": "celery-routes-a-form-notes",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680046/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680062/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2066,7 +2833,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680046",
+       "a1000000-0000-4000-8000-000000680062",
        "$authorization"
       ],
       "kwargs": []
@@ -2080,7 +2847,7 @@
    "name": "celery-routes-a-form-valid-start-immutable",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2092,7 +2859,7 @@
    "name": "celery-routes-a-form-invalid-start",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 400,
    "response": [
@@ -2106,7 +2873,7 @@
    "name": "celery-routes-a-form-subscription-number-immutable",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2118,7 +2885,7 @@
    "name": "celery-routes-a-stripped-number-and-type",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680052/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680068/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2152,7 +2919,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680052",
+       "a1000000-0000-4000-8000-000000680068",
        "$authorization"
       ],
       "kwargs": []
@@ -2168,7 +2935,7 @@
    "name": "celery-routes-a-athlete-own",
    "actor": "athlete",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680047/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680063/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2197,7 +2964,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680047",
+       "a1000000-0000-4000-8000-000000680063",
        "$authorization"
       ],
       "kwargs": []
@@ -2212,7 +2979,7 @@
    "name": "celery-routes-a-athlete-other-denied",
    "actor": "athlete",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -2227,7 +2994,7 @@
    "name": "celery-routes-a-foreign-denied",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680053/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680069/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -2272,7 +3039,7 @@
    "name": "celery-routes-a-other-group-not-found",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680048/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680064/update",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -2289,7 +3056,7 @@
    "name": "celery-routes-a-group-member",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680048/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680064/update",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -2320,7 +3087,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680048",
+       "a1000000-0000-4000-8000-000000680064",
        "$authorization"
       ],
       "kwargs": []
@@ -2335,7 +3102,7 @@
    "name": "celery-routes-a-soft-deleted-row",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680049/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680065/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2364,7 +3131,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680049",
+       "a1000000-0000-4000-8000-000000680065",
        "$authorization"
       ],
       "kwargs": []
@@ -2379,7 +3146,7 @@
    "name": "celery-routes-a-full-collaborator",
    "actor": "full_collaborator",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680050/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680066/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2408,7 +3175,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680050",
+       "a1000000-0000-4000-8000-000000680066",
        "$authorization"
       ],
       "kwargs": []
@@ -2423,7 +3190,7 @@
    "name": "celery-routes-a-admin-impersonating-owner",
    "actor": "admin",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680051/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680067/update",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -2455,7 +3222,7 @@
      {
       "task": "print_document_subscription",
       "args": [
-       "a1000000-0000-4000-8000-000000680051",
+       "a1000000-0000-4000-8000-000000680067",
        "$authorization"
       ],
       "kwargs": []
@@ -2470,7 +3237,7 @@
    "name": "celery-routes-a-owner-without-association-server-error",
    "actor": "owner_without_association",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -2483,7 +3250,7 @@
    "name": "celery-routes-a-owner-scoped-athlete-denied",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -2501,7 +3268,7 @@
    "name": "celery-routes-a-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -2516,7 +3283,7 @@
    "name": "celery-routes-a-admin-without-session",
    "actor": "admin",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -2531,7 +3298,7 @@
    "name": "celery-routes-a-anonymous",
    "actor": "anonymous",
    "method": "PATCH",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 401,
    "response": {
@@ -2546,7 +3313,7 @@
    "name": "celery-routes-a-wrong-method",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 405,
    "response": {
@@ -2561,7 +3328,7 @@
    "name": "celery-routes-a-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680029/update",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680033/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -2582,7 +3349,7 @@
    "name": "celery-routes-a-reminder-associate-email",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -2640,7 +3407,7 @@
    "name": "celery-routes-a-reminder-tutor-email",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680055/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680071/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -2698,7 +3465,7 @@
    "name": "celery-routes-a-reminder-user-email",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680056/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680072/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -2756,7 +3523,7 @@
    "name": "celery-routes-a-reminder-empty-associate-email",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680057/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680073/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -2814,7 +3581,7 @@
    "name": "celery-routes-a-reminder-quoted-names",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680058/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680074/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -2872,7 +3639,7 @@
    "name": "celery-routes-a-reminder-tutor-without-email",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680059/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680075/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -2927,10 +3694,136 @@
    }
   },
   {
+   "name": "celery-routes-a-reminder-promotes-promote",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680083/medical-certificate/send-email-reminder",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Email reminder sent"
+   },
+   "effect": {
+    "kind": "reminder",
+    "celery": [
+     {
+      "task": "send_email_template",
+      "args": [],
+      "kwargs": [
+       [
+        "recipient_list",
+        [
+         "anna.tutor@example.test"
+        ]
+       ],
+       [
+        "subject",
+        "[$denomination:own] Ricordati di rinnovare il tuo certificato"
+       ],
+       [
+        "template",
+        "email/account/email_subscription_medical_certificate_expiring.html"
+       ],
+       [
+        "data",
+        {
+         "athlete_first_name": "Lia",
+         "athlete_last_name": "Neri",
+         "sport_association": {
+          "denomination": "$denomination:own"
+         },
+         "certificate_expiring_date": "02/02/2027",
+         "app_host": "$app_url",
+         "settings": {
+          "WHITELABEL_NAME": "$whitelabel",
+          "IS_WHITELABEL": "$is_whitelabel"
+         }
+        }
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ],
+    "promotion": {
+     "associate": "late",
+     "relations": 1,
+     "path": "associate.sport_association"
+    }
+   }
+  },
+  {
+   "name": "celery-routes-a-reminder-promotes-promote_first",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680084/medical-certificate/send-email-reminder",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Email reminder sent"
+   },
+   "effect": {
+    "kind": "reminder",
+    "celery": [
+     {
+      "task": "send_email_template",
+      "args": [],
+      "kwargs": [
+       [
+        "recipient_list",
+        [
+         "$email:owner"
+        ]
+       ],
+       [
+        "subject",
+        "[$denomination:own] Ricordati di rinnovare il tuo certificato"
+       ],
+       [
+        "template",
+        "email/account/email_subscription_medical_certificate_expiring.html"
+       ],
+       [
+        "data",
+        {
+         "athlete_first_name": "Lea",
+         "athlete_last_name": "Neri",
+         "sport_association": {
+          "denomination": "$denomination:own"
+         },
+         "certificate_expiring_date": "03/03/2027",
+         "app_host": "$app_url",
+         "settings": {
+          "WHITELABEL_NAME": "$whitelabel",
+          "IS_WHITELABEL": "$is_whitelabel"
+         }
+        }
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ],
+    "promotion": {
+     "associate": "late_two",
+     "relations": 2,
+     "path": "associate.sport_association"
+    }
+   }
+  },
+  {
    "name": "celery-routes-a-reminder-body-ignored",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -2990,7 +3883,7 @@
    "name": "celery-routes-a-reminder-no-certificate",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680060/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680076/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3000,7 +3893,7 @@
    "name": "celery-routes-a-reminder-no-expiration",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680061/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680077/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3010,7 +3903,7 @@
    "name": "celery-routes-a-reminder-no-associate",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680062/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680078/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -3020,7 +3913,7 @@
    "name": "celery-routes-a-reminder-athlete-own",
    "actor": "athlete",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680063/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680079/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -3078,7 +3971,7 @@
    "name": "celery-routes-a-reminder-athlete-other-not-found",
    "actor": "athlete",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 404,
    "response": {
@@ -3090,7 +3983,7 @@
    "name": "celery-routes-a-reminder-foreign-not-found",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680064/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680080/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 404,
    "response": {
@@ -3102,7 +3995,7 @@
    "name": "celery-routes-a-reminder-foreign-owner",
    "actor": "foreign_owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680064/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680080/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -3184,7 +4077,7 @@
    "name": "celery-routes-a-reminder-other-group",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680065/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680081/medical-certificate/send-email-reminder",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -3198,7 +4091,7 @@
    "name": "celery-routes-a-reminder-group-member",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680065/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680081/medical-certificate/send-email-reminder",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },
@@ -3258,7 +4151,7 @@
    "name": "celery-routes-a-reminder-soft-deleted",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680066/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680082/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
@@ -3316,7 +4209,7 @@
    "name": "celery-routes-a-reminder-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -3377,7 +4270,7 @@
    "name": "celery-routes-a-reminder-owner-without-association",
    "actor": "owner_without_association",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 404,
    "response": {
@@ -3389,7 +4282,7 @@
    "name": "celery-routes-a-reminder-owner-scoped-athlete-denied",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -3404,7 +4297,7 @@
    "name": "celery-routes-a-reminder-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 403,
    "response": {
@@ -3416,7 +4309,7 @@
    "name": "celery-routes-a-reminder-admin-without-session",
    "actor": "admin",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 403,
    "response": {
@@ -3428,7 +4321,7 @@
    "name": "celery-routes-a-reminder-anonymous",
    "actor": "anonymous",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 401,
    "response": {
@@ -3440,7 +4333,7 @@
    "name": "celery-routes-a-reminder-wrong-method",
    "actor": "owner",
    "method": "GET",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 405,
    "response": {
@@ -3452,7 +4345,7 @@
    "name": "celery-routes-a-reminder-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/subscription/a1000000-0000-4000-8000-000000680054/medical-certificate/send-email-reminder",
+   "path": "/subscription/a1000000-0000-4000-8000-000000680070/medical-certificate/send-email-reminder",
    "headers": {},
    "status": 200,
    "response": {
