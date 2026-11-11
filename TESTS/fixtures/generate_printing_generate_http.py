@@ -422,7 +422,8 @@ def course_name(p):
     if p['subject'] == 2:
         if p['link']:
             if p['meta'] and 'description' in p['meta']:
-                return p['meta']['description']
+                description = p['meta']['description']
+                return {'bool': description} if isinstance(description, bool) else description
             kind, name = p['link']
             return (CARNETS if kind == 'carnet' else COURSES)[name]['title']
         if p['course'] and 'label' in p['course']:

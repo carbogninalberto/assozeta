@@ -4684,8 +4684,12 @@
         "Rata 1 Yoga",
         "Danza, Mensile",
         "Carnet 10 ingressi",
-        true,
-        false
+        {
+         "bool": true
+        },
+        {
+         "bool": false
+        }
        ],
        [
         "$date:-20",
@@ -4887,10 +4891,14 @@
        ],
        [
         "Iscrizione",
-        true,
+        {
+         "bool": true
+        },
         "Quota extra",
         "Danza, Mensile",
-        false,
+        {
+         "bool": false
+        },
         "Rata 1 Yoga",
         "Nuoto",
         "Iscrizione",
@@ -5043,10 +5051,14 @@
        ],
        [
         "Iscrizione",
-        true,
+        {
+         "bool": true
+        },
         "Quota extra",
         "Danza, Mensile",
-        false,
+        {
+         "bool": false
+        },
         "Rata 1 Yoga",
         "Nuoto"
        ],
@@ -6567,7 +6579,9 @@
         "-",
         "Socio",
         "12,00",
-        true,
+        {
+         "bool": true
+        },
         "$date:-4",
         {
          "int": "4"
@@ -6581,7 +6595,9 @@
         "3470001111",
         "Tutore",
         "13,00",
-        false,
+        {
+         "bool": false
+        },
         "$date:-9",
         {
          "int": "9"
@@ -6652,7 +6668,9 @@
         "-",
         "Socio",
         "12,00",
-        true,
+        {
+         "bool": true
+        },
         "$date:-4",
         {
          "int": "4"
@@ -6694,7 +6712,9 @@
         "3470001111",
         "Tutore",
         "13,00",
-        false,
+        {
+         "bool": false
+        },
         "$date:-9",
         {
          "int": "9"
@@ -7370,7 +7390,9 @@
         "-",
         "Socio",
         "12,00",
-        true,
+        {
+         "bool": true
+        },
         "$date:-4",
         {
          "int": "4"
@@ -7412,7 +7434,9 @@
         "3470001111",
         "Tutore",
         "13,00",
-        false,
+        {
+         "bool": false
+        },
         "$date:-9",
         {
          "int": "9"

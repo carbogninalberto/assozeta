@@ -1142,7 +1142,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH profile/update/subscription/template | HTML outside the prettify subset in regulation/demand/section text | `dto/profile_template.go:256` (`bs4prettify/prettify.go`) | B | The editor's own output is in the subset. Templates saved by older editors (comments, unquoted attributes, stray `&`) get resent on every save from `routes/association/Members/subscription/Template.svelte:105-110`. legacy: yes. Cost: expensive (html.parser recovery). |
-| same | section name outside the upper-case subset (ß, ligatures) | `dto/profile_template.go:105` | B | Typed by the user, but rare. Cost: cheap. |
+| same | section name outside the upper-case subset (ß, ligatures) | `dto/profile_template.go` (`ProfileTemplateUpper`) | B (**ported** in t2docs) | `str.upper()` of every code point comes from a table generated from CPython 3.13.16 (SpecialCasing included); lone surrogates stay as they are. |
 | same | float strings with whitespace/underscores/non-ASCII digits, >15-digit ints, overflow | `dto/profile_template.go:337-368` | B | The UI `parseFloat`s fees (`Template.svelte:83-94`). |
 | same | non-string logo, container in text/flag field, NUL/surrogates, multipart | `dto/profile_template.go:135,210-221` | B | The UI sends the association object as JSON. legacy: low. |
 | same | logo/avatar not decodable (TIFF/AVIF) | image processor | B | Upload inputs are limited to png/jpg elsewhere (`routes/profile/sections/Account.svelte:239`). legacy: yes (old stored logos). Cost: medium. |

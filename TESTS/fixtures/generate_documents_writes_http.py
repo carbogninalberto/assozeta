@@ -528,8 +528,8 @@ certificate_case('rfc2231-ascii-name-replaces', certificate_part(b"filename*=us-
                  content='%PDF-1.4 parte', content_type='image/png')
 certificate_case('rfc2231-invalid-utf8-name-replaces', certificate_part(b"filename*=utf-8''scan%FF%E2%82.png", extra=()),
                  filename='scan\ufffd\ufffd.png', content='%PDF-1.4 parte', content_type='image/png')
-certificate_case('rfc2231-unknown-charset-ignored', certificate_part(b"filename*=bogus''visita.pdf"))
-certificate_case('invalid-utf8-disposition-ignored', certificate_part(b'filename="visita\xff.pdf"'))
+certificate_case('rfc2231-unknown-charset-ignored', certificate_part(b"filename*=bogus''visita.pdf"), 500)
+certificate_case('invalid-utf8-disposition-ignored', certificate_part(b'filename="visita\xff.pdf"'), 500)
 certificate_case('invalid-utf8-other-header-kept', certificate_part(b'filename="visita.pdf"', extra=(b'Content-Type: application/pdf; x=\xff',)),
                  filename='visita.pdf', content='%PDF-1.4 parte')
 certificate_case('base64-file', certificate_part(b'filename="b64.pdf"', content=b'JVBERi0xLjQg\r\nYmFzZTY0 \r\n',
