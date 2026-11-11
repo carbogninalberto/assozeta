@@ -114,3 +114,8 @@ body).
   fails Go on the first message with an apostrophe — CAUGHT.
 - `go test ./internal/emailrender` (golden renders, palette, separators, refusals) and `service/email_render_routes_test.go`
   (commit before publish, kept invitation without association, refusals write nothing).
+
+## Ported in taildocs
+
+`collaborators/add` with a NUL in the e-mail answers the validation error (400); a lone surrogate answers the 500 page, as
+Django does. Permission floats whose repr uses an exponent, and `-0.0`, are still refused.

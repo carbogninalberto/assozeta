@@ -821,7 +821,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### email-render-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST collaborators/add | permission floats with exponent / `-0.0`; NUL or lone surrogates in e-mail | `BE_GO/internal/service/email_render_routes.go:128,166,256` | B | `routes/connectedCollaborators/ConnectedCollaborators.svelte:36-43` sends the permission list built by the UI (no such floats). legacy: no; cheap. |
+| POST collaborators/add | permission floats with exponent / `-0.0`; NUL or lone surrogates in e-mail | `BE_GO/internal/service/email_render_routes.go:128,166,256` | B (NUL in the e-mail **ported** in taildocs: the 400 validation error; a lone surrogate is the 500 page in Django too, case added. Permission floats with exponent / `-0.0` are still open: the view's second `save()` logs an update entry with the number text PostgreSQL's jsonb hands back, not ported yet) | `routes/connectedCollaborators/ConnectedCollaborators.svelte:36-43` sends the permission list built by the UI (no such floats). legacy: no; cheap. |
 | POST invoice/<uid>/send | payment date before year 1000 | `service/email_render_routes.go:434` (`emailrender.ErrUnsupported`) | B | Needs a mistyped date; unusual data. legacy: possible. Stays: `strftime('%Y')` pads such years differently per platform. |
 | all | non-English `Accept-Language` | — | n/a | Not a refusal (rendered correctly; test harness only). |
 
