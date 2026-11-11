@@ -154,9 +154,9 @@ func (y *ymd) couldBeDay(value decimal) bool {
 	}
 }
 
-// resolve is _ymd.resolve_ymd(yearfirst=False, dayfirst=dayFirst); false is
-// the ValueError for more than three values.
-func (y *ymd) resolve(dayFirst bool) (year, month, day *big.Int, ok bool) {
+// resolve is _ymd.resolve_ymd(yearfirst=yearFirst, dayfirst=dayFirst); false
+// is the ValueError for more than three values.
+func (y *ymd) resolve(yearFirst, dayFirst bool) (year, month, day *big.Int, ok bool) {
 	v := y.values
 	n := len(v)
 	labelled := 0
@@ -227,7 +227,7 @@ func (y *ymd) resolve(dayFirst bool) (year, month, day *big.Int, ok bool) {
 				month, day, year = v[0], v[1], v[2]
 			}
 		case 1:
-			if gt31(v[0]) {
+			if gt31(v[0]) || (yearFirst && !gt31(v[2])) {
 				year, month, day = v[0], v[1], v[2]
 			} else {
 				day, month, year = v[0], v[1], v[2]
@@ -240,7 +240,7 @@ func (y *ymd) resolve(dayFirst bool) (year, month, day *big.Int, ok bool) {
 			}
 		default:
 			switch {
-			case gt31(v[0]) || y.yearIdx == 0:
+			case gt31(v[0]) || y.yearIdx == 0 || (yearFirst && le12(v[1]) && !gt31(v[2])):
 				if dayFirst && le12(v[2]) {
 					year, day, month = v[0], v[1], v[2]
 				} else {
@@ -258,11 +258,12 @@ func (y *ymd) resolve(dayFirst bool) (year, month, day *big.Int, ok bool) {
 
 // parser is one run of parser._parse.
 type parser struct {
-	pivot    int64
-	dayFirst bool
-	res      parsed
-	ymd      ymd
-	raised   *Error // an exception _parse does not catch
+	pivot     int64
+	dayFirst  bool
+	yearFirst bool
+	res       parsed
+	ymd       ymd
+	raised    *Error // an exception _parse does not catch
 }
 
 // convertYear is parserinfo.convertyear.
@@ -429,7 +430,7 @@ func (p *parser) parse(text string) bool {
 			return false
 		}
 	}
-	year, month, day, ok := p.ymd.resolve(p.dayFirst)
+	year, month, day, ok := p.ymd.resolve(p.yearFirst, p.dayFirst)
 	if !ok {
 		return false
 	}

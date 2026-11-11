@@ -58,8 +58,9 @@ func TestSubscriptionMiscTaxCodeInputs(t *testing.T) {
 		{person(domain.RequestField{Name: "sex", Value: json.Number("1")}), domain.ErrSubscriptionMiscServer},
 		{person(domain.RequestField{Name: "sex", Value: "X"}), ErrSubscriptionMiscMissingData},
 		{person(domain.RequestField{Name: "last_name", Value: json.Number("5")}), ErrSubscriptionMiscInvalidData},
-		{person(domain.RequestField{Name: "last_name", Value: "王"}), domain.ErrSubscriptionMiscNotPorted},
-		{person(domain.RequestField{Name: "born_date", Value: "10 maggio 1990"}), domain.ErrSubscriptionMiscNotPorted},
+		{person(domain.RequestField{Name: "last_name", Value: "王"}), nil},
+		{person(domain.RequestField{Name: "born_date", Value: "10 maggio 1990"}), ErrSubscriptionMiscInvalidData},
+		{person(domain.RequestField{Name: "born_city", Value: "Roma\xff"}), domain.ErrSubscriptionMiscNotPorted},
 		{[]any{"Rossi"}, domain.ErrSubscriptionMiscServer},
 	} {
 		if _, err := misc.TaxCode(item.body); !errors.Is(err, item.want) {

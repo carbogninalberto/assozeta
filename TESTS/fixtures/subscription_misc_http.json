@@ -1921,6 +1921,210 @@
    }
   },
   {
+   "name": "subscription-misc-tax-cjk-last-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "MZDMRA90E10H501S"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "毛泽东",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-cyrillic-first-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSRIU90E10H501Q"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Юрий",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-entity-last-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "R&amp;ssi &eacute;",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-numeric-reference-first-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSAXX90E10H501I"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "&#x41;&#66;&#1114112;",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-surrogate-city",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "raw_body": "{\"last_name\": \"Rossi\", \"first_name\": \"Mario\", \"sex\": \"M\", \"born_date\": \"10/05/1990\", \"born_city\": \"Roma\\ud800\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-misc-tax-combining-run",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Marí́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́o",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-kana-city",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "ローマ"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-month-name-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "May 10, 1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-month-first-year-first-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90H05H501Z"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "june-5-1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-iso-time-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "1990-05-10T10:00:00Z",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-italian-month-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10 maggio 1990",
+    "born_city": "Roma"
+   }
+  },
+  {
    "name": "subscription-misc-tax-list-body",
    "actor": "anonymous",
    "method": "POST",
