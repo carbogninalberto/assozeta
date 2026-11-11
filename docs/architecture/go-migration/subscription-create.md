@@ -141,8 +141,9 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   back) is stored at `<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png` (the subscription/sign upload, shared; a storage
   failure is the 503 `signature_storage` body) and `save(update_fields=[signature_url, signature_storage_key])` writes the name and
   the public URL (one update entry; the create entry was written without them). A later failure deletes the stored object.
-- `new_user_account.new_member` true: `new_member_info['email']` (missing: 500) names the user create_subscription continues with
-  (the first live user with that exact e-mail by key); without one `UserSerializer(raise_exception)` (400 field errors) and
+- `new_user_account.new_member` true: `new_member_info['email']` (missing: 500) is checked for an account:
+  one with that exact e-mail links nothing (the rows stay with the request's user, as without `new_member`, and no account or
+  welcome e-mail is created); without one `UserSerializer(raise_exception)` (400 field errors) and
   `create_user` with a `token_hex(10)` username (create entry, indexed through the actor), then `first_name[:3] + last_name[:3]` plus 8
   random upper-case characters and `set_password` (the username update entry; the password is not audited). That user owns the
   associate (and tutor), the signature, the payment and the subscription; the membership dates follow its season settings; it gets

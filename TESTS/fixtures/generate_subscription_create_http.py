@@ -606,8 +606,8 @@ quick('owner', 'quick_fallback', 'Fabio Ripiego', plan='nessuno',
 # base64.b64decode(validate=True) (invalid: 400 'Firma non valida.', rolled back) is stored at
 # '<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png' and save(update_fields=[signature_url, signature_storage_key])
 # writes the name and the public URL (update entry).
-# new_user_account.new_member: the live user with new_member_info's e-mail (first by key) becomes create_subscription's
-# user; without one UserSerializer(raise_exception) creates the account (create_user with a token_hex username: create
+# new_user_account.new_member: an e-mail that already has an account links nothing (the request's user owns the rows, as
+# without new_member); without one UserSerializer(raise_exception) creates the account (create_user with a token_hex username: create
 # entry; then first_name[:3] + last_name[:3] + 8 random upper-case characters and set_password: the username update
 # entry) and the welcome e-mail with the password is queued on commit before the other tasks. That user owns the
 # associate, the payment, the signature and the subscription and gets the notification; an athlete user also queues
@@ -717,7 +717,8 @@ add('new-member-account', 'owner', 200, SUCCESS(25.0),
 known_member = person('Elsa', 'Esistente', 'SSTLSE90C41H501K')
 add('new-member-existing-email', 'owner', 200, SUCCESS(25.0),
     body=request(known_member, account={'new_member': True, 'new_member_info': {'first_name': 'X', 'last_name': 'Y', 'email': ATHLETE_EMAIL}}),
-    effect=member_effect('Elsa Esistente', known_member, member=IDS['athlete'], member_label='athlete'))
+    effect=success('owner', 'Elsa Esistente', associate=created_associate(known_member), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
 
 # --- The public forms -------------------------------------------------------------------------------------
 # An anonymous request is attributed to the user named by data['sport_association'] (User.objects.get(username=...): a
@@ -757,6 +758,14 @@ add('anonymous-form-new-account', 'anonymous', 200, SUCCESS(25.0),
                                    'last_name': 'Registrato', 'phone': None},
                          signature='https://firme.example.test/remo.png'))
 
+known_anonymous = person('Ada', 'Anonima', 'DANNDA90C41H501K')
+add('anonymous-form-existing-email', 'anonymous', 200, SUCCESS(25.0),
+    body=request(known_anonymous, sport_association=OWNER_NAME, **FORM,
+                 account={'new_member': True, 'new_member_info': {'first_name': 'Ada', 'last_name': 'Anonima', 'phone': None,
+                                                                  'email': ATHLETE_EMAIL}}),
+    effect=success('anonymous', 'Ada Anonima', associate=created_associate(known_anonymous), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+
 add('athlete-form-unknown-username-server-error', 'athlete', 500, SERVER,
     body=request(person('Tina', 'Atleta', 'TLTTNI90C41H501K'), sport_association='nessuno'))
 add('athlete-form-athlete-username-server-error', 'athlete', 500, SERVER,
@@ -767,7 +776,7 @@ add('athlete-form-invalid-fields', 'athlete', 400, {'sex': ['"X" is not a valid 
     body=request(person('Tina', 'Atleta', 'TLTTNI90C41H501K', sex='X'), sport_association=OWNER_NAME, **FORM))
 athlete_form = person('Tina', 'Atleta', 'TLTTNI90C41H501K')
 add('athlete-form', 'athlete', 200, SUCCESS(25.0), body=request(athlete_form, sport_association=OWNER_NAME, **FORM),
-    effect=member_effect('Tina Atleta', athlete_form, member=IDS['athlete'], member_label='athlete', actor='athlete', broadcast=False))
+    effect=member_effect('Tina Atleta', athlete_form, member=IDS['athlete'], member_label='athlete', actor='athlete'))
 # A minor with a tutor: both belong to the athlete.
 minor_form = person('Mino', 'Minore', 'MNRMNI15C01H501K', born='01/03/2015', is_minor=True)
 tutor_form = person('Tea', 'Tutrice', 'TTRTEA80C41H501K', born='01/03/1980', sex='f')
@@ -1033,6 +1042,13 @@ owner_child = person('Olmo', 'Famiglia', 'FMGLMO11A01H501J')
 add('family-wizard-owner', 'owner', 200, FAMILY_SUCCESS,
     body=family_body([family_entry(owner_child)], sport_association=OWNER_NAME, type='altro'),
     effect=family_effect('owner', [owner_child], through_actor=(OWN, 'actor.sport_association')))
+
+# An entry whose member e-mail already has an account is created with the owner, like one without new_member.
+linked_child = person('Elio', 'Famiglia', 'FMGLEI12A01H501M')
+add('family-wizard-owner-existing-email', 'owner', 200, FAMILY_SUCCESS,
+    body=family_body([family_entry(linked_child, new_user_account={'new_member': True, 'new_member_info': {
+        'first_name': 'Elio', 'last_name': 'Famiglia', 'phone': None, 'email': ATHLETE_EMAIL}})], sport_association=OWNER_NAME),
+    effect=family_effect('owner', [linked_child], through_actor=(OWN, 'actor.sport_association')))
 
 # --- A preregistration that renews a subscription ------------------------------------------------------------
 # data['preregistration'] is True with a subscription_id: fill_data_preregisration reads the subscription in the
