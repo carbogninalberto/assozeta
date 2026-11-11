@@ -63,7 +63,8 @@ func subscriptionCreateTokenHex(n int) (string, error) {
 }
 
 // newMember is `new_user_account.is_valid() and new_user_account.save().new_member`:
-// the user with new_member_info's e-mail, else a new account (nil: request.user).
+// a new account for new_member_info; an e-mail that already has an account links
+// nothing (nil: request.user, like a registration without new_member).
 func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.SubscriptionCreateTransaction, data domain.RequestObject,
 	settings *domain.SubscriptionCreateSettings, request SubscriptionCreateRequest) (*subscriptionCreateMember, error) {
 	accountValue, _ := data.Lookup("new_user_account")
@@ -107,7 +108,7 @@ func (s *SubscriptionCreates) newMember(ctx context.Context, tx domain.Subscript
 		return nil, err
 	}
 	if existing != nil {
-		return &subscriptionCreateMember{member: *existing}, nil
+		return nil, nil
 	}
 	if s.accounts == nil {
 		return nil, domain.ErrSubscriptionCreateNotPorted

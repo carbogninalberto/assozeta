@@ -1753,88 +1753,6 @@
    }
   },
   {
-   "name": "subscription-renew-renew-user-null",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/renew",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "status": "error",
-    "msg": "argument of type 'NoneType' is not iterable"
-   },
-   "effect": null,
-   "body": {
-    "new_user_account": {
-     "new_member": false
-    },
-    "plan_id": null,
-    "membership_plan_id": null,
-    "associate_data": {
-     "first_name": "Rita",
-     "last_name": "Rossa",
-     "tax_code": "RSSRTI90C41H501K",
-     "born_date": "15/03/1990",
-     "sex": "M"
-    },
-    "signature": {
-     "there_is_signature": false,
-     "data": ""
-    },
-    "medical_certificate": {
-     "medical_id": null
-    },
-    "custom_data": {},
-    "additional_fields": {},
-    "courses": [],
-    "user": null
-   },
-   "setup": {
-    "association": {
-     "multiple_membership_fee": false
-    }
-   }
-  },
-  {
-   "name": "subscription-renew-renew-user-email-in-text",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/renew",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "status": "error",
-    "msg": "string indices must be integers, not 'str'"
-   },
-   "effect": null,
-   "body": {
-    "new_user_account": {
-     "new_member": false
-    },
-    "plan_id": null,
-    "membership_plan_id": null,
-    "associate_data": {
-     "first_name": "Rita",
-     "last_name": "Rossa",
-     "tax_code": "RSSRTI90C41H501K",
-     "born_date": "15/03/1990",
-     "sex": "M"
-    },
-    "signature": {
-     "there_is_signature": false,
-     "data": ""
-    },
-    "medical_certificate": {
-     "medical_id": null
-    },
-    "custom_data": {},
-    "additional_fields": {},
-    "courses": [],
-    "user": "email"
-   },
-   "setup": null
-  },
-  {
    "name": "subscription-renew-renew-tags-none",
    "actor": "owner",
    "method": "POST",
@@ -2258,7 +2176,7 @@
    "setup": null
   },
   {
-   "name": "subscription-renew-renew-new-associate-id-and-user",
+   "name": "subscription-renew-renew-new-associate-id-user-email-not-linked",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/subscription/renew",
@@ -2315,7 +2233,7 @@
       },
       "columns": {
        "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-       "user_id": "a1000000-0000-4000-8000-000000945023",
+       "user_id": "$owner",
        "payment_id": "$fresh_payment",
        "type": 2,
        "role": 1,
@@ -2431,22 +2349,6 @@
       "action": 0,
       "ref": "$fresh_subscription_membership",
       "changes": {},
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "direct"
-      ],
-      "app": "application"
-     },
-     {
-      "model": "subscription",
-      "action": 1,
-      "ref": "$fresh_subscription",
-      "changes": {
-       "user": [
-        "a1000000-0000-4000-8000-000000700001",
-        "a1000000-0000-4000-8000-000000945023"
-       ]
-      },
       "index": [
        "a1000000-0000-4000-8000-000000701001",
        "direct"

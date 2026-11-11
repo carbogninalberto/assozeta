@@ -8648,7 +8648,7 @@
       "born_date": "1990-03-15",
       "sex": "M",
       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "user_id": "a1000000-0000-4000-8000-000000700004"
+      "user_id": "a1000000-0000-4000-8000-000000700001"
      }
     },
     "tutor": null,
@@ -8680,7 +8680,6 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "user_id": "a1000000-0000-4000-8000-000000700004",
      "subscription_number": "528"
     },
     "membership": {
@@ -8691,7 +8690,7 @@
      "membership_number": "528"
     },
     "medical": null,
-    "broadcast_created": true,
+    "broadcast_created": false,
     "audit": [
      {
       "model": "associate",
@@ -8715,7 +8714,7 @@
       "changes": {
        "user": [
         "None",
-        "a1000000-0000-4000-8000-000000700004"
+        "a1000000-0000-4000-8000-000000700001"
        ]
       },
       "index": [
@@ -8757,28 +8756,6 @@
        "a1000000-0000-4000-8000-000000701001",
        "direct"
       ]
-     },
-     {
-      "model": "notificationsbroadcast",
-      "action": 0,
-      "ref": "notificationsbroadcast",
-      "changes": {},
-      "app": "notifications",
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ]
-     },
-     {
-      "model": "usernotificationsbroadcast",
-      "action": 0,
-      "ref": "usernotificationsbroadcast",
-      "changes": {},
-      "app": "notifications",
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ]
      }
     ],
     "celery": [
@@ -8809,55 +8786,12 @@
        "$authorization"
       ],
       "kwargs": []
-     },
-     {
-      "task": "send_email_template",
-      "args": [],
-      "kwargs": [
-       [
-        "recipient_list",
-        [
-         "message-reads-700001@example.test"
-        ]
-       ],
-       [
-        "subject",
-        "[$denomination] Ricordati di approvare l'iscrizione di Elsa Esistente"
-       ],
-       [
-        "template",
-        "email/account/email_new_subscription.html"
-       ],
-       [
-        "data",
-        {
-         "athlete_first_name": "Elsa",
-         "athlete_last_name": "Esistente",
-         "sport_association": {
-          "denomination": "$denomination"
-         },
-         "app_host": "$app_url",
-         "settings": {
-          "WHITELABEL_NAME": "$whitelabel_name",
-          "IS_WHITELABEL": "$is_whitelabel"
-         }
-        }
-       ],
-       [
-        "sport_association_id",
-        {
-         "uuid": "a1000000-0000-4000-8000-000000701001"
-        }
-       ]
-      ]
      }
     ],
     "notification": {
      "msg": "Nuova Iscrizione aggiunta per Elsa Esistente.",
-     "association": "a1000000-0000-4000-8000-000000701001",
-     "user": "athlete"
-    },
-    "member": "a1000000-0000-4000-8000-000000700004"
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
    },
    "body": {
     "new_user_account": {
@@ -9599,6 +9533,209 @@
    "setup": null
   },
   {
+   "name": "subscription-create-anonymous-form-existing-email",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "anonymous",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Ada",
+      "last_name": "Anonima",
+      "tax_code": "DANNDA90C41H501K",
+      "born_date": "1990-03-15",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "531"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "531"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Ada Anonima.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": true,
+     "new_member_info": {
+      "first_name": "Ada",
+      "last_name": "Anonima",
+      "phone": null,
+      "email": "message-reads-700004@example.test"
+     }
+    },
+    "associate_data": {
+     "first_name": "Ada",
+     "last_name": "Anonima",
+     "tax_code": "DANNDA90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "sport_association": "message-reads-700001",
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": null
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-create-athlete-form-unknown-username-server-error",
    "actor": "athlete",
    "method": "POST",
@@ -9796,17 +9933,17 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "user_id": "a1000000-0000-4000-8000-000000700004",
-     "subscription_number": "531"
+     "subscription_number": "532"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "531"
+     "membership_number": "532"
     },
     "medical": null,
-    "broadcast_created": false,
+    "broadcast_created": true,
     "audit": [
      {
       "model": "associate",
@@ -9872,6 +10009,22 @@
        "a1000000-0000-4000-8000-000000701001",
        "direct"
       ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "notificationsbroadcast",
+      "changes": {},
+      "app": "notifications",
+      "index": null
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "usernotificationsbroadcast",
+      "changes": {},
+      "app": "notifications",
+      "index": null
      }
     ],
     "celery": [
@@ -10049,14 +10202,14 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "user_id": "a1000000-0000-4000-8000-000000700004",
-     "subscription_number": "532"
+     "subscription_number": "533"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "532"
+     "membership_number": "533"
     },
     "medical": null,
     "broadcast_created": false,
@@ -10337,14 +10490,14 @@
      "start_date": "$next_season_start",
      "end_date": "$next_season_end",
      "creation_date": "$next_season_created",
-     "subscription_number": "533"
+     "subscription_number": "534"
     },
     "membership": {
      "membership_type": "$next_membership_type",
      "start_date": "$next_season_start",
      "end_date": "$next_season_end",
      "price": null,
-     "membership_number": "533"
+     "membership_number": "534"
     },
     "medical": null,
     "broadcast_created": false,
@@ -10569,14 +10722,14 @@
      "start_date": "$next_season_start",
      "end_date": "$next_season_end",
      "creation_date": "$next_season_created",
-     "subscription_number": "534"
+     "subscription_number": "535"
     },
     "membership": {
      "membership_type": "$next_membership_type",
      "start_date": "$next_season_start",
      "end_date": "$next_season_end",
      "price": null,
-     "membership_number": "534"
+     "membership_number": "535"
     },
     "medical": null,
     "broadcast_created": false,
@@ -10776,14 +10929,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "535"
+     "subscription_number": "536"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "535"
+     "membership_number": "536"
     },
     "medical": null,
     "broadcast_created": false,
@@ -10964,14 +11117,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "536"
+     "subscription_number": "537"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "536"
+     "membership_number": "537"
     },
     "medical": null,
     "broadcast_created": false,
@@ -11156,14 +11309,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "537"
+     "subscription_number": "538"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "537"
+     "membership_number": "538"
     },
     "medical": null,
     "broadcast_created": false,
@@ -11348,7 +11501,7 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "538",
+     "subscription_number": "539",
      "medical_id": "a1000000-0000-4000-8000-000000939006"
     },
     "membership": {
@@ -11356,7 +11509,7 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "538"
+     "membership_number": "539"
     },
     "medical": {
      "label": "own_subscription",
@@ -11571,14 +11724,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "539"
+     "subscription_number": "540"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "539"
+     "membership_number": "540"
     },
     "medical": null,
     "broadcast_created": false,
@@ -11769,7 +11922,7 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "540",
+     "subscription_number": "541",
      "medical_id": "a1000000-0000-4000-8000-000000939008"
     },
     "membership": {
@@ -11777,7 +11930,7 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "540"
+     "membership_number": "541"
     },
     "medical": {
      "label": "public_upload",
@@ -12002,14 +12155,14 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "user_id": "a1000000-0000-4000-8000-000000700004",
-     "subscription_number": "541"
+     "subscription_number": "542"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "541"
+     "membership_number": "542"
     },
     "medical": null,
     "broadcast_created": false,
@@ -12244,7 +12397,7 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "user_id": "a1000000-0000-4000-8000-000000700004",
-     "subscription_number": "542",
+     "subscription_number": "543",
      "medical_id": "a1000000-0000-4000-8000-000000939007"
     },
     "membership": {
@@ -12252,7 +12405,7 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "542"
+     "membership_number": "543"
     },
     "medical": {
      "label": "athlete_account",
@@ -12511,14 +12664,14 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "user_id": "a1000000-0000-4000-8000-000000700004",
-     "subscription_number": "543"
+     "subscription_number": "544"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "543"
+     "membership_number": "544"
     },
     "medical": null,
     "broadcast_created": false,
@@ -13505,7 +13658,7 @@
        "subscription_type": "",
        "start_date": "$season_start",
        "end_date": "$season_end",
-       "subscription_number": "544",
+       "subscription_number": "545",
        "custom_data": {},
        "additional_fields": null
       }
@@ -13524,7 +13677,7 @@
        "start_date": "$season_start",
        "end_date": "$season_end",
        "price": null,
-       "membership_number": "544"
+       "membership_number": "545"
       }
      }
     ],
@@ -13751,7 +13904,7 @@
        "subscription_type": "",
        "start_date": "$season_start",
        "end_date": "$season_end",
-       "subscription_number": "545",
+       "subscription_number": "546",
        "custom_data": {},
        "additional_fields": null
       }
@@ -13770,7 +13923,7 @@
        "start_date": "$season_start",
        "end_date": "$season_end",
        "price": "0.00",
-       "membership_number": "545"
+       "membership_number": "546"
       }
      }
     ],
@@ -14044,7 +14197,7 @@
        "subscription_type": "",
        "start_date": "$season_start",
        "end_date": "$season_end",
-       "subscription_number": "546",
+       "subscription_number": "547",
        "custom_data": {},
        "additional_fields": null
       }
@@ -14063,7 +14216,7 @@
        "start_date": "$season_start",
        "end_date": "$season_end",
        "price": null,
-       "membership_number": "546"
+       "membership_number": "547"
       }
      },
      {
@@ -14123,7 +14276,7 @@
        "subscription_type": "",
        "start_date": "$season_start",
        "end_date": "$season_end",
-       "subscription_number": "547",
+       "subscription_number": "548",
        "custom_data": {},
        "additional_fields": null
       }
@@ -14142,7 +14295,7 @@
        "start_date": "$season_start",
        "end_date": "$season_end",
        "price": null,
-       "membership_number": "547"
+       "membership_number": "548"
       }
      }
     ],
@@ -14571,7 +14724,7 @@
        "subscription_type": "",
        "start_date": "$season_start",
        "end_date": "$season_end",
-       "subscription_number": "548",
+       "subscription_number": "549",
        "custom_data": {},
        "additional_fields": null
       }
@@ -14590,7 +14743,7 @@
        "start_date": "$season_start",
        "end_date": "$season_end",
        "price": null,
-       "membership_number": "548"
+       "membership_number": "549"
       }
      }
     ],
@@ -14778,6 +14931,301 @@
     ],
     "sport_association": "message-reads-700001",
     "type": "altro"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-family-wizard-owner-existing-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "subs": [],
+    "payments": "$payments"
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "family",
+      "bind": "$family",
+      "match": {
+       "type": "family"
+      },
+      "columns": {}
+     },
+     {
+      "label": "associate",
+      "bind": "$associate_0",
+      "match": {
+       "first_name": "Elio",
+       "last_name": "Famiglia"
+      },
+      "columns": {
+       "tax_code": "FMGLEI12A01H501M",
+       "born_date": "1990-03-15",
+       "sex": "M",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "family_id": "$family"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$payment_0",
+      "match": {
+       "associate_id": "$associate_0"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000930026",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$subscription_0",
+      "match": {
+       "associate_id": "$associate_0"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$payment_0",
+       "type": 2,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "start_date": "$season_start",
+       "end_date": "$season_end",
+       "subscription_number": "550",
+       "custom_data": {},
+       "additional_fields": null
+      }
+     },
+     {
+      "label": "membership",
+      "bind": "$subscription_0_membership",
+      "match": {
+       "subscription_id": "$subscription_0"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "associate_id": "$associate_0",
+       "payment_id": "$payment_0",
+       "membership_type": "$default_membership_type",
+       "start_date": "$season_start",
+       "end_date": "$season_end",
+       "price": null,
+       "membership_number": "550"
+      }
+     }
+    ],
+    "changed": {},
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "family",
+      "action": 0,
+      "ref": "$family",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "$associate_0",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "$associate_0",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$payment_0",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$subscription_0",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "$subscription_0_membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$subscription_0"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription_0",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Elio Famiglia.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ],
+    "payments": [
+     "$payment_0"
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Capo",
+     "last_name": "Famiglia",
+     "tax_code": "FMGCPA80A01H501F",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": null
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null,
+    "is_family_wizard": true,
+    "multiple_entry_form_data": [
+     {
+      "new_user_account": {
+       "new_member": true,
+       "new_member_info": {
+        "first_name": "Elio",
+        "last_name": "Famiglia",
+        "phone": null,
+        "email": "message-reads-700004@example.test"
+       }
+      },
+      "associate_data": {
+       "first_name": "Elio",
+       "last_name": "Famiglia",
+       "tax_code": "FMGLEI12A01H501M",
+       "born_date": "15/03/1990",
+       "sex": "M"
+      },
+      "associate_tutor_data": null,
+      "signature": {
+       "there_is_signature": false,
+       "data": ""
+      },
+      "plan_id": null,
+      "membership_plan_id": null,
+      "custom_data": {},
+      "additional_fields": null,
+      "medical_certificate": {
+       "medical_id": null,
+       "certificate_expring_date": null
+      },
+      "valid": true
+     }
+    ],
+    "sport_association": "message-reads-700001"
    },
    "setup": null
   },
@@ -15390,7 +15838,7 @@
      "start_date": "$next_season_start",
      "end_date": "$next_season_end",
      "user_id": "a1000000-0000-4000-8000-000000700004",
-     "subscription_number": "549",
+     "subscription_number": "551",
      "creation_date": "$next_season_created"
     },
     "membership": {
@@ -15398,7 +15846,7 @@
      "start_date": "$next_season_start",
      "end_date": "$next_season_end",
      "price": null,
-     "membership_number": "549"
+     "membership_number": "551"
     },
     "medical": null,
     "broadcast_created": false,
@@ -15637,7 +16085,7 @@
        "subscription_type": "",
        "start_date": "$season_start",
        "end_date": "$season_end",
-       "subscription_number": "550",
+       "subscription_number": "552",
        "custom_data": {
         "city": "Milano",
         "nota": "propria",
@@ -15666,7 +16114,7 @@
        "start_date": "$season_start",
        "end_date": "$season_end",
        "price": null,
-       "membership_number": "550"
+       "membership_number": "552"
       }
      }
     ],
@@ -16134,14 +16582,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "551"
+     "subscription_number": "553"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "551"
+     "membership_number": "553"
     },
     "medical": null,
     "broadcast_created": false,
@@ -16844,14 +17292,14 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "user_id": "$new_user",
-     "subscription_number": "552"
+     "subscription_number": "554"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "552"
+     "membership_number": "554"
     },
     "medical": null,
     "broadcast_created": true,
@@ -17097,14 +17545,14 @@
      "start_date": "$season_start",
      "end_date": "$season_end",
      "user_id": "$new_user",
-     "subscription_number": "553"
+     "subscription_number": "555"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "553"
+     "membership_number": "555"
     },
     "medical": null,
     "broadcast_created": true,
@@ -17512,14 +17960,14 @@
      "subscription_type": "",
      "start_date": "$season_start",
      "end_date": "$season_end",
-     "subscription_number": "554"
+     "subscription_number": "556"
     },
     "membership": {
      "membership_type": "$default_membership_type",
      "start_date": "$season_start",
      "end_date": "$season_end",
      "price": null,
-     "membership_number": "554"
+     "membership_number": "556"
     },
     "medical": null,
     "broadcast_created": false,

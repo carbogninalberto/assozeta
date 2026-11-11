@@ -9,8 +9,8 @@ the row by id, or the association's row with the same tax code, updated with
 deleted=False; an unknown id is created with that key), then the association's
 unpaid subscription payments of an associate with the same first name, last
 name and tax code (iexact) created between the new subscription's start and end
-dates are deleted (QuerySet.delete(), the new payment excluded); data['user']['email']
-names a user that becomes the subscription's user (save()); data['tags'] (ids or
+dates are deleted (QuerySet.delete(), the new payment excluded); data['user'] is not read (the renewed
+subscription keeps the account it was created with); data['tags'] (ids or
 {'tag_id'} dicts) of the association are set on the subscription; its data['courses'] are enrolled.
 APIException (serializer errors, 409) propagates; any other exception is
 400 {"status": "error", "msg": str(e)} with everything rolled back.
@@ -437,10 +437,6 @@ add('renew-membership-plan-required', 'renew', 'owner', 400, {'msg': 'Membership
     setup={'association': {'multiple_membership_fee': True}},
     body={k: v for k, v in renewal({**basic, 'type': 2}).items() if k != 'membership_plan_id'})
 # Errors after create_subscription roll everything back (no task, no notification).
-add('renew-user-null', 'renew', 'owner', 400, error("argument of type 'NoneType' is not iterable"),
-    setup={'association': {'multiple_membership_fee': False}}, body=renewal(basic, user=None))
-add('renew-user-email-in-text', 'renew', 'owner', 400, error("string indices must be integers, not 'str'"),
-    body=renewal(basic, user='email'))
 add('renew-tags-none', 'renew', 'owner', 400, error("object of type 'NoneType' has no len()"), body=renewal(basic, tags=None))
 add('renew-tag-malformed', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"), body=renewal(basic, tags=['x']))
 add('renew-tag-without-id', 'renew', 'owner', 400, error("'tag_id'"), body=renewal(basic, tags=[{'id': TAGS['tag_a']['id']}]))
@@ -473,26 +469,27 @@ add('renew-basic', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$
                   celery=tasks('$renew_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Rino Rinnovo.', 'association': OWN}]))
 
-# An associate_id no row has: the associate is created with that key. data['user']['email'] names a user, who becomes the
-# subscription's user (save(): one update entry). Tags as ids.
+# An associate_id no row has: the associate is created with that key. data['user'] is not read: the renewed subscription
+# keeps the account it was created with, whatever the body names (an e-mail of an account, a value of any other shape).
+# Tags as ids.
 fresh = {'associate_id': NEW_ID, 'first_name': 'Nadia', 'last_name': 'Nuova', 'born_date': '02/02/1992', 'sex': 'F', 'type': '2'}
 rows = [{'label': 'associate', 'bind': '$fresh_associate', 'match': {'associate_id': NEW_ID},
          'columns': {'first_name': 'Nadia', 'last_name': 'Nuova', 'born_date': '1992-02-02', 'sex': 'F', 'tax_code': None,
                      'sport_association_id': OWN, 'user_id': '$owner'}},
         new_payment('$fresh_payment', NEW_ID),
-        *subscription_rows('$fresh_subscription', NEW_ID, kind=2, payment='$fresh_payment', user=TARGET_USER['id'])]
-add('renew-new-associate-id-and-user', 'renew', 'full_collaborator', 200, {'status': 'success', 'payment_id': '$new'},
-    body=renewal(fresh, user={'email': TARGET_USER['email']}, tags=[TAGS['tag_b']['id']]),
-    effect=effect('full_collaborator', new=rows, tags=[('$fresh_subscription', 'tag_b')],
-                  audit=[entry('associate', 0, '$fresh_associate', {'user': ['None', 'None']}),
-                         entry('associate', 1, '$fresh_associate', {'user': ['None', OWNER]}),
-                         entry('payment', 0, '$fresh_payment', {'amount': ['None', '25.0']}),
-                         entry('subscription', 0, '$fresh_subscription', {'user': ['None', OWNER]}),
-                         entry('subscriptionmembership', 0, '$fresh_subscription_membership'),
-                         entry('subscription', 1, '$fresh_subscription', {'user': [OWNER, TARGET_USER['id']]}),
-                         *notification_entries('full_collaborator')],
-                  celery=tasks('$fresh_subscription'),
-                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Nadia Nuova.', 'association': OWN}]))
+        *subscription_rows('$fresh_subscription', NEW_ID, kind=2, payment='$fresh_payment')]
+for name, user_value in (('renew-new-associate-id-user-email-not-linked', {'email': TARGET_USER['email']}),):
+    add(name, 'renew', 'full_collaborator', 200, {'status': 'success', 'payment_id': '$new'},
+        body=renewal(fresh, user=user_value, tags=[TAGS['tag_b']['id']]),
+        effect=effect('full_collaborator', new=rows, tags=[('$fresh_subscription', 'tag_b')],
+                      audit=[entry('associate', 0, '$fresh_associate', {'user': ['None', 'None']}),
+                             entry('associate', 1, '$fresh_associate', {'user': ['None', OWNER]}),
+                             entry('payment', 0, '$fresh_payment', {'amount': ['None', '25.0']}),
+                             entry('subscription', 0, '$fresh_subscription', {'user': ['None', OWNER]}),
+                             entry('subscriptionmembership', 0, '$fresh_subscription_membership'),
+                             *notification_entries('full_collaborator')],
+                      celery=tasks('$fresh_subscription'),
+                      notifications=[{'msg': 'Nuova Iscrizione aggiunta per Nadia Nuova.', 'association': OWN}]))
 
 # associate_id of a row in another association with a tax code: the association's own row with that tax code (iexact) is
 # the one updated (the tax code as sent); the row named by the id is unchanged.
@@ -669,8 +666,8 @@ add('renew-athlete-duplicate', 'renew', 'athlete', 409, {'msg': 'Questa iscrizio
 # --- subscription/renew by a member account: its own subscriptions, in their association -----------------
 # _member_renewal_association: the named association must have a subscription of the requester, or of a person sharing a
 # tax code or a family with one of the requester's subscriptions, for the associate of the request (by associate_id when
-# it is a string, else by tax code); otherwise 403 'User not allowed.' before anything is written. Only an association
-# account sets the renewed subscription's account from data['user']['email'].
+# it is a string, else by tax code); otherwise 403 'User not allowed.' before anything is written. The body's `user`
+# does not choose the account of the renewed subscription.
 NOT_ALLOWED = {'detail': 'User not allowed.'}
 HERE = {'sport_association_id': OWN, 'denomination': 'Associazione'}
 

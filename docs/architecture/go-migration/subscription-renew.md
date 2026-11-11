@@ -47,8 +47,7 @@
      (iexact) are deleted. They must be created between the new subscription's start and end dates (midnight UTC), and the new
      payment is excluded. This is `QuerySet.delete()`: the Payment `pre_delete` installment cascade, SET_NULL references cleared,
      entries in reverse key order indexed from the changes.
-  2. When `'email' in data['user']` (dict key, list item or substring; other types are a `TypeError`), the first live user with
-     that e-mail becomes the subscription's user: `save()` writes one update entry when it changes.
+  2. `data['user']` is not read: the renewed subscription keeps the account it was created with.
   3. `data['tags']`: ids, or `{'tag_id'}` dicts when the first item is not a string. `Tags.objects.filter(tag_id__in=..., sport_association=...)`
      links the association's own tags with those ids; the through rows are not audited.
   4. `data['courses']` with items: each course goes through `add_course_to_subscription` inside the renewal's transaction
@@ -101,9 +100,7 @@ for the associate of the request: by `associate_data.associate_id` when it is a 
 `{"detail": "User not allowed."}` before any write, the shape the quick re-subscription already uses. Go: `renewMemberAllowed`
 and `MemberRenewable`.
 
-`data['user']['email']` sets the renewed subscription's account only for an association account (owners and collaborators
-acting as the owner, whose renewal is always in their own association); a member account's body does not choose it, and the key
-is not read at all for such a requester.
+`data['user']` does not choose the account of the renewed subscription for any requester; the key is not read.
 
 The certificate named by `medical_certificate.medical_id` follows
 [subscription-create](subscription-create.md#the-certificate-a-registration-links) with the member as requester.

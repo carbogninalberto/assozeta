@@ -46,9 +46,6 @@ type SubscriptionRenewTransaction interface {
 	RenewalPayments(ctx context.Context, association string, first, last, tax *string, start, end time.Time, except, scope *string) (ids []string, invoiced bool, err error)
 	// DeletePayments is the payments' QuerySet.delete() (signals and audit).
 	DeletePayments(ctx context.Context, ids []string, audit CourseSubscriptionAudit) error
-	// UserByEmail is User.objects.filter(email=email).first() (nil email: IS NULL).
-	UserByEmail(ctx context.Context, email *string) (*string, error)
-	SetSubscriptionUser(ctx context.Context, subscription, user string) error
 	// AddTags links the existing tags among ids to the subscription.
 	AddTags(ctx context.Context, subscription string, ids []string) error
 	// RenewAssociationOwner is SportAssociation.objects.get(sport_association_id=id).user

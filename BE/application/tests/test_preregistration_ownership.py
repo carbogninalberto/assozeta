@@ -64,6 +64,42 @@ class PreregistrationOwnershipTests(BaseAPITestCase):
                 self.assertEqual(subscription.associate.user, account)
                 self.assertEqual(subscription.payment.user, account)
 
+    def test_member_email_of_an_existing_account_is_not_linked(self):
+        existing = create_test_user(role=User.ATHLETE)
+        accounts = User.objects.count()
+        for preregistration in (False, True):
+            with self.subTest(preregistration=preregistration):
+                tax_code = f'BRBGVN90B10{uuid.uuid4().hex[:4].upper()}T'
+                body = payload(self.user.username, preregistration=preregistration, tax_code=tax_code, new_member={
+                    'first_name': 'Giovanni', 'last_name': 'Barbieri', 'phone': '3330000000', 'email': existing.email})
+                response = self.anonymous().post('/subscription/add', body, format='json')
+                self.assertEqual(response.status_code, 200, response.data)
+                subscription = self.created(tax_code)
+                self.assertNotEqual(subscription.user, existing)
+                self.assertNotEqual(subscription.associate.user, existing)
+                self.assertNotEqual(subscription.payment.user, existing)
+                self.assertEqual(User.objects.count(), accounts)
+
+    def test_logged_in_member_with_the_email_of_another_account_stays_on_its_own(self):
+        existing = create_test_user(role=User.ATHLETE)
+        member = create_test_user(role=User.ATHLETE)
+        tax_code = f'BRBGVN90B10{uuid.uuid4().hex[:4].upper()}T'
+        body = payload(self.user.username, preregistration=False, tax_code=tax_code, new_member={
+            'first_name': 'Giovanni', 'last_name': 'Barbieri', 'phone': '3330000000', 'email': existing.email})
+        response = self.as_user(member).post('/subscription/add', body, format='json')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(self.created(tax_code).user, member)
+
+    def test_association_adding_a_member_with_the_email_of_an_account_does_not_link_it(self):
+        existing = create_test_user(role=User.ATHLETE)
+        tax_code = f'BRBGVN90B10{uuid.uuid4().hex[:4].upper()}T'
+        body = payload(self.user.username, preregistration=False, tax_code=tax_code, new_member={
+            'first_name': 'Giovanni', 'last_name': 'Barbieri', 'phone': '3330000000', 'email': existing.email})
+        response = self.as_user(self.user).post('/subscription/add', body, format='json')
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(self.created(tax_code).user, self.user)
+        self.assertEqual(self.created(tax_code).associate.user, self.user)
+
     def test_preregistration_without_account_matches_a_normal_registration(self):
         owners = {}
         for preregistration in (False, True):

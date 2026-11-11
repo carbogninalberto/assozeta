@@ -260,13 +260,6 @@ def subscription_renew(request):
                 payments = payments.exclude(payment_id=fresh_sub.payment.payment_id)
             payments.order_by('creation_date').delete()
 
-            # Only the association chooses the account of the renewed subscription.
-            if requester.role == User.ASSOCIATION and 'user' in data and 'email' in data['user']:
-                user = User.objects.filter(email=data['user']['email']).first()
-                if user is not None:
-                    fresh_sub.user = user
-                    fresh_sub.save()
-
             if 'tags' in data and len(data['tags']) > 0:
                 if isinstance(data['tags'][0], str):
                     tag_ids = data['tags']
