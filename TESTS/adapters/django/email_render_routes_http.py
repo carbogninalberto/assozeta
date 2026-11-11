@@ -181,6 +181,7 @@ def assert_effect(case, before, after, source, context):
     expires = datetime.fromisoformat(invite['expiration_date'].replace('Z', '+00:00')).timestamp()
     contract.require(since - 1 <= created <= until + 1 and abs(expires - created - timedelta(days=90).total_seconds()) < 2, 'state.dates')
     audit, indexes = harness.audit_delta(contract, before, after)
+    audit = sorted(audit, key=lambda item: item['id'])
     reading = effect.get('reading')
     contract.require(len(audit) == (2 if reading else 1), 'audit.count')
     event = audit[0]

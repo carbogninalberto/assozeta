@@ -3478,7 +3478,7 @@
    "headers": {},
    "status": 400,
    "response": {
-    "error": "{'sport_association': {'denomination': [ErrorDetail(string='This field may not be blank.', code='blank')], 'tax_code': [ErrorDetail(string='Ensure this field has no more than 11 characters.', code='max_length')], 'address_cap': [ErrorDetail(string='Enter exactly 5 digits', code='invalid')], 'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'multiple_subscription_fee': [ErrorDetail(string='Must be a valid boolean.', code='invalid')], 'configuration': [ErrorDetail(string='Value must be valid JSON.', code='invalid')]}}"
+    "error": "{'sport_association': {'denomination': [ErrorDetail(string='This field may not be blank.', code='blank')], 'tax_code': [ErrorDetail(string='Ensure this field has no more than 11 characters.', code='max_length')], 'address_cap': [ErrorDetail(string='Enter exactly 5 digits', code='invalid')], 'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'multiple_subscription_fee': [ErrorDetail(string='Must be a valid boolean.', code='invalid')], 'configuration': [ErrorDetail(string='Value must be valid JSON.', code='invalid')], 'enabled_for': [ErrorDetail(string='Value must be valid JSON.', code='invalid')]}}"
    },
    "effect": null,
    "raw_body": "sport_association.denomination=&sport_association.tax_code=xxxxxxxxxxxx&sport_association.address=&sport_association.address_cap=123&sport_association.subscription_fee=abc&sport_association.multiple_subscription_fee=maybe&sport_association.configuration=%7Bx&sport_association.federation=&sport_association.enabled_for=",
@@ -3495,7 +3495,21 @@
     "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
    },
    "effect": null,
-   "raw_body": "sport_association.subscription_fee=&sport_association.multiple_subscription_fee=&sport_association.configuration=&sport_association.sport_association_id=&sport_association.membership_fee=&sport_association.address_cap=&sport_association.sport=",
+   "raw_body": "sport_association.subscription_fee=&sport_association.multiple_subscription_fee=&sport_association.sport_association_id=&sport_association.membership_fee=&sport_association.address_cap=&sport_association.sport=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-json-empty",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'configuration': [ErrorDetail(string='Value must be valid JSON.', code='invalid')], 'custom_subscription_form_data': [ErrorDetail(string='Value must be valid JSON.', code='invalid')]}}"
+   },
+   "effect": null,
+   "raw_body": "sport_association.configuration=&sport_association.custom_subscription_form_data=",
    "content_type": "application/x-www-form-urlencoded"
   },
   {

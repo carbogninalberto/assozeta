@@ -70,6 +70,13 @@ func ParseModuleNested(object domain.RequestObject, taken func(id string) (bool,
 			continue
 		}
 		if form {
+			// JSONField.get_value marks HTML input as a JSON string whatever its text: json.loads.
+			if text, isText := value.(string); isText && field.kind == nestedJSON {
+				if _, err := ParseMessageMutationsJSON([]byte(text)); err != nil {
+					errors = append(errors, DRFFieldError{Field: field.name, Codes: []string{ModuleJSON}})
+				}
+				continue
+			}
 			// Field.get_value on the parsed 'sport_association.<key>' input: an empty value
 			// of a nullable field is None (or '' when blank is allowed), of an optional
 			// one is skipped (or '' when blank is allowed); a required field keeps ''.
@@ -80,15 +87,6 @@ func ParseModuleNested(object domain.RequestObject, taken func(id string) (bool,
 					value = nil
 				case field.name == "denomination" || field.name == "tax_code":
 				default:
-					continue
-				}
-			}
-			if field.kind == nestedJSON {
-				if text, isText := value.(string); isText {
-					// JSONField.get_value marks HTML input as a JSON string: json.loads.
-					if _, err := ParseMessageMutationsJSON([]byte(text)); err != nil {
-						errors = append(errors, DRFFieldError{Field: field.name, Codes: []string{ModuleJSON}})
-					}
 					continue
 				}
 			}

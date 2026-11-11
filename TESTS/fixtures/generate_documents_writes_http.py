@@ -100,7 +100,7 @@ cases = []
 
 
 def add(name, actor, path, status, response, *, method='POST', body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        throttle=None, retry_after=None):
+        throttle=None, retry_after=None, raw_b64=None):
     """throttle: {'preload': n, 'age': seconds}: the address's upload history holds n entries of that age before the request."""
     case = {'name': f'documents-writes-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
@@ -112,6 +112,8 @@ def add(name, actor, path, status, response, *, method='POST', body=None, raw_bo
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
+    if raw_b64 is not None:
+        case['raw_b64'], case['content_type'] = raw_b64, content_type
     cases.append(case)
 
 
@@ -487,6 +489,84 @@ for label, sent, kept in (('bare', 'Rossi & Bianchi.pdf', 'Rossi & Bianchi.pdf')
         raw_body=multipart(('medical_certificate', sent, 'application/pdf', '%PDF-1.4 e'))[0], content_type=CERT_BODY[1],
         effect=effect('owner', documents=[stored(kept, '%PDF-1.4 e', 'application/pdf')], certificates=[{'document': 0, 'user': 'owner'}],
                       audit=[doc_create(0), cert_create(0)]))
+
+# Django's multipart parser reads each header line as UTF-8 (a line that is not, or that names an unknown RFC 2231 charset,
+# is skipped, and a part without a content-disposition is ignored), decodes RFC 2231 file names (continuations, utf-8 and
+# the single-byte charsets), and decodes a base64 transfer encoding (fields: whole value, kept as sent when it is not
+# base64; files: the white space stripped, a failure ends the request); other transfer encodings are ignored.
+def multipart_bytes(*parts, boundary='documentswritesboundary'):
+    """parts: (header lines as bytes, content as bytes): a multipart body for raw_b64."""
+    chunks = []
+    for lines, content in parts:
+        chunks.append(b'--' + boundary.encode() + b'\r\n' + b''.join(line + b'\r\n' for line in lines) + b'\r\n' + content + b'\r\n')
+    return (base64.b64encode(b''.join(chunks) + b'--' + boundary.encode() + b'--\r\n').decode(),
+            f'multipart/form-data; boundary={boundary}')
+
+
+def certificate_part(disposition, content=b'%PDF-1.4 parte', extra=(b'Content-Type: application/pdf',)):
+    return ([b'Content-Disposition: form-data; name="medical_certificate"; ' + disposition, *extra], content)
+
+
+def certificate_case(name, part, status=200, response=None, *, filename=None, content=None, content_type='application/pdf'):
+    raw_b64, kind = multipart_bytes(part)
+    if filename is None:
+        add('certificate-' + name, 'owner', CERT, status, response or SERVER, raw_b64=raw_b64, content_type=kind)
+        return
+    add('certificate-' + name, 'owner', CERT, 200, created_cert(), raw_b64=raw_b64, content_type=kind,
+        effect=effect('owner', documents=[stored(filename, content, content_type)], certificates=[{'document': 0, 'user': 'owner'}],
+                      audit=[doc_create(0), cert_create(0)]))
+
+
+certificate_case('rfc2231-utf8-name', certificate_part(b"filename*=utf-8''ricevuta%20%C3%A8.pdf"), filename='ricevuta è.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-continuations', certificate_part(b'filename*0="visita"; filename*1=".pdf"'), filename='visita.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-continuations-out-of-order', certificate_part(b"filename*1*=%C3%A8.pdf; filename*0*=utf-8''scan"),
+                 filename='scanè.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-latin1-name', certificate_part(b"filename*=iso-8859-1''scan%E8.png", extra=()), filename='scanè.png',
+                 content='%PDF-1.4 parte', content_type='image/png')
+certificate_case('rfc2231-ascii-name-replaces', certificate_part(b"filename*=us-ascii''scan%E8.png", extra=()), filename='scan\ufffd.png',
+                 content='%PDF-1.4 parte', content_type='image/png')
+certificate_case('rfc2231-invalid-utf8-name-replaces', certificate_part(b"filename*=utf-8''scan%FF%E2%82.png", extra=()),
+                 filename='scan\ufffd\ufffd.png', content='%PDF-1.4 parte', content_type='image/png')
+certificate_case('rfc2231-unknown-charset-ignored', certificate_part(b"filename*=bogus''visita.pdf"))
+certificate_case('invalid-utf8-disposition-ignored', certificate_part(b'filename="visita\xff.pdf"'))
+certificate_case('invalid-utf8-other-header-kept', certificate_part(b'filename="visita.pdf"', extra=(b'Content-Type: application/pdf; x=\xff',)),
+                 filename='visita.pdf', content='%PDF-1.4 parte')
+certificate_case('base64-file', certificate_part(b'filename="b64.pdf"', content=b'JVBERi0xLjQg\r\nYmFzZTY0 \r\n',
+                                                 extra=(b'Content-Type: application/pdf', b'Content-Transfer-Encoding: base64')),
+                 filename='b64.pdf', content='%PDF-1.4 base64')
+certificate_case('base64-file-upper-case-name', certificate_part(b'filename="b64.pdf"', content=b'JVBERi0xLjQgYmFzZTY0',
+                                                                 extra=(b'content-transfer-encoding:  BASE64 ',)),
+                 filename='b64.pdf', content='%PDF-1.4 base64')
+certificate_case('base64-file-padded-pairs', certificate_part(b'filename="b64.pdf"', content=b'JVBERi0xLjQ=',
+                                                              extra=(b'Content-Transfer-Encoding: base64',)),
+                 filename='b64.pdf', content='%PDF-1.4')
+certificate_case('base64-file-skips-other-characters', certificate_part(b'filename="b64.pdf"', content=b'JVBE*Ri0x$LjQ=',
+                                                                        extra=(b'Content-Transfer-Encoding: base64',)),
+                 filename='b64.pdf', content='%PDF-1.4')
+certificate_case('base64-file-padding-error', certificate_part(b'filename="b64.pdf"', content=b'JVBERi0xLjQ',
+                                                               extra=(b'Content-Transfer-Encoding: base64',)),
+                 400, {'detail': 'Multipart form parse error - Could not decode base64 data.'})
+certificate_case('base64-file-empty', certificate_part(b'filename="b64.pdf"', content=b'', extra=(b'Content-Transfer-Encoding: base64',)),
+                 filename='b64.pdf', content='')
+certificate_case('quoted-printable-ignored', certificate_part(b'filename="qp.pdf"', content=b'%PDF=3D1',
+                                                              extra=(b'Content-Transfer-Encoding: quoted-printable',)),
+                 filename='qp.pdf', content='%PDF=3D1')
+# Fields: a base64 value is decoded (kept as sent when it is not base64) and invalid UTF-8 is replaced.
+_field = lambda name, content, *extra: ([f'Content-Disposition: form-data; name="{name}"'.encode(), *extra], content)
+_cte = b'Content-Transfer-Encoding: base64'
+_raw, _kind = multipart_bytes(_field('document', B64(B64('campo base64')).encode(), _cte), _field('filename', b'cte.txt'))
+add('upload-field-base64', 'owner', UPLOAD('files'), 200, FILE_UPLOADED, raw_b64=_raw, content_type=_kind,
+    effect=effect('owner', documents=[stored('cte.txt', 'campo base64', 'text/plain')],
+                  files=[{'document': 0, 'subscription': 'files'}], audit=[doc_create(0), file_create(0, 'files')]))
+_raw, _kind = multipart_bytes(_field('document', B64('campo grezzo').encode(), _cte), _field('filename', b'raw.txt'))
+add('upload-field-base64-undecodable-kept', 'owner', UPLOAD('files'), 200, FILE_UPLOADED, raw_b64=_raw, content_type=_kind,
+    effect=effect('owner', documents=[stored('raw.txt', 'campo grezzo', 'text/plain')],
+                  files=[{'document': 0, 'subscription': 'files'}], audit=[doc_create(0), file_create(0, 'files')]))
+_raw, _kind = multipart_bytes(_field('document', B64('latin').encode()), _field('filename', b'caf\xe9.pdf'))
+add('upload-field-invalid-utf8-replaced', 'owner', UPLOAD('files'), 200, FILE_UPLOADED, raw_b64=_raw, content_type=_kind,
+    effect=effect('owner', documents=[stored('caf\ufffd.pdf', 'latin', 'application/pdf')],
+                  files=[{'document': 0, 'subscription': 'files'}], audit=[doc_create(0), file_create(0, 'files')]))
 
 # ---------------------------------------------------------------- subscription/<uid>/medical-certificate/upload
 MED = lambda label: (f'/subscription/{SUBSCRIPTIONS[label]["id"] if label in SUBSCRIPTIONS else DRAFTS[label]["id"] if label in DRAFTS else label}'

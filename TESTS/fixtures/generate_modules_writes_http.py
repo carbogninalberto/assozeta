@@ -441,6 +441,7 @@ add('update-nested-collaborator', 'full_collaborator', 'PATCH', update('edit'), 
 # reads the last value of each key; '' is None for a nullable field ('' where blank is allowed), skipped for an optional
 # one and kept for a required one; JSON fields are json.loads of the text.
 FORM = 'application/x-www-form-urlencoded'
+JSON_INVALID = ('Value must be valid JSON.', 'invalid')
 
 
 def form_nested_case(name, raw, *fields, outer=()):
@@ -457,16 +458,18 @@ form_nested_case('errors', 'sport_association.denomination=&sport_association.ta
                  '&sport_association.configuration=%7Bx&sport_association.federation=&sport_association.enabled_for=',
                  ('denomination', [BLANK]), ('tax_code', [MAX(11)]), ('address_cap', [CAP]),
                  ('subscription_fee', [('A valid number is required.', 'invalid')]), ('multiple_subscription_fee', [NOT_BOOL]),
-                 ('configuration', [('Value must be valid JSON.', 'invalid')]))
+                 ('configuration', [JSON_INVALID]), ('enabled_for', [JSON_INVALID]))
 form_nested_valid('empty-values', 'sport_association.subscription_fee=&sport_association.multiple_subscription_fee='
-                  '&sport_association.configuration=&sport_association.sport_association_id=&sport_association.membership_fee='
+                  '&sport_association.sport_association_id=&sport_association.membership_fee='
                   '&sport_association.address_cap=&sport_association.sport=')
+form_nested_case('json-empty', 'sport_association.configuration=&sport_association.custom_subscription_form_data=', ('configuration', [JSON_INVALID]),
+                 ('custom_subscription_form_data', [JSON_INVALID]))
 form_nested_valid('unknown-keys', 'sport_association.zzz=1&title=Mai')
 form_nested_valid('last-value-wins', 'sport_association.sport=' + 's' * 101 + '&sport_association.sport=ok')
 form_nested_case('last-value-invalid', 'sport_association.sport=ok&sport_association.sport=' + 's' * 101, ('sport', [MAX(100)]))
 form_nested_valid('json-null', 'sport_association.configuration=null&sport_association.enabled_for=%5B1%5D')
 form_nested_case('json-text', 'sport_association.additional_fields=abc&sport_association.stripe_available_methods=%22ok%22',
-                 ('additional_fields', [('Value must be valid JSON.', 'invalid')]))
+                 ('additional_fields', [JSON_INVALID]))
 form_nested_case('primary-key', 'sport_association.sport_association_id=' + OWN, ('sport_association_id', [UNIQUE_ID]))
 form_nested_case('primary-key-text', 'sport_association.sport_association_id=x', ('sport_association_id', [('Must be a valid UUID.', 'invalid')]))
 form_nested_case('with-outer-errors', 'title=' + 'x' * 256 + '&sport_association.sport=' + 's' * 101, ('sport', [MAX(100)]),
