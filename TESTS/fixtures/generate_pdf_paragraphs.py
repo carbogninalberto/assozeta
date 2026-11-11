@@ -44,6 +44,19 @@ TEXTS = [
     '', 'ASD Aurora', 'Sport & Fun', 'Sport &amp; Fun', 'A < B', 'A <b>B</b>', 'A > B', '&', '<', '&amp;', 'a&b', 'a &b c', 'a&b;c',
     'R&D', 'AT&T Italia', 'Yoga &amp; Pilates &lt;adulti&gt;', '&lt;b&gt;', 'a<br/>b', 'a<br>b', 'a<br></br>b', 'a</br>b', '<br/>',
     '<b>grassetto</b>', '<i>corsivo</i> e <b><i>entrambi</i></b>', '<strong>a</strong><em>b</em>', '<b>a', 'a</b>', '<b><i>a</b></i>',
+    '<para size="12">a b</para>', '<para fontsize="14" leading="20">a</para>', '<para font="Helvetica-Bold">a</para>',
+    '<para face="Symbol">abc</para>', '<para color="red">a</para>', '<para fg="#00ff00">a</para>', '<para backcolor="yellow">a</para>',
+    '<para align="center">a</para>', '<para align="right">a</para>', '<para align="justify">a</para>', '<para align="bogus">a</para>',
+    '<para spaceb="5" spacea="6">a</para>', '<para leading="+2">a</para>', '<para size="-2">a</para>', '<para lindent="10">a</para>',
+    '<para lindent="0">a</para>', '<para underlinewidth="2" underlinecolor="red">a<u>b</u></para>', '<para strikeoffset="2">a<strike>b</strike></para>',
+    '<para splitlongwords="0">a</para>', '<para allowwidows="0">a</para>', '<para alloworphans="1">a</para>', '<para spaceshrinkage="0.1">a</para>',
+    '<para texttransform="uppercase">a</para>', '<para foo="1">a</para>', '<para size>a</para>', '<para size="x">a</para>',
+    '<para color="nope">a</para>', '<para wordwrap="LTR">a</para>', '<para wordwrap="bogus">a</para>', '<para borderwidth="1">a</para>',
+    '<para autoleading="max">a</para>', '<para autoleading="off">a</para>', '<para justifybreaks="1">a</para>', '<para bfont="Foo">a</para>',
+    '<para font="Arial">a</para>', '<para font="Courier">a</para>', '<para size="12" color="blue">a<b>b</b> c</para>',
+    '<para align="center" size="8">a <u>b</u> <font size="12">c</font></para>', '<para align="right" bgcolor="#eeeeee">a b c</para>',
+    '<para underlinecolor="nope">a</para>', '<para underlinewidth="x">a</para>', '<para alignment="center" spaceBefore="3">a</para>',
+    '<para textcolor="green" backColor="red" leftindent="0">a</para>', '<para color="red" color="blue">a</para>',
     '<para>a</para>', '<para>a', 'a</para>b', '<para align="center">a</para>', '< para>a</para>', '<para/>', '<para >a</para>',
     '<h1>Titolo</h1>', '<div class="x">a</div>', '<unknown>a</unknown>', '<x', '<x y="1', 'a <3 b', '1<2 e 3>2', 'a<=b', '<>', '</>',
     '<!-- nota -->a', '<!--a', '<!-->a', '<!--->a', '<!-- a --!>b', '<?xml version="1.0"?>a', '<!DOCTYPE html>a', '<![CDATA[a<b]]>c',
@@ -115,11 +128,16 @@ TOKENS = [
 ]
 
 
+PARA_REFUSED = ('indent', 'lindent', 'rindent', 'findent', 'justify', 'border', 'texttransform', 'enddots', 'wordwrap', 'hyphenation', 'uriwastereduce',
+                'embeddedhyphenation', 'autoleading')
+
+
 def refusable(text):
     lowered = text.lower()
     if '<img' in lowered and not ('src="%s"' % IMAGE) in text:
         return True
-    return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or '<para' in lowered or 'blacker(' in lowered
+    return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or ('<para' in lowered and any(word in lowered for word in PARA_REFUSED))
+            or 'blacker(' in lowered
             or 'whiter(' in lowered or (('<a' in lowered or '<link' in lowered) and ('#' in text or 'document:' in lowered or 'name' in lowered))
             or ('<' in text and (not text.isascii() or 'inf' in lowered or 'nan' in lowered
                                                          or 'courier' in lowered or 'times' in lowered)))
@@ -169,6 +187,21 @@ def describe_image(frag):
     return ['img', defn.src, dimension(defn.width), dimension(defn.height), dimension(defn.valign)]
 
 
+def style_info(style):
+    lines = [[us_value(getattr(style, name + 'Width')), us_value(getattr(style, name + 'Offset')), us_value(getattr(style, name + 'Gap')),
+              rgb(getattr(style, name + 'Color'))] for name in ('underline', 'strike')]
+    return [style.fontName, finite(style.fontSize), finite(style.leading), style.alignment, finite(style.spaceBefore), finite(style.spaceAfter),
+            rgb(style.textColor), rgb(style.backColor), lines, finite(style.spaceShrinkage), bool(style.splitLongWords), bool(style.allowWidows),
+            bool(style.allowOrphans)]
+
+
+def style_unported(style):
+    return (style.leftIndent or style.rightIndent or style.firstLineIndent or style.alignment not in (0, 1, 2) or style.borderWidth
+            or style.borderPadding or style.borderRadius or style.textTransform or style.endDots or style.wordWrap
+            or getattr(style, 'autoLeading', '') not in ('', 'off') or style.hyphenationLang or style.uriWasteReduce
+            or style.embeddedHyphenation or style.borderColor)
+
+
 def outcome(text, font):
     styles = getSampleStyleSheet()
     style = ParagraphStyle('Body', parent=styles['Normal'], fontName=font, fontSize=9, leading=12)
@@ -180,7 +213,7 @@ def outcome(text, font):
     except Exception:
         entry['error'] = True
         return entry
-    other = paragraph.style is not style or bool(paragraph.bulletText)
+    other = bool(paragraph.bulletText) or bool(style_unported(paragraph.style))
     frags = []
     for frag in paragraph.frags:
         if frag.greek or frag.fontName not in FONTS + ('Symbol', 'ZapfDingbats'):
@@ -193,6 +226,11 @@ def outcome(text, font):
     if other:
         entry['other'] = True
     else:
+        try:
+            entry['style'] = style_info(paragraph.style)
+        except TypeError:
+            entry['other'] = True
+            return entry
         entry['frags'] = frags
     return entry
 

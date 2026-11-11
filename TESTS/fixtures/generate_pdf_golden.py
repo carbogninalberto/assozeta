@@ -424,6 +424,39 @@ CASES += [
 ]
 
 
+# <para> with attributes: the style of the paragraph (size, font, colour, leading, spacing, alignment, background, line defaults).
+PARAS = [
+    '<para size="12" color="red">grande rosso</para>', '<para leading="20" align="center">centrato con interlinea ampia</para>',
+    '<para align="right">a destra</para>', '<para align="right" size="8" bgcolor="#dddddd">a destra con sfondo</para>',
+    '<para backcolor="yellow" spaceb="5" spacea="7">sfondo</para>', '<para font="Helvetica-Bold" size="9">grassetto <u>sotto</u> <i>x</i></para>',
+    '<para font="Helvetica-Oblique" fg="#005500">' + 'testo lungo che va a capo ' * 8 + '</para>', '<para face="Symbol">abc</para>',
+    '<para underlinewidth="2" underlinecolor="blue" underlineoffset="-3" underlinegap="2">a <u kind="double">b</u></para>',
+    '<para strikeoffset="1" strikewidth="1.5">a <strike>b</strike></para>', '<para size="+3" leading="+4">relativo</para>',
+    '<para splitlongwords="0">' + 'x' * 120 + '</para>', '<para spaceshrinkage="0.3">' + 'parola ' * 40 + '</para>',
+    '<para align="center" size="7">a <font size="11" color="green">b</font> <sup>c</sup> <a href="https://example.test/p">d</a></para>',
+    '<para lindent="0" rindent="0" findent="0" borderwidth="0">zero</para>', '<para allowwidows="0">' + 'riga uno due tre quattro cinque sei ' * 30 + '</para>',
+    '<para alloworphans="1">' + 'riga uno due tre quattro cinque sei ' * 30 + '</para>', '<para size="0.5in">pollici</para>',
+]
+CASES += [
+    balance('bs-para', header(None, '<para color="red" size="22">ASD Aurora</para>', city='<para size="10" align="center">Roma</para>',
+                              address='<para backcolor="#eeeeee">Via Roma 1</para>')),
+    with_additional(balance('bs-para-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', '<para align="right" backcolor="#eeeeee" spaceb="6" spacea="3">I saldi sono riportati.</para>'],
+                     ['altro', '<para size="14" color="blue" align="left">' + 'testo lungo ' * 30 + '</para>']]),
+    balance('bs-para-attribute-error', header(None, '<para size="x">ASD</para>')),
+    balance('bs-para-unknown-error', header(None, '<para foo="1">ASD</para>')),
+    balance('bs-para-font-error', header(None, '<para font="Arial">ASD</para>')),
+    report('rt-para-cells', ['<para color="red">Nome</para>', 'Testo', 'Note'],
+           [[PARAS[i], PARAS[(i + 5) % len(PARAS)], PARAS[(i + 9) % len(PARAS)]] for i in range(len(PARAS))], 'Attributi'),
+    report('rt-para-pages', ['N', 'Testo'], [[str(i), PARAS[i % len(PARAS)]] for i in range(120)], 'Attributi su pagine'),
+    report('rt-para-text-cut', ['Nome'], [['x']], 'Tagliato', text_before='<para backcolor="#eeeeee" size="10" leading="13">' + 'testo con sfondo ' * 700 + '</para>',
+           text_after='<para allowwidows="0" align="right">' + 'riga destra ' * 500 + '</para>'),
+    report('rt-para-text-orphans', ['Nome'], [['x']], 'Orfane', text_before='<para alloworphans="1" allowwidows="0">' + 'riga ' * 900 + '</para>'),
+    attendance('at-para', ('<para color="red">Yoga</para>', ['01/01/2026', '<para align="right">x</para>'],
+                           [('<para size="8">Rossi</para>', ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:

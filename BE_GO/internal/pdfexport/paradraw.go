@@ -389,6 +389,12 @@ func (p *paragraph) postText(tx *textObject, xs *fragState) {
 
 // draw is Paragraph.drawPara for left-aligned and centred lines.
 func (p *paragraph) draw(c *canvas) {
+	if bg := p.style.backColor; bg != nil {
+		c.saveState()
+		c.setFillColor(*bg)
+		c.fillRect(0, 0, p.width, p.height)
+		c.restoreState()
+	}
 	if p.lineCount() == 0 {
 		return
 	}
@@ -416,8 +422,11 @@ func (p *paragraph) draw(c *canvas) {
 			}
 			offset := 0.0
 			if simple {
-				if p.style.centred {
+				switch p.style.alignment() {
+				case alignCenter:
 					offset = 0 + 0.5*line.extra
+				case alignRight:
+					offset = 0 + line.extra
 				}
 				tx.setXPos(offset)
 				tx.textOut(text, true)
@@ -459,8 +468,11 @@ func (p *paragraph) draw(c *canvas) {
 			}
 			m := 0.0
 			if simple {
-				if p.style.centred {
+				switch p.style.alignment() {
+				case alignCenter:
 					m = 0 + 0.5*line.extra
+				case alignRight:
+					m = 0 + line.extra
 				}
 				tx.setXPos(m)
 				p.putFragLine(tx, xs, m, line)

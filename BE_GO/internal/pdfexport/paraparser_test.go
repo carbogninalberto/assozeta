@@ -21,6 +21,23 @@ func usValue(v usVal) any {
 	return v.str
 }
 
+// describeStyle is the form generate_pdf_paragraphs.py writes for a style.
+func describeStyle(s paraStyle) []any {
+	if !s.linesSet {
+		s.lines = defaultLines()
+	}
+	lines := []any{}
+	for _, l := range s.lines {
+		var col *color
+		if l.hasColor {
+			col = &l.color
+		}
+		lines = append(lines, []any{usValue(l.width), usValue(l.offset), usValue(l.gap), rgbOf(col)})
+	}
+	return []any{s.fontName, s.fontSize, s.leading, s.alignment(), s.spaceBefore, s.spaceAfter, rgbOf(&s.textColor), rgbOf(s.backColor), lines,
+		s.shrinkage(), !s.noSplit, !s.denyWidows, s.allowOrphans}
+}
+
 // describeFrag is the form generate_pdf_paragraphs.py writes for a fragment.
 func describeFrag(f *frag) []any {
 	lines := []any{}
@@ -76,6 +93,7 @@ func TestParagraphParserCorpus(t *testing.T) {
 			Error     bool   `json:"error"`
 			Other     bool   `json:"other"`
 			Frags     []any  `json:"frags"`
+			Style     []any  `json:"style"`
 		} `json:"cases"`
 	}
 	if err := json.Unmarshal(raw, &file); err != nil {
@@ -83,7 +101,7 @@ func TestParagraphParserCorpus(t *testing.T) {
 	}
 	exact, failures := 0, 0
 	for _, item := range file.Cases {
-		frags, _, err := parseParagraph(paraClean(item.Text), paraStyle{fontName: item.Font, fontSize: 9, leading: 12})
+		frags, style, err := parseParagraph(paraClean(item.Text), paraStyle{fontName: item.Font, fontSize: 9, leading: 12})
 		if errors.Is(err, ErrNotPorted) {
 			if !item.Refusable && !item.Other {
 				t.Errorf("%q: refused", item.Text)
@@ -106,6 +124,11 @@ func TestParagraphParserCorpus(t *testing.T) {
 			got := []any{}
 			for _, f := range frags {
 				got = append(got, describeFrag(f))
+			}
+			wantStyle, _ := json.Marshal(item.Style)
+			haveStyle, _ := json.Marshal(describeStyle(style))
+			if string(wantStyle) != string(haveStyle) {
+				t.Errorf("%q: style\nwant %s\n got %s", item.Text, wantStyle, haveStyle)
 			}
 			want, _ := json.Marshal(item.Frags)
 			have, _ := json.Marshal(got)

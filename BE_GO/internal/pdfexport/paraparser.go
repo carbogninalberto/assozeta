@@ -447,13 +447,15 @@ func (p *paraParser) newLine(kind int) bool {
 func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 	switch tag {
 	case "para":
-		if len(attrs) > 0 {
-			return p.unsupported()
+		if len(attrs) > 0 && !p.applyParaAttrs(attrs) {
+			return false
+		}
+		family, bold, italic, st := ps2tt(p.style.fontName)
+		if st != attrOK {
+			return p.attrFailure(st, "error with style name")
 		}
 		p.started = true
-		size := p.style.fontSize
-		p.stack = []paraTag{{tag: "para", family: "helvetica", bold: strings.Contains(p.style.fontName, "Bold"),
-			italic: strings.Contains(p.style.fontName, "Oblique"), size: size, color: p.style.textColor}}
+		p.stack = []paraTag{{tag: "para", family: family, bold: bold, italic: italic, size: p.style.fontSize, color: p.style.textColor}}
 		p.nlines, p.nlinks = 0, 0
 		return true
 	case "b", "strong":
@@ -1232,4 +1234,269 @@ func (p *paraParser) endImg() bool {
 	}
 	_, ok := p.pop("img")
 	return ok
+}
+
+type paraAttrKind int
+
+const (
+	pkNum paraAttrKind = iota
+	pkInt
+	pkBool
+	pkColor
+	pkAlign
+	pkFont
+	pkAutoLeading
+	pkWordWrap
+	pkTransform
+	pkAnchor
+	pkStr
+	pkUS
+)
+
+// paraAttrSpec is an entry of _paraAttrMap: the style attribute and the
+// conversion of its value.
+type paraAttrSpec struct {
+	attr string
+	kind paraAttrKind
+}
+
+var paraAttrNames = func() map[string]paraAttrSpec {
+	table := []struct {
+		keys []string
+		attr string
+		kind paraAttrKind
+	}{
+		{[]string{"font", "face"}, "fontName", pkFont}, {[]string{"fontsize", "size"}, "fontSize", pkNum},
+		{[]string{"leading"}, "leading", pkNum}, {[]string{"autoleading"}, "autoLeading", pkAutoLeading},
+		{[]string{"lindent"}, "leftIndent", pkNum}, {[]string{"rindent"}, "rightIndent", pkNum}, {[]string{"findent"}, "firstLineIndent", pkNum},
+		{[]string{"align"}, "alignment", pkAlign}, {[]string{"spaceb"}, "spaceBefore", pkNum}, {[]string{"spacea"}, "spaceAfter", pkNum},
+		{[]string{"bfont"}, "bulletFontName", pkStr}, {[]string{"bfontsize"}, "bulletFontSize", pkNum},
+		{[]string{"boffsety"}, "bulletOffsetY", pkNum}, {[]string{"bindent"}, "bulletIndent", pkNum}, {[]string{"bcolor"}, "bulletColor", pkColor},
+		{[]string{"banchor"}, "bulletAnchor", pkAnchor}, {[]string{"color", "fg"}, "textColor", pkColor},
+		{[]string{"backcolor", "bgcolor", "bg"}, "backColor", pkColor}, {[]string{"justifybreaks"}, "justifyBreaks", pkBool},
+		{[]string{"justifylastline"}, "justifyLastLine", pkInt}, {[]string{"wordwrap"}, "wordWrap", pkWordWrap},
+		{[]string{"allowwidows"}, "allowWidows", pkBool}, {[]string{"alloworphans"}, "allowOrphans", pkBool},
+		{[]string{"splitlongwords"}, "splitLongWords", pkBool}, {[]string{"borderwidth"}, "borderWidth", pkNum},
+		{[]string{"borderpadding"}, "borderPadding", pkNum}, {[]string{"bordercolor"}, "borderColor", pkColor},
+		{[]string{"borderradius"}, "borderRadius", pkNum}, {[]string{"texttransform"}, "textTransform", pkTransform},
+		{[]string{"enddots"}, "endDots", pkStr}, {[]string{"underlinewidth"}, "underlineWidth", pkUS},
+		{[]string{"underlinecolor"}, "underlineColor", pkColor}, {[]string{"underlineoffset"}, "underlineOffset", pkUS},
+		{[]string{"underlinegap"}, "underlineGap", pkUS}, {[]string{"strikewidth"}, "strikeWidth", pkUS},
+		{[]string{"strikecolor"}, "strikeColor", pkColor}, {[]string{"strikeoffset"}, "strikeOffset", pkUS},
+		{[]string{"strikegap"}, "strikeGap", pkUS}, {[]string{"spaceshrinkage"}, "spaceShrinkage", pkNum},
+		{[]string{"hyphenationlang"}, "hyphenationLang", pkStr}, {[]string{"hyphenationoverflow"}, "hyphenationOverflow", pkBool},
+		{[]string{"hyphenationminwordlength"}, "hyphenationMinWordLength", pkInt}, {[]string{"uriwastereduce"}, "uriWasteReduce", pkNum},
+		{[]string{"embeddedhyphenation"}, "embeddedHyphenation", pkBool},
+	}
+	names := map[string]paraAttrSpec{}
+	for _, entry := range table {
+		spec := paraAttrSpec{entry.attr, entry.kind}
+		for _, key := range entry.keys {
+			names[key] = spec
+		}
+		names[strings.ToLower(entry.attr)] = spec
+	}
+	return names
+}()
+
+// applyParaAttrs is _initial_frag's style change: the style is copied and
+// the attributes of <para> applied. The ones that change the layout in ways
+// this package does not draw (indents, justified lines, borders, bullets,
+// text transforms, hyphenation) are refused once their values are known to
+// be valid.
+func (p *paraParser) applyParaAttrs(attrs []htmlAttr) bool {
+	style := p.style
+	if !style.linesSet {
+		style.lines, style.linesSet = defaultLines(), true
+	}
+	order, values := dedupeAttrs(attrs)
+	refused := false
+	for _, name := range order {
+		attr := values[name]
+		spec, ok := paraAttrNames[name]
+		if !ok {
+			return p.fail("invalid attribute name %s", name)
+		}
+		if !attr.has {
+			return p.fail("invalid value for %s", name)
+		}
+		value := attr.value
+		var number numVal
+		switch spec.kind {
+		case pkNum:
+			n, st := paraNum(value, true)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid number")
+			}
+			number = n
+		case pkInt:
+			if _, st := pyInt(value, 10); st != attrOK {
+				return p.attrFailure(st, "invalid integer")
+			}
+		case pkBool:
+			b, st := paraBool(value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid boolean")
+			}
+			if spec.attr == "allowWidows" {
+				style.denyWidows = !b
+			}
+			if spec.attr == "allowOrphans" {
+				style.allowOrphans = b
+			}
+			if spec.attr == "splitLongWords" {
+				style.noSplit = !b
+			}
+			if spec.attr == "embeddedHyphenation" && b {
+				refused = true
+			}
+		case pkColor:
+			c, st := paraColor(value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid color")
+			}
+			switch spec.attr {
+			case "textColor":
+				style.textColor = c
+			case "backColor":
+				style.backColor = &c
+			case "underlineColor":
+				style.lines[lineUnderline].hasColor, style.lines[lineUnderline].color = true, c
+			case "strikeColor":
+				style.lines[lineStrike].hasColor, style.lines[lineStrike].color = true, c
+			case "bulletColor":
+			default:
+				refused = true
+			}
+		case pkAlign:
+			if !asciiOnly(value) {
+				return p.unsupported()
+			}
+			switch strings.ToLower(value) {
+			case "left":
+				style.align, style.centred = alignLeft, false
+			case "right":
+				style.align, style.centred = alignRight, false
+			case "center", "centre":
+				style.align, style.centred = alignCenter, false
+			case "justify":
+				refused = true
+			default:
+				return p.fail("illegal alignment %q", value)
+			}
+		case pkFont:
+			if _, _, _, st := ps2tt(value); st != attrOK {
+				return p.attrFailure(st, "invalid font name")
+			}
+			style.fontName = canonicalFontName(value)
+		case pkAutoLeading:
+			switch strings.ToLower(value) {
+			case "", "off":
+			case "min", "max":
+				refused = true
+			default:
+				return p.fail("Invalid autoLeading")
+			}
+		case pkWordWrap:
+			switch strings.ToUpper(pyTrimASCII(value)) {
+			case "":
+			case "CJK", "RTL", "LTR":
+				refused = true
+			default:
+				return p.fail("cannot convert wordWrap")
+			}
+		case pkTransform:
+			if !asciiOnly(value) {
+				return p.unsupported()
+			}
+			switch strings.ToLower(pyTrimASCII(value)) {
+			case "":
+			case "uppercase", "lowercase", "capitalize", "none":
+				refused = true
+			default:
+				return p.fail("cannot convert textTransform")
+			}
+		case pkAnchor:
+			switch strings.ToLower(value) {
+			case "start", "middle", "end", "numeric":
+			default:
+				return p.fail("illegal bullet anchor")
+			}
+		case pkStr:
+			if spec.attr == "endDots" && value != "" || spec.attr == "hyphenationLang" && pyTrimUnicode(value) != "" {
+				refused = true
+			}
+		case pkUS:
+			v, ok := p.usValue(value, true)
+			if !ok {
+				return false
+			}
+			kind := lineUnderline
+			if strings.HasPrefix(spec.attr, "strike") {
+				kind = lineStrike
+			}
+			switch {
+			case strings.HasSuffix(spec.attr, "Width"):
+				style.lines[kind].width = *v
+			case strings.HasSuffix(spec.attr, "Offset"):
+				style.lines[kind].offset = *v
+			default:
+				style.lines[kind].gap = *v
+			}
+		}
+		if spec.kind != pkNum {
+			continue
+		}
+		apply := func(current *float64) {
+			if number.rel {
+				*current += number.v
+			} else {
+				*current = number.v
+			}
+		}
+		switch spec.attr {
+		case "fontSize":
+			apply(&style.fontSize)
+		case "leading":
+			apply(&style.leading)
+		case "spaceBefore":
+			apply(&style.spaceBefore)
+		case "spaceAfter":
+			apply(&style.spaceAfter)
+		case "spaceShrinkage":
+			shrink := style.shrinkage()
+			apply(&shrink)
+			style.shrink, style.shrinkSet = shrink, true
+		case "leftIndent", "rightIndent", "firstLineIndent", "borderWidth", "borderPadding", "borderRadius", "uriWasteReduce":
+			current := 0.0
+			apply(&current)
+			if current != 0 {
+				refused = true
+			}
+		}
+	}
+	p.style = style
+	if refused {
+		return p.unsupported()
+	}
+	return true
+}
+
+// canonicalFontName is the style font name of a name ps2tt accepts: the
+// concrete Helvetica, Symbol or ZapfDingbats font (a name for another family
+// is refused before this).
+func canonicalFontName(name string) string {
+	switch strings.ToLower(name) {
+	case "helvetica":
+		return "Helvetica"
+	case "helvetica-bold":
+		return "Helvetica-Bold"
+	case "helvetica-boldoblique":
+		return "Helvetica-BoldOblique"
+	case "helvetica-oblique":
+		return "Helvetica-Oblique"
+	case "symbol":
+		return "Symbol"
+	}
+	return "ZapfDingbats"
 }

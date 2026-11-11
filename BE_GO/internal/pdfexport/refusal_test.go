@@ -22,7 +22,7 @@ func TestInputsNotPorted(t *testing.T) {
 		"anchor":         {Header: header("None", `A <a name="top"/> B`)},
 		"internal link":  {Header: header("None", `A <a href="#top">B</a> C`)},
 		"greek":          {Header: header("None", "A <greek>B</greek>")},
-		"para attribute": {Header: header("None", `<para align="center">A</para>`)},
+		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
 		"additional":     {Additional: []string{"saldi <index item=\"e\"/> note"}},
 		"png as jpeg":    {Header: header("data:image/jpeg;base64,iVBORw0KGgo=", "ASD")},
 		"cut jpeg":       {Header: header("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD", "ASD")},

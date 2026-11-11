@@ -13,6 +13,15 @@ type paraStyle struct {
 	spaceBefore float64
 	spaceAfter  float64
 	textColor   color
+	align       int
+	backColor   *color
+	// shrink is spaceShrinkage when shrinkSet; denyWidows, allowOrphans and
+	// noSplit are allowWidows=0, allowOrphans=1 and splitLongWords=0.
+	shrink       float64
+	shrinkSet    bool
+	denyWidows   bool
+	allowOrphans bool
+	noSplit      bool
 	// lines are the underline and strike defaults of the style; linesSet is
 	// false for a style built by a document, which has reportlab's.
 	lines    [2]lineDefaults
@@ -25,6 +34,29 @@ type lineDefaults struct {
 	hasColor           bool
 	color              color
 	width, offset, gap usVal
+}
+
+const (
+	alignLeft = iota
+	alignCenter
+	alignRight
+)
+
+// alignment is the alignment of the style: centred for the documents'
+// centred styles, else align.
+func (s paraStyle) alignment() int {
+	if s.centred {
+		return alignCenter
+	}
+	return s.align
+}
+
+// shrinkage is spaceShrinkage.
+func (s paraStyle) shrinkage() float64 {
+	if s.shrinkSet {
+		return s.shrink
+	}
+	return 0.05
 }
 
 func defaultLines() [2]lineDefaults {
@@ -337,7 +369,7 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 	}
 	size := f.size
 	spaceWidth := stringWidth(" ", f.font, size)
-	shrink := 0.05 * spaceWidth
+	shrink := p.style.shrinkage() * spaceWidth
 	hyphenWidth := stringWidth("-", f.font, size)
 	var line []*simpleWord
 	currentWidth := -spaceWidth
@@ -368,7 +400,7 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 					}
 				}
 			}
-			if !word.split && !forced && wordWidth > maxWidth {
+			if !p.style.noSplit && !word.split && !forced && wordWidth > maxWidth {
 				words = append(splitWord(word.text, currentWidth+spaceWidth, maxWidth, f.font, size), words...)
 				forced = true
 				continue
@@ -737,7 +769,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 				}
 			}
 		}
-		limWidth := maxWidth + spaceShrink*0.05
+		limWidth := maxWidth + spaceShrink*p.style.shrinkage()
 		if !lineBreak && newWidth > limWidth && !w.splitH && f.img == nil {
 			if w.shy {
 				if cut := w.shyphenate(newWidth, limWidth); cut != nil {
@@ -752,7 +784,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 					}
 				}
 			}
-			if !w.split && wordWidth > maxWidth {
+			if !p.style.noSplit && !w.split && wordWidth > maxWidth {
 				cut := splitFragWord(w, maxWidth-spaceWidth-currentWidth, maxWidth)
 				pending = append(append([]*fragWord{cut[0], injected(f)}, cut[1:]...), pending...)
 				done = done[:len(done)-1]
@@ -946,13 +978,21 @@ func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable
 		p.wrap(c, availWidth, availHeight)
 	}
 	s := int(availHeight / p.style.leading)
-	if s <= 1 {
+	if !p.style.allowOrphans && s <= 1 || s == 0 {
 		p.wrapped = false
 		return nil
 	}
 	n := p.lineCount()
 	if n <= s {
 		return []flowable{p}
+	}
+	if p.style.denyWidows && n == s+1 {
+		if p.style.allowOrphans && n == 3 || n > 3 {
+			s--
+		} else {
+			p.wrapped = false
+			return nil
+		}
 	}
 	if p.kind == 1 {
 		return []flowable{p.processedPart(0, s), p.processedPart(s, n)}
