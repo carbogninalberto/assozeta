@@ -298,6 +298,39 @@ add('sort-unknown-transform-after-page', 'owner', {'sort[field]': 'title__nope',
     INVALID_PAGE)
 add('sort-relation-after-page', 'owner', {'sort[field]': 'tags', 'sort[sort]': 'asc', 'pagination[page]': 'abc'}, 404, INVALID_PAGE)
 add('sort-unknown-transform-all', 'owner', {'sort[field]': 'title__nope', 'sort[sort]': 'asc', 'all': '1'}, 500, SERVER)
+# Transform chains: `date` gives a date and `time` a time, each with its own extracts; an extract is a number
+# and has none.
+add('sort-creation-date-month-asc', 'owner', {'sort[field]': 'creation_date__date__month', 'sort[sort]': 'asc'}, 200,
+    page(['internal', 'old', 'grouped', 'full', 'draft']))
+add('sort-creation-time-hour-desc', 'owner', {'sort[field]': 'creation_date__time__hour', 'sort[sort]': 'desc'}, 200,
+    page(['draft', 'old', 'grouped', 'full', 'internal']))
+add('sort-creation-date-week-day-all', 'owner', {'sort[field]': 'creation_date__date__week_day', 'sort[sort]': 'asc', 'all': '1',
+                                                 'query[tags]': TAGS['t1']['id']}, 200, listed(['full', 'draft']))
+for name in ('creation_date__year__date', 'creation_date__date__hour', 'creation_date__time__year', 'creation_date__date__date',
+             'creation_date__date__month__x', 'title__lower', 'title__length', 'description__unaccent', 'fee__abs', 'pk__gt', 'pinned__x',
+             'status_flag__exact', 'creation_date__gte'):
+    add('sort-rejected-' + name.replace('__', '-').replace('_', '-'), 'owner', {'sort[field]': name, 'sort[sort]': 'asc'}, 500, SERVER)
+add('sort-rejected-transform-after-page', 'owner', {'sort[field]': 'fee__abs', 'sort[sort]': 'asc', 'pagination[page]': '0'}, 404, INVALID_PAGE)
+add('sort-rejected-transform-optimized', 'owner', {'sort[field]': 'title__lower', 'sort[sort]': 'asc', 'all': '1', 'optimized': '1'}, 500, SERVER)
+# JSON fields: every name is a key transform (one key that int() reads is an array index). Two courses carry the
+# tag: one with JSON values and one without (NULL sorts last ascending, first descending).
+JSON_PAIR = {'query[tags]': TAGS['t1']['id']}
+for number, (name, direction, labels) in enumerate((('events__days', 'asc', ['full', 'draft']), ('events__days', 'desc', ['draft', 'full']),
+                                ('multiple_quotes__0', 'asc', ['full', 'draft']), ('multiple_quotes__0__amount', 'desc', ['draft', 'full']),
+                                ('events__days__1', 'asc', ['full', 'draft']), ('multiple_quotes__-1', 'desc', ['draft', 'full']),
+                                ('multiple_quotes__ 0', 'asc', ['full', 'draft']), ("events__da'ys__x", 'asc', None),
+                                ('events__contains', 'asc', None), ('events__', 'asc', None), ('multiple_quotes__0__', 'asc', None)), 1):
+    slug = ''.join(ch if ch.isalnum() else '-' for ch in name).strip('-')
+    if labels is None:
+        # A key no row has: one row, so no ties.
+        add(f'sort-json-{number}-{slug}-{direction}', 'owner', {'sort[field]': name, 'sort[sort]': direction, 'query[status_flag]': '3'}, 200,
+            page(['internal']))
+    else:
+        add(f'sort-json-{number}-{slug}-{direction}', 'owner', {'sort[field]': name, 'sort[sort]': direction, **JSON_PAIR}, 200, page(labels))
+add('sort-json-key-all', 'owner', {'sort[field]': 'multiple_quotes__0__label', 'sort[sort]': 'desc', 'all': '1', **JSON_PAIR}, 200,
+    listed(['draft', 'full']))
+add('sort-json-index-out-of-range', 'owner', {'sort[field]': 'multiple_quotes__99999999999', 'sort[sort]': 'asc', 'query[status_flag]': '3'},
+    500, SERVER)
 
 # KTDatatablePagination.
 add('page-size', 'owner', {'pagination[perpage]': '2'}, 200, page(['full', 'grouped'], total=5, pages=3, perpage=2))
@@ -417,6 +450,11 @@ add('excel-sort-creation-asc', 'owner', {'sort[field]': 'creation_date', 'sort[s
     export(['old', 'draft', 'internal', 'grouped', 'full']), method='POST', body=EXCEL)
 add('excel-sort-creation-hour-asc', 'owner', {'sort[field]': 'creation_date__hour', 'sort[sort]': 'asc'}, 200,
     export(['internal', 'full', 'grouped', 'old', 'draft']), method='POST', body=EXCEL)
+add('excel-sort-creation-time-hour-asc', 'owner', {'sort[field]': 'creation_date__time__hour', 'sort[sort]': 'asc'}, 200,
+    export(['internal', 'full', 'grouped', 'old', 'draft']), method='POST', body=EXCEL)
+add('excel-sort-json-key-desc', 'owner', {'sort[field]': 'events__days', 'sort[sort]': 'desc', 'query[tags]': TAGS['t1']['id']}, 200,
+    export(['draft', 'full']), method='POST', body=EXCEL)
+add('excel-sort-rejected-transform', 'owner', {'sort[field]': 'title__lower', 'sort[sort]': 'asc'}, 500, SERVER, method='POST', body=EXCEL)
 add('excel-sort-random-one-row', 'owner', {'sort[field]': '?', 'sort[sort]': 'asc', 'query[status_flag]': '3'}, 200,
     export(['internal']), method='POST', body=EXCEL)
 add('excel-sort-unknown-field', 'owner', {'sort[field]': 'nope', 'sort[sort]': 'asc'}, 500, SERVER, method='POST', body=EXCEL)

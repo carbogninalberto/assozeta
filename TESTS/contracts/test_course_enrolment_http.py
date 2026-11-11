@@ -12,7 +12,7 @@ request creates, so the expected body may hold placeholders:
   runner.
 Unordered lists (installments, membership payments) are compared sorted.
 """
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import re
@@ -26,7 +26,8 @@ from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, Response
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/course_enrolment_http.json'
 UNORDERED = {'installments': 'id', 'membership_payments': 'payment_id'}
 UUID = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z')
-TODAY = re.compile(r'\{today:([^}]+)\}')
+TODAY = re.compile(r'\{today(?:\+(\d+)m)?:([^}]+)\}')
+NOW_PLUS = re.compile(r'\$now\+(\d+)m\Z')
 BINDINGS = {}
 
 
@@ -42,8 +43,21 @@ def allowed(case):
     return {'POST', 'OPTIONS'}
 
 
+def add_months(value, months):
+    """value + relativedelta(months=months): the day is clipped to the target month."""
+    total = value.year * 12 + value.month - 1 + months
+    year, month = divmod(total, 12)
+    last = (datetime(year + (month + 1) // 12, (month + 1) % 12 + 1, 1) - timedelta(days=1)).day
+    return value.replace(year=year, month=month + 1, day=min(value.day, last))
+
+
 def today_tokens(value, now):
-    return TODAY.sub(lambda match: now.strftime(match.group(1)), value)
+    """'{today:FMT}' the date in strftime FMT; '{today+Nm:FMT}' the first day of the month N months on."""
+    def render(match):
+        if match.group(1) is None:
+            return now.strftime(match.group(2))
+        return add_months(now.replace(day=1), int(match.group(1))).strftime(match.group(2))
+    return TODAY.sub(render, value)
 
 
 def recent(text, now):
@@ -80,6 +94,9 @@ def bind(expected, actual, binds, now):
         return binds.get(expected, expected)
     if expected == '$now' and isinstance(actual, str) and recent(actual, now):
         return actual
+    if isinstance(expected, str) and NOW_PLUS.match(expected) and isinstance(actual, str) \
+            and recent(actual, add_months(now, int(NOW_PLUS.match(expected).group(1)))):
+        return actual
     if isinstance(expected, str):
         for sym in sorted(binds, key=len, reverse=True):
             expected = expected.replace(sym, binds[sym])
@@ -89,8 +106,11 @@ def bind(expected, actual, binds, now):
 def assert_case(case, base_url, *, token, sessions):
     headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
                **substitute(case['headers'], sessions)}
-    status, raw, received = Client(base_url, token).request(case['method'], case['path'], case.get('body'), headers, raw=True,
-                                                            include_headers=True)
+    body = case.get('body')
+    if 'raw_body' in case:
+        body = case['raw_body'].encode()
+        headers['Content-Type'] = case['content_type']
+    status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
 
     def check(condition, code):
         if not condition:

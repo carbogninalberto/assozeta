@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"strconv"
@@ -183,6 +184,57 @@ func courseEnrolmentNumeric92(number float64) (string, bool) {
 	return result, true
 }
 
+// quoteCategoryChoice is the payment category extraction of
+// add_course_subscription and add_course_to_subscription: `'value' in
+// quote['payment_category']` runs outside the try (None, numbers and booleans
+// raise), a string or list never yields a usable lookup (the subscript raises
+// inside the try), and a dict's value goes through UUIDField.to_python:
+// strings, integers (UUID(int=)) and None (an IS NULL lookup, no row) look the
+// category up; floats, lists and dicts raise inside the try and keep it.
+func quoteCategoryChoice(quote domain.RequestObject) (override bool, id *string, err error) {
+	selected, present := quote.Lookup("payment_category")
+	if !present {
+		return false, nil, nil
+	}
+	var value any
+	switch chosen := selected.(type) {
+	case domain.RequestObject:
+		found, ok := chosen.Lookup("value")
+		if !ok {
+			return false, nil, nil
+		}
+		value = found
+	case string, []any:
+		return false, nil, nil
+	default:
+		return false, nil, courseEnrolmentServer
+	}
+	switch v := value.(type) {
+	case nil:
+		return true, nil, nil
+	case string:
+		if parsed, err := paymentInfoParseUUID(v); err == nil {
+			text := parsed.String()
+			return true, &text, nil
+		}
+	case bool:
+		text := "00000000-0000-0000-0000-00000000000" + map[bool]string{false: "0", true: "1"}[v]
+		return true, &text, nil
+	case json.Number:
+		if strings.ContainsAny(string(v), ".eE") {
+			return false, nil, nil
+		}
+		number, ok := new(big.Int).SetString(string(v), 10)
+		if !ok || number.Sign() < 0 || number.BitLen() > 128 {
+			return false, nil, nil
+		}
+		hex := fmt.Sprintf("%032x", number)
+		text := hex[:8] + "-" + hex[8:12] + "-" + hex[12:16] + "-" + hex[16:20] + "-" + hex[20:]
+		return true, &text, nil
+	}
+	return false, nil, nil
+}
+
 func amountJSON(text string) json.Number {
 	number, _ := strconv.ParseFloat(text, 64)
 	return json.Number(dto.PythonFloatStr(number))
@@ -212,14 +264,26 @@ func (s *CourseEnrolment) associationOf(ctx context.Context, tx domain.CourseEnr
 // validateItem is one serializer child: the fields, the course lookup, the
 // primary key's UniqueValidator, then validate() for memberships.
 func (s *CourseEnrolment) validateItem(ctx context.Context, tx domain.CourseEnrolmentTransaction, identity domain.ResolvedIdentity, item any,
-	group *string) (*enrolmentItem, map[string]any, error) {
-	write, invalid := dto.ParseCourseSubscriptionWrite(item, false)
+	group *string, form bool) (*enrolmentItem, map[string]any, error) {
+	write, invalid := dto.ParseCourseSubscriptionWrite(item, form)
+	if write.FormJSON {
+		// A JSON document the jsonb column rejects: a database error text.
+		return nil, nil, ErrCourseEnrolmentNotPorted
+	}
 	object, isObject := item.(domain.RequestObject)
 	if !isObject {
 		return nil, invalid, nil
 	}
 	if invalid == nil {
 		invalid = map[string]any{}
+	}
+	if object, ok := item.(domain.RequestObject); ok && form {
+		// A BooleanField missing from HTML input reads as False (default_empty_html), also for the create.
+		for _, name := range dto.CourseSubscriptionBooleans {
+			if _, present := object.Lookup(name); !present {
+				write.Bools[name] = false
+			}
+		}
 	}
 	for _, name := range []string{"course", "subscription_id"} {
 		if _, present := object.Lookup(name); !present {
@@ -577,21 +641,15 @@ func (s *CourseEnrolment) addCourseSubscription(ctx context.Context, tx domain.C
 			// multiple_quote.keys(): AttributeError.
 			return courseEnrolmentServer
 		}
-		if selected, present := quote.Lookup("payment_category"); present {
-			object, ok := selected.(domain.RequestObject)
-			if !ok {
-				return ErrCourseEnrolmentNotPorted
-			}
-			if value, present := object.Lookup("value"); present {
-				text, ok := value.(string)
-				if !ok {
-					return ErrCourseEnrolmentNotPorted
-				}
-				// A value the UUID field rejects raises inside the try: logged, kept.
-				if id, err := paymentInfoParseUUID(text); err == nil {
-					if category, err = tx.CategoryFirst(ctx, id.String()); err != nil {
-						return err
-					}
+		override, categoryID, err := quoteCategoryChoice(quote)
+		if err != nil {
+			return err
+		}
+		if override {
+			category = nil
+			if categoryID != nil {
+				if category, err = tx.CategoryFirst(ctx, *categoryID); err != nil {
+					return err
 				}
 			}
 		}
@@ -681,10 +739,6 @@ func (s *CourseEnrolment) membershipCreated(ctx context.Context, tx domain.Cours
 
 // Add follows CourseSubscriptionViewSet.add (atomic).
 func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdentity, request CourseEnrolmentRequest) ([]map[string]any, error) {
-	if request.Form {
-		// HTML form input (QueryDict values, JSON fields) is not ported.
-		return nil, ErrCourseEnrolmentNotPorted
-	}
 	tx, err := s.begin(ctx)
 	if err != nil {
 		return nil, err
@@ -703,7 +757,7 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 	errs := make([]map[string]any, len(items))
 	failed := false
 	for index, item := range items {
-		plan, invalid, err := s.validateItem(ctx, tx, identity, item, group)
+		plan, invalid, err := s.validateItem(ctx, tx, identity, item, group, request.Form)
 		if err != nil {
 			return nil, err
 		}
@@ -775,9 +829,6 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 // field filters by the dict and raises (500) after every write is kept. A
 // failure after the first write keeps what was written before it.
 func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.ResolvedIdentity, request CourseEnrolmentRequest) error {
-	if request.Form {
-		return ErrCourseEnrolmentNotPorted
-	}
 	tx, err := s.begin(ctx)
 	if err != nil {
 		return err
@@ -787,7 +838,7 @@ func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.Resol
 	if body == nil {
 		body = domain.RequestObject{}
 	}
-	plan, invalid, err := s.validateItem(ctx, tx, identity, body, supplierGroup(request.GroupHeader))
+	plan, invalid, err := s.validateItem(ctx, tx, identity, body, supplierGroup(request.GroupHeader), request.Form)
 	if err != nil {
 		return err
 	}

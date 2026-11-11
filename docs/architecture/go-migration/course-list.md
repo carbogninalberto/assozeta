@@ -71,13 +71,31 @@ names: pandas keeps them, skips the numeric coercion for those columns and sizes
 
 - **Exports:** workbook inputs `xlsxexport` does not reproduce (formula-like text and the other cases in
   `xlsx-exports.md`) and an export (either format) whose ordering is one of the lazy names below.
-- **Lazy orderings:** names Django resolves only when compiling the rows — transforms of a field (`title__lower`, JSON keys,
-  chains; the single extracts `year`, `month`, `hour`, `date`, `time`... of `creation_date`, `start_date` and `end_date` are ported), M2M/reverse relations (`tags`, `locations`, `coursesubscription`,
-  `attendanceregistry`) and relation paths (`sport_association__...`). Go refuses them where Django compiles: after
-  the count and page checks (an invalid page is still the 404) or on `all=1`. Django answers a valid one with rows
-  and an invalid one with a 500.
+- **Orderings through a relation:** M2M and reverse relations (`tags`, `locations`, `coursesubscription`,
+  `attendanceregistry`) and paths through a foreign key (`sport_association__...`, `group__...`). Kept refused: the join
+  repeats a course once per related row, or every listed course has the same related row and ties, so the order of
+  the page is the database's choice and not a contract. Go refuses them where Django compiles: after the count and
+  page checks (an invalid page is still the 404) or on `all=1`.
 - The order of one course's athletes is the database's (no `ORDER BY` in either backend); with a broken associate
   among several athletes, which entries precede the stop depends on it. The contract compares athletes as a set.
+
+## Orderings resolved when the rows are read (t4l3)
+
+Names after a column are compiled with the rows (after the count and page checks, or on `all=1`, also for the exports):
+
+- A datetime column takes its extracts (`year`, `iso_year`, `month`, `day`, `week`, `week_day`, `iso_week_day`,
+  `quarter`, `hour`, `minute`, `second`), `date` and `time`; `date` takes the date extracts and `time` takes `hour`,
+  `minute`, `second` (`creation_date__date__month`, `creation_date__time__hour`). An extract is a number and takes
+  nothing more.
+- `events` and `multiple_quotes` take any names as JSON keys: one name that Python's `int()` reads is an array index
+  (`multiple_quotes__0`, also `-1` and ` 0`), any other is an object key, and several names are a path
+  (`multiple_quotes__0__amount`). Empty names and names of lookups (`contains`) are keys too. An index outside
+  the 32-bit range is a 500.
+- Any other name after a column (`title__lower`, `fee__abs`, `pk__gt`, `creation_date__year__date`) is a 500: no such
+  transform is registered here.
+
+This follows what Django answers on this branch, where `sort[field]` reaches `order_by()` as sent. If the client
+orderings get restricted to a list of fields in Django, these cases follow that list.
 
 ## Evidence (TDD)
 
@@ -99,3 +117,5 @@ PDF export: 17 more cases (159 in all). RED `v2pdf-red-r2`: Django 159/159, Go a
 authored expectation carried the per-tag columns and failed on Django; they belong to the workbook only). GREEN
 `v2pdf-versioned-r1` (and `v2pdf-versioned-r2` after merging `codex/go-backend-parity`): 159/159 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, each document compared in decoded
 form. Mutation `v2pdf-mutation-r1`: a document without the Tag column fails `pdf-owner` (CAUGHT).
+
+t4l3: 199 cases (transform chains, JSON key orderings, rejected transforms). GREEN CI `t4l3-1`. Mutation `t4l3-cl-mut` (the extract after `date` dropped) CAUGHT on `sort-creation-date-month-asc`.

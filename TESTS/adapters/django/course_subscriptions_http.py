@@ -40,7 +40,7 @@ ATTACHMENT_LINK = 'application.Payment_attachments'
 MANAGED = (CS, INSTALLMENT, PAYMENT, MEMBERSHIP_LINK, CARNET_LINK, ATTACHMENT_LINK, harness.AUDIT, harness.INDEX)
 CS_COLUMNS = {'deleted': 'deleted', 'paid': 'paid', 'multiple_quote': 'multiple_quote', 'billed_frequency': 'billed_frequency',
               'created': 'creation_date', 'membership_fee': 'membership_fee', 'subscription': 'subscription_id', 'course': 'course_id',
-              'billed_from': 'billed_from', 'billed_until': 'billed_until', 'one_fee_payment': 'one_fee_payment'}
+              'billed_from': 'billed_from', 'billed_until': 'billed_until', 'one_fee_payment': 'one_fee_payment', 'archived': 'archived'}
 PAYMENT_COLUMNS = {'amount': 'amount', 'meta': 'meta', 'category': 'payment_category_id', 'created': 'creation_date',
                    'payment_date': 'payment_date', 'description': 'description'}
 MODELS = {'payment': ('Payment', PAYMENT, 'payments'), 'coursesubscriptioninstallment': ('CourseSubscriptionInstallment', INSTALLMENT, 'installments'),

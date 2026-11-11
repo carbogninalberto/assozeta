@@ -405,10 +405,6 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
-	if write.ID != nil && *write.ID != instance.ID {
-		// A primary-key change (Model.save() would insert a copy) is not ported.
-		return nil, ErrCourseSubscriptionNotPorted
-	}
 	var events courseSubscriptionEventPlan
 	if write.Events != nil {
 		if events, err = s.planEvents(ctx, tx, instance, write.Events, group, request.GroupHeader); err != nil {
@@ -441,6 +437,10 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	}
 	save := domain.CourseSubscriptionSave{Row: row, Changes: changes, Representation: dto.CourseSubscriptionRepr(row, memory),
 		AssociationID: instance.CourseAssociationID, ResolutionPath: "course.sport_association"}
+	if row.ID != instance.ID {
+		// Model.save() under another primary key writes that row, not this one.
+		save.Copy, save.AssociationID = true, course.AssociationID
+	}
 	if err = tx.SaveCourseSubscription(ctx, save, context); err != nil {
 		return nil, err
 	}

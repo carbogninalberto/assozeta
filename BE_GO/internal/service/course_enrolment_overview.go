@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -23,17 +24,20 @@ func enrolmentLate(tx domain.CourseEnrolmentTransaction, err error) error {
 }
 
 // overviewQuote is add_course_to_subscription's multiple_quote extraction:
-// the stored quote whose quote_id equals the selection's value, else the
-// raw selection; exceptions inside the try leave None.
-func overviewQuote(stored *string, selected any) (any, error) {
-	object, ok := selected.(domain.RequestObject)
-	if !ok {
-		return nil, ErrCourseEnrolmentNotPorted
+// the stored quote whose quote_id equals the selection's value, else the raw
+// selection; every exception inside the try leaves None. `data.keys()` fails
+// for a body that is not a dict (a list, a string, a number), a missing
+// selection only writes into the request data, and a selection other than a
+// dict with a `value` raises on the first stored quote's comparison. Only a
+// stored list without items keeps the selection untouched, whatever it is.
+func overviewQuote(stored *string, data any) (any, error) {
+	object, isObject := data.(domain.RequestObject)
+	if !isObject {
+		return nil, nil
 	}
-	value, present := object.Lookup("value")
-	text, isText := value.(string)
-	if !present || !isText {
-		return nil, ErrCourseEnrolmentNotPorted
+	selected, present := object.Lookup("multiple_quote")
+	if !present {
+		return nil, nil
 	}
 	quotes, err := dto.CourseWritesStoredJSON(stored)
 	if err != nil {
@@ -52,15 +56,43 @@ func overviewQuote(stored *string, selected any) (any, error) {
 		if !present {
 			return nil, nil
 		}
-		idText, ok := id.(string)
+		chosen, ok := selected.(domain.RequestObject)
 		if !ok {
-			return nil, ErrCourseEnrolmentNotPorted
+			return nil, nil
 		}
-		if idText == text {
+		value, present := chosen.Lookup("value")
+		if !present {
+			return nil, nil
+		}
+		if dto.PythonEqual(id, value) {
 			return quote, nil
 		}
 	}
 	return selected, nil
+}
+
+// overviewOneFeeFlag is `'one_fee_payment' in data and data['one_fee_payment']`:
+// a dict (or form) is looked up; for a list or a string the membership test
+// runs and a hit fails on the subscript; a number or boolean fails on the test.
+func overviewOneFeeFlag(data any) (any, error) {
+	switch body := data.(type) {
+	case domain.RequestObject:
+		value, _ := body.Lookup("one_fee_payment")
+		return value, nil
+	case []any:
+		for _, item := range body {
+			if text, ok := item.(string); ok && text == "one_fee_payment" {
+				return nil, courseEnrolmentServer
+			}
+		}
+		return nil, nil
+	case string:
+		if strings.Contains(body, "one_fee_payment") {
+			return nil, courseEnrolmentServer
+		}
+		return nil, nil
+	}
+	return nil, courseEnrolmentServer
 }
 
 // enrolmentAthleteOwns is the athlete check of course_overview_add and
@@ -80,14 +112,9 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	data := domain.RequestObject{}
+	var data any = domain.RequestObject{}
 	if request.Body != nil {
-		object, ok := request.Body.(domain.RequestObject)
-		if !ok || request.Form {
-			// Lists, scalars and HTML form input are not ported.
-			return nil, ErrCourseEnrolmentNotPorted
-		}
-		data = object
+		data = request.Body
 	}
 	tx, err := s.begin(ctx)
 	if err != nil {
@@ -167,8 +194,9 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 	item := map[string]any{"course_subscription_id": row.ID, "course": courseSerializerData(*render), "paid": false,
 		"creation_date": dto.DRFUTCDateTime(row.CreationDate), "subscription": subscription.ID, "payment": paymentID,
 		"multi_payments": row.MultiPayments, "one_fee_payment": false, "archived": false, "type": 1, "multiple_quote": quoteJSON,
-		"billed_frequency": 1, "billed_from": nil, "billed_until": nil, "billed_from_day_of_month": 1, "membership_active": true,
-		"membership_fee": "0.00", "auto_renewal": false, "deleted": false, "membership_payments": []any{}}
+		"billed_frequency": row.BilledFrequency, "billed_from": drfOptionalTime(row.BilledFrom), "billed_until": drfOptionalTime(row.BilledUntil),
+		"billed_from_day_of_month": 1, "membership_active": true, "membership_fee": *row.MembershipFee, "auto_renewal": row.AutoRenewal,
+		"deleted": false, "membership_payments": []any{}}
 	var paymentJSON any
 	if payment != nil {
 		created := dto.DRFUTCDateTime(payment.CreationDate)
@@ -198,15 +226,13 @@ type courseEnrolled struct {
 // error after the first write is wrapped by enrolmentLate (the work so far is
 // committed) unless the caller is atomic and rolls back.
 func (s *CourseEnrolment) addCourseToSubscription(ctx context.Context, tx domain.CourseEnrolmentTransaction, course domain.CourseWriteRow,
-	subscription domain.CourseWriteSubscription, association string, data domain.RequestObject, athlete bool, request CourseEnrolmentRequest,
+	subscription domain.CourseWriteSubscription, association string, data any, athlete bool, request CourseEnrolmentRequest,
 	audit domain.CourseSubscriptionAudit, atomic bool) (*courseEnrolled, error) {
 	var err error
 	var quote any
 	if course.CourseType == 2 {
-		if selected, present := data.Lookup("multiple_quote"); present {
-			if quote, err = overviewQuote(course.MultipleQuotes, selected); err != nil {
-				return nil, err
-			}
+		if quote, err = overviewQuote(course.MultipleQuotes, data); err != nil {
+			return nil, err
 		}
 	}
 	exists, err := tx.LiveRow(ctx, course.ID, subscription.ID)
@@ -216,13 +242,13 @@ func (s *CourseEnrolment) addCourseToSubscription(ctx context.Context, tx domain
 	if exists {
 		return nil, nil
 	}
-	if athlete && course.CourseType == courseMembershipType {
-		// The athlete membership prefill (naive strptime dates) is not ported.
-		return nil, ErrCourseEnrolmentNotPorted
+	if _, upload := quote.(domain.RequestUpload); upload {
+		// The jsonb column cannot encode a file: TypeError before the row exists.
+		return nil, courseEnrolmentServer
 	}
-	oneFeeFlag, _ := data.Lookup("one_fee_payment")
+	flag, flagErr := overviewOneFeeFlag(data)
 	oneFeePositive, _ := decimalPositive(&course.OneFee)
-	oneFee := dto.PythonTruthy(oneFeeFlag) && oneFeePositive
+	oneFee := flagErr == nil && dto.PythonTruthy(flag) && oneFeePositive
 	quoteBranch := !oneFee && course.CourseType == 2 && quote != nil
 	var quoteObject domain.RequestObject
 	var quoteStored, quoteMemory string
@@ -230,16 +256,8 @@ func (s *CourseEnrolment) addCourseToSubscription(ctx context.Context, tx domain
 	if quoteBranch {
 		var ok bool
 		if quoteObject, ok = quote.(domain.RequestObject); ok {
-			if selected, present := quoteObject.Lookup("payment_category"); present {
-				if _, ok := selected.(domain.RequestObject); !ok {
-					return nil, ErrCourseEnrolmentNotPorted
-				}
-			}
 			if raw, present := quoteObject.Lookup("amount"); present {
 				quoteStored, quoteMemory, quoteErr = quoteAmount(raw)
-				if errors.Is(quoteErr, ErrCourseEnrolmentNotPorted) {
-					return nil, quoteErr
-				}
 			} else {
 				quoteErr = courseEnrolmentServer
 			}
@@ -257,7 +275,21 @@ func (s *CourseEnrolment) addCourseToSubscription(ctx context.Context, tx domain
 		enrolmentRepr(created.row, created.memory, true), audit); err != nil {
 		return nil, err
 	}
-	payment, dated, err := s.overviewPayments(ctx, tx, created, course, data, association, quoteObject, quoteBranch, oneFee, quoteStored,
+	late := func(err error) error {
+		if atomic {
+			return err
+		}
+		return enrolmentLate(tx, err)
+	}
+	if athlete && course.CourseType == courseMembershipType {
+		if err = s.athletePrefill(ctx, tx, created, course, audit); err != nil {
+			return nil, late(err)
+		}
+	}
+	if flagErr != nil {
+		return nil, late(flagErr)
+	}
+	payment, dated, err := s.overviewPayments(ctx, tx, created, course, association, quoteObject, quoteBranch, oneFee, quoteStored,
 		quoteMemory, quoteErr, request, audit)
 	if err != nil {
 		if atomic {
@@ -280,7 +312,7 @@ func (s *CourseEnrolment) addCourseToSubscription(ctx context.Context, tx domain
 // overviewPayments creates add_course_to_subscription's payments; the last
 // one is returned (dated: its creation_date is an event date).
 func (s *CourseEnrolment) overviewPayments(ctx context.Context, tx domain.CourseEnrolmentTransaction, created *enrolmentRow, course domain.CourseWriteRow,
-	data domain.RequestObject, association string, quote domain.RequestObject, quoteBranch, oneFee bool, quoteStored, quoteMemory string,
+	association string, quote domain.RequestObject, quoteBranch, oneFee bool, quoteStored, quoteMemory string,
 	quoteErr error, request CourseEnrolmentRequest, audit domain.CourseSubscriptionAudit) (*domain.CourseEnrolmentPayment, bool, error) {
 	category, err := tx.CoursesCategory(ctx, association)
 	if err != nil {
@@ -308,14 +340,15 @@ func (s *CourseEnrolment) overviewPayments(ctx context.Context, tx domain.Course
 		if quoteErr != nil {
 			return nil, false, quoteErr
 		}
-		if selected, present := quote.Lookup("payment_category"); present {
-			if value, present := selected.(domain.RequestObject).Lookup("value"); present {
-				if text, ok := value.(string); !ok {
-					return nil, false, ErrCourseEnrolmentNotPorted
-				} else if id, err := paymentInfoParseUUID(text); err == nil {
-					if category, err = tx.CategoryFirst(ctx, id.String()); err != nil {
-						return nil, false, err
-					}
+		override, categoryID, err := quoteCategoryChoice(quote)
+		if err != nil {
+			return nil, false, err
+		}
+		if override {
+			category = nil
+			if categoryID != nil {
+				if category, err = tx.CategoryFirst(ctx, *categoryID); err != nil {
+					return nil, false, err
 				}
 			}
 		}
@@ -454,4 +487,66 @@ func (s *CourseEnrolment) MakePayment(ctx context.Context, identity domain.Resol
 		item["group"] = audit.GroupRaw
 	}
 	return map[string]any{"data": item}, nil
+}
+
+// addMonths is datetime + relativedelta(months=n): the day is clipped to the
+// target month's length.
+func addMonths(value time.Time, months int) time.Time {
+	total := value.Year()*12 + int(value.Month()) - 1 + months
+	year := total / 12
+	if total%12 < 0 {
+		year--
+	}
+	month := total - year*12 + 1
+	last := time.Date(year, time.Month(month)+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	day := value.Day()
+	if day > last {
+		day = last
+	}
+	return time.Date(year, time.Month(month), day, value.Hour(), value.Minute(), value.Second(), value.Nanosecond(), value.Location())
+}
+
+// athletePrefill is the membership defaults an athlete's enrolment copies
+// from the course (add_course_to_subscription): auto renewal, fee and
+// frequency, then the billing period of the season (strings the DateTimeField
+// rejects), of the subscription date or of the day of the current month
+// (strptime: naive datetimes), saved once.
+func (s *CourseEnrolment) athletePrefill(ctx context.Context, tx domain.CourseEnrolmentTransaction, created *enrolmentRow, course domain.CourseWriteRow,
+	audit domain.CourseSubscriptionAudit) error {
+	if course.SportSeason {
+		// The season's dates are assigned as text, which the DateTimeField rejects on save.
+		return courseEnrolmentServer
+	}
+	if course.BilledFrequency == nil {
+		// relativedelta(months=None) fails before the save.
+		return courseEnrolmentServer
+	}
+	row := &created.row
+	row.AutoRenewal, row.MembershipFee, row.BilledFrequency = course.AutoRenewal, course.Fee, *course.BilledFrequency
+	created.floatFee = false
+	created.memory.Naive = map[string]bool{}
+	var from time.Time
+	if course.FromSubscription {
+		from = row.CreationDate
+	} else {
+		now := s.moment()
+		day := course.BilledDayOfMonth
+		if day < 1 || day > time.Date(now.Year(), now.Month()+1, 0, 0, 0, 0, 0, time.UTC).Day() {
+			// strptime of an impossible day: ValueError before the save.
+			return courseEnrolmentServer
+		}
+		from = time.Date(now.Year(), now.Month(), day, 0, 0, 0, 0, time.UTC)
+		created.memory.Naive["billed_from"], created.memory.Naive["billed_until"] = true, true
+	}
+	until := addMonths(from, *course.BilledFrequency)
+	row.BilledFrom, row.BilledUntil = &from, &until
+	created.memory.Times["billed_from"], created.memory.Times["billed_until"] = false, false
+	return tx.SaveRow(ctx, created.save(), audit)
+}
+
+func drfOptionalTime(value *time.Time) any {
+	if value == nil {
+		return nil
+	}
+	return dto.DRFUTCDateTime(*value)
 }

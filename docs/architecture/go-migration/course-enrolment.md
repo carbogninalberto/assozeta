@@ -81,12 +81,28 @@ the course). Response `{'data': PaymentSerializer}`.
 
 ## Not ported (refused with a 500 before any write)
 
-- Non-canonical `X-Group-Id` spellings.
-- course-subscriptions/add: HTML form bodies.
-- Quote payments with a non-object `payment_category` or a non-string category `value`; overview quote selections without a
-  string `value` and stored quotes with a non-string `quote_id`.
-- course-overview add: non-object bodies, HTML form bodies, and the athlete membership prefill.
-- Payments rendered with an instructor or invoice (make-payment).
+- An HTML form `multiple_quote` or `events` document the jsonb column rejects (lone surrogates, nesting past the parser
+  limit): the answer is the database's error text.
+- Payments rendered with an instructor or invoice (make-payment): the view renders the payment it has just created, so
+  no request reaches this.
+
+## Form bodies, loose quote values and the athlete prefill (t4l3)
+
+- course-subscriptions/add (and the stock router create) read HTML form input: values are the form's strings,
+  `multiple_quote` and `events` are JSON text ("Value must be valid JSON." otherwise), and a boolean the form leaves out
+  is false, so `membership_active` is stored false.
+- A quote's `payment_category`: `null`, a number or a boolean raises before the lookup (rollback on
+  course-subscriptions/add, the row kept on overview add); text or a list keeps the default category; an object's
+  `value` is looked up as text, as an integer (the UUID with that integer value) or `null` (no category), and any other
+  value keeps the default.
+- course-overview add takes any body. A list, text, number or boolean has no selection; `one_fee_payment` found in a
+  list or inside text, and any number or boolean body, raise after the row is created. A selection is compared with the
+  stored `quote_id` by Python equality (`1 == True`, `"1" != 1`); a selection that is not an object with `value` leaves
+  no quote unless the course stores no quotes, when it is kept as sent.
+- An athlete adding a membership course copies the course's auto renewal, fee and frequency and saves the billing
+  period: from the row's creation date, or from the course's day of the current month (naive datetimes in the audit
+  repr), until that plus the frequency in months. A sport-season course, a missing frequency or an impossible day raise
+  after the row is created; a missing fee is saved and then raises.
 
 ## Evidence
 
@@ -117,3 +133,5 @@ Enrolment owner checks (113 cases; fixture regenerated from Django):
 - `router-course-subscriptions-create` and `course-subscriptions` stay green natively.
 
 tailcourses: the same raw `X-Group-Id` handling on `course-subscriptions/add` (events: created only), overview add (payment and installment saved twice) and make-payment (the response renders the in-memory payment, so its `group` is the header as sent). Cases `*-raw-group` (117 cases). RED: documented refusal. GREEN CI `tailcourses-2`. Mutation `tc-mut2` (response group left canonical) CAUGHT.
+
+t4l3: form bodies, loose `payment_category` values, overview bodies and selections, the athlete membership prefill (177 cases; `router-course-subscriptions-create` 32). GREEN CI `t4l3-1`. Mutation `t4l3-mut` (billing period one month longer) CAUGHT on `overview-add-athlete-membership-day`.

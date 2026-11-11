@@ -36,8 +36,8 @@ with a payment, otherwise it deletes the unpaid membership payments.
 update is atomic: the serializer (partial) and its membership validate(),
 then the current membership payment is matched by its meta billed_until and
 saved with the new amount and period (Payment.save() fills a null category).
-``events`` that are not null (installment edits) and a changed primary key are
-not ported. Run with ``python3 -I``.
+A changed primary key makes Model.save() write the instance under the new key
+(a copy, or over a soft-deleted row with that key). Run with ``python3 -I``.
 """
 import copy
 import datetime as dt
@@ -258,6 +258,18 @@ SUBSCRIPTION_TAGS = {'sub_mario': ['t_a', 't_b'], 'sub_luisa': ['t_b'], 'sub_abr
 HOLDINGS['h_deleted'] = {'id': 'a1000000-0000-4000-8000-000000669904', 'carnet': 'zero', 'cs': ['cs_deleted'], 'disabled': False,
                          'meta': None, 'created': '2026-09-19T08:00:00Z'}
 UNKNOWN = 'a1000000-0000-4000-8000-000000669999'
+# Rows whose payment is also the payment of one of their installments (ids of their own, as above).
+COURSES['condiviso'] = {'id': 'a1000000-0000-4000-8000-000000669911', 'association': OWN, 'type': 1, 'title': 'Condiviso', 'deleted': False,
+                        'group': None}
+for number, (label, gone) in enumerate((('shared', False), ('shared_gone', True), ('shared_paid', False))):
+    PAYMENTS['sh_pay_' + label] = {**PAYMENTS['main'], 'id': f'a1000000-0000-4000-8000-00000066992{number}', 'amount': '40.00',
+                                   'paid': label == 'shared_paid', 'description': 'Quota unica'}
+    CS['cs_' + label] = {**copy.deepcopy(CS['cs_gino']), 'id': f'a1000000-0000-4000-8000-00000066993{number}', 'course': 'condiviso',
+                         'subscription': None, 'payment': 'sh_pay_' + label, 'membership_active': True, 'deleted': gone}
+    INSTALLMENTS['sh_i_' + label] = {'id': f'a1000000-0000-4000-8000-00000066994{number}', 'cs': 'cs_' + label, 'number': 0, 'amount': '40.00',
+                                     'payment': 'sh_pay_' + label, 'group': None, 'deleted': False, 'payment_date': '2026-10-01T22:30:00Z',
+                                     'paid': False}
+INSTALLMENTS['sh_i_plain'] = {**INSTALLMENTS['sh_i_shared'], 'id': 'a1000000-0000-4000-8000-000000669949', 'number': 1, 'payment': None}
 
 STATE = {'cs': copy.deepcopy(CS), 'payments': copy.deepcopy(PAYMENTS), 'installments': copy.deepcopy(INSTALLMENTS)}
 for row in STATE['installments'].values():
@@ -1178,6 +1190,118 @@ add('list-after-writes', 'owner', f'{LIST}?include_deleted=true&course_id={C("yo
     listing(*[k for k in own_rows(True) if STATE['cs'][k]['course'] == 'yoga']))
 add('list-after-membership-writes', 'owner', f'{LIST}?subscription_id={S("sub_luisa")}&course_id={C("palestra")}', 200,
     listing('cs_member', 'cs_dup', 'cs_mismatch', 'cs_recover', 'cs_badmeta'))
+
+
+# --- delete of a row whose payment is also an unpaid installment's payment ----
+def shared_delete(actor, label):
+    """The installment's pre_delete deletes the shared payment (SET_NULL clears the stored row's
+    reference); the instance still holds it, so auditlog records the save and the UPDATE then fails
+    on the missing payment. Nothing is atomic: the deletes and the entry stay, the row is not saved."""
+    row = STATE['cs'][label]
+    gone = sorted((k for k, i in STATE['installments'].items() if i['cs'] == label and not i['deleted']), key=lambda k: STATE['installments'][k]['id'])
+    audit, payments = [], []
+    for key in gone:
+        entries = unpaid_installment(key, actor)
+        audit += entries
+        payments += [e['label'] for e in entries if e['model'] == 'payment'][:1]
+    audit += [deleted('coursesubscriptioninstallment', key, actor_index(actor)) for key in reversed(gone)]
+    was = row['deleted']
+    row['deleted'] = True
+    if was:
+        audit.append(changed_entry('coursesubscription', label, actor_index(actor), unseen_changes(label)))
+    else:
+        audit.append(changed_entry('coursesubscription', label, [OWN, 'course.sport_association'],
+                                   {'deleted': ['False', 'True'], 'payment': ['None', PAYMENTS[row['payment']]['id']]}))
+    row['deleted'], row['payment'] = was, None
+    for key in gone:
+        del STATE['installments'][key]
+    for key in payments:
+        STATE['payments'][key]['gone'] = True
+    return {'kind': 'delete', 'actor': actor, 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': gone, 'payments_deleted': payments,
+            'payments_changed': {}, 'audit': audit}
+
+
+add('delete-shared-payment-server-error', 'owner', one('cs_shared', 'delete'), 500, SERVER, method='DELETE', effect=shared_delete('owner', 'cs_shared'))
+add('delete-shared-payment-deleted-row-server-error', 'full_collaborator', one('cs_shared_gone', 'delete'), 500, SERVER, method='DELETE',
+    effect=shared_delete('full_collaborator', 'cs_shared_gone'))
+# A paid shared payment stays: the plain soft delete.
+add('delete-shared-paid-payment', 'owner', one('cs_shared_paid', 'delete'), 204, '<empty>', method='DELETE',
+    effect=soft_delete('owner', 'cs_shared_paid'))
+# The first row lost its payment and installments: a second delete is the plain one.
+add('delete-shared-payment-again', 'owner', one('cs_shared', 'delete'), 204, '<empty>', method='DELETE', effect=soft_delete('owner', 'cs_shared'))
+
+# --- update with another primary key ------------------------------------------
+CS_TABLE = 'application.CourseSubscription'
+
+
+def copied(actor, source, key, fields, sent=()):
+    """Model.save() of the instance under another key: the row of that key (STATE label `key`),
+    its created-row spec and auditlog's two entries (the pre-save diff against a row the default
+    manager does not find, indexed through the actor, then the create)."""
+    label = 'copy_' + key[-4:]
+    row = STATE['cs'][label] = {**copy.deepcopy(STATE['cs'][source]), **fields, 'id': key, 'membership_payments': []}
+    ident = lambda table, value: table[value]['id'] if value else None
+    spec = {'$sym': '@' + label, 'course_subscription_id': key, 'course_id': COURSES[row['course']]['id'], 'paid': row['paid'],
+            'creation_date': row['created'], 'subscription_id': ident(SUBSCRIPTIONS, row['subscription']), 'payment_id': ident(PAYMENTS, row['payment']),
+            'multi_payments': row['multi_payments'], 'one_fee_payment': row['one_fee_payment'], 'archived': row['archived'], 'type': row['type'],
+            'multiple_quote': row['multiple_quote'], 'billed_frequency': row['billed_frequency'], 'billed_from': row['billed_from'],
+            'billed_until': row['billed_until'], 'billed_from_day_of_month': row['billed_from_day_of_month'],
+            'membership_active': row['membership_active'], 'membership_fee': row['membership_fee'], 'auto_renewal': row['auto_renewal'],
+            'deleted': row['deleted']}
+    changes = unseen_changes(label)
+    entry = lambda action, index: {'model': 'coursesubscription', 'label': '@' + label, 'action': action, 'changes': changes, 'overrides': {},
+                                   'index': index, 'repr': cs_repr(label, sent)}
+    return label, spec, [entry(1, actor_index(actor)), entry(0, [OWN, 'course.sport_association'])]
+
+
+def copy_effect(actor, spec, audit, **more):
+    return {'kind': 'update', 'actor': actor, 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': [], 'payments_deleted': [],
+            'payments_changed': {}, 'created': {CS_TABLE: [spec]}, 'audit': audit, **more}
+
+
+NEW = lambda number: f'a1000000-0000-4000-8000-00000066998{number}'
+label, spec, audit = copied('owner', 'cs_gino', NEW(1), {'paid': True, 'membership_fee': '7.50', 'created': '2026-09-12T08:00:00Z'},
+                            sent=('creation_date',))
+add('update-primary-key-copies-row', 'owner', one('cs_gino', 'update'), 200, item(label), method='PATCH',
+    body={'course_subscription_id': NEW(1).upper(), 'paid': True, 'membership_fee': '7.5', 'creation_date': '2026-09-12T10:00:00+02:00'},
+    effect=copy_effect('owner', spec, audit))
+# The installments are edited on the row the path names; the copy has none.
+text = 'Rata n.7 del 15/12/26 (Corsa)'
+label, spec, audit = copied('full_collaborator', 'cs_ev', NEW(2), {})
+created = {CS_TABLE: [spec], PAYMENT_TABLE: [new_payment('@pkp', '11.00', created='2026-12-15T00:00:00Z', description=text, meta=ev_meta(text, '2026-12-15'))],
+           INSTALLMENT_TABLE: [new_installment('@pki', 'cs_ev', 6, '11.00', '@pkp', '2026-12-15T00:00:00Z')]}
+audit = [{'model': 'payment', 'label': '@pkp', 'action': 0, 'changes': '$created', 'overrides': {}, 'index': [OWN, 'direct'], 'repr': None},
+         {'model': 'coursesubscriptioninstallment', 'label': '@pki', 'action': 0, 'changes': '$created', 'overrides': {},
+          'index': [OWN, 'course_subscription.course.sport_association'], 'repr': None}] + audit
+add('update-primary-key-with-events', 'full_collaborator', one('cs_ev', 'update'), 200, item(label), method='PATCH', body={
+    'course_subscription_id': NEW(2), 'events': [
+        {'course_subscription_installment_id': INSTALLMENTS['ev_keep']['id'], 'id': 0, 'amount': '20.00', 'payment_date': '2026-10-01'},
+        {'course_subscription_installment_id': UNKNOWN, 'id': 4}, {'id': 6, 'amount': '11.00', 'payment_date': '15/12/2026'}]},
+    effect={**copy_effect('full_collaborator', spec, audit), 'created': created})
+# The membership's current payment is saved with the new key in its meta; the copy has no payments.
+label, spec, audit = copied('owner', 'cs_member', NEW(3), {'membership_fee': '31.00'})
+meta = {**STATE['payments']['mp_cur']['meta'], 'course_subscription_id': NEW(3), 'amount': '31.00'}
+audit.append(changed_entry('payment', 'mp_cur', [OWN, 'direct'], {
+    'amount': ['30.00', '31.00'], 'meta': [json.dumps(STATE['payments']['mp_cur']['meta'], sort_keys=True), json.dumps(meta, sort_keys=True)]}))
+STATE['payments']['mp_cur'].update({'amount': '31.00', 'meta': meta})
+add('update-primary-key-membership-payment', 'owner', one('cs_member', 'update'), 200, item(label), method='PATCH',
+    body={'course_subscription_id': NEW(3), 'membership_fee': '31.00'},
+    effect=copy_effect('owner', spec, audit, payments_changed={'mp_cur': {'amount': '31.00', 'meta': meta}}))
+# The key of a soft-deleted row passes the unique check (default manager): save() writes over that row
+# (archived is read-only here: the instance keeps its own).
+target = 'cs_del2'
+before_row = copy.deepcopy(STATE['cs'][target])
+STATE['cs'][target].update({k: v for k, v in STATE['cs']['cs_senza'].items() if k not in ('id', 'membership_payments')})
+fields = {name: STATE['cs'][target][key] for name, key in (('deleted', 'deleted'), ('course', 'course'), ('subscription', 'subscription'),
+                                                           ('billed_from', 'billed_from'), ('archived', 'archived')) if STATE['cs'][target][key] != before_row[key]}
+add('update-primary-key-of-deleted-row-overwrites', 'owner', one('cs_senza', 'update'), 200, item(target), method='PATCH',
+    body={'course_subscription_id': CS[target]['id'], 'archived': False},
+    effect={'kind': 'update', 'actor': 'owner', 'cs_changed': {target: fields}, 'cs_deleted': [], 'installments_deleted': [], 'payments_deleted': [],
+            'payments_changed': {}, 'audit': [changed_entry('coursesubscription', target, actor_index('owner'), unseen_changes(target))]})
+add('list-after-copies', 'owner', f'{LIST}?include_deleted=true&course_id={C("yoga")}', 200,
+    listing(*[k for k in own_rows(True) if STATE['cs'][k]['course'] == 'yoga']))
+add('list-after-membership-copy', 'owner', f'{LIST}?course_id={C("palestra")}', 200,
+    listing(*[k for k in own_rows() if STATE['cs'][k]['course'] == 'palestra']))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course subscriptions list, update, delete and bulk-delete authored sequence with '

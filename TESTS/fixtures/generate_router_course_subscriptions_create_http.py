@@ -35,11 +35,13 @@ LIST = '/course-subscriptions/'
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, effect=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, effect=None, raw_body=None, content_type=None):
     case = {'name': f'router-course-subscriptions-create-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if body is not None:
         case['body'] = body
+    if raw_body is not None:
+        case['raw_body'], case['content_type'] = raw_body, content_type
     cases.append(case)
 
 
@@ -47,7 +49,7 @@ def reissue(name, source, *, path=LIST, status=None, response=None):
     """The add case's request on the router route; its writes are the same."""
     case = BY_NAME[source]
     add(name, case['actor'], path, status or case['status'], case['response'] if response is None else response, body=case.get('body'),
-        headers=case['headers'], effect=copy.deepcopy(case['effect']))
+        headers=case['headers'], effect=copy.deepcopy(case['effect']), raw_body=case.get('raw_body'), content_type=case.get('content_type'))
 
 
 def row_only(source, sym, *, actor, course=None, subscription=None, billed=True, float_fee=False):
@@ -100,6 +102,9 @@ add('format-unknown-not-found', 'owner', '/course-subscriptions.csv', 404, {'det
 # Successful creates: the add route's writes, then the 500.
 for source in ('course-fee', 'one-fee', 'installment-course', 'body-events-grouped', 'quote', 'quote-invalid-category', 'membership',
                'course-of-other-association'):
+    reissue(source + '-server-error', source, status=500, response=SERVER)
+# HTML form input reads like JSON apart from the boolean defaults: the same writes, then the 500.
+for source in ('form-urlencoded', 'form-multipart', 'form-quote'):
     reissue(source + '-server-error', source, status=500, response=SERVER)
 reissue('format-json-quote-not-selected-server-error', 'quote-not-selected', path='/course-subscriptions.json', status=500, response=SERVER)
 reissue('format-json-slash-membership-without-fee-server-error', 'membership-without-fee', path='/course-subscriptions.json/', status=500,

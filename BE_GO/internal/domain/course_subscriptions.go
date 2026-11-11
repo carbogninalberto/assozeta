@@ -176,6 +176,16 @@ type CourseSubscriptionSave struct {
 	Representation string
 	AssociationID  *string
 	ResolutionPath string
+	// AuditOnly records the entry of a save whose UPDATE the database
+	// rejects (the statement leaves nothing behind).
+	AuditOnly bool
+	// Overrides are the in-memory values of an Unseen entry that differ from
+	// the stored row.
+	Overrides map[string][2]string
+	// Copy is Model.save() under another primary key: the UPDATE of a row
+	// with that key (one the default manager hides), else an INSERT with its
+	// create entry; Changes carry the in-memory values of the written fields.
+	Copy bool
 }
 
 // CourseSubscriptionPaymentSave is Payment.save() of the matched membership
