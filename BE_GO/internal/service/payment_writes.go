@@ -231,6 +231,9 @@ type paymentAttachment struct {
 	filename string
 	// invalid is b64decode's binascii.Error / ValueError (the 500 page).
 	invalid bool
+	// unlinked is a Document that is created (filename str() of the value) and then
+	// fails: os.path.join or default_storage.save raises before attachments.add.
+	unlinked bool
 }
 
 // paymentAttachmentPlan is _handle_documents' loop: the items stored in
@@ -281,12 +284,24 @@ func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentA
 			plan.stored = append(plan.stored, paymentAttachment{invalid: true})
 			return plan, nil
 		}
-		// A name that is not text, or one default_storage.save rejects, leaves the created Document behind (not ported).
-		if !ok || !utf8.ValidString(name) {
-			return plan, domain.ErrPaymentWritesNotPorted
+		// A name that is not text is stored as str(value) and os.path.join then raises; a name
+		// default_storage.save rejects leaves the created Document behind. Either way: the 500 page.
+		if !ok {
+			text := dto.PythonStr(filename)
+			if utf8.RuneCountInString(text) > 255 {
+				plan.stored = append(plan.stored, paymentAttachment{invalid: true})
+			} else {
+				plan.stored = append(plan.stored, paymentAttachment{filename: text, unlinked: true})
+			}
+			return plan, nil
+		}
+		if !utf8.ValidString(name) {
+			plan.stored = append(plan.stored, paymentAttachment{invalid: true}) // the INSERT cannot encode it
+			return plan, nil
 		}
 		if _, err := documentkey.UploadName(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), uuid.New(), name); err != nil {
-			return plan, domain.ErrPaymentWritesNotPorted
+			plan.stored = append(plan.stored, paymentAttachment{filename: name, unlinked: true})
+			return plan, nil
 		}
 		plan.stored = append(plan.stored, paymentAttachment{content: content, filename: name})
 	}
@@ -311,8 +326,11 @@ func (s *PaymentWrites) storeAttachments(ctx context.Context, tx domain.PaymentW
 			}
 			at := s.at()
 			document := domain.NewDocument{ID: s.newID(), Token: s.newID(), Filename: item.filename, Created: at}
-			if err := tx.AttachPaymentDocument(ctx, payment, document, actorAssociation, auditContext, at); err != nil {
+			if err := tx.AttachPaymentDocument(ctx, payment, document, !item.unlinked, actorAssociation, auditContext, at); err != nil {
 				return err
+			}
+			if item.unlinked {
+				return domain.ErrPaymentWritesServer
 			}
 			if err := s.documents.save(ctx, document, item.content); err != nil {
 				return err
@@ -626,8 +644,8 @@ func (s *PaymentWrites) render(ctx context.Context, tx domain.PaymentWritesTrans
 // entry validates the serializer input: the related lookups and tenant scope, then the field errors.
 func (s *PaymentWrites) entry(ctx context.Context, tx domain.PaymentWritesTransaction, identity domain.ResolvedIdentity, object domain.RequestObject,
 	partial bool) (dto.PaymentEntryInput, error) {
-	for _, name := range []string{"payment_id", "user"} {
-		// A primary key change and the nested user write are not ported.
+	for _, name := range []string{"payment_id"} {
+		// A primary key in the body is not ported.
 		if _, present := object.Lookup(name); present {
 			return dto.PaymentEntryInput{}, domain.ErrPaymentWritesNotPorted
 		}
@@ -855,6 +873,10 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if err != nil {
 		return nil, err
 	}
+	if input.UserPresent {
+		// serializer.save(): Payment.objects.create(user=<dict>) raises.
+		return nil, domain.ErrPaymentWritesServer
+	}
 	total, err := metaAmount(object)
 	if err != nil {
 		return nil, err
@@ -1062,6 +1084,10 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		m.row.AssociateID = associate
 	}
 	m.row.PaymentIntentID = nil
+	if input.UserPresent {
+		// serializer.save(): update() refuses writable nested fields.
+		return nil, domain.ErrPaymentWritesServer
+	}
 	total, err := metaAmount(object)
 	if err != nil {
 		return nil, err

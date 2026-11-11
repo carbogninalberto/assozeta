@@ -659,20 +659,26 @@ func paymentExportCourseValue(text *string) (xlsxexport.Value, error) {
 			return xlsxexport.NoneValue(), nil
 		case string:
 			return xlsxexport.StrValue(item), nil
+		case bool:
+			return xlsxexport.BoolValue(item), nil
+		case []any, map[string]any:
+			// openpyxl cannot convert a list or dict: the workbook fails (Django answers 500).
+			return xlsxexport.ObjectValue(""), nil
 		case json.Number:
 			if number, err := strconv.ParseInt(item.String(), 10, 64); err == nil {
 				return xlsxexport.IntValue(number), nil
 			}
 			if !strings.ContainsAny(item.String(), ".eE") {
-				return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted // beyond int64
+				return xlsxexport.BigIntValue(item.String()), nil
 			}
+			// float() of a huge exponent is inf, of a tiny one 0.0.
 			number, err := strconv.ParseFloat(item.String(), 64)
-			if err != nil || math.IsInf(number, 0) {
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
 				return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted
 			}
 			return xlsxexport.FloatValue(number), nil
 		}
-		return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted // a bool, list or object label
+		return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted
 	}
 	return xlsxexport.Value{}, domain.ErrPaymentReadsServer
 }

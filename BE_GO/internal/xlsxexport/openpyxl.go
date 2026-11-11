@@ -3,6 +3,7 @@ package xlsxexport
 import (
 	_ "embed"
 	"math"
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
@@ -297,6 +298,13 @@ func PandasOpenpyxl(data [][]Value, columns []string, now time.Time) ([]byte, er
 	if len(data) != len(columns) {
 		return nil, ErrDjango // "N columns passed, passed data had M columns"
 	}
+	for _, column := range data {
+		for _, value := range column[:min(rows, len(column))] {
+			if value.Kind == Object {
+				return nil, ErrDjango // openpyxl: Cannot convert [..] to Excel
+			}
+		}
+	}
 	uses := map[string]int{}
 	for _, name := range columns {
 		uses[name]++
@@ -449,6 +457,14 @@ func pandasOpenpyxlCell(col int, kind dtype, value Value) (opCell, error) {
 			text = "1"
 		}
 		return opCell{col: col, kind: 'b', text: text}, nil
+	case BigInt:
+		// A numeric cell: "%.16g" % number converts the int to a float first.
+		number, _ := new(big.Float).SetString(value.Text)
+		approx, _ := number.Float64()
+		if math.IsInf(approx, 0) {
+			return opCell{}, ErrDjango // OverflowError: int too large to convert to float
+		}
+		return opCell{col: col, kind: 'n', text: percentG(approx, false)}, nil
 	}
 	return openpyxlString(col, value.Text, false)
 }

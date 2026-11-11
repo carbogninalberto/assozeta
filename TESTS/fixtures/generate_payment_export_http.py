@@ -178,6 +178,19 @@ PAYMENTS = {
                        paid_on='2024-01-20T10:00:00Z'),
     'abroad': payment('2024-01-25T09:00:00Z', subject=0, amount='99.00', paid=True, association=FOREIGN, account='cash',
                       description='Estero', paid_on='2024-01-25T10:00:00Z'),
+    # Archived rows of the second association whose course label is not text; the cases below pick one by its description.
+    'label_bool': payment('2024-02-02T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-bool',
+                          course={'label': True}, paid_on='2024-02-02T10:00:00Z'),
+    'label_big': payment('2024-02-03T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-big',
+                         course={'label': 123456789012345678901234567890}, paid_on='2024-02-03T10:00:00Z'),
+    'label_big_text': payment('2024-02-03T11:00:00Z', association=FOREIGN, archived=True, amount='2.00', description='et-big text',
+                              course={'label': 'Etichetta'}, paid_on='2024-02-03T12:00:00Z'),
+    'label_huge': payment('2024-02-04T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-huge',
+                          course={'label': 10 ** 400}, paid_on='2024-02-04T10:00:00Z'),
+    'label_list': payment('2024-02-05T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-list',
+                          course={'label': [1, 'a']}, paid_on='2024-02-05T10:00:00Z'),
+    'label_dict': payment('2024-02-06T09:00:00Z', association=FOREIGN, archived=True, amount='1.00', description='et-dict',
+                          course={'label': {'k': 1}}, paid_on='2024-02-06T10:00:00Z'),
 }
 COURSE_SUBSCRIPTIONS = {
     'swim': {'id': uid('c5c5c5c5'), 'course': 'swim', 'payment': 'course', 'deleted': False},
@@ -676,6 +689,18 @@ add('xlsx-petty-last-row-without-account', 'owner', PETTY + '&m=xlsx&query[payme
 add('xlsx-petty-transfer-without-account', 'foreign_owner', PETTY + '&m=xlsx', 500, SERVER)
 add('xlsx-athlete', 'athlete', X, 500, SERVER)
 add('xlsx-range-empty', 'owner', X + '&query[payment_range]=', 500, SERVER)
+
+# A course label that is not text: a boolean is a boolean cell, an int beyond 64 bits a numeric cell (its float; beyond the
+# float range the conversion raises), a list or object cannot be written (openpyxl raises: the 500 page).
+for token, label in (('bool', 'label_bool'), ('big', 'label_big'), ('huge', 'label_huge'), ('list', 'label_list'), ('dict', 'label_dict')):
+    path = EXPORT + f'?archived=1&query[generalSearch]=et-{token}'
+    rows = listed(association=FOREIGN, archived=True, search=f'et-{token}')
+    assert rows == ([label] if token != 'big' else ['label_big_text', label]), rows
+    add(f'label-{token}-csv', 'foreign_owner', path, 200, body(export_csv(rows, association=FOREIGN), FOREIGN))
+    if token in ('bool', 'big'):
+        add(f'label-{token}-xlsx', 'foreign_owner', path + '&m=xlsx', 200, xbody(export_xlsx(rows, association=FOREIGN), FOREIGN))
+    else:
+        add(f'label-{token}-xlsx-server-error', 'foreign_owner', path + '&m=xlsx', 500, SERVER)
 
 # The fallback window starts a year ago: no authored transfer or payment is in it, the header only.
 TEN_YEARS = (datetime.now(timezone.utc) - timedelta(days=3650), datetime.now(timezone.utc) + timedelta(days=1))

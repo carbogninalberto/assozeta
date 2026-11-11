@@ -177,6 +177,13 @@ PAYMENTS = {
     'up_attach_long': payment(),
     'up_attach_nul': payment(),
     'up_attach_null_name': payment(),
+    'up_attach_number': payment(),
+    'up_attach_boolean': payment(),
+    'up_attach_float': payment(),
+    'up_attach_list': payment(),
+    'up_attach_object': payment(),
+    'up_attach_traversal': payment(),
+    'up_attach_directory': payment(),
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
@@ -404,6 +411,25 @@ add('add-validation-errors', 'owner', ADD, 400, errors_repr([
     ('creation_date', [(WRONG_DATE, 'invalid')]),
 ]), body={'creation_date': '2026-13-01', 'payment_date': '05/03/2026', 'amount': 'abc', 'type': 'card', 'subject': 9, 'description': '   ',
           'paid': True, 'complex_item': None}, effect=effect('owner'))
+# A nested `user` is validated by UserSerializer (every field optional); a valid one cannot be saved: the 500 page.
+USER_ERRORS = {'first_name': 'x' * 151, 'last_name': ['a'], 'email': 'nope', 'phone': None, 'username': '', 'role': 9}
+add('add-user-null', 'owner', ADD, 400, errors_repr([('user', [('This field may not be null.', 'null')])]),
+    body={'creation_date': '2026-03-04', 'payment_date': None, 'user': None, 'complex_item': None}, effect=effect('owner'))
+add('add-user-not-an-object', 'owner', ADD, 400,
+    errors_repr([('user', {'non_field_errors': [('Invalid data. Expected a dictionary, but got str.', 'invalid')]})]),
+    body={'creation_date': '2026-03-04', 'payment_date': None, 'user': 'mario', 'complex_item': None}, effect=effect('owner'))
+add('add-user-field-errors', 'owner', ADD, 400, errors_repr([
+    ('amount', [('A valid number is required.', 'invalid')]),
+    ('user', {'first_name': [('Ensure this field has no more than 150 characters.', 'max_length')],
+              'last_name': [('Not a valid string.', 'invalid')], 'email': [('Enter a valid email address.', 'invalid')],
+              'username': [('This field may not be blank.', 'blank')], 'role': [('"9" is not a valid choice.', 'invalid_choice')]})]),
+    body={'creation_date': '2026-03-04', 'payment_date': None, 'amount': 'abc', 'user': USER_ERRORS, 'complex_item': None},
+    effect=effect('owner'))
+add('add-user-object-server-error', 'owner', ADD, 500, SERVER,
+    body={'creation_date': '2026-03-04', 'payment_date': None, 'user': {'first_name': 'Mario', 'role': '2', 'phone': None}, 'complex_item': None},
+    effect=effect('owner'))
+add('add-user-empty-object-server-error', 'owner', ADD, 500, SERVER,
+    body={'creation_date': '2026-03-04', 'payment_date': None, 'user': {}, 'complex_item': None}, effect=effect('owner'))
 add('add-amount-decimal-places', 'owner', ADD, 400, errors_repr([('amount', [('Ensure that there are no more than 2 decimal places.',
                                                                               'max_decimal_places')])]),
     body={'creation_date': '2026-03-04', 'payment_date': None, 'amount': '10.125', 'complex_item': None}, effect=effect('owner'))
@@ -450,11 +476,15 @@ add('add-unknown-group-header-server-error', 'owner', ADD, 500, SERVER, headers=
 def attachment_docs(specs, actor, payment):
     """The Document creates (audit specs), the effect's stored documents and the rendered attachments."""
     audit, stored, rendered = [], [], []
-    for index, (filename, body) in enumerate(specs):
+    for index, (filename, body, *unlinked) in enumerate(specs):
         key = f'$doc{index}'
         audit.append({'key': key, 'model': 'document', 'action': 0, 'index': actor_index(actor),
                       'changes': {'document_id': ['None', key], 'creation_date': ['None', key + '_created'], 'filename': ['None', filename],
                                   'token': ['None', key + '_token'], 'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}})
+        if unlinked:
+            # A Document that stays unattached and has no stored object.
+            stored.append({'filename': filename, 'payment': payment, 'unlinked': True})
+            continue
         stored.append({'filename': filename, 'body_b64': base64.b64encode(body).decode(), 'payment': payment})
         rendered.append({'document_id': f'$bind:doc{index}', 'creation_date': '$now', 'filepath': None, 'filename': filename,
                          'file_size_bytes': None, 'token': f'$bind:doc{index}_token'})
@@ -830,6 +860,16 @@ add('update-validation-errors', 'owner', UPDATE('up_plain'), 400, {
     'attachments_data': {'0': ['Expected a dictionary of items but got type "int".']}},
     method='PATCH', body={'type': 'x', 'subject': True, 'amount': 'x', 'paid': 'maybe', 'payment_date': 5, 'creation_date': None,
                           'attachments_data': [3]}, effect=effect('owner'))
+add('update-user-null', 'owner', UPDATE('up_plain'), 400, {'user': ['This field may not be null.']}, method='PATCH', body={'user': None},
+    effect=effect('owner'))
+add('update-user-not-an-object', 'owner', UPDATE('up_plain'), 400,
+    {'user': {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']}}, method='PATCH', body={'user': [1]},
+    effect=effect('owner'))
+add('update-user-field-errors', 'owner', UPDATE('up_plain'), 400, {
+    'user': {'first_name': ['Ensure this field has no more than 150 characters.'], 'last_name': ['Not a valid string.'],
+             'email': ['Enter a valid email address.'], 'username': ['This field may not be blank.'],
+             'role': ['"9" is not a valid choice.']}},
+    method='PATCH', body={'user': USER_ERRORS}, effect=effect('owner'))
 add('update-related-errors', 'owner', UPDATE('up_plain'), 400, {
     'description': ['This field may not be blank.'], 'payment_category': [f'Invalid pk "{IDS["missing"]}" - object does not exist.'],
     'custom_accounts': ['“1.5” is not a valid UUID.'], 'amount': ['Ensure that there are no more than 9 digits in total.']},
@@ -907,6 +947,9 @@ updated('update-admin-impersonating-owner', 'admin', 'up_admin', {'amount': '14'
 updated('update-attachment-without-keys', 'owner', 'up_attachment', {'amount': '15', 'attachments_data': [{'filename': 'x.pdf'}]},
         {'amount': '15.00'}, status=400, response={'exception': 'document key not present'})
 updated('update-unchanged-no-audit', 'owner', 'up_collab', {'amount': '13.00'}, {})
+# A valid nested user reaches serializer.save(), which cannot write it: nothing changes.
+updated('update-user-object-server-error', 'owner', 'up_plain', {'user': {'first_name': 'Mario'}, 'amount': '31'}, {}, status=500, response=SERVER)
+updated('update-user-empty-object-server-error', 'owner', 'up_plain', {'user': {}}, {}, status=500, response=SERVER)
 # A payment_id in the body is dropped: the update always applies to the row named by the path.
 updated('update-own-payment-id', 'owner', 'up_own_id', {'payment_id': PAYMENTS['up_own_id']['id'], 'amount': '16'}, {'amount': '16.00'})
 updated('update-own-payment-id-uppercase', 'owner', 'up_own_upper',
@@ -959,6 +1002,20 @@ updated('update-attachment-long-filename', 'owner', 'up_attach_long',
 updated('update-attachment-nul-filename', 'owner', 'up_attach_nul',
         {'amount': '26', 'attachments_data': [{'document': b64(PDF), 'filename': 'x\u0000.pdf'}]}, {'amount': '26.00'},
         status=500, response=SERVER)
+# A filename that is not text is stored as str(value) and os.path.join then raises; a storage name the backend refuses
+# leaves the created Document unattached. The payment's own changes are kept.
+for kind, value, text in (('number', 5, '5'), ('boolean', True, 'True'), ('float', 1.5, '1.5'), ('list', ['a', 1], "['a', 1]"),
+                          ('object', {'k': None}, "{'k': None}")):
+    label = f'up_attach_{kind}'
+    updated(f'update-attachment-{kind}-filename', 'owner', label,
+            {'amount': '28', 'attachments_data': [{'document': b64(PDF), 'filename': value}]}, {'amount': '28.00'}, status=500,
+            response=SERVER, documents=[(text, PDF, True)])
+updated('update-attachment-traversal-filename', 'owner', 'up_attach_traversal',
+        {'amount': '29', 'attachments_data': [{'document': b64(PDF), 'filename': '../x.pdf'}]}, {'amount': '29.00'}, status=500,
+        response=SERVER, documents=[('../x.pdf', PDF, True)])
+updated('update-attachment-directory-filename', 'owner', 'up_attach_directory',
+        {'amount': '30', 'attachments_data': [{'document': b64(PDF), 'filename': 'dir/'}]}, {'amount': '30.00'}, status=500,
+        response=SERVER, documents=[('dir/', PDF, True)])
 updated('update-attachment-null-filename', 'owner', 'up_attach_null_name',
         {'amount': '27', 'attachments_data': [{'document': b64(PDF), 'filename': None}]}, {'amount': '27.00'}, status=500, response=SERVER)
 
