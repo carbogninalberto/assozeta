@@ -201,7 +201,8 @@ _identity_context = harness.with_celery_broker(harness.fixture_context_for(contr
     (lambda label=label: models()[label]) for label in (
         'application.Associate', 'application.Payment', 'application.Subscription', 'application.SubscriptionMembership',
         'notifications.NotificationsBroadcast', 'notifications.UserNotificationsBroadcast', 'application.AssociateImportDraftStatus',
-        'application.CourseSubscriptionInstallment', 'application.CourseSubscription'))))
+        'application.CourseSubscriptionInstallment', 'application.CourseSubscription', 'application.MedicalCertificate',
+        'docmanager.Document'))))
 
 
 @contextmanager
@@ -255,6 +256,8 @@ def seed_id(label, ref):
 
 def resolve(value, binding):
     if isinstance(value, str) and value.startswith('$'):
+        if value == '$any_uuid':
+            return value
         if value in binding:
             return binding[value]
         if value == '$default_membership_type':
