@@ -180,10 +180,15 @@ middleware, which skips `STREAMED_PATHS`) sees an empty body and the view reads 
 
 ## Not ported (refused with the 500 page before any write)
 
-- Form and multipart bodies on the serializer views (schedule, restore, remote settings, test, key,
-  confirm, fetch) and multipart bodies on the item view (DRF parses them; the page sends JSON). Form
-  bodies on the item view are ported (their values are strings: 400).
-- Lone surrogate code points in a CharField; runner replies Python decodes but Go does not (as in
+- (t4l2) Form and multipart bodies are served on every view: the serializers read HTML input
+  (`dto.ValidateBackupActionsInput`: a missing BooleanField is False, an empty value of a field
+  that is not required is skipped or stays '' when it allows blank, an uploaded file reads as its
+  name where the field calls `str()`); the remote test replaces an empty form by a plain dict; the
+  item view answers 400 for any form value. Cases `schedule-form-*`, `schedule-multipart-*`,
+  `remote-put-form*`, `remote-put-multipart`, `remote-test-form*`, `keep-multipart-body`,
+  `delete-multipart-*`.
+- (t4l2) A lone surrogate in a CharField is DRF's surrogate validator error (served).
+- Runner replies Python decodes but Go does not (as in
   instance-backups: UTF-16/32, surrogates, NaN/Infinity literals, deep nesting).
 
 Implemented but not exercised by the fixture: development mode, an upload whose body ends before its
