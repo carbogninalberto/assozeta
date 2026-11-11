@@ -65,6 +65,8 @@ ASSOCIATES = {
                        address_city='Torino', address='Corso Francia 10', address_cap='10100', email='bruno@example.test',
                        phone_label='Cellulare', phone='3470000001', phone_3_label='Ufficio', phone_3='0110000000'),
     'anna': associate('Anna', 'Rossi', sex='F'),
+    # Text the xlsxwriter workbook treats specially: a formula, a link with an anchor, a rich string and an array formula.
+    'strange': associate('=SUM(1,2)', 'http://example.test/p#a', sex='F', email='<r>x</r>', address='{=A1}', born_city='internal:Sheet1!A1'),
     'hans': associate('Hans', 'Muller', FOREIGN, sex='M'),
     'greta': associate('Greta', 'Muller', FOREIGN, sex='F'),
 }
@@ -98,6 +100,7 @@ SUBSCRIPTIONS = {
     'mario_old': subscription('mario', '2025-12-01T10:00:00Z', status=3, deleted=True, number='0', medical='expired_adult',
                               end='2025-08-31'),
     'elena': subscription('elena', '2025-11-01T10:00:00Z', status=5, group='own_group', number='7', kind='Tesserato'),
+    'strange': subscription('strange', '2026-03-02T10:00:00Z', number='external:C:/x#S!A1', kind='mailto:a@b.it'),
     'archived': subscription('mario', '2026-04-01T10:00:00Z', archived=True, number='99'),
     'hans': subscription('hans', '2026-03-05T10:00:00Z', FOREIGN, number='1'),
     'nobody': subscription(None, '2026-01-05T10:00:00Z', FOREIGN, number='2'),

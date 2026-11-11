@@ -1016,8 +1016,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### misc-exports.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/rich-string/`#` URL text in member fields. legacy: yes. Cost: medium. |
-| GET invoice/list/export?m=xlsx | openpyxl-refused input | `service/misc_exports.go:493` | B | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
+| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text (**ported** in t2docs: formulas, `{=...}`, `<r>` rich strings, links with anchors and `internal:`/`external:`; only dynamic array functions such as `=SEQUENCE(` stay: their metadata parts are not written) | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B (ported; dynamic arrays stay) | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/rich-string/`#` URL text in member fields. legacy: yes. Cost: medium. |
+| GET invoice/list/export?m=xlsx | openpyxl-refused input (bool columns **ported** in t2docs; the remaining refusals are pandas dtype cases that need a Python int beyond int64) | `service/misc_exports.go:493` | B (ported; big ints stay: pandas keeps them as objects/uint64 and the coercion depends on the dtype mix, no Go counterpart) | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
 
 ### modules-responses.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1028,7 +1028,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go` | ported (v2-rest-b3) | The CharField stores `str()` of the value. |
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go` | ported (v2-rest-b3) | Integer ids resolve through `UUID(int=...)`; a document other rows reference is deleted with the shared collector. |
 | GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`Info`) | ported (v2-rest-a, v2-rest-b) | Not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` in Django and Go (v2-rest-b). |
-| GET modules/<id>/export | ints beyond int64, xlsxwriter-refused text (list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
+| GET modules/<id>/export | ints beyond int64 (stays: the answer is a Python int object, pandas stores it as an object/uint64 column, no Go counterpart), xlsxwriter-refused text (**ported** in t2docs except dynamic array functions; list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
 
 ### modules-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1123,7 +1123,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST printing/generate | `format: 'pdf'` | `service/printing_generate.go:218-219` | **A** (ported in v2-pdf) | `components/modals/PrintingModal.svelte:80` defaults `format: 'pdf'`. The body is sent at `:110-112`. Cost: expensive (reportlab-equivalent PDF). |
-| same (excel) | openpyxl refusals (bool column, dup names), int beyond int64 / bad float in `meta.description` | `service/printing_generate.go:210-211,767,773` | B | A bool column needs bool `meta.description` values. legacy: yes. Cost: cheap. |
+| same (excel) | openpyxl refusals (bool column **ported** in t2docs, dup names were ported earlier), bad float in `meta.description` (**ported**: `1e999` is inf), int beyond int64 in `meta.description` (stays: a Python int object in a pandas column, no Go counterpart) | `service/printing_generate.go:210-211,767,773` | B | A bool column needs bool `meta.description` values. legacy: yes. Cost: cheap. |
 
 ### restore-cleanup.md
 | route | refusal condition | Go site | class | evidence / notes |

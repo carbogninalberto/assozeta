@@ -1246,6 +1246,25 @@
    "export_user": "export_b",
    "payment": "gone"
   },
+  "e5": {
+   "created": "2026-09-02T10:00:00Z",
+   "queue": null,
+   "response": {
+    "nome": "=1+1",
+    "note": "http://example.test/p#frag",
+    "firma": "<r>b</r>",
+    "indirizzo": "internal:Z!A1",
+    "eta": "{=A1}"
+   },
+   "approved": true,
+   "user": null,
+   "attachments": [],
+   "id": "a1000000-0000-4000-8000-000000643121",
+   "module": "export",
+   "number": 4,
+   "export_user": null,
+   "payment": null
+  },
   "plain_r": {
    "created": "2026-09-02T10:00:00Z",
    "queue": null,
@@ -1258,7 +1277,7 @@
    "attachments": [
     "d6"
    ],
-   "id": "a1000000-0000-4000-8000-000000643121",
+   "id": "a1000000-0000-4000-8000-000000643122",
    "module": "export_plain",
    "number": 0,
    "export_user": null,
@@ -1271,7 +1290,7 @@
    "approved": true,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643122",
+   "id": "a1000000-0000-4000-8000-000000643123",
    "module": "export_noname",
    "number": 0,
    "export_user": null,
@@ -1284,7 +1303,7 @@
    "approved": true,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643123",
+   "id": "a1000000-0000-4000-8000-000000643124",
    "module": "export_nolabel",
    "number": 0,
    "export_user": null,
@@ -1297,7 +1316,7 @@
    "approved": true,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643124",
+   "id": "a1000000-0000-4000-8000-000000643125",
    "module": "export_dict",
    "number": 0,
    "export_user": null,
@@ -1312,7 +1331,7 @@
    "approved": true,
    "user": null,
    "attachments": [],
-   "id": "a1000000-0000-4000-8000-000000643125",
+   "id": "a1000000-0000-4000-8000-000000643126",
    "module": "export_foreign",
    "number": 0,
    "export_user": null,
@@ -1741,6 +1760,26 @@
          "Pagato",
          "Approvata",
          ""
+        ],
+        [
+         "=1+1",
+         "{=A1}",
+         "-",
+         "-",
+         "internal:Z!A1",
+         "<r>b</r>",
+         "http://example.test/p#frag",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "4"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
         ]
        ],
        "index": false,
@@ -1911,6 +1950,26 @@
          "Pagato",
          "Approvata",
          ""
+        ],
+        [
+         "=1+1",
+         "{=A1}",
+         "-",
+         "-",
+         "internal:Z!A1",
+         "<r>b</r>",
+         "http://example.test/p#frag",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "4"
+         },
+         "-",
+         "-",
+         "-",
+         "Approvata",
+         ""
         ]
        ],
        "index": false,
@@ -2079,6 +2138,26 @@
          "-",
          "",
          "Pagato",
+         "Approvata",
+         ""
+        ],
+        [
+         "=1+1",
+         "{=A1}",
+         "-",
+         "-",
+         "internal:Z!A1",
+         "<r>b</r>",
+         "http://example.test/p#frag",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "4"
+         },
+         "-",
+         "-",
+         "-",
          "Approvata",
          ""
         ]
@@ -2252,6 +2331,26 @@
          "-",
          "",
          "Pagato",
+         "Approvata",
+         ""
+        ],
+        [
+         "=1+1",
+         "{=A1}",
+         "-",
+         "-",
+         "internal:Z!A1",
+         "<r>b</r>",
+         "http://example.test/p#frag",
+         "-",
+         "-",
+         "02/09/2026 10:00",
+         {
+          "int": "4"
+         },
+         "-",
+         "-",
+         "-",
          "Approvata",
          ""
         ]

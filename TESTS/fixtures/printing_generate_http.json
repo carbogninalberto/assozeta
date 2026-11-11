@@ -798,6 +798,64 @@
    "invoice": null,
    "association": "a1000000-0000-4000-8000-000000701002",
    "link": null
+  },
+  "p15": {
+   "id": "a1000000-0000-4000-8000-000002710058",
+   "associate": "anna",
+   "subject": 2,
+   "amount": "12.00",
+   "created": [
+    -4,
+    "10:30:00"
+   ],
+   "paid_on": null,
+   "paid": false,
+   "archived": false,
+   "expense": false,
+   "deleted": false,
+   "group": null,
+   "description": null,
+   "meta": {
+    "description": true
+   },
+   "course": null,
+   "category": null,
+   "account": null,
+   "invoice": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": [
+    "course",
+    "nuoto"
+   ]
+  },
+  "p16": {
+   "id": "a1000000-0000-4000-8000-000002710059",
+   "associate": "marco",
+   "subject": 2,
+   "amount": "13.00",
+   "created": [
+    -9,
+    "10:45:00"
+   ],
+   "paid_on": null,
+   "paid": false,
+   "archived": false,
+   "expense": false,
+   "deleted": false,
+   "group": null,
+   "description": null,
+   "meta": {
+    "description": false
+   },
+   "course": null,
+   "category": null,
+   "account": null,
+   "invoice": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "link": [
+    "course",
+    "nuoto"
+   ]
   }
  },
  "cases": [
@@ -4569,55 +4627,73 @@
         "Marco",
         "Tobia",
         "Lia",
-        "Anna"
+        "Anna",
+        "Anna",
+        "Marco"
        ],
        [
         "Bianchi",
         "Neri",
         "Verdi",
-        "Rossi"
+        "Rossi",
+        "Rossi",
+        "Bianchi"
        ],
        [
         "-",
         "-",
         "lia@example.test",
-        "anna@example.test"
+        "anna@example.test",
+        "anna@example.test",
+        "-"
        ],
        [
         "-",
         "-",
         "0451234",
-        "3331234567"
+        "3331234567",
+        "3331234567",
+        "-"
        ],
        [
         "3470001111",
         "-",
         "-",
-        "-"
+        "-",
+        "-",
+        "3470001111"
        ],
        [
         "Tutore",
         "Socio",
         "Socio",
-        "Socio"
+        "Socio",
+        "Socio",
+        "Tutore"
        ],
        [
         "120,50",
         "30,00",
         "45,00",
-        "10,00"
+        "10,00",
+        "12,00",
+        "13,00"
        ],
        [
         "Nuoto",
         "Rata 1 Yoga",
         "Danza, Mensile",
-        "Carnet 10 ingressi"
+        "Carnet 10 ingressi",
+        true,
+        false
        ],
        [
         "$date:-20",
         "$date:-12",
         "$date:-8",
-        "$date:-30"
+        "$date:-30",
+        "$date:-4",
+        "$date:-9"
        ],
        [
         {
@@ -4631,6 +4707,12 @@
         },
         {
          "int": "30"
+        },
+        {
+         "int": "4"
+        },
+        {
+         "int": "9"
         }
        ]
       ]
@@ -4729,7 +4811,9 @@
        [
         "Gina",
         "Anna",
+        "Anna",
         "Lia",
+        "Marco",
         "Tobia",
         "Marco",
         "Anna",
@@ -4738,7 +4822,9 @@
        [
         "Gialli",
         "Rossi",
+        "Rossi",
         "Verdi",
+        "Bianchi",
         "Neri",
         "Bianchi",
         "Rossi",
@@ -4747,7 +4833,9 @@
        [
         "-",
         "anna@example.test",
+        "anna@example.test",
         "lia@example.test",
+        "-",
         "-",
         "-",
         "anna@example.test",
@@ -4756,7 +4844,9 @@
        [
         "-",
         "3331234567",
+        "3331234567",
         "0451234",
+        "-",
         "-",
         "-",
         "3331234567",
@@ -4769,6 +4859,8 @@
         "-",
         "3470001111",
         "-",
+        "3470001111",
+        "-",
         "-"
        ],
        [
@@ -4778,12 +4870,16 @@
         "Socio",
         "Tutore",
         "Socio",
+        "Tutore",
+        "Socio",
         "Socio"
        ],
        [
         "40,00",
+        "12,00",
         "25,00",
         "45,00",
+        "13,00",
         "30,00",
         "120,50",
         "20,00",
@@ -4791,8 +4887,10 @@
        ],
        [
         "Iscrizione",
+        true,
         "Quota extra",
         "Danza, Mensile",
+        false,
         "Rata 1 Yoga",
         "Nuoto",
         "Iscrizione",
@@ -4800,8 +4898,10 @@
        ],
        [
         "$date:-2",
+        "$date:-4",
         "$date:-5",
         "$date:-8",
+        "$date:-9",
         "$date:-12",
         "$date:-20",
         "$date:-25",
@@ -4812,10 +4912,16 @@
          "int": "2"
         },
         {
+         "int": "4"
+        },
+        {
          "int": "5"
         },
         {
          "int": "8"
+        },
+        {
+         "int": "9"
         },
         {
          "int": "12"
@@ -4875,28 +4981,36 @@
        [
         "Gina",
         "Anna",
+        "Anna",
         "Lia",
+        "Marco",
         "Tobia",
         "Marco"
        ],
        [
         "Gialli",
         "Rossi",
+        "Rossi",
         "Verdi",
+        "Bianchi",
         "Neri",
         "Bianchi"
        ],
        [
         "-",
         "anna@example.test",
+        "anna@example.test",
         "lia@example.test",
+        "-",
         "-",
         "-"
        ],
        [
         "-",
         "3331234567",
+        "3331234567",
         "0451234",
+        "-",
         "-",
         "-"
        ],
@@ -4905,6 +5019,8 @@
         "-",
         "-",
         "-",
+        "3470001111",
+        "-",
         "3470001111"
        ],
        [
@@ -4912,26 +5028,34 @@
         "Socio",
         "Socio",
         "Socio",
+        "Tutore",
+        "Socio",
         "Tutore"
        ],
        [
         "40,00",
+        "12,00",
         "25,00",
         "45,00",
+        "13,00",
         "30,00",
         "120,50"
        ],
        [
         "Iscrizione",
+        true,
         "Quota extra",
         "Danza, Mensile",
+        false,
         "Rata 1 Yoga",
         "Nuoto"
        ],
        [
         "$date:-2",
+        "$date:-4",
         "$date:-5",
         "$date:-8",
+        "$date:-9",
         "$date:-12",
         "$date:-20"
        ],
@@ -4940,10 +5064,16 @@
          "int": "2"
         },
         {
+         "int": "4"
+        },
+        {
          "int": "5"
         },
         {
          "int": "8"
+        },
+        {
+         "int": "9"
         },
         {
          "int": "12"
@@ -5106,6 +5236,8 @@
         "Rossi",
         "Rossi",
         "Rossi",
+        "Rossi",
+        "Bianchi",
         "Bianchi",
         "Bianchi",
         "Verdi",
@@ -5117,6 +5249,8 @@
         "Anna",
         "Anna",
         "Anna",
+        "Anna",
+        "Marco",
         "Marco",
         "Marco",
         "Lia",
@@ -5128,6 +5262,8 @@
         "$date:-11000",
         "$date:-11000",
         "$date:-11000",
+        "$date:-11000",
+        "$date:-3000",
         "$date:-3000",
         "$date:-3000",
         "$date:-2000",
@@ -5139,6 +5275,8 @@
         "anna@example.test",
         "anna@example.test",
         "anna@example.test",
+        "anna@example.test",
+        "-",
         "-",
         "-",
         "lia@example.test",
@@ -5150,6 +5288,8 @@
         "3331234567",
         "3331234567",
         "3331234567",
+        "3331234567",
+        "-",
         "-",
         "-",
         "0451234",
@@ -5161,6 +5301,8 @@
         "-",
         "-",
         "-",
+        "-",
+        "3470001111",
         "3470001111",
         "3470001111",
         "-",
@@ -5172,6 +5314,8 @@
         "Socio",
         "Socio",
         "Socio",
+        "Socio",
+        "Tutore",
         "Tutore",
         "Tutore",
         "Socio",
@@ -5183,6 +5327,8 @@
         "associato e tesserato",
         "associato e tesserato",
         "associato e tesserato",
+        "associato e tesserato",
+        "tesserato",
         "tesserato",
         "tesserato",
         "associato e tesserato",
@@ -5190,6 +5336,7 @@
         "associato e tesserato"
        ],
        [
+        "Corso",
         "Altro",
         "Iscrizione",
         "Iscrizione",
@@ -5198,10 +5345,13 @@
         "Corso",
         "Corso",
         "Corso",
+        "Corso",
         "Iscrizione"
        ],
        [
+        "-",
         "Extra",
+        "-",
         "-",
         "-",
         "-",
@@ -5212,10 +5362,12 @@
         "-"
        ],
        [
+        "12.00",
         "25.00",
         "20.00",
         "50.00",
         "50.00",
+        "13.00",
         "0.00",
         "120.50",
         "45.00",
@@ -5226,7 +5378,9 @@
         "Non pagato",
         "Non pagato",
         "Non pagato",
+        "Non pagato",
         "Pagato",
+        "Non pagato",
         "Non pagato",
         "Non pagato",
         "Non pagato",
@@ -5234,10 +5388,12 @@
         "Non pagato"
        ],
        [
+        "$date:-4",
         "$date:-5",
         "$date:-25",
         "$date:-40",
         "$date:-60",
+        "$date:-9",
         "$date:-15",
         "$date:-20",
         "$date:-8",
@@ -5248,7 +5404,9 @@
         "-",
         "-",
         "-",
+        "-",
         "$date:-59",
+        "-",
         "-",
         "-",
         "-",
@@ -5259,7 +5417,9 @@
         "-",
         "-",
         "-",
+        "-",
         "12",
+        "-",
         "-",
         "-",
         "-",
@@ -6398,6 +6558,34 @@
         {
          "int": "30"
         }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "12,00",
+        true,
+        "$date:-4",
+        {
+         "int": "4"
+        }
+       ],
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "13,00",
+        false,
+        "$date:-9",
+        {
+         "int": "9"
+        }
        ]
       ],
       "title": "Quote corso/carnet non pagate (giorno stampa $today)"
@@ -6463,6 +6651,20 @@
         "3331234567",
         "-",
         "Socio",
+        "12,00",
+        true,
+        "$date:-4",
+        {
+         "int": "4"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
         "25,00",
         "Quota extra",
         "$date:-5",
@@ -6482,6 +6684,20 @@
         "$date:-8",
         {
          "int": "8"
+        }
+       ],
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "13,00",
+        false,
+        "$date:-9",
+        {
+         "int": "9"
         }
        ],
        [
@@ -6597,6 +6813,23 @@
         "-",
         "Socio",
         "associato e tesserato",
+        "Corso",
+        "-",
+        "12.00",
+        "Non pagato",
+        "$date:-4",
+        "-",
+        "-"
+       ],
+       [
+        "Rossi",
+        "Anna",
+        "$date:-11000",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
+        "associato e tesserato",
         "Altro",
         "Extra",
         "25.00",
@@ -6655,6 +6888,23 @@
         "$date:-60",
         "$date:-59",
         "12"
+       ],
+       [
+        "Bianchi",
+        "Marco",
+        "$date:-3000",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "tesserato",
+        "Corso",
+        "-",
+        "13.00",
+        "Non pagato",
+        "$date:-9",
+        "-",
+        "-"
        ],
        [
         "Bianchi",
@@ -7119,6 +7369,20 @@
         "3331234567",
         "-",
         "Socio",
+        "12,00",
+        true,
+        "$date:-4",
+        {
+         "int": "4"
+        }
+       ],
+       [
+        "Anna",
+        "Rossi",
+        "anna@example.test",
+        "3331234567",
+        "-",
+        "Socio",
         "25,00",
         "Quota extra",
         "$date:-5",
@@ -7138,6 +7402,20 @@
         "$date:-8",
         {
          "int": "8"
+        }
+       ],
+       [
+        "Marco",
+        "Bianchi",
+        "-",
+        "-",
+        "3470001111",
+        "Tutore",
+        "13,00",
+        false,
+        "$date:-9",
+        {
+         "int": "9"
         }
        ],
        [

@@ -144,6 +144,9 @@ PAYMENTS = {
     'p12': payment('nina', 3, '5.00', [-1, '05:00:00'], account='cassa'),
     'p13': payment('anna', 1, '20.00', [-25, '00:00:00']),
     'p14': payment('hans', 1, '60.00', [-6, '10:00:00'], association=FOREIGN),
+    # A JSON boolean as the description: the column holds bools next to strings (an openpyxl boolean cell).
+    'p15': payment('anna', 2, '12.00', [-4, '10:30:00'], meta={'description': True}, link=['course', 'nuoto']),
+    'p16': payment('marco', 2, '13.00', [-9, '10:45:00'], meta={'description': False}, link=['course', 'nuoto']),
 }
 SUBJECT = {0: 'Altro', 1: 'Iscrizione', 2: 'Corso', 3: 'Giroconto'}
 TYPE = {1: 'associato', 2: 'associato e tesserato', 3: 'tesserato'}

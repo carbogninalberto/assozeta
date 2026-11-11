@@ -249,6 +249,14 @@ excel_utils('eu-decimal-repr', ['a'], [D('1E+2'), D('0.000001'), 'x'])
 excel_utils('eu-int-huge', ['a'], [I(12345678901234567), I(1)])
 excel_utils('eu-int-huge-none', ['a'], [I(12345678901234567), None])
 excel_utils('eu-many-rows', ['n', 's'], [I(n) for n in range(40)], [f'row {n}' for n in range(40)])
+# Bool columns: only bools become Int64 1/0, bools next to ints or floats take their numeric kind, next to text they stay bool cells.
+excel_utils('eu-bool-only', ['b'], [{'bool': True}, {'bool': False}, {'bool': True}])
+excel_utils('eu-bool-none', ['b'], [{'bool': True}, None, {'bool': False}])
+excel_utils('eu-bool-int', ['b'], [{'bool': True}, I(2), {'bool': False}])
+excel_utils('eu-bool-float', ['b'], [{'bool': True}, F(1.5)])
+excel_utils('eu-bool-text', ['b', 'n'], [{'bool': True}, 'x', {'bool': False}], [I(1), I(2), I(3)])
+excel_utils('eu-bool-numeric-text', ['b'], [{'bool': True}, '5', {'bool': False}])
+excel_utils('eu-bool-dup', ['b', 'b'], [{'bool': True}, {'bool': False}], [I(1), I(2)])
 
 # Seeded random numeric-looking columns: pandas.to_numeric's parser, the Int64/float64
 # choice, float formatting and the str() widths.
@@ -302,6 +310,18 @@ subscription('sub-many', ['a' * n for n in range(1, 30)], [[f'{r}-{c}' for c in 
 subscription('sub-dups', ['x', 'y'], [['same', 'same'], ['same', 'other'], ['other', 'same']])
 subscription('sub-specials', SIMPLE, [['=x', 'http://a.b', ' sp', 'a\x02b', '_x0000_'], ['{=1}', 'mailto:a', 'b ', '\n', 'é']])
 subscription('sub-long', SIMPLE, [['x' * 33000, 'a', 'b', 'c', 'd']])
+# Formulas (a leading '=' or a {=...} token), rich strings (<r>...</r> is written raw) and links with anchors, internal: and
+# external: targets, as in XlsxWriter's Worksheet.write(). Dynamic array functions write extra parts and stay unported.
+subscription('sub-formulas', SIMPLE, [['=1+1', '{=SUM(A1:A2)}', '=', '=SUM("a<b>&c")', '=aSINGLE(1)'],
+                                      ['=_xlfn.SUM(1)', '=héSORT(1)', '{=}', '={x}', '=SORT']])
+subscription('sub-dynamic', SIMPLE, [['=SEQUENCE(3)', 'a', 'b', 'c', 'd']])
+subscription('sub-rich', SIMPLE, [['<r>x</r>', '<r><t>a</t></r>', '<r>&</r>', '<r>', 'x</r>'], ['<r></r>', '<r>\x01</r>', ' <r>x</r>', '<r>x</r> ', 'y']])
+subscription('sub-urls', SIMPLE, [['http://a.b/c#frag', 'internal:Sheet2!B2', 'external:./f.xlsx', 'external:\\\\srv/share', 'https://x.y/%41#a b'],
+                                  ['external:C:/dir/f.xlsx#S!A1', 'mailto:a@b.it', 'ftp://x/y z<>', 'http://x/a#b#c', 'internal:'],
+                                  ['http://' + 'a' * 2080, 'http://x#' + 'b' * 2080, 'mailto:' + 'c' * 33000, 'http://a"b[c]^d`e{f}', 'external:#loc']])
+subscription('sub-url-header', ['http://x.y/z#h', 'internal:A1', 'Nome', '=A1', '<r>h</r>'], [['a', 'b', 'c', 'd', 'e']])
+subscription('sub-url-same-text', ['a', 'b'], [['http://x.y', 'http://x.y'], ['http://x.y', 'mailto:x@y']])
+instructor('ir-urls', SCHEMA, [['internal:A1', 'external:x', '{=A1}', '=SUM(1)', 'http://u/v#w', 'd', I(1), '<r>x</r>', 'e']])
 
 # ---------------------------------------------------------------- modules/<id>/export (xlsxwriter, 'Risposte')
 STANDARD = ['Data creazione', 'Progressivo risposta', 'Posizione in coda', 'Utente', 'Pagamento', 'Approvato', 'Allegati']
