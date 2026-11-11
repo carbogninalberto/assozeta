@@ -89,9 +89,6 @@ func (s *CourseEnrolment) OverviewAdd(ctx context.Context, identity domain.Resol
 		}
 		data = object
 	}
-	if err = canonicalGroup(request.GroupHeader); err != nil {
-		return nil, err
-	}
 	tx, err := s.begin(ctx)
 	if err != nil {
 		return nil, err
@@ -391,9 +388,6 @@ func (s *CourseEnrolment) MakePayment(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	if err = canonicalGroup(request.GroupHeader); err != nil {
-		return nil, err
-	}
 	tx, err := s.begin(ctx)
 	if err != nil {
 		return nil, err
@@ -454,5 +448,10 @@ func (s *CourseEnrolment) MakePayment(ctx context.Context, identity domain.Resol
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	return map[string]any{"data": dto.CourseEnrolmentPaymentItem(rendered)}, nil
+	item := dto.CourseEnrolmentPaymentItem(rendered)
+	if audit.GroupRaw != "" {
+		// PaymentSerializer renders the in-memory payment: the header as sent.
+		item["group"] = audit.GroupRaw
+	}
+	return map[string]any{"data": item}, nil
 }

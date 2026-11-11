@@ -293,8 +293,30 @@
    "max": 5,
    "created": "2026-06-05T10:00:00Z"
   },
-  "abroad": {
+  "huge": {
    "id": "a1000000-0000-4000-8000-000000986027",
+   "camp": "camp",
+   "start": "2026-10-01T07:00:00Z",
+   "end": "2026-10-02T07:00:00Z",
+   "title": "Enorme",
+   "description": null,
+   "fee": "9999999.99",
+   "max": null,
+   "created": "2026-06-07T10:00:00Z"
+  },
+  "wordy": {
+   "id": "a1000000-0000-4000-8000-000000986028",
+   "camp": "camp",
+   "start": "2026-11-01T07:00:00Z",
+   "end": "2026-11-02T07:00:00Z",
+   "title": "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+   "description": null,
+   "fee": "0.00",
+   "max": null,
+   "created": "2026-06-08T10:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000986029",
    "camp": "abroad",
    "start": "2026-07-01T07:00:00Z",
    "end": "2026-07-02T07:00:00Z",
@@ -307,7 +329,7 @@
  },
  "services": {
   "kayak": {
-   "id": "a1000000-0000-4000-8000-000000986028",
+   "id": "a1000000-0000-4000-8000-000000986030",
    "period": "july",
    "title": "Kayak",
    "description": "Mezza giornata",
@@ -316,7 +338,7 @@
    "created": "2026-06-05T09:00:00Z"
   },
   "umbrella": {
-   "id": "a1000000-0000-4000-8000-000000986029",
+   "id": "a1000000-0000-4000-8000-000000986031",
    "period": "july",
    "title": "Ombrellone è",
    "description": null,
@@ -325,7 +347,7 @@
    "created": "2026-06-07T09:00:00Z"
   },
   "bus": {
-   "id": "a1000000-0000-4000-8000-000000986030",
+   "id": "a1000000-0000-4000-8000-000000986032",
    "period": "july",
    "title": "Bus",
    "description": null,
@@ -334,7 +356,7 @@
    "created": "2026-06-06T09:00:00.000001Z"
   },
   "tent": {
-   "id": "a1000000-0000-4000-8000-000000986031",
+   "id": "a1000000-0000-4000-8000-000000986033",
    "period": "big",
    "title": "Tenda",
    "description": null,
@@ -343,7 +365,7 @@
    "created": "2026-06-08T09:00:00Z"
   },
   "snack": {
-   "id": "a1000000-0000-4000-8000-000000986032",
+   "id": "a1000000-0000-4000-8000-000000986034",
    "period": "august",
    "title": "Merenda",
    "description": null,
@@ -352,7 +374,7 @@
    "created": "2026-06-09T09:00:00Z"
   },
   "guide": {
-   "id": "a1000000-0000-4000-8000-000000986033",
+   "id": "a1000000-0000-4000-8000-000000986035",
    "period": "sept",
    "title": "Guida",
    "description": null,
@@ -360,8 +382,197 @@
    "category": "own",
    "created": "2026-06-10T09:00:00Z"
   },
+  "huge_svc": {
+   "id": "a1000000-0000-4000-8000-000000986036",
+   "period": "huge",
+   "title": "Extra",
+   "description": null,
+   "fee": "5.00",
+   "category": "own",
+   "created": "2026-06-12T09:00:00Z"
+  },
+  "wordy_0": {
+   "id": "a1000000-0000-4000-8000-000000986037",
+   "period": "wordy",
+   "title": "S00xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_1": {
+   "id": "a1000000-0000-4000-8000-000000986038",
+   "period": "wordy",
+   "title": "S01xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_2": {
+   "id": "a1000000-0000-4000-8000-000000986039",
+   "period": "wordy",
+   "title": "S02xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_3": {
+   "id": "a1000000-0000-4000-8000-000000986040",
+   "period": "wordy",
+   "title": "S03xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_4": {
+   "id": "a1000000-0000-4000-8000-000000986041",
+   "period": "wordy",
+   "title": "S04xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_5": {
+   "id": "a1000000-0000-4000-8000-000000986042",
+   "period": "wordy",
+   "title": "S05xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_6": {
+   "id": "a1000000-0000-4000-8000-000000986043",
+   "period": "wordy",
+   "title": "S06xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_7": {
+   "id": "a1000000-0000-4000-8000-000000986044",
+   "period": "wordy",
+   "title": "S07xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_8": {
+   "id": "a1000000-0000-4000-8000-000000986045",
+   "period": "wordy",
+   "title": "S08xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_9": {
+   "id": "a1000000-0000-4000-8000-000000986046",
+   "period": "wordy",
+   "title": "S09xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_10": {
+   "id": "a1000000-0000-4000-8000-000000986047",
+   "period": "wordy",
+   "title": "S10xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_11": {
+   "id": "a1000000-0000-4000-8000-000000986048",
+   "period": "wordy",
+   "title": "S11xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_12": {
+   "id": "a1000000-0000-4000-8000-000000986049",
+   "period": "wordy",
+   "title": "S12xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_13": {
+   "id": "a1000000-0000-4000-8000-000000986050",
+   "period": "wordy",
+   "title": "S13xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_14": {
+   "id": "a1000000-0000-4000-8000-000000986051",
+   "period": "wordy",
+   "title": "S14xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_15": {
+   "id": "a1000000-0000-4000-8000-000000986052",
+   "period": "wordy",
+   "title": "S15xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_16": {
+   "id": "a1000000-0000-4000-8000-000000986053",
+   "period": "wordy",
+   "title": "S16xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_17": {
+   "id": "a1000000-0000-4000-8000-000000986054",
+   "period": "wordy",
+   "title": "S17xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_18": {
+   "id": "a1000000-0000-4000-8000-000000986055",
+   "period": "wordy",
+   "title": "S18xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "wordy_19": {
+   "id": "a1000000-0000-4000-8000-000000986056",
+   "period": "wordy",
+   "title": "S19xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "description": null,
+   "fee": "1.00",
+   "category": "own",
+   "created": "2026-06-13T09:00:00Z"
+  },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-000000986034",
+   "id": "a1000000-0000-4000-8000-000000986057",
    "period": "abroad",
    "title": "Estero",
    "description": null,
@@ -377,60 +588,85 @@
   ],
   "big": [
    "tent"
+  ],
+  "huge": [
+   "huge_svc"
+  ],
+  "wordy": [
+   "wordy_0",
+   "wordy_1",
+   "wordy_2",
+   "wordy_3",
+   "wordy_4",
+   "wordy_5",
+   "wordy_6",
+   "wordy_7",
+   "wordy_8",
+   "wordy_9",
+   "wordy_10",
+   "wordy_11",
+   "wordy_12",
+   "wordy_13",
+   "wordy_14",
+   "wordy_15",
+   "wordy_16",
+   "wordy_17",
+   "wordy_18",
+   "wordy_19"
   ]
  },
  "camp_subscriptions": {
   "mario": {
-   "id": "a1000000-0000-4000-8000-000000986035",
+   "id": "a1000000-0000-4000-8000-000000986058",
    "camp": "camp",
    "registration": "mario",
    "status": 2,
    "created": "2026-06-12T09:00:00Z"
   },
   "luisa": {
-   "id": "a1000000-0000-4000-8000-000000986036",
+   "id": "a1000000-0000-4000-8000-000000986059",
    "camp": "camp",
    "registration": "luisa",
    "status": 1,
    "created": "2026-06-13T09:00:00.500000Z"
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-000000986037",
+   "id": "a1000000-0000-4000-8000-000000986060",
    "camp": "camp",
    "registration": "grouped",
    "status": 3,
    "created": "2026-06-10T09:00:00Z"
   },
   "bus": {
-   "id": "a1000000-0000-4000-8000-000000986038",
+   "id": "a1000000-0000-4000-8000-000000986061",
    "camp": "camp",
    "registration": "sibling",
    "status": 2,
    "created": "2026-06-09T09:00:00Z"
   },
   "nosub": {
-   "id": "a1000000-0000-4000-8000-000000986039",
+   "id": "a1000000-0000-4000-8000-000000986062",
    "camp": "plain",
    "registration": null,
    "status": 2,
    "created": "2026-06-11T09:00:00Z"
   },
   "luisa_plain": {
-   "id": "a1000000-0000-4000-8000-000000986040",
+   "id": "a1000000-0000-4000-8000-000000986063",
    "camp": "plain",
    "registration": "luisa",
    "status": 2,
    "created": "2026-06-14T09:00:00Z"
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-000000986041",
+   "id": "a1000000-0000-4000-8000-000000986064",
    "camp": "abroad",
    "registration": "abroad",
    "status": 2,
    "created": "2026-06-15T09:00:00Z"
   },
   "extra": {
-   "id": "a1000000-0000-4000-8000-000000986042",
+   "id": "a1000000-0000-4000-8000-000000986065",
    "camp": "plain",
    "registration": "sibling",
    "status": 2,
@@ -439,7 +675,7 @@
  },
  "payments": {
   "unpaid": {
-   "id": "a1000000-0000-4000-8000-000000986043",
+   "id": "a1000000-0000-4000-8000-000000986066",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "a1000000-0000-4000-8000-000000700001",
    "associate": "mario",
@@ -456,26 +692,26 @@
      "amount": 12.5,
      "subject": 0,
      "title": "Kayak",
-     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
     },
     {
      "payment_category_id": "a1000000-0000-4000-8000-000000986005",
      "amount": 5.0,
      "subject": 0,
      "title": "Ombrellone è",
-     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
     },
     {
      "payment_category_id": "a1000000-0000-4000-8000-000000986005",
      "amount": 7.0,
      "subject": 0,
      "title": "Tenda",
-     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
     }
    ]
   },
   "paid": {
-   "id": "a1000000-0000-4000-8000-000000986044",
+   "id": "a1000000-0000-4000-8000-000000986067",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "a1000000-0000-4000-8000-000000700001",
    "associate": "mario",
@@ -492,14 +728,14 @@
      "amount": 2.0,
      "subject": 0,
      "title": "Merenda",
-     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032"
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034"
     }
    ],
    "invoice": true,
    "instructor": true
   },
   "luisa_deleted": {
-   "id": "a1000000-0000-4000-8000-000000986045",
+   "id": "a1000000-0000-4000-8000-000000986068",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "a1000000-0000-4000-8000-000000700001",
    "associate": "luisa",
@@ -513,7 +749,7 @@
    "meta": null
   },
   "luisa_paid": {
-   "id": "a1000000-0000-4000-8000-000000986046",
+   "id": "a1000000-0000-4000-8000-000000986069",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": null,
    "associate": "luisa",
@@ -527,7 +763,7 @@
    "meta": []
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-000000986047",
+   "id": "a1000000-0000-4000-8000-000000986070",
    "association": "a1000000-0000-4000-8000-000000701002",
    "user": "a1000000-0000-4000-8000-000000700007",
    "associate": "hans",
@@ -542,7 +778,7 @@
   }
  },
  "instructor": {
-  "id": "a1000000-0000-4000-8000-000000986048",
+  "id": "a1000000-0000-4000-8000-000000986071",
   "first_name": "Anna è",
   "last_name": "Bianchi",
   "email": "anna@example.test",
@@ -550,7 +786,7 @@
   "default_hourly_billing": "12.50"
  },
  "invoice": {
-  "id": "a1000000-0000-4000-8000-000000986049",
+  "id": "a1000000-0000-4000-8000-000000986072",
   "created": "2026-06-14T10:00:00Z",
   "membership_fee": "0.00",
   "activity_fee": "25.00",
@@ -562,7 +798,7 @@
  },
  "subscription_periods": {
   "m_july": {
-   "id": "a1000000-0000-4000-8000-000000986050",
+   "id": "a1000000-0000-4000-8000-000000986073",
    "cs": "mario",
    "period": "july",
    "payment": "unpaid",
@@ -572,7 +808,7 @@
    ]
   },
   "m_big": {
-   "id": "a1000000-0000-4000-8000-000000986051",
+   "id": "a1000000-0000-4000-8000-000000986074",
    "cs": "mario",
    "period": "big",
    "payment": "unpaid",
@@ -581,7 +817,7 @@
    ]
   },
   "m_aug": {
-   "id": "a1000000-0000-4000-8000-000000986052",
+   "id": "a1000000-0000-4000-8000-000000986075",
    "cs": "mario",
    "period": "august",
    "payment": "paid",
@@ -590,14 +826,14 @@
    ]
   },
   "m_june": {
-   "id": "a1000000-0000-4000-8000-000000986053",
+   "id": "a1000000-0000-4000-8000-000000986076",
    "cs": "mario",
    "period": "june",
    "payment": null,
    "services": []
   },
   "l_july": {
-   "id": "a1000000-0000-4000-8000-000000986054",
+   "id": "a1000000-0000-4000-8000-000000986077",
    "cs": "luisa",
    "period": "july",
    "payment": "luisa_deleted",
@@ -606,14 +842,14 @@
    ]
   },
   "g_aug": {
-   "id": "a1000000-0000-4000-8000-000000986055",
+   "id": "a1000000-0000-4000-8000-000000986078",
    "cs": "grouped",
    "period": "august",
    "payment": null,
    "services": []
   },
   "n_sept": {
-   "id": "a1000000-0000-4000-8000-000000986056",
+   "id": "a1000000-0000-4000-8000-000000986079",
    "cs": "nosub",
    "period": "sept",
    "payment": null,
@@ -622,7 +858,7 @@
    ]
   },
   "lp_sept": {
-   "id": "a1000000-0000-4000-8000-000000986057",
+   "id": "a1000000-0000-4000-8000-000000986080",
    "cs": "luisa_plain",
    "period": "sept",
    "payment": "luisa_paid",
@@ -631,7 +867,7 @@
    ]
   },
   "a_abroad": {
-   "id": "a1000000-0000-4000-8000-000000986058",
+   "id": "a1000000-0000-4000-8000-000000986081",
    "cs": "abroad",
    "period": "abroad",
    "payment": "abroad",
@@ -806,7 +1042,7 @@
    "response": {
     "data": [
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986036",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986059",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986012",
        "current_year": false,
@@ -822,9 +1058,9 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986054",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986077",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986045",
+          "payment_id": "a1000000-0000-4000-8000-000000986068",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -896,13 +1132,13 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986028",
-            "a1000000-0000-4000-8000-000000986029"
+            "a1000000-0000-4000-8000-000000986030",
+            "a1000000-0000-4000-8000-000000986031"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -923,7 +1159,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -948,7 +1184,7 @@
             "payment_category": null
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -973,7 +1209,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -994,7 +1230,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1015,7 +1251,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -1042,7 +1278,7 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986036"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986059"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -1052,7 +1288,7 @@
       },
       "selected_services": {
        "a1000000-0000-4000-8000-000000986022": {
-        "a1000000-0000-4000-8000-000000986028": true
+        "a1000000-0000-4000-8000-000000986030": true
        }
       },
       "paid_periods": {
@@ -1063,7 +1299,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986035",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986058",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986011",
        "current_year": true,
@@ -1079,9 +1315,9 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986050",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986073",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986043",
+          "payment_id": "a1000000-0000-4000-8000-000000986066",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -1133,21 +1369,21 @@
             "amount": 12.5,
             "subject": 0,
             "title": "Kayak",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 5.0,
             "subject": 0,
             "title": "Ombrellone è",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 7.0,
             "subject": 0,
             "title": "Tenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
            }
           ],
           "payment_intent_id": null,
@@ -1175,13 +1411,13 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986028",
-            "a1000000-0000-4000-8000-000000986029"
+            "a1000000-0000-4000-8000-000000986030",
+            "a1000000-0000-4000-8000-000000986031"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1202,7 +1438,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -1227,7 +1463,7 @@
             "payment_category": null
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1252,7 +1488,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1273,7 +1509,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1294,7 +1530,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -1321,12 +1557,12 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986051",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986074",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986043",
+          "payment_id": "a1000000-0000-4000-8000-000000986066",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -1378,21 +1614,21 @@
             "amount": 12.5,
             "subject": 0,
             "title": "Kayak",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 5.0,
             "subject": 0,
             "title": "Ombrellone è",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 7.0,
             "subject": 0,
             "title": "Tenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
            }
           ],
           "payment_intent_id": null,
@@ -1420,12 +1656,12 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986031"
+            "a1000000-0000-4000-8000-000000986033"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1450,7 +1686,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1473,12 +1709,12 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986052",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986075",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986044",
+          "payment_id": "a1000000-0000-4000-8000-000000986067",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -1507,9 +1743,9 @@
            "family_role": null
           },
           "subscription_id": "a1000000-0000-4000-8000-000000986011",
-          "instructor_id": "a1000000-0000-4000-8000-000000986048",
+          "instructor_id": "a1000000-0000-4000-8000-000000986071",
           "instructor": {
-           "instructor_id": "a1000000-0000-4000-8000-000000986048",
+           "instructor_id": "a1000000-0000-4000-8000-000000986071",
            "user": "a1000000-0000-4000-8000-000000700001",
            "first_name": "Anna è",
            "last_name": "Bianchi",
@@ -1541,7 +1777,7 @@
           "custom_account_type": null,
           "custom_account_name": null,
           "invoice": {
-           "invoice_id": "a1000000-0000-4000-8000-000000986049",
+           "invoice_id": "a1000000-0000-4000-8000-000000986072",
            "document_token": null,
            "creation_date": "2026-06-14T10:00:00Z",
            "membership_fee": "0.00",
@@ -1578,7 +1814,7 @@
             "amount": 2.0,
             "subject": 0,
             "title": "Merenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034"
            }
           ],
           "payment_intent_id": null,
@@ -1609,7 +1845,7 @@
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1634,7 +1870,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1657,10 +1893,10 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986053",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986076",
          "payment": null,
          "camps_and_retreats_period": {
           "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000986025",
@@ -1681,7 +1917,7 @@
           "$bag": [],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -1694,14 +1930,14 @@
       },
       "selected_services": {
        "a1000000-0000-4000-8000-000000986022": {
-        "a1000000-0000-4000-8000-000000986028": true,
-        "a1000000-0000-4000-8000-000000986029": true
-       },
-       "a1000000-0000-4000-8000-000000986024": {
+        "a1000000-0000-4000-8000-000000986030": true,
         "a1000000-0000-4000-8000-000000986031": true
        },
+       "a1000000-0000-4000-8000-000000986024": {
+        "a1000000-0000-4000-8000-000000986033": true
+       },
        "a1000000-0000-4000-8000-000000986023": {
-        "a1000000-0000-4000-8000-000000986032": true
+        "a1000000-0000-4000-8000-000000986034": true
        },
        "a1000000-0000-4000-8000-000000986025": {}
       },
@@ -1713,7 +1949,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986037",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986060",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986016",
        "current_year": true,
@@ -1729,7 +1965,7 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986055",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986078",
          "payment": null,
          "camps_and_retreats_period": {
           "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000986023",
@@ -1746,7 +1982,7 @@
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1771,7 +2007,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1794,7 +2030,7 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986037"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986060"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -1811,7 +2047,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986038",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986061",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986013",
        "current_year": true,
@@ -1849,7 +2085,7 @@
    "response": {
     "data": [
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986036",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986059",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986012",
        "current_year": false,
@@ -1865,9 +2101,9 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986054",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986077",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986045",
+          "payment_id": "a1000000-0000-4000-8000-000000986068",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -1939,13 +2175,13 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986028",
-            "a1000000-0000-4000-8000-000000986029"
+            "a1000000-0000-4000-8000-000000986030",
+            "a1000000-0000-4000-8000-000000986031"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -1966,7 +2202,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -1991,7 +2227,7 @@
             "payment_category": null
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2016,7 +2252,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2037,7 +2273,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2058,7 +2294,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -2085,7 +2321,7 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986036"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986059"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -2095,7 +2331,7 @@
       },
       "selected_services": {
        "a1000000-0000-4000-8000-000000986022": {
-        "a1000000-0000-4000-8000-000000986028": true
+        "a1000000-0000-4000-8000-000000986030": true
        }
       },
       "paid_periods": {
@@ -2106,7 +2342,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986035",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986058",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986011",
        "current_year": true,
@@ -2122,9 +2358,9 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986050",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986073",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986043",
+          "payment_id": "a1000000-0000-4000-8000-000000986066",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -2176,21 +2412,21 @@
             "amount": 12.5,
             "subject": 0,
             "title": "Kayak",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 5.0,
             "subject": 0,
             "title": "Ombrellone è",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 7.0,
             "subject": 0,
             "title": "Tenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
            }
           ],
           "payment_intent_id": null,
@@ -2218,13 +2454,13 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986028",
-            "a1000000-0000-4000-8000-000000986029"
+            "a1000000-0000-4000-8000-000000986030",
+            "a1000000-0000-4000-8000-000000986031"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2245,7 +2481,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -2270,7 +2506,7 @@
             "payment_category": null
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2295,7 +2531,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2316,7 +2552,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2337,7 +2573,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -2364,12 +2600,12 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986051",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986074",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986043",
+          "payment_id": "a1000000-0000-4000-8000-000000986066",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -2421,21 +2657,21 @@
             "amount": 12.5,
             "subject": 0,
             "title": "Kayak",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 5.0,
             "subject": 0,
             "title": "Ombrellone è",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 7.0,
             "subject": 0,
             "title": "Tenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
            }
           ],
           "payment_intent_id": null,
@@ -2463,12 +2699,12 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986031"
+            "a1000000-0000-4000-8000-000000986033"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2493,7 +2729,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2516,12 +2752,12 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986052",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986075",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986044",
+          "payment_id": "a1000000-0000-4000-8000-000000986067",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -2550,9 +2786,9 @@
            "family_role": null
           },
           "subscription_id": "a1000000-0000-4000-8000-000000986011",
-          "instructor_id": "a1000000-0000-4000-8000-000000986048",
+          "instructor_id": "a1000000-0000-4000-8000-000000986071",
           "instructor": {
-           "instructor_id": "a1000000-0000-4000-8000-000000986048",
+           "instructor_id": "a1000000-0000-4000-8000-000000986071",
            "user": "a1000000-0000-4000-8000-000000700001",
            "first_name": "Anna è",
            "last_name": "Bianchi",
@@ -2584,7 +2820,7 @@
           "custom_account_type": null,
           "custom_account_name": null,
           "invoice": {
-           "invoice_id": "a1000000-0000-4000-8000-000000986049",
+           "invoice_id": "a1000000-0000-4000-8000-000000986072",
            "document_token": null,
            "creation_date": "2026-06-14T10:00:00Z",
            "membership_fee": "0.00",
@@ -2621,7 +2857,7 @@
             "amount": 2.0,
             "subject": 0,
             "title": "Merenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034"
            }
           ],
           "payment_intent_id": null,
@@ -2652,7 +2888,7 @@
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2677,7 +2913,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2700,10 +2936,10 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986053",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986076",
          "payment": null,
          "camps_and_retreats_period": {
           "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000986025",
@@ -2724,7 +2960,7 @@
           "$bag": [],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -2737,14 +2973,14 @@
       },
       "selected_services": {
        "a1000000-0000-4000-8000-000000986022": {
-        "a1000000-0000-4000-8000-000000986028": true,
-        "a1000000-0000-4000-8000-000000986029": true
-       },
-       "a1000000-0000-4000-8000-000000986024": {
+        "a1000000-0000-4000-8000-000000986030": true,
         "a1000000-0000-4000-8000-000000986031": true
        },
+       "a1000000-0000-4000-8000-000000986024": {
+        "a1000000-0000-4000-8000-000000986033": true
+       },
        "a1000000-0000-4000-8000-000000986023": {
-        "a1000000-0000-4000-8000-000000986032": true
+        "a1000000-0000-4000-8000-000000986034": true
        },
        "a1000000-0000-4000-8000-000000986025": {}
       },
@@ -2756,7 +2992,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986037",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986060",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986016",
        "current_year": true,
@@ -2772,7 +3008,7 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986055",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986078",
          "payment": null,
          "camps_and_retreats_period": {
           "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000986023",
@@ -2789,7 +3025,7 @@
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2814,7 +3050,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -2837,7 +3073,7 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986037"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986060"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -2854,7 +3090,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986038",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986061",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986013",
        "current_year": true,
@@ -2894,7 +3130,7 @@
    "response": {
     "data": [
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986036",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986059",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986012",
        "current_year": false,
@@ -2910,9 +3146,9 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986054",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986077",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986045",
+          "payment_id": "a1000000-0000-4000-8000-000000986068",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -2984,13 +3220,13 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986028",
-            "a1000000-0000-4000-8000-000000986029"
+            "a1000000-0000-4000-8000-000000986030",
+            "a1000000-0000-4000-8000-000000986031"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3011,7 +3247,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -3036,7 +3272,7 @@
             "payment_category": null
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3061,7 +3297,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3082,7 +3318,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3103,7 +3339,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -3130,7 +3366,7 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986036"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986059"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -3140,7 +3376,7 @@
       },
       "selected_services": {
        "a1000000-0000-4000-8000-000000986022": {
-        "a1000000-0000-4000-8000-000000986028": true
+        "a1000000-0000-4000-8000-000000986030": true
        }
       },
       "paid_periods": {
@@ -3151,7 +3387,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986035",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986058",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986011",
        "current_year": true,
@@ -3167,9 +3403,9 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986050",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986073",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986043",
+          "payment_id": "a1000000-0000-4000-8000-000000986066",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -3221,21 +3457,21 @@
             "amount": 12.5,
             "subject": 0,
             "title": "Kayak",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 5.0,
             "subject": 0,
             "title": "Ombrellone è",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 7.0,
             "subject": 0,
             "title": "Tenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
            }
           ],
           "payment_intent_id": null,
@@ -3263,13 +3499,13 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986028",
-            "a1000000-0000-4000-8000-000000986029"
+            "a1000000-0000-4000-8000-000000986030",
+            "a1000000-0000-4000-8000-000000986031"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3290,7 +3526,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -3315,7 +3551,7 @@
             "payment_category": null
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3340,7 +3576,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3361,7 +3597,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3382,7 +3618,7 @@
             "payment_category": "a1000000-0000-4000-8000-000000986005"
            },
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
             "payment_category_info": {
              "payment_category_id": null,
              "name": "",
@@ -3409,12 +3645,12 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986051",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986074",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986043",
+          "payment_id": "a1000000-0000-4000-8000-000000986066",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -3466,21 +3702,21 @@
             "amount": 12.5,
             "subject": 0,
             "title": "Kayak",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 5.0,
             "subject": 0,
             "title": "Ombrellone è",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
            },
            {
             "payment_category_id": "a1000000-0000-4000-8000-000000986005",
             "amount": 7.0,
             "subject": 0,
             "title": "Tenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
            }
           ],
           "payment_intent_id": null,
@@ -3508,12 +3744,12 @@
           "camps_and_retreats": "a1000000-0000-4000-8000-000000986019",
           "camps_and_Retreats_period_services": {
            "$unordered": [
-            "a1000000-0000-4000-8000-000000986031"
+            "a1000000-0000-4000-8000-000000986033"
            ]
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3538,7 +3774,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3561,12 +3797,12 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986052",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986075",
          "payment": {
-          "payment_id": "a1000000-0000-4000-8000-000000986044",
+          "payment_id": "a1000000-0000-4000-8000-000000986067",
           "user": {
            "first_name": "Message",
            "last_name": "Fixture",
@@ -3595,9 +3831,9 @@
            "family_role": null
           },
           "subscription_id": "a1000000-0000-4000-8000-000000986011",
-          "instructor_id": "a1000000-0000-4000-8000-000000986048",
+          "instructor_id": "a1000000-0000-4000-8000-000000986071",
           "instructor": {
-           "instructor_id": "a1000000-0000-4000-8000-000000986048",
+           "instructor_id": "a1000000-0000-4000-8000-000000986071",
            "user": "a1000000-0000-4000-8000-000000700001",
            "first_name": "Anna è",
            "last_name": "Bianchi",
@@ -3629,7 +3865,7 @@
           "custom_account_type": null,
           "custom_account_name": null,
           "invoice": {
-           "invoice_id": "a1000000-0000-4000-8000-000000986049",
+           "invoice_id": "a1000000-0000-4000-8000-000000986072",
            "document_token": null,
            "creation_date": "2026-06-14T10:00:00Z",
            "membership_fee": "0.00",
@@ -3666,7 +3902,7 @@
             "amount": 2.0,
             "subject": 0,
             "title": "Merenda",
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032"
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034"
            }
           ],
           "payment_intent_id": null,
@@ -3697,7 +3933,7 @@
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3722,7 +3958,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3745,10 +3981,10 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         },
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986053",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986076",
          "payment": null,
          "camps_and_retreats_period": {
           "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000986025",
@@ -3769,7 +4005,7 @@
           "$bag": [],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986035"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986058"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -3782,14 +4018,14 @@
       },
       "selected_services": {
        "a1000000-0000-4000-8000-000000986022": {
-        "a1000000-0000-4000-8000-000000986028": true,
-        "a1000000-0000-4000-8000-000000986029": true
-       },
-       "a1000000-0000-4000-8000-000000986024": {
+        "a1000000-0000-4000-8000-000000986030": true,
         "a1000000-0000-4000-8000-000000986031": true
        },
+       "a1000000-0000-4000-8000-000000986024": {
+        "a1000000-0000-4000-8000-000000986033": true
+       },
        "a1000000-0000-4000-8000-000000986023": {
-        "a1000000-0000-4000-8000-000000986032": true
+        "a1000000-0000-4000-8000-000000986034": true
        },
        "a1000000-0000-4000-8000-000000986025": {}
       },
@@ -3801,7 +4037,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986037",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986060",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986016",
        "current_year": true,
@@ -3817,7 +4053,7 @@
       "periods": {
        "$bag": [
         {
-         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986055",
+         "camps_and_retreats_subscription_period_id": "a1000000-0000-4000-8000-000000986078",
          "payment": null,
          "camps_and_retreats_period": {
           "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000986023",
@@ -3834,7 +4070,7 @@
           },
           "services": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3859,7 +4095,7 @@
          "camps_and_retreats_period_services": {
           "$bag": [
            {
-            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032",
+            "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986034",
             "payment_category_info": {
              "payment_category_id": "a1000000-0000-4000-8000-000000986005",
              "name": "Servizi campo",
@@ -3882,7 +4118,7 @@
           ],
           "$by": "camps_and_retreats_period_service_id"
          },
-         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986037"
+         "camps_and_retreats_subscription": "a1000000-0000-4000-8000-000000986060"
         }
        ],
        "$by": "camps_and_retreats_subscription_period_id"
@@ -3899,7 +4135,7 @@
       "camps_and_retreats": "a1000000-0000-4000-8000-000000986019"
      },
      {
-      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986038",
+      "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986061",
       "subscription": {
        "subscription_id": "a1000000-0000-4000-8000-000000986013",
        "current_year": true,
@@ -4133,7 +4369,7 @@
    },
    "effect": null,
    "body": {
-    "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986035",
+    "camps_and_retreats_subscription_id": "a1000000-0000-4000-8000-000000986058",
     "status_flag": true,
     "created_at": null,
     "subscription": true,
@@ -4561,7 +4797,7 @@
      {
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
       "services": [
-       "a1000000-0000-4000-8000-000000986028"
+       "a1000000-0000-4000-8000-000000986030"
       ]
      }
     ]
@@ -4610,10 +4846,10 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
        },
        {
-        "camps_and_retreats_period_service_id": "{a1000000-0000-4000-8000-000000986028}"
+        "camps_and_retreats_period_service_id": "{a1000000-0000-4000-8000-000000986030}"
        }
       ]
      }
@@ -4638,7 +4874,7 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
        }
       ]
      }
@@ -4663,7 +4899,7 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032"
        }
       ]
      }
@@ -4692,8 +4928,8 @@
         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
         "camps_and_retreats_period_services": {
          "$unordered": [
-          "a1000000-0000-4000-8000-000000986028",
-          "a1000000-0000-4000-8000-000000986029"
+          "a1000000-0000-4000-8000-000000986030",
+          "a1000000-0000-4000-8000-000000986031"
          ]
         },
         "camps_and_retreats_subscription": "$bind:sub",
@@ -4704,7 +4940,7 @@
         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986024",
         "camps_and_retreats_period_services": {
          "$unordered": [
-          "a1000000-0000-4000-8000-000000986031"
+          "a1000000-0000-4000-8000-000000986033"
          ]
         },
         "camps_and_retreats_subscription": "$bind:sub",
@@ -4733,8 +4969,8 @@
        "subscription": "$sub",
        "payment": "$payment",
        "services": [
-        "a1000000-0000-4000-8000-000000986028",
-        "a1000000-0000-4000-8000-000000986029"
+        "a1000000-0000-4000-8000-000000986030",
+        "a1000000-0000-4000-8000-000000986031"
        ]
       },
       {
@@ -4742,7 +4978,7 @@
        "subscription": "$sub",
        "payment": "$payment",
        "services": [
-        "a1000000-0000-4000-8000-000000986031"
+        "a1000000-0000-4000-8000-000000986033"
        ]
       }
      ],
@@ -4764,21 +5000,21 @@
         "amount": 12.5,
         "subject": 0,
         "title": "Kayak",
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
        },
        {
         "payment_category_id": "a1000000-0000-4000-8000-000000986005",
         "amount": 5.0,
         "subject": 0,
         "title": "Ombrellone è",
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
        },
        {
         "payment_category_id": "a1000000-0000-4000-8000-000000986005",
         "amount": 7.0,
         "subject": 0,
         "title": "Tenda",
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
        }
       ],
       "invoice_id": null,
@@ -4927,7 +5163,7 @@
        ],
        "meta_payment_categories": [
         "None",
-        "[{\"amount\": 12.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986028\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Kayak\"}, {\"amount\": 5.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986029\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Ombrellone \\u00e8\"}, {\"amount\": 7.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986031\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Tenda\"}]"
+        "[{\"amount\": 12.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986030\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Kayak\"}, {\"amount\": 5.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986031\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Ombrellone \\u00e8\"}, {\"amount\": 7.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986033\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Tenda\"}]"
        ],
        "invoice": [
         "None",
@@ -5026,10 +5262,10 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
        },
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986029"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986031"
        }
       ]
      },
@@ -5037,7 +5273,7 @@
       "camps_and_retreats_period": "A1000000000040008000000000986024",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "A1000000-0000-4000-8000-000000986031"
+        "camps_and_retreats_period_service_id": "A1000000-0000-4000-8000-000000986033"
        }
       ]
      }
@@ -5769,7 +6005,7 @@
         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
         "camps_and_retreats_period_services": {
          "$unordered": [
-          "a1000000-0000-4000-8000-000000986028"
+          "a1000000-0000-4000-8000-000000986030"
          ]
         },
         "camps_and_retreats_subscription": "$bind:sub",
@@ -5798,7 +6034,7 @@
        "subscription": "$sub",
        "payment": "$payment",
        "services": [
-        "a1000000-0000-4000-8000-000000986028"
+        "a1000000-0000-4000-8000-000000986030"
        ]
       }
      ],
@@ -5820,7 +6056,7 @@
         "amount": 12.5,
         "subject": 0,
         "title": "Kayak",
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
        }
       ],
       "invoice_id": null,
@@ -5944,7 +6180,7 @@
        ],
        "meta_payment_categories": [
         "None",
-        "[{\"amount\": 12.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986028\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Kayak\"}]"
+        "[{\"amount\": 12.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986030\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Kayak\"}]"
        ],
        "invoice": [
         "None",
@@ -6028,7 +6264,7 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
        }
       ]
      }
@@ -6111,6 +6347,140 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "camps-subscriptions-add-amount-overflow-rolls-back",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986019/subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "numeric field overflow\nDETAIL:  A field with precision 9, scale 2 must round to an absolute value less than 10^7.\n"
+   },
+   "effect": null,
+   "body": {
+    "subscription": "a1000000-0000-4000-8000-000000986011",
+    "periods": [
+     {
+      "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986027",
+      "services": [
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986036"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-subscriptions-add-notes-too-long-rolls-back",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986019/subscriptions/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "value too long for type character varying(5120)\n"
+   },
+   "effect": null,
+   "body": {
+    "subscription": "a1000000-0000-4000-8000-000000986012",
+    "periods": [
+     {
+      "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986028",
+      "services": [
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986037"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986038"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986039"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986040"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986041"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986042"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986043"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986044"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986045"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986046"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986047"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986048"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986049"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986050"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986051"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986052"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986053"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986054"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986055"
+       },
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986056"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-subscriptions-add-malformed-group-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986019/subscriptions/add",
+   "headers": {
+    "X-Group-Id": "abc"
+   },
+   "status": 500,
+   "response": {
+    "error": "['“abc” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "subscription": "a1000000-0000-4000-8000-000000986013",
+    "periods": [
+     {
+      "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
+      "services": [
+       {
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
    "name": "camps-subscriptions-add-existing-explicit-id",
    "actor": "owner",
    "method": "POST",
@@ -6130,7 +6500,7 @@
    "name": "camps-subscriptions-update-anonymous",
    "actor": "anonymous",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 401,
    "response": {
@@ -6143,7 +6513,7 @@
    "name": "camps-subscriptions-update-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -6156,7 +6526,7 @@
    "name": "camps-subscriptions-update-owner-scoped-athlete-denied",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -6172,7 +6542,7 @@
    "name": "camps-subscriptions-update-wrong-method",
    "actor": "owner",
    "method": "POST",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 405,
    "response": {
@@ -6185,7 +6555,7 @@
    "name": "camps-subscriptions-update-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -6219,7 +6589,7 @@
    "name": "camps-subscriptions-update-athlete-forbidden",
    "actor": "athlete",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -6245,7 +6615,7 @@
    "name": "camps-subscriptions-update-foreign-forbidden",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986041/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986064/subscriptions/update",
    "headers": {},
    "status": 403,
    "response": {
@@ -6258,7 +6628,7 @@
    "name": "camps-subscriptions-update-unassociated-owner-server-error",
    "actor": "owner_without_association",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6271,7 +6641,7 @@
    "name": "camps-subscriptions-update-list-body-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6284,7 +6654,7 @@
    "name": "camps-subscriptions-update-string-body-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6297,7 +6667,7 @@
    "name": "camps-subscriptions-update-null-body-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6311,7 +6681,7 @@
    "name": "camps-subscriptions-update-unknown-period-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986040/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986063/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6330,7 +6700,7 @@
    "name": "camps-subscriptions-update-invalid-period-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986040/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986063/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6349,7 +6719,7 @@
    "name": "camps-subscriptions-update-period-missing-key-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986040/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986063/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6368,7 +6738,7 @@
    "name": "camps-subscriptions-update-period-not-iterable-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986040/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986063/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6383,7 +6753,7 @@
    "name": "camps-subscriptions-update-paid-period-skipped",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986040/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986063/subscriptions/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -6411,7 +6781,7 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986026",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986035"
        }
       ]
      }
@@ -6422,7 +6792,7 @@
    "name": "camps-subscriptions-update-owner-replace-periods",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -6438,17 +6808,17 @@
      "created": [
       {
        "period": "a1000000-0000-4000-8000-000000986022",
-       "subscription": "a1000000-0000-4000-8000-000000986035",
+       "subscription": "a1000000-0000-4000-8000-000000986058",
        "payment": "$payment",
        "services": [
-        "a1000000-0000-4000-8000-000000986028"
+        "a1000000-0000-4000-8000-000000986030"
        ]
       }
      ],
      "deleted": [
-      "a1000000-0000-4000-8000-000000986050",
-      "a1000000-0000-4000-8000-000000986051",
-      "a1000000-0000-4000-8000-000000986053"
+      "a1000000-0000-4000-8000-000000986073",
+      "a1000000-0000-4000-8000-000000986074",
+      "a1000000-0000-4000-8000-000000986076"
      ]
     },
     "payments": {
@@ -6467,7 +6837,7 @@
         "amount": 12.5,
         "subject": 0,
         "title": "Kayak",
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
        }
       ],
       "invoice_id": null,
@@ -6488,13 +6858,13 @@
       "course": null
      },
      "deleted": [
-      "a1000000-0000-4000-8000-000000986043"
+      "a1000000-0000-4000-8000-000000986066"
      ]
     },
     "audit": [
      {
       "model": "Payment",
-      "key": "a1000000-0000-4000-8000-000000986043",
+      "key": "a1000000-0000-4000-8000-000000986066",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6502,7 +6872,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986050",
+      "key": "a1000000-0000-4000-8000-000000986073",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6510,7 +6880,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986051",
+      "key": "a1000000-0000-4000-8000-000000986074",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6518,7 +6888,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986053",
+      "key": "a1000000-0000-4000-8000-000000986076",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6539,7 +6909,7 @@
        ],
        "camps_and_retreats_subscription": [
         "None",
-        "a1000000-0000-4000-8000-000000986035"
+        "a1000000-0000-4000-8000-000000986058"
        ],
        "payment": [
         "None",
@@ -6596,7 +6966,7 @@
        ],
        "meta_payment_categories": [
         "None",
-        "[{\"amount\": 12.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986028\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Kayak\"}]"
+        "[{\"amount\": 12.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986030\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Kayak\"}]"
        ],
        "invoice": [
         "None",
@@ -6679,7 +7049,7 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986022",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986028"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
        }
       ]
      },
@@ -6693,7 +7063,7 @@
    "name": "camps-subscriptions-update-collaborator-deleted-payment",
    "actor": "full_collaborator",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986036/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986059/subscriptions/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -6708,19 +7078,19 @@
     "subperiods": {
      "created": [],
      "deleted": [
-      "a1000000-0000-4000-8000-000000986054"
+      "a1000000-0000-4000-8000-000000986077"
      ]
     },
     "payments": {
      "created": null,
      "deleted": [
-      "a1000000-0000-4000-8000-000000986045"
+      "a1000000-0000-4000-8000-000000986068"
      ]
     },
     "audit": [
      {
       "model": "Payment",
-      "key": "a1000000-0000-4000-8000-000000986045",
+      "key": "a1000000-0000-4000-8000-000000986068",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6728,7 +7098,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986054",
+      "key": "a1000000-0000-4000-8000-000000986077",
       "action": 2,
       "changes": "$deleted",
       "association": null,
@@ -6742,7 +7112,7 @@
    "name": "camps-subscriptions-update-missing-registration-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986039/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986062/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6758,15 +7128,15 @@
      "created": [
       {
        "period": "a1000000-0000-4000-8000-000000986026",
-       "subscription": "a1000000-0000-4000-8000-000000986039",
+       "subscription": "a1000000-0000-4000-8000-000000986062",
        "payment": null,
        "services": [
-        "a1000000-0000-4000-8000-000000986033"
+        "a1000000-0000-4000-8000-000000986035"
        ]
       }
      ],
      "deleted": [
-      "a1000000-0000-4000-8000-000000986056"
+      "a1000000-0000-4000-8000-000000986079"
      ]
     },
     "payments": {
@@ -6776,7 +7146,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986056",
+      "key": "a1000000-0000-4000-8000-000000986079",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6797,7 +7167,7 @@
        ],
        "camps_and_retreats_subscription": [
         "None",
-        "a1000000-0000-4000-8000-000000986039"
+        "a1000000-0000-4000-8000-000000986062"
        ],
        "payment": [
         "None",
@@ -6815,7 +7185,7 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986026",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986035"
        }
       ]
      }
@@ -6826,7 +7196,7 @@
    "name": "camps-subscriptions-update-string-periods-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986037/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986060/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6841,7 +7211,7 @@
     "subperiods": {
      "created": [],
      "deleted": [
-      "a1000000-0000-4000-8000-000000986055"
+      "a1000000-0000-4000-8000-000000986078"
      ]
     },
     "payments": {
@@ -6851,7 +7221,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986055",
+      "key": "a1000000-0000-4000-8000-000000986078",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6867,7 +7237,7 @@
    "name": "camps-subscriptions-update-service-without-category-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986038/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986061/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6883,10 +7253,10 @@
      "created": [
       {
        "period": "a1000000-0000-4000-8000-000000986025",
-       "subscription": "a1000000-0000-4000-8000-000000986038",
+       "subscription": "a1000000-0000-4000-8000-000000986061",
        "payment": null,
        "services": [
-        "a1000000-0000-4000-8000-000000986030"
+        "a1000000-0000-4000-8000-000000986032"
        ]
       }
      ],
@@ -6912,7 +7282,7 @@
        ],
        "camps_and_retreats_subscription": [
         "None",
-        "a1000000-0000-4000-8000-000000986038"
+        "a1000000-0000-4000-8000-000000986061"
        ],
        "payment": [
         "None",
@@ -6930,7 +7300,7 @@
       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000986025",
       "services": [
        {
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986030"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986032"
        }
       ]
      }
@@ -6941,7 +7311,7 @@
    "name": "camps-subscriptions-update-invalid-service-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986038/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986061/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -6957,13 +7327,13 @@
      "created": [
       {
        "period": "a1000000-0000-4000-8000-000000986022",
-       "subscription": "a1000000-0000-4000-8000-000000986038",
+       "subscription": "a1000000-0000-4000-8000-000000986061",
        "payment": null,
        "services": []
       }
      ],
      "deleted": [
-      "@sp:a1000000-0000-4000-8000-000000986038:a1000000-0000-4000-8000-000000986025"
+      "@sp:a1000000-0000-4000-8000-000000986061:a1000000-0000-4000-8000-000000986025"
      ]
     },
     "payments": {
@@ -6973,7 +7343,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "@sp:a1000000-0000-4000-8000-000000986038:a1000000-0000-4000-8000-000000986025",
+      "key": "@sp:a1000000-0000-4000-8000-000000986061:a1000000-0000-4000-8000-000000986025",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -6994,7 +7364,7 @@
        ],
        "camps_and_retreats_subscription": [
         "None",
-        "a1000000-0000-4000-8000-000000986038"
+        "a1000000-0000-4000-8000-000000986061"
        ],
        "payment": [
         "None",
@@ -7023,7 +7393,7 @@
    "name": "camps-subscriptions-update-dict-periods-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986042/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986065/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -7055,7 +7425,7 @@
    "name": "camps-subscriptions-update-null-period-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986042/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986065/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -7089,7 +7459,7 @@
    "name": "camps-subscriptions-update-services-not-iterable-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986042/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986065/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -7105,7 +7475,7 @@
      "created": [
       {
        "period": "a1000000-0000-4000-8000-000000986026",
-       "subscription": "a1000000-0000-4000-8000-000000986042",
+       "subscription": "a1000000-0000-4000-8000-000000986065",
        "payment": null,
        "services": []
       }
@@ -7132,7 +7502,7 @@
        ],
        "camps_and_retreats_subscription": [
         "None",
-        "a1000000-0000-4000-8000-000000986042"
+        "a1000000-0000-4000-8000-000000986065"
        ],
        "payment": [
         "None",
@@ -7157,7 +7527,7 @@
    "name": "camps-subscriptions-update-service-missing-key-server-error",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986042/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986065/subscriptions/update",
    "headers": {},
    "status": 500,
    "response": {
@@ -7173,13 +7543,13 @@
      "created": [
       {
        "period": "a1000000-0000-4000-8000-000000986026",
-       "subscription": "a1000000-0000-4000-8000-000000986042",
+       "subscription": "a1000000-0000-4000-8000-000000986065",
        "payment": null,
        "services": []
       }
      ],
      "deleted": [
-      "@sp:a1000000-0000-4000-8000-000000986042:a1000000-0000-4000-8000-000000986026"
+      "@sp:a1000000-0000-4000-8000-000000986065:a1000000-0000-4000-8000-000000986026"
      ]
     },
     "payments": {
@@ -7189,7 +7559,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "@sp:a1000000-0000-4000-8000-000000986042:a1000000-0000-4000-8000-000000986026",
+      "key": "@sp:a1000000-0000-4000-8000-000000986065:a1000000-0000-4000-8000-000000986026",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7210,7 +7580,7 @@
        ],
        "camps_and_retreats_subscription": [
         "None",
-        "a1000000-0000-4000-8000-000000986042"
+        "a1000000-0000-4000-8000-000000986065"
        ],
        "payment": [
         "None",
@@ -7240,7 +7610,7 @@
    "name": "camps-subscriptions-update-null-service-skipped-untitled-camp",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986042/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986065/subscriptions/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -7256,15 +7626,15 @@
      "created": [
       {
        "period": "a1000000-0000-4000-8000-000000986026",
-       "subscription": "a1000000-0000-4000-8000-000000986042",
+       "subscription": "a1000000-0000-4000-8000-000000986065",
        "payment": "$payment",
        "services": [
-        "a1000000-0000-4000-8000-000000986033"
+        "a1000000-0000-4000-8000-000000986035"
        ]
       }
      ],
      "deleted": [
-      "@sp:a1000000-0000-4000-8000-000000986042:a1000000-0000-4000-8000-000000986026"
+      "@sp:a1000000-0000-4000-8000-000000986065:a1000000-0000-4000-8000-000000986026"
      ]
     },
     "payments": {
@@ -7283,7 +7653,7 @@
         "amount": 15.0,
         "subject": 0,
         "title": "Guida",
-        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986033"
+        "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000986035"
        }
       ],
       "invoice_id": null,
@@ -7308,7 +7678,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "@sp:a1000000-0000-4000-8000-000000986042:a1000000-0000-4000-8000-000000986026",
+      "key": "@sp:a1000000-0000-4000-8000-000000986065:a1000000-0000-4000-8000-000000986026",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7329,7 +7699,7 @@
        ],
        "camps_and_retreats_subscription": [
         "None",
-        "a1000000-0000-4000-8000-000000986042"
+        "a1000000-0000-4000-8000-000000986065"
        ],
        "payment": [
         "None",
@@ -7386,7 +7756,7 @@
        ],
        "meta_payment_categories": [
         "None",
-        "[{\"amount\": 15.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986033\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Guida\"}]"
+        "[{\"amount\": 15.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000986035\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000986005\", \"subject\": 0, \"title\": \"Guida\"}]"
        ],
        "invoice": [
         "None",
@@ -7472,7 +7842,7 @@
         "camps_and_retreats_period_service_id": null
        },
        {
-        "camps_and_retreats_period_service_id": "A1000000-0000-4000-8000-000000986033"
+        "camps_and_retreats_period_service_id": "A1000000-0000-4000-8000-000000986035"
        }
       ]
      }
@@ -7483,7 +7853,7 @@
    "name": "camps-subscriptions-update-form-without-periods",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986038/subscriptions/update",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986061/subscriptions/update",
    "headers": {},
    "status": 200,
    "response": {
@@ -7498,7 +7868,7 @@
     "subperiods": {
      "created": [],
      "deleted": [
-      "@sp:a1000000-0000-4000-8000-000000986038:a1000000-0000-4000-8000-000000986022"
+      "@sp:a1000000-0000-4000-8000-000000986061:a1000000-0000-4000-8000-000000986022"
      ]
     },
     "payments": {
@@ -7508,7 +7878,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "@sp:a1000000-0000-4000-8000-000000986038:a1000000-0000-4000-8000-000000986022",
+      "key": "@sp:a1000000-0000-4000-8000-000000986061:a1000000-0000-4000-8000-000000986022",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7523,7 +7893,7 @@
    "name": "camps-subscriptions-delete-anonymous",
    "actor": "anonymous",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 401,
    "response": {
@@ -7535,7 +7905,7 @@
    "name": "camps-subscriptions-delete-restricted-missing-permission",
    "actor": "restricted_collaborator",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -7547,7 +7917,7 @@
    "name": "camps-subscriptions-delete-owner-scoped-athlete-denied",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {
     "X-Impersonation-Id": "$session:owner_athlete",
     "User-Id": "a1000000-0000-4000-8000-000000700004"
@@ -7562,7 +7932,7 @@
    "name": "camps-subscriptions-delete-wrong-method",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 405,
    "response": {
@@ -7575,7 +7945,7 @@
    "name": "camps-subscriptions-delete-options",
    "actor": "owner",
    "method": "OPTIONS",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -7608,7 +7978,7 @@
    "name": "camps-subscriptions-delete-athlete-forbidden",
    "actor": "athlete",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -7632,7 +8002,7 @@
    "name": "camps-subscriptions-delete-foreign-forbidden",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986041/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986064/subscriptions/delete",
    "headers": {},
    "status": 403,
    "response": {
@@ -7644,7 +8014,7 @@
    "name": "camps-subscriptions-delete-unassociated-owner-server-error",
    "actor": "owner_without_association",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 500,
    "response": {
@@ -7656,7 +8026,7 @@
    "name": "camps-subscriptions-delete-owner-unpaid-and-paid",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -7667,26 +8037,26 @@
     "subscription": {
      "created": null,
      "deleted": [
-      "a1000000-0000-4000-8000-000000986035"
+      "a1000000-0000-4000-8000-000000986058"
      ]
     },
     "subperiods": {
      "created": [],
      "deleted": [
-      "@sp:a1000000-0000-4000-8000-000000986035:a1000000-0000-4000-8000-000000986022",
-      "a1000000-0000-4000-8000-000000986052"
+      "@sp:a1000000-0000-4000-8000-000000986058:a1000000-0000-4000-8000-000000986022",
+      "a1000000-0000-4000-8000-000000986075"
      ]
     },
     "payments": {
      "created": null,
      "deleted": [
-      "@pay:a1000000-0000-4000-8000-000000986035:a1000000-0000-4000-8000-000000986022"
+      "@pay:a1000000-0000-4000-8000-000000986058:a1000000-0000-4000-8000-000000986022"
      ]
     },
     "audit": [
      {
       "model": "Payment",
-      "key": "@pay:a1000000-0000-4000-8000-000000986035:a1000000-0000-4000-8000-000000986022",
+      "key": "@pay:a1000000-0000-4000-8000-000000986058:a1000000-0000-4000-8000-000000986022",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7694,7 +8064,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "@sp:a1000000-0000-4000-8000-000000986035:a1000000-0000-4000-8000-000000986022",
+      "key": "@sp:a1000000-0000-4000-8000-000000986058:a1000000-0000-4000-8000-000000986022",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7702,7 +8072,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986052",
+      "key": "a1000000-0000-4000-8000-000000986075",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7710,7 +8080,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscription",
-      "key": "a1000000-0000-4000-8000-000000986035",
+      "key": "a1000000-0000-4000-8000-000000986058",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7723,7 +8093,7 @@
    "name": "camps-subscriptions-delete-collaborator-paid-cascade",
    "actor": "full_collaborator",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986040/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986063/subscriptions/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -7734,13 +8104,13 @@
     "subscription": {
      "created": null,
      "deleted": [
-      "a1000000-0000-4000-8000-000000986040"
+      "a1000000-0000-4000-8000-000000986063"
      ]
     },
     "subperiods": {
      "created": [],
      "deleted": [
-      "a1000000-0000-4000-8000-000000986057"
+      "a1000000-0000-4000-8000-000000986080"
      ]
     },
     "payments": {
@@ -7750,7 +8120,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscriptionPeriod",
-      "key": "a1000000-0000-4000-8000-000000986057",
+      "key": "a1000000-0000-4000-8000-000000986080",
       "action": 2,
       "changes": "$deleted",
       "association": null,
@@ -7758,7 +8128,7 @@
      },
      {
       "model": "CampsAndRetreatsSubscription",
-      "key": "a1000000-0000-4000-8000-000000986040",
+      "key": "a1000000-0000-4000-8000-000000986063",
       "action": 2,
       "changes": "$deleted",
       "association": null,
@@ -7771,7 +8141,7 @@
    "name": "camps-subscriptions-delete-hex-uid-empty",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000000040008000000000986036/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000000040008000000000986059/subscriptions/delete",
    "headers": {},
    "status": 200,
    "response": {
@@ -7782,7 +8152,7 @@
     "subscription": {
      "created": null,
      "deleted": [
-      "a1000000-0000-4000-8000-000000986036"
+      "a1000000-0000-4000-8000-000000986059"
      ]
     },
     "subperiods": {
@@ -7796,7 +8166,7 @@
     "audit": [
      {
       "model": "CampsAndRetreatsSubscription",
-      "key": "a1000000-0000-4000-8000-000000986036",
+      "key": "a1000000-0000-4000-8000-000000986059",
       "action": 2,
       "changes": "$deleted",
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -7809,7 +8179,7 @@
    "name": "camps-subscriptions-delete-again-not-found",
    "actor": "owner",
    "method": "DELETE",
-   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986035/subscriptions/delete",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986058/subscriptions/delete",
    "headers": {},
    "status": 404,
    "response": {

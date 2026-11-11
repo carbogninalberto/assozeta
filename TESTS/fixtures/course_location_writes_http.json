@@ -1067,6 +1067,70 @@
    }
   },
   {
+   "name": "course-location-writes-update-primary-key-change-inserts-copy",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000989002",
+    "documents": [],
+    "title": "Copia",
+    "description": "Vasca",
+    "address": "",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000989002",
+    "stored": {
+     "title": "Copia",
+     "description": "Vasca",
+     "address": ""
+    }
+   },
+   "body": {
+    "course_location_id": "a1000000-0000-4000-8000-000000989002",
+    "title": "Copia"
+   }
+  },
+  {
+   "name": "course-location-writes-update-primary-key-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_location_id": [
+     "course location with this course location id already exists."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006"
+   }
+  },
+  {
+   "name": "course-location-writes-update-primary-key-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "course_location_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "course_location_id": "abc"
+   }
+  },
+  {
    "name": "course-location-writes-update-document-missing-key-keeps-change",
    "actor": "owner",
    "method": "PATCH",

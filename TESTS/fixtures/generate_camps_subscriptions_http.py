@@ -100,6 +100,10 @@ PERIODS = {
              'description': 'Breve', 'fee': '55.50', 'max': 5, 'created': '2026-06-04T10:00:00Z'},
     'sept': {'id': next(ids), 'camp': 'plain', 'start': '2026-09-01T07:00:00Z', 'end': '2026-09-05T07:00:00Z', 'title': 'Settembre',
              'description': None, 'fee': '10.00', 'max': 5, 'created': '2026-06-05T10:00:00Z'},
+    'huge': {'id': next(ids), 'camp': 'camp', 'start': '2026-10-01T07:00:00Z', 'end': '2026-10-02T07:00:00Z', 'title': 'Enorme',
+             'description': None, 'fee': '9999999.99', 'max': None, 'created': '2026-06-07T10:00:00Z'},
+    'wordy': {'id': next(ids), 'camp': 'camp', 'start': '2026-11-01T07:00:00Z', 'end': '2026-11-02T07:00:00Z', 'title': 'W' * 255,
+              'description': None, 'fee': '0.00', 'max': None, 'created': '2026-06-08T10:00:00Z'},
     'abroad': {'id': next(ids), 'camp': 'abroad', 'start': '2026-07-01T07:00:00Z', 'end': '2026-07-02T07:00:00Z', 'title': 'Estero',
                'description': None, 'fee': '1.00', 'max': None, 'created': '2026-06-06T10:00:00Z'},
 }
@@ -116,10 +120,14 @@ SERVICES = {
               'created': '2026-06-09T09:00:00Z'},
     'guide': {'id': next(ids), 'period': 'sept', 'title': 'Guida', 'description': None, 'fee': '15.00', 'category': 'own',
               'created': '2026-06-10T09:00:00Z'},
+    'huge_svc': {'id': next(ids), 'period': 'huge', 'title': 'Extra', 'description': None, 'fee': '5.00', 'category': 'own',
+                 'created': '2026-06-12T09:00:00Z'},
+    **{f'wordy_{n}': {'id': next(ids), 'period': 'wordy', 'title': f'S{n:02d}' + 'x' * 252, 'description': None, 'fee': '1.00', 'category': 'own',
+                      'created': '2026-06-13T09:00:00Z'} for n in range(20)},
     'abroad': {'id': next(ids), 'period': 'abroad', 'title': 'Estero', 'description': None, 'fee': '3.00', 'category': 'foreign',
                'created': '2026-06-11T09:00:00Z'},
 }
-PERIOD_LINKS = {'july': ['kayak', 'umbrella'], 'big': ['tent']}
+PERIOD_LINKS = {'july': ['kayak', 'umbrella'], 'big': ['tent'], 'huge': ['huge_svc'], 'wordy': [f'wordy_{n}' for n in range(20)]}
 CAMP_SUBSCRIPTIONS = {
     'mario': {'id': next(ids), 'camp': 'camp', 'registration': 'mario', 'status': 2, 'created': '2026-06-12T09:00:00Z'},
     'luisa': {'id': next(ids), 'camp': 'camp', 'registration': 'luisa', 'status': 1, 'created': '2026-06-13T09:00:00.500000Z'},
@@ -655,6 +663,21 @@ created('add-athlete-family-registration', 'athlete', 'camp', 'sibling', [], {'s
 created('add-owner-group-payment', 'owner', 'camp', 'grouped', [('july', ['kayak'])],
         {'subscription': rid('grouped'), 'periods': [period_body('july', 'kayak')]}, group='own_group')
 created('add-owner-form', 'owner', 'plain', 'mario', [], None, form=f'subscription={rid("mario")}&status_flag=2')
+def failed_payment(name, registration, selected, body, message, *, headers=None):
+    """An add whose payment INSERT fails: the view is atomic, so nothing stays; the error text is the driver's."""
+    add(name, 'owner', A('camp'), 500, {'error': message}, method='POST', body=body, headers=headers)
+
+
+failed_payment('add-amount-overflow-rolls-back', 'mario', [('huge', ['huge_svc'])],
+               {'subscription': rid('mario'), 'periods': [period_body('huge', 'huge_svc')]},
+               'numeric field overflow\nDETAIL:  A field with precision 9, scale 2 must round to an absolute value less than 10^7.\n')
+failed_payment('add-notes-too-long-rolls-back', 'luisa', [('wordy', [f'wordy_{n}' for n in range(20)])],
+               {'subscription': rid('luisa'), 'periods': [period_body('wordy', *[f'wordy_{n}' for n in range(20)])]},
+               'value too long for type character varying(5120)\n')
+failed_payment('add-malformed-group-payment', 'sibling', [('july', ['kayak'])],
+               {'subscription': rid('sibling'), 'periods': [period_body('july', 'kayak')]}, "['“abc” is not a valid UUID.']",
+               headers={'X-Group-Id': 'abc'})
+
 add('add-existing-explicit-id', 'owner', A('camp'), 400, {'error': repr_detail([('camps_and_retreats_subscription_id', [UNIQUE])])},
     method='POST', body={'camps_and_retreats_subscription_id': NEW_SUB, 'subscription': rid('mario')})
 

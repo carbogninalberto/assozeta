@@ -85,16 +85,17 @@ func (s *CourseEnrolment) auditContext(ctx context.Context, tx domain.CourseEnro
 		return domain.CourseSubscriptionAudit{}, err
 	}
 	return domain.CourseSubscriptionAudit{Context: paymentCategoryAuditContext(identity, request.Audit), ActorAssociation: actor,
-		At: s.moment(), Group: supplierGroup(request.GroupHeader)}, nil
+		At: s.moment(), Group: supplierGroup(request.GroupHeader), GroupRaw: rawGroupSpelling(request.GroupHeader)}, nil
 }
 
-// canonicalGroup refuses an X-Group-Id the group-aware create would store
-// in a spelling auditlog records as sent.
-func canonicalGroup(header string) error {
+// rawGroupSpelling is the X-Group-Id text as sent when the group-aware
+// create stores it in a spelling other than the canonical one; auditlog
+// records the created row's group as sent.
+func rawGroupSpelling(header string) string {
 	if group := supplierGroup(header); header != "" && group != nil && *group != header {
-		return ErrCourseEnrolmentNotPorted
+		return header
 	}
-	return nil
+	return ""
 }
 
 // createGroup is GroupAwareManager.create's raw X-Group-Id: a value the
@@ -439,6 +440,8 @@ func (s *CourseEnrolment) serializerCreate(ctx context.Context, tx domain.Course
 // eventPayment is the serializer's payment and installment for one event.
 func (s *CourseEnrolment) eventPayment(ctx context.Context, tx domain.CourseEnrolmentTransaction, created *enrolmentRow, course domain.CourseWriteRow,
 	event dto.CourseEvent, request CourseEnrolmentRequest, audit domain.CourseSubscriptionAudit) error {
+	// The serializer only creates the rows (no explicit save follows).
+	audit.GroupNoResave = true
 	if course.AssociationID == nil {
 		// instance.course.sport_association.user: AttributeError.
 		return courseEnrolmentServer
@@ -682,9 +685,6 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 		// HTML form input (QueryDict values, JSON fields) is not ported.
 		return nil, ErrCourseEnrolmentNotPorted
 	}
-	if err := canonicalGroup(request.GroupHeader); err != nil {
-		return nil, err
-	}
 	tx, err := s.begin(ctx)
 	if err != nil {
 		return nil, err
@@ -777,9 +777,6 @@ func (s *CourseEnrolment) Add(ctx context.Context, identity domain.ResolvedIdent
 func (s *CourseEnrolment) StockCreate(ctx context.Context, identity domain.ResolvedIdentity, request CourseEnrolmentRequest) error {
 	if request.Form {
 		return ErrCourseEnrolmentNotPorted
-	}
-	if err := canonicalGroup(request.GroupHeader); err != nil {
-		return err
 	}
 	tx, err := s.begin(ctx)
 	if err != nil {

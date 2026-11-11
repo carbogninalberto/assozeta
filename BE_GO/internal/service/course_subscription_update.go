@@ -419,6 +419,7 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
+	context.GroupRaw = rawGroupSpelling(request.GroupHeader)
 	if write.Events != nil {
 		// serializer.save(): the events edit runs before the instance save.
 		if err = s.applyEvents(ctx, tx, instance, events, group, context); err != nil {

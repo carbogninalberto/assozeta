@@ -86,3 +86,5 @@ subscription period carries a soft-deleted unpaid payment (two saves, two full e
 `X-Group-Id` over a payment without a group. RED `v2misc2-red-r2`: Django 110/110, Go 500. GREEN `v2misc2-green-r2`:
 110/110 on the four transports. Mutation `v2misc2-mutation-r1` (final entry's amount rendered from the stored
 decimal) fails `services-update-deleted-payment` on Go (`audit.changes`).
+
+tailcourses: in the service update walk a recomputed amount past numeric(9,2) (or notes past 5120 characters) audits the failing payment save and then answers the driver's text as the 500; earlier saves stay. Case `services-update-amount-overflow` (117 cases). GREEN CI `tailcourses-2`. Mutation `tc-mut6` (overflow text changed) CAUGHT.

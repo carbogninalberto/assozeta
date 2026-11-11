@@ -152,15 +152,25 @@ func (t *courseEnrolmentTransaction) CreatePayment(ctx context.Context, payment 
 	}
 	stored := changes["amount"][1]
 	changes["amount"] = [2]string{"None", payment.MemoryAmount}
+	second := courseWritesGroupResave(audit)
+	if audit.GroupRaw != "" {
+		changes["group"] = [2]string{"None", audit.GroupRaw}
+	}
 	if err = appendModelAudit(ctx, t.tx, courseSubscriptionEntry("payment", "Payment", payment.ID, "", 0, changes, payment.AssociationID, "direct",
 		audit)); err != nil {
 		return err
 	}
-	if !payment.SecondSave || stored == payment.MemoryAmount {
+	if !payment.SecondSave {
+		return nil
+	}
+	if stored != payment.MemoryAmount {
+		second["amount"] = [2]string{stored, payment.MemoryAmount}
+	}
+	if len(second) == 0 {
 		return nil
 	}
 	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("payment", "Payment", payment.ID, "", 1,
-		map[string][2]string{"amount": {stored, payment.MemoryAmount}}, payment.AssociationID, "direct", audit))
+		second, payment.AssociationID, "direct", audit))
 }
 
 func (t *courseEnrolmentTransaction) AddMembershipPayment(ctx context.Context, row, payment string) error {

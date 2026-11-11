@@ -44,9 +44,6 @@ var (
 	// storable text, names Storage.save rejects, no document storage) before
 	// any write.
 	ErrCourseLocationUploadUnsupported = refusal.New("course location document upload is not ported")
-	// ErrCourseLocationPrimaryKeyChange refuses a new course_location_id on
-	// update: Model.save() would insert a copy under the new key (not ported).
-	ErrCourseLocationPrimaryKeyChange = refusal.New("course location primary key change is not ported")
 )
 
 // CourseLocationValidationError is DRF's 400 field map.
@@ -247,9 +244,6 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 		}
 		return s.finish(ctx, tx, created, failure)
 	}
-	if write.ID != nil && *write.ID != row.ID {
-		return nil, ErrCourseLocationPrimaryKeyChange
-	}
 	uploads, failure, refused := s.courseLocationDocuments(write)
 	if refused != nil {
 		return nil, refused
@@ -258,6 +252,18 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 	applyCourseLocationWrite(row, write)
 	if write.AssociationPresent {
 		row.AssociationID = write.AssociationID
+	}
+	if write.ID != nil && *write.ID != row.ID {
+		// Model.save() under a key no row has inserts a copy with the validated
+		// values; the row the path names stays and the documents attach to the copy.
+		row.ID = *write.ID
+		if err = tx.CopyLocation(ctx, *row, auditContext, at); err != nil {
+			return nil, err
+		}
+		if err = s.storeDocuments(ctx, tx, identity, row.ID, uploads, auditContext); err != nil {
+			return nil, err
+		}
+		return s.finish(ctx, tx, *row, failure)
 	}
 	changes := map[string][2]string{}
 	diff := func(name string, before, after *string) {

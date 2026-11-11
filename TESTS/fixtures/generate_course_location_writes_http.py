@@ -184,6 +184,19 @@ add('update-same-values-no-audit', 'full_collaborator', one('gym', 'update'), 20
     body={'title': 'Palestra', 'sport_association': OWN}, effect=effect)
 response, effect = changed('owner', 'pool', title=None, address='')
 add('update-null-title', 'owner', one('pool', 'update'), 200, response, method='PATCH', body={'title': None, 'address': ''}, effect=effect)
+# A changed course_location_id passing validation: Model.save() inserts a copy under the new key; the path's row stays.
+COPY_ID = 'a1000000-0000-4000-8000-000000989002'
+copy_row = {**{key: STATE['pool'][key] for key in ('title', 'description', 'address')}, 'title': 'Copia'}
+response = item(copy_row, COPY_ID)
+add('update-primary-key-change-inserts-copy', 'owner', one('pool', 'update'), 200, response, method='PATCH',
+    body={'course_location_id': COPY_ID, 'title': 'Copia'},
+    effect={'kind': 'copy', 'actor': 'owner', 'id': COPY_ID, 'stored': copy_row})
+add('update-primary-key-taken', 'owner', one('pool', 'update'), 400,
+    {'course_location_id': ['course location with this course location id already exists.']}, method='PATCH',
+    body={'course_location_id': LOCATIONS['gym']['id']})
+add('update-primary-key-malformed', 'owner', one('pool', 'update'), 400, {'course_location_id': ['Must be a valid UUID.']}, method='PATCH',
+    body={'course_location_id': 'abc'})
+
 response, effect = changed('owner', 'gym', description='Nuova')
 add('update-document-missing-key-keeps-change', 'owner', one('gym', 'update'), 400, MISSING_KEY, method='PATCH',
     body={'description': 'Nuova', 'documents_data': [{'document': ''}]}, effect=effect)

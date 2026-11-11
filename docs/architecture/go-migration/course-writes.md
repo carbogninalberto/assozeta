@@ -168,3 +168,5 @@ Evidence: 137 cases. RED: documented refusals (v2-refusals.md, course-writes row
 Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `restcourses-mutation-r1` (the installment id lookup's result
 ignored) CAUGHT. Re-run green in the same sweep: course-enrolment, course-subscriptions, course-overview,
 subscription-renew, subscription-writes, personas-writes and the router families that share the event and date readers.
+
+tailcourses: a non-canonical `X-Group-Id` (upper case, braces) on `course/add` and the overview update is stored as the UUID and audited as sent: the course, payment and installment create entries carry the header text, and the second save of each (course association save, `payment.save()`, `installment.save()`) records the stored group against it. `CourseSubscriptionAudit.GroupRaw` carries the spelling. Cases `add-installments-raw-group`, `add-default-fee-braced-group`, `overview-update-to-installments-raw-group` (149 cases). RED: documented refusal (v2-refusals.md row). GREEN CI `tailcourses-2` on the four transports. Mutation `tc-mut1` (the second-save group change dropped) CAUGHT.

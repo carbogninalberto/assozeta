@@ -103,7 +103,7 @@ func (s *CourseWrites) auditContext(ctx context.Context, tx domain.CourseWritesT
 		return domain.CourseSubscriptionAudit{}, err
 	}
 	return domain.CourseSubscriptionAudit{Context: paymentCategoryAuditContext(identity, request.Audit), ActorAssociation: actor,
-		At: s.now().UTC().Truncate(time.Microsecond), Group: supplierGroup(request.GroupHeader)}, nil
+		At: s.now().UTC().Truncate(time.Microsecond), Group: supplierGroup(request.GroupHeader), GroupRaw: rawGroupSpelling(request.GroupHeader)}, nil
 }
 
 // courseEventLookup is the transaction part of CourseEventsSerializer's
@@ -120,7 +120,7 @@ func courseEventTaken(ctx context.Context, tx courseEventLookup, header string) 
 
 // createGroup is GroupAwareManager.create's raw X-Group-Id: a value the
 // UUIDField rejects, or an unknown group (deferred foreign key), fails the
-// create; a non-canonical spelling would be audited as sent (not ported).
+// create; a non-canonical spelling is audited as sent (audit.GroupRaw).
 func (s *CourseWrites) createGroup(ctx context.Context, tx domain.CourseWritesTransaction, header string) (*string, error) {
 	if header == "" {
 		return nil, nil
@@ -128,9 +128,6 @@ func (s *CourseWrites) createGroup(ctx context.Context, tx domain.CourseWritesTr
 	group := supplierGroup(header)
 	if group == nil {
 		return nil, domain.ErrCourseWritesServer
-	}
-	if *group != header {
-		return nil, domain.ErrCourseWritesNotPorted
 	}
 	exists, err := tx.GroupExists(ctx, *group)
 	if err != nil {
