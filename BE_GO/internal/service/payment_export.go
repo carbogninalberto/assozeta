@@ -662,8 +662,7 @@ func paymentExportCourseValue(text *string) (xlsxexport.Value, error) {
 		case bool:
 			return xlsxexport.BoolValue(item), nil
 		case []any, map[string]any:
-			// openpyxl cannot convert a list or dict: the workbook fails (Django answers 500).
-			return xlsxexport.ObjectValue(""), nil
+			return xlsxexport.ObjectValue(dto.PythonRepr(label)), nil
 		case json.Number:
 			if number, err := strconv.ParseInt(item.String(), 10, 64); err == nil {
 				return xlsxexport.IntValue(number), nil

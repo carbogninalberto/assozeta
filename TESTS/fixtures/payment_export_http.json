@@ -4814,13 +4814,92 @@
    }
   },
   {
-   "name": "payment-export-label-list-xlsx-server-error",
+   "name": "payment-export-label-list-xlsx",
    "actor": "foreign_owner",
    "method": "GET",
    "path": "/payment/list/export?archived=1&query[generalSearch]=et-list&m=xlsx",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>"
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-list"
+        ],
+        [
+         "In Attesa"
+        ],
+        [
+         "-"
+        ],
+        [
+         "2024-02-05"
+        ],
+        [
+         "2024-02-05"
+        ],
+        [
+         ""
+        ],
+        [
+         "Altro"
+        ],
+        [
+         ""
+        ],
+        [
+         "-"
+        ],
+        [
+         "-"
+        ],
+        [
+         "Entrata"
+        ],
+        [
+         {
+          "list": [
+           {
+            "int": "1"
+           },
+           "a"
+          ]
+         }
+        ],
+        [
+         {
+          "decimal": "1.00"
+         }
+        ],
+        [
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
   },
   {
    "name": "payment-export-label-dict-csv",
@@ -4840,13 +4919,94 @@
    }
   },
   {
-   "name": "payment-export-label-dict-xlsx-server-error",
+   "name": "payment-export-label-dict-xlsx",
    "actor": "foreign_owner",
    "method": "GET",
    "path": "/payment/list/export?archived=1&query[generalSearch]=et-dict&m=xlsx",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>"
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-dict"
+        ],
+        [
+         "In Attesa"
+        ],
+        [
+         "-"
+        ],
+        [
+         "2024-02-06"
+        ],
+        [
+         "2024-02-06"
+        ],
+        [
+         ""
+        ],
+        [
+         "Altro"
+        ],
+        [
+         ""
+        ],
+        [
+         "-"
+        ],
+        [
+         "-"
+        ],
+        [
+         "Entrata"
+        ],
+        [
+         {
+          "dict": [
+           [
+            "k",
+            {
+             "int": "1"
+            }
+           ]
+          ]
+         }
+        ],
+        [
+         {
+          "decimal": "1.00"
+         }
+        ],
+        [
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
   }
  ]
 }

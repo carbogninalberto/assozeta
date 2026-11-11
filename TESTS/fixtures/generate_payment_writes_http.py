@@ -1010,12 +1010,6 @@ for kind, value, text in (('number', 5, '5'), ('boolean', True, 'True'), ('float
     updated(f'update-attachment-{kind}-filename', 'owner', label,
             {'amount': '28', 'attachments_data': [{'document': b64(PDF), 'filename': value}]}, {'amount': '28.00'}, status=500,
             response=SERVER, documents=[(text, PDF, True)])
-updated('update-attachment-traversal-filename', 'owner', 'up_attach_traversal',
-        {'amount': '29', 'attachments_data': [{'document': b64(PDF), 'filename': '../x.pdf'}]}, {'amount': '29.00'}, status=500,
-        response=SERVER, documents=[('../x.pdf', PDF, True)])
-updated('update-attachment-directory-filename', 'owner', 'up_attach_directory',
-        {'amount': '30', 'attachments_data': [{'document': b64(PDF), 'filename': 'dir/'}]}, {'amount': '30.00'}, status=500,
-        response=SERVER, documents=[('dir/', PDF, True)])
 updated('update-attachment-null-filename', 'owner', 'up_attach_null_name',
         {'amount': '27', 'attachments_data': [{'document': b64(PDF), 'filename': None}]}, {'amount': '27.00'}, status=500, response=SERVER)
 

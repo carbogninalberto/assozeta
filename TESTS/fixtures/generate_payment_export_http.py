@@ -493,6 +493,10 @@ def typed(value):
         return {'float': repr(value)}
     if isinstance(value, Decimal):
         return {'decimal': str(value)}
+    if isinstance(value, list):
+        return {'list': [typed(item) for item in value]}
+    if isinstance(value, dict):
+        return {'dict': [[key, typed(item)] for key, item in value.items()]}
     return value
 
 
@@ -697,7 +701,7 @@ for token, label in (('bool', 'label_bool'), ('big', 'label_big'), ('huge', 'lab
     rows = listed(association=FOREIGN, archived=True, search=f'et-{token}')
     assert rows == ([label] if token != 'big' else ['label_big_text', label]), rows
     add(f'label-{token}-csv', 'foreign_owner', path, 200, body(export_csv(rows, association=FOREIGN), FOREIGN))
-    if token in ('bool', 'big'):
+    if token != 'huge':
         add(f'label-{token}-xlsx', 'foreign_owner', path + '&m=xlsx', 200, xbody(export_xlsx(rows, association=FOREIGN), FOREIGN))
     else:
         add(f'label-{token}-xlsx-server-error', 'foreign_owner', path + '&m=xlsx', 500, SERVER)

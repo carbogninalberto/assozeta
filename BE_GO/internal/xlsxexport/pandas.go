@@ -117,7 +117,9 @@ func toNumeric(column frameColumn) (numericResult, error) {
 			sawFloat = true
 			floats[i] = number
 		case Object:
-			return numericResult{}, ErrNotPorted
+			// floatify(list) raises TypeError: coerced to NaN.
+			sawFloat = true
+			floats[i] = math.NaN()
 		case BigInt:
 			// An int beyond int64: a column of numbers only is not ported; next to text it only decides the mask.
 			sawBig = true

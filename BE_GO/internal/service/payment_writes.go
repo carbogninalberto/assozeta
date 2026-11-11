@@ -300,8 +300,8 @@ func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentA
 			return plan, nil
 		}
 		if _, err := documentkey.UploadName(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), uuid.New(), name); err != nil {
-			plan.stored = append(plan.stored, paymentAttachment{filename: name, unlinked: true})
-			return plan, nil
+			// Storage.save raises SuspiciousFileOperation (a 400 page, the Document stays): not ported.
+			return plan, domain.ErrPaymentWritesNotPorted
 		}
 		plan.stored = append(plan.stored, paymentAttachment{content: content, filename: name})
 	}

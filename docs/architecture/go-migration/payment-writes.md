@@ -207,6 +207,6 @@ digits) fails `payment-writes-add-other-script-dates` (CAUGHT).
   under `user` (the repr form for add). A valid object reaches `serializer.save()`, which cannot write it: the 500 page
   with nothing stored (update: after the parties and the subscription are resolved).
 - `attachments_data` with a filename that is not text: the Document is created with `str(value)` and audited, then
-  `os.path.join` raises; a name the storage refuses (`../x`, a trailing `/`) leaves the created, unattached Document. Both
-  answer the 500 page after the payment's own changes (the adapter's `unlinked` document specs).
-Cases: 182 (add and update variants). Form bodies of an update and a `payment_id` key on add stay refused.
+  `os.path.join` raises: the 500 page after the payment's own changes (the adapter's `unlinked` document specs). A name the
+  storage refuses (`../x`, a trailing `/`) is Django's 400 SuspiciousOperation page and stays refused.
+Cases: 180 (add and update variants). Form bodies of an update and a `payment_id` key on add stay refused.

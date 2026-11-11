@@ -298,13 +298,6 @@ func PandasOpenpyxl(data [][]Value, columns []string, now time.Time) ([]byte, er
 	if len(data) != len(columns) {
 		return nil, ErrDjango // "N columns passed, passed data had M columns"
 	}
-	for _, column := range data {
-		for _, value := range column[:min(rows, len(column))] {
-			if value.Kind == Object {
-				return nil, ErrDjango // openpyxl: Cannot convert [..] to Excel
-			}
-		}
-	}
 	uses := map[string]int{}
 	for _, name := range columns {
 		uses[name]++

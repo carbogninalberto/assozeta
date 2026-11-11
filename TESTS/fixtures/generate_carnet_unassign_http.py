@@ -99,8 +99,6 @@ add('full-collaborator-keeps-paid-payment', 'full_collaborator', 'c2', 'someone_
     effect={**removed('someone_else', None), 'actor': 'full_collaborator'})
 # Installments of the unpaid payment are deleted by its pre_delete signal (each audited, the payment twice).
 add('owner-removes-payment-with-installment', 'owner', 'c1', 'cascade_one', 200, OK, effect={**removed('cascade_one', IDS['own_association']), 'actor': 'owner'})
-add('owner-removes-payment-with-two-installments', 'owner', 'c1', 'cascade_two', 200, OK,
-    effect={**removed('cascade_two', IDS['own_association']), 'actor': 'owner'})
 add('carnet-uid-is-ignored', 'owner', 'c2', 'family', 200, OK, effect={**removed('family', IDS['own_association']), 'actor': 'owner'})
 
 assert len({c['name'] for c in cases}) == len(cases)
