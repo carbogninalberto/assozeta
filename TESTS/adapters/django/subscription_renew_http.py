@@ -57,7 +57,7 @@ LABELS = {
     'membership': 'application.SubscriptionMembership', 'medical': 'application.MedicalCertificate',
     'broadcast': 'notifications.NotificationsBroadcast', 'user_broadcast': 'notifications.UserNotificationsBroadcast',
     'draft': 'application.AssociateImportDraft', 'status': 'application.AssociateImportDraftStatus', 'link': 'application.Subscription_tags',
-    'family': 'application.Family',
+    'family': 'application.Family', 'document': 'docmanager.Document',
     'course_subscription': 'application.CourseSubscription', 'installment': 'application.CourseSubscriptionInstallment',
 }
 MANAGED = (*LABELS.values(), harness.AUDIT, harness.INDEX)
@@ -66,7 +66,7 @@ KEYS = {'application.Associate': 'associate_id', 'application.Payment': 'payment
         'notifications.NotificationsBroadcast': 'broadcast_id', 'notifications.UserNotificationsBroadcast': 'user_broadcast_id',
         'application.AssociateImportDraft': 'associate_import_draft_id',
         'application.AssociateImportDraftStatus': 'associate_import_draft_status_id', 'application.Subscription_tags': 'id',
-        'application.Family': 'family_id', 'application.CourseSubscription': 'course_subscription_id',
+        'application.Family': 'family_id', 'docmanager.Document': 'document_id', 'application.CourseSubscription': 'course_subscription_id',
         'application.CourseSubscriptionInstallment': 'course_subscription_installment_id'}
 # Seed sections by row label (for references by name).
 SECTIONS = {'associate': 'associates', 'payment': 'payments', 'subscription': 'subscriptions', 'medical': 'certificates',
@@ -74,7 +74,7 @@ SECTIONS = {'associate': 'associates', 'payment': 'payments', 'subscription': 's
 AUDIT_MODELS = {'associate': 'associate', 'payment': 'payment', 'subscription': 'subscription', 'subscriptionmembership': 'membership',
                 'medicalcertificate': 'medical', 'associateimportdraft': 'draft', 'associateimportdraftstatus': 'status',
                 'notificationsbroadcast': 'broadcast', 'usernotificationsbroadcast': 'user_broadcast', 'family': 'family',
-                'coursesubscription': 'course_subscription', 'coursesubscriptioninstallment': 'installment'}
+                'coursesubscription': 'course_subscription', 'coursesubscriptioninstallment': 'installment', 'document': 'document'}
 STATE = {}
 
 
@@ -231,6 +231,9 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
     finally:
         if mirror is not None:
             mirror.close()
+        # The workload's uploads go with it.
+        for item in create.listing() - {create.SENTINEL[0]}:
+            create.STORAGE['client'].delete_object(Bucket=create.BUCKET, Key=item)
         store.delete(key)
         if original[0] is not None:
             store.restore(key, max(original[1], 0), original[0], replace=True)
@@ -293,7 +296,12 @@ def check_rows(effect, before, after, ids, since, until, binding):
         binding[spec['bind']] = key
         row = new[label][key]
         model = LABELS[label]
-        expected = {**defaults[model], **match, **resolve(spec['columns'], binding)}
+        columns = resolve(spec['columns'], binding)
+        for column, value in list(columns.items()):
+            if value == '$any_uuid':
+                contract.require(create.uuid4_text(row[column]), 'state.uuid:' + label + ':' + column)
+                columns[column] = row[column]
+        expected = {**defaults[model], **match, **columns}
         contract.require(create.uuid4_text(key) or key == spec['match'].get(KEYS[model]), 'state.key:' + label)
         expected[KEYS[model]] = row[KEYS[model]]
         if 'creation_date' in expected and 'creation_date' not in spec['columns']:
@@ -331,6 +339,26 @@ def check_rows(effect, before, after, ids, since, until, binding):
                 {k: [expected.get(k), currents[label][key].get(k)] for k in expected if expected.get(k) != currents[label][key].get(k)},
                 default=str))
     return binding
+
+
+def check_storage(effect, binding):
+    """The bucket holds the placeholder certificate image of a typed date (its Document row is checked with the rows) and nothing else."""
+    spec = effect.get('placeholder')
+    expected = set(create.STATE['objects'])
+    if spec:
+        from docmanager.models import Document
+        document = binding['$placeholder_document']
+        created = Document._base_manager.get(pk=document).creation_date
+        key = f"{create.LOCATION}/{created.timestamp()}/{document}/{spec['filename']}"
+        added = create.listing() - expected
+        contract.require(added == {key}, 'storage.placeholder-key' + json.dumps(sorted(added)))
+        stored = create.STORAGE['client'].get_object(Bucket=create.BUCKET, Key=key)
+        body = stored['Body'].read()
+        contract.require(body[:8] == b'\x89PNG\r\n\x1a\n' and body == create.placeholder_png(spec['text']), f'storage.placeholder-bytes:{len(body)}')
+        contract.require(stored['ContentType'] == 'image/png' and stored.get('ContentEncoding') is None, 'storage.placeholder-metadata')
+        expected.add(key)
+    contract.require(create.listing() == expected, 'storage.objects')
+    create.STATE['objects'] = expected
 
 
 def prepare_deletes(case):
@@ -486,8 +514,10 @@ def assert_effect(case, before, after, source, context):
         if effect is None:
             harness.celery_published(contract, fixture, [], since=since, until=until)
             contract.require(all(before[k] == after[k] for k in MANAGED), 'state.no-effect')
+            contract.require(create.listing() == create.STATE['objects'], 'storage.no-effect')
         else:
             check_rows(effect, before, after, ids, since, until, binding)
+            check_storage(effect, binding)
             body = contract.LAST.get('body')
             subscriptions = [spec for spec in effect['new'] if spec['label'] == 'subscription']
             if isinstance(body, dict) and 'payment_id' in body:
@@ -509,6 +539,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     STATE['source'] = source
     ids = source['ids']
     fixture['raw'] = raw
+    create.STATE['objects'] = create.listing()
     results, context = [], {'remote': {}, 'fixture': fixture}
     for case in source['cases']:
         if case.get('setup'):

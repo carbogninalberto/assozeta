@@ -799,17 +799,45 @@
      "new_member": false
     }
    }
+  },
+  "typed_date": {
+   "id": "a1000000-0000-4000-8000-000000945034",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "valid": false,
+   "data": {
+    "associate": {
+     "first_name": "Tosca",
+     "last_name": "Tipata",
+     "tax_code": "TPTTSC90A41H501M",
+     "born_date": "01/01/1990",
+     "sex": "F",
+     "email": null
+    },
+    "associate_tutor": null,
+    "new_user_account": {
+     "new_member": false
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": "",
+     "certificate_expring_date": "2027-03-31"
+    }
+   }
   }
  },
  "statuses": {
   "old_approving": {
-   "id": "a1000000-0000-4000-8000-000000945034",
+   "id": "a1000000-0000-4000-8000-000000945035",
    "association": "a1000000-0000-4000-8000-000000701001",
    "doing": true,
    "type": 2
   },
   "importing": {
-   "id": "a1000000-0000-4000-8000-000000945035",
+   "id": "a1000000-0000-4000-8000-000000945036",
    "association": "a1000000-0000-4000-8000-000000701001",
    "doing": false,
    "type": 1
@@ -3602,7 +3630,7 @@
    "headers": {},
    "status": 200,
    "response": {
-    "msg": "2 su 7 atleti approvati.",
+    "msg": "2 su 8 atleti approvati.",
     "approved": 2
    },
    "effect": {
@@ -7802,6 +7830,1059 @@
     "courses": []
    },
    "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-certificate-placeholder",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "associate",
+      "bind": "$renew_certificate_placeholder_associate",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948001"
+      },
+      "columns": {
+       "first_name": "Pia",
+       "last_name": "Segnaposto",
+       "born_date": "1991-05-05",
+       "sex": "F",
+       "tax_code": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner"
+      }
+     },
+     {
+      "label": "document",
+      "bind": "$placeholder_document",
+      "match": {
+       "filename": "medical_certificate_Pia_Segnaposto.png"
+      },
+      "columns": {
+       "filename": "medical_certificate_Pia_Segnaposto.png",
+       "token": "$any_uuid"
+      }
+     },
+     {
+      "label": "medical",
+      "bind": "$placeholder_medical",
+      "match": {
+       "document_id": "$placeholder_document"
+      },
+      "columns": {
+       "expiration_date": "2027-03-31",
+       "user_id": "$owner",
+       "document_id": "$placeholder_document"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$renew_certificate_placeholder_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948001",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$renew_certificate_placeholder_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948001"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$renew_certificate_placeholder_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "59",
+       "medical_id": "$placeholder_medical",
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {},
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "$renew_certificate_placeholder_associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "$renew_certificate_placeholder_associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "document",
+      "action": 0,
+      "ref": "$placeholder_document",
+      "changes": {
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "app": "docmanager"
+     },
+     {
+      "model": "medicalcertificate",
+      "action": 0,
+      "ref": "$placeholder_medical",
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-03-31 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$renew_certificate_placeholder_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$renew_certificate_placeholder_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$renew_certificate_placeholder_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$renew_certificate_placeholder_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Pia Segnaposto.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ],
+    "placeholder": {
+     "filename": "medical_certificate_Pia_Segnaposto.png",
+     "expiration": "2027-03-31",
+     "text": "\n            Pia Segnaposto\n\n            \n\n            Questa certificazione è valida fino al 2027-03-31 00:00:00+00:00\n\n            \n\n            \n\n            Attenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.\n                        "
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000948001",
+     "first_name": "Pia",
+     "last_name": "Segnaposto",
+     "born_date": "05/05/1991",
+     "sex": "F",
+     "type": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": "",
+     "certificate_expring_date": "2027-03-31"
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-certificate-placeholder-italian-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "associate",
+      "bind": "$renew_certificate_placeholder_italian_date_associate",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948002"
+      },
+      "columns": {
+       "first_name": "Niccolò",
+       "last_name": "Però",
+       "born_date": "1992-06-06",
+       "sex": "M",
+       "tax_code": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner"
+      }
+     },
+     {
+      "label": "document",
+      "bind": "$placeholder_document",
+      "match": {
+       "filename": "medical_certificate_Niccolò_Però.png"
+      },
+      "columns": {
+       "filename": "medical_certificate_Niccolò_Però.png",
+       "token": "$any_uuid"
+      }
+     },
+     {
+      "label": "medical",
+      "bind": "$placeholder_medical",
+      "match": {
+       "document_id": "$placeholder_document"
+      },
+      "columns": {
+       "expiration_date": "2027-04-05",
+       "user_id": "$owner",
+       "document_id": "$placeholder_document"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$renew_certificate_placeholder_italian_date_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948002",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$renew_certificate_placeholder_italian_date_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948002"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$renew_certificate_placeholder_italian_date_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "60",
+       "medical_id": "$placeholder_medical",
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {},
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "$renew_certificate_placeholder_italian_date_associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "$renew_certificate_placeholder_italian_date_associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "document",
+      "action": 0,
+      "ref": "$placeholder_document",
+      "changes": {
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "app": "docmanager"
+     },
+     {
+      "model": "medicalcertificate",
+      "action": 0,
+      "ref": "$placeholder_medical",
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-04-05 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$renew_certificate_placeholder_italian_date_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$renew_certificate_placeholder_italian_date_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$renew_certificate_placeholder_italian_date_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$renew_certificate_placeholder_italian_date_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Niccolò Però.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ],
+    "placeholder": {
+     "filename": "medical_certificate_Niccolò_Però.png",
+     "expiration": "2027-04-05",
+     "text": "\n            Niccolò Però\n\n            \n\n            Questa certificazione è valida fino al 2027-04-05 00:00:00+00:00\n\n            \n\n            \n\n            Attenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.\n                        "
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000948002",
+     "first_name": "Niccolò",
+     "last_name": "Però",
+     "born_date": "06/06/1992",
+     "sex": "M",
+     "type": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "certificate_expring_date": "5/4/2027"
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-certificate-number-date-skipped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "associate",
+      "bind": "$number_associate",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948003"
+      },
+      "columns": {
+       "first_name": "Nino",
+       "last_name": "Numero",
+       "born_date": "1993-07-07",
+       "sex": "M",
+       "tax_code": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$number_payment",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948003",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$number_subscription",
+      "match": {
+       "associate_id": "a1000000-0000-4000-8000-000000948003"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$number_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "61",
+       "medical_id": null,
+       "custom_data": {},
+       "additional_fields": {},
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {},
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "$number_associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "$number_associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$number_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$number_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$number_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$number_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Nino Numero.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000948003",
+     "first_name": "Nino",
+     "last_name": "Numero",
+     "born_date": "07/07/1993",
+     "sex": "M",
+     "type": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": 20270331
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": []
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-approve-certificate-placeholder",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/associates-draft/list/approve",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "1 su 1 atleti approvati.",
+    "approved": 1
+   },
+   "effect": {
+    "actor": "owner",
+    "new": [
+     {
+      "label": "associate",
+      "bind": "$typed_date_associate",
+      "match": {
+       "first_name": "Tosca",
+       "last_name": "Tipata"
+      },
+      "columns": {
+       "first_name": "Tosca",
+       "last_name": "Tipata",
+       "tax_code": "TPTTSC90A41H501M",
+       "born_date": "1990-01-01",
+       "sex": "F",
+       "email": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner"
+      }
+     },
+     {
+      "label": "document",
+      "bind": "$placeholder_document",
+      "match": {
+       "filename": "medical_certificate_Tosca_Tipata.png"
+      },
+      "columns": {
+       "filename": "medical_certificate_Tosca_Tipata.png",
+       "token": "$any_uuid"
+      }
+     },
+     {
+      "label": "medical",
+      "bind": "$placeholder_medical",
+      "match": {
+       "document_id": "$placeholder_document"
+      },
+      "columns": {
+       "expiration_date": "2027-03-31",
+       "user_id": "$owner",
+       "document_id": "$placeholder_document"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$typed_date_payment",
+      "match": {
+       "associate_id": "$typed_date_associate",
+       "amount": "25.00"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000945024",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$typed_date_subscription",
+      "match": {
+       "associate_id": "$typed_date_associate"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$typed_date_payment",
+       "type": 1,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "subscription_number": "62",
+       "medical_id": "$placeholder_medical",
+       "custom_data": null,
+       "additional_fields": null,
+       "start_date": "$season_start",
+       "end_date": "$season_end"
+      }
+     }
+    ],
+    "changed": {},
+    "deleted": {
+     "draft": [
+      "typed_date"
+     ]
+    },
+    "tags": [],
+    "audit": [
+     {
+      "model": "associateimportdraftstatus",
+      "action": 0,
+      "ref": "$status",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application",
+      "status": "create"
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "$typed_date_associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "$typed_date_associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "document",
+      "action": 0,
+      "ref": "$placeholder_document",
+      "changes": {
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "app": "docmanager"
+     },
+     {
+      "model": "medicalcertificate",
+      "action": 0,
+      "ref": "$placeholder_medical",
+      "changes": {
+       "expiration_date": [
+        "None",
+        "2027-03-31 00:00:00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$typed_date_payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$typed_date_subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associateimportdraft",
+      "action": 2,
+      "ref": "typed_date",
+      "changes": {
+       "data": [
+        "{'associate': {'sex': 'F', 'email': None, 'tax_code': 'TPTTSC90A41H501M', 'born_date': '01/01/1990', 'last_name': 'Tipata', 'first_name': 'Tosca', 'type': 1, 'role': 1, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'user': UUID('a1000000-0000-4000-8000-000000700001')}, 'signature': {'there_is_signature': False, 'data': ''}, 'associate_tutor': None, 'new_user_account': {'new_member': False}, 'medical_certificate': {'filename': '', 'medical_id': None, 'certificate_expring_date': '2027-03-31'}, 'associate_data': {'sex': 'F', 'email': None, 'tax_code': 'TPTTSC90A41H501M', 'born_date': '01/01/1990', 'last_name': 'Tipata', 'first_name': 'Tosca', 'type': 1, 'role': 1, 'sport_association': UUID('a1000000-0000-4000-8000-000000701001'), 'user': UUID('a1000000-0000-4000-8000-000000700001')}, 'associate_tutor_data': None, 'membership_plan_id': None, 'plan_id': None}",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "app": "application",
+      "deleted": true
+     },
+     {
+      "model": "associateimportdraftstatus",
+      "action": 2,
+      "ref": "$status",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "app": "application",
+      "status": "delete"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$typed_date_subscription"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$typed_date_subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Tosca Tipata.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ],
+    "placeholder": {
+     "filename": "medical_certificate_Tosca_Tipata.png",
+     "expiration": "2027-03-31",
+     "text": "\n            Tosca Tipata\n\n            \n\n            Questa certificazione è valida fino al 2027-03-31 00:00:00+00:00\n\n            \n\n            \n\n            Attenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.\n                        "
+    }
+   },
+   "body": {
+    "associate_import_draft_ids": [
+     "a1000000-0000-4000-8000-000000945034"
+    ],
+    "subscription_details": {
+     "type": 1
+    }
+   },
+   "setup": {
+    "drafts": {
+     "typed_date": true
+    }
+   }
   }
  ]
 }
