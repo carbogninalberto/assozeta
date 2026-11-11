@@ -1298,7 +1298,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association |
 | same | `tags` string / non-string ids | `:188` etc. | B | UI sends the list row's tag objects (handled at `:190-198`) |
 | same | `user.email` list/dict; non-mapped Python exception texts | `:157`, `:304` | B | not UI-shaped. legacy: no |
-| same | inputs refused by subscription-create (preregistration, new accounts, signatures, certificate expiration, `type_of_associate`, …) | `service/subscription_create*.go` | see subscription-create.md | The renewal body sends `signature.there_is_signature:false`, `new_member:false` and `medical_certificate.medical_id` only (`RenewalModal.svelte:40-56`). Check `associate_data.type`/`role` against the create refusals in that family's inventory |
+| same, and associates-draft approve | a typed `certificate_expring_date` without an upload (placeholder image) | `service/subscription_create.go` (`subscriptionCreateRefuse`) | **ported** (tailsubs) | Cases `renew-certificate-placeholder*`, `approve-certificate-placeholder`. |
+| same | inputs refused by subscription-create (preregistration, new accounts, signatures, `type_of_associate`, …) | `service/subscription_create*.go` | see subscription-create.md | The renewal body sends `signature.there_is_signature:false`, `new_member:false` and `medical_certificate.medical_id` only (`RenewalModal.svelte:40-56`). Check `associate_data.type`/`role` against the create refusals in that family's inventory |
 | POST subscription/associates-draft/list/approve | a draft hitting any create refusal refuses the whole request; group header | same | depends on subscription-create | UI caller `Members/import/AssociateTable.svelte:286,302` |
 
 ### unknown-paths.md

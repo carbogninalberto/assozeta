@@ -99,7 +99,8 @@ def resolve_date(text):
         return date.fromisoformat(text)
     year = today().year
     values = {'$today': today(), '$season_start': date(year, 1, 1), '$season_end': date(year, 12, 31),
-              '$last_season_start': date(year - 1, 1, 1), '$last_season_end': date(year - 1, 12, 31)}
+              '$last_season_start': date(year - 1, 1, 1), '$last_season_end': date(year - 1, 12, 31),
+              '$next_season_start': date(year + 1, 1, 1), '$next_season_end': date(year + 1, 12, 31)}
     return values[text]
 
 
@@ -262,6 +263,8 @@ def resolve(value, binding):
             return binding[value]
         if value == '$default_membership_type':
             return create.membership_type_default()
+        if value == '$next_membership_type':
+            return create.membership_type_default(1)
         if value == '$today_midnight':
             return datetime.combine(today(), day_time()).isoformat() + 'Z'
         return resolve_date(value).isoformat()
@@ -513,6 +516,10 @@ def assert_effect(case, before, after, source, context):
     effect = case['effect']
     token = fixture['tokens'].get(case['actor'])
     binding = {'$authorization': f'Bearer {token}' if token else None, '$category': STATE['category'], '$owner': ids['owner']}
+    # A preregistration is created on the next season's first day.
+    binding['$next_season_created'] = datetime.combine(resolve_date('$next_season_start'), day_time()).isoformat() + 'Z'
+    for name in ('start', 'end'):
+        binding[f'$next_season_{name}_text'] = resolve_date(f'$next_season_{name}').isoformat() + ' 00:00:00+00:00'
     try:
         if effect is None:
             harness.celery_published(contract, fixture, [], since=since, until=until)

@@ -199,8 +199,8 @@ func subscriptionCreateToday(now time.Time) string {
 // refuse rejects the inputs whose create_subscription paths are not ported,
 // before anything is read or written. today is the naive current date.
 func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
-	// Renewals and draft approvals do not port preregistration (the placeholder certificate of a typed date is ported there too).
-	if value, _ := data.Lookup("preregistration"); value == true {
+	// A preregistration that names the subscription it renews is not ported inside a renewal or a draft approval.
+	if value, _ := data.Lookup("preregistration"); value == true && subscriptionRenewalRequested(data) {
 		return domain.ErrSubscriptionCreateNotPorted
 	}
 	return subscriptionCreateRefuseInputs(data, today)

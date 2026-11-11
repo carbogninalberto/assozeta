@@ -256,7 +256,7 @@ def notification_entries(actor):
             for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
 
 
-def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medical=None, number=None, renewal_form=True):
+def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medical=None, number=None, renewal_form=True, season=None):
     """The new subscription (and membership for types 2 and 3) of one create_subscription call."""
     if number is None:
         NUMBER[0] += 1
@@ -264,7 +264,7 @@ def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medi
     rows = [{'label': 'subscription', 'bind': bind, 'match': {'associate_id': associate_ref},
              'columns': {'sport_association_id': OWN, 'user_id': user, 'payment_id': payment, 'type': kind, 'role': 1, 'status_flag': 1,
                          'meta': NO_PLANS, 'subscription_type': '', 'subscription_number': number, 'medical_id': medical,
-                         'custom_data': {} if renewal_form else None, 'additional_fields': {} if renewal_form else None, **SEASON}}]
+                         'custom_data': {} if renewal_form else None, 'additional_fields': {} if renewal_form else None, **(season or SEASON)}}]
     if kind in (2, 3):
         rows.append({'label': 'membership', 'bind': bind + '_membership', 'match': {'subscription_id': bind},
                      'columns': {'sport_association_id': OWN, 'associate_id': associate_ref, 'payment_id': payment,
@@ -953,6 +953,26 @@ result['placeholder'] = placeholder_parts('Tosca', 'Tipata', '2027-03-31')[2]
 add('approve-certificate-placeholder', 'approve', 'owner', 200, {'msg': '1 su 1 atleti approvati.', 'approved': 1},
     setup={'drafts': {'typed_date': True}},
     body={'associate_import_draft_ids': [DRAFTS['typed_date']['id']], 'subscription_details': {'type': 1}}, effect=result)
+
+# data['preregistration'] is True: the subscription is created on the next season's first day with that season's dates.
+form = {'associate_id': 'a1000000-0000-4000-8000-000000948004', 'first_name': 'Pietro', 'last_name': 'Prenotato', 'born_date': '08/08/1994',
+        'sex': 'M', 'type': 1}
+NEXT = {'creation_date': '$next_season_created', 'start_date': '$next_season_start', 'end_date': '$next_season_end'}
+rows = [{'label': 'associate', 'bind': '$early_associate', 'match': {'associate_id': form['associate_id']},
+         'columns': {'first_name': 'Pietro', 'last_name': 'Prenotato', 'born_date': '1994-08-08', 'sex': 'M', 'tax_code': None,
+                     'sport_association_id': OWN, 'user_id': '$owner'}},
+        new_payment('$early_payment', form['associate_id']),
+        *subscription_rows('$early_subscription', form['associate_id'], kind=1, payment='$early_payment', season=NEXT)]
+add('renew-preregistration', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(form, preregistration=True),
+    effect=effect('owner', new=rows,
+                  audit=[entry('associate', 0, '$early_associate', {'user': ['None', 'None']}),
+                         entry('associate', 1, '$early_associate', {'user': ['None', OWNER]}),
+                         entry('payment', 0, '$early_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$early_subscription',
+                               {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']})],
+                  celery=tasks('$early_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pietro Prenotato.', 'association': OWN}]))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
