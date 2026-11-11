@@ -126,6 +126,10 @@ func (s *InstanceSetup) Configure(ctx context.Context, body any, audit domain.Lo
 	if input.RefusedURL || !input.DomainASCII {
 		return nil, domain.ErrInstanceSetupRefused
 	}
+	if len([]rune(input.SupportEmail)) > 254 {
+		// The configuration row is the first insert of the transaction.
+		return setupFailure(500, "value too long for type character varying(254)\n"), nil
+	}
 	if !input.Fresh {
 		association, failure, err := s.importedAssociation(ctx, input.ImportTask)
 		if err != nil {
@@ -147,11 +151,11 @@ func (s *InstanceSetup) Configure(ctx context.Context, body any, audit domain.Lo
 		return &InstanceSetupReply{Status: 200, Body: map[string]any{"success": true, "message": "Istanza configurata con successo",
 			"association_id": association, "redirect": "/login"}}, nil
 	}
-	email, ok := normalizeSetupEmail(input.OwnerEmail)
+	email := normalizeSetupEmail(input.OwnerEmail)
 	// The model columns (EmailField max_length=254) reject longer values
-	// inside the transaction; Django answers with the database error text.
-	if !ok || len([]rune(email)) > 254 || len([]rune(input.SupportEmail)) > 254 {
-		return nil, domain.ErrInstanceSetupRefused
+	// inside the transaction; the view answers with the database error text.
+	if len([]rune(email)) > 254 {
+		return setupFailure(500, "value too long for type character varying(254)\n"), nil
 	}
 	hash, err := s.hashes.Encode(ctx, input.OwnerPassword)
 	if err != nil {
@@ -181,19 +185,13 @@ func (s *InstanceSetup) Configure(ctx context.Context, body any, audit domain.Lo
 }
 
 // normalizeSetupEmail is BaseUserManager.normalize_email: the domain part
-// lowercased. ok=false when that needs Python's Unicode lowercasing.
-func normalizeSetupEmail(email string) (string, bool) {
+// lowercased with Python's str.lower().
+func normalizeSetupEmail(email string) string {
 	at := strings.LastIndex(email, "@")
 	if at < 0 {
-		return email, true
+		return email
 	}
-	domainPart := email[at+1:]
-	for _, r := range domainPart {
-		if r > 127 {
-			return "", false
-		}
-	}
-	return email[:at] + "@" + strings.ToLower(domainPart), true
+	return email[:at] + "@" + dto.PythonLower(email[at+1:])
 }
 
 // Reconfigure is InstanceReconfigureView.put for request.user; body is read

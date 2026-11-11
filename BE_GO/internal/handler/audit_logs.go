@@ -55,7 +55,7 @@ func (h *AuditLogHandler) serve(c echo.Context, operation, name, description str
 		return c.JSON(404, map[string]string{"detail": "Invalid page."})
 	case err != nil:
 		return messageReadsError(c, err)
-	case !dto.AuditFiniteJSON(body):
+	case !dto.AuditResponseEncodable(body):
 		return messageReadsError(c, dto.ErrAuditUnhandled)
 	}
 	return c.Blob(200, echo.MIMEApplicationJSON, dto.PythonJSONDumpsCompact(body))

@@ -58,6 +58,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -71,6 +72,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -84,6 +86,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -97,6 +100,7 @@
    "location": "/accounts/login/?next=/chat/test/%3Fa%3D1%26b%3D%252F%26c%3D%25C3%25A8%26d%3Dx%2By",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -110,6 +114,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -123,6 +128,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -136,6 +142,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -149,6 +156,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -162,6 +170,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -178,6 +187,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -194,6 +204,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -210,6 +221,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -226,6 +238,216 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-post-no-cookie",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n  <p>You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties.</p>\n  <p>If you have configured your browser to disable cookies, please re-enable them, at least for this site, or for “same-origin” requests.</p>\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-put-no-cookie",
+   "actor": "anonymous",
+   "method": "PUT",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n  <p>You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties.</p>\n  <p>If you have configured your browser to disable cookies, please re-enable them, at least for this site, or for “same-origin” requests.</p>\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-patch-no-cookie",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n  <p>You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties.</p>\n  <p>If you have configured your browser to disable cookies, please re-enable them, at least for this site, or for “same-origin” requests.</p>\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-delete-no-cookie",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/chat/test/",
+   "headers": {},
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n  <p>You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties.</p>\n  <p>If you have configured your browser to disable cookies, please re-enable them, at least for this site, or for “same-origin” requests.</p>\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-no-cookie-italian",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Accept-Language": "it"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Proibito <span>(403)</span></h1>\n  <p>Verifica CSRF fallita. Richiesta interrotta.</p>\n\n\n  <p>Stai vedendo questo messaggio perché questo sito richiede un cookie CSRF quando invii dei form. Questo cookie è necessario per ragioni di sicurezza, per assicurare che il tuo browser non sia stato dirottato da terze parti.</p>\n  <p>Se hai configurato il tuo browser web per disattivare l&#x27;invio dei cookies, riattivalo almeno per questo sito, o per connessioni &quot;same-origin&quot;</p>\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>Maggiorni informazioni sono disponibili con DEBUG=True</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "it",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-no-cookie-italian-quality",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Accept-Language": "xx;q=0.9, it-IT;q=0.5, en;q=0.4"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Proibito <span>(403)</span></h1>\n  <p>Verifica CSRF fallita. Richiesta interrotta.</p>\n\n\n  <p>Stai vedendo questo messaggio perché questo sito richiede un cookie CSRF quando invii dei form. Questo cookie è necessario per ragioni di sicurezza, per assicurare che il tuo browser non sia stato dirottato da terze parti.</p>\n  <p>Se hai configurato il tuo browser web per disattivare l&#x27;invio dei cookies, riattivalo almeno per questo sito, o per connessioni &quot;same-origin&quot;</p>\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>Maggiorni informazioni sono disponibili con DEBUG=True</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "it",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-session-no-cookie",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "sessionid=chattestowner0000000000000000001"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n  <p>You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is required for security reasons, to ensure that your browser is not being hijacked by third parties.</p>\n  <p>If you have configured your browser to disable cookies, please re-enable them, at least for this site, or for “same-origin” requests.</p>\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-token-mismatch",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-token-missing",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-cookie-wrong-length",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=short",
+    "X-CSRFToken": "short"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-bad-origin",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001",
+    "Origin": "http://evil.example"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-https-no-referer",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001",
+    "X-Forwarded-Proto": "https"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n  <p>You are seeing this message because this HTTPS site requires a “Referer header” to be sent by your web browser, but none was sent. This header is required for security reasons, to ensure that your browser is not being hijacked by third parties.</p>\n  <p>If you have configured your browser to disable “Referer” headers, please re-enable them, at least for this site, or for HTTPS connections, or for “same-origin” requests.</p>\n  <p>If you are using the &lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt; tag or including the “Referrer-Policy: no-referrer” header, please remove them. The CSRF protection requires the “Referer” header to do strict referer checking. If you’re concerned about privacy, use alternatives like &lt;a rel=&quot;noreferrer&quot; …&gt; for links to third-party sites.</p>\n\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
+   "effect": null
+  },
+  {
+   "name": "chat-test-csrf-https-bad-referer",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/chat/test/",
+   "headers": {
+    "Cookie": "csrftoken=chattestcsrfsecret00000000000001",
+    "X-CSRFToken": "chattestcsrfsecret00000000000001",
+    "X-Forwarded-Proto": "https",
+    "Referer": "https://evil.example/x"
+   },
+   "status": 403,
+   "response": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n  <meta name=\"robots\" content=\"NONE,NOARCHIVE\">\n  <title>403 Forbidden</title>\n  <style>\n    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n<body>\n<div id=\"summary\">\n  <h1>Forbidden <span>(403)</span></h1>\n  <p>CSRF verification failed. Request aborted.</p>\n\n\n</div>\n\n<div id=\"explanation\">\n  <p><small>More information is available with DEBUG=True.</small></p>\n</div>\n\n</body>\n</html>\n",
+   "location": null,
+   "set_cookie": null,
+   "vary": "Cookie, origin, Accept-Language, Accept-Encoding",
+   "language": "en",
    "effect": null
   },
   {
@@ -241,6 +463,7 @@
    "location": null,
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -256,6 +479,7 @@
    "location": null,
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -271,6 +495,7 @@
    "location": null,
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -287,6 +512,7 @@
    "location": null,
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -302,6 +528,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -317,6 +544,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -332,6 +560,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": "sessionid=\"\"; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/; SameSite=Lax",
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -347,6 +576,7 @@
    "location": "/accounts/login/?next=/chat/test/",
    "set_cookie": "sessionid=\"\"; expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; Path=/; SameSite=Lax",
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -360,6 +590,7 @@
    "location": "/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -373,6 +604,7 @@
    "location": "/chat/test/?a=1&b=%2F",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   },
   {
@@ -388,6 +620,7 @@
    "location": "/chat/test/",
    "set_cookie": null,
    "vary": "Cookie, origin, Accept-Language",
+   "language": "en",
    "effect": null
   }
  ]

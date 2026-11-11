@@ -255,8 +255,8 @@ def import_task(key, status, result):
     return IMPORT_TASKS[key]['task_id']
 
 
-def import_body(task):
-    return setup_body(oem={'name': ' Istanza Importata ', 'primaryColor': '#123ABC'},
+def import_body(task, oem=None):
+    return setup_body(oem=oem or {'name': ' Istanza Importata ', 'primaryColor': '#123ABC'},
                       initialization={'type': 'import', 'importTaskId': task, 'associationName': 'ignored'})
 
 
@@ -304,6 +304,27 @@ add('configure-import-progress-task', 'anonymous', CONFIGURE, 500,
     body=import_body(import_task('progress', 'PROGRESS', json.dumps({'percent': 50}))), headers=TOKEN)
 add('configure-import-owner-token', 'owner', CONFIGURE, 200, LINKED, body=import_body(own_task), headers=TOKEN,
     effect={'kind': 'import', 'config': IMPORTED, 'association': IDS['own_association']})
+
+# EmailField columns hold 254 characters: the insert inside the setup transaction fails and the view answers the database text
+# (everything rolls back, so the instance stays unconfigured).
+TOO_LONG = 'value too long for type character varying(254)\n'
+LONG_EMAIL = 'x' * 250 + '@setup.example.test'
+add('configure-support-email-too-long', 'anonymous', CONFIGURE, 500, failed(TOO_LONG),
+    body=setup_body(oem={'name': 'Istanza Setup', 'supportEmail': LONG_EMAIL}), headers=TOKEN)
+add('configure-owner-email-too-long', 'anonymous', CONFIGURE, 500, failed(TOO_LONG),
+    body=setup_body(initialization={'type': 'fresh', 'associationName': 'Associazione Setup', 'ownerEmail': LONG_EMAIL,
+                                    'ownerPassword': 'setup-password-1'}), headers=TOKEN)
+add('configure-import-support-email-too-long', 'anonymous', CONFIGURE, 500, failed(TOO_LONG),
+    body=import_body(own_task, oem={'name': 'Istanza Import', 'supportEmail': LONG_EMAIL}), headers=TOKEN)
+# normalize_email lowercases the domain with str.lower(): U+0130 becomes two characters, so 254 characters grow to 255.
+DOTTED = 'x' * (254 - len('@İ.example.test')) + '@İ.example.test'
+assert len(DOTTED) == 254
+add('configure-owner-email-grows-when-lowercased', 'anonymous', CONFIGURE, 500, failed(TOO_LONG),
+    body=setup_body(initialization={'type': 'fresh', 'associationName': 'Associazione Setup', 'ownerEmail': DOTTED,
+                                    'ownerPassword': 'setup-password-1'}), headers=TOKEN)
+add('configure-email-over-validator-limit', 'anonymous', CONFIGURE, 400,
+    invalid({'oem': {'supportEmail': [EMAIL_INVALID]}}),
+    body=setup_body(oem={'name': 'Istanza Setup', 'supportEmail': 'x' * 310 + '@setup.example.test'}), headers=TOKEN)
 
 # --- the fresh setup -------------------------------------------------------
 OWNER_PASSWORD = 'setup-password-1'

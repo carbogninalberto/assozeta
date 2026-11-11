@@ -866,8 +866,8 @@ func run() (runErr error) {
 	// chat/test/ (application.chat.views.chat_test): login_required page whose
 	// template does not exist; CommonMiddleware's APPEND_SLASH for /chat/test.
 	chatTestHandler := handler.NewChatTestHandler(middleware.SessionAuditContext)
-	e.Any("/chat/test/", chatTestHandler.Page, middleware.DjangoSessionAudit(sessionAuthentication),
-		middleware.DjangoCSRFRejecting(cfg.CSRFTrustedOrigins, chatTestHandler.RefuseCSRF))
+	e.Any("/chat/test/", chatTestHandler.Page, handler.ManualResponseEncoding(), middleware.DjangoSessionAudit(sessionAuthentication),
+		middleware.DjangoCSRFReasoned(cfg.CSRFTrustedOrigins, chatTestHandler.RefuseCSRF))
 	e.Any("/chat/test", apiSchemaHandler.AppendSlash, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/access", instanceHandler.Access, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/instance/admin", instanceAdminHandler.Admin, middleware.DjangoSessionAudit(sessionAuthentication))

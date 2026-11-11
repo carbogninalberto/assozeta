@@ -9,13 +9,13 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/repository"
 )
 
 // AssociationTransfer follows AssociationExportViewSet and
@@ -98,7 +98,7 @@ func (s *AssociationTransfer) Active(ctx context.Context, identity domain.Resolv
 	return &AssociationTransferReply{Status: 200, Body: map[string]bool{"active": false}}, nil
 }
 
-// Status mirrors export_status; a registered task (its owner cache entry) is not ported.
+// Status mirrors export_status.
 func (s *AssociationTransfer) Status(ctx context.Context, identity domain.ResolvedIdentity, task string) (*AssociationTransferReply, error) {
 	user := identity.ScopeUser
 	if user == nil || user.Role != domain.RoleAssociation || identity.Collaborator {
@@ -111,15 +111,130 @@ func (s *AssociationTransfer) Status(ctx context.Context, identity domain.Resolv
 	if reply != nil || err != nil {
 		return reply, err
 	}
-	_ = association
-	registered, err := s.store.CacheKeysExist(ctx, exportTaskOwnerPrefix+task)
+	if s.options.Writes == nil {
+		registered, err := s.store.CacheKeysExist(ctx, exportTaskOwnerPrefix+task)
+		if err != nil {
+			return nil, err
+		}
+		if registered {
+			return nil, domain.ErrAssociationTransferNotPorted
+		}
+		return transferError(404, exportNotFound), nil
+	}
+	return s.exportStatus(ctx, association, task)
+}
+
+// exportStatus is export_status past the permission and argument checks: the
+// task's owner entry must name the caller's association, then the result row
+// and the active or last snapshot are merged into the answer.
+func (s *AssociationTransfer) exportStatus(ctx context.Context, association, task string) (*AssociationTransferReply, error) {
+	owner, err := s.cachedDict(ctx, exportTaskName+task)
 	if err != nil {
 		return nil, err
 	}
-	if registered {
-		return nil, domain.ErrAssociationTransferNotPorted
+	if owner == nil || len(owner.Values) == 0 {
+		return transferError(404, exportNotFound), nil
 	}
-	return transferError(404, exportNotFound), nil
+	if owned, _ := pickledText(owner, "sport_association_id"); owned != association {
+		return transferError(404, exportNotFound), nil
+	}
+	row, err := s.store.TaskResult(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	status, ready := "PENDING", false
+	var info any
+	var rawResult json.RawMessage
+	if row != nil {
+		status = row.Status
+		ready = status == "SUCCESS" || status == "FAILURE" || status == "REVOKED"
+		if row.Encoding != "utf-8" {
+			return nil, domain.ErrAssociationTransferNotPorted
+		}
+		if row.Meta != nil && *row.Meta != "" {
+			meta, err := celeryJSON(*row.Meta)
+			if err != nil {
+				return nil, err
+			}
+			object, ok := meta.(map[string]any)
+			if !ok {
+				return nil, domain.ErrAssociationTransferNotPorted
+			}
+			children, _ := object["children"].([]any)
+			_, hasStatus := object["status"]
+			if hasStatus || len(children) > 0 || (object["children"] != nil && children == nil) {
+				return nil, domain.ErrAssociationTransferNotPorted
+			}
+		}
+		if status != "FAILURE" && status != "REVOKED" && status != "RETRY" && row.Result != nil && *row.Result != "" {
+			if info, err = celeryJSON(*row.Result); err != nil {
+				return nil, err
+			}
+			rawResult = json.RawMessage(strings.TrimSpace(*row.Result))
+		}
+	}
+	body := map[string]any{"task_id": task, "status": status, "ready": ready}
+	snapshot := func(name string) (*repository.PickledDict, error) {
+		dict, err := s.cachedDict(ctx, name+association)
+		if err != nil || dict == nil || len(dict.Values) == 0 {
+			return nil, err
+		}
+		if id, _ := dict.Values["task_id"].(string); id != task {
+			return nil, nil
+		}
+		return dict, nil
+	}
+	fill := func(dict *repository.PickledDict, estimate string) error {
+		for _, field := range []struct{ name, fallback string }{{"status", status}, {"estimate", estimate}, {"progress", ""}, {"updated_at", ""}} {
+			value, present := dict.Values[field.name]
+			switch {
+			case present:
+				rendered, err := transferJSON(value)
+				if err != nil {
+					return err
+				}
+				body[field.name] = rendered
+			case field.name == "progress" || field.name == "updated_at":
+				body[field.name] = nil
+			default:
+				body[field.name] = field.fallback
+			}
+		}
+		return nil
+	}
+	active, err := snapshot(exportActiveName)
+	if err != nil {
+		return nil, err
+	}
+	if active != nil {
+		if err = fill(active, "0%"); err != nil {
+			return nil, err
+		}
+	} else if terminal, err := snapshot(exportLastName); err != nil {
+		return nil, err
+	} else if terminal != nil {
+		if err = fill(terminal, "100%"); err != nil {
+			return nil, err
+		}
+		body["ready"] = true
+	} else if object, isObject := info.(map[string]any); isObject && object["task_id"] == task {
+		body["estimate"], body["progress"], body["updated_at"] = "0%", object["progress"], object["updated_at"]
+		if estimate, present := object["estimate"]; present {
+			body["estimate"] = estimate
+		}
+	}
+	if ready {
+		if status == "SUCCESS" {
+			if rawResult != nil {
+				body["result"] = rawResult
+			} else {
+				body["result"] = nil
+			}
+		} else {
+			body["error"] = taskFailedMessage
+		}
+	}
+	return &AssociationTransferReply{Status: 200, Body: body}, nil
 }
 
 // List mirrors list_exports with django.core.signing download tokens; audit
@@ -299,7 +414,9 @@ func (s *AssociationTransfer) ImportAllowed(ctx context.Context, identity domain
 	return owner != nil && *owner == user.ID, nil
 }
 
-var loneSurrogate = regexp.MustCompile(`(?i)\\ud[89a-f][0-9a-f]{2}`)
+// errTransferUnrenderable is the 500 DRF's strict JSON renderer ends in for a result holding a lone
+// surrogate (the UTF-8 encode) or a float beyond float64 (json.loads gives inf).
+var errTransferUnrenderable = errors.New("stored task result cannot be rendered as JSON")
 
 // ImportStatus mirrors import_status: only a task id start_import registered
 // (its cache entry) whose result row is not named after another task is
@@ -368,11 +485,12 @@ func (s *AssociationTransfer) ImportStatus(ctx context.Context, task string) (*A
 }
 
 // celeryJSON decodes a stored JSON value; invalid JSON is kombu's DecodeError
-// (a 500 page). Values the Python side would render differently (typed
-// "__type__" objects, lone surrogates, floats beyond float64) are refused.
+// (a 500 page), as are a lone surrogate and a float beyond float64 (the
+// response cannot be rendered). Typed "__type__" objects (kombu rebuilds them
+// as Python objects; only the app writes them) are refused.
 func celeryJSON(text string) (any, error) {
-	if loneSurrogate.MatchString(text) {
-		return nil, domain.ErrAssociationTransferNotPorted
+	if dto.AuditLoneSurrogate(text) {
+		return nil, errTransferUnrenderable
 	}
 	decoder := json.NewDecoder(bytes.NewReader([]byte(text)))
 	decoder.UseNumber()
@@ -405,7 +523,7 @@ func celeryJSON(text string) (any, error) {
 			if strings.ContainsAny(string(v), ".eE") {
 				number, err := strconv.ParseFloat(string(v), 64)
 				if err != nil || math.IsInf(number, 0) {
-					return domain.ErrAssociationTransferNotPorted
+					return errTransferUnrenderable
 				}
 			}
 		}

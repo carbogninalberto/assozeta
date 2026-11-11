@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/labstack/echo/v4"
 )
 
@@ -52,14 +52,28 @@ func (h *ChatTestHandler) Page(c echo.Context) error {
 	return nil
 }
 
-// RefuseCSRF answers an unsafe request that CsrfViewMiddleware rejects. Django
-// renders its localized csrf_403.html failure page there, which Go does not
-// reproduce: refused with the 500 page.
-func (h *ChatTestHandler) RefuseCSRF(c echo.Context) error {
-	return restError(c, errChatTestCSRFNotPorted)
+// RefuseCSRF answers an unsafe request that CsrfViewMiddleware rejects with
+// django.views.csrf.csrf_failure: 403 and the failure page (DEBUG off) in the
+// active language. kind is middleware.CSRFFailure*.
+func (h *ChatTestHandler) RefuseCSRF(c echo.Context, kind string) error {
+	messages := csrfFailureCatalogs[handlerReadRouteLocale.Language(c.Request())]
+	if messages == nil {
+		messages = csrfFailureCatalogs[readRouteDefaultLanguage]
+	}
+	page := csrfFailureSkeletons[kind]
+	for name, text := range messages {
+		page = strings.ReplaceAll(page, "@@"+name+"@@", djangoEscapeHTML(text))
+	}
+	header := c.Response().Header()
+	header.Set("Content-Type", "text/html; charset=utf-8")
+	header.Set("Content-Length", strconv.Itoa(len(page)))
+	c.Response().WriteHeader(http.StatusForbidden)
+	if c.Request().Method == http.MethodHead {
+		return nil
+	}
+	_, err := c.Response().Write([]byte(page))
+	return err
 }
-
-var errChatTestCSRFNotPorted = refusal.New("chat test CSRF failure page not ported")
 
 // chatTestQuote is urllib.parse.quote(value, safe='/') of an ASCII string.
 func chatTestQuote(value string) string {
