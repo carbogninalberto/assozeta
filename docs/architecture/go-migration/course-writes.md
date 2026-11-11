@@ -75,9 +75,9 @@ course and payments through `changes_json.sport_association`.
 The owner's association (500), the live group-aware course (500 when missing or without association, 403 when foreign), the
 subscription (group-aware) and its live course subscription. With `installments` (iterated as Python does: a text is iterated
 by character) each listed live group-aware installment of the row has its unpaid payment deleted with its signals, then is
-deleted and audited as loaded; without it the row's unpaid (`paid=False`) installments are. The row is then soft-deleted
-(its live installments deleted, `deleted=True` saved, indexed through the course); a missing row is a 500. When the row's own
-payment was deleted with an installment the save fails on the deferred foreign key after auditlog wrote its entry (500).
+deleted and audited as loaded; without it the row's unpaid (`paid=False`) installments are. The row is then soft-deleted in
+one transaction: its live installments are deleted, and when the row's own payment was deleted with one of them the cleared
+stored reference is read back before `deleted=True` is saved (indexed through the course); a missing row is a 500.
 Response `{'data': {'msg': 'associate deleted.'}}`.
 
 ## course/<uid>/overview/<uid_subscription>/update

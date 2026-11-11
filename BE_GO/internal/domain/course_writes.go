@@ -170,6 +170,10 @@ type CourseWritesTransaction interface {
 
 	// LiveCourseSubscription is CourseSubscription.objects.filter(course=..., subscription=...).first().
 	LiveCourseSubscription(ctx context.Context, course string, subscription *string) (*CourseSubscriptionRow, error)
+	// SharedPayment reports whether the row's own payment is also the unpaid
+	// payment of one of its live group-aware installments (deleting the
+	// installments deletes it).
+	SharedPayment(ctx context.Context, row CourseSubscriptionRow, group *string) (bool, error)
 	// LiveInstallment is the group-aware live installment id of the row.
 	LiveInstallment(ctx context.Context, row, id string, group *string) (*CourseWriteInstallment, error)
 	// Installments are the row's live group-aware installments: unpaid
