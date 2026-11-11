@@ -690,6 +690,54 @@
    "payment": null,
    "tags": [],
    "signature_key": null
+  },
+  "a_ghid": {
+   "id": "a1000000-0000-4000-8000-000000610154",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "elena",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": "own_group",
+   "archived": false,
+   "deleted": false,
+   "payment": "ghp",
+   "tags": [],
+   "signature_key": null
+  },
+  "a_ghid_orph": {
+   "id": "a1000000-0000-4000-8000-000000610156",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "elena",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": "own_group",
+   "archived": false,
+   "deleted": false,
+   "payment": "ghp_orph",
+   "tags": [],
+   "signature_key": null
+  },
+  "a_dhid_orph": {
+   "id": "a1000000-0000-4000-8000-000000610158",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "elena",
+   "status": 4,
+   "acceptance": "2026-01-15",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-01-10T09:00:00Z",
+   "group": null,
+   "archived": false,
+   "deleted": false,
+   "payment": "dhp_orph",
+   "tags": [],
+   "signature_key": null
   }
  },
  "payments": {
@@ -1376,6 +1424,51 @@
    "paid": false,
    "archived": false,
    "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "ghp": {
+   "id": "a1000000-0000-4000-8000-000000610153",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "ghp_orph": {
+   "id": "a1000000-0000-4000-8000-000000610155",
+   "association": null,
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": false,
+   "associate": null,
+   "group": null,
+   "category": true,
+   "created": "2026-04-01T10:00:00Z",
+   "description": "Quota fixture",
+   "invoice": null
+  },
+  "dhp_orph": {
+   "id": "a1000000-0000-4000-8000-000000610157",
+   "association": null,
+   "subject": 2,
+   "amount": "10.00",
+   "paid": false,
+   "archived": false,
+   "deleted": true,
    "associate": null,
    "group": null,
    "category": true,
@@ -5608,6 +5701,250 @@
      "subscription_duration": 0
     }
    }
+  },
+  {
+   "name": "subscription-lifecycle-archive-group-hidden-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610154/archive",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription archival completed."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ghp",
+      "action": 1,
+      "changes": null,
+      "created": true,
+      "overrides": {
+       "archived": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "subscription",
+      "label": "a_ghid",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {
+      "a_ghid": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "payments": {
+     "changed": {
+      "ghp": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "cs": {
+     "changed": {},
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-archive-group-hidden-payment-without-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610156/archive",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription archival completed."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "ghp_orph",
+      "action": 1,
+      "changes": null,
+      "created": true,
+      "overrides": {
+       "archived": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "subscription",
+      "label": "a_ghid_orph",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {
+      "a_ghid_orph": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "payments": {
+     "changed": {
+      "ghp_orph": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "cs": {
+     "changed": {},
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-lifecycle-archive-soft-deleted-payment-without-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000610158/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription archival completed."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "payment",
+      "label": "dhp_orph",
+      "action": 1,
+      "changes": null,
+      "created": true,
+      "overrides": {
+       "archived": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "subscription",
+      "label": "a_dhid_orph",
+      "action": 1,
+      "changes": {
+       "archived": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     }
+    ],
+    "related_deleted": [],
+    "objects_deleted": [],
+    "subscriptions": {
+     "changed": {
+      "a_dhid_orph": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "payments": {
+     "changed": {
+      "dhp_orph": {
+       "archived": true
+      }
+     },
+     "deleted": []
+    },
+    "cs": {
+     "changed": {},
+     "deleted": []
+    },
+    "installments": {
+     "changed": {},
+     "deleted": []
+    }
+   },
+   "setup": null
   },
   {
    "name": "subscription-lifecycle-archive-payment-without-association",

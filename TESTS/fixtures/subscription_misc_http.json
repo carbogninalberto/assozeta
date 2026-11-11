@@ -2551,6 +2551,143 @@
    }
   },
   {
+   "name": "subscription-misc-generate-file-lines",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [
+     "uno\n",
+     "due\r\n",
+     "tre\r",
+     "quattro"
+    ],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "palestra.txt",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\nuno\ndue\r\ntre\rquattro\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "palestra.txt",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-accents",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [
+     "caffè\n"
+    ],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "palestra.txt",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\ncaffè\n\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-path-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [
+     "x"
+    ],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "percorso.csv",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"a/b/../percorso.csv\"\r\nContent-Type: text/csv\r\n\r\nx\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-then-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "dopo",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "dopo",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"bin.dat\"\r\nContent-Type: application/octet-stream\r\n\r\nx\r\n--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"\r\n\r\ndopo\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-other-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "gym_name is required"
+   },
+   "effect": null,
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"a.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
    "name": "subscription-misc-generate-float",
    "actor": "owner",
    "method": "POST",

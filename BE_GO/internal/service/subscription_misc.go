@@ -254,12 +254,20 @@ func (s *SubscriptionMisc) GenerateLink(ctx context.Context, identity domain.Res
 	if err != nil {
 		return nil, err
 	}
-	if _, upload := gym.(domain.RequestUpload); upload {
-		return nil, domain.ErrSubscriptionMiscNotPorted // str() of an uploaded file
-	}
 	// CharField(max_length=255) stores str(value); PostgreSQL rejects a NUL,
 	// psycopg a lone surrogate, varchar(255) a longer text (no row is written).
+	// str() of an uploaded file is its name.
 	stored := dto.PythonStr(gym)
+	echoed := gym
+	if upload, isUpload := gym.(domain.RequestUpload); isUpload {
+		if !upload.Whole && upload.Size > 0 {
+			return nil, domain.ErrSubscriptionMiscNotPorted // the lines of a file over one chunk are not retained
+		}
+		stored = upload.Name
+		// The response carries the in-memory file: DRF's encoder iterates it
+		// (File.__iter__ is bytes.splitlines(True) per chunk) and decodes each line.
+		echoed = subscriptionMiscFileLines(upload.Content)
+	}
 	if !utf8.ValidString(stored) || strings.ContainsRune(stored, 0) || utf8.RuneCountInString(stored) > 255 {
 		return nil, domain.ErrSubscriptionMiscServer
 	}
@@ -272,9 +280,9 @@ func (s *SubscriptionMisc) GenerateLink(ctx context.Context, identity domain.Res
 	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
-	result := domain.RequestObject{{Name: "token", Value: token}, {Name: "gym_name", Value: gym},
+	result := domain.RequestObject{{Name: "token", Value: token}, {Name: "gym_name", Value: echoed},
 		{Name: "expires_at", Value: dto.DRFUTCDateTime(expires)}}
-	if !dto.AssociateDraftRenderable(result) {
+	if upload, isUpload := gym.(domain.RequestUpload); (isUpload && !utf8.ValidString(upload.Content)) || !dto.AssociateDraftRenderable(result) {
 		return nil, domain.ErrSubscriptionMiscServer // the renderer fails after the link is saved
 	}
 	return result, nil
@@ -638,4 +646,29 @@ func sequenceMatches(a, b []rune) int {
 		}
 	}
 	return total
+}
+
+// subscriptionMiscFileLines is tuple(file) for a one-chunk file: the lines
+// with their endings (\n, \r or \r\n); a line that is no UTF-8 stays a
+// byte string the renderer cannot encode (AssociateDraftRenderable fails).
+func subscriptionMiscFileLines(content string) []any {
+	lines := []any{}
+	start := 0
+	for i := 0; i < len(content); i++ {
+		switch content[i] {
+		case '\n':
+		case '\r':
+			if i+1 < len(content) && content[i+1] == '\n' {
+				i++
+			}
+		default:
+			continue
+		}
+		lines = append(lines, content[start:i+1])
+		start = i + 1
+	}
+	if start < len(content) {
+		lines = append(lines, content[start:])
+	}
+	return lines
 }

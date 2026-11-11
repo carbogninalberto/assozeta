@@ -67,8 +67,6 @@ func (h *MedicalAppointmentAddHandler) Add(c echo.Context) error {
 			fields[name] = messages
 		}
 		return c.JSON(http.StatusBadRequest, fields)
-	case errors.Is(err, dto.ErrMedicalAppointmentAddNotPorted):
-		c.Logger().Error(err)
 	}
 	return h.medical.failure(c, err)
 }

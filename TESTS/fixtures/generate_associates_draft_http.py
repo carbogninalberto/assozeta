@@ -252,7 +252,11 @@ for label, associate_born, tutor, valid in (
         ('year-only-adult-tutor-not-read', '1980', MINOR_TUTOR, True),
         ('minor-month-name-minor-tutor-invalid', '2015-06-01', {'born_date': 'June 1, 2012'}, False),
         ('minor-dashed-adult-tutor', '2015-06-01', {'born_date': '01-06-1980'}, True),
-        ('minor-unreadable-tutor-ignored', '1 June 2015', {'born_date': '1 giugno 1980'}, True)):
+        ('minor-unreadable-tutor-ignored', '1 June 2015', {'born_date': '1 giugno 1980'}, True),
+        # Years before 1000: the date is only compared with today.
+        ('year-below-1000-adult-tutor-not-read', '0500-01-01', MINOR_TUTOR, True),
+        ('year-below-1000-last-day', '0999-12-31', MINOR_TUTOR, True),
+        ('minor-year-below-1000-tutor', '2015-06-01', {'born_date': '0500-01-01'}, True)):
     edit_data = {'associate': {**ADULT, 'born_date': associate_born}, 'associate_tutor': tutor, 'medical_certificate': {'medical_id': None}}
     edited(f'edit-{label}', 'owner', 'partial', {'edit_data': edit_data},
            {'data': {'edit_data': {**edit_data, 'medical_certificate': {'medical_id': '$new'}}}}, valid=valid,

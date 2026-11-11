@@ -75,13 +75,21 @@ CREATED = {'data': 'medical appointment created.'}
 OK_REPLY = [{'reply': {'status': 200, 'body': 'ok'}}]
 
 
+DOC = 'a1000000-0000-4000-8000-000000984001'
+DOC_MISSING = 'a1000000-0000-4000-8000-000000984002'
+TAKEN = 'a1000000-0000-4000-8000-000000984003'
+FRESH = 'a1000000-0000-4000-8000-000000984004'
+DOCUMENTS = [{'id': DOC, 'filename': 'certificate.pdf'}]
+EXISTING = [{'id': TAKEN, 'region': 'agonistica'}]
+
+
 def created(actor, *, target='own', session=None, region, date='$default-date', notes=None, sport=None, address=None,
-            meta='$default-meta', creation='$default-now'):
+            meta='$default-meta', creation='$default-now', document=None, ident='$id'):
     """The appointment row (stored values) and its create audit (in-memory values)."""
-    row = {'subscription': SUBSCRIPTIONS[target]['id'], 'region': region, 'document': None, 'notes': notes, 'sport': sport,
-           'address': address}
-    changes = {'medical_appointments_id': ['None', '$id'], 'subscription': ['None', SUBSCRIPTIONS[target]['id']],
-               'region': ['None', region], 'document': ['None', 'None']}
+    row = {'id': ident, 'subscription': SUBSCRIPTIONS[target]['id'], 'region': region, 'document': document, 'notes': notes,
+           'sport': sport, 'address': address}
+    changes = {'medical_appointments_id': ['None', ident], 'subscription': ['None', SUBSCRIPTIONS[target]['id']],
+               'region': ['None', region], 'document': ['None', document or 'None']}
     if date == '$default-date':
         row['date'], changes['date'] = '$default-date', ['None', '$default-date']
     else:
@@ -102,8 +110,8 @@ def created(actor, *, target='own', session=None, region, date='$default-date', 
     return {'actor': actor, 'session': session, 'association': SUBSCRIPTIONS[target]['association'], 'row': row, 'changes': changes}
 
 
-def printed():
-    return [{'path': '/document/medical-appointment/$id', **OK_REPLY[0]}]
+def printed(ident='$id'):
+    return [{'path': '/document/medical-appointment/' + ident, **OK_REPLY[0]}]
 
 
 ADMIN_OWNER = {'X-Impersonation-Id': '$session:admin_owner', 'User-Id': IDS['owner']}
@@ -193,7 +201,35 @@ add('completed-restore-still-prints', 'owner', 200, CREATED, body=BASIC,
     restore={'state': 'completed', 'completed_at': '2026-01-01T00:00:00Z'},
     effect=created('owner', region='non-agonistica', date=('20/11/2026', '2026-11-20')), prints=printed())
 
+# Document and primary key fields.
+DATE = ('20/11/2026', '2026-11-20')
+UNIQUE = 'medical appointments with this medical appointments id already exists.'
+add('document-set', 'owner', 200, CREATED, body={**BASIC, 'document': DOC},
+    effect=created('owner', region='non-agonistica', date=DATE, document=DOC), prints=printed())
+add('document-blank-is-none', 'owner', 200, CREATED, body={**BASIC, 'document': ''},
+    effect=created('owner', region='non-agonistica', date=DATE), prints=printed())
+add('document-missing', 'owner', 400, {'document': [f'Invalid pk "{DOC_MISSING}" - object does not exist.']},
+    body={**BASIC, 'document': DOC_MISSING})
+add('document-malformed', 'owner', 400, {'document': ['\u201cnope\u201d is not a valid UUID.']}, body={**BASIC, 'document': 'nope'})
+add('document-bool', 'owner', 400, {'document': ['Incorrect type. Expected pk value, received bool.']}, body={**BASIC, 'document': True})
+add('document-list', 'owner', 400, {'document': ['\u201c[1]\u201d is not a valid UUID.']}, body={**BASIC, 'document': [1]})
+add('id-supplied', 'owner', 200, CREATED, body={**BASIC, 'medical_appointments_id': FRESH.upper()},
+    effect=created('owner', region='non-agonistica', date=DATE, ident=FRESH), prints=printed(FRESH))
+add('id-taken', 'owner', 400, {'medical_appointments_id': [UNIQUE]}, body={**BASIC, 'medical_appointments_id': TAKEN})
+add('id-null', 'owner', 400, {'medical_appointments_id': ['This field may not be null.']},
+    body={**BASIC, 'medical_appointments_id': None})
+add('id-malformed', 'owner', 400, {'medical_appointments_id': ['\u201cabc\u201d is not a valid UUID.']},
+    body={**BASIC, 'medical_appointments_id': 'abc'})
+add('id-float', 'owner', 400, {'medical_appointments_id': ['\u201c1.5\u201d is not a valid UUID.']},
+    body={**BASIC, 'medical_appointments_id': 1.5})
+add('id-integer', 'owner', 200, CREATED, body={**BASIC, 'medical_appointments_id': 12345},
+    effect=created('owner', region='non-agonistica', date=DATE, ident='00000000-0000-0000-0000-000000003039'),
+    prints=printed('00000000-0000-0000-0000-000000003039'))
+add('id-and-document-errors', 'owner', 400, {'medical_appointments_id': [UNIQUE],
+                                              'document': [f'Invalid pk "{DOC_MISSING}" - object does not exist.']},
+    body={**BASIC, 'medical_appointments_id': TAKEN, 'document': DOC_MISSING})
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription/<uid>/medical-appointments/add', 'ids': IDS,
-                              'subscriptions': SUBSCRIPTIONS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+                              'subscriptions': SUBSCRIPTIONS, 'documents': DOCUMENTS, 'existing': EXISTING, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
