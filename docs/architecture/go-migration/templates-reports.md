@@ -132,16 +132,14 @@ matrix for the MCP server as well.
   `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
   its parser raises on (`A<B` opens a tag) fails the export like any other
   exception (`v2rep3-*` receipts).
-- `get_schema` for a whitelisted model or the full schema (static model
-  metadata).
-- The other whitelisted models; relation traversal (`a__b`), reverse
-  relations, `joins`, date-part transforms in filters and `group_by`, JSON
-  field filters and values, ordering or grouping by a relation name, `?`
-  ordering, lookups outside the list above, boolean/float limits and offsets,
-  non-canonical UUID spellings, decimal values beyond the field's digits,
-  integers outside the column range, aggregate aliases with `__`, quotes,
-  whitespace or a field's name, and HTML references other than the common
-  named ones (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&apos;`, `&nbsp;`).
+- The report tools use the query engine described in `mcp-server.md` (every
+  whitelisted model, `get_schema`, relation paths). Still refused: filter
+  values of unusual types and spellings (non-list `in`/`range`, non-ASCII
+  digits, UUID and ISO date spellings, containers), JSON containment,
+  multi-key and nested-key lookups, `exclude` across many-valued relations,
+  boolean/float limits and offsets, repeated fields, non-string `joins`
+  items, uncommon HTML references, integers outside the column range inside
+  `or_filters`/`exclude`, and `?` ordering (not deterministic).
 
 ## Group and unusual arguments (`v2rep2-*` receipts)
 
@@ -220,3 +218,8 @@ Paragraph markup (`v2rep3-*` receipts): 178 cases (4 more: `run-export-pdf-marku
 9000-character word cut over pages, `run-export-pdf-markup-unclosed-error` and
 `run-export-pdf-label-markup-error`). RED: the documented refusal. GREEN and
 mutation: see v2-refusals.md, "Ported in the v2-reports-3 change".
+
+t6x3: the lookups and date/time parts above were compared call by call between
+Django's tool functions and the Go engine on the seeded private PostgreSQL (54
+authored calls plus 21 more; the calls are in CASES of
+TESTS/adapters/go/mcp_server_tools.py).

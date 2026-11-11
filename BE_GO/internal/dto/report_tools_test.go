@@ -71,6 +71,31 @@ func TestReportToolPlans(t *testing.T) {
 	}
 }
 
+func TestReportToolIntegerOverflowOrigins(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	plan := func(t *testing.T, params string) error {
+		t.Helper()
+		_, err := PlanMCPTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		return err
+	}
+	// Inside or_filters or exclude the folded TRUE/FALSE does not mean the
+	// same as in Django, so the request is handed to Django.
+	for _, params := range []string{
+		`{"model_name":"Course","fields":["title"],"or_filters":[{"start_date__month":99999999999999999999},{"title":"Nuoto Adulti"}]}`,
+		`{"model_name":"Course","fields":["title"],"exclude":{"start_date__month":99999999999999999999}}`,
+	} {
+		if err := plan(t, params); !errors.Is(err, ErrReportNotPorted) {
+			t.Errorf("%s: got %v, want ErrReportNotPorted", params, err)
+		}
+	}
+	// A plain AND condition of filters keeps Django's empty exception.
+	err := plan(t, `{"model_name":"Course","fields":["title"],"filters":{"start_date__month":99999999999999999999}}`)
+	var raised *MCPToolException
+	if !errors.As(err, &raised) || raised.Message != "" {
+		t.Errorf("plain filters: got %v, want the empty MCPToolException", err)
+	}
+}
+
 func TestReportToolLookupFamilies(t *testing.T) {
 	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
 	plan := func(t *testing.T, params string) ReportPlan {

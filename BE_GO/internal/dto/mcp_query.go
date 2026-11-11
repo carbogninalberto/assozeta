@@ -779,7 +779,7 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 			existingInner = append(existingInner, join.alias)
 		}
 	}
-	clause, _, err := q.addQInner(node, map[string]bool{}, false, false)
+	clause, _, err := q.addQInner(node, map[string]bool{}, false, false, false)
 	if err != nil {
 		return err
 	}
@@ -790,9 +790,10 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 	return nil
 }
 
-func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated bool) (string, []string, error) {
+func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
 	currentNegated = currentNegated != node.negated
 	branchNegated = branchNegated || node.negated
+	branchOR = branchOR || node.or
 	effectiveOR := node.or
 	if currentNegated {
 		effectiveOR = !node.or
@@ -806,9 +807,9 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 		var err error
 		switch typed := child.(type) {
 		case mcpLeaf:
-			clause, needed, err = q.buildFilter(typed, used, branchNegated, currentNegated)
+			clause, needed, err = q.buildFilter(typed, used, branchNegated, currentNegated, branchOR)
 		case *mcpNode:
-			clause, needed, err = q.addQInner(typed, used, branchNegated, currentNegated)
+			clause, needed, err = q.addQInner(typed, used, branchNegated, currentNegated, branchOR)
 		}
 		if err != nil {
 			return "", nil, err
@@ -856,7 +857,7 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 }
 
 // buildFilter is Query.build_filter for key=value.
-func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated bool) (string, []string, error) {
+func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
 	if leaf.key == "" {
 		return "", nil, mcpRaise("Cannot parse keyword query ''")
 	}
@@ -876,6 +877,13 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 	lookup, err := q.buildLookup(info.transforms, lhs, leaf.value)
 	if err != nil {
 		return "", nil, err
+	}
+	// Django folds an out-of-range integer comparison into an always-true or
+	// always-false condition; the empty/full result is only reproduced for a
+	// plain AND condition of filters (an empty OR branch is dropped and a
+	// negated node matches everything), so those requests go to Django.
+	if lookup.outOfRange && (branchNegated || currentNegated || branchOR) {
+		return "", nil, mcpNotPorted("integer outside the column range in or_filters or exclude")
 	}
 	if lookup.sql == "FALSE" && !branchNegated && !currentNegated {
 		q.empty = true
@@ -898,6 +906,9 @@ type mcpLookup struct {
 	name       string
 	sql        string
 	isnullTrue bool
+	// outOfRange marks an integer comparison folded to TRUE/FALSE because the
+	// value is outside the column range (IntegerFieldOverflow).
+	outOfRange bool
 }
 
 var mcpRelatedLookups = map[string]bool{"exact": true, "in": true, "isnull": true, "gt": true, "gte": true, "lt": true, "lte": true}
@@ -1118,7 +1129,7 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 	if lhs.kind == "int" && prepared.integer != nil {
 		if special, argument, ok := mcpIntegerComparison(lhs, name, prepared.integer); ok {
 			if special != "" {
-				return mcpLookup{name: name, sql: special}, nil
+				return mcpLookup{name: name, sql: special, outOfRange: true}, nil
 			}
 			prepared.param = argument
 		}
