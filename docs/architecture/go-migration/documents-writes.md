@@ -161,7 +161,7 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   filename in upload-document is a 500 without writes in both.
 - `documents/add` items reached after an unmodelled item are never run. The request is refused when the loop would
   reach such an item.
-- Multipart bodies with `Content-Transfer-Encoding`, filenames with invalid UTF-8, RFC 2231 names in other charsets, and bodies over 250 MiB.
+- Multipart bodies over 250 MiB (the request has to be held in memory; the answer then depends on the host's memory and proxy limits, not on the input), and RFC 2231 names in a charset other than utf-8, ascii, latin-1 and windows-1252 (the decoder is not ported; a charset name Python does not know is a skipped header line, as in Django).
 - Uploaded files as values of the archive update fields (upload-document's `document` and `filename` are ported, see below).
 - After the Document exists (the earlier writes are kept, and Go answers the 500 page):
   - a storage key that already exists, where `get_available_name` would pick a random alternative;
@@ -235,3 +235,14 @@ fails `throttle.recorded` on `documents-writes-certificate-anonymous`. GREEN (`i
 Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation (`imphard-mutation-r1`): counting signed-in accounts too fails Go
 on `documents-writes-certificate-wrong-method` (`throttle.not-reached`). Not ported: a file name `mimetypes` reads as a URL
 (refused with the 500 page before any write).
+
+## Ported in t2docs
+
+The multipart reader follows Django's `parse_boundary_stream`: each header line is decoded as UTF-8 and parsed by a port of
+`parse_header_parameters` (`email.message._parseparam`, RFC 2231 continuations and `%`-encoded values via `decode_params`,
+`collapse_rfc2231_value` with `errors='replace'`, the `codecs.lookup` name table of CPython 3.13); a line that is not UTF-8, or whose
+charset Python does not know, is skipped, so a part without a content-disposition is ignored. `Content-Transfer-Encoding: base64`
+(case-insensitive) decodes a field's whole value (kept as sent when it is not base64) or a file's white-space-stripped content
+(a failure is `400 Multipart form parse error - Could not decode base64 data.`); other encodings are ignored. Field values are decoded
+as UTF-8 with replacement characters. Unit tests compare 49 header lines and 49 base64 inputs with CPython/Django answers
+(`internal/handler/testdata`). Cases added to `documents-writes` (certificate upload and `upload-document` fields).

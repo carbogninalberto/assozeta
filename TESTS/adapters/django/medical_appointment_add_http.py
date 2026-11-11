@@ -57,7 +57,7 @@ def models():
 
 
 def seed_rows(source, created):
-    _, subscription = models()
+    subscription = models()[1]
     ids = source['ids']
     for row in source['subscriptions'].values():
         subscription._base_manager.bulk_create([subscription(
@@ -66,6 +66,14 @@ def seed_rows(source, created):
             subscription_number=row['number'], group_id=ids[row['group']] if row['group'] else None, deleted=row['deleted'],
             creation_date=datetime(2026, 1, 10, 9, tzinfo=timezone.utc))])
         created.append((subscription, row['id']))
+    from docmanager.models import Document
+    for row in source['documents']:
+        Document.objects.create(document_id=row['id'], filename=row['filename'])
+        created.append((Document, row['id']))
+    own = source['subscriptions']['own']['id']
+    appointment = models()[0]
+    for row in source['existing']:
+        appointment.objects.create(medical_appointments_id=row['id'], subscription_id=own, region=row['region'])
 
 
 fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(lambda: models()[0],))
@@ -139,7 +147,9 @@ def assert_effect(case, before, after, source, context):
         require(row['date'] == expected['date'], 'state.date')
     for column in ('region', 'notes', 'sport', 'address', 'meta'):
         require(row[column] == expected[column], 'state.' + column)
-    require(str(row['subscription_id']) == expected['subscription'] and row['document_id'] is None, 'state.references')
+    require(str(row['subscription_id']) == expected['subscription']
+            and (str(row['document_id']) if row['document_id'] else None) == expected['document'], 'state.references')
+    require(expected['id'] == '$id' or key == expected['id'], 'state.id')
     require(len(added) == 1 and len(indexes) == 1, 'audit.count')
     event = added[0]
     types_ = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'application'}

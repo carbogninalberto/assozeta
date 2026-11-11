@@ -38,7 +38,7 @@ module is caught earlier by the validator) answers its text as `500 {'error': ..
 ## Not ported
 
 Refused in Go with the 500 page before any write, and outside the authored sequence:
-- update with the nested association as form keys (`sport_association.<field>`): the nested serializer's HTML input parsing is not ported (JSON dicts are, see below).
+- update with the nested association as form keys (`sport_association.<field>`) is ported in t2docs: `parse_html_dict` keeps the keys with a non-empty remainder (last value wins), the nested fields read `''` as None (nullable; `''` where blank is allowed), skip it (optional) or keep it (`denomination`, `tax_code`), JSON fields are `json.loads` of the text (`Value must be valid JSON.`), and the nested-write assertion follows as for JSON dicts.
 - `{'error': str(e)}` texts of database exceptions inside `modules_update` (Go answers the 500 page).
 
 `templates/<pk>/update` (`SportAssociationModuleTemplatesViewSet.update`) is not part of this family: it belongs to the module-templates viewset with its own fixture and Go files (`module-templates.md`), and is left for that family. Module responses (`modules/<id>/response/add`, `modules/response/<id>/approve|delete|add-attachment`), `export` and `modules/<custom_link>/info` remain separate.

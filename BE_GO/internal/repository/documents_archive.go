@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -139,46 +140,19 @@ func (t *archiveWriteTransaction) BulkDeleteArchives(ctx context.Context, ids []
 			return err
 		}
 	}
-	references := []struct {
-		Table  string `db:"table_name"`
-		Column string `db:"column_name"`
-	}{}
-	if err := t.tx.SelectContext(ctx, &references, `SELECT c.conrelid::regclass::text AS table_name, a.attname AS column_name
- FROM pg_constraint c JOIN pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=c.conkey[1]
- WHERE c.contype='f' AND c.confrelid='docmanager_document'::regclass AND array_length(c.conkey, 1)=1`); err != nil {
+	// Document.objects.filter(document_id__in=...).delete(): the collector's cascades (files, medical rows, links) and
+	// SET_NULL updates, one audit entry per deleted row.
+	graph, err := documentDeleteGraph()
+	if err != nil {
 		return err
 	}
-	for _, ref := range references {
-		if documentSetNull[ref.Table+"."+ref.Column] {
-			if _, err := t.tx.ExecContext(ctx, `UPDATE `+ref.Table+` SET `+ref.Column+`=NULL WHERE `+ref.Column+`=ANY($1::uuid[])`, documents); err != nil {
-				return err
-			}
-			continue
-		}
-		var referenced bool
-		if err := t.tx.GetContext(ctx, &referenced, `SELECT EXISTS(SELECT 1 FROM `+ref.Table+` WHERE `+ref.Column+`=ANY($1::uuid[]))`, documents); err != nil {
-			return err
-		}
-		if referenced {
-			return domain.ErrDocumentCascadeUnsupported
-		}
+	run := &collaboratorDeleteRun{tx: t.tx, graph: graph, audit: audit, now: func() time.Time { return at }}
+	rows, err := run.load(ctx, graph.Models[documentDeleteLabel], `t.document_id = ANY($1::uuid[]) FOR UPDATE`, documents)
+	if err != nil {
+		return err
 	}
-	reverse := map[string]string{"customer_invoice_pdf": "application.CustomerInvoice.None"}
-	for _, id := range documents {
-		changes, _, err := deleteModelWithAuditReverse(ctx, t.tx, "docmanager_document", "document_id", id, reverse)
-		if err != nil {
-			return err
-		}
-		// Document has no resolver and no association field: the actor's association, if any.
-		event := modelAuditEntry{Model: "document", Key: id, Representation: "Document object (" + id + ")", Action: 2,
-			Changes: changes, Context: audit, At: at}
-		if actorAssociation != nil {
-			path := "actor.sport_association"
-			event.AssociationID, event.ResolutionPath = actorAssociation, &path
-		}
-		if err = appendModelAuditForApp(ctx, t.tx, "docmanager", event); err != nil {
-			return err
-		}
+	if err = run.Delete(ctx, documentDeleteLabel, rows); err != nil {
+		return fmt.Errorf("document bulk delete: %w", err)
 	}
 	return nil
 }

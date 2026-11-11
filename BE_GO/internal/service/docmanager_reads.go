@@ -296,7 +296,8 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		filename = strings.ReplaceAll(filename, ",", " ")
 	}
 	guessed, known, err := s.guess(filename)
-	if err != nil {
+	var refusedName *pymime.ValueError
+	if err != nil && !errors.As(err, &refusedName) {
 		return nil, domain.ErrDocmanagerNotPorted
 	}
 	// Documents are served with a fixed set of inline types; every other file
@@ -306,6 +307,10 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 		contentType, attachment, named = "application/octet-stream", true, true
 	}
 	var disposition *string
+	if refusedName != nil {
+		// guess_type raised a ValueError after the object was fetched.
+		named = false
+	}
 	if named {
 		value, ok := contentDisposition(attachment, filename)
 		if !ok {
@@ -327,6 +332,10 @@ func (s *DocmanagerReads) stream(ctx context.Context, document *domain.StoredDoc
 	}
 	if err != nil {
 		return nil, domain.ErrDocmanagerNotPorted
+	}
+	if refusedName != nil {
+		_ = object.Body.Close()
+		return exception(refusedName.Text), nil
 	}
 	if badHeader {
 		_ = object.Body.Close()

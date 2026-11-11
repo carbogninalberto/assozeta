@@ -363,6 +363,8 @@ DEMAND = '<p style="text-align: center">Il sottoscritto chiede di essere ammesso
 sections = [dict(s) for s in STATE['additional_sections']] + [
     {'name': 'privacy è', 'text': '<p>Trattamento dei dati &amp; consenso</p>', 'show_to_members': True, 'show_to_both': False,
      'show_to_athletes': True, 'collapsed': False},
+    # str.upper() maps ß, ligatures and ǰ to several characters.
+    {'name': 'stra\u00dfe \ufb01ne \u01f0 \u0390', 'text': '<p>maiuscole</p>'},
     {'name': '', 'text': '<p>senza nome</p>'},
     {'name': 'Vuota', 'text': ''},
     {'name': 'Senza testo'},

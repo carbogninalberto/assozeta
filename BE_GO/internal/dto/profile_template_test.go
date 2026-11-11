@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -43,11 +44,27 @@ func TestProfileTemplateUpperAgainstPython(t *testing.T) {
 	if accepted != golden.Accepted {
 		t.Fatalf("accepted %d, golden %d", accepted, golden.Accepted)
 	}
-	for _, refused := range []string{"ß", "ŉ", "ǰ", "ﬁ", "Ꭰ", "ꭰ"} {
-		if _, ok := ProfileTemplateUpper(refused); ok {
-			t.Fatalf("%q accepted", refused)
+	// Special casing and the characters outside the golden's accepted ranges (CPython 3.13.16).
+	for in, want := range map[string]string{"ß": "SS", "ŉ": "ʼN", "ǰ": "J̌", "ﬁ": "FI", "ꭰ": "Ꭰ", "\u0390": "\u0399\u0308\u0301", "ᾳ": "ΑΙ", "ǆ": "Ǆ",
+		"ﬓ": "ՄՆ", "\ufffd": "\ufffd"} {
+		if got, ok := ProfileTemplateUpper(in); !ok || got != want {
+			t.Fatalf("%q: %q, want %q", in, got, want)
 		}
 	}
+	if _, ok := ProfileTemplateUpper("a\xffb"); ok {
+		t.Fatal("invalid UTF-8 accepted")
+	}
+}
+
+func profileTemplateUpperSupported(r rune) bool {
+	switch {
+	case r == 0xdf || r == 0x149 || r == 0x1f0 || r == unicode.ReplacementChar:
+		return false
+	case r >= 0x20 && r < 0x7f, r >= 0xa0 && r < 0x250, r >= 0x2000 && r < 0x2c00, r >= 0x3000 && r < 0xa000,
+		r >= 0x1f000 && r < 0x1fb00, r == '\t', r == '\n', r == '\r':
+		return true
+	}
+	return false
 }
 
 func TestProfileTemplateFloat(t *testing.T) {
@@ -170,8 +187,6 @@ func TestPlanProfileTemplate(t *testing.T) {
 		{domain.RequestField{Name: "additional_sections", Value: json.Number("5")}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "additional_sections", Value: []any{domain.RequestObject{{Name: "name", Value: json.Number("5")},
 			{Name: "text", Value: "<p>x</p>"}}}}, ErrProfileTemplatePython},
-		{domain.RequestField{Name: "additional_sections", Value: []any{domain.RequestObject{{Name: "name", Value: "ß"},
-			{Name: "text", Value: "<p>x</p>"}}}}, ErrProfileTemplateNotPorted},
 		{domain.RequestField{Name: "regulation", Value: json.Number("5")}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "regulation", Value: "<!-- c -->"}, ErrProfileTemplateNotPorted},
 		{domain.RequestField{Name: "subscription_fee_plans", Value: []any{"x"}}, ErrProfileTemplatePython},

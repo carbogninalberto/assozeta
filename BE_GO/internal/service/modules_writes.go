@@ -190,15 +190,11 @@ func (s *ModulesWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, &domain.PermissionDenied{Detail: "You are not allowed to update this camp or retreat"}
 	}
 	write, invalid := dto.ParseModuleWrite(body, form, true)
-	if write.Nested == dto.ModuleNestedForm {
-		// The nested serializer's HTML input parsing is not ported.
-		return nil, domain.ErrModuleWriteNotPorted
-	}
 	var nested []dto.DRFFieldError
-	if write.Nested == dto.ModuleNestedFields {
+	if write.Nested == dto.ModuleNestedFields || write.Nested == dto.ModuleNestedForm {
 		if nested, err = dto.ParseModuleNested(write.NestedObject, func(id string) (bool, error) {
 			return tx.Taken(ctx, "sport_association_id", id, nil)
-		}); err != nil {
+		}, write.Nested == dto.ModuleNestedForm); err != nil {
 			return nil, err
 		}
 	}
@@ -208,10 +204,7 @@ func (s *ModulesWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if invalid != nil || nested != nil {
 		return nil, &ModuleValidationError{Errors: invalid, Nested: nested}
 	}
-	if write.Nested == dto.ModuleNestedFields {
-		return nil, errModuleNested
-	}
-	if write.Nested == dto.ModuleNestedEmpty {
+	if write.Nested != dto.ModuleNestedAbsent {
 		return nil, errModuleNested
 	}
 	if write.ID != nil && *write.ID != row.ID {

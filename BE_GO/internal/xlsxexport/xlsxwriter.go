@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -29,15 +30,21 @@ type Frame struct {
 
 // xwCell is one stored xlsxwriter cell.
 type xwCell struct {
-	kind   byte // 's' string, 'n' number, 'b' bool, 'k' blank
-	number string
-	sst    int
-	format int // 0 none, 1 header, 2 hyperlink
+	kind    byte // 's' string, 'n' number, 'b' bool, 'k' blank, 'f' formula, 'a' array formula
+	number  string
+	sst     int
+	format  int    // 0 none, 1 header, 2 hyperlink
+	formula string // 'f' and 'a'
+	ref     string // 'a'
 }
 
+// xwLink is one entry of the worksheet's hyperlinks: kind 1 is a link with a
+// relationship (url) and an optional location, kind 2 an internal location.
 type xwLink struct {
 	row, col int
+	kind     int
 	url      string
+	location *string
 }
 
 type xwSheet struct {
@@ -46,6 +53,7 @@ type xwSheet struct {
 	index   map[string]int
 	count   int
 	links   []xwLink
+	hlinks  int // hlink_count: every URL write that passed the length checks
 	rowMin  int
 	rowMax  int
 	colMin  int
@@ -102,7 +110,7 @@ func (sheet *xwSheet) writeToken(row, col int, text string, format int) error {
 		}
 		return nil
 	case strings.HasPrefix(text, "="), strings.HasPrefix(text, "{=") && strings.HasSuffix(text, "}"):
-		return ErrNotPorted // formulas (_prepare_formula) are not reproduced
+		return sheet.writeFormula(row, col, text, format)
 	case xwLooksRich(text):
 		// The Django export hands such text over as one rich-string run with
 		// the characters escaped (xlsx_text.py), so the cell shows the text.
@@ -115,28 +123,132 @@ func (sheet *xwSheet) writeToken(row, col int, text string, format int) error {
 	return nil
 }
 
-// writeURL is _write_url for external http(s)/ftp(s)/mailto links without
-// an anchor.
-func (sheet *xwSheet) writeURL(row, col int, url string, format int) error {
-	if strings.HasPrefix(url, "internal:") || strings.HasPrefix(url, "external:") || strings.Contains(url, "#") || format != 0 {
+// xwDynamicFunctions is re_dynamic_function: names followed by '(' after a word boundary.
+var xwDynamicFunctions = []string{"ANCHORARRAY", "BYCOL", "BYROW", "CHOOSECOLS", "CHOOSEROWS", "DROP", "EXPAND", "FILTER", "HSTACK", "LAMBDA",
+	"MAKEARRAY", "MAP", "RANDARRAY", "REDUCE", "SCAN", "SEQUENCE", "SINGLE", "SORT", "SORTBY", "SWITCH", "TAKE", "TEXTSPLIT", "TOCOL", "TOROW",
+	"UNIQUE", "VSTACK", "WRAPCOLS", "WRAPROWS", "XLOOKUP"}
+
+func xwWordRune(r rune) bool { return r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r) }
+
+// xwHasDynamicFunction is re_dynamic_function.search: a name that starts at a
+// word boundary (the previous character is not a word character).
+func xwHasDynamicFunction(formula string) bool {
+	for _, name := range xwDynamicFunctions {
+		needle := name + "("
+		for from := 0; ; {
+			at := strings.Index(formula[from:], needle)
+			if at < 0 {
+				break
+			}
+			at += from
+			before, _ := utf8.DecodeLastRuneInString(formula[:at])
+			if at == 0 || !xwWordRune(before) {
+				return true
+			}
+			from = at + 1
+		}
+	}
+	return false
+}
+
+var xwSingleTypo = regexp.MustCompile(`\SINGLE\(`)
+
+// xwPrepareFormula is _prepare_formula without future functions: the braces
+// and '=' go and the spreadsheet-only SINGLE( typo of its dynamic-function list applies.
+func xwPrepareFormula(formula string) string {
+	formula = strings.TrimPrefix(strings.TrimPrefix(formula, "{"), "=")
+	formula = strings.TrimSuffix(formula, "}")
+	if strings.Contains(formula, "_xlfn.") {
+		return formula
+	}
+	return xwSingleTypo.ReplaceAllString(formula, "_xlfn.SINGLE(")
+}
+
+// writeFormula is Worksheet._write_formula for a str token: a plain formula
+// (value 0) or a one-cell array formula; dynamic array functions write extra
+// metadata parts and stay unported.
+func (sheet *xwSheet) writeFormula(row, col int, text string, format int) error {
+	if xwHasDynamicFunction(text) {
 		return ErrNotPorted
 	}
-	display := strings.ReplaceAll(url, "mailto:", "")
+	if strings.HasPrefix(text, "{") && strings.HasSuffix(text, "}") {
+		ref := xwCellRef(row, col)
+		sheet.store(row, col, xwCell{kind: 'a', formula: xwPrepareFormula(text), ref: ref, number: "0", format: format})
+		return nil
+	}
+	sheet.store(row, col, xwCell{kind: 'f', formula: xwPrepareFormula(text), number: "0", format: format})
+	return nil
+}
+
+// xwEscapeURL is _escape_url.
+func xwEscapeURL(url string) string {
+	if xwEscaped.MatchString(url) {
+		return url
+	}
+	return strings.NewReplacer("%", "%25", `"`, "%22", " ", "%20", "<", "%3c", ">", "%3e", "[", "%5b", "]", "%5d",
+		"^", "%5e", "\x60", "%60", "{", "%7b", "}", "%7d").Replace(url)
+}
+
+var xwDrivePrefix = regexp.MustCompile(`^\w:`)
+
+// writeURL is Worksheet._write_url for a str token (the string is the URL;
+// format is the cell format, 0 for the default hyperlink format).
+func (sheet *xwSheet) writeURL(row, col int, url string, format int) error {
+	display := url
+	kind := 1
+	if strings.HasPrefix(url, "internal:") {
+		url = strings.ReplaceAll(url, "internal:", "")
+		display = strings.ReplaceAll(display, "internal:", "")
+		kind = 2
+	}
+	external := false
+	if strings.HasPrefix(url, "external:") {
+		url = strings.ReplaceAll(strings.ReplaceAll(url, "external:", ""), "/", `\`)
+		display = strings.ReplaceAll(strings.ReplaceAll(display, "external:", ""), "/", `\`)
+		external = true
+	}
+	display = strings.ReplaceAll(display, "mailto:", "")
 	if utf8.RuneCountInString(display) > 32767 {
 		return nil // ignored: nothing is written
 	}
-	if !xwEscaped.MatchString(url) {
-		url = strings.NewReplacer("%", "%25", `"`, "%22", " ", "%20", "<", "%3c", ">", "%3e", "[", "%5b", "]", "%5d",
-			"^", "%5e", "`", "%60", "{", "%7b", "}", "%7d").Replace(url)
+	location := &display // url_str starts as the displayed string
+	if kind == 1 {
+		location = nil
+		if before, after, found := strings.Cut(url, "#"); found {
+			url, location = before, &after
+		}
+		url = xwEscapeURL(url)
+		if location != nil && !external {
+			escaped := xwEscapeURL(*location)
+			location = &escaped
+		}
+		if xwDrivePrefix.MatchString(url) || strings.HasPrefix(url, `\`) {
+			url = "file:///" + url
+		}
+		url = strings.TrimPrefix(url, `.\`)
 	}
-	if utf8.RuneCountInString(url) > 2079 {
-		return nil // ignored: nothing is written
+	limit := utf8.RuneCountInString(url)
+	if location != nil {
+		limit = max(limit, utf8.RuneCountInString(*location))
 	}
-	if len(sheet.links) >= 65530 {
+	if limit > 2079 {
 		return nil
 	}
-	sheet.writeString(row, col, display, 2)
-	sheet.links = append(sheet.links, xwLink{row: row, col: col, url: url})
+	if sheet.hlinks++; sheet.hlinks > 65530 {
+		return nil
+	}
+	if format == 0 {
+		format = 2
+	}
+	sheet.writeString(row, col, display, format)
+	link := xwLink{row: row, col: col, kind: kind, url: url, location: location}
+	for i, existing := range sheet.links {
+		if existing.row == row && existing.col == col {
+			sheet.links[i] = link
+			return nil
+		}
+	}
+	sheet.links = append(sheet.links, link)
 	return nil
 }
 
@@ -297,6 +409,10 @@ func (sheet *xwSheet) xml(widths []float64) []byte {
 					out.WriteString(` t="s"><v>` + strconv.Itoa(cell.sst) + `</v></c>`)
 				case 'b':
 					out.WriteString(` t="b"><v>` + cell.number + `</v></c>`)
+				case 'f':
+					out.WriteString("><f>" + xwEscapeData(cell.formula) + "</f><v>" + cell.number + "</v></c>")
+				case 'a':
+					out.WriteString(`><f t="array" ref="` + xwEscapeAttr(cell.ref) + `">` + xwEscapeData(cell.formula) + "</f><v>" + cell.number + "</v></c>")
 				default:
 					out.WriteString(`><v>` + cell.number + `</v></c>`)
 				}
@@ -315,8 +431,19 @@ func (sheet *xwSheet) xml(widths []float64) []byte {
 		})
 		sheet.links = links
 		out.WriteString("<hyperlinks>")
-		for i, link := range links {
-			out.WriteString(`<hyperlink ref="` + xwCellRef(link.row, link.col) + `" r:id="rId` + strconv.Itoa(i+1) + `"/>`)
+		rel := 0
+		for _, link := range links {
+			ref := xwCellRef(link.row, link.col)
+			if link.kind == 1 {
+				rel++
+				out.WriteString(`<hyperlink ref="` + ref + `" r:id="rId` + strconv.Itoa(rel) + `"`)
+				if link.location != nil {
+					out.WriteString(` location="` + xwEscapeAttr(*link.location) + `"`)
+				}
+				out.WriteString("/>")
+				continue
+			}
+			out.WriteString(`<hyperlink ref="` + ref + `" location="` + xwEscapeAttr(link.url) + `" display="` + xwEscapeAttr(*link.location) + `"/>`)
 		}
 		out.WriteString("</hyperlinks>")
 	}
@@ -382,9 +509,6 @@ func PandasXlsxwriter(frame Frame, now time.Time) ([]byte, error) {
 		offset = 1
 	}
 	for i, name := range frame.Columns {
-		if strings.Contains(name, ":") && xwURLPrefix.MatchString(name) {
-			return nil, ErrNotPorted
-		}
 		if err := sheet.writeToken(0, i+offset, name, 1); err != nil {
 			return nil, err
 		}
@@ -406,7 +530,13 @@ func PandasXlsxwriter(frame Frame, now time.Time) ([]byte, error) {
 	}
 	data := sheet.xml(frame.Widths)
 	stamp := now.UTC().Format("2006-01-02T15:04:05Z")
-	header, link := sheet.usesFormat(1), len(sheet.links) > 0
+	header, link := sheet.usesFormat(1), sheet.usesFormat(2)
+	external := 0
+	for _, item := range sheet.links {
+		if item.kind == 1 {
+			external++
+		}
+	}
 	sharedStrings := len(sheet.strings) > 0
 	types := "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`
 	rels := "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`
@@ -449,11 +579,16 @@ func PandasXlsxwriter(frame Frame, now time.Time) ([]byte, error) {
 	entries = append(entries,
 		zipEntry{name: "xl/styles.xml", data: []byte(xwStyles(header, link))},
 		zipEntry{name: "xl/theme/theme1.xml", data: xlsxwriterTheme})
-	if link {
+	if external > 0 {
 		var out strings.Builder
 		out.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`)
-		for i, item := range sheet.links {
-			out.WriteString(`<Relationship Id="rId` + strconv.Itoa(i+1) + `" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="` + xwEscapeAttr(item.url) + `" TargetMode="External"/>`)
+		rel := 0
+		for _, item := range sheet.links {
+			if item.kind != 1 {
+				continue
+			}
+			rel++
+			out.WriteString(`<Relationship Id="rId` + strconv.Itoa(rel) + `" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="` + xwEscapeAttr(item.url) + `" TargetMode="External"/>`)
 		}
 		out.WriteString("</Relationships>")
 		entries = append(entries, zipEntry{name: "xl/worksheets/_rels/sheet1.xml.rels", data: []byte(out.String())})

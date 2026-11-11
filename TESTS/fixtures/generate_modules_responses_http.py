@@ -188,6 +188,9 @@ RESPONSES = {
     'e3': {**R, 'id': next(xids), 'module': 'export', 'number': None, 'created': '2026-09-05T00:00:00Z',
            'response': {'nome': 'http://example.test/modulo?a=1&b=2', 'eta': None, 'note': 'riga\nuno\x01due', '5': 'non letto'}},
     'e4': {**R, 'id': next(xids), 'module': 'export', 'number': 3, 'response': {}, 'export_user': 'export_b', 'payment': 'gone'},
+    # Answers the xlsxwriter workbook treats specially: a formula, a link with an anchor, an internal link, a rich string, an array formula.
+    'e5': {**R, 'id': next(xids), 'module': 'export', 'number': 4,
+           'response': {'nome': '=1+1', 'note': 'http://example.test/p#frag', 'firma': '<r>b</r>', 'indirizzo': 'internal:Z!A1', 'eta': '{=A1}'}},
     'plain_r': {**R, 'id': next(xids), 'module': 'export_plain', 'number': 0, 'response': [1, 2], 'attachments': ['d6']},
     'noname_r': {**R, 'id': next(xids), 'module': 'export_noname', 'number': 0},
     'nolabel_r': {**R, 'id': next(xids), 'module': 'export_nolabel', 'number': 0},

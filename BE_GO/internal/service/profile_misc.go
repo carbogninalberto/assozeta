@@ -564,6 +564,8 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 			changes[name] = [2]string{old, new}
 		}
 	}
+	// IntegerField.get_prep_value is int(value) in model field order; a value it rejects, an integer outside
+	// 0..32767 or None (NOT NULL) fails the save.
 	for _, name := range []string{"balance_sheet_year", "balance_sheet_start_day", "balance_sheet_start_month", "subscription_start_day",
 		"subscription_start_month"} {
 		value, present := latest[name]

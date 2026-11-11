@@ -384,7 +384,15 @@ func excelUtilsCoerce(column frameColumn) (frameColumn, error) {
 		}
 	}
 	if converted.dtype == dtBool {
-		return frameColumn{}, ErrNotPorted
+		// Only bools: float(True).is_integer() holds, astype('Int64') gives 1 and 0.
+		out := frameColumn{dtype: dtNullable, values: make([]Value, len(converted.values))}
+		for i, value := range converted.values {
+			out.values[i] = IntValue(0)
+			if value.Bool {
+				out.values[i] = IntValue(1)
+			}
+		}
+		return out, nil
 	}
 	if !integral {
 		return frameColumn{dtype: dtFloat64, values: converted.values}, nil
@@ -436,7 +444,11 @@ func pandasOpenpyxlCell(col int, kind dtype, value Value) (opCell, error) {
 	case Int:
 		return opCell{col: col, kind: 'n', text: percentG(float64(value.Int), false)}, nil
 	case Bool:
-		return opCell{}, ErrNotPorted
+		text := "0"
+		if value.Bool {
+			text = "1"
+		}
+		return opCell{col: col, kind: 'b', text: text}, nil
 	}
 	return openpyxlString(col, value.Text, false)
 }

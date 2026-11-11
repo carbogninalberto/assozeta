@@ -66,6 +66,8 @@ jobs:
             TESTS/contracts/requirements-qr.txt
       - name: Install disposable integration dependencies
         run: |
+          # The runner's default mirror is sometimes unresolvable; use the main archive then.
+          getent hosts azure.archive.ubuntu.com >/dev/null || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
@@ -280,6 +282,8 @@ jobs:
             docs/manuale/requirements-offline.txt
       - name: Install storage fixture dependencies
         run: |
+          # The runner's default mirror is sometimes unresolvable; use the main archive then.
+          getent hosts azure.archive.ubuntu.com >/dev/null || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
           sudo apt-get update
           sudo apt-get install -y locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
@@ -376,6 +380,8 @@ jobs:
           python TESTS/adapters/django/production_runtime.py
       - name: Install disposable integration dependencies
         run: |
+          # The runner's default mirror is sometimes unresolvable; use the main archive then.
+          getent hosts azure.archive.ubuntu.com >/dev/null || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
@@ -441,6 +447,8 @@ jobs:
             docs/manuale/requirements-offline.txt
       - name: Install disposable impersonation dependencies
         run: |
+          # The runner's default mirror is sometimes unresolvable; use the main archive then.
+          getent hosts azure.archive.ubuntu.com >/dev/null || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
@@ -609,6 +617,8 @@ jobs:
             TESTS/contracts/requirements-qr.txt
       - name: Install disposable category dependencies
         run: |
+          # The runner's default mirror is sometimes unresolvable; use the main archive then.
+          getent hosts azure.archive.ubuntu.com >/dev/null || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen
@@ -710,6 +720,8 @@ jobs:
             TESTS/contracts/requirements-qr.txt
       - name: Install private database, native codec and browser dependencies
         run: |
+          # The runner's default mirror is sometimes unresolvable; use the main archive then.
+          getent hosts azure.archive.ubuntu.com >/dev/null || sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null || true
           sudo apt-get update
           sudo apt-get install -y postgresql-16 redis-server locales build-essential pkg-config libpq-dev libjpeg-dev zlib1g-dev libwebp-dev
           sudo sed -i 's/^# *it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen

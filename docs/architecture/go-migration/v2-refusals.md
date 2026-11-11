@@ -641,7 +641,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### associates-draft.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/associates-draft/<uid>/edit | `edit_data.associate.born_date` (or tutor's) in a form outside `YYYY-MM-DD`, ISO datetime, `A/B/YYYY`, or year < 1000 | service/associates_draft.go:286,310 (`ErrAssociateDraftNotPorted`) | B (legacy: yes) | UI stores `DD/MM/YYYY` (date input `src/routes/association/Members/import/EditData.svelte:572-574`, sent at :123) and the spreadsheet import normalises to `%d/%m/%Y` (`application/services/subscription_service.py:757-760`); both handled. Only a typed year < 1000 or a draft row written with another date text. Cost: medium (more dateutil forms). |
+| POST subscription/associates-draft/<uid>/edit | `edit_data.associate.born_date` (or tutor's) in a form outside `YYYY-MM-DD`, ISO datetime, `A/B/YYYY`, or year < 1000 | service/associates_draft.go:286,310 (`ErrAssociateDraftNotPorted`) | ported (t2subsb) | UI stores `DD/MM/YYYY` (date input `src/routes/association/Members/import/EditData.svelte:572-574`, sent at :123) and the spreadsheet import normalises to `%d/%m/%Y` (`application/services/subscription_service.py:757-760`); both handled. Ported in t2subsb: a year < 1000 makes the associate's `strftime`/`strptime` round trip fail (500, as Django on Linux) and is ignored for the tutor. The date forms dateutil reads were already ported. |
 | POST subscription/associates-draft/list/approve | whole route "stays on Django" per this doc | — | n/a | Superseded: now registered in Go at `BE_GO/cmd/server/main.go:900` (`subscriptionRenewHandler.Approve`, subscription-renew family, not in this group). UI calls it (`Members/import/AssociateTable.svelte:286,302`), so its refusals must be classified under subscription-renew. |
 
 ### camps-periods.md
@@ -801,7 +801,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **ported** (v2-subscriptions, `pyhtml.Unescape`) | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
-| same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` / bodies > 250 MiB | `handler/documents_writes.go:328,376,384` | B | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). legacy: no; medium. |
+| same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` (**ported** in t2docs: header lines, continuations, utf-8/ascii/latin-1/windows-1252 names, base64) / bodies > 250 MiB (stays: the answer depends on the host's memory and proxy limits) / RFC 2231 names in other charsets (stays: decoder not ported) | `handler/documents_writes.go`, `handler/django_header.go` | B (ported, two inputs stay) | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). legacy: no; medium. |
 | POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go:182,488` | B (NUL and surrogates **ported** in v2-documents-4; None in `documents/add` stays: the error text carries the new row's id and timestamp) | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). legacy: no; cheap. |
 | upload-document, archive update | uploaded file as a text field | `service/documents_writes.go:213,481,646` | B (upload-document **ported** in v2-rest-docs; archive update stays) | UI sends JSON. cheap. |
 | PATCH documents/<pk>/update | boolean UUID pk; any input | `BE_GO/internal/dto/documents_writes.go:30,36,68` | B (boolean pk **ported** in v2-documents-4) | Route not called by UI (`DOCUMENTS.UPDATE` unused). cheap. |
@@ -821,7 +821,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### email-render-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST collaborators/add | permission floats with exponent / `-0.0`; NUL or lone surrogates in e-mail | `BE_GO/internal/service/email_render_routes.go:128,166,256` | B (NUL in the e-mail **ported** in taildocs: the 400 validation error; a lone surrogate is the 500 page in Django too, case added. Permission floats with exponent / `-0.0` are still open: the view's second `save()` logs an update entry with the number text PostgreSQL's jsonb hands back, not ported yet) | `routes/connectedCollaborators/ConnectedCollaborators.svelte:36-43` sends the permission list built by the UI (no such floats). legacy: no; cheap. |
+| POST collaborators/add | permission floats with exponent / `-0.0`; NUL or lone surrogates in e-mail | `BE_GO/internal/service/email_render_routes.go:128,166,256` | B (NUL in the e-mail **ported** in taildocs: the 400 validation error; a lone surrogate is the 500 page in Django too, case added. Permission floats with exponent / `-0.0` **ported** in t2docs: the create entry shows the request's own number text and the second `save()` logs an update entry with the numeric reading PostgreSQL's jsonb hands back) | `routes/connectedCollaborators/ConnectedCollaborators.svelte:36-43` sends the permission list built by the UI (no such floats). legacy: no; cheap. |
 | POST invoice/<uid>/send | payment date before year 1000 | `service/email_render_routes.go:434` (`emailrender.ErrUnsupported`) | B | Needs a mistyped date; unusual data. legacy: possible. Stays: `strftime('%Y')` pads such years differently per platform. |
 | all | non-English `Accept-Language` | — | n/a | Not a refusal (rendered correctly; test harness only). |
 
@@ -836,7 +836,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 |---|---|---|---|---|
 | GET document/retrieve/<uid> | object absent and referenced by a subscription or invoice (re-render) | `service/docmanager_reads.go:241-246` | **A** (ported in v2-documents-rest) | Links everywhere (`accounting/receipts/ReceiptList.svelte:68`, `Members/MembersList.svelte:527`). Produced by a restore with "allow missing media" (`profile/sections/DataImport.svelte:188-189`) or a failed/pending `save_to_storage`. Medium confidence on frequency. |
 | GET document/retrieve | provider errors: HEAD answered 429/5xx or not at all, GetObject failure other than a missing key (a client-error HEAD answer is ported in v2-documents-3) | `service/docmanager_reads.go`, `stream` | B | Infrastructure. cheap. |
-| GET document/retrieve | URL-like names with a bracketed or non-ASCII network location (the other URL-like names are ported in v2-documents-rest; trailing newline and empty name ported in v2-documents-3; invalid UTF-8/NUL and odd creation dates cannot be read by Django either) | `service/docmanager_reads.go:225,233,256,262`; `BE_GO/pkg/pymime/pymime.go:146-163` | B | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
+| GET document/retrieve | URL-like names with a bracketed or non-ASCII network location (**ported** in t2docs: `pymime` follows `urlsplit`'s bracket, IPvFuture, IPv4-in-brackets and NFKC checks; a refused location answers the `ValueError` text as `{'exception': ...}` once the object was fetched; `data:` types of any text are the guessed type; the other URL-like names are ported in v2-documents-rest; trailing newline and empty name ported in v2-documents-3; invalid UTF-8/NUL and odd creation dates cannot be read by Django either) | `service/docmanager_reads.go`; `BE_GO/pkg/pymime/pymime.go` | B (ported) | Generated names start with `[`; an uploaded name like `Nota:spese.pdf` (Linux/Android) would hit it. legacy: yes; cheap. |
 | GET document/retrieve | download token JSON with NaN/Infinity | token decode | C | Needs `SECRET_KEY`. |
 | — | `SECRET_KEY_FALLBACKS` | — | C | Not configured. |
 
@@ -861,7 +861,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### documents-archive.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST documents/bulk-delete | Document referenced by rows Django would cascade (subscription files, medical rows, M2M) | `BE_GO/internal/repository/documents_archive.go:163`, `ErrDocumentCascadeUnsupported` | B | UI calls it (`archive/Archive.svelte:272`), but no UI flow archives a document that is also referenced elsewhere: template generation adds either the archive row or a SubscriptionFile, not both (`BE/docmanager/views/printing_views.py:686-705`; `Archive.svelte:174-175` sends `parent`, `Members/detail/sections/Cloud.svelte:67-68` sends `subscription`). legacy: yes (non-UI calls sending both); medium. |
+| POST documents/bulk-delete | Document referenced by rows Django would cascade (subscription files, medical rows, M2M) (**ported** in t2docs: the Documents are deleted through the shared collector emulation of the document delete route) | `BE_GO/internal/repository/documents_archive.go` | B (ported) | UI calls it (`archive/Archive.svelte:272`), but no UI flow archives a document that is also referenced elsewhere: template generation adds either the archive row or a SubscriptionFile, not both (`BE/docmanager/views/printing_views.py:686-705`; `Archive.svelte:174-175` sends `parent`, `Members/detail/sections/Cloud.svelte:67-68` sends `subscription`). legacy: yes (non-UI calls sending both); medium. |
 
 ### instance-backups.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -995,7 +995,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### medical-appointment-add.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/medical-appointments/add | non-null `document` or any `medical_appointments_id` | `BE_GO/internal/dto/medical_appointment_add.go:39,42` | B | `Members/detail/sections/modals/AddMedicalAppointment.svelte:69-83` sends date/region/sport/address/creation_date/meta only. cheap. |
+| POST subscription/<uid>/medical-appointments/add | non-null `document` or any `medical_appointments_id` | `BE_GO/internal/dto/medical_appointment_add.go` | ported (t2subsb) | `Members/detail/sections/modals/AddMedicalAppointment.svelte:69-83` sends date/region/sport/address/creation_date/meta only. Ported in t2subsb: `document` (existing Document, `Invalid pk` otherwise) and `medical_appointments_id` (UUID, unique). |
 
 ### mcp-server.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1016,8 +1016,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### misc-exports.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/`#` URL text in member fields (text shaped like `<r>…</r>` is ported: written as an escaped run). legacy: yes. Cost: medium. |
-| GET invoice/list/export?m=xlsx | openpyxl-refused input | `service/misc_exports.go:493` | B | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
+| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text (**ported** in t2docs: formulas, `{=...}`, `<r>` text (written as an escaped run), links with anchors and `internal:`/`external:`; only dynamic array functions such as `=SEQUENCE(` stay: their metadata parts are not written) | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B (ported; dynamic arrays stay) | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/rich-string/`#` URL text in member fields. legacy: yes. Cost: medium. |
+| GET invoice/list/export?m=xlsx | openpyxl-refused input (bool columns **ported** in t2docs; the remaining refusals are pandas dtype cases that need a Python int beyond int64) | `service/misc_exports.go:493` | B (ported; big ints stay: pandas keeps them as objects/uint64 and the coercion depends on the dtype mix, no Go counterpart) | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
 
 ### modules-responses.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1028,14 +1028,14 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST add-attachment | non-string `filename`/`base64` | `service/modules_responses.go` | ported (v2-rest-b3) | The CharField stores `str()` of the value. |
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go` | ported (v2-rest-b3) | Integer ids resolve through `UUID(int=...)`; a document other rows reference is deleted with the shared collector. |
 | GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`Info`) | ported (v2-rest-a, v2-rest-b) | Not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` in Django and Go (v2-rest-b). |
-| GET modules/<id>/export | ints beyond int64, xlsxwriter-refused text (list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
+| GET modules/<id>/export | ints beyond int64 (stays: the answer is a Python int object, pandas stores it as an object/uint64 column, no Go counterpart), xlsxwriter-refused text (**ported** in t2docs except dynamic array functions; list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
 
 ### modules-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH modules/<id>/update | `module_id` differs from the row | `service/modules_writes.go` (`Update`) | ported (v2-rest-b3) | The copy under the new key is inserted as `Model.save()` does (`modules-writes.md`). |
 | PATCH modules/<id>/update | nested `sport_association` dict with keys | `dto/modules_nested.go` (`ParseModuleNested`) | ported (rest-prof) | Fields validated in order, errors nested, then the nested-write assertion (`modules-writes.md`). |
-| PATCH modules/<id>/update | nested association as `sport_association.<field>` form keys | `service/modules_writes.go` (`Update`) | B | The nested serializer's HTML input parsing is not ported; the composer sends JSON. |
+| PATCH modules/<id>/update | nested association as `sport_association.<field>` form keys | `dto/modules_nested.go` (`ParseModuleNested`, form mode) | ported (t2docs) | The prefix keys become the nested input (last value wins; a key with nothing after the prefix is no input); `''` is None, `''` or skipped by the field's null/blank/required options; JSON fields are `json.loads` of the text; then the nested-write assertion as for JSON dicts. |
 | PATCH update | DB exception text | handler | C | Only on infrastructure errors. |
 
 ### payment-misc.md
@@ -1062,7 +1062,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### persona-subs-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST/PUT/PATCH personas-subscriptions/ | form bodies; key change; bad jsonb; >1 new tag link | `service/persona_subs_writes.go:32,112,220,241,245,389` | B | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
+| POST/PUT/PATCH personas-subscriptions/ | >1 new tag link | `service/persona_subs_writes.go` | ported (t2subsb: the through rows follow the iteration order of Django's set of ids, `importeffects.PySetOrder`) | |
+| same | form bodies; key change (Model.save inserts a copy); jsonb text PostgreSQL rejects | `service/persona_subs_writes.go:32,112,220,241,245` | B (open in t2subsb: not reached) | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
 
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1123,7 +1124,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST printing/generate | `format: 'pdf'` | `service/printing_generate.go:218-219` | **A** (ported in v2-pdf) | `components/modals/PrintingModal.svelte:80` defaults `format: 'pdf'`. The body is sent at `:110-112`. Cost: expensive (reportlab-equivalent PDF). |
-| same (excel) | openpyxl refusals (bool column, dup names), int beyond int64 / bad float in `meta.description` | `service/printing_generate.go:210-211,767,773` | B | A bool column needs bool `meta.description` values. legacy: yes. Cost: cheap. |
+| same (excel) | openpyxl refusals (bool column **ported** in t2docs, dup names were ported earlier), bad float in `meta.description` (**ported**: `1e999` is inf), int beyond int64 in `meta.description` (stays: a Python int object in a pandas column, no Go counterpart) | `service/printing_generate.go:210-211,767,773` | B | A bool column needs bool `meta.description` values. legacy: yes. Cost: cheap. |
 
 ### restore-cleanup.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1142,7 +1143,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH profile/update/subscription/template | HTML outside the prettify subset in regulation/demand/section text | `dto/profile_template.go:256` (`bs4prettify/prettify.go`) | B | The editor's own output is in the subset. Templates saved by older editors (comments, unquoted attributes, stray `&`) get resent on every save from `routes/association/Members/subscription/Template.svelte:105-110`. legacy: yes. Cost: expensive (html.parser recovery). |
-| same | section name outside the upper-case subset (ß, ligatures) | `dto/profile_template.go:105` | B | Typed by the user, but rare. Cost: cheap. |
+| same | section name outside the upper-case subset (ß, ligatures) | `dto/profile_template.go` (`ProfileTemplateUpper`) | B (**ported** in t2docs) | `str.upper()` of every code point comes from a table generated from CPython 3.13.16 (SpecialCasing included); lone surrogates stay as they are. |
 | same | float strings with whitespace/underscores/non-ASCII digits, >15-digit ints, overflow | `dto/profile_template.go:337-368` | B | The UI `parseFloat`s fees (`Template.svelte:83-94`). |
 | same | non-string logo, container in text/flag field, NUL/surrogates, multipart | `dto/profile_template.go:135,210-221` | B | The UI sends the association object as JSON. legacy: low. |
 | same | logo/avatar not decodable (TIFF/AVIF) | image processor | B | Upload inputs are limited to png/jpg elsewhere (`routes/profile/sections/Account.svelte:239`). legacy: yes (old stored logos). Cost: medium. |
@@ -1187,7 +1188,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | GET subscription/validate-token-link-and-get-subscriptions | unknown canonical token while pairing pending/paired | `service/bakney_public_links.go` | ported | Ported in v2-misc-3 (`subscription-misc.md`, `v2misc3-final-r1`). |
 | POST subscription/calculate-tax-code | NFKD outside ranges, entities, >30 combining marks, lettered date slugs | `service/subscription_misc.go:119` | B | Exotic names. The UI sends `DD/MM/YYYY`-type dates. |
 | DELETE subscription/<uid>/delete-document/<id> | Document referenced by another row | ported (`DeleteSharedDocument`, the shared deletion collector) | ported (v2-rest-c; was B, legacy: yes) | `upload-document` creates a fresh Document per file (`subscriptions_views.py:2779-2792`). legacy: yes (imports). Cost: medium. |
-| POST subscription/generate-token-link | multipart `gym_name` file | `service/subscription_misc.go:250` | B | `components/modals/ShareModuleMultipleSubscriptionLink.svelte:37` sends JSON. |
+| POST subscription/generate-token-link | multipart `gym_name` file | `service/subscription_misc.go` | ported (t2subsb) | `str(file)` is the stored name; the response carries the file's decoded lines (files over one 64 KiB chunk stay refused: only the first chunk is read). |
 
 ### subscription-create.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1242,21 +1243,21 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/archive | unpaid payment **with an invoice** on the subscription, a course subscription or an installment | `service/subscription_lifecycle.go:203`, `ErrSubscriptionLifecycleNotPorted` | **ported** (v2-subscriptions) | The UI archive buttons are at `MembersList.svelte:1504`, `MembersBook.svelte:1258`, `MembersListArchive.svelte:237` and `personas/detail/sections/Subscriptions.svelte:126`. The data comes from payment cancel (see top) |
-| same | payment hidden from `Payment.objects` (soft-deleted, or outside `X-Group-Id`) | `:203` (`hiddenPayment`) | **ported** (soft-deleted, v2-subscriptions) / B (group) | Soft-deleted: the payment bulk delete in the UI leaves `subscription.payment` / `course_subscription.payment` pointing at a `deleted=True` row. Group: the UI never sets a group |
-| same | payment missing (`payment == nil`) / payment without association | `:197`, `:207`, `:342` | B | Dangling FK or NULL association. legacy: yes. cheap |
-| same | `Payment.save()` raises (account transfer, subject 3, without description) on a reached or in-range payment | `:207`, `:346` (`ErrPaymentSaveFailed`, `service/payment_archive.go:50-68`) | B | The range query (`repository/subscription_lifecycle.go:133`) takes the associate's unpaid payments. Account transfers rarely carry an associate. legacy: yes. medium |
-| same | subscription dates still empty after save defaults (no season settings) | `:300` | B | legacy: yes (old rows, or an association without season settings). cheap |
+| same | payment hidden from `Payment.objects` (soft-deleted, or outside `X-Group-Id`) | `:203` (`hiddenPayment`) | **ported** (soft-deleted, v2-subscriptions; group-hidden, t2subsb) | Soft-deleted: the payment bulk delete in the UI leaves `subscription.payment` / `course_subscription.payment` pointing at a `deleted=True` row. Group: the UI never sets a group |
+| same | payment missing (`payment == nil`) / payment without association | `:197`, `:207`, `:342` | ported (a payment without an association, rare-data change) / kept (payment row missing) | Missing row: a dangling FK, which the database constraints forbid, so no request can reach it. |
+| same | `Payment.save()` raises (account transfer, subject 3, without description) on a reached or in-range payment | `:207`, `:346` (`ErrPaymentSaveFailed`, `service/payment_archive.go:50-68`) | ported (rare-data change) | The range query (`repository/subscription_lifecycle.go:133`) takes the associate's unpaid payments. Account transfers rarely carry an associate. legacy: yes. medium |
+| same | subscription dates still empty after save defaults (no season settings) | `:300` | ported (rare-data change) | Old rows, or an association without season settings. |
 | POST subscription/<uid>/delete | subscription has `signature_storage_key` | `:378` | **ported** (v2-subscriptions) | Every signature upload sets `signature_storage_key` (`BE/application/models/subscriptions_models.py:660-720`). The UI signs from `SignatureModal.svelte:13`. Delete is called from `MembersList.svelte:1637`, `MembersBook.svelte:1391`, `personas/detail/sections/Subscriptions.svelte:173` |
 | same | any row referencing the subscription other than course subscriptions/tags (carnet subscriptions, medical appointments, memberships, sold products, tokens, files, transfers, camp subscriptions; includes soft-deleted rows) | `:385` via `repository/subscription_lifecycle.go:140-157` | **ported** (v2-subscriptions, generic Collector) | The FKs are at `carnet_models.py:44`, `subscriptions_models.py:94,782,872,895,904,1001`, `courses_models.py:358`. The UI creates them all: medical appointment add (`SUBSCRIPTION.MEDICAL_APPOINTMENTS.ADD`), carnet assign, transfer (`MembersList.svelte:1405`), upload-document, camp subscriptions. Most active members have at least one |
 | same | unpaid payment with invoice | `:408` | **ported** (v2-subscriptions) | same cancel-payment data as archive |
-| same | unpaid payment reached twice | `:402` | B | needs two links to one unpaid payment. legacy: yes. medium |
-| same | dates empty | `:438` area | B | as archive. legacy: yes |
+| same | unpaid payment reached twice | `:402` | ported (rare-data change) | Two links to one unpaid payment. |
+| same | dates empty | `:438` area | ported (rare-data change) | as archive. |
 | (reject/approve) | — | — | — | nothing refused |
 
 ### subscription-transfer.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/transfer | recipient branch on a subscription with empty `start_date`/`end_date` | `service/subscription_transfer.go:209` → `:261`, `ErrSubscriptionTransferNotPorted` | B | `Subscription.save()` fills the dates, so only rows never re-saved, or associations without season settings, have them empty. legacy: yes. cheap (season defaults are already ported elsewhere) |
+| POST subscription/<uid>/transfer | recipient branch on a subscription with empty `start_date`/`end_date` | `service/subscription_transfer.go` | ported (rare-data change) | `Subscription.save()` fills the dates, so only rows never re-saved, or associations without season settings, have them empty. The recipient save fills them from the season settings. |
 | same | e-mail branch when the first 3 chars of the tutor's (else the associate's) first or last name are non-ASCII | `:226+` → `:261`; also `:396` | **ported** (v2-subscriptions) | UI sends `{recipient, email}` (`MembersList.svelte:1405-1411`, `MembersBook.svelte:1159`). When the e-mail has no account, `recipient` is undefined and the e-mail branch runs. Names come from the member forms, which accept any Unicode (e.g. `Émile`, `Çelik`, `Šimić`, `Ángel`) |
 | same | e-mail domain non-ASCII | same | **ported** (v2-subscriptions) | IDN e-mail domains. legacy: no. cheap |
 
@@ -1294,11 +1295,11 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST subscription/renew | renewal by an athlete | ported (v2-sub-create) | **ported** | The athlete area renews through `RenewalModal` (`routes/activities/subscription/partials/subscription-element.svelte:231`), which POSTs to `SUBSCRIPTION.RENEW` (`Members/modals/RenewalModal.svelte:65`) |
 | same | renewal with non-empty `courses` | ported (v2subs: `SubscriptionRenewals.courses`) | **ported** | `RenewalModal.svelte:58` sends `courses: formData.renewal_info?.courses`; each course runs through the course-enrolment port inside the renewal's transaction. |
 | same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **ported** (v2-subscriptions) | data from payment cancel (top) in the new period |
-| same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group |
-| same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association |
-| same | `tags` string / non-string ids | `:188` etc. | B | UI sends the list row's tag objects (handled at `:190-198`) |
-| same | `user.email` list/dict; non-mapped Python exception texts | `:157`, `:304` | B | not UI-shaped. legacy: no |
-| same, and associates-draft approve | a typed `certificate_expring_date` without an upload (placeholder image) | `service/subscription_create.go` (`subscriptionCreateRefuse`) | **ported** (tailsubs) | Cases `renew-certificate-placeholder*`, `approve-draft-without-associate` (its draft carries the typed date). Also ported (tailsubs): `preregistration: true` without `subscription_id` in renewals and approvals; with a `subscription_id` it stays refused (not yet written). |
+| same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group. Open in t2subsb: not reached (shared with the subscription/add refusals of the same two inputs). |
+| same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association. Open in t2subsb: not reached. |
+| same | `tags` string / non-string ids | `service/subscription_renew.go` (`tags`) | ported (t2subsb) | A text is iterated by character (the first is no UUID); an int or bool id is `uuid.UUID(int=...)`, anything else the `is not a valid UUID` error with `str(value)`. |
+| same | `user.email` list/dict; non-mapped Python exception texts | `:157`, `:304` | ported (t2subsb: list/dict e-mail, searched as its `str()`) / B (exception texts) | Exception texts of Python internals that no request shape reaches stay refused. |
+| same, and associates-draft approve | a typed `certificate_expring_date` without an upload (placeholder image) | `service/subscription_create.go` (`subscriptionCreateRefuse`) | **ported** (tailsubs) | Cases `renew-certificate-placeholder*`, `approve-draft-without-associate` (its draft carries the typed date). Also ported (tailsubs): `preregistration: true` without `subscription_id` in renewals and approvals; with a `subscription_id` it stays refused (open in t2subsb: the success effect of the renewal inside the view's transaction was not characterized). |
 | same | inputs refused by subscription-create (preregistration, new accounts, signatures, `type_of_associate`, …) | `service/subscription_create*.go` | see subscription-create.md | The renewal body sends `signature.there_is_signature:false`, `new_member:false` and `medical_certificate.medical_id` only (`RenewalModal.svelte:40-56`). Check `associate_data.type`/`role` against the create refusals in that family's inventory |
 | POST subscription/associates-draft/list/approve | a draft hitting any create refusal refuses the whole request; group header | same | depends on subscription-create | UI caller `Members/import/AssociateTable.svelte:286,302` |
 

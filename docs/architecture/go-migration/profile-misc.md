@@ -70,3 +70,13 @@ API v2 (v2-misc): the checklist's whole-row `onboarding_data` (own `users_onboar
 Read-only identity fields (sec-onboarding): `users_onboarding_id` and `user` are read-only in `UsersOnboardingSerializer`, and Go no longer refuses any value for them. Six cases send other, malformed and null values for both keys (owner and collaborator, with changed and unchanged flags). RED `seconb-red-r1`: Django 107/107, Go 500. GREEN `seconb-green-r2`: 107/107 on the four transports. Mutation `seconb-mutation-r1` (the row id taken from the body) fails `profile-misc-onboarding-flags-ui-row-uppercase-ids` on Go.
 
 Rest-prof (rows of the former rare-input refusals): 138 cases (31 added). Django 138/138 first run, Go failed only on the negative-zero audit, fixed. The soft-deleted case adds `deleted` to the association and user fixtures (no index row). RED: documented refusals, see the v2-refusals rows; each added case was a 500 page before. Mutation (the lead length check allowing one more character) fails `profile-misc-lead-too-long-role` on Go.
+
+## Ported in t2docs
+
+`membership_data` season/fiscal day and month go through `int(value)` like `PositiveSmallIntegerField.get_prep_value`: floats are
+truncated, bools are 0/1, text may use any Unicode digits and surrounding white space; a value int() rejects answers
+`Field '<column>' expected a number but got <repr>.` (containers show their repr), an infinite float the raw `OverflowError`
+text. An integer outside 0..32767, or None, is sent to the database as a literal `UPDATE` of the user's integer columns inside a
+savepoint and the driver's text is the answer (`smallint out of range\n`; a negative number or NULL violates a constraint and the
+text quotes the new row, built by the server). The atomic block rolls everything back. 9 cases added; the two that quote the
+user's row are not authored (the expected text would be the whole stored row).

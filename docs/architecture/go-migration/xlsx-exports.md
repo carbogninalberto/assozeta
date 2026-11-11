@@ -50,12 +50,20 @@ Inputs Go refuses (`ErrNotPorted`; the callers answer the 500 page before any wr
 - numeric-looking text with 17 or more significant digits beyond 2**53: pandas accumulates digits with `number * 10 + digit`,
   which the compiler contracts into a fused multiply-add on arm64 (the macOS and aarch64 wheels) and not on x86-64, so the
   parsed value depends on the platform Django runs on;
-- xlsxwriter formulas (`=...`, `{=...}`), `internal:`/`external:` links and URLs with `#`;
-- integers beyond int64, booleans in a column `get_excel_base64` coerces, duplicate column names in `get_excel_base64`.
+- xlsxwriter dynamic array functions (`=SEQUENCE(`, `=FILTER(` ...): they write the metadata parts of a dynamic array formula;
+- integers beyond int64 in a column `get_excel_base64` coerces: pandas keeps them as Python objects or `uint64` and the
+  numeric coercion then depends on which kinds meet in the column (uint64/int64 conflicts), a numpy dtype lattice that has no
+  Go counterpart.
+
+Ported in t2docs: xlsxwriter formulas (`=...`, `{=...}`, a plain formula with value 0 or a one-cell array formula, SINGLE typo of
+`_prepare_formula` included), rich-string text (`<r>...</r>`: Django's export hands it over as one escaped run, `xlsx_text.py`, so the cell shows the text), `internal:` and `external:`
+links, URLs with `#` anchors (a `location` attribute and the `internal` hyperlink element with `display`), links in header cells
+(the header format), and in `get_excel_base64` bool columns (only bools become `Int64` 1/0, bools next to numbers take their kind,
+next to text they stay boolean cells). Duplicate column names were already handled. 14 golden cases added.
 
 ## Golden test
 
-`TESTS/fixtures/generate_xlsx_golden.py` builds 115 workbooks with Django's own functions (extracted from the sources with
+`TESTS/fixtures/generate_xlsx_golden.py` builds 216 workbooks with Django's own functions (extracted from the sources with
 `ast`; the two inline view workbooks are copied line for line) and stores their zip entries and parts in
 `BE_GO/internal/xlsxexport/testdata/golden.json`. `go test ./internal/xlsxexport` rebuilds each one in Go and compares it part
 by part; Django's failures (`None` or a raise) must be `ErrDjango`, the listed refusals `ErrNotPorted`. The cases cover the
