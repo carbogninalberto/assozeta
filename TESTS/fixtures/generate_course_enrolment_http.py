@@ -89,6 +89,7 @@ COURSES = {
     'one': course('Tennis', one_fee='40.00', one_fee_payment=True),
     'multi': course('Danza', multi=True, events=EVENTS),
     'free': course('Libero', fee='0.00'),
+    'free_raw': course('Libero gruppo', fee='0.00'),
     'quotes': course('Pilates', fee='0.00', course_type=2, quotes=QUOTES),
     'member': course('Palestra', fee='30.00', course_type=3),
     'gone': course('Rimosso', deleted=True),
@@ -104,6 +105,8 @@ COURSES = {
     'ov_plain_quotes': course('Spinning', fee='0.00', course_type=2, quotes=QUOTES),
     'ov_free': course('Gratis', fee='0.00'),
     'ov_group': course('Squadra', fee='10.00', group=OWN_GROUP),
+    'ov_group_raw': course('Reparto', fee='10.00', group=OWN_GROUP),
+    'ov_group_multi': course('Corsa gruppo', multi=True, events=EVENTS, group=OWN_GROUP),
     'ov_athlete': course('Scherma', fee='12.00'),
     'ov_cross': course('Vela', fee='8.00'),
     # impersonation sessions and quote amounts as typed in the course form
@@ -156,6 +159,7 @@ INSTALLMENTS = {
     'plain': installment('mp', 0),
     'linked': installment('mp', 1, payment_label='old', amount='25.50'),
     'group': installment('mp', 2, group=OWN_GROUP, amount='12.00'),
+    'group_raw': installment('mp', 5, group=OWN_GROUP, amount='13.00'),
     'deleted': installment('mp', 3, deleted=True),
     'far': installment('mp_far', 0, amount='15.00'),
     'nosub': installment('mp_nosub', 0),
@@ -284,6 +288,8 @@ FULL = IDS['full_collaborator']
 FULL_SESSION = {'X-Impersonation-Id': '$session:owner_full', 'User-Id': FULL}
 HIDDEN = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
 GROUP = lambda key: {'X-Group-Id': IDS[key]}
+RAW_GROUP = IDS['own_group'].upper()
+RAW = {'X-Group-Id': RAW_GROUP}
 missing = lambda key: {'detail': f'Missing permission: {key}'}
 method_not_allowed = lambda verb: {'detail': f'Method "{verb}" not allowed.'}
 REQUIRED = ['This field is required.']
@@ -410,7 +416,7 @@ add('make-payment-other-association-course', 'owner', MP_PATH('far'), 403, NOT_A
 add('make-payment-other-association-owner', 'foreign_owner', MP_PATH('plain'), 403, NOT_ALLOWED)
 
 
-def make_payment(name, actor, label, *, sym, headers=None, group=None):
+def make_payment(name, actor, label, *, sym, headers=None, group=None, raw=None):
     row = INSTALLMENTS[label]
     cs_row = next(item for item in CS.values() if item['course_subscription_id'] == row['course_subscription_id'])
     sub_label = next(key for key, value in SUBSCRIPTIONS.items() if value['subscription_id'] == cs_row['subscription_id'])
@@ -419,9 +425,10 @@ def make_payment(name, actor, label, *, sym, headers=None, group=None):
     user, associate_id = person[sub_label]
     created = new_payment(sym, row['amount'], user=user, associate=associate_id, association=association, created=row['payment_date'],
                           group=group)
-    audit = [created_entry(PAYMENT, sym, [association, DIRECT]),
+    audit = [created_entry(PAYMENT, sym, [association, DIRECT], **({'group': ['None', raw]} if raw else {})),
+             *([entry(PAYMENT, sym, 1, {'group': [group, raw]}, [association, DIRECT])] if raw else []),
              entry(CSI, iid(label), 1, {'payment': [row['payment_id'] or 'None', sym]}, [association, CSI_INDEX])]
-    response = {'data': payment_item(created, subscription_id=sid(sub_label))}
+    response = {'data': payment_item({**created, 'group_id': raw or created['group_id']}, subscription_id=sid(sub_label))}
     add(name, actor, MP_PATH(label), 200, response, headers=headers,
         result=effect(actor, rows={CSI: {iid(label): {'payment_id': sym}}}, created={PAYMENT: [created]}, audit=audit))
 
@@ -430,6 +437,7 @@ make_payment('make-payment-owner', 'owner', 'plain', sym='@mp1')
 # The installment's previous payment stays; the new one replaces the link.
 make_payment('make-payment-replaces-link', 'full_collaborator', 'linked', sym='@mp2')
 make_payment('make-payment-grouped', 'owner', 'group', sym='@mp3', headers=GROUP('own_group'), group=OWN_GROUP)
+make_payment('make-payment-raw-group', 'owner', 'group_raw', sym='@mp7', headers=RAW, group=OWN_GROUP, raw=RAW_GROUP)
 make_payment('make-payment-athlete', 'athlete', 'athlete', sym='@mp4')
 # The payment takes the course's association.
 make_payment('make-payment-course-association', 'foreign_owner', 'far', sym='@mp6')
@@ -477,7 +485,7 @@ def course_json(label):
     return {'label': COURSES[label]['title'], 'value': cid(label)}
 
 
-def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None, group=None, kind='fee', quotes=QUOTES, stored_amount='25.50',
+def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None, group=None, raw=None, kind='fee', quotes=QUOTES, stored_amount='25.50',
                  memory='25.5', quote_category=QUOTE_CATEGORY):
     """add_course_to_subscription's row, payment(s) and saves for the authored kind."""
     association = SUBSCRIPTIONS[sub]['sport_association_id']
@@ -485,6 +493,8 @@ def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None
     course_row = COURSES[course_label]
     course_association = course_row['sport_association_id']
     cs_sym, pay = '@' + sym, '@' + sym + 'p'
+    raw_new = {'group': ['None', raw]} if raw else {}
+    raw_resave = lambda payment_sym, owner: [entry(PAYMENT, payment_sym, 1, {'group': [group, raw]}, [owner, DIRECT])] if raw else []
     created, audit, payment_json, rows_payment = {}, [], None, None
     quote = jsonb(quotes[0]) if kind == 'quote' else None
     row = new_cs(cs_sym, course_label, sub, quote=quote, multi=kind == 'multi')
@@ -495,18 +505,20 @@ def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None
     if kind == 'fee':
         pays.append(new_payment(pay, course_row['fee'], user=user, associate=associate_id, association=association, group=group,
                                 course_json=course_json(course_label)))
-        audit.append(created_entry(PAYMENT, pay, [association, DIRECT]))
+        audit.append(created_entry(PAYMENT, pay, [association, DIRECT], **raw_new))
+        audit += raw_resave(pay, association)
         payment_json = {'payment_id': pay, 'amount': float(course_row['fee']), 'paid': False, 'creation_date': '$now'}
     elif kind == 'one':
         pays.append(new_payment(pay, course_row['one_fee'], user=user, associate=associate_id, association=association, group=group,
                                 course_json=course_json(course_label), meta={'one_fee': 'true'}))
-        audit.append(created_entry(PAYMENT, pay, [association, DIRECT]))
+        audit.append(created_entry(PAYMENT, pay, [association, DIRECT], **raw_new))
+        audit += raw_resave(pay, association)
         payment_json = {'payment_id': pay, 'amount': float(course_row['one_fee']), 'paid': False, 'creation_date': '$now'}
     elif kind == 'quote':
         pays.append(new_payment(pay, stored_amount, user=user, associate=associate_id, association=association, group=group,
                                 course_json=course_json(course_label), meta={'multiple_quote': quotes[0]}, category=quote_category))
-        audit += [created_entry(PAYMENT, pay, [association, DIRECT], amount=['None', memory]),
-                  entry(PAYMENT, pay, 1, {'amount': [stored_amount, memory]}, [association, DIRECT])]
+        audit += [created_entry(PAYMENT, pay, [association, DIRECT], amount=['None', memory], **raw_new),
+                  entry(PAYMENT, pay, 1, {'amount': [stored_amount, memory], **({'group': [group, raw]} if raw else {})}, [association, DIRECT])]
         payment_json = {'payment_id': pay, 'amount': float(memory), 'paid': False, 'creation_date': '$now'}
     elif kind == 'multi':
         audit.append(entry(CSM, cs_sym, 1, {'multi_payments': ['False', 'True'], 'membership_fee': ['0.00', '0.0']},
@@ -516,7 +528,9 @@ def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None
         pays.append(new_payment(pay, event['amount'], user=user, associate=associate_id, association=association, group=group,
                                 course_json=course_json(course_label), created=date + 'T00:00:00Z'))
         created[CSI] = [new_installment('@' + sym + 'i', cs_sym, event['id'], event['amount'], pay, date, group=group)]
-        audit += [created_entry(PAYMENT, pay, [association, DIRECT]), created_entry(CSI, '@' + sym + 'i', [course_association, CSI_INDEX])]
+        audit += [created_entry(PAYMENT, pay, [association, DIRECT], **raw_new), *raw_resave(pay, association),
+                  created_entry(CSI, '@' + sym + 'i', [course_association, CSI_INDEX], **raw_new),
+                  *([entry(CSI, '@' + sym + 'i', 1, {'group': [group, raw]}, [course_association, CSI_INDEX])] if raw else [])]
         payment_json = {'payment_id': pay, 'amount': float(event['amount']), 'paid': False, 'creation_date': date}
     if pays:
         row['payment_id'] = pay
@@ -546,6 +560,8 @@ add('overview-add-unknown-quote-fails', 'owner', oa('ov_quotes', 'mario'), 500, 
 overview_add('overview-add-free-course', 'owner', 'ov_free', 'luisa', sym='oa6', kind='none')
 overview_add('overview-add-grouped', 'owner', 'ov_group', 'group', sym='oa7', headers=GROUP('own_group'), group=OWN_GROUP)
 # Athletes use their subscription's association.
+overview_add('overview-add-raw-group', 'owner', 'ov_group_raw', 'group', sym='oa13', headers=RAW, group=OWN_GROUP, raw=RAW_GROUP)
+overview_add('overview-add-installments-raw-group', 'owner', 'ov_group_multi', 'group', sym='oa14', headers=RAW, group=OWN_GROUP, raw=RAW_GROUP, kind='multi')
 overview_add('overview-add-athlete', 'athlete', 'ov_athlete', 'mario', sym='oa8')
 overview_add('overview-add-subscription-association', 'owner', 'ov_cross', 'hans', sym='oa10')
 # Impersonation sessions: the athlete's own subscription (its association), the collaborator as the owner.
@@ -682,6 +698,22 @@ for n, (event, amount) in enumerate(zip(body_events, ('15.00', '7.50'))):
     audit += [created_entry(PAYMENT, f'@ca4p{n}', [OWN, DIRECT]), created_entry(CSI, f'@ca4i{n}', [OWN, CSI_INDEX])]
 add('add-body-events-grouped', actor, CA, 201, [overview_item(row, 'group', installments=[installment_item(i) for i in created_insts])],
     headers=GROUP('own_group'), body={'course': cid('free'), 'subscription_id': sid('group'), 'events': body_events},
+    result=effect(actor, created={CSM: [row], PAYMENT: created_pays, CSI: created_insts}, audit=audit))
+# The same events under a non-canonical X-Group-Id: created only, audited as sent, no second save.
+actor = 'owner'
+row = new_cs('@ca4r', 'free_raw', 'group')
+body_events = [{'id': 2, 'amount': '15', 'payment_date': '01/02/2099'}, {'id': 0, 'amount': 7.5, 'payment_date': '01/03/2099'}]
+created_pays, created_insts, audit = [], [], [entry(CSM, '@ca4r', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']),
+                                                    [OWN, COURSE_INDEX], cs_repr('@ca4r', 'free_raw', 'group'))]
+for n, (event, amount) in enumerate(zip(body_events, ('15.00', '7.50'))):
+    text, meta = rata('free_raw', event, '@ca4r')
+    date = event_date(event['payment_date']).isoformat()
+    created_pays.append(new_payment(f'@ca4rp{n}', amount, user=OWNER, associate=aid('luisa'), description=text, meta=meta, created=date + 'T00:00:00Z',
+                                    group=OWN_GROUP))
+    created_insts.append(new_installment(f'@ca4ri{n}', '@ca4r', event['id'], amount, f'@ca4rp{n}', date, group=OWN_GROUP))
+    audit += [created_entry(PAYMENT, f'@ca4rp{n}', [OWN, DIRECT], group=['None', RAW_GROUP]), created_entry(CSI, f'@ca4ri{n}', [OWN, CSI_INDEX], group=['None', RAW_GROUP])]
+add('add-body-events-raw-group', actor, CA, 201, [overview_item(row, 'group', installments=[installment_item(i) for i in created_insts])],
+    headers=RAW, body={'course': cid('free_raw'), 'subscription_id': sid('group'), 'events': body_events},
     result=effect(actor, created={CSM: [row], PAYMENT: created_pays, CSI: created_insts}, audit=audit))
 # A multiple-quote course: the quote's amount (a float), category and description.
 actor = 'owner'

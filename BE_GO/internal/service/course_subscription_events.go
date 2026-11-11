@@ -155,10 +155,6 @@ func (s *CourseSubscriptions) planEvents(ctx context.Context, tx domain.CourseSu
 				if parsedGroup == nil {
 					return plan, domain.ErrCourseSubscriptionServer
 				}
-				if *parsedGroup != header {
-					// auditlog would record the header as sent.
-					return plan, ErrCourseSubscriptionNotPorted
-				}
 				found, err := tx.GroupExists(ctx, *parsedGroup)
 				if err != nil {
 					return plan, err
@@ -210,6 +206,8 @@ func (s *CourseSubscriptions) applyEvents(ctx context.Context, tx domain.CourseS
 	if len(plan.created) == 0 {
 		return nil
 	}
+	// The events serializer only creates the rows (no explicit save follows).
+	audit.GroupNoResave = true
 	association := *instance.CourseAssociationID
 	context, err := tx.EventPaymentContext(ctx, association)
 	if err != nil {

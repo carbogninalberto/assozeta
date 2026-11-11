@@ -229,12 +229,6 @@ func (s *CourseWrites) OverviewUpdate(ctx context.Context, identity domain.Resol
 		return err
 	}
 	data, raises := courseWritesBody(request.Body, "multi_payments", "one_fee_payment")
-	if header := request.GroupHeader; header != "" {
-		if group := supplierGroup(header); group != nil && *group != header {
-			// The creates would audit the header as sent.
-			return domain.ErrCourseWritesNotPorted
-		}
-	}
 	tx, err := s.begin(ctx)
 	if err != nil {
 		return err

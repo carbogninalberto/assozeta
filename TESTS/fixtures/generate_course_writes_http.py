@@ -101,6 +101,7 @@ COURSES = {
     'o_text': course('Boxe'),
     'o_upd': course('Pilates', one_fee='30.00', one_fee_payment=True, events=OV_EVENTS),
     # update_metadata_courses_callback returns early for an empty old title.
+    'o_raw': course('Yoga raw', one_fee='30.00', events=[{'id': 0, 'amount': '20.00', 'payment_date': '10/01/2099'}], group=OWN_GROUP),
     'u_blank': course(''),
     'u_null': {**course('Senza titolo'), 'title': None},
     'u_clear': course('Ginnastica'),
@@ -143,7 +144,7 @@ PAYMENTS = {
 }
 for label, values in (('d_pa', {}), ('d_pb', {'paid': True}), ('d_pm', {}), ('d_pg', {'group': OWN_GROUP}), ('d_ph', {}),
                       ('o1_pa', {}), ('o1_pb', {'paid': True}), ('o2_pd', {}), ('o2_pe', {}), ('o3_p', {}),
-                      ('u1_p', {}), ('u2_pa', {}), ('u2_pb', {'paid': True}), ('u3_pa', {}), ('u4_p', {})):
+                      ('u1_p', {}), ('u2_pa', {}), ('u2_pb', {'paid': True}), ('u3_pa', {}), ('u4_p', {}), ('u7_p', {})):
     PAYMENTS[label] = payment(**values)
 
 
@@ -169,6 +170,7 @@ CS = {
     'u3': cs('u_plain', 'luisa', multi=True),
     'u4': cs('o_upd', 'group', payment_label='u4_p'),
     'u5': cs('u_multi', 'luisa'),
+    'u7': cs('o_raw', 'group', payment_label='u7_p'),
     'u_far': cs('u_far', 'hans'),
     'd_cs_m': {**cs('d_member', 'luisa'), 'type': 3},
     'o5': cs('o_session', 'luisa'),
@@ -355,6 +357,8 @@ ATHLETE_SESSION = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': AT
 FULL_SESSION = {'X-Impersonation-Id': '$session:owner_full', 'User-Id': IDS['full_collaborator']}
 HIDDEN = {'detail': 'Risorsa non disponibile per questo utente e associazione.'}
 GROUP = lambda key: {'X-Group-Id': IDS[key]}
+RAW_GROUP = IDS['own_group'].upper()
+RAW = {'X-Group-Id': RAW_GROUP}
 missing = lambda key: {'detail': f'Missing permission: {key}'}
 method_not_allowed = lambda verb: {'detail': f'Method "{verb}" not allowed.'}
 cid = lambda label: COURSES[label]['course_id']
@@ -728,6 +732,23 @@ add('overview-update-impersonated-collaborator', 'owner', ou('o_upd', 'luisa'), 
 add('overview-update-impersonated-athlete-other-subscription', 'owner', ou('o_upd', 'luisa'), 403, HIDDEN, headers=ATHLETE_SESSION,
     body={'one_fee_payment': True})
 
+# Instalments under a non-canonical X-Group-Id: each created row is audited with the header as sent and saved once more.
+actor = 'owner'
+row = CS['u7']
+audit = [deleted(PAYMENT, 'u7_p', actor),
+         entry(CSM, row['course_subscription_id'], 1, {'multi_payments': ['False', 'True']}, [OWN, COURSE_INDEX],
+               cs_repr({**row, 'payment_id': None, 'multi_payments': True})),
+         created_entries(PAYMENT, '@u7p0', [OWN, DIRECT], group=['None', RAW_GROUP]),
+         entry(PAYMENT, '@u7p0', 1, {'group': [OWN_GROUP, RAW_GROUP]}, [OWN, DIRECT]),
+         created_entries(CSI, '@u7i0', [OWN, CSI_INDEX], group=['None', RAW_GROUP]),
+         entry(CSI, '@u7i0', 1, {'group': [OWN_GROUP, RAW_GROUP]}, [OWN, CSI_INDEX])]
+raw_event = event_payment('@u7p0', 0, COURSES['o_raw']['events'][0], 'u7', 'o_raw', user=luisa[0], associate=luisa[1])
+raw_event['group_id'] = OWN_GROUP
+add('overview-update-to-installments-raw-group', actor, ou('o_raw', 'group'), 200, OV_UPDATED, headers=RAW, body={'multi_payments': True, 'all': False},
+    result=effect(actor, rows={CSM: {csid('u7'): change_row(CSM, 'u7', payment_id=None, multi_payments=True)}, PAYMENT: {pid('u7_p'): None}},
+                  created={PAYMENT: [raw_event], CSI: [new_installment('@u7i0', csid('u7'), 0, '20.00', '@u7p0', '2099-01-10', group=OWN_GROUP)]},
+                  audit=audit))
+
 # Not atomic: data['all'] is read only for a past event, after the payment and the save.
 actor = 'owner'
 row = CS['u4']
@@ -873,6 +894,44 @@ add('add-default-fee-payment', actor, '/course/add', 200, ADDED,
     body={'new_course': {'title': 'Gratis', 'description': 'Note'}, 'subscriptions': [sid('luisa')]},
     result=effect(actor, created={COURSE: [new_course('@nc4', 'Gratis', 'Note')], CSM: [new_cs('@cs4', '@nc4', sid('luisa'), False, '@p4')],
                                   PAYMENT: [new_payment('@p4', '0.00', user=luisa[0], associate=luisa[1])]}, audit=audit))
+# A non-canonical X-Group-Id is stored as the UUID and audited as sent in every created row.
+actor = 'owner'
+events = [ev(0, '30.00'), ev(1, 30, '10/01/2020')]
+cs_sym, pay_sym, inst_sym = '@cs9', '@p9', '@i9'
+audit = [created_entries(COURSE, '@nc9', actor_index(actor), sport_association=['None', 'None'], group=['None', RAW_GROUP], one_fee=['None', '0.0']),
+         entry(COURSE, '@nc9', 1, {'sport_association': ['None', OWN], 'group': [OWN_GROUP, RAW_GROUP], 'one_fee': ['0.00', '0.0']}, [OWN, CHANGES_INDEX]),
+         entry(CSM, cs_sym, 0, stored('create', membership_fee=['None', '0.0']), [OWN, COURSE_INDEX], new_cs_repr(cs_sym, '@nc9', sid('group'), True)),
+         created_entries(PAYMENT, pay_sym, [OWN, DIRECT], group=['None', RAW_GROUP]),
+         entry(PAYMENT, pay_sym, 1, {'group': [OWN_GROUP, RAW_GROUP]}, [OWN, DIRECT]),
+         created_entries(CSI, inst_sym, [OWN, CSI_INDEX], group=['None', RAW_GROUP]),
+         entry(CSI, inst_sym, 1, {'group': [OWN_GROUP, RAW_GROUP]}, [OWN, CSI_INDEX]),
+         entry(CSM, cs_sym, 1, {'membership_fee': ['0.00', '0.0']}, [OWN, COURSE_INDEX], new_cs_repr(cs_sym, '@nc9', sid('group'), True))]
+add('add-installments-raw-group', actor, '/course/add', 200, ADDED, headers=RAW, body={
+    'new_course': {'title': 'Gruppo grezzo', 'description': 'Serale', 'fee': 60, 'multi_payments_split': True, 'events': events},
+    'subscriptions': [sid('group')]}, result=effect(actor, created={
+        COURSE: [new_course('@nc9', 'Gruppo grezzo', 'Serale', fee='60.00', multi_payments=True, events=events, group_id=OWN_GROUP)],
+        CSM: [new_cs(cs_sym, '@nc9', sid('group'), True)],
+        PAYMENT: [new_payment(pay_sym, '30.00', user=luisa[0], associate=luisa[1], created='2099-01-10T00:00:00Z', group=OWN_GROUP)],
+        CSI: [new_installment(inst_sym, cs_sym, 0, '30.00', pay_sym, '2099-01-10', group=OWN_GROUP)]}, audit=audit))
+
+# Single payment, group spelled with braces and mixed case: the payment records the header as sent twice.
+BRACED = '{' + IDS['own_group'].upper() + '}'
+audit = [created_entries(COURSE, '@nc10', actor_index(actor), sport_association=['None', 'None'], group=['None', BRACED], one_fee=['None', '0.0'],
+                         fee=['None', '0.0']),
+         entry(COURSE, '@nc10', 1, {'sport_association': ['None', OWN], 'group': [OWN_GROUP, BRACED], 'one_fee': ['0.00', '0.0'], 'fee': ['0.00', '0.0']},
+               [OWN, CHANGES_INDEX]),
+         entry(CSM, '@cs10', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+               new_cs_repr('@cs10', '@nc10', sid('group'), False)),
+         created_entries(PAYMENT, '@p10', [OWN, DIRECT], amount=['None', '0.0'], group=['None', BRACED]),
+         entry(PAYMENT, '@p10', 1, {'amount': ['0.00', '0.0'], 'group': [OWN_GROUP, BRACED]}, [OWN, DIRECT]),
+         entry(CSM, '@cs10', 1, {'payment': ['None', '@p10'], 'membership_fee': ['0.00', '0.0']}, [OWN, COURSE_INDEX],
+               new_cs_repr('@cs10', '@nc10', sid('group'), False, '@p10'))]
+add('add-default-fee-braced-group', actor, '/course/add', 200, ADDED, headers={'X-Group-Id': BRACED},
+    body={'new_course': {'title': 'Graffe', 'description': 'Note'}, 'subscriptions': [sid('group')]},
+    result=effect(actor, created={COURSE: [new_course('@nc10', 'Graffe', 'Note', group_id=OWN_GROUP)],
+                                  CSM: [new_cs('@cs10', '@nc10', sid('group'), False, '@p10')],
+                                  PAYMENT: [new_payment('@p10', '0.00', user=luisa[0], associate=luisa[1], group=OWN_GROUP)]}, audit=audit))
+
 # Not atomic: an unknown subscription fails after the course exists.
 add('add-unknown-subscription', actor, '/course/add', 500, SERVER,
     body={'new_course': {'title': 'Parziale', 'description': 'Note', 'fee': '5'}, 'subscriptions': [UNKNOWN]},

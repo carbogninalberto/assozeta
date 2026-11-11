@@ -372,6 +372,9 @@ func (t *courseWritesTransaction) CreateCourse(ctx context.Context, row domain.C
 	for name, pair := range overrides {
 		changes[name] = pair
 	}
+	if audit.GroupRaw != "" {
+		changes["group"] = [2]string{"None", audit.GroupRaw}
+	}
 	// Course.objects.get resolves the course without an association: the actor's.
 	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("course", "Course", row.ID, "", 0, changes, nil, "", audit))
 }
@@ -380,6 +383,10 @@ func (t *courseWritesTransaction) CreateCourse(ctx context.Context, row domain.C
 // UPDATE, so the entry resolves through its changes.
 func (t *courseWritesTransaction) SetCourseAssociation(ctx context.Context, course, association string, changes map[string][2]string,
 	audit domain.CourseSubscriptionAudit) error {
+	if audit.GroupRaw != "" && audit.Group != nil {
+		// The in-memory course still holds the header as sent.
+		changes["group"] = [2]string{*audit.Group, audit.GroupRaw}
+	}
 	// The resolver tries the old value, then the new one.
 	resolved, err := t.liveAssociation(ctx, map[string][2]string{"sport_association": {changes["sport_association"][1], ""}})
 	if err != nil {
@@ -443,15 +450,22 @@ func (t *courseWritesTransaction) CreatePayment(ctx context.Context, payment dom
 	}
 	stored := changes["amount"][1]
 	changes["amount"] = [2]string{"None", payment.MemoryAmount}
+	second := courseWritesGroupResave(audit)
+	if audit.GroupRaw != "" {
+		changes["group"] = [2]string{"None", audit.GroupRaw}
+	}
 	if err = appendModelAudit(ctx, t.tx, courseSubscriptionEntry("payment", "Payment", payment.ID, "", 0, changes, payment.AssociationID, "direct",
 		audit)); err != nil {
 		return err
 	}
-	if stored == payment.MemoryAmount {
+	if stored != payment.MemoryAmount {
+		second["amount"] = [2]string{stored, payment.MemoryAmount}
+	}
+	if len(second) == 0 {
 		return nil
 	}
 	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("payment", "Payment", payment.ID, "", 1,
-		map[string][2]string{"amount": {stored, payment.MemoryAmount}}, payment.AssociationID, "direct", audit))
+		second, payment.AssociationID, "direct", audit))
 }
 
 func (t *courseWritesTransaction) CreateInstallment(ctx context.Context, installment domain.CourseWriteInstallmentCreate,
@@ -466,8 +480,28 @@ func (t *courseWritesTransaction) CreateInstallment(ctx context.Context, install
 	if err != nil {
 		return err
 	}
-	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("coursesubscriptioninstallment", "CourseSubscriptionInstallment", installment.ID, "",
-		0, changes, installment.AssociationID, "course_subscription.course.sport_association", audit))
+	if audit.GroupRaw != "" {
+		changes["group"] = [2]string{"None", audit.GroupRaw}
+	}
+	if err = appendModelAudit(ctx, t.tx, courseSubscriptionEntry("coursesubscriptioninstallment", "CourseSubscriptionInstallment", installment.ID, "",
+		0, changes, installment.AssociationID, "course_subscription.course.sport_association", audit)); err != nil {
+		return err
+	}
+	if resave := courseWritesGroupResave(audit); len(resave) > 0 {
+		// installment.save() diffs the stored group against the header as sent.
+		return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("coursesubscriptioninstallment", "CourseSubscriptionInstallment", installment.ID, "",
+			1, resave, installment.AssociationID, "course_subscription.course.sport_association", audit))
+	}
+	return nil
+}
+
+// courseWritesGroupResave is the change a second save of a row created with a
+// non-canonical X-Group-Id records: the stored group against the header as sent.
+func courseWritesGroupResave(audit domain.CourseSubscriptionAudit) map[string][2]string {
+	if audit.GroupRaw == "" || audit.Group == nil || audit.GroupNoResave {
+		return map[string][2]string{}
+	}
+	return map[string][2]string{"group": {*audit.Group, audit.GroupRaw}}
 }
 
 // --- course-overview ----------------------------------------------------------------

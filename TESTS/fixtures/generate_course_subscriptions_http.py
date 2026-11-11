@@ -1044,6 +1044,25 @@ add('update-events-object-with-installments-server-error', 'owner', one('cs_ev',
     body={'events': {'rata': 1}})
 add('update-events-text-with-installments-server-error', 'owner', one('cs_ev', 'update'), 500, SERVER, method='PATCH', body={'events': 'x'})
 
+# A non-canonical X-Group-Id: the rows the events create are audited with the header as sent (created only, never saved again).
+actor = 'owner'
+RAW_GROUP = IDS['own_group'].upper()
+raw_text = 'Rata n.8 del 10/12/26 (Corsa)'
+raw_created = {PAYMENT_TABLE: [{**new_payment('@evr', '35.00', created='2026-12-10T00:00:00Z', description=raw_text,
+                                                meta=ev_meta(raw_text, '2026-12-10', 'cs_ev2'), associate='gino'), 'group_id': IDS['own_group']}],
+               INSTALLMENT_TABLE: [{**new_installment('@evri', 'cs_ev2', 7, '35.00', '@evr', '2026-12-10T00:00:00Z'), 'group_id': IDS['own_group']}]}
+raw_audit = [{'model': 'payment', 'label': '@evr', 'action': 0, 'changes': '$created', 'overrides': {'group': ['None', RAW_GROUP]},
+              'index': [OWN, 'direct'], 'repr': None},
+             {'model': 'coursesubscriptioninstallment', 'label': '@evri', 'action': 0, 'changes': '$created',
+              'overrides': {'group': ['None', RAW_GROUP]}, 'index': [OWN, 'course_subscription.course.sport_association'], 'repr': None}]
+STATE['payments']['@evr'] = {'paid': False}
+STATE['installments']['@evri'] = {'id': '@evri', 'cs': 'cs_ev2', 'number': 7, 'amount': '35.00', 'payment': '@evr', 'group': 'own_group', 'deleted': False,
+                                  'payment_date': '2026-12-10T00:00:00Z', 'paid': False}
+add('update-events-raw-group', actor, one('cs_ev2', 'update'), 200, item('cs_ev2', 'own_group'), method='PATCH',
+    headers={'X-Group-Id': RAW_GROUP}, body={'events': [{'id': 7, 'amount': '35.00', 'payment_date': '10/12/2026'}]},
+    effect={'kind': 'update', 'actor': actor, 'cs_changed': {}, 'cs_deleted': [], 'installments_deleted': [], 'payments_deleted': [],
+            'payments_changed': {}, 'created': raw_created, 'audit': raw_audit})
+
 # --- delete ----------------------------------------------------------------
 add('delete-anonymous', 'anonymous', one('cs_del', 'delete'), 401, ANONYMOUS, method='DELETE')
 add('delete-restricted-missing-permission', 'restricted_collaborator', one('cs_del', 'delete'), 403, missing('delete'), method='DELETE')

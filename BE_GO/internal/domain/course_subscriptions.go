@@ -129,6 +129,11 @@ type CourseSubscriptionAudit struct {
 	At               time.Time
 	// Group is the X-Group-Id filter of the group-aware managers.
 	Group *string
+	// GroupRaw is the X-Group-Id text as sent when it is not the canonical
+	// spelling: the created rows carry it in memory, so auditlog records it.
+	GroupRaw string
+	// GroupNoResave marks creates that no explicit save follows.
+	GroupNoResave bool
 }
 
 // CourseSubscriptionPaymentState is the stored payment the update saves.

@@ -13158,6 +13158,177 @@
    }
   },
   {
+   "name": "course-subscriptions-update-events-raw-group",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {
+    "X-Group-Id": "A1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000660081",
+    "creation_date": "2026-09-10T08:00:00Z",
+    "paid": false,
+    "subscription": {
+     "subscription_id": "a1000000-0000-4000-8000-000000660017",
+     "associate": {
+      "associate_id": "a1000000-0000-4000-8000-000000660008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1970-03-03",
+      "email": null,
+      "sex": "M",
+      "first_name": "Gino",
+      "last_name": "Neri",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "current_year": "corrente"
+    },
+    "multi_payments": true,
+    "multiple_quote": null,
+    "one_fee_payment": false,
+    "installments": [
+     {
+      "course_subscription_installment_id": "@evri",
+      "id": 7,
+      "amount": "35.00",
+      "payment_date": "2026-12-10",
+      "paid": false
+     }
+    ],
+    "course": "a1000000-0000-4000-8000-000000660027",
+    "type": 1,
+    "billed_frequency": 1,
+    "billed_from": null,
+    "billed_until": null,
+    "billed_from_day_of_month": 1,
+    "membership_active": true,
+    "membership_fee": "0.00",
+    "auto_renewal": false,
+    "membership_payments": [],
+    "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
+    "carnets": []
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "cs_changed": {},
+    "cs_deleted": [],
+    "installments_deleted": [],
+    "payments_deleted": [],
+    "payments_changed": {},
+    "created": {
+     "application.Payment": [
+      {
+       "$sym": "@evr",
+       "payment_id": "@evr",
+       "type": "default",
+       "subject": 2,
+       "amount": "35.00",
+       "creation_date": "2026-12-10T00:00:00Z",
+       "payment_date": null,
+       "paid": false,
+       "expense": false,
+       "description": "Rata n.8 del 10/12/26 (Corsa)",
+       "payment_category_id": "$default_category",
+       "meta_payment_categories": null,
+       "invoice_id": null,
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "associate_id": "a1000000-0000-4000-8000-000000660008",
+       "supplier_id": null,
+       "instructor_id": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "payment_intent_id": null,
+       "archived": false,
+       "invoice_fiscal_code": null,
+       "meta": {
+        "description": "Rata n.8 del 10/12/26 (Corsa)",
+        "course_id": "a1000000-0000-4000-8000-000000660027",
+        "course_title": "Corsa",
+        "course_subscription_id": "a1000000-0000-4000-8000-000000660081",
+        "payment_date": "2026-12-10"
+       },
+       "notes": null,
+       "custom_accounts_id": "$bank_own",
+       "signature_id": null,
+       "deleted": false,
+       "group_id": "a1000000-0000-4000-8000-000000714001",
+       "course": null
+      }
+     ],
+     "application.CourseSubscriptionInstallment": [
+      {
+       "$sym": "@evri",
+       "course_subscription_installment_id": "@evri",
+       "course_subscription_id": "a1000000-0000-4000-8000-000000660081",
+       "id": 7,
+       "amount": "35.00",
+       "paid": false,
+       "payment_date": "2026-12-10T00:00:00Z",
+       "payment_id": "@evr",
+       "archived": false,
+       "group_id": "a1000000-0000-4000-8000-000000714001",
+       "deleted": false
+      }
+     ]
+    },
+    "audit": [
+     {
+      "model": "payment",
+      "label": "@evr",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "group": [
+        "None",
+        "A1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "@evri",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "group": [
+        "None",
+        "A1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course_subscription.course.sport_association"
+      ],
+      "repr": null
+     }
+    ]
+   },
+   "body": {
+    "events": [
+     {
+      "id": 7,
+      "amount": "35.00",
+      "payment_date": "10/12/2026"
+     }
+    ]
+   }
+  },
+  {
    "name": "course-subscriptions-delete-anonymous",
    "actor": "anonymous",
    "method": "DELETE",
