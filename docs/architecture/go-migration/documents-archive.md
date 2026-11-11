@@ -53,11 +53,12 @@ implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/docum
   (auditlog walks `_meta.get_fields()` on delete, and only a reverse foreign key
   with an explicit `related_name` resolves to a manager), indexed through the
   actor's association (`actor.sport_association`, none for collaborators).
-- **Go limitation:** Django's collector clears the `SET_NULL` Document
-  references (ported) and cascades to other referencing rows (medical
-  certificates and appointments, subscription files, many-to-many links). Go
-  refuses such a delete with 500 instead of approximating the cascade; this
-  needs review before execution ownership moves.
+- The Documents' delete runs through the shared collector emulation of the document delete route
+  (`collaboratorDeleteRun`, graph `document_delete_scope.json`): the `SET_NULL` references are cleared and the cascades (medical
+  certificates and appointments, subscription files, many-to-many links, with their own audit entries) are deleted as Django's
+  `QuerySet.delete()` does (ported in t2docs; this route used to refuse such a delete with the 500 page). The cascade itself is
+  exercised by the document delete route's cases (`docmanager-reads`); `documents-bulk-delete` keeps its 11 cases without
+  references.
 
 ## Evidence (TDD)
 

@@ -861,7 +861,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### documents-archive.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST documents/bulk-delete | Document referenced by rows Django would cascade (subscription files, medical rows, M2M) | `BE_GO/internal/repository/documents_archive.go:163`, `ErrDocumentCascadeUnsupported` | B | UI calls it (`archive/Archive.svelte:272`), but no UI flow archives a document that is also referenced elsewhere: template generation adds either the archive row or a SubscriptionFile, not both (`BE/docmanager/views/printing_views.py:686-705`; `Archive.svelte:174-175` sends `parent`, `Members/detail/sections/Cloud.svelte:67-68` sends `subscription`). legacy: yes (non-UI calls sending both); medium. |
+| POST documents/bulk-delete | Document referenced by rows Django would cascade (subscription files, medical rows, M2M) (**ported** in t2docs: the Documents are deleted through the shared collector emulation of the document delete route) | `BE_GO/internal/repository/documents_archive.go` | B (ported) | UI calls it (`archive/Archive.svelte:272`), but no UI flow archives a document that is also referenced elsewhere: template generation adds either the archive row or a SubscriptionFile, not both (`BE/docmanager/views/printing_views.py:686-705`; `Archive.svelte:174-175` sends `parent`, `Members/detail/sections/Cloud.svelte:67-68` sends `subscription`). legacy: yes (non-UI calls sending both); medium. |
 
 ### instance-backups.md
 | route | refusal condition | Go site | class | evidence / notes |
