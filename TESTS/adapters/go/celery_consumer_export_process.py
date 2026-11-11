@@ -105,6 +105,28 @@ SCENARIOS = [
 ]
 
 
+def difference_summary(left, right, path='', limit=12):
+    """First differing leaves of two observations, so a mismatch is readable in a CI log."""
+    found = []
+
+    def walk(a, b, where):
+        if len(found) >= limit:
+            return
+        if isinstance(a, dict) and isinstance(b, dict):
+            for key in sorted(set(a) | set(b), key=str):
+                if key not in a or key not in b:
+                    found.append(f'{where}/{key}: only in {"django" if key in a else "go"}')
+                else:
+                    walk(a[key], b[key], f'{where}/{key}')
+        elif isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+            for index, (x, y) in enumerate(zip(a, b)):
+                walk(x, y, f'{where}[{index}]')
+        elif a != b:
+            found.append(f'{where}: django={str(a)[:160]!r} go={str(b)[:160]!r}')
+    walk(left, right, path)
+    return ''.join('\n  ' + line for line in found)
+
+
 def stored_objects(created_key):
     objects = {
         f'{LOCATION}/documents/tessera.pdf': PDF + b'tessera',
@@ -712,7 +734,7 @@ class Harness:
         if go != django:
             (OUTPUT / 'difference.json').write_text(json.dumps({'scenario': scenario.name, 'django': django, 'go': go},
                                                                indent=1, default=str, ensure_ascii=False) + '\n')
-        assert go == django, 'Go differs from Django: ' + scenario.name
+        assert go == django, 'Go differs from Django: ' + scenario.name + difference_summary(django, go)
         self.completed.append(scenario.name)
         print('PASS: ' + scenario.name, flush=True)
 
