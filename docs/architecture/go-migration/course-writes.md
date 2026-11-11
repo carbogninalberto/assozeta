@@ -108,7 +108,8 @@ carry the session context.
   `course_subscription_installment_id` is valid (`dict(validated_data)` keeps the UUID object: the save fails after
   auditlog has written its entry). Decimals, floats, booleans, billing integers and dates in other spellings, and values
   the column rejects (entry, then 500), follow Django. Float event amounts are compared by their binary value.
-- course-overview update for an athlete whose subscription has no association, and a non-canonical `X-Group-Id`.
+- course-overview update for an athlete whose subscription has no association: kept refused, no stored row can reach it
+  (the subscription's association column is NOT NULL).
 
 ## Evidence
 
