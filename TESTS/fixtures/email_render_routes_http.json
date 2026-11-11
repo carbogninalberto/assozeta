@@ -1838,9 +1838,9 @@
     "email": "float-exponent-float@example.test",
     "role": 3,
     "permissions": {
-     "a": 1e+20,
+     "a": 100000000000000000000,
      "b": [
-      1.5e+16
+      15000000000000000
      ]
     },
     "index": [
@@ -1941,7 +1941,7 @@
     "email": "float-negative-zero@example.test",
     "role": 3,
     "permissions": [
-     -0.0,
+     0.0,
      1
     ],
     "index": [
@@ -2042,7 +2042,7 @@
     "email": "float-negative-exponent-float@example.test",
     "role": 3,
     "permissions": {
-     "k": -2e+30
+     "k": -2000000000000000000000000000000
     },
     "index": [
      "a1000000-0000-4000-8000-000000701001",

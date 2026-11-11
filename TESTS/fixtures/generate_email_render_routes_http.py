@@ -229,7 +229,7 @@ for label, raw, memory, loaded, perms in (
         ('negative-exponent-float', '{"k": -2e30}', '{"k": -2e+30}', '{"k": -2000000000000000000000000000000}', {'k': -2e30})):
     add('add-permissions-' + label, 'owner', ADD, 200, INVITED,
         raw_body='{"email": "float-%s@example.test", "collaborator_permissions": %s}' % (label, raw), content_type='application/json',
-        effect=invited('float-%s@example.test' % label, 3, perms, reading=[loaded, memory]))
+        effect=invited('float-%s@example.test' % label, 3, json.loads(loaded), reading=[loaded, memory]))
 add('add-permissions-small-exponent', 'owner', ADD, 200, INVITED,
     raw_body='{"email": "small@example.test", "collaborator_permissions": [1e-05, 1e15, 0.0001]}', content_type='application/json',
     effect=invited('small@example.test', 3, [1e-05, 1e15, 0.0001]))

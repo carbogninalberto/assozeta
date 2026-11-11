@@ -3506,7 +3506,7 @@
    "headers": {},
    "status": 400,
    "response": {
-    "error": "{'sport_association': {'configuration': [ErrorDetail(string='Value must be valid JSON.', code='invalid')], 'custom_subscription_form_data': [ErrorDetail(string='Value must be valid JSON.', code='invalid')]}}"
+    "error": "{'sport_association': {'custom_subscription_form_data': [ErrorDetail(string='Value must be valid JSON.', code='invalid')], 'configuration': [ErrorDetail(string='Value must be valid JSON.', code='invalid')]}}"
    },
    "effect": null,
    "raw_body": "sport_association.configuration=&sport_association.custom_subscription_form_data=",

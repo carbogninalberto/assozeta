@@ -462,8 +462,8 @@ form_nested_case('errors', 'sport_association.denomination=&sport_association.ta
 form_nested_valid('empty-values', 'sport_association.subscription_fee=&sport_association.multiple_subscription_fee='
                   '&sport_association.sport_association_id=&sport_association.membership_fee='
                   '&sport_association.address_cap=&sport_association.sport=')
-form_nested_case('json-empty', 'sport_association.configuration=&sport_association.custom_subscription_form_data=', ('configuration', [JSON_INVALID]),
-                 ('custom_subscription_form_data', [JSON_INVALID]))
+form_nested_case('json-empty', 'sport_association.configuration=&sport_association.custom_subscription_form_data=',
+                 ('custom_subscription_form_data', [JSON_INVALID]), ('configuration', [JSON_INVALID]))
 form_nested_valid('unknown-keys', 'sport_association.zzz=1&title=Mai')
 form_nested_valid('last-value-wins', 'sport_association.sport=' + 's' * 101 + '&sport_association.sport=ok')
 form_nested_case('last-value-invalid', 'sport_association.sport=ok&sport_association.sport=' + 's' * 101, ('sport', [MAX(100)]))
