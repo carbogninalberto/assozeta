@@ -4,9 +4,10 @@ from application.models import CampsAndRetreats, CampsAndRetreatsPeriod, CampsAn
     CampsAndRetreatsSubscriptionPeriod, CampsAndRetreatsSubscription, Subscription, Payment
 from application.serializers.payment_serializers import PaymentCategorySerializer, PaymentSerializer
 from application.serializers.subscriptions_serializers import SubscriptionBasicSerializer
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
-class CampsAndRetreatsSerializer(serializers.ModelSerializer):
+class CampsAndRetreatsSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = CampsAndRetreats.objects.create(**validated_data)
@@ -20,7 +21,7 @@ class CampsAndRetreatsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CampsAndRetreatsPeriodSerializer(serializers.ModelSerializer):
+class CampsAndRetreatsPeriodSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = CampsAndRetreatsPeriod.objects.create(**validated_data)
@@ -57,7 +58,7 @@ class CampsAndRetreatsPeriodSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CampsAndRetreatsPeriodsServiceAddSerializer(serializers.ModelSerializer):
+class CampsAndRetreatsPeriodsServiceAddSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
         class Meta:
             model = CampsAndRetreatsPeriodsService

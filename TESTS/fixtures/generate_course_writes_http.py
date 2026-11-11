@@ -618,16 +618,16 @@ audit = [deleted(PAYMENT, 'o2_pd', actor), deleted(CSI, 'o2_d', actor), deleted(
 add('overview-delete-unpaid-installments', actor, od('o_else', 'luisa'), 200, OV_DELETED, method='DELETE', result=effect(
     actor, rows={CSM: {csid('o2'): {'deleted': True}}, CSI: {iid('o2_d'): None, iid('o2_e'): None, iid('o2_f'): None},
                  PAYMENT: {pid('o2_pd'): None, pid('o2_pe'): None}}, audit=audit))
-# The row's own payment is deleted with its installment: the soft delete's save still
-# carries it (auditlog records the entry), then the deferred foreign key fails.
+# The row's own payment is also its installment's unpaid payment: deleting the
+# installment deletes the payment (SET_NULL clears the stored reference) and the
+# soft delete reads the reference back and saves the row deleted, in one transaction.
 actor = 'owner'
-row = CS['o3']
-audit = [deleted(PAYMENT, 'o3_p', actor), deleted(CSI, 'o3_a', actor), deleted(PAYMENT, 'o3_p', actor), deleted(CSI, 'o3_a', actor),
-         entry(CSM, row['course_subscription_id'], 1, {'payment': ['None', pid('o3_p')], 'deleted': ['False', 'True']}, [OWN, COURSE_INDEX],
-               cs_repr({**row, 'deleted': True}))]
-add('overview-delete-own-payment-fails', actor, od('o_stale', 'luisa'), 500, SERVER, method='DELETE', result=effect(
-    actor, rows={CSM: {csid('o3'): change_row(CSM, 'o3', payment_id=None)}, CSI: {iid('o3_a'): None}, PAYMENT: {pid('o3_p'): None}},
-    audit=audit))
+audit = [deleted(PAYMENT, 'o3_p', actor), deleted(CSI, 'o3_a', actor), deleted(PAYMENT, 'o3_p', actor), deleted(CSI, 'o3_a', actor)]
+CS['o3']['payment_id'] = None
+audit.append(soft_deleted('o3', actor))
+add('overview-delete-own-payment-completes', actor, od('o_stale', 'luisa'), 200, OV_DELETED, method='DELETE', result=effect(
+    actor, rows={CSM: {csid('o3'): change_row(CSM, 'o3', payment_id=None, deleted=True)}, CSI: {iid('o3_a'): None},
+                 PAYMENT: {pid('o3_p'): None}}, audit=audit))
 add('overview-delete-installments-empty-text', 'owner', od('o_text', 'luisa'), 200, OV_DELETED, method='DELETE', body={'installments': ''},
     result=effect('owner', rows={CSM: {csid('o4'): {'deleted': True}}}, audit=[soft_deleted('o4', 'owner')]))
 

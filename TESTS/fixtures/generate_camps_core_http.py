@@ -276,14 +276,10 @@ add('add-float-body-server-error', 'owner', A, 500, {'error': "'float' object do
     body=1.5)
 add('add-null-body-server-error', 'owner', A, 500, {'error': "'NoneType' object does not support item assignment"}, method='POST',
     raw_body='null', content_type='application/json')
-add('add-invalid-fields', 'owner', A, 400, {'error': repr_detail([('camps_and_retreats_id', [UUID_INVALID]), ('title', [BLANK]),
-                                                                    ('description', [too_long(2048)])])},
+add('add-invalid-fields', 'owner', A, 400, {'error': repr_detail([('title', [BLANK]), ('description', [too_long(2048)])])},
     method='POST', body={'camps_and_retreats_id': 'abc', 'title': '', 'description': 'x' * 2049})
-add('add-invalid-types', 'full_collaborator', A, 400, {'error': repr_detail([('camps_and_retreats_id', [UUID_INVALID]),
-                                                                              ('title', [too_long(255)]), ('description', [NOT_STRING])])},
+add('add-invalid-types', 'full_collaborator', A, 400, {'error': repr_detail([('title', [too_long(255)]), ('description', [NOT_STRING])])},
     method='POST', body={'camps_and_retreats_id': 1.5, 'title': 'y' * 256, 'description': True})
-add('add-existing-id', 'owner', A, 400, {'error': repr_detail([('camps_and_retreats_id', [UNIQUE])])}, method='POST',
-    body={'camps_and_retreats_id': CAMPS['winter']['id'], 'title': 'Copia'})
 
 
 def created_camp(actor, name, values, body, *, explicit_id=None, raw=None):
@@ -309,10 +305,11 @@ created_camp('owner', 'add-owner', {'title': 'Campo invernale', 'description': '
 # The view overwrites a sport_association of the body with the user's own.
 created_camp('full_collaborator', 'add-full-collaborator-defaults', {'title': None, 'description': None},
              {'sport_association': FOREIGN})
-created_camp('owner', 'add-explicit-id', {'title': '5', 'description': None},
-             {'camps_and_retreats_id': NEW_CAMP.replace('-', '').upper(), 'title': 5, 'description': None}, explicit_id=NEW_CAMP)
-add('add-explicit-id-again', 'owner', A, 400, {'error': repr_detail([('camps_and_retreats_id', [UNIQUE])])}, method='POST',
-    body={'camps_and_retreats_id': NEW_CAMP})
+# camps_and_retreats_id is read-only: a key in the body is ignored and the camp gets a new one.
+created_camp('owner', 'add-existing-id-ignored', {'title': 'Copia', 'description': None},
+             {'camps_and_retreats_id': CAMPS['winter']['id'], 'title': 'Copia'})
+created_camp('owner', 'add-explicit-id-ignored', {'title': '5', 'description': None},
+             {'camps_and_retreats_id': NEW_CAMP.replace('-', '').upper(), 'title': 5, 'description': None})
 
 # ---------------------------------------------------------------------------
 # <uid>/update
@@ -356,7 +353,7 @@ add('update-invalid-fields', 'owner', camp_path('spring', 'update'), 400, {'erro
     ('title', [BLANK]), ('description', [too_long(2048)]), ('sport_association', [NULL])])}, method='PATCH',
     body={'title': '', 'description': 'z' * 2049, 'sport_association': None})
 add('update-invalid-relations', 'owner', camp_path('spring', 'update'), 400, {'error': repr_detail([
-    ('camps_and_retreats_id', [UNIQUE]), ('title', [NOT_STRING]), ('sport_association', [bad_uuid('abc')])])}, method='PATCH',
+    ('title', [NOT_STRING]), ('sport_association', [bad_uuid('abc')])])}, method='PATCH',
     body={'camps_and_retreats_id': CAMPS['winter']['id'], 'title': False, 'sport_association': 'abc'})
 add('update-unknown-association', 'full_collaborator', camp_path('spring', 'update'), 400,
     {'error': repr_detail([('sport_association', [missing_pk(UNKNOWN)])])}, method='PATCH', body={'sport_association': UNKNOWN})
@@ -383,21 +380,11 @@ updated_camp('owner', 'update-own-association-unchanged', 'autumn', {}, body={'s
 updated_camp('owner', 'update-hex-uid', 'winter', {'title': '12'}, body={'title': 12},
              path_id=CAMPS['winter']['id'].replace('-', '').upper())
 
-# A camps_and_retreats_id no row has: Model.save() inserts a copy with the validated values under that key and the
-# camp the path names stays. auditlog's pre_save finds no row under the new key (an update against nothing, indexed
-# from its changes), then post_save logs the create (indexed directly). A key another camp has is the unique error.
-COPY_CAMP = 'a1000000-0000-4000-8000-0000007a9901'
-COPY_CHANGES = {'camps_and_retreats_id': ['None', COPY_CAMP], 'sport_association': ['None', OWN], 'title': ['None', 'Copia'],
-                'description': ['None', 'Dal modulo']}
-add('update-new-id-inserts-copy', 'owner', camp_path('spring', 'update'), 200,
-    {'message': 'Camp or retreat updated successfully',
-     'camp_and_retreat': {'camps_and_retreats_id': COPY_CAMP, 'title': 'Copia', 'description': 'Dal modulo', 'sport_association': OWN}},
-    method='PATCH', body={'camps_and_retreats_id': COPY_CAMP, 'title': 'Copia'},
-    effect={'actor': 'owner', 'rows': {CAMP: {COPY_CAMP: {'title': 'Copia', 'description': 'Dal modulo', 'sport_association_id': OWN}}},
-            'audit': [audit('CampsAndRetreats', COPY_CAMP, 1, COPY_CHANGES, OWN, 'changes_json.sport_association'),
-                      audit('CampsAndRetreats', COPY_CAMP, 0, COPY_CHANGES, OWN, 'direct')]})
-add('update-new-id-taken', 'owner', camp_path('spring', 'update'), 400, {'error': repr_detail([('camps_and_retreats_id', [UNIQUE])])},
-    method='PATCH', body={'camps_and_retreats_id': COPY_CAMP, 'title': 'Altra'})
+# camps_and_retreats_id is read-only: a key in the body is ignored and the camp the path names is updated in place.
+updated_camp('owner', 'update-new-id-ignored', 'spring', {'title': 'Copia'},
+             body={'camps_and_retreats_id': 'a1000000-0000-4000-8000-0000007a9901', 'title': 'Copia'})
+updated_camp('owner', 'update-other-row-id-ignored', 'spring', {'title': 'Altra'},
+             body={'camps_and_retreats_id': CAMPS['winter']['id'], 'title': 'Altra'})
 
 # ---------------------------------------------------------------------------
 # <uid>/delete
@@ -446,9 +433,8 @@ created_camp('owner', 'add-multipart-with-file', {'title': 'Campo con allegato',
              raw=multipart(('title', None, 'Campo con allegato'), ('allegato', 'a.txt', 'dati'), ('description', None, 'Dal modulo')))
 add('add-multipart-file-as-title', 'owner', A, 400, {'error': repr_detail([('title', [NOT_STRING])])}, method='POST',
     raw_body=multipart(('title', 'titolo.txt', 'x'))[0], content_type=multipart(('title', 'titolo.txt', 'x'))[1])
-add('add-multipart-file-as-id', 'full_collaborator', A, 400, {'error': repr_detail([('camps_and_retreats_id', [UUID_INVALID])])}, method='POST',
-    raw_body=multipart(('camps_and_retreats_id', 'id.bin', 'x'), ('title', None, 'Ok'))[0],
-    content_type=multipart(('camps_and_retreats_id', 'id.bin', 'x'), ('title', None, 'Ok'))[1])
+created_camp('full_collaborator', 'add-multipart-file-as-id-ignored', {'title': 'Ok', 'description': None}, None,
+             raw=multipart(('camps_and_retreats_id', 'id.bin', 'x'), ('title', None, 'Ok')))
 add('add-multipart-text-without-file-server-error', 'owner', A, 500, {'error': 'This QueryDict instance is immutable'}, method='POST',
     raw_body=multipart(('title', None, 'Senza file'))[0], content_type=multipart(('title', None, 'Senza file'))[1])
 updated_camp('owner', 'update-multipart-with-file', 'spring', {'title': 'Con allegato'}, form=multipart(('title', None, 'Con allegato'),

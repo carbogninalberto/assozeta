@@ -5,19 +5,16 @@ import "github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 // ArchiveUpdateDate is DateField's 'invalid' code (DATE_INPUT_FORMATS ['%d/%m/%Y']).
 const ArchiveUpdateDate = "archive-date-format"
 
-// ArchiveUpdateUnique is the primary key's UniqueValidator code.
-const ArchiveUpdateUnique = "unique:sport association documents archive:sport association documents archive id"
-
 // ArchiveUpdate is DocumentArchiveSerializer(instance, data=..., partial=True)
-// field input before the related lookups; document is read-only.
+// field input before the related lookups; document and the primary key are
+// read-only.
 type ArchiveUpdate struct {
-	ID                     *string
-	Association            *string
-	AssociationRaw         any
-	Date                   *string
-	FolderPresent          bool
-	Folder                 *FolderPK
-	IDPresent, DatePresent bool
+	Association    *string
+	AssociationRaw any
+	Date           *string
+	FolderPresent  bool
+	Folder         *FolderPK
+	DatePresent    bool
 }
 
 // ParseArchiveUpdate validates the present fields in serializer order;
@@ -28,15 +25,6 @@ func ParseArchiveUpdate(object domain.RequestObject) (ArchiveUpdate, map[string]
 	for _, field := range object {
 		if _, upload := field.Value.(domain.RequestUpload); upload {
 			return update, nil, domain.ErrDocumentWritesNotPorted
-		}
-	}
-	if value, present := object.Lookup("sport_association_documents_archive_id"); present {
-		update.IDPresent = true
-		// A boolean is an int for UUIDField: uuid.UUID(int=True) is ...0001.
-		if id, codes := drfUUIDField(value); codes != nil {
-			invalid["sport_association_documents_archive_id"] = codes
-		} else {
-			update.ID = &id
 		}
 	}
 	if value, present := object.Lookup("sport_association"); present {

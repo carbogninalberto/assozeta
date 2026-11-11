@@ -82,7 +82,7 @@ plan.
 
 - After `get_object()`, `scoped_queryset(...).select_for_update().get(pk=...)`: an association-scoped session outside the
   row's subscription and course association is a 500 (DoesNotExist).
-- Field validation: a writable `course_subscription_id` (UUIDField, UniqueValidator on the live rows), `subscription_id`
+- Field validation: `course_subscription_id` is read-only (a key in the body is ignored), `subscription_id`
   (UUIDField; a boolean is an integer UUID), `creation_date`, `billed_from` and `billed_until` (DateTimeFields, the last two
   nullable), the BooleanFields, `billed_frequency` (0..32767) and `billed_from_day_of_month` (1..28), `membership_fee`
   (DecimalField(9, 2), a blank value is None), the JSONFields `multiple_quote` and `events`, and `course`, whose queryset
@@ -144,18 +144,18 @@ Membership payments render PaymentSerializer's nested `instructor` and `invoice`
 - Update: unmatched installments sharing one payment, and an HTML-form `multiple_quote` or `events` document the jsonb
   column rejects: 500.
 
-## Changed primary key and shared payment (t4l3)
+## Primary key in the body and shared payment delete (t5pk)
 
-- Update with another `course_subscription_id`: Model.save() writes the instance under the new key and leaves the row
-  the path names as it was (installment edits still apply to it). auditlog's pre-save entry diffs every field against
-  nothing and is indexed through the actor; a key no row has is inserted and gets the create entry (indexed through the
-  course); the key of a soft-deleted row passes the unique check and that row is written over (no create entry). The
-  membership's current payment is saved with the new key in its meta; the response renders the new row (no
-  installments, no membership payments). Cases `update-primary-key-*`, `list-after-*copy*`.
-- Delete of a row whose own payment is also the unpaid payment of one of its installments: the installment's signal
-  deletes the payment and clears the stored reference; the instance still holds it, so the save's entry is recorded
-  (`deleted` and `payment`, or every field for an already deleted row) and the UPDATE fails. Nothing is atomic: 500 with
-  the installments and the payment gone, the entry kept and the row not marked deleted. Cases `delete-shared-*`.
+- `course_subscription_id` is read-only in `CourseSubscriptionOverviewSerializer` (`application/serializers/primary_key.py`):
+  an update saves the row the path names in place whatever key the body carries (another row's, a soft-deleted row's, a new
+  or a null one) and answers that row; the membership's current payment keeps the path row's key in its meta. Cases
+  `update-existing-id-ignored`, `update-primary-key-*`; the stock router's PUT likewise (`router_course_subscriptions`,
+  `update-primary-key-ignored`). The add ignores the key as well (`course-enrolment.md`).
+- `CourseSubscription.delete()` runs in one transaction (the delete action is `@transaction.atomic` too). When the row's own
+  payment is also the unpaid payment of one of its installments, the installment's signal deletes that payment and clears
+  the stored reference; the model reads the reference back (`refresh_from_db(fields=['payment'])`) and saves the row
+  deleted: 204 with the installments, the shared payment and the soft delete done together (the entry lists `deleted`
+  only, or every field for an already deleted row). Cases `delete-shared-*`; the router's destroy `destroy-shared-payment`.
 
 ## Evidence
 

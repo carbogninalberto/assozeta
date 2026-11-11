@@ -12,9 +12,9 @@ import (
 )
 
 // PersonaSubsWrite is AssociateSubscriptionSerializer's validated data before
-// the related-field lookups: present keys only.
+// the related-field lookups: present keys only (the read-only subscription_id
+// is ignored).
 type PersonaSubsWrite struct {
-	ID       *string
 	JSON     map[string]any        // custom_data, additional_fields, meta (nil is None)
 	Choices  map[string]int64      // type, role, status_flag
 	Dates    map[string]*time.Time // acceptance_date, resignation_date, start_date, end_date (nil is None)
@@ -80,7 +80,6 @@ func personaSubsFormObject(form domain.RequestObject, partial bool, invalid map[
 			set(name, value)
 		}
 	}
-	plain("subscription_id", false)
 	for _, name := range PersonaSubsJSONFields {
 		value, present := form.Lookup(name)
 		if !present {
@@ -180,15 +179,6 @@ func ParsePersonaSubsWrite(body any, partial, form bool) (PersonaSubsWrite, map[
 	}
 	write := PersonaSubsWrite{JSON: map[string]any{}, Choices: map[string]int64{}, Dates: map[string]*time.Time{}, Text: map[string]*string{},
 		Booleans: map[string]bool{}, Relations: map[string]*string{}, RelationInput: map[string]any{}}
-	if value, present := object.Lookup("subscription_id"); present {
-		if value == nil {
-			invalid["subscription_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := personaDRFUUID(value); ok {
-			write.ID = &id
-		} else {
-			invalid["subscription_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	for _, name := range PersonaSubsJSONFields {
 		if value, present := object.Lookup(name); present {
 			if parsed, isForm := value.(personaSubsFormJSON); isForm {

@@ -500,7 +500,7 @@
       "subscription_membership_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Subscription membership id"
       },
       "sport_association": {
@@ -862,14 +862,14 @@
    }
   },
   {
-   "name": "router-memberships-create-form-body",
+   "name": "router-memberships-create-form-body-id-ignored",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/subscription/memberships/",
    "headers": {},
    "status": 201,
    "response": {
-    "subscription_membership_id": "a1000000-0000-4000-8000-000000659101",
+    "subscription_membership_id": "$new",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "associate_id": null,
     "associate": null,
@@ -887,7 +887,7 @@
    "effect": {
     "kind": "add",
     "actor": "full_collaborator",
-    "id": "a1000000-0000-4000-8000-000000659101",
+    "id": "$new",
     "stored": {
      "subscription": null,
      "sport_association": "a1000000-0000-4000-8000-000000701001",
@@ -906,21 +906,49 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "router-memberships-create-existing-id",
+   "name": "router-memberships-create-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/memberships/",
    "headers": {},
-   "status": 400,
+   "status": 201,
    "response": {
-    "subscription_membership_id": [
-     "subscription membership with this subscription membership id already exists."
-    ]
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": null,
+    "membership_number": "0",
+    "description": null,
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
    },
-   "effect": null,
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": null,
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    }
+   },
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000701001",
-    "subscription_membership_id": "a1000000-0000-4000-8000-000000659101"
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016"
    }
   },
   {
@@ -1206,7 +1234,7 @@
       "subscription_membership_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Subscription membership id"
       },
       "sport_association": {
@@ -1507,6 +1535,67 @@
     "description": "Aggiornata router",
     "end_date": "31/12/2026",
     "price": "12.5"
+   }
+  },
+  {
+   "name": "router-memberships-update-primary-key-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650017/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650017",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "2026-09-02T08:00:00Z",
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "membership_type": null,
+    "membership_number": "0",
+    "description": "Chiave ignorata",
+    "price": "12.50",
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650012",
+    "attached_membership_documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000650003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "ricevuta.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000650004"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "m2",
+    "changes": {
+     "description": [
+      "Aggiornata router",
+      "Chiave ignorata"
+     ]
+    },
+    "stored": {
+     "subscription": "a1000000-0000-4000-8000-000000650010",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": "a1000000-0000-4000-8000-000000650012",
+     "creation_date": "2026-09-02T08:00:00Z",
+     "start_date": "2026-01-01",
+     "end_date": "2026-12-31",
+     "membership_type": null,
+     "membership_number": "0",
+     "description": "Chiave ignorata",
+     "price": "12.50"
+    }
+   },
+   "body": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016",
+    "description": "Chiave ignorata"
    }
   },
   {

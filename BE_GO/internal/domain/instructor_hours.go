@@ -104,7 +104,6 @@ type InstructorHoursTransaction interface {
 	OwnedHour(ctx context.Context, owner, instructor, id string) (*InstructorHour, error)
 	CountHours(ctx context.Context, query InstructorHoursQuery) (int64, error)
 	Hours(ctx context.Context, query InstructorHoursQuery, limit, offset int64) ([]InstructorHourListed, error)
-	HourIDTaken(ctx context.Context, id string, exclude *string) (bool, error)
 	// VisiblePayment is Payment.objects (not deleted, group-aware) by pk.
 	VisiblePayment(ctx context.Context, id string, group *string) (*InstructorHoursPayment, error)
 	DocumentExists(ctx context.Context, id string) (bool, error)

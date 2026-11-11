@@ -247,20 +247,11 @@ func instructorHoursStoredJSON(text *string) (string, error) {
 	return string(dto.PythonJSONDumpsSorted(parsed)), nil
 }
 
-// related validates the related fields and the primary key's uniqueness the
-// way the serializer's fields do, adding their errors; a foreign payment is
-// the tenant scope's PermissionDenied.
+// related validates the related fields the way the serializer's fields do,
+// adding their errors; a foreign payment is the tenant scope's
+// PermissionDenied. The primary key is read-only: a key in the body is ignored.
 func (s *InstructorHoursService) related(ctx context.Context, tx domain.InstructorHoursTransaction, identity domain.ResolvedIdentity,
-	object domain.RequestObject, write dto.InstructorHoursWrite, errs map[string]any, exclude *string, group *string) error {
-	if write.ID != nil {
-		taken, err := tx.HourIDTaken(ctx, *write.ID, exclude)
-		if err != nil {
-			return err
-		}
-		if taken {
-			errs["instructor_hours_id"] = []string{dto.InstructorHoursUnique}
-		}
-	}
+	object domain.RequestObject, write dto.InstructorHoursWrite, errs map[string]any, group *string) error {
 	missing := func(name string) {
 		value, _ := object.Lookup(name)
 		errs[name] = []string{"related-does-not-exist:" + dto.PythonStr(value)}
@@ -314,9 +305,6 @@ func (s *InstructorHoursService) related(ctx context.Context, tx domain.Instruct
 // apply sets the validated fields on row (serializer.update's setattr, or
 // create's keyword arguments over the model defaults).
 func instructorHoursApply(row *domain.InstructorHour, write dto.InstructorHoursWrite) {
-	if write.ID != nil {
-		row.ID = *write.ID
-	}
 	if write.Instructor.Present {
 		row.InstructorID = *write.Instructor.ID
 	}
@@ -414,7 +402,7 @@ func (s *InstructorHoursService) Add(ctx context.Context, identity domain.Resolv
 		return err
 	}
 	defer tx.Rollback()
-	if err := s.related(ctx, tx, identity, data, write, errs, nil, supplierGroup(group)); err != nil {
+	if err := s.related(ctx, tx, identity, data, write, errs, supplierGroup(group)); err != nil {
 		return err
 	}
 	if len(errs) > 0 {
@@ -499,7 +487,7 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 		errs = map[string]any{}
 	}
 	object, _ := body.(domain.RequestObject)
-	if err := s.related(ctx, tx, identity, object, write, errs, &old.ID, supplierGroup(group)); err != nil {
+	if err := s.related(ctx, tx, identity, object, write, errs, supplierGroup(group)); err != nil {
 		return err
 	}
 	if len(errs) > 0 {
@@ -513,28 +501,6 @@ func (s *InstructorHoursService) Update(ctx context.Context, identity domain.Res
 	association, err := s.actorAssociation(ctx, tx, audit)
 	if err != nil {
 		return err
-	}
-	if row.ID != old.ID {
-		// save() under a new primary key inserts a copy; auditlog's pre_save
-		// finds no row and logs the full diff as an update, then the create.
-		if err := tx.InsertHour(ctx, row); err != nil {
-			return err
-		}
-		changes, err := tx.CreatedChanges(ctx, row.ID)
-		if err != nil {
-			return err
-		}
-		for _, action := range []int{1, 0} {
-			event := domain.InstructorHoursAudit{Model: "InstructorHours", Key: row.ID, Action: action, Changes: changes}
-			if action == 0 {
-				// The update entry is written before the copy exists (the actor's association).
-				event.Instructor = &row.InstructorID
-			}
-			if err := tx.AppendAudit(ctx, event, association, audit, s.moment()); err != nil {
-				return err
-			}
-		}
-		return tx.Commit()
 	}
 	changes, err := instructorHoursChanges(*old, row, write)
 	if err != nil {
@@ -563,7 +529,7 @@ func instructorHoursChanges(old, row domain.InstructorHour, write dto.Instructor
 		return "False"
 	}
 	pairs := map[string][2]string{
-		"instructor_hours_id": {old.ID, row.ID}, "instructor": {old.InstructorID, row.InstructorID},
+		"instructor":    {old.InstructorID, row.InstructorID},
 		"creation_date": {pythonNaiveUTC(old.CreationDate), pythonNaiveUTC(row.CreationDate)}, "date": {old.Date, row.Date},
 		"compensation_type": {old.CompensationType, row.CompensationType}, "hours": {old.Hours, row.Hours},
 		"hourly_billing":     {old.HourlyBilling, row.HourlyBilling},

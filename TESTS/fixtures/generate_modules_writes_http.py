@@ -177,7 +177,7 @@ add('add-list-body-server-error', 'owner', 'POST', ADD, 500, SERVER, body=[])
 add('add-string-body-server-error', 'owner', 'POST', ADD, 500, SERVER, body='testo')
 add('add-form-body-server-error', 'owner', 'POST', ADD, 500, SERVER, raw_body='title=x', content_type='application/x-www-form-urlencoded')
 add('add-invalid-fields', 'owner', 'POST', ADD, 400, {
-    'module_id': ['Must be a valid UUID.'], 'custom_link': ['module with this custom link already exists.'],
+    'custom_link': ['module with this custom link already exists.'],
     'creation_date': ['Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].'],
     'title': ['Ensure this field has no more than 255 characters.'], 'require_approval': ['Must be a valid boolean.'],
     'start_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.'],
@@ -189,7 +189,7 @@ add('add-invalid-fields', 'owner', 'POST', ADD, 400, {
           'start_date': '2026-01-01', 'end_date': 5, 'always_active': None, 'max_responses': -1, 'queue_mode': [],
           'payment_data': None, 'response_message': True, 'elements': None, 'sport_association': 'ignorata'})
 add('add-more-invalid-fields', 'owner', 'POST', ADD, 400, {
-    'module_id': ['module with this module id already exists.'], 'custom_link': ['This field may not be blank.'],
+    'custom_link': ['This field may not be blank.'],
     'creation_date': ['This field may not be null.'], 'title': ['This field may not be blank.'],
     'start_date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.'],
     'max_responses': ['Ensure this value is less than or equal to 2147483647.'],
@@ -206,12 +206,12 @@ add('add-owner-every-field', 'owner', 'POST', ADD, 200, CREATED, body={
     'queue_mode': True, 'only_users': 'off', 'payment_required': 'yes', 'payment_data': {'z': 1, 'a': [1, 'è', None]},
     'response_message': 12.5, 'allow_attachments': 'on', 'elements': [{'type': 'text'}, 'x'], 'enabled': False,
     'sport_association': FOREIGN, 'responses': 'ignorate'},
-    effect=created('owner', fixed_id=CLIENT, created_at='2026-03-01T08:00:00.500000Z', link='nuovo-è', title='Nuovo modulo',
+    effect=created('owner', created_at='2026-03-01T08:00:00.500000Z', link='nuovo-è', title='Nuovo modulo',
                    require_approval=True, start='2026-02-01', end='2026-02-28', always_active=True, max_responses=25, queue_mode=True,
                    payment_required=True, payment_data={'z': 1, 'a': [1, 'è', None]}, response_message='12.5', allow_attachments=True,
                    elements=[{'type': 'text'}, 'x']))
-add('add-client-id-taken', 'owner', 'POST', ADD, 400, {'module_id': ['module with this module id already exists.'],
-                                                       'custom_link': ['module with this custom link already exists.']},
+# module_id is read-only: the body's key is ignored (the add above got a new key); only the custom link is taken.
+add('add-client-id-ignored-link-taken', 'owner', 'POST', ADD, 400, {'custom_link': ['module with this custom link already exists.']},
     body={'module_id': CLIENT, 'custom_link': 'nuovo-è'})
 add('add-explicit-nulls', 'full_collaborator', 'POST', ADD, 200, CREATED,
     body={'custom_link': None, 'title': None, 'start_date': None, 'end_date': None, 'max_responses': None, 'response_message': None,
@@ -268,7 +268,6 @@ add('update-deleted-association-owner', 'deleted_association_owner', 'PATCH', up
 add('update-list-body', 'owner', 'PATCH', update('edit'), 400,
     error('{' + detail('non_field_errors', 'Invalid data. Expected a dictionary, but got list.', 'invalid') + '}'), body=[1])
 add('update-invalid-fields', 'owner', 'PATCH', update('edit'), 400, error('{' + ', '.join([
-    detail('module_id', 'Must be a valid UUID.', 'invalid'),
     detail('custom_link', 'module with this custom link already exists.', 'unique'),
     detail('creation_date', 'Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].',
            'invalid'),
@@ -286,7 +285,6 @@ add('update-invalid-fields', 'owner', 'PATCH', update('edit'), 400, error('{' + 
           'end_date': 5, 'start_date': '2026-01-01', 'require_approval': 'forse', 'title': 'x' * 256, 'creation_date': 'ieri',
           'custom_link': 'occupato', 'module_id': 'nope'})
 add('update-more-invalid-fields', 'owner', 'PATCH', update('edit'), 400, error('{' + ', '.join([
-    detail('module_id', 'module with this module id already exists.', 'unique'),
     detail('custom_link', 'This field may not be blank.', 'blank'),
     detail('creation_date', 'This field may not be null.', 'null'),
     detail('title', 'This field may not be blank.', 'blank'),
@@ -481,38 +479,16 @@ add('update-nested-form-bare-prefix', 'owner', 'PATCH', update('edit'), 200, Non
 cases[-1]['response'] = updated('edit', enabled=True)
 
 
-def created_audit(row, ident):
-    """auditlog's diff of a module against nothing: None-valued fields are kept only for the association and the JSON fields."""
-    changes = {'module_id': ['None', ident]}
-    for key, value in row.items():
-        if key == 'id':
-            continue
-        name = 'sport_association' if key == 'association' else FIELD_NAMES.get(key, key)
-        if value is None and key != 'association':
-            continue
-        changes[name] = ['None', audit_text(key, value)]
-    return changes
-
-
-# A module_id no row has: Model.save() inserts a copy with the validated values and the module of the path stays.
-# auditlog logs the row twice under the new key: the update of its pre_save (indexed from its changes), then the create.
+# module_id is read-only: a key in the body (new or another module's) is ignored and the module the path names is updated
+# in place.
 assert STATE['edit']['link'] is None and STATE['taken']['link'] == 'Occupato'
-COPY = 'a1000000-0000-4000-8000-000000642901'
-COPIED = {**STATE['edit'], 'id': COPY, 'title': 'Copia con nuova chiave', 'queue_mode': False}
-add('update-new-key-copies', 'owner', 'PATCH', update('edit'), 200,
-    {'message': UPDATED, 'camp_and_retreat': serialized(COPIED, enabled=True)},
-    body={'module_id': COPY.upper(), 'title': 'Copia con nuova chiave', 'queue_mode': False},
-    effect={'kind': 'copy', 'actor': 'owner', 'fixed_id': COPY, 'stored': stored(COPIED), 'created': COPIED['created']})
-add('update-new-key-source-unchanged', 'owner', 'PATCH', update('edit'), 200, None, effect=changed('edit', 'owner'))
+add('update-new-key-ignored', 'owner', 'PATCH', update('edit'), 200, None,
+    body={'module_id': 'A1000000-0000-4000-8000-000000642901', 'title': 'Copia con nuova chiave', 'queue_mode': False},
+    effect=changed('edit', 'owner', title='Copia con nuova chiave', queue_mode=False))
 cases[-1]['response'] = updated('edit', enabled=True)
-# The copy repeats the custom link: the database refuses the insert, the view answers its text and the first entry stays.
-REFUSED = 'a1000000-0000-4000-8000-000000642902'
-add('update-new-key-link-taken', 'full_collaborator', 'PATCH', update('taken'), 500,
-    error('duplicate key value violates unique constraint "application_module_custom_link_key"\n'
-          'DETAIL:  Key (custom_link)=(Occupato) already exists.\n'),
-    body={'module_id': REFUSED, 'title': 'Mai copiato'},
-    effect={'kind': 'copy-refused', 'actor': 'full_collaborator', 'fixed_id': REFUSED, 'association': OWN,
-            'changes': created_audit({**STATE['taken'], 'title': 'Mai copiato'}, REFUSED)})
+add('update-other-row-key-ignored', 'full_collaborator', 'PATCH', update('edit'), 200, None,
+    body={'module_id': mid('taken'), 'title': 'Mai copiato'}, effect=changed('edit', 'full_collaborator', title='Mai copiato'))
+cases[-1]['response'] = updated('edit', enabled=True)
 
 # --------------------------------------------------- modules/<id>/duplicate
 duplicate = lambda label: f'/modules/{mid(label)}/duplicate'

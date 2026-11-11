@@ -146,7 +146,7 @@ var courseSubscriptionListActions = func() map[string]any {
 		"payment_category": plain("field", "Payment category"), "sport_association": plain("field", "Sport association"),
 		"custom_accounts": plain("field", "Custom accounts"), "signature": plain("field", "Signature"), "group": plain("field", "Group")}
 	return map[string]any{"POST": map[string]any{
-		"course_subscription_id": t("Course subscription id", 0, false), "subscription_id": t("Subscription id", 0, true),
+		"course_subscription_id": f("string", "Course subscription id", false, true, nil), "subscription_id": t("Subscription id", 0, true),
 		"creation_date": plain("datetime", "Creation date"), "paid": plain("boolean", "Paid"),
 		"subscription": n("Subscription", map[string]any{"subscription_id": t("Subscription id", 0, false),
 			"associate": n("Associate", associate, true, false), "current_year": readOnly("Current year")}, false, true),

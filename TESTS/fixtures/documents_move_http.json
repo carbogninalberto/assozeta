@@ -403,7 +403,7 @@
       "sport_association_documents_archive_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Sport association documents archive id"
       },
       "sport_association": {

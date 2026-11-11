@@ -82,7 +82,7 @@ method = lambda name: {'detail': f'Method "{name}" not allowed.'}
 field = lambda kind, label, required=False, read_only=False, **extra: {'type': kind, 'required': required, 'read_only': read_only,
                                                                     **({'label': label} if label else {}), **extra}
 FIELDS = {
-    'course_location_id': field('string', 'Course location id'),
+    'course_location_id': field('string', 'Course location id', read_only=True),
     'documents': field('field', 'Documents', read_only=True, child={'type': 'nested object', 'required': False, 'read_only': True, 'children': {
         'document_id': field('string', 'Document id'), 'creation_date': field('datetime', 'Creation date'),
         'filepath': field('string', 'Filepath', max_length=1000), 'filename': field('string', 'Filename', required=True, max_length=255),
@@ -120,11 +120,13 @@ add('list-format-unknown-not-found', 'owner', '/course-locations.xml', 404, BARE
 add('list-format-unknown-anonymous-not-found', 'anonymous', '/course-locations.api/', 404, BARE, method='POST', body={})
 add('list-query-format-unknown-not-found', 'owner', LIST + '?format=xml', 404, BARE)
 # create (CreateModelMixin.create with the viewset's perform_create).
-add('create-invalid-fields', 'owner', LIST, 400, {'course_location_id': ['Must be a valid UUID.'], 'title': ['This field may not be blank.'],
+add('create-invalid-fields', 'owner', LIST, 400, {'title': ['This field may not be blank.'],
     'description': ['Ensure this field has no more than 2048 characters.']}, method='POST',
     body={'course_location_id': 'abc', 'title': '', 'description': 'x' * 2049})
-add('create-existing-id', 'owner', LIST, 400, {'course_location_id': ['course location with this course location id already exists.']},
-    method='POST', body={'course_location_id': LOCATIONS['gym']['id']})
+# course_location_id is read-only: the body's key is ignored and the location gets a new one.
+response, effect = created('owner', {'title': 'Chiave ignorata'})
+add('create-existing-id-ignored', 'owner', LIST, 201, response, method='POST',
+    body={'course_location_id': LOCATIONS['gym']['id'], 'title': 'Chiave ignorata'}, effect=effect)
 add('create-unknown-association', 'owner', LIST, 400, {'sport_association': [f'Invalid pk "{UNKNOWN}" - object does not exist.']},
     method='POST', body={'sport_association': UNKNOWN})
 add('create-foreign-association-forbidden', 'owner', LIST, 403, FORBIDDEN, method='POST', body={'sport_association': FOREIGN, 'title': ''})
@@ -175,6 +177,9 @@ add('update-foreign-association-forbidden', 'owner', detail('gym'), 403, FORBIDD
 response, effect = changed('owner', 'gym', title='Palestra router', address='Via 4')
 add('update-owner-put-is-partial', 'owner', detail('gym'), 200, response, method='PUT', body={'title': 'Palestra router', 'address': 'Via 4'},
     effect=effect)
+response, effect = changed('owner', 'gym', description='Chiave ignorata')
+add('update-primary-key-ignored', 'owner', detail('gym'), 200, response, method='PUT',
+    body={'course_location_id': LOCATIONS['pool']['id'], 'description': 'Chiave ignorata'}, effect=effect)
 response, effect = changed('full_collaborator', 'gym')
 add('update-same-values-no-audit', 'full_collaborator', detail('gym'), 200, response, method='PUT', body={'title': 'Palestra router'},
     effect=effect)

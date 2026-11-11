@@ -52,31 +52,29 @@ unchanged; counting unpaid payments fails the owner case.
 `name` and `account_code` (CharField(100)), `initial_balance` (DecimalField(10,
 2)), `account_type` (a ChoiceField over 1-3 compared as `str(value)`), `enabled`
 and `editable` (a form body without them sends False unless partial,
-`BooleanField.default_empty_html`, as the Django reference showed) and a
-writable `custom_account_id` with its UniqueValidator. Errors are DRF's 400
+`BooleanField.default_empty_html`, as the Django reference showed);
+`custom_account_id` is read-only (a key in the body is ignored). Errors are DRF's 400
 field map. Add saves with the owner's association; update gets the
 association's account (a malformed or foreign id is
 `404 {"exception": "CustomAccounts matching query does not exist."}`; the
 non-editable flag does not block updates). Both answer the serialized account
 with the list's balance and deletable (group-aware payments). auditlog records
 the create (the transfer relations' related_name accessors render as their
-empty manager) and the changed fields, indexed directly. A new
-`custom_account_id` on update makes `Model.save()` insert a copy under that
-key and leave the named row as it was: Go inserts the copy (the validated
-values, the serializer's response), and auditlog logs it twice, as an update
-against nothing (indexed through its changes) and then as the create (indexed
-directly). The same holds for a new `custom_account_transfer_id` on a transfer
-update. A body that names the row's own key is a plain update; a key of another
-row is the UniqueValidator's 400. Account delete (a cascading hard delete of
-its payments) is ported: see balance-sheet.md.
-`TESTS/fixtures/balance_account_writes_http.json` authors 32 cases (three for the key: the copy, the row's own key and another row's key).
+empty manager) and the changed fields, indexed directly. t5pk: a key in the
+body (`custom_account_id`, or `custom_account_transfer_id` on a transfer) is
+ignored: the add generates the key, the update saves the row the path names in
+place, whatever key the body names (a new one, the row's own, another row's, a
+null or malformed one). Account delete (a cascading hard delete of its
+payments) is ported: see balance-sheet.md.
+`TESTS/fixtures/balance_account_writes_http.json` authors 33 cases (`add-existing-id-ignored`,
+`add-full-collaborator-explicit-id-ignored`, `update-*-id-*`).
 
 ## Transfer add, update and delete
 
 `POST balance-sheet/accounts-transfer/add`, `PATCH .../<uid>/update` and
 `DELETE .../<uid>/delete` keep the same access rules and port
-`CustomAccountTransferSerializer`: a writable `custom_account_transfer_id`
-(UniqueValidator), `custom_account_from`/`custom_account_to` (nullable relations
+`CustomAccountTransferSerializer`: a read-only `custom_account_transfer_id`
+(ignored in the body), `custom_account_from`/`custom_account_to` (nullable relations
 whose queryset is the association's accounts, so another association's or an
 unknown account is `Invalid pk "…" - object does not exist.`, a malformed one
 the model field's `“…” is not a valid UUID.`), `amount` (DecimalField(10, 2))

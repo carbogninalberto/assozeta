@@ -1252,6 +1252,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @transaction.atomic
     def delete(self, request, pk=None):
         """
         Soft delete a course subscription

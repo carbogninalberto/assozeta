@@ -17,13 +17,13 @@ func TestInputsNotPorted(t *testing.T) {
 	}
 	base := DataTable{Columns: []string{"A"}, Rows: [][]Cell{{{Text: "a"}}}, Title: "T", Portrait: true, IsA3: true}
 	for name, input := range map[string]DataTable{
-		"underline":      {Header: header("None", "A <u>B</u>")},
-		"link":           {Header: header("None", `A <a href="https://example.test">B</a>`)},
-		"font":           {Header: header("None", `A <font size="20">B</font>`)},
-		"superscript":    {Header: header("None", "m<sup>2</sup>")},
-		"end tag":        {Header: header("None", "A </strike> B")},
-		"para attribute": {Header: header("None", `<para align="center">A</para>`)},
-		"additional":     {Additional: []string{"saldi <u>e</u> note"}},
+		"image file":     {Header: header("None", `A <img src="/tmp/logo.jpg"/> B`)},
+		"image png":      {Header: header("None", `A <img src="data:image/png;base64,iVBORw0KGgo="/> B`)},
+		"anchor":         {Header: header("None", `A <a name="top"/> B`)},
+		"internal link":  {Header: header("None", `A <a href="#top">B</a> C`)},
+		"greek":          {Header: header("None", "A <greek>B</greek>")},
+		"para attribute": {Header: header("None", `<para align="justify" lindent="12">A</para>`)},
+		"additional":     {Additional: []string{"saldi <index item=\"e\"/> note"}},
 		"png as jpeg":    {Header: header("data:image/jpeg;base64,iVBORw0KGgo=", "ASD")},
 		"cut jpeg":       {Header: header("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBD", "ASD")},
 	} {
@@ -37,6 +37,11 @@ func TestInputsNotPorted(t *testing.T) {
 	broken.Header = header("None", "A <b>B")
 	if _, err := broken.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
 		t.Errorf("unclosed tag: %v", err)
+	}
+	stray := base
+	stray.Header = header("None", "A </strike> B")
+	if _, err := stray.Build(time.Unix(946684800, 0)); !errors.Is(err, ErrLayout) || errors.Is(err, ErrNotPorted) {
+		t.Errorf("stray end tag: %v", err)
 	}
 	plain := base
 	plain.Header = header("None", "ASD > Aurora \"1990\" & <b>C</b>")

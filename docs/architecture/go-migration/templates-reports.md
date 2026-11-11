@@ -14,22 +14,23 @@ transport, identity and listing behaviour is in `module-templates.md` and
   soft-deleted associations: HTTP 500). `get_object`: an unparseable pk is
   DRF's bare `404 Not found.`, an unknown or foreign pk
   `404 No SportAssociationModuleTemplates matches the given query.`.
-- `ModelSerializer(fields='__all__', partial=True)`: the pk (UUID, nullable
-  no; `UniqueValidator` excluding the instance), `name` (150 chars, trimmed,
-  not blank, not null), nullable non-blank text fields, booleans (`null`
-  rejected), and the related `sport_association` last. The relation's
-  queryset is the default manager; a pk of another tenant is DRF's generic
-  `403 You do not have permission to perform this action.` raised during
-  field validation, so it wins over the other field errors. A non-dict body
-  is `400 non_field_errors`. Form bodies work (partial: absent booleans stay;
-  an empty nullable text is `None`).
-- `save()` writes every field; auditlog logs only changed fields
-  (`[str(old), str(new)]`, index `direct`), nothing when unchanged.
-- A new, unused pk makes `Model.save()` insert a copy with the merged values
-  (the original row stays). auditlog then logs two entries for the new pk:
-  an update against `None` from `pre_save` (indexed through
-  `changes_json.sport_association`, the row does not exist yet) and the create
-  from `post_save` (index `direct`). The response is the copy.
+- `ModelSerializer(fields='__all__', partial=True)`: `ReadOnlyPrimaryKeyMixin`
+  makes the pk read-only, so a key in the body (an unused one, another row's,
+  a malformed or null one) is ignored and never appears in an error body; then
+  `name` (150 chars, trimmed, not blank, not null), nullable non-blank text
+  fields, booleans (`null` rejected), and the related `sport_association` last.
+  The relation's queryset is the default manager; a pk of another tenant is
+  DRF's generic `403 You do not have permission to perform this action.` raised
+  during field validation, so it wins over the other field errors. A non-dict
+  body is `400 non_field_errors`. Form bodies work (partial: absent booleans
+  stay; an empty nullable text is `None`).
+- `save()` writes every field to the row the path names; auditlog logs only
+  changed fields (`[str(old), str(new)]`, index `direct`), nothing when
+  unchanged. t5pk: no row is inserted: `update-new-id-ignored` (a key no row
+  has, one field changed) updates the path's row in place with one update
+  entry, `update-other-row-id-ignored` (another template's key, no other
+  field) answers the path's row unchanged with no entry, and
+  `update-own-id-ignored-no-audit` does the same with the path row's own key.
 - The viewset's `delete()` answers `DELETE` on this route with its pk
   (`204`, delete audit); `Allow: PATCH, DELETE, OPTIONS`.
 
@@ -127,8 +128,11 @@ matrix for the MCP server as well.
 ## Not ported (refused with the HTML 500 page before any query)
 
 - In the file tools: workbook labels that are numbers equal to one another or
-  beyond 64 bits, and the paragraph tags `pdfexport` refuses (pdf-exports.md,
-  "Paragraph markup"). Labels, cells and texts with `&`, `<`, entities, `<b>`,
+  beyond 64 bits, and the paragraph markup `pdfexport` still refuses (pdf-exports.md,
+  "Paragraph markup": anchors, internal links, images that are not base64 JPEG data URLs, Courier and Times, `<para>` indents,
+  justification and borders). `u`, `strike`, `font`, `span`, `nobr`, `sup`, `sub`, `a`, `link`, base64 JPEG `img` and `<para>`
+  with attributes are drawn (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`, `export-pdf-inline-image` and
+  the three `export-pdf-rich-*-error` ones). Labels, cells and texts with `&`, `<`, entities, `<b>`,
   `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
   its parser raises on (`A<B` opens a tag) fails the export like any other
   exception (`v2rep3-*` receipts).
@@ -186,12 +190,14 @@ complete, so none is recorded as covered. `list_reports`, `save_report`,
 
 `TESTS/fixtures/templates_reports_http.json` (generator alongside) authors 84
 cases: 22 for the template update and 62 for the report run (37 tool paths
-over seeded tags, payment categories and carnets). The Django reference
-corrected the copy expectation (two audit entries, the first indexed through
-the changes). RED: Django 84/84 and Go 404 on the first case before any Go
-code. GREEN: native Django, native Go, Caddy `/api/v1` and `/api/v2` pass
-84/84 with exact template, audit, index and report effects. Dropping the
-nullable `IS NOT NULL` from `exclude` fails the run.
+over seeded tags, payment categories and carnets). RED: Django 84/84 and Go 404
+on the first case before any Go code. GREEN: native Django, native Go, Caddy
+`/api/v1` and `/api/v2` pass 84/84 with exact template, audit, index and report
+effects. Dropping the nullable `IS NOT NULL` from `exclude` fails the run.
+t5pk: the key is read-only, so a key in the body is ignored and the row the
+path names is updated in place (`update-new-id-ignored`,
+`update-other-row-id-ignored`, `update-own-id-ignored-no-audit`); no copy is
+inserted and the earlier copy expectation no longer applies.
 
 File tools (`v2rep-*` receipts): the fixture has 125 cases (41 more run
 cases over the same tags, categories and carnets plus seeded courses,

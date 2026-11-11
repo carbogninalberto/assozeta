@@ -689,10 +689,10 @@
  },
  "profiles": {
   "foreign_association": {
-   "denomination": "Sport & Fun <i>club</i> A.S.D.",
-   "address_city": "Città di Ca­stello &amp; dintorni",
+   "denomination": "Sport & Fun <i>club</i> A.S.D. <u color=\"#aa0000\">1990</u> m<sup>2</sup>",
+   "address_city": "Città di Ca­stello &amp; <font color=\"#005599\" size=\"14\">dintorni</font>",
    "address_cap": "06012",
-   "address": "Via <b>Roma</b> 1 – R&D <3",
+   "address": "Via <b>Roma</b> 1 – R&D <3 <a href=\"https://example.test/sede?a=1&amp;b=2\">sede</a>",
    "logo": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k="
   },
   "deleted_association": {
@@ -5112,7 +5112,7 @@
        "RIGHT",
        "RIGHT"
       ],
-      "header": "\n        <div style=\"text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;\">\n            <div style=\"text-align: center;\">\n                <img src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k=\" style=\"height: 1000px;\"/>\n            </div>\n            <div style=\"text-align: center;\">\n                <h1 style=\"font-size: 20px;\">Sport & Fun <i>club</i> A.S.D.</h1>\n                <h2 style=\"font-size: 16px;\">Città di Ca­stello &amp; dintorni, 06012, Via <b>Roma</b> 1 – R&D <3</h2>\n                <h3 style=\"font-size: 16px;\">Approvato il ____/____/______</h3>\n            </div>\n        </div>\n        ",
+      "header": "\n        <div style=\"text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;\">\n            <div style=\"text-align: center;\">\n                <img src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k=\" style=\"height: 1000px;\"/>\n            </div>\n            <div style=\"text-align: center;\">\n                <h1 style=\"font-size: 20px;\">Sport & Fun <i>club</i> A.S.D. <u color=\"#aa0000\">1990</u> m<sup>2</sup></h1>\n                <h2 style=\"font-size: 16px;\">Città di Ca­stello &amp; <font color=\"#005599\" size=\"14\">dintorni</font>, 06012, Via <b>Roma</b> 1 – R&D <3 <a href=\"https://example.test/sede?a=1&amp;b=2\">sede</a></h2>\n                <h3 style=\"font-size: 16px;\">Approvato il ____/____/______</h3>\n            </div>\n        </div>\n        ",
       "is_a3": true,
       "landscape": false,
       "additional": [
@@ -5123,7 +5123,7 @@
       ]
      }
     },
-    "filename": "[$today] Bilancio 2024 - Sport & Fun <i>club</i> A.S.D..pdf"
+    "filename": "[$today] Bilancio 2024 - Sport & Fun <i>club</i> A.S.D. <u color=\"#aa0000\">1990</u> m<sup>2</sup>.pdf"
    },
    "effect": {
     "kind": "update",
@@ -5277,7 +5277,7 @@
        "RIGHT",
        "RIGHT"
       ],
-      "header": "\n        <div style=\"text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;\">\n            <div style=\"text-align: center;\">\n                <img src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k=\" style=\"height: 1000px;\"/>\n            </div>\n            <div style=\"text-align: center;\">\n                <h1 style=\"font-size: 20px;\">Sport & Fun <i>club</i> A.S.D.</h1>\n                <h2 style=\"font-size: 16px;\">Città di Ca­stello &amp; dintorni, 06012, Via <b>Roma</b> 1 – R&D <3</h2>\n                <h3 style=\"font-size: 16px;\">Approvato il ____/____/______</h3>\n            </div>\n        </div>\n        ",
+      "header": "\n        <div style=\"text-align: center;display:flex;justify-content: center;width: 200px;margin:auto; margin-bottom: 20px;\">\n            <div style=\"text-align: center;\">\n                <img src=\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFVlZF9V\nXVtqeJmBanGQc1tdhbWGkJ6jq62rZ4C8ybqmx5moq6T/2wBDARweHigjKE4rK06kbl1upKSkpKSk\npKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKSkpKT/wAARCAAIAAwDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRX\nOewf/9k=\" style=\"height: 1000px;\"/>\n            </div>\n            <div style=\"text-align: center;\">\n                <h1 style=\"font-size: 20px;\">Sport & Fun <i>club</i> A.S.D. <u color=\"#aa0000\">1990</u> m<sup>2</sup></h1>\n                <h2 style=\"font-size: 16px;\">Città di Ca­stello &amp; <font color=\"#005599\" size=\"14\">dintorni</font>, 06012, Via <b>Roma</b> 1 – R&D <3 <a href=\"https://example.test/sede?a=1&amp;b=2\">sede</a></h2>\n                <h3 style=\"font-size: 16px;\">Approvato il ____/____/______</h3>\n            </div>\n        </div>\n        ",
       "is_a3": true,
       "landscape": false,
       "additional": [
@@ -5288,7 +5288,7 @@
       ]
      }
     },
-    "filename": "[$today] Bilancio 2024 - Sport & Fun <i>club</i> A.S.D..pdf"
+    "filename": "[$today] Bilancio 2024 - Sport & Fun <i>club</i> A.S.D. <u color=\"#aa0000\">1990</u> m<sup>2</sup>.pdf"
    },
    "effect": {
     "kind": "update",

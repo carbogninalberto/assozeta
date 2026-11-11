@@ -7,11 +7,8 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
-const (
-	InstructorHoursUnique = "unique:instructor hours:instructor hours id"
-	// InstructorHoursJSON is JSONField's 'invalid' for HTML input json.loads rejects.
-	InstructorHoursJSON = "instructor-hours-json"
-)
+// InstructorHoursJSON is JSONField's 'invalid' for HTML input json.loads rejects.
+const InstructorHoursJSON = "instructor-hours-json"
 
 // InstructorHoursTextFields are the model's text fields.
 var InstructorHoursTextFields = []SupplierField{
@@ -37,7 +34,6 @@ var InstructorHoursDecimals = []InstructorHoursDecimal{
 // InstructorHoursWrite is InstructorHoursSerializer's validated data before
 // the related lookups. Maps hold present fields (nil for None).
 type InstructorHoursWrite struct {
-	ID           *string
 	Instructor   SubscriptionMembershipRelation
 	Payment      SubscriptionMembershipRelation
 	Document     SubscriptionMembershipRelation
@@ -53,8 +49,9 @@ type InstructorHoursWrite struct {
 }
 
 // ParseInstructorHoursWrite ports InstructorHoursSerializer field validation
-// (fields '__all__'; document_token is read-only). Uniqueness, the related
-// querysets and the tenant scope are checked by the service.
+// (fields '__all__'; document_token and the primary key instructor_hours_id are
+// read-only). The related querysets and the tenant scope are checked by the
+// service.
 func ParseInstructorHoursWrite(body any, form, partial bool) (InstructorHoursWrite, map[string]any, error) {
 	write := InstructorHoursWrite{Text: map[string]*string{}, Decimals: map[string]*string{}, JSON: map[string]any{}}
 	if body == nil {
@@ -68,15 +65,6 @@ func ParseInstructorHoursWrite(body any, form, partial bool) (InstructorHoursWri
 	errs := map[string]any{}
 	// An empty HTML value of a non-null, non-required field is skipped.
 	skipped := func(value any, null bool) bool { return form && value == "" && !null }
-	if value, present := object.Lookup("instructor_hours_id"); present && !skipped(value, false) {
-		if value == nil {
-			errs["instructor_hours_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := supplierUUID(value); ok {
-			write.ID = &id
-		} else {
-			errs["instructor_hours_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	if value, present := object.Lookup("creation_date"); present && !skipped(value, false) {
 		if value == nil {
 			errs["creation_date"] = []string{PaymentCategoryValidationNull}

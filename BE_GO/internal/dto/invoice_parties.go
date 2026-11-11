@@ -378,9 +378,9 @@ func ParseCustomerInvoiceAdd(object domain.RequestObject) (CustomerInvoiceAdd, I
 // --- invoice_suppliers_add / update ---------------------------------------
 
 // SupplierInvoiceInput is InvoiceSuppliersSerializer's validated data
-// (presence flags for a partial update).
+// (presence flags for a partial update; the read-only invoice_supplier_id is
+// ignored).
 type SupplierInvoiceInput struct {
-	ID                                            *string
 	IdentifierSet, AmountSet, PaymentDateSet      bool
 	Identifier, Amount                            string
 	PaymentDate                                   *time.Time
@@ -397,7 +397,7 @@ type SupplierInvoiceInput struct {
 }
 
 // ParseSupplierInvoice ports InvoiceSuppliersSerializer field validation;
-// relation existence, tenant scope and uniqueness are checked by the service.
+// relation existence and tenant scope are checked by the service.
 func ParseSupplierInvoice(body any, partial, form bool) (SupplierInvoiceInput, InvoicePartyErrors) {
 	input := SupplierInvoiceInput{}
 	errors := InvoicePartyErrors{}
@@ -412,15 +412,6 @@ func ParseSupplierInvoice(body any, partial, form bool) (SupplierInvoiceInput, I
 			return value, present
 		}
 		return value, present
-	}
-	if value, present := lookup("invoice_supplier_id"); present {
-		if value == nil {
-			errors.add("invoice_supplier_id", PaymentCategoryValidationNull)
-		} else if id, ok := drfUUID(value); ok {
-			input.ID = &id
-		} else {
-			errors.add("invoice_supplier_id", PaymentCategoryValidationUUID)
-		}
 	}
 	nested := func(name string, null bool) {
 		if form {

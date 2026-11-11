@@ -180,14 +180,15 @@ func moduleTemplatesFields() map[string]any {
 		return map[string]any{"type": "boolean", "required": false, "read_only": false, "label": label}
 	}
 	return map[string]any{
-		"sport_association_module_templates_id": text("Sport association module templates id"),
-		"name":                                  map[string]any{"type": "string", "required": true, "read_only": false, "label": "Name", "max_length": 150},
-		"template":                              text("Template"),
-		"footer":                                flag("Footer"),
-		"header":                                flag("Header"),
-		"custom_footer_header":                  flag("Custom footer header"),
-		"custom_footer":                         text("Custom footer"),
-		"custom_header":                         text("Custom header"),
-		"sport_association":                     map[string]any{"type": "field", "required": true, "read_only": false, "label": "Sport association"},
+		"sport_association_module_templates_id": map[string]any{"type": "string", "required": false, "read_only": true,
+			"label": "Sport association module templates id"},
+		"name":                 map[string]any{"type": "string", "required": true, "read_only": false, "label": "Name", "max_length": 150},
+		"template":             text("Template"),
+		"footer":               flag("Footer"),
+		"header":               flag("Header"),
+		"custom_footer_header": flag("Custom footer header"),
+		"custom_footer":        text("Custom footer"),
+		"custom_header":        text("Custom header"),
+		"sport_association":    map[string]any{"type": "field", "required": true, "read_only": false, "label": "Sport association"},
 	}
 }

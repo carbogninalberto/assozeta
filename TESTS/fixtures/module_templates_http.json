@@ -421,7 +421,6 @@
    "effect": {
     "kind": "create",
     "label": "owner",
-    "fixed_id": null,
     "row": {
      "association": "a1000000-0000-4000-8000-000000701001",
      "name": "Nuovo modulo è",
@@ -477,14 +476,14 @@
    }
   },
   {
-   "name": "module-templates-add-client-id-number-name",
+   "name": "module-templates-add-client-id-ignored",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/templates/add",
    "headers": {},
    "status": 201,
    "response": {
-    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000770099",
+    "sport_association_module_templates_id": "$new:client",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "name": "12.5",
     "template": null,
@@ -498,7 +497,6 @@
    "effect": {
     "kind": "create",
     "label": "client",
-    "fixed_id": "a1000000-0000-4000-8000-000000770099",
     "row": {
      "association": "a1000000-0000-4000-8000-000000701001",
      "name": "12.5",
@@ -552,24 +550,210 @@
    }
   },
   {
-   "name": "module-templates-add-duplicate-id",
+   "name": "module-templates-add-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/templates/add",
    "headers": {},
-   "status": 400,
+   "status": 201,
    "response": {
-    "sport_association_module_templates_id": [
-     "sport association module templates with this sport association module templates id already exists."
-    ]
+    "sport_association_module_templates_id": "$new:existing",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Doppio",
+    "template": null,
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
    },
    "unordered": false,
    "effect": {
-    "kind": "none"
+    "kind": "create",
+    "label": "existing",
+    "row": {
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Doppio",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    },
+    "audit": {
+     "action": 0,
+     "actor": "owner",
+     "changes": {
+      "sport_association_module_templates_id": [
+       "None",
+       "$new"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "name": [
+       "None",
+       "Doppio"
+      ],
+      "footer": [
+       "None",
+       "True"
+      ],
+      "header": [
+       "None",
+       "True"
+      ],
+      "custom_footer_header": [
+       "None",
+       "False"
+      ]
+     }
+    },
+    "index_path": "direct"
    },
    "body": {
-    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000770099",
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000770001",
     "name": "Doppio"
+   }
+  },
+  {
+   "name": "module-templates-add-malformed-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "sport_association_module_templates_id": "$new:malformed",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Chiave ignorata",
+    "template": null,
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "unordered": false,
+   "effect": {
+    "kind": "create",
+    "label": "malformed",
+    "row": {
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Chiave ignorata",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    },
+    "audit": {
+     "action": 0,
+     "actor": "owner",
+     "changes": {
+      "sport_association_module_templates_id": [
+       "None",
+       "$new"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "name": [
+       "None",
+       "Chiave ignorata"
+      ],
+      "footer": [
+       "None",
+       "True"
+      ],
+      "header": [
+       "None",
+       "True"
+      ],
+      "custom_footer_header": [
+       "None",
+       "False"
+      ]
+     }
+    },
+    "index_path": "direct"
+   },
+   "body": {
+    "sport_association_module_templates_id": "nope",
+    "name": "Chiave ignorata"
+   }
+  },
+  {
+   "name": "module-templates-add-null-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "sport_association_module_templates_id": "$new:null",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Chiave nulla",
+    "template": null,
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "unordered": false,
+   "effect": {
+    "kind": "create",
+    "label": "null",
+    "row": {
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Chiave nulla",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    },
+    "audit": {
+     "action": 0,
+     "actor": "owner",
+     "changes": {
+      "sport_association_module_templates_id": [
+       "None",
+       "$new"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "name": [
+       "None",
+       "Chiave nulla"
+      ],
+      "footer": [
+       "None",
+       "True"
+      ],
+      "header": [
+       "None",
+       "True"
+      ],
+      "custom_footer_header": [
+       "None",
+       "False"
+      ]
+     }
+    },
+    "index_path": "direct"
+   },
+   "body": {
+    "sport_association_module_templates_id": null,
+    "name": "Chiave nulla"
    }
   },
   {
@@ -594,9 +778,6 @@
     ],
     "custom_footer": [
      "Not a valid string."
-    ],
-    "sport_association_module_templates_id": [
-     "Must be a valid UUID."
     ]
    },
    "unordered": false,
@@ -784,7 +965,7 @@
       "sport_association_module_templates_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Sport association module templates id"
       },
       "name": {
@@ -1239,7 +1420,7 @@
      "custom_header": null
     },
     {
-     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000770099",
+     "sport_association_module_templates_id": "$new:client",
      "sport_association": "a1000000-0000-4000-8000-000000701001",
      "name": "12.5",
      "template": null,
@@ -1248,6 +1429,39 @@
      "custom_footer_header": false,
      "custom_footer": null,
      "custom_header": "h"
+    },
+    {
+     "sport_association_module_templates_id": "$new:existing",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Doppio",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    },
+    {
+     "sport_association_module_templates_id": "$new:malformed",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Chiave ignorata",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    },
+    {
+     "sport_association_module_templates_id": "$new:null",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Chiave nulla",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
     }
    ],
    "unordered": true,

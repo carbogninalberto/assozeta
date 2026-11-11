@@ -107,6 +107,10 @@ add('update-membership-validation', 'owner', detail('cs_member'), 400,
 effect = updated('owner', 'cs_gino', {'paid': True, 'billed_frequency': 2}, {'paid': ['False', 'True'], 'billed_frequency': ['1', '2']})
 add('update-owner-put-is-partial', 'owner', detail('cs_gino'), 200, item('cs_gino'), method='PUT', body={'paid': True, 'billed_frequency': 2},
     effect=effect)
+# course_subscription_id is read-only: another row's key in the body is ignored.
+effect = updated('owner', 'cs_gino', {'billed_frequency': 3}, {'billed_frequency': ['2', '3']})
+add('update-primary-key-ignored', 'owner', detail('cs_gino'), 200, item('cs_gino'), method='PUT',
+    body={'course_subscription_id': CS['cs_yoga']['id'], 'billed_frequency': 3}, effect=effect)
 add('destroy-deleted-not-found', 'owner', detail('cs_deleted'), 404, NOT_FOUND, method='DELETE')
 add('destroy-foreign-not-found', 'owner', detail('cs_abroad'), 404, NOT_FOUND, method='DELETE')
 add('destroy-malformed-server-error', 'owner', detail('abc'), 500, SERVER, method='DELETE')
@@ -115,6 +119,10 @@ add('destroy-owner', 'owner', detail('cs_del5'), 204, '<empty>', method='DELETE'
 add('destroy-again-not-found', 'owner', detail('cs_del5'), 404, NOT_FOUND, method='DELETE')
 add('destroy-format-json-installment', 'full_collaborator', detail('cs_del2', '.json'), 204, '<empty>', method='DELETE',
     effect=soft_delete('full_collaborator', 'cs_del2'))
+# The row's own payment is also an unpaid installment's payment: the installments, that payment and the row's
+# soft delete complete together.
+STATE['cs']['cs_shared']['payment'] = None
+add('destroy-shared-payment', 'owner', detail('cs_shared'), 204, '<empty>', method='DELETE', effect=soft_delete('owner', 'cs_shared'))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'DefaultRouter course-subscriptions list, retrieve, update and destroy routes',

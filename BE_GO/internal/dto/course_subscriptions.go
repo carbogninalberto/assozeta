@@ -307,9 +307,9 @@ func CourseSubscriptionRepr(row domain.CourseSubscriptionRow, memory CourseSubsc
 }
 
 // CourseSubscriptionWrite is CourseSubscriptionOverviewSerializer's validated
-// data (partial): only present fields are set.
+// data (partial): only present fields are set. The primary key is read-only:
+// a course_subscription_id in the body is ignored.
 type CourseSubscriptionWrite struct {
-	ID             *string
 	SubscriptionID *string
 	CreationDate   *time.Time
 	Bools          map[string]bool
@@ -337,9 +337,6 @@ var courseSubscriptionIntegers = []struct {
 
 // CourseSubscriptionJSONInvalid is JSONField's "Value must be valid JSON." for form text.
 const CourseSubscriptionJSONInvalid = "json-invalid"
-
-// CourseSubscriptionUnique is the UniqueValidator code of the primary key.
-const CourseSubscriptionUnique = "unique:course subscription:course subscription id"
 
 // courseSubscriptionUUID is serializers.UUIDField.to_internal_value (a bool is
 // an int, UUID(int=...)).
@@ -381,15 +378,6 @@ func ParseCourseSubscriptionWrite(body any, form bool) (CourseSubscriptionWrite,
 	errs := map[string]any{}
 	// get_value: an empty HTML value of a non-null optional field is skipped.
 	skip := func(value any) bool { return form && value == "" }
-	if value, present := object.Lookup("course_subscription_id"); present && !skip(value) {
-		if value == nil {
-			errs["course_subscription_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := courseSubscriptionUUID(value); ok {
-			write.ID = &id
-		} else {
-			errs["course_subscription_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	// subscription_id is declared required: an empty HTML value is validated.
 	if value, present := object.Lookup("subscription_id"); present {
 		if value == nil {

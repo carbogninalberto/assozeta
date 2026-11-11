@@ -73,22 +73,12 @@ func (s *CourseLocationWrites) location(ctx context.Context, tx domain.CourseLoc
 	return row, nil
 }
 
-// validate applies the course_location_id UniqueValidator and the
-// sport_association queryset and tenant scope (its PermissionDenied escapes
-// the serializer before the field errors are raised).
+// validate applies the sport_association queryset and tenant scope (its
+// PermissionDenied escapes the serializer before the field errors are raised).
 func (s *CourseLocationWrites) validate(ctx context.Context, tx domain.CourseLocationWriteTransaction, identity domain.ResolvedIdentity,
-	write dto.CourseLocationWrite, invalid map[string]any, exclude *string) error {
+	write dto.CourseLocationWrite, invalid map[string]any) error {
 	if invalid == nil {
 		invalid = map[string]any{}
-	}
-	if write.ID != nil {
-		taken, err := tx.LocationIDTaken(ctx, *write.ID, exclude)
-		if err != nil {
-			return err
-		}
-		if taken {
-			invalid["course_location_id"] = []string{dto.CourseLocationUnique}
-		}
 	}
 	if write.AssociationID != nil {
 		exists, err := tx.AssociationExists(ctx, *write.AssociationID)
@@ -210,11 +200,7 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 		}
 	}
 	write, invalid := dto.ParseCourseLocationWrite(body, form, raw != nil)
-	var exclude *string
-	if row != nil {
-		exclude = &row.ID
-	}
-	if err = s.validate(ctx, tx, identity, write, invalid, exclude); err != nil {
+	if err = s.validate(ctx, tx, identity, write, invalid); err != nil {
 		return nil, err
 	}
 	auditContext, at := paymentCategoryAuditContext(identity, audit), s.now().UTC().Truncate(time.Microsecond)
@@ -229,9 +215,6 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 			return nil, refused
 		}
 		created := domain.CourseLocation{ID: s.ids(), AssociationID: &association}
-		if write.ID != nil {
-			created.ID = *write.ID
-		}
 		applyCourseLocationWrite(&created, write)
 		if err = tx.CreateLocation(ctx, created, auditContext, at); err != nil {
 			return nil, err
@@ -249,18 +232,6 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 	applyCourseLocationWrite(row, write)
 	if write.AssociationPresent {
 		row.AssociationID = write.AssociationID
-	}
-	if write.ID != nil && *write.ID != row.ID {
-		// Model.save() under a key no row has inserts a copy with the validated
-		// values; the row the path names stays and the documents attach to the copy.
-		row.ID = *write.ID
-		if err = tx.CopyLocation(ctx, *row, auditContext, at); err != nil {
-			return nil, err
-		}
-		if err = s.storeDocuments(ctx, tx, identity, row.ID, uploads, auditContext); err != nil {
-			return nil, err
-		}
-		return s.finish(ctx, tx, *row, failure)
 	}
 	changes := map[string][2]string{}
 	diff := func(name string, before, after *string) {

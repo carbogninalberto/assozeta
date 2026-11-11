@@ -130,15 +130,6 @@ func (s *MedicalAppointmentAdd) Add(ctx context.Context, identity domain.Resolve
 	} else if err != nil {
 		return err
 	}
-	if input.ID != nil {
-		taken, err := tx.AppointmentIDTaken(ctx, *input.ID)
-		if err != nil {
-			return err
-		}
-		if taken {
-			fields["medical_appointments_id"] = []string{"unique:medical appointments:medical appointments id"}
-		}
-	}
 	if input.Document != nil {
 		exists, err := tx.DocumentExists(ctx, *input.Document)
 		if err != nil {
@@ -154,9 +145,6 @@ func (s *MedicalAppointmentAdd) Add(ctx context.Context, identity domain.Resolve
 	now := s.now().UTC().Truncate(time.Microsecond)
 	row := domain.MedicalAppointmentAddRow{ID: uuid.NewString(), Document: input.Document, Subscription: id, Region: input.Region, Notes: input.Notes,
 		Sport: input.Sport, Address: input.Address, CreationDate: now}
-	if input.ID != nil {
-		row.ID = *input.ID
-	}
 	changes := map[string][2]string{"medical_appointments_id": {"None", row.ID}, "subscription": {"None", id},
 		"region": {"None", row.Region}, "document": {"None", "None"}}
 	if input.Document != nil {

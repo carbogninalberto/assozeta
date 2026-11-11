@@ -303,7 +303,7 @@
       "sport_association_module_templates_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Sport association module templates id"
       },
       "name": {
@@ -425,9 +425,6 @@
     ],
     "footer": [
      "Must be a valid boolean."
-    ],
-    "sport_association_module_templates_id": [
-     "Must be a valid UUID."
     ]
    },
    "effect": null,
@@ -513,14 +510,14 @@
    }
   },
   {
-   "name": "router-templates-create-client-id",
+   "name": "router-templates-create-client-id-ignored",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/templates/",
    "headers": {},
    "status": 201,
    "response": {
-    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990199",
+    "sport_association_module_templates_id": "$new",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "name": "7",
     "template": null,
@@ -533,7 +530,7 @@
    "effect": {
     "kind": "add",
     "actor": "full_collaborator",
-    "id": "a1000000-0000-4000-8000-000000990199",
+    "id": "$new",
     "stored": {
      "name": "7",
      "template": null,
@@ -548,6 +545,43 @@
     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990199",
     "name": 7,
     "custom_header": "h"
+   }
+  },
+  {
+   "name": "router-templates-create-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "sport_association_module_templates_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Chiave esistente",
+    "template": null,
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "name": "Chiave esistente",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990101",
+    "name": "Chiave esistente"
    }
   },
   {
@@ -696,7 +730,7 @@
       "sport_association_module_templates_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Sport association module templates id"
       },
       "name": {
@@ -900,8 +934,8 @@
    }
   },
   {
-   "name": "router-templates-update-unchanged-no-audit",
-   "actor": "full_collaborator",
+   "name": "router-templates-update-key-only-ignored",
+   "actor": "owner",
    "method": "PUT",
    "path": "/templates/a1000000-0000-4000-8000-000000990102/",
    "headers": {},
@@ -919,7 +953,7 @@
    },
    "effect": {
     "kind": "update",
-    "actor": "full_collaborator",
+    "actor": "owner",
     "id": "a1000000-0000-4000-8000-000000990102",
     "changes": {},
     "stored": {
@@ -927,6 +961,129 @@
      "template": "<p>Corpo</p>",
      "footer": true,
      "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990299"
+   }
+  },
+  {
+   "name": "router-templates-update-unused-id-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>chiave</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {
+     "template": [
+      "<p>Corpo</p>",
+      "<p>chiave</p>"
+     ]
+    },
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>chiave</p>",
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990299",
+    "template": "<p>chiave</p>"
+   }
+  },
+  {
+   "name": "router-templates-update-other-row-id-ignored",
+   "actor": "full_collaborator",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>chiave</p>",
+    "footer": true,
+    "header": false,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {
+     "header": [
+      "True",
+      "False"
+     ]
+    },
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>chiave</p>",
+     "footer": true,
+     "header": false,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990101",
+    "header": false
+   }
+  },
+  {
+   "name": "router-templates-update-unchanged-no-audit",
+   "actor": "full_collaborator",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>chiave</p>",
+    "footer": true,
+    "header": false,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {},
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>chiave</p>",
+     "footer": true,
+     "header": false,
      "custom_footer_header": false,
      "custom_footer": null,
      "custom_header": null

@@ -124,16 +124,15 @@ def stored(filename, content, content_type, encoding=None, *, kept=True, object_
 
 
 def effect(actor, *, documents=(), archives=(), files=(), certificates=(), subscriptions=None, drafts=None, audit=(), cache=None,
-           archive_updates=None, archive_inserted=None, archive_deleted=()):
+           archive_updates=None, archive_deleted=()):
     """documents: stored(...) in creation order ($doc<i>); archives: [{'document': i, 'folder': label|None}] kept rows ($archive<i>);
     files: [{'document': i, 'subscription': label}] ($file<i>); certificates: [{'document': i, 'user': label|None}] ($cert<i>);
     subscriptions: {label: {column: value}} with '$cert<i>'; drafts: {label: final data}; audit: entries in write order;
     cache: the medical upload grant ({'session': label, 'certificate': i}); archive_updates: {label: {column: value}};
-    archive_inserted: a copy of a seeded row under a new key; archive_deleted: seeded rows deleted."""
+    archive_deleted: seeded rows deleted."""
     return {'actor': actor, 'documents': list(documents), 'archives': list(archives), 'files': list(files),
             'certificates': list(certificates), 'subscriptions': subscriptions or {}, 'drafts': drafts or {}, 'audit': list(audit),
-            'cache': cache, 'archive_updates': archive_updates or {}, 'archive_inserted': archive_inserted,
-            'archive_deleted': list(archive_deleted)}
+            'cache': cache, 'archive_updates': archive_updates or {}, 'archive_deleted': list(archive_deleted)}
 
 
 def entry(model, key, action, changes, index):
@@ -178,7 +177,7 @@ def multipart(*parts, boundary='documentswritesboundary'):
 # ---------------------------------------------------------------- documents/add
 ADD = '/documents/add'
 ADD_OPTIONS = {**options('Document Archive', ('application/json',)), 'actions': {'POST': {
-    'sport_association_documents_archive_id': {'type': 'string', 'required': False, 'read_only': False,
+    'sport_association_documents_archive_id': {'type': 'string', 'required': False, 'read_only': True,
                                                'label': 'Sport association documents archive id'},
     'sport_association': {'type': 'field', 'required': True, 'read_only': False, 'label': 'Sport association'},
     'document': {'type': 'field', 'required': False, 'read_only': True, 'label': 'Document', 'child': {
@@ -318,33 +317,33 @@ add('update-unknown-association', 'owner', UPDATE('u1'), 400,
     {'sport_association': [f'Invalid pk "{UNKNOWN}" - object does not exist.']}, method='PATCH', body={'sport_association': UNKNOWN})
 add('update-null-association', 'owner', UPDATE('u1'), 400, {'sport_association': ['This field may not be null.']},
     method='PATCH', body={'sport_association': None})
-add('update-taken-primary-key', 'owner', UPDATE('u1'), 400,
-    {'sport_association_documents_archive_id': ['sport association documents archive with this sport association documents archive id already exists.']},
-    method='PATCH', body={'sport_association_documents_archive_id': ARCHIVES['u2']['id']})
+# The archive key is read-only: a key in the body (another row's, an unused one, a malformed one, null or a boolean) is
+# ignored and the row the path names is updated in place with one plain update entry; the body key is never validated.
+add('update-other-row-id-ignored', 'owner', UPDATE('u1'), 500, SERVER, method='PATCH',
+    body={'sport_association_documents_archive_id': ARCHIVES['u2']['id'], 'date': '06/09/2026'},
+    effect=effect('owner', archive_updates={'u1': {'date': '2026-09-06'}},
+                  audit=[archive_update('u1', {'date': ['2026-09-01', '2026-09-06']})]))
 add('update-no-change-server-error', 'owner', UPDATE('u1'), 500, SERVER, method='PATCH', body={'document': 'ignored'})
 add('update-date-saved-before-server-error', 'owner', UPDATE('u1'), 500, SERVER, method='PATCH', body={'date': '01/02/2026'},
     effect=effect('owner', archive_updates={'u1': {'date': '2026-02-01'}},
-                  audit=[archive_update('u1', {'date': ['2026-09-01', '2026-02-01']})]))
+                  audit=[archive_update('u1', {'date': ['2026-09-06', '2026-02-01']})]))
 add('update-folder-saved-before-server-error', 'full_collaborator', UPDATE('u1'), 500, SERVER, method='PATCH',
     body={'folder': '$folder:own', 'sport_association': OWN},
     effect=effect('full_collaborator', archive_updates={'u1': {'folder': '$folder:own'}},
                   audit=[archive_update('u1', {'folder': ['None', '$folder-text:own']})]))
 add('update-folder-cleared-before-server-error', 'owner', UPDATE('u2'), 500, SERVER, method='PATCH', body={'folder': None},
     effect=effect('owner', archive_updates={'u2': {'folder': None}}, audit=[archive_update('u2', {'folder': ['$folder-text:own', 'None']})]))
-add('update-new-primary-key-inserts-row', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
-    body={'sport_association_documents_archive_id': NEW_PK},
-    effect=effect('owner', archive_inserted={'from': 'upk', 'id': NEW_PK},
-                  # pre_save finds no row under the new key: an update diff against None, indexed before the row exists
-                  # (through changes_json), then post_save logs the create.
-                  audit=[entry('SportAssociationDocumentsArchive', NEW_PK, 1, '$inserted', 'changes'),
-                         entry('SportAssociationDocumentsArchive', NEW_PK, 0, '$inserted', 'direct')]))
-# A boolean primary key is an int for UUIDField: uuid.UUID(int=True).
-BOOLEAN_PK = '00000000-0000-0000-0000-000000000001'
-add('update-boolean-primary-key-inserts-row', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
-    body={'sport_association_documents_archive_id': True},
-    effect=effect('owner', archive_inserted={'from': 'upk', 'id': BOOLEAN_PK},
-                  audit=[entry('SportAssociationDocumentsArchive', BOOLEAN_PK, 1, '$inserted', 'changes'),
-                         entry('SportAssociationDocumentsArchive', BOOLEAN_PK, 0, '$inserted', 'direct')]))
+add('update-new-primary-key-ignored', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
+    body={'sport_association_documents_archive_id': NEW_PK, 'date': '07/09/2026'},
+    effect=effect('owner', archive_updates={'upk': {'date': '2026-09-07'}},
+                  audit=[archive_update('upk', {'date': ['2026-09-05', '2026-09-07']})]))
+# A body whose only field is the read-only key changes nothing: no update entry.
+add('update-malformed-primary-key-ignored', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
+    body={'sport_association_documents_archive_id': 'abc'})
+add('update-null-primary-key-ignored', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
+    body={'sport_association_documents_archive_id': None})
+add('update-boolean-primary-key-ignored', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
+    body={'sport_association_documents_archive_id': True})
 add('update-route-delete', 'owner', UPDATE('ud'), 204, '<empty>', method='DELETE',
     effect=effect('owner', archive_deleted=['ud'], audit=[entry('SportAssociationDocumentsArchive', 'ud', 2, '$deleted', 'changes')]))
 

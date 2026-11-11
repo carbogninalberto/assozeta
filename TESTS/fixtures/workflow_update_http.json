@@ -1043,36 +1043,6 @@
    }
   },
   {
-   "name": "workflow-update-invalid-id-malformed",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "msg": "workflow not valid."
-   },
-   "effect": null,
-   "body": {
-    "automation_workflow_id": "nope"
-   }
-  },
-  {
-   "name": "workflow-update-invalid-id-duplicate",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "msg": "workflow not valid."
-   },
-   "effect": null,
-   "body": {
-    "automation_workflow_id": "a1000000-0000-4000-8000-000000962016"
-   }
-  },
-  {
    "name": "workflow-update-invalid-association-unknown",
    "actor": "owner",
    "method": "PATCH",
@@ -3466,7 +3436,7 @@
    }
   },
   {
-   "name": "workflow-update-new-id-inserts-copy",
+   "name": "workflow-update-new-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
@@ -3479,75 +3449,34 @@
     "actor": "owner",
     "session": null,
     "label": "plain",
-    "copy": {
-     "id": "a1000000-0000-4000-8000-000000962900",
-     "row": {
-      "name": "Copia",
-      "description": "Spazi",
-      "automation_tree": [
-       {
-        "data": {
-         "k": "è"
-        },
-        "id": "trigger",
-        "value": "new_subscription"
+    "row": {
+     "name": "Copia",
+     "description": "Spazi",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "k": "è"
        }
-      ],
-      "enabled": true
-     },
-     "update": {
-      "automation_workflow_id": [
-       "None",
-       "a1000000-0000-4000-8000-000000962900"
-      ],
-      "sport_association": [
-       "None",
-       "a1000000-0000-4000-8000-000000701001"
-      ],
-      "name": [
-       "None",
-       "Copia"
-      ],
-      "automation_tree": [
-       "None",
-       "[{\"data\": {\"k\": \"\\u00e8\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]"
-      ],
-      "enabled": [
-       "None",
-       "True"
-      ],
-      "description": [
-       "None",
-       "Spazi"
-      ]
-     },
-     "create": {
-      "automation_workflow_id": [
-       "None",
-       "a1000000-0000-4000-8000-000000962900"
-      ],
-      "sport_association": [
-       "None",
-       "a1000000-0000-4000-8000-000000701001"
-      ],
-      "name": [
-       "None",
-       "Copia"
-      ],
-      "automation_tree": [
-       "None",
-       "[{\"data\": {\"k\": \"\\u00e8\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]"
-      ],
-      "enabled": [
-       "None",
-       "True"
-      ],
-      "description": [
-       "None",
-       "Spazi"
-      ]
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "name": [
+        "Ancora",
+        "Copia"
+       ],
+       "automation_tree": [
+        "[{\"data\": {\"a\": \"primo\", \"z\": \"ultimo\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]",
+        "[{\"data\": {\"k\": \"\\u00e8\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]"
+       ]
+      }
      }
-    }
+    ]
    },
    "body": {
     "automation_workflow_id": "a1000000-0000-4000-8000-000000962900",
@@ -3564,7 +3493,7 @@
    }
   },
   {
-   "name": "workflow-update-new-id-enable-copy",
+   "name": "workflow-update-new-id-ignored-enable",
    "actor": "full_collaborator",
    "method": "PATCH",
    "path": "/communications/workflows/a1000000-0000-4000-8000-000000962033/update",
@@ -3577,91 +3506,124 @@
     "actor": "full_collaborator",
     "session": null,
     "label": "copy_plain",
-    "copy": {
-     "id": "a1000000-0000-4000-8000-000000962901",
-     "row": {
-      "name": "Da copiare",
-      "description": "Nota",
-      "automation_tree": [
-       {
-        "data": {
-         "a": [
-          true,
-          null,
-          1.5
-         ],
-         "b": 1
-        },
-        "id": "trigger",
-        "value": "new_subscription"
-       },
-       {
-        "data": {
-         "subject": "Ciao à"
-        },
-        "id": "message",
-        "value": "email"
+    "row": {
+     "name": "Da copiare",
+     "description": "Nota",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "b": 1,
+        "a": [
+         true,
+         null,
+         1.5
+        ]
        }
-      ],
-      "enabled": true
-     },
-     "update": {
-      "automation_workflow_id": [
-       "None",
-       "a1000000-0000-4000-8000-000000962901"
-      ],
-      "sport_association": [
-       "None",
-       "a1000000-0000-4000-8000-000000701001"
-      ],
-      "name": [
-       "None",
-       "Da copiare"
-      ],
-      "automation_tree": [
-       "None",
-       "[{\"data\": {\"a\": [true, null, 1.5], \"b\": 1}, \"id\": \"trigger\", \"value\": \"new_subscription\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]"
-      ],
-      "enabled": [
-       "None",
-       "True"
-      ],
-      "description": [
-       "None",
-       "Nota"
-      ]
-     },
-     "create": {
-      "automation_workflow_id": [
-       "None",
-       "a1000000-0000-4000-8000-000000962901"
-      ],
-      "sport_association": [
-       "None",
-       "a1000000-0000-4000-8000-000000701001"
-      ],
-      "name": [
-       "None",
-       "Da copiare"
-      ],
-      "automation_tree": [
-       "None",
-       "[{\"data\": {\"a\": [true, null, 1.5], \"b\": 1}, \"id\": \"trigger\", \"value\": \"new_subscription\"}, {\"data\": {\"subject\": \"Ciao \\u00e0\"}, \"id\": \"message\", \"value\": \"email\"}]"
-      ],
-      "enabled": [
-       "None",
-       "True"
-      ],
-      "description": [
-       "None",
-       "Nota"
-      ]
+      },
+      {
+       "id": "message",
+       "value": "email",
+       "data": {
+        "subject": "Ciao à"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "enabled": [
+        "False",
+        "True"
+       ]
+      }
      }
-    }
+    ]
    },
    "body": {
     "automation_workflow_id": "a1000000-0000-4000-8000-000000962901",
     "enabled": true
+   }
+  },
+  {
+   "name": "workflow-update-id-of-other-row-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Copia",
+     "description": "Spazi",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "k": "è"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": []
+   },
+   "body": {
+    "automation_workflow_id": "a1000000-0000-4000-8000-000000962016"
+   }
+  },
+  {
+   "name": "workflow-update-id-malformed-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Copia",
+     "description": "Chiave",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_subscription",
+       "data": {
+        "k": "è"
+       }
+      }
+     ],
+     "enabled": true
+    },
+    "audit": [
+     {
+      "changes": {
+       "description": [
+        "Spazi",
+        "Chiave"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "automation_workflow_id": "nope",
+    "description": "Chiave"
    }
   },
   {

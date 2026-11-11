@@ -24,7 +24,7 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
   `request.user.sport_association` (a user without one is a 500 `{'error': 'SportAssociation matching query does
   not exist.'}`); another association is a 403 `{'detail': 'You are not allowed editing this.'}` (deleting, to view).
 - Validation errors answer 400 `{'error': str(ValidationError)}`: the repr of the ErrorDetail dict in field order
-  (pk, model fields, forward relations). The tenant-scoped related fields raise DRF's generic PermissionDenied while
+  (model fields, forward relations; the pk is read-only). The tenant-scoped related fields raise DRF's generic PermissionDenied while
   validating: the add views turn it into 500 `{'error': ...}`, the update views re-raise it (403).
 - `CampsAndRetreatsPeriodSerializer.to_internal_value` assigns None to a `''` fee or max_participants in
   `request.data`: JSON input becomes null (a null fee is a 400), an HTML form raises
@@ -64,13 +64,12 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
   (Django's order is the database's), `Payment.save()` description failures, and amounts or notes PostgreSQL would
   reject (numeric overflow, the non-negative amount constraint, notes over 5120 characters).
 
-## Update under a new key
+## Primary key in the body (t5pk)
 
-A body naming a `camps_and_retreats_period_id` (or `..._service_id`) that no row has passes validation and `Model.save()` inserts a copy with
-the validated values; the row the path names stays. auditlog finds no row under the new key, so it logs the whole copy as an update
-(indexed through the actor's own association, if any), then the create (indexed through the camp). The many-to-many services of a period
-attach to the copy; the service walk reads the copy's key, so no meta entry names it and only the notes and amounts of the unpaid
-payments are recomputed. A key another row has is the validation error `unique`; the path's own key is a plain update.
+`camps_and_retreats_period_id` and `camps_and_retreats_period_service_id` are read-only. A key in an update body (new,
+another row's, malformed) is ignored and the row the path names is updated in place: the period's services link to it and
+the service walk recomputes the meta entries that name the path's service (`update-*-key-*`, `services-update-*-key-*`). A key
+in an add body is ignored and the row gets a new key (`add-*-id-ignored*`, `services-add-*-id-ignored`).
 
 ## Evidence
 

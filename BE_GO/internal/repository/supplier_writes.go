@@ -97,13 +97,6 @@ func (t *supplierWriteTransaction) GroupAssociation(ctx context.Context, id stri
 	return association, err == nil, err
 }
 
-func (t *supplierWriteTransaction) SupplierIDTaken(ctx context.Context, id string, group *string, exclude *string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_supplierandcustomers
- WHERE supplier_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR supplier_id<>$3::uuid))`, id, group, exclude)
-	return taken, err
-}
-
 func (t *supplierWriteTransaction) LiveSupplier(ctx context.Context, id string, group *string) (*domain.Supplier, error) {
 	var row domain.Supplier
 	err := t.tx.GetContext(ctx, &row, `SELECT `+supplierColumns+` FROM application_supplierandcustomers

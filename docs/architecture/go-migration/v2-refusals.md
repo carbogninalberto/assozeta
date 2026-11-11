@@ -139,10 +139,14 @@ Receipts are `quality-reports/go-migration/<family>-http-v2rep3-*`; pdf-exports.
 | templates-reports | `POST saved-reports/<pk>/run` | XLSX column labels (B): labels that are equal numbers (`1` and `1.0`, `true` and `1`), and an integer label beyond 64 bits | 182 cases; RED: the documented refusal; GREEN `v2rep3-b-versioned-r2` 4 transports; 202 golden workbooks from the Django exporter (`go test ./internal/xlsxexport`) |
 | mcp-server-tools | stdio `export_data`, `export_multi_sheet`, `get_attendance_matrix(export=true)`; also the assistant channel | the XLSX and PDF results (B / A for the assistant): built with the code of the saved-report run and answered with `row_count`, `sheet_count` or `total_dates` and `save_info` | 147 cases, 146 identical and 1 refused (`title` that is not a string), 4/4 sessions identical; RED: the 3 documented refusals of `v2rep2-r2`; GREEN `v2rep3-b-mcp-r3-mcp-server-tools`; mutation `v2rep3-b-mcp-mut1-mcp-server-tools` (row count one too high in the attendance `save_info`) CAUGHT on `get_attendance_matrix export` |
 
-Still refused in these PDFs (B): the paragraph tags that draw lines, links, images, rises, other sizes or colours (`u`,
-`strike`, `a`, `font`, `sup` and the others in pdf-exports.md), a `<para>` with attributes, and logo data Python's base64
-accepts that is not a JPEG Go's decoder reads. Markup reportlab's parser raises on (an unclosed tag, `A<B`) is no refusal:
-the export fails as in Django. Still refused on the MCP transport: an exporter exception whose text Go does not reproduce and argument types `save_info` would write back differently (mcp-server.md). Re-run green natively: printing-generate 113/113 and subscription-reads 350/350
+Ported in t3pdf: the paragraph tags that draw lines, links, images, rises, other sizes and colours (`u`, `strike`, `a`, `link`,
+`font`, `span`, `nobr`, `sup`, `sub`, base64 JPEG `img`) and a `<para>` with attributes (see "Fragments with their own style" in
+pdf-exports.md). Still refused in these PDFs (B), each because Go cannot or does not reproduce it: `<a name>` anchors and
+`#`/`document:` links (named destinations), `img` of a file, URL, PNG or other format (server files and network, PIL
+re-encoding), the Courier and Times fonts (no metrics), colours that are CMYK, transparent or Python expressions, `<para>`
+indents, justified lines, borders, text transforms, `autoLeading`, `wordWrap`, end dots and hyphenation, the tags `greek`,
+`unichar`, `bullet`, `seq*`, `onDraw` and `index`, and logo data Python's base64 accepts that is not a JPEG Go's decoder reads.
+Markup reportlab's parser raises on (an unclosed tag, `A<B`) is no refusal: the export fails as in Django. Still refused on the MCP transport: an exporter exception whose text Go does not reproduce and argument types `save_info` would write back differently (mcp-server.md). Re-run green natively: printing-generate 113/113 and subscription-reads 350/350
 (`v2rep3-rerun-r1`), course-list 159/159 and course-subscriptions 145/145 (`v2rep3-rerun-r2`).
 
 ### Ported in the v2-pdf change
@@ -356,7 +360,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-lo
 | document-views | `GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes): the first tutor relation is saved as primary with its audit entry, for signed-in requests | 162 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 | document-views | same | `HEAD` (B): the views' 405 without a body. The slash-less paths already answered the `APPEND_SLASH` redirect (unknown-paths) | same receipts |
 | documents-writes | `POST documents/add`, `POST subscription/<uid>/upload-document` | filename with NUL or lone surrogates (B): the driver's text in `documents/add`, the 500 page without writes in upload-document | 147 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT |
-| documents-writes | `PATCH documents/<pk>/update` | boolean primary key (B): `uuid.UUID(int=True)` | same receipts |
+| documents-writes | `PATCH documents/<pk>/update` | boolean primary key (B): `uuid.UUID(int=True)` — t5pk: the key is read-only in Django and Go, any key in the body is ignored (`update-boolean-primary-key-ignored`) | same receipts |
 | invoice-views | `GET document/invoice/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes), for signed-in requests | 92 cases; RED `v2doc4-red-r1` (refusal restored); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 
 Left in these families after this change, with the reason:
@@ -489,8 +493,9 @@ Left refused in these families, with the reason:
 - documents-writes: storage provider failures (infrastructure errors, not inputs); archive update fields sent as files.
 - invoice-core: random ordering (nothing to compare); smart-search terms in other
   scripts (the database's case folding); bulk bodies with file parts (iterating an uploaded file).
-- invoice-parties: nested `payment`/`supplier` objects, `payment_id`, a new `invoice_supplier_id`, supplier payments whose nested
-  rendering needs the payment serializer's relations, linked payments the manager cannot load, random ordering.
+- invoice-parties: nested `payment`/`supplier` objects, `payment_id`, supplier payments whose nested
+  rendering needs the payment serializer's relations, linked payments the manager cannot load, random ordering
+  (t5pk: `invoice_supplier_id` is read-only and ignored).
 - invoice-sync-print: the restore that becomes pending between admission and task (a race window); dates before year 1000 and
   FatturaPA inputs outside the subset.
 - invoice-generate: `send_receipt_email` of other JSON types; approve without a configured producer (class C).
@@ -622,7 +627,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### balance-accounts.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH balance-sheet/accounts/<uid>/update | body carries a new `custom_account_id` | service/balance_account_writes.go (was `ErrBalanceAccountPrimaryKeyChange`) | ported (tailpay) | `src/routes/accounting/accounts/modals/EditModal.svelte:62-76` sends the form fields `name`, `account_type`, `enabled`, `initial_balance`, `account_code` only. Go inserts the copy under the new key as `Model.save()` does (two audit entries, the named row stays); the transfer update with a new `custom_account_transfer_id` is ported the same way (balance-accounts.md). |
+| PATCH balance-sheet/accounts/<uid>/update | body carries a new `custom_account_id` | service/balance_account_writes.go | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go, so the body's key is ignored and the named row is updated in place; the same for `custom_account_transfer_id` on the transfer update (balance-accounts.md, cases `update-*-id-*`). |
 
 ### camps-subscriptions.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -636,7 +641,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST camps-and-retreats/add, PATCH <uid>/update | multipart body with file parts | dto/camps_core_write.go (`CampAssignAssociation`) | ported (t3courses) | Add sends JSON (`campsAndRetreats/modals/AddModal.svelte:31-32`); camp update route not called by UI. Cost: cheap. |
-| PATCH camps-and-retreats/<uid>/update | changed primary key passing validation | service/camps_core.go (`Update`) | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does (`camps-core.md`). |
+| PATCH camps-and-retreats/<uid>/update | changed primary key passing validation | service/camps_core.go (`Update`) | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the camp is updated in place (`camps-core.md`). |
 
 ### associates-draft.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -647,7 +652,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### camps-periods.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH periods/<uid>/update, periods/services/<uid>/update | changed primary key passing validation | service/camps_periods.go (`UpdatePeriod`, `UpdateService`) | ported (v2-rest-b3) | The copy under the new key is inserted as `Model.save()` does (`camps-periods.md`). |
+| PATCH periods/<uid>/update, periods/services/<uid>/update | changed primary key passing validation | service/camps_periods.go (`UpdatePeriod`, `UpdateService`) | ported (t5pk) | Ported in t5pk: the keys are read-only in Django and Go; the body's key is ignored and the path's row is updated in place (`camps-periods.md`). |
 | POST periods/add, PATCH periods/<uid>/update, services add/update | form body with the services key or file parts | dto/camps_period_write.go (`campsInput`, `campsPeriodPreprocess`, `ParseCampsPeriodWrite`) | ported (t3courses) | UI sends JSON (`overview/modals/AddModal.svelte:33-34`, `AddServiceModal.svelte:31-32`, and the two above). Cost: cheap. |
 | PATCH camps-and-retreats/periods/services/<uid>/update | an unpaid walked payment is soft-deleted, or (with `X-Group-Id` set) belongs to another/no group | service/camps_periods.go (`campsWalk`) | ported | Ported in v2-misc-2 (`camps-periods.md`, `v2misc2-green-r2`). A hidden payment without an association stays refused (B). |
 | PATCH services/<uid>/update | walk failure with more than one subscription period; `Payment.save()` description failure | service/camps_periods.go:773,816 | B | Failures need malformed metas (e.g. null) on camp payments, which the camp writers never produce; legacy: yes (admin-edited metas). Cost: medium. |
@@ -675,7 +680,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH communications/workflows/<uid>/update | enabling a cron workflow whose time text is outside the parsed form (`20200101`, hour-only) | service/automation_workflow_update.go (`automationWorkflowEnablePlan`) | B | Future times ported in v2-misc (Celery eta). The editor's `datetime-local` gives `YYYY-MM-DDTHH:MM`, a parsed form. **Ported in restb2** (`workflow-update.md`). |
-| PATCH communications/workflows/<uid>/update | body with a new `automation_workflow_id` not yet used | service/automation_workflow_update.go:169 | B | UI update bodies carry only `automation_tree`/`name` (`AutomationEditor.svelte:148-155`), `automation_tree` (`components/inputs/email-builder/EmailBuilder.svelte:32-36`) or `enabled`. Cost: medium. **Ported in restb2** (`workflow-update.md`). |
+| PATCH communications/workflows/<uid>/update | body with a new `automation_workflow_id` not yet used | service/automation_workflow_update.go | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the named workflow is saved in place (`workflow-update.md`, cases `new-id-ignored*`). |
 | PATCH communications/workflows/<uid>/update | form-encoded `automation_tree` | dto/automation_workflow_write.go:145 (`ErrAutomationWorkflowFormTreeNotPorted`) | B (ported, tailplat) | UI sends JSON. Cost: cheap. Ported in tailplat: the form value is read with json.loads (invalid JSON, non-list, NaN/Infinity and huge integers are the generic 400). Ported in t3plat: a lone surrogate escape saves nothing and keeps the pre_save audit entry, then answers the 500 page (cases `form-tree-lone-surrogate-*`). Nesting past 500 levels stays refused (kept: the recursion limit of Python's JSON codec is an interpreter detail); the django-handoff family now uses that case. |
 
 ### chat-test.md
@@ -719,7 +724,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | ported | Ported (`course-locations.md`, `v2c-green`); indexed form keys ported in t3courses (`dto.courseLocationFormDocuments`: the repeated key, DRF's `parse_html_list` / `parse_html_dict` notation, ignored by a partial update). |
-| PATCH course/locations/<pk>/update | changed `course_location_id` | service/course_location_writes.go (`CopyLocation`) | ported (tailcourses) | The row the path names stays; the validated values are inserted under the new key, audited as the pre-save update then the create (`course-locations.md`, cases `update-primary-key-*`). |
+| PATCH course/locations/<pk>/update | changed `course_location_id` | service/course_location_writes.go | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the path's row is updated in place (`course-locations.md`, cases `update-primary-key-*`). |
 
 ### course-enrolment.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -780,11 +785,11 @@ Coordination/status doc; no refusals. Nothing to classify.
 | POST course-subscriptions/add | "not routed in Go" | — | n/a | Superseded: now routed (`BE_GO/cmd/server/main.go:588`, `courseEnrolmentHandler.Add`, another family). |
 | POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions_export.go`, `ErrCourseSubscriptionExportUnsupported` | ported: `excel` (famwiz), `pdf` (v2-pdf) | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
 | PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | ported | Ported (`course-subscriptions.md`, `v2c-green`). |
-| PATCH …/update | changed primary key | `repository/course_subscriptions.go` (`copyCourseSubscription`) | ported (t4l3) | Ported in t4l3: the instance is saved under the new key (insert with the pre-save and create entries, or over a soft-deleted row with that key); cases `update-primary-key-*` (`course-subscriptions.md`). UI never sends `course_subscription_id` in the body. |
+| PATCH …/update | changed primary key | `service/course_subscription_update.go` | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the path's row is saved in place (cases `update-primary-key-*`, `course-subscriptions.md`). |
 | PATCH …/update | HTML-form input for `multiple_quote`/`events` | `dto/course_subscriptions.go` (`ParseCourseSubscriptionWrite`) | ported (t3courses) | The form text goes through json.loads (a file part's text is its name); invalid text answers "Value must be valid JSON.". A document the jsonb column rejects (lone surrogates, nesting past the parser limit) stays refused (C: database error text). Cases `update-form-*`, `update-multipart-multiple-quote-file-invalid-json`. |
 | GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | ported | Ported for GET and update renders (`v2c-green`); the export does not render payments. |
 | same | a rendered membership payment with `instructor_id` | same site | ported | Ported with the invoice case (`v2c-green`). |
-| DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go` (`Delete`) | ported (t4l3) | Ported in t4l3: the deletes and the save's entry stay, the row is not saved, 500 (cases `delete-shared-*`). No current writer shares one payment (`BE/application/views/course_views.py:118-148,985-1038` create separate payments). legacy: possible but unproven; medium. |
+| DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go` (`Delete`) | ported (t5pk) | Ported in t5pk: the delete is one transaction in Django and Go; the installments, the shared payment and the soft delete complete together, 204 (cases `delete-shared-*`, router `destroy-shared-payment`). |
 
 ### document-views.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -964,7 +969,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET invoice-customers/list | an invoice of the caller's association without a PDF | `BE_GO/internal/service/invoice_parties.go:97-104`, `ErrInvoicePartyNotPorted` | **A** (ported in v2-documents) | `accounting/customersInvoice/CustomersInvoiceList.svelte:513`. A customer invoice added from the UI (`:309`) whose eager print made no PDF (renderer error swallowed, or any completed data restore making the eager task raise `StaleDataTask`, per invoice-views.md) leaves `pdf_id` NULL; Django prints it on its association's list (`invoice_views.py:836`). |
-| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id`, new `invoice_supplier_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B (not reached in t3pay; the nested objects are validated by the full `PaymentSerializer` and `SupplierSerializer`, whose field errors embed further nested serializers (associate, instructor, invoice); a valid object is the 500 page) | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). |
+| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B (not reached in t3pay; the nested objects are validated by the full `PaymentSerializer` and `SupplierSerializer`, whose field errors embed further nested serializers (associate, instructor, invoice); a valid object is the 500 page) | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). Ported in t5pk: `invoice_supplier_id` is read-only in Django and Go; a key in the body is ignored (`invoice-parties.md`, cases `supplier-*-id-ignored`). |
 | PATCH invoice-suppliers/<uid>/update | linked payment not loadable or description None/"quota corso" | `service/invoice_parties.go:640-649` | B | Supplier add sets a description (`invoice_views.py:695`); needs a later edit blanking it. legacy: yes; medium. |
 | GET invoice-suppliers/list | payment linking an associate/instructor/invoice or with a subscription/course subject | `service/invoice_parties.go:370-371` | B | Auto-created supplier payment is `Payment.OTHER` with a supplier; needs a manual edit in the payment editor. legacy: yes; medium. |
 | lists | ordering by relation path or `?` | invoice_parties service | B (relation paths **ported** in t4l1: only the invoice's own columns order the list, any path is an unknown ordering; `?` kept: a random order has no answer to reproduce) | Not sent by the UI tables. |
@@ -995,7 +1000,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### medical-appointment-add.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/medical-appointments/add | non-null `document` or any `medical_appointments_id` | `BE_GO/internal/dto/medical_appointment_add.go` | ported (t2subsb) | `Members/detail/sections/modals/AddMedicalAppointment.svelte:69-83` sends date/region/sport/address/creation_date/meta only. Ported in t2subsb: `document` (existing Document, `Invalid pk` otherwise) and `medical_appointments_id` (UUID, unique). |
+| POST subscription/<uid>/medical-appointments/add | non-null `document` or any `medical_appointments_id` | `BE_GO/internal/dto/medical_appointment_add.go` | ported (t2subsb) | `Members/detail/sections/modals/AddMedicalAppointment.svelte:69-83` sends date/region/sport/address/creation_date/meta only. Ported in t2subsb: `document` (existing Document, `Invalid pk` otherwise). Since t5pk `medical_appointments_id` is read-only in Django and Go (ignored; the UI never sends it). |
 
 ### mcp-server.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1033,7 +1038,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### modules-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH modules/<id>/update | `module_id` differs from the row | `service/modules_writes.go` (`Update`) | ported (v2-rest-b3) | The copy under the new key is inserted as `Model.save()` does (`modules-writes.md`). |
+| PATCH modules/<id>/update | `module_id` differs from the row | `service/modules_writes.go` (`Update`) | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the module is updated in place (`modules-writes.md`). |
 | PATCH modules/<id>/update | nested `sport_association` dict with keys | `dto/modules_nested.go` (`ParseModuleNested`) | ported (rest-prof) | Fields validated in order, errors nested, then the nested-write assertion (`modules-writes.md`). |
 | PATCH modules/<id>/update | nested association as `sport_association.<field>` form keys | `dto/modules_nested.go` (`ParseModuleNested`, form mode) | ported (t2docs) | The prefix keys become the nested input (last value wins; a key with nothing after the prefix is no input); `''` is None, `''` or skipped by the field's null/blank/required options; JSON fields are `json.loads` of the text; then the nested-write assertion as for JSON dicts. |
 | PATCH update | DB exception text | handler | C | Only on infrastructure errors. |
@@ -1063,7 +1068,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST/PUT/PATCH personas-subscriptions/ | >1 new tag link | `service/persona_subs_writes.go` | ported (t2subsb: the through rows follow the iteration order of Django's set of ids, `importeffects.PySetOrder`) | |
-| same | form bodies; key change (Model.save inserts a copy); jsonb text PostgreSQL rejects | `service/persona_subs_writes.go` | B (ported in t4l1: form and multipart bodies, the copy under a new key with its two audit entries, the 500 page with the pre-save entry kept for a rejected JSON value. Kept: form JSON text nested past 500 levels, Python's recursion limit depends on the live call stack; a new key held by a row of another group, left out on purpose) | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
+| same | form bodies; jsonb text PostgreSQL rejects | `service/persona_subs_writes.go` | B (ported in t4l1: form and multipart bodies, the 500 page with the pre-save entry kept for a rejected JSON value. Kept: form JSON text nested past 500 levels, Python's recursion limit depends on the live call stack) | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
+| same | key change on update | `service/persona_subs_writes.go` (`RouterUpdate`) | ported (t5pk) | Ported in t5pk: `subscription_id` is read-only in Django and Go; the body's key is ignored and the path's subscription is updated in place (`persona-subs-writes.md`, `update-subscription-id-ignored`). |
 
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1212,7 +1218,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | ported (v2-sub-create) | **ported** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
-| update | changed `subscription_membership_id` | | ported | Ported in t2subsa (the copy under the new key, `subscription-memberships.md`). |
+| update | changed `subscription_membership_id` | | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the path's row is updated in place (`subscription-memberships.md`). |
 | add | multipart with files | | ported | Ported in t2subsa (files merged into the mutable data, read per field). Form keys for `documents_data` stay refused: the UI sends JSON, and a repeated plain key is read as its last value by this API's form parser. |
 
 ### stripe-routes.md
@@ -1324,7 +1330,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | PATCH communications/workflows/<id>/update | a cron time Go does not classify | `service/automation_workflow_update.go` | B | Future times ported in v2-misc (see workflow-update.md). **Ported in restb2** (`workflow-update.md`). |
 | same | time string not starting with 4 ASCII digits / out-of-range field | (500 after saves, Django too) | — | parity, not a refusal Not a refusal: parity with Django, nothing to port. |
-| same | new `automation_workflow_id` | `:169` | B | UI PATCH bodies carry only `enabled`, or `automation_tree` and `name` (`AutomationEditor.svelte:145-156`, `EmailBuilder.svelte:32`). legacy: no **Ported in restb2** (`workflow-update.md`). |
+| same | new `automation_workflow_id` | service/automation_workflow_update.go | ported (t5pk) | Ported in t5pk: the body's key is ignored, the named workflow is saved in place (`workflow-update.md`). |
 | same | form-encoded `automation_tree` | `dto/automation_workflow_write.go:145` | B (ported, tailplat) | UI sends JSON Ported in tailplat (see automation-workflows). Lone surrogates ported in t3plat; nesting past 500 stays refused (django-handoff family example). |
 
 ### suppliers.md
@@ -1332,7 +1338,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | GET supplier/list | ordering by a relation path `field__other` | `service/suppliers.go:17`, `ErrSupplierOrdering` | ported (t4l1): ordering accepts only the supplier's own columns, so every path through a relation (including the owner account) answers as an unknown ordering, the same 500 on both sides | UI sortable columns are `name`, `email`, `address`, `tax_code` (`suppliers-and-customers/SuppliersAndCustomers.svelte:355-402`). legacy: no. |
 | DELETE supplier/<uid>/delete, bulk-delete | supplier referenced by a table other than payments, supplier invoices, subscriptions, sold products | service/supplier_writes.go | B (kept as a schema guard: the models declare exactly these four references, so no request reaches it) | The four Django-referenced tables are handled. Other references need models outside the UI's supplier flows. legacy: yes (if any). medium |
-| PATCH supplier/<uid>/update | body changes `supplier_id` | `service/supplier_writes.go` | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does. A body that also clears `sport_association` is ported in rest-b1 (the copy has no association). |
+| PATCH supplier/<uid>/update | body changes `supplier_id` | `service/supplier_writes.go` | ported (t5pk) | Ported in t5pk: the key is read-only in Django and Go; the body's key is ignored and the supplier is updated in place (`suppliers.md`). |
 
 ### ui-api-version.md
 | route | refusal condition | Go site | class | evidence / notes |

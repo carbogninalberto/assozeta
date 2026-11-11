@@ -288,7 +288,7 @@ add('add-athlete-forbidden', 'athlete', P_ADD, 403, NOT_ASSOCIATION, method='POS
 add('add-missing-required', 'owner', P_ADD, 400, {'error': repr_detail([('start_date', [REQUIRED]), ('end_date', [REQUIRED]),
                                                                           ('camps_and_retreats', [REQUIRED])])}, method='POST', body={})
 add('add-invalid-fields', 'owner', P_ADD, 400, {'error': repr_detail([
-    ('camps_and_retreats_period_id', [UUID_INVALID]), ('start_date', [DATETIME]), ('end_date', [DATETIME]), ('title', [BLANK]),
+    ('start_date', [DATETIME]), ('end_date', [DATETIME]), ('title', [BLANK]),
     ('description', [too_long(2048)]), ('fee', [NUMBER]), ('max_participants', [('Ensure this value is greater than or equal to 0.', 'min_value')]),
     ('created_at', [NULL]), ('camps_and_retreats', [missing_pk(UNKNOWN)]),
     ('camps_and_Retreats_period_services', [('Expected a list of items but got type "str".', 'not_a_list')])])},
@@ -309,9 +309,6 @@ add('add-invalid-digits-and-types', 'owner', P_ADD, 400, {'error': repr_detail([
     method='POST', body={**DATES, 'title': True, 'fee': '12345678', 'max_participants': '1.5', 'camps_and_retreats': True})
 add('add-blank-fee-is-null', 'owner', P_ADD, 400, {'error': repr_detail([('fee', [NULL])])}, method='POST',
     body={**DATES, 'fee': '', 'max_participants': '', 'camps_and_retreats': camp_id('camp')})
-add('add-existing-id', 'owner', P_ADD, 400, {'error': repr_detail([('camps_and_retreats_period_id', [
-    ('camps and retreats period with this camps and retreats period id already exists.', 'unique')])])}, method='POST',
-    body={**DATES, 'camps_and_retreats_period_id': PERIODS['july']['id'], 'camps_and_retreats': camp_id('camp')})
 add('add-list-body', 'owner', P_ADD, 400, {'error': repr_detail([('non_field_errors', [
     ('Invalid data. Expected a dictionary, but got list.', 'invalid')])])}, method='POST', body=[])
 add('add-null-body', 'owner', P_ADD, 400, {'error': repr_detail([('non_field_errors', [('No data provided', 'null')])])}, method='POST',
@@ -370,12 +367,16 @@ created_period('full_collaborator', 'add-full-collaborator-defaults', {'camp': '
                                                                       'end': '2026-11-02T00:00:00Z', 'title': None, 'description': None,
                                                                       'fee': '0.00', 'max': 0},
                {'start_date': '2026-11-01T00:00:00', 'end_date': '2026-11-02T00:00:00Z', 'camps_and_retreats': camp_id('plain')})
-created_period('owner', 'add-explicit-id-and-created', {'camp': 'camp', 'start': '2026-12-01T00:00:00Z', 'end': '2026-12-03T00:00:00Z',
-                                                        'title': '5', 'description': None, 'fee': '12.34', 'max': None},
+# camps_and_retreats_period_id is read-only: a key in the body is ignored and the period gets a new one.
+created_period('owner', 'add-explicit-id-ignored-and-created', {'camp': 'camp', 'start': '2026-12-01T00:00:00Z', 'end': '2026-12-03T00:00:00Z',
+                                                                'title': '5', 'description': None, 'fee': '12.34', 'max': None},
                {'camps_and_retreats_period_id': NEW_PERIOD, 'created_at': '2026-06-30T12:00:00.123456Z', 'start_date': '2026-12-01',
                 'end_date': '2026-12-03T01:00:00+01:00', 'title': 5, 'fee': 12.34, 'max_participants': '',
                 'camps_and_retreats': camp_id('camp')},
-               explicit_id=NEW_PERIOD, explicit_created='2026-06-30T12:00:00.123456Z')
+               explicit_created='2026-06-30T12:00:00.123456Z')
+created_period('owner', 'add-existing-id-ignored', {'camp': 'camp', 'start': '2026-10-01T08:00:00Z', 'end': '2026-10-05T00:00:00Z',
+                                                    'title': None, 'description': None, 'fee': '0.00', 'max': 0},
+               {**DATES, 'camps_and_retreats_period_id': PERIODS['july']['id'], 'camps_and_retreats': camp_id('camp')})
 created_period('owner_without_association', 'add-unassociated-owner', {'camp': 'abroad', 'start': '2026-10-01T08:00:00Z',
                                                                        'end': '2026-10-05T00:00:00Z', 'title': None, 'description': None,
                                                                        'fee': '-3.00', 'max': 2},
@@ -473,45 +474,14 @@ updated_period('owner', 'update-move-camp-and-nulls', 'august', {'camps_and_retr
 updated_period('owner', 'update-form', 'august', None, {'description': 'Form è', 'end': '2026-08-20T00:00:00Z', 'max': 3},
                form='description=Form+%C3%A8&end_date=2026-08-20T00%3A00%3A00Z&max_participants=3')
 
-# A body naming a key no row has: Model.save() inserts a copy with the validated values and the period the path names stays. auditlog's
-# pre_save finds no row under the new key and logs the whole row as an update (indexed through the actor), post_save logs the create.
+# camps_and_retreats_period_id is read-only: a key in the body is ignored and the period the path names is updated in place.
 COPY_PERIOD, COPY_SERVICE = 'a1000000-0000-4000-8000-000000985090', 'a1000000-0000-4000-8000-000000985091'
-
-
-def copied_period(actor, name, label, body, values, new_id, *, links=None, status_fee=None):
-    base = STATE['periods'][label]
-    row = {**base, **values, 'id': new_id}
-    fee = repr(float(values['fee'])) if 'fee' in values else base['fee']
-    changes = {'camps_and_retreats_period_id': ['None', new_id], 'camps_and_retreats': ['None', CAMPS[row['camp']]['id']],
-               'start_date': ['None', naive(row['start'])], 'end_date': ['None', naive(row['end'])], 'fee': ['None', fee],
-               'created_at': ['None', naive(row['created'])]}
-    for field, value in (('title', row['title']), ('description', row['description']), ('max_participants', row['max'])):
-        if value is not None:
-            changes[field] = ['None', str(value)]
-    events = [audit('CampsAndRetreatsPeriod', new_id, 1, changes, OWN if actor == 'owner' else None,
-                    'actor.sport_association' if actor == 'owner' else None),
-              audit('CampsAndRetreatsPeriod', new_id, 0, changes, CAMPS[row['camp']]['association'], PERIOD_PATH)]
-    effect = {'actor': actor, 'rows': {PERIOD: {new_id: period_row(row)}}, 'audit': events}
-    STATE['periods']['copy_' + name], STATE['links']['copy_' + name] = row, links or []
-    if links:
-        effect['links'] = {PERIOD_LINK: {'add': [[new_id, SERVICES[s]['id']] for s in sorted(links)], 'remove': []}}
-    response = {'message': 'Updated successfully', 'period': period_data('copy_' + name)}
-    del STATE['periods']['copy_' + name], STATE['links']['copy_' + name]
-    add(name, actor, period_path(label, 'update'), 200, response, method='PATCH', body=body, effect=effect)
-
-
-copied_period('owner', 'update-new-key-copy', 'august', {'camps_and_retreats_period_id': COPY_PERIOD, 'title': 'Agosto bis', 'fee': '21',
-                                                         'camps_and_Retreats_period_services': [SERVICES['bus']['id']]},
-              {'title': 'Agosto bis', 'fee': '21.00'}, COPY_PERIOD, links=['bus'])
-add('update-new-key-taken', 'owner', period_path('august', 'update'), 400, {'error': repr_detail([('camps_and_retreats_period_id', [
-    ('camps and retreats period with this camps and retreats period id already exists.', 'unique')])])}, method='PATCH',
-    body={'camps_and_retreats_period_id': PERIODS['july']['id']})
-add('update-new-key-invalid', 'owner', period_path('august', 'update'), 400, {'error': repr_detail([('camps_and_retreats_period_id', [UUID_INVALID])])},
-    method='PATCH', body={'camps_and_retreats_period_id': 'x'})
-add('update-same-key-no-copy', 'owner', period_path('august', 'update'), 200,
-    {'message': 'Updated successfully', 'period': period_data('august')}, method='PATCH',
-    body={'camps_and_retreats_period_id': PERIODS['august']['id']},
-    effect={'actor': 'owner', 'rows': {PERIOD: {PERIODS['august']['id']: period_row(STATE['periods']['august'])}}, 'audit': []})
+updated_period('owner', 'update-new-key-ignored', 'august', {'camps_and_retreats_period_id': COPY_PERIOD, 'title': 'Agosto bis', 'fee': '21',
+                                                             'camps_and_Retreats_period_services': [SERVICES['bus']['id']]},
+               {'title': 'Agosto bis', 'fee': '21.00'}, links=['bus'])
+updated_period('owner', 'update-other-row-key-ignored', 'august', {'camps_and_retreats_period_id': PERIODS['july']['id']}, {})
+updated_period('owner', 'update-malformed-key-ignored', 'august', {'camps_and_retreats_period_id': 'x'}, {})
+updated_period('owner', 'update-same-key', 'august', {'camps_and_retreats_period_id': PERIODS['august']['id']}, {})
 
 # ---------------------------------------------------------------------------
 # periods/services/add
@@ -558,13 +528,10 @@ add('services-add-athlete-forbidden', 'athlete', S_ADD, 403, NOT_ASSOCIATION, me
 add('services-add-missing-period', 'owner', S_ADD, 400, {'error': repr_detail([('camps_and_retreats_period', [REQUIRED])])}, method='POST',
     body={'title': 'X'})
 add('services-add-invalid', 'owner', S_ADD, 400, {'error': repr_detail([
-    ('camps_and_retreats_period_service_id', [UUID_INVALID]), ('title', [BLANK]), ('fee', [NUMBER]), ('created_at', [DATETIME]),
+    ('title', [BLANK]), ('fee', [NUMBER]), ('created_at', [DATETIME]),
     ('camps_and_retreats_period', [missing_pk(UNKNOWN)]), ('payment_category', [bad_uuid('abc')])])}, method='POST',
     body={'camps_and_retreats_period_service_id': 1.5, 'title': '', 'fee': '', 'created_at': 'ieri', 'camps_and_retreats_period': UNKNOWN,
           'payment_category': 'abc'})
-add('services-add-existing-id', 'owner', S_ADD, 400, {'error': repr_detail([('camps_and_retreats_period_service_id', [
-    ('camps and retreats periods service with this camps and retreats period service id already exists.', 'unique')])])}, method='POST',
-    body={'camps_and_retreats_period_service_id': SERVICES['kayak']['id'], 'camps_and_retreats_period': period_id('sept')})
 add('services-add-foreign-period-server-error', 'owner', S_ADD, 500, {'error': TENANT}, method='POST',
     body={'camps_and_retreats_period': period_id('abroad'), 'fee': 'x'})
 add('services-add-foreign-category-server-error', 'owner', S_ADD, 500, {'error': TENANT}, method='POST',
@@ -577,11 +544,16 @@ created_service('full_collaborator', 'services-add-collaborator-defaults', {'per
                 {'camps_and_retreats_period': period_id('sept'), 'payment_category': None}, default_fee=True)
 created_service('owner', 'services-add-form', {'period': 'sept', 'title': None, 'description': None, 'fee': '3.00', 'category': None},
                 form=f'camps_and_retreats_period={period_id("sept")}&title=&description=&fee=3&payment_category=')
-created_service('owner', 'services-add-explicit-id', {'period': 'sept', 'title': 'Cena', 'description': None, 'fee': '1234567.89',
-                                                      'category': 'own'},
+# camps_and_retreats_period_service_id is read-only: a key in the body is ignored and the service gets a new one.
+created_service('owner', 'services-add-explicit-id-ignored', {'period': 'sept', 'title': 'Cena', 'description': None, 'fee': '1234567.89',
+                                                              'category': 'own'},
                 {'camps_and_retreats_period_service_id': NEW_SERVICE, 'created_at': '2026-06-20T08:00:00+02:00',
                  'camps_and_retreats_period': period_id('sept'), 'title': 'Cena', 'fee': 1234567.89, 'payment_category': CATEGORIES['own']['id']},
-                explicit_id=NEW_SERVICE, explicit_created='2026-06-20T06:00:00Z')
+                explicit_created='2026-06-20T06:00:00Z')
+created_service('owner', 'services-add-existing-id-ignored', {'period': 'sept', 'title': None, 'description': None, 'fee': '0.00',
+                                                              'category': None},
+                {'camps_and_retreats_period_service_id': SERVICES['kayak']['id'], 'camps_and_retreats_period': period_id('sept')},
+                default_fee=True)
 created_service('owner_without_association', 'services-add-unassociated-owner', {'period': 'abroad', 'title': None, 'description': None,
                                                                                   'fee': '3.10', 'category': 'foreign'},
                 {'camps_and_retreats_period': period_id('abroad'), 'fee': '3.1', 'payment_category': CATEGORIES['foreign']['id']})
@@ -717,34 +689,12 @@ updated_service('owner', 'services-update-deleted-payment', 'canoe', {'fee': '9.
 # With X-Group-Id the payment manager is group-aware: a payment outside that group is saved and audited the same way.
 updated_service('owner', 'services-update-other-group-payment', 'umbrella', {'fee': '6.00'}, {'fee': '6.00'},
                 headers={'X-Group-Id': IDS['own_group']})
-def copied_service(actor, name, label, body, values, new_id):
-    base = STATE['services'][label]
-    row = {**base, **values, 'id': new_id}
-    changes = {'camps_and_retreats_period_service_id': ['None', new_id], 'camps_and_retreats_period': ['None', PERIODS[row['period']]['id']],
-               'fee': ['None', row['fee']], 'payment_category': ['None', CATEGORIES[row['category']]['id'] if row['category'] else 'None'],
-               'created_at': ['None', naive(row['created'])]}
-    for field in ('title', 'description'):
-        if row[field] is not None:
-            changes[field] = ['None', row[field]]
-    events = [audit('CampsAndRetreatsPeriodsService', new_id, 1, changes, OWN if actor == 'owner' else None,
-                    'actor.sport_association' if actor == 'owner' else None),
-              audit('CampsAndRetreatsPeriodsService', new_id, 0, changes, CAMPS[PERIODS[row['period']]['camp']]['association'], SERVICE_PATH)]
-    rows = {SERVICE: {new_id: service_row(row)}}
-    # The walk reads the copy's key: no meta entry names it, the notes and amounts are recomputed.
-    STATE['services']['copy_' + name] = row
-    payment_effects('copy_' + name, rows, events)
-    response = {'message': 'Updated successfully', 'period': service_data('copy_' + name)}
-    del STATE['services']['copy_' + name]
-    add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', body=body, effect={'actor': actor, 'rows': rows, 'audit': events})
-
-
-copied_service('owner', 'services-update-new-key-copy', 'bus', {'camps_and_retreats_period_service_id': COPY_SERVICE, 'title': 'Corriera',
-                                                                'fee': '4'},
-               {'title': 'Corriera', 'fee': '4.00'}, COPY_SERVICE)
-add('services-update-new-key-taken', 'owner', service_path('bus', 'update'), 400, {'error': repr_detail([(
-    'camps_and_retreats_period_service_id', [('camps and retreats periods service with this camps and retreats period service id already exists.',
-                                              'unique')])])}, method='PATCH',
-    body={'camps_and_retreats_period_service_id': SERVICES['kayak']['id']})
+# camps_and_retreats_period_service_id is read-only: a key in the body is ignored and the service the path names is updated
+# in place (the payment walk reads the path's key).
+updated_service('owner', 'services-update-new-key-ignored', 'bus', {'camps_and_retreats_period_service_id': COPY_SERVICE,
+                                                                     'title': 'Corriera', 'fee': '4'},
+                {'title': 'Corriera', 'fee': '4.00'})
+updated_service('owner', 'services-update-other-row-key-ignored', 'bus', {'camps_and_retreats_period_service_id': SERVICES['kayak']['id']}, {})
 
 # A fee that pushes a payment's recomputed amount past numeric(9,2): the meta saves before it stay, the failing save is audited
 # (auditlog writes before the UPDATE) and then raises; later payments are not walked.

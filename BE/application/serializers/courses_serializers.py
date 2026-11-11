@@ -13,6 +13,7 @@ from application.serializers.payment_serializers import PaymentSerializer
 from application.serializers.subscriptions_serializers import SubscriptionSerializer, SubscriptionSerializerSimplify
 from core.settings import STORAGE_DIR
 from docmanager.models import Document
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -20,7 +21,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = '__all__'
 
-class CourseLocationSerializer(serializers.ModelSerializer):
+class CourseLocationSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     documents = DocumentSerializer(many=True, read_only=True)
     documents_data = serializers.ListField(
         child=serializers.DictField(), write_only=True, required=False
@@ -153,7 +154,7 @@ class CourseSimpleSerializer(serializers.ModelSerializer):
             'description',
         )
 
-class CourseSubscriptionOverviewSerializer(serializers.ModelSerializer):
+class CourseSubscriptionOverviewSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     subscription = SubscriptionSerializerSimplify(read_only=True)
     installments = serializers.SerializerMethodField()
     course = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all())
