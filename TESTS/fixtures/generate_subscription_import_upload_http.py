@@ -191,6 +191,9 @@ add('form-field-associates-file-server-error', 'owner', 500, SERVER, raw=multipa
 add('malformed-document-id', 'owner', 400, ['badly formed hexadecimal UUID string'], body={'document_id': 'non-un-uuid', 'map': {}})
 add('integer-document-id', 'owner', 400, ["'int' object has no attribute 'replace'"], body={'document_id': 5, 'map': {}})
 add('null-document-id', 'owner', 400, ['one of the hex, bytes, bytes_le, fields, or int arguments must be given'], body={'document_id': None, 'map': None})
+# t4l1: a file sent as document_id is uuid.UUID(file), the in-memory upload class's AttributeError.
+add('file-document-id', 'owner', 400, ["'InMemoryUploadedFile' object has no attribute 'replace'"],
+    raw=multipart(fields=[('map', '{}')], files=[('document_id', 'soci.csv', b'Nome\nAda\n', 'text/csv')]))
 add('unknown-document-server-error', 'owner', 500, SERVER, body={'document_id': IDS['missing'], 'map': {'nome': 'Nome'}})
 add('unknown-document-form-server-error', 'full_collaborator', 500, SERVER,
     raw=multipart(fields=[('document_id', IDS['missing']), ('map', '{}')]))

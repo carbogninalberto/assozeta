@@ -1168,7 +1168,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | same | workbook with boolean, error, time-of-day or duration cells, the 1904 date system, a non-text header cell, only whole-number columns | `pandasxlsx.ErrUnsupported` | B | Member sheets carry names and text columns; these forms need a hand-made or converted sheet. Cost: medium. |
 | same | a number or date text in a date column that dateutil reads as a year below 1000 | `service/subscription_import_rows.go` (`subscriptionImportDate`) | B | Ported in v2subs3 otherwise (`internal/pydateutil`). |
 | same | CSV invalid UTF-8, NUL, bare CR, columns with İ/Σ | `service/subscription_import_upload.go:219-223` | B | A Latin-1 CSV exported from old Excel gives invalid UTF-8: user-producible but a minority. legacy: n/a. Cost: medium. |
-| same | file given as `document_id` | `service/subscription_import_upload.go:189` | B | The UI sends a string. |
+| same | file given as `document_id` | `service/subscription_import_upload.go` | B (ported in t4l1: `uuid.UUID(file)` is the 400 `'InMemoryUploadedFile' object has no attribute 'replace'`, `TemporaryUploadedFile` for a request over the in-memory upload size) | The UI sends a string. |
 
 ### relay-go-realtime.md
 | route | refusal condition | Go site | class | evidence / notes |

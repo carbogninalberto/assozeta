@@ -335,6 +335,20 @@
    }
   },
   {
+   "name": "subscription-import-upload-file-document-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "'InMemoryUploadedFile' object has no attribute 'replace'"
+   ],
+   "effect": null,
+   "raw_body": "--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"map\"\r\n\r\n{}\r\n--ImportBoundary7d1f\r\nContent-Disposition: form-data; name=\"document_id\"; filename=\"soci.csv\"\r\nContent-Type: text/csv\r\n\r\nNome\nAda\n\r\n--ImportBoundary7d1f--\r\n",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
    "name": "subscription-import-upload-unknown-document-server-error",
    "actor": "owner",
    "method": "POST",

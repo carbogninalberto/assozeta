@@ -251,7 +251,7 @@ func (s *DocumentUploads) storeImportFile(ctx context.Context, identity domain.R
 // Upload follows the view: the association (401 without one), data.keys(),
 // then the upload branch, the mapping branch's lookups, or TypeError.
 func (s *SubscriptionImportUpload) Upload(ctx context.Context, identity domain.ResolvedIdentity, body any,
-	audit domain.LoginAuditContext) (domain.RequestObject, error) {
+	audit domain.LoginAuditContext, spooled bool) (domain.RequestObject, error) {
 	tx, err := s.store.BeginSubscriptionImport(ctx)
 	if err != nil {
 		return nil, err
@@ -301,7 +301,13 @@ func (s *SubscriptionImportUpload) Upload(ctx context.Context, identity domain.R
 	case nil:
 		return nil, &PaymentInfoUUIDError{Detail: "one of the hex, bytes, bytes_le, fields, or int arguments must be given"}
 	case domain.RequestFile:
-		return nil, ErrSubscriptionImportNotPorted
+		// uuid.UUID(file): the upload class depends on the request's length
+		// (FILE_UPLOAD_MAX_MEMORY_SIZE), which spooled reports.
+		class := "InMemoryUploadedFile"
+		if spooled {
+			class = "TemporaryUploadedFile"
+		}
+		return nil, &PaymentInfoUUIDError{Detail: "'" + class + "' object has no attribute 'replace'"}
 	default:
 		return nil, &PaymentInfoUUIDError{Detail: "'" + pythonTypeNameOf(value) + "' object has no attribute 'replace'"}
 	}
