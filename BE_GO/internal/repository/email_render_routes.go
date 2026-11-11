@@ -127,9 +127,20 @@ func (t *collaboratorInviteTransaction) AppendInviteAudit(ctx context.Context, i
 	if err != nil {
 		return err
 	}
-	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "collaborationinvites", Key: id,
+	differs := event.PermissionsMemory != nil && event.PermissionsLoaded != nil && *event.PermissionsMemory != *event.PermissionsLoaded
+	if differs {
+		// The create entry renders the instance's own value, not the stored reading.
+		changes["collaborator_permissions"] = [2]string{"None", *event.PermissionsMemory}
+	}
+	entry := modelAuditEntry{Model: "collaborationinvites", Key: id,
 		Representation: "CollaborationInvites object (" + id + ")", Action: 0, Changes: changes, Context: event.Context,
-		AssociationID: event.AssociationID, ResolutionPath: event.ResolutionPath, At: event.At})
+		AssociationID: event.AssociationID, ResolutionPath: event.ResolutionPath, At: event.At}
+	if err = appendModelAudit(ctx, t.tx, entry); err != nil || !differs {
+		return err
+	}
+	entry.Action = 1
+	entry.Changes = map[string][2]string{"collaborator_permissions": {*event.PermissionsLoaded, *event.PermissionsMemory}}
+	return appendModelAudit(ctx, t.tx, entry)
 }
 
 func (t *collaboratorInviteTransaction) LiveAssociations(ctx context.Context, user string, impersonation *string) ([]domain.EmailRenderAssociation, error) {

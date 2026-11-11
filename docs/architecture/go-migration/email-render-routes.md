@@ -91,9 +91,7 @@ colours. `go test ./internal/emailrender` reproduces all of it and checks that u
 
 ## Not ported (refused with the 500 page before any write)
 
-- `collaborators/add` permissions containing a float whose Python repr uses an exponent (`1e+16`, `1e-05`) or `-0.0`: PostgreSQL
-  returns them as other numbers, so Django's second `save()` logs an update entry; and e-mail strings with NUL characters or lone
-  surrogates.
+- `collaborators/add` e-mail strings with NUL characters or lone surrogates are answered as Django does (see below).
 - Inputs the renderer refuses (see above); with the current templates and views this is only an invoice payment date before
   year 1000.
 - `Accept-Language` values other than English are rendered correctly (golden evidence) but the HTTP families run in English only
@@ -118,4 +116,10 @@ body).
 ## Ported in taildocs
 
 `collaborators/add` with a NUL in the e-mail answers the validation error (400); a lone surrogate answers the 500 page, as
-Django does. Permission floats whose repr uses an exponent, and `-0.0`, are still refused.
+Django does. 
+## Ported in t2docs
+
+`collaborators/add` permissions with a float whose repr uses a positive exponent (`1e+20`) or `-0.0`: the create entry carries the
+request's own `json.dumps(sort_keys=True)` text, PostgreSQL's jsonb hands the number back as an integer (`-0.0` as `0.0`) and the
+view's second `save()` logs an update entry `[loaded text, request text]` under the same index. Floats with a negative exponent
+read back unchanged and log nothing more.

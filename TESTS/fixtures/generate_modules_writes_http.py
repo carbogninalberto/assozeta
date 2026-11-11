@@ -437,6 +437,47 @@ add('update-nested-with-outer-errors', 'owner', 'PATCH', update('edit'), 400,
 add('update-nested-collaborator', 'full_collaborator', 'PATCH', update('edit'), 400, nested_errors(('sport', [MAX(100)])),
     body={'sport_association': {'sport': 's' * 101}})
 
+# === nested association as HTML form input ('sport_association.<field>' keys, parse_html_dict): the nested serializer
+# reads the last value of each key; '' is None for a nullable field ('' where blank is allowed), skipped for an optional
+# one and kept for a required one; JSON fields are json.loads of the text.
+FORM = 'application/x-www-form-urlencoded'
+
+
+def form_nested_case(name, raw, *fields, outer=()):
+    add('update-nested-form-' + name, 'owner', 'PATCH', update('edit'), 400, nested_errors(*fields, outer=outer), raw_body=raw, content_type=FORM)
+
+
+def form_nested_valid(name, raw):
+    add('update-nested-form-' + name, 'owner', 'PATCH', update('edit'), 500, error(NESTED), raw_body=raw, content_type=FORM)
+
+
+form_nested_valid('valid', 'title=Mai&sport_association.sport=Calcio&sport_association.tax_code=12345678901')
+form_nested_case('errors', 'sport_association.denomination=&sport_association.tax_code=xxxxxxxxxxxx&sport_association.address='
+                 '&sport_association.address_cap=123&sport_association.subscription_fee=abc&sport_association.multiple_subscription_fee=maybe'
+                 '&sport_association.configuration=%7Bx&sport_association.federation=&sport_association.enabled_for=',
+                 ('denomination', [BLANK]), ('tax_code', [MAX(11)]), ('address_cap', [CAP]),
+                 ('subscription_fee', [('A valid number is required.', 'invalid')]), ('multiple_subscription_fee', [NOT_BOOL]),
+                 ('configuration', [('Value must be valid JSON.', 'invalid')]))
+form_nested_valid('empty-values', 'sport_association.subscription_fee=&sport_association.multiple_subscription_fee='
+                  '&sport_association.configuration=&sport_association.sport_association_id=&sport_association.membership_fee='
+                  '&sport_association.address_cap=&sport_association.sport=')
+form_nested_valid('unknown-keys', 'sport_association.zzz=1&title=Mai')
+form_nested_valid('last-value-wins', 'sport_association.sport=' + 's' * 101 + '&sport_association.sport=ok')
+form_nested_case('last-value-invalid', 'sport_association.sport=ok&sport_association.sport=' + 's' * 101, ('sport', [MAX(100)]))
+form_nested_valid('json-null', 'sport_association.configuration=null&sport_association.enabled_for=%5B1%5D')
+form_nested_case('json-text', 'sport_association.additional_fields=abc&sport_association.stripe_available_methods=%22ok%22',
+                 ('additional_fields', [('Value must be valid JSON.', 'invalid')]))
+form_nested_case('primary-key', 'sport_association.sport_association_id=' + OWN, ('sport_association_id', [UNIQUE_ID]))
+form_nested_case('primary-key-text', 'sport_association.sport_association_id=x', ('sport_association_id', [('Must be a valid UUID.', 'invalid')]))
+form_nested_case('with-outer-errors', 'title=' + 'x' * 256 + '&sport_association.sport=' + 's' * 101, ('sport', [MAX(100)]),
+                 outer=[detail('title', 'Ensure this field has no more than 255 characters.', 'max_length')])
+# A key with nothing after the prefix is no nested input: the update goes on.
+add('update-nested-form-bare-prefix', 'owner', 'PATCH', update('edit'), 200, None,
+    raw_body='title=Form+senza+annidato&sport_association.=x', content_type=FORM,
+    effect=changed('edit', 'owner', title='Form senza annidato'))
+cases[-1]['response'] = updated('edit', enabled=True)
+
+
 def created_audit(row, ident):
     """auditlog's diff of a module against nothing: None-valued fields are kept only for the association and the JSON fields."""
     changes = {'module_id': ['None', ident]}

@@ -62,12 +62,36 @@ const ModuleNestedUniqueID = "unique:sport association:sport association id"
 // the fields present are checked in Meta.fields order and the errors returned in
 // that order. taken says whether a SportAssociation (soft-deleted ones included)
 // already has the primary key.
-func ParseModuleNested(object domain.RequestObject, taken func(id string) (bool, error)) ([]DRFFieldError, error) {
+func ParseModuleNested(object domain.RequestObject, taken func(id string) (bool, error), form bool) ([]DRFFieldError, error) {
 	var errors []DRFFieldError
 	for _, field := range moduleNestedFields {
 		value, present := object.Lookup(field.name)
 		if !present {
 			continue
+		}
+		if form {
+			// Field.get_value on the parsed 'sport_association.<key>' input: an empty value
+			// of a nullable field is None (or '' when blank is allowed), of an optional
+			// one is skipped (or '' when blank is allowed); a required field keeps ''.
+			if text, _ := value.(string); text == "" {
+				switch {
+				case field.null && field.blank:
+				case field.null:
+					value = nil
+				case field.name == "denomination" || field.name == "tax_code":
+				default:
+					continue
+				}
+			}
+			if field.kind == nestedJSON {
+				if text, isText := value.(string); isText {
+					// JSONField.get_value marks HTML input as a JSON string: json.loads.
+					if _, err := ParseMessageMutationsJSON([]byte(text)); err != nil {
+						errors = append(errors, DRFFieldError{Field: field.name, Codes: []string{ModuleJSON}})
+					}
+					continue
+				}
+			}
 		}
 		var codes []string
 		switch field.kind {

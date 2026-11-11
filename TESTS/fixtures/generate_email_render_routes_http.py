@@ -177,12 +177,12 @@ INVITED = {'msg': 'User invited'}
 COLLABORATOR = 'email/account/email_welcome_collaborator_message.html'
 
 
-def invited(email, role, permissions=None, *, actor='owner', index=(OWN, 'actor.sport_association'), sent=True):
+def invited(email, role, permissions=None, *, actor='owner', index=(OWN, 'actor.sport_association'), sent=True, reading=None):
     """One CollaborationInvites row of the owner with its create entry; sent: the e-mail is queued."""
     message = render(COLLABORATOR, {'email': email, 'token': '$token', 'sport_association': {'denomination': '$denomination:own'},
                                     'app_host': '$app_url', 'settings': {'WHITELABEL_NAME': '$whitelabel', 'IS_WHITELABEL': '$is_whitelabel'}})
     return {'kind': 'invite', 'actor': actor, 'email': email, 'role': role, 'permissions': permissions,
-            'index': list(index) if index else None,
+            'index': list(index) if index else None, 'reading': reading,
             'celery': [mail('$whitelabel | Invito a collaborare', message, '$from_email', [email], OWN)] if sent else []}
 
 
@@ -220,6 +220,19 @@ add('add-number-email', 'owner', ADD, 500, SERVER, body={'email': 5})
 add('add-too-long-for-column', 'owner', ADD, 500, SERVER, body={'email': 'a' * 100 + '@' + '.'.join(['b' * 60] * 3) + '.it'})
 add('add-role-not-int', 'owner', ADD, 500, SERVER, body={'email': 'x@example.test', 'collaborator_role': '2.0'})
 add('add-role-null', 'owner', ADD, 500, SERVER, body={'email': 'x@example.test', 'collaborator_role': None})
+# jsonb hands floats back as numerics: a positive exponent reads as an integer and -0.0 as 0.0, so the
+# second save() logs an update entry (and the create entry shows the instance's own text); small exponents round-trip.
+for label, raw, memory, loaded, perms in (
+        ('exponent-float', '{"a": 1e20, "b": [1.5e+16]}', '{"a": 1e+20, "b": [1.5e+16]}', '{"a": 100000000000000000000, "b": [15000000000000000]}',
+         {'a': 1e20, 'b': [1.5e16]}),
+        ('negative-zero', '[-0.0, 1]', '[-0.0, 1]', '[0.0, 1]', [-0.0, 1]),
+        ('negative-exponent-float', '{"k": -2e30}', '{"k": -2e+30}', '{"k": -2000000000000000000000000000000}', {'k': -2e30})):
+    add('add-permissions-' + label, 'owner', ADD, 200, INVITED,
+        raw_body='{"email": "float-%s@example.test", "collaborator_permissions": %s}' % (label, raw), content_type='application/json',
+        effect=invited('float-%s@example.test' % label, 3, perms, reading=[loaded, memory]))
+add('add-permissions-small-exponent', 'owner', ADD, 200, INVITED,
+    raw_body='{"email": "small@example.test", "collaborator_permissions": [1e-05, 1e15, 0.0001]}', content_type='application/json',
+    effect=invited('small@example.test', 3, [1e-05, 1e15, 0.0001]))
 add('add-permissions-nul', 'owner', ADD, 500, SERVER, body={'email': 'x@example.test', 'collaborator_permissions': {'k': 'a\u0000'}})
 add('add-list-body', 'owner', ADD, 400, ['Email is required'], body=['other'])
 add('add-list-body-with-key', 'owner', ADD, 500, SERVER, body=['email'])

@@ -181,7 +181,8 @@ def assert_effect(case, before, after, source, context):
     expires = datetime.fromisoformat(invite['expiration_date'].replace('Z', '+00:00')).timestamp()
     contract.require(since - 1 <= created <= until + 1 and abs(expires - created - timedelta(days=90).total_seconds()) < 2, 'state.dates')
     audit, indexes = harness.audit_delta(contract, before, after)
-    contract.require(len(audit) == 1, 'audit.count')
+    reading = effect.get('reading')
+    contract.require(len(audit) == (2 if reading else 1), 'audit.count')
     event = audit[0]
     model = invites_model()
     stored = model._base_manager.get(pk=invite['collaboration_invite_id'])
@@ -191,7 +192,14 @@ def assert_effect(case, before, after, source, context):
     key = str(invite['collaboration_invite_id'])
     contract.require(event['content_type_id'] == types['collaborationinvites'] and event['action'] == 0 and event['object_pk'] == key
                      and event['object_repr'] == f'CollaborationInvites object ({key})', 'audit.identity')
-    contract.require(event['changes'] == created_changes(model, stored), 'audit.changes')
+    expected = created_changes(model, stored)
+    if reading:
+        expected = {**expected, 'collaborator_permissions': ['None', reading[1]]}
+        update = audit[1]
+        contract.require(update['action'] == 1 and update['object_pk'] == key and update['content_type_id'] == event['content_type_id']
+                         and update['changes'] == {'collaborator_permissions': reading} and update['actor_id'] == event['actor_id']
+                         and update['cid'] == event['cid'], 'audit.update')
+    contract.require(event['changes'] == expected, 'audit.changes')
     contract.require(event['actor_id'] == actor and event['actor_email'] == users[actor]['email'], 'audit.actor')
     session = case['headers'].get('X-Impersonation-Id', '')
     additional = None
@@ -206,8 +214,9 @@ def assert_effect(case, before, after, source, context):
     if effect['index'] is None:
         contract.require(not indexes, 'index.none')
     else:
-        contract.require(len(indexes) == 1 and index is not None and index['sport_association_id'] == effect['index'][0]
-                         and index['resolution_path'] == effect['index'][1], 'index.fields')
+        contract.require(len(indexes) == len(audit) and index is not None and all(
+            row['sport_association_id'] == effect['index'][0] and row['resolution_path'] == effect['index'][1]
+            for row in indexes.values()), 'index.fields')
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepare)

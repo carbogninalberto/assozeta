@@ -3457,6 +3457,321 @@
    }
   },
   {
+   "name": "modules-writes-update-nested-form-valid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "raw_body": "title=Mai&sport_association.sport=Calcio&sport_association.tax_code=12345678901",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'denomination': [ErrorDetail(string='This field may not be blank.', code='blank')], 'tax_code': [ErrorDetail(string='Ensure this field has no more than 11 characters.', code='max_length')], 'address_cap': [ErrorDetail(string='Enter exactly 5 digits', code='invalid')], 'subscription_fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'multiple_subscription_fee': [ErrorDetail(string='Must be a valid boolean.', code='invalid')], 'configuration': [ErrorDetail(string='Value must be valid JSON.', code='invalid')]}}"
+   },
+   "effect": null,
+   "raw_body": "sport_association.denomination=&sport_association.tax_code=xxxxxxxxxxxx&sport_association.address=&sport_association.address_cap=123&sport_association.subscription_fee=abc&sport_association.multiple_subscription_fee=maybe&sport_association.configuration=%7Bx&sport_association.federation=&sport_association.enabled_for=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-empty-values",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "raw_body": "sport_association.subscription_fee=&sport_association.multiple_subscription_fee=&sport_association.configuration=&sport_association.sport_association_id=&sport_association.membership_fee=&sport_association.address_cap=&sport_association.sport=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-unknown-keys",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "raw_body": "sport_association.zzz=1&title=Mai",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-last-value-wins",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "raw_body": "sport_association.sport=sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss&sport_association.sport=ok",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-last-value-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport': [ErrorDetail(string='Ensure this field has no more than 100 characters.', code='max_length')]}}"
+   },
+   "effect": null,
+   "raw_body": "sport_association.sport=ok&sport_association.sport=sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-json-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "The `.update()` method does not support writable nested fields by default.\nWrite an explicit `.update()` method for serializer `application.serializers.modules_serializers.ModulesSerializer`, or set `read_only=True` on nested serializer fields."
+   },
+   "effect": null,
+   "raw_body": "sport_association.configuration=null&sport_association.enabled_for=%5B1%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-json-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'additional_fields': [ErrorDetail(string='Value must be valid JSON.', code='invalid')]}}"
+   },
+   "effect": null,
+   "raw_body": "sport_association.additional_fields=abc&sport_association.stripe_available_methods=%22ok%22",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-primary-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='sport association with this sport association id already exists.', code='unique')]}}"
+   },
+   "effect": null,
+   "raw_body": "sport_association.sport_association_id=a1000000-0000-4000-8000-000000701001",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-primary-key-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport_association_id': [ErrorDetail(string='Must be a valid UUID.', code='invalid')]}}"
+   },
+   "effect": null,
+   "raw_body": "sport_association.sport_association_id=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-with-outer-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': {'sport': [ErrorDetail(string='Ensure this field has no more than 100 characters.', code='max_length')]}, 'title': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')]}"
+   },
+   "effect": null,
+   "raw_body": "title=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&sport_association.sport=sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "modules-writes-update-nested-form-bare-prefix",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/modules/a1000000-0000-4000-8000-000000642001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "module_id": "a1000000-0000-4000-8000-000000642001",
+     "enabled": true,
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": null,
+      "demand": null,
+      "logo": null,
+      "subscription_fee": "0.00",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [],
+      "membership_fee": null,
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "INFORMATIVA AI SENSI DELL'EX ART.13 D.LGS. 196/2003",
+        "text": "Gentile sig./sig.ra, <br>\n                ai sensi dell'ex art.13 d. lgs. 196/2003 (di seguito T.U.), ed in relazione ai dati personali di cui\n                codesto ente entrerà in possesso,\n                La informiamo di quanto segue: <br>\n\n                <b> 1. FINALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                Il trattamento è finalizzato unicamente per la realizzazione delle finalità istituzionali promosse\n                dall'ente medesimo nei limiti delle disposizioni statuarie previste e in conformità a quanto stabilito\n                dal D.lgs. n. 196/2003. <br>\n\n                <b>2. MODALITA' DEL TRATTAMENTO DEI DATI.</b><br>\n                a) Il trattamento e realizzato per mezzo delle operazioni o complesso di operazioni indicate all'art. 4\n                comma 1 lett. a) T.U. : raccolta, registrazione, organizzazione, conservazione, consultazione,\n                e distribuzione dei dati. <br>\n\n                b) Le operazioni possono essere svolte con o senza l'ausilio di strumenti elettronici o comunque\n                automatizzati. <br>\n\n                c) Il trattamento è svolto dal titolare e/o dagli incaricati del trattamento. <br>\n\n                <b>3. CONFERIMENTO DEI DATI.</b><br>\n                Il conferimento di dati personali comuni e/o sensibili è strettamente necessario ai fini dello\n                svolgimento delle attività di cui al punto 1.<br>\n\n                <b>4. RIFIUTO DI CONFERIMENTO DI DATI.</b><br>\n                L'eventuale rifiuto da parte dell'interessato di conferire dati personali nel caso di cui al punto 3\n                comporta l'impossibilità di adempiere\n                alle attività di cui punto 1.<br>\n\n                <b>5. COMUNICAZIONE DEI DATI.</b><br>\n                I dati personali possono venire a conoscenza degli incaricati del trattamento e possono essere\n                comunicati per le finalità di cui al punto 1 a collaboratori esterni e, in genere, a tutti quei soggetti\n                cui la comunicazione sia necessaria per il corretto adempimento delle finalità\n                indicate nel punto 1.<br>\n\n                <b>6. DIFFUSIONE DEI DATI.</b><br>\n                I dati personali non sono soggetti a diffusione di nessun genere. <br>\n\n                <b>7. TITOLARE DEL TRATTAMENTO.</b><br>\n                Titolare del trattamento è <b>l'associazione</b>."
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "CONSENSO PER IL TRATTAMENTO DEI DATI NON SENSIBILI AD USO ISTITUZIONALE",
+        "text": "Il/La sottoscritto/a, acquisite le informazioni di cui all'ex articolo 13 del D.lgs. n. 196/2003, ai sensi\n                dell'art 23 del predetto decreto, presta\n                il proprio consenso all'intero trattamento dei propri dati personali e in particolare: <br>\n                <b> · </b> Per l'utilizzo degli stessi per il perseguimento degli scopi statuari per il fine di\n                ricevere comunicazioni cartacee o elettroniche\n                (newsletter/email) con informazioni in merito all'attività dell'Associazione. <br>\n                <b> · </b> Affinché i dati riguardanti l'iscrizione siano comunicati agli enti cui l'associazione\n                collabora e da questi trattati nella misura\n                necessaria all'adempimento di obblighi previsti dalla legge e dalle norme statuarie. Sono consapevole\n                che, in mancanza del mio\n                consenso l'ente sportivo non potrà dar luogo\n                ai servizi citati. <br>"
+       },
+       {
+        "show_to_members": true,
+        "show_to_both": true,
+        "show_to_athletes": true,
+        "name": "SCRITTURA PRIVATA DI RICHIESTA CONSENSO",
+        "text": "L'ASSOCIAZIONE CHIEDE ALL'ASSOCIATO E/O AL TUTORE,\n                SE MINORENNE, L'AUTORIZZAZIONE ALL'USO DI FOTOGRAFIE E RIPRESE DEL SAGGIO O DI OGNI ALTRA OCCASIONE\n                CHE RITRAGGONO IL/LA FIGLIO/A MINORE PER SCOPI PUBBLICITARI, COMPRESA LA PUBBLICAZIONE SUL SITO\n                DELL'ASSOCIAZIONE.\n                <br>"
+       }
+      ],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": [
+       "associate",
+       "associate-membership",
+       "membership"
+      ],
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": [
+       "card",
+       "sepa_debit"
+      ],
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "invoice.html",
+      "subscription_template": "subscription.html",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": true,
+      "show_demand_to_both": true,
+      "show_demand_to_athletes": true
+     },
+     "custom_link": null,
+     "creation_date": "2026-03-01T08:00:00.500000Z",
+     "title": "Form senza annidato",
+     "require_approval": true,
+     "start_date": null,
+     "end_date": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": true,
+     "only_users": true,
+     "payment_required": false,
+     "payment_data": {
+      "k": [
+       1,
+       2
+      ]
+     },
+     "response_message": "Ciao",
+     "allow_attachments": false,
+     "elements": "testo"
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "edit",
+    "stored": {
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "link": null,
+     "title": "Form senza annidato",
+     "require_approval": true,
+     "start": null,
+     "end": null,
+     "always_active": true,
+     "max_responses": null,
+     "queue_mode": true,
+     "only_users": true,
+     "payment_required": false,
+     "payment_data": {
+      "k": [
+       1,
+       2
+      ]
+     },
+     "response_message": "Ciao",
+     "allow_attachments": false,
+     "elements": "testo"
+    },
+    "created": "2026-03-01T08:00:00.500000Z",
+    "changes": {
+     "title": [
+      "Form è",
+      "Form senza annidato"
+     ]
+    }
+   },
+   "raw_body": "title=Form+senza+annidato&sport_association.=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "modules-writes-update-new-key-copies",
    "actor": "owner",
    "method": "PATCH",
@@ -3718,7 +4033,7 @@
      },
      "custom_link": null,
      "creation_date": "2026-03-01T08:00:00.500000Z",
-     "title": "Form è",
+     "title": "Form senza annidato",
      "require_approval": true,
      "start_date": null,
      "end_date": null,
@@ -3745,7 +4060,7 @@
     "stored": {
      "association": "a1000000-0000-4000-8000-000000701001",
      "link": null,
-     "title": "Form è",
+     "title": "Form senza annidato",
      "require_approval": true,
      "start": null,
      "end": null,
@@ -4462,7 +4777,7 @@
      },
      "custom_link": "$new",
      "creation_date": "$now",
-     "title": "Form è (copia)",
+     "title": "Form senza annidato (copia)",
      "require_approval": true,
      "start_date": null,
      "end_date": null,
@@ -4491,7 +4806,7 @@
     "stored": {
      "association": "a1000000-0000-4000-8000-000000701001",
      "link": null,
-     "title": "Form è (copia)",
+     "title": "Form senza annidato (copia)",
      "require_approval": true,
      "start": null,
      "end": null,
