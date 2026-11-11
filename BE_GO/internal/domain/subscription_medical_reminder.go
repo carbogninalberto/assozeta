@@ -11,17 +11,17 @@ import (
 // denomination. TutorUnpromoted marks an associate whose tutor relations are
 // all non-primary (get_main_tutor would save the first one as primary).
 type MedicalReminderRecipient struct {
-	Associate               *string
-	First, Last, Email      *string
-	Tutor                   bool
-	TutorEmail              *string
-	TutorUnpromoted         bool
+	Associate          *string
+	First, Last, Email *string
+	Tutor              bool
+	TutorEmail         *string
+	TutorUnpromoted    bool
 	// TutorRelation is the key of the relation get_main_tutor saves as primary.
 	TutorRelation int64
 	// AssociateAssociation, AssociateDeleted, AssociateGroup describe the associate row the audit index resolves through.
-	AssociateAssociation *string
-	AssociateDeleted     bool
-	AssociateGroup       *string
+	AssociateAssociation    *string
+	AssociateDeleted        bool
+	AssociateGroup          *string
 	UserEmail, Denomination *string
 }
 
