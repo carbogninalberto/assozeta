@@ -1,6 +1,11 @@
 package apischema
 
-import "strings"
+import (
+	"strings"
+	"unicode"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+)
 
 // CatalogKey mirrors DjangoTranslation(language) for the "django" domain: for
 // every catalog directory, the catalogs gettext.find(..., all=True) selects for
@@ -14,7 +19,7 @@ import "strings"
 // their exact spelling never selects a catalog.
 func CatalogKey(language string) (string, bool) {
 	d := loaded()
-	if strings.ContainsAny(language, "/\x00") {
+	if strings.Contains(language, "/") {
 		return "", false
 	}
 	var expansions []string
@@ -50,20 +55,21 @@ func CatalogKey(language string) (string, bool) {
 	return key.String(), true
 }
 
-// toLocale is django.utils.translation.to_locale for ASCII input.
+// toLocale is django.utils.translation.to_locale.
 func toLocale(language string) string {
-	lang, country, _ := strings.Cut(strings.ToLower(language), "-")
+	lang, country, _ := strings.Cut(dto.PythonLower(language), "-")
 	if country == "" {
-		if len(language) <= 3 {
-			return strings.ToLower(language)
+		runes := []rune(language)
+		if len(runes) <= 3 {
+			return dto.PythonLower(language)
 		}
-		return strings.ToLower(language[:3]) + language[3:]
+		return dto.PythonLower(string(runes[:3])) + string(runes[3:])
 	}
 	country, tail, hasTail := strings.Cut(country, "-")
-	if len(country) > 2 {
+	if len([]rune(country)) > 2 {
 		country = pythonTitle(country)
 	} else {
-		country = strings.ToUpper(country)
+		country = dto.PythonUpper(country)
 	}
 	if hasTail && tail != "" {
 		country += "-" + tail
@@ -71,28 +77,38 @@ func toLocale(language string) string {
 	return lang + "_" + country
 }
 
-// pythonTitle is str.title() for ASCII: a letter is upper case after a
-// non-letter and lower case after a letter.
+// pythonTitle is str.title(): a cased character after a cased one is lower
+// case, any other cased character is title case (with the full case mappings
+// that expand to several characters).
 func pythonTitle(value string) string {
-	out := []byte(value)
+	var out strings.Builder
 	previousCased := false
-	for i, c := range out {
-		lower, upper := c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z'
+	for _, r := range value {
+		cased := unicode.IsUpper(r) || unicode.IsLower(r) || unicode.IsTitle(r)
 		switch {
-		case (lower || upper) && previousCased:
-			out[i] = strings.ToLower(string(c))[0]
-		case lower || upper:
-			out[i] = strings.ToUpper(string(c))[0]
+		case cased && previousCased:
+			out.WriteString(dto.PythonLower(string(r)))
+		case cased:
+			if expansion, ok := titleExpansions[r]; ok {
+				out.WriteString(expansion)
+			} else {
+				out.WriteRune(unicode.ToTitle(r))
+			}
+		default:
+			out.WriteRune(r)
 		}
-		previousCased = lower || upper
+		previousCased = cased
 	}
-	return string(out)
+	return out.String()
 }
+
+// titleExpansions are the SpecialCasing title-case mappings into ASCII letters.
+var titleExpansions = map[rune]string{'ß': "Ss", 'ﬀ': "Ff", 'ﬁ': "Fi", 'ﬂ': "Fl", 'ﬃ': "Ffi", 'ﬄ': "Ffl", 'ﬅ': "St", 'ﬆ': "St"}
 
 // normalizeLocale is locale.normalize. Encodings that _replace_encoding would
 // rewrite are replaced by a placeholder: only their position matters here.
 func normalizeLocale(name string, alias map[string]string) string {
-	code := strings.ToLower(name)
+	code := dto.PythonLower(name)
 	code = strings.ReplaceAll(code, ":", ".")
 	modifier := ""
 	if before, after, found := strings.Cut(code, "@"); found {
