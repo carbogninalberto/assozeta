@@ -111,6 +111,9 @@ type OnboardingTransaction interface {
 	CompleteConfiguration(ctx context.Context, id int64, at time.Time) error
 	User(ctx context.Context, id string) (OnboardingUser, error)
 	SaveUser(ctx context.Context, value OnboardingUser) error
+	// RefusedUserSave runs the UPDATE of the user's integer columns with the given SQL literals (as Django's driver
+	// sends them) and returns the database's refusal as the driver prints it.
+	RefusedUserSave(ctx context.Context, user string, assignments []OnboardingLiteral) (string, error)
 	// Flags are up to two UsersOnboarding rows of the user (objects.get).
 	Flags(ctx context.Context, user string) ([]OnboardingFlags, error)
 	SaveFlags(ctx context.Context, value OnboardingFlags) error
@@ -120,3 +123,6 @@ type OnboardingTransaction interface {
 	Commit() error
 	Rollback() error
 }
+
+// OnboardingLiteral is one column assignment of the user's row: Literal is SQL text (an integer or NULL).
+type OnboardingLiteral struct{ Column, Literal string }

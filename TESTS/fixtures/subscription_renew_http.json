@@ -1833,6 +1833,400 @@
    "setup": null
   },
   {
+   "name": "subscription-renew-renew-tags-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“a” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "tags": "abc"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-tags-text-unicode",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“è” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "tags": "èa"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-tags-float-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“1.5” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "tags": [
+     {
+      "tag_id": 5
+     },
+     {
+      "tag_id": 1.5
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-tags-bool-then-bad-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“x” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "tags": [
+     {
+      "tag_id": true
+     },
+     {
+      "tag_id": "x"
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-tags-list-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“[1, 2]” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "tags": [
+     {
+      "tag_id": [
+       1,
+       2
+      ]
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-tags-negative-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“-1” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "tags": [
+     {
+      "tag_id": -1
+     }
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-tags-first-text-then-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“2.0” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "tags": [
+     "a1000000-0000-4000-8000-000000945019",
+     7,
+     2.0
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-user-email-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“x” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "user": {
+     "email": [
+      "a@example.test"
+     ]
+    },
+    "tags": [
+     "x"
+    ]
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-user-email-dict",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "['“x” is not a valid UUID.']"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "first_name": "Rita",
+     "last_name": "Rossa",
+     "tax_code": "RSSRTI90C41H501K",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "user": {
+     "email": {
+      "a": 1
+     }
+    },
+    "tags": [
+     "x"
+    ]
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-renew-renew-tag-without-id",
    "actor": "owner",
    "method": "POST",

@@ -1,17 +1,13 @@
 package dto
 
 import (
+	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
-
-// ErrMedicalAppointmentAddNotPorted refuses request keys whose DRF fields are
-// not ported: a non-null document (PrimaryKeyRelatedField with the tenant
-// scope check) and medical_appointments_id (UUIDField with UniqueValidator).
-var ErrMedicalAppointmentAddNotPorted = refusal.New("medical appointment field not ported")
 
 // MedicalAppointmentAddInput is MedicalAppointmentsSerializer's validated
 // data; a nil pointer field was not sent (the model default applies) unless
@@ -21,7 +17,8 @@ type MedicalAppointmentAddInput struct {
 	Date                  *string // ISO date; nil with DateNull false: the timezone.now() default
 	DateNull              bool
 	Notes, Sport, Address *string
-	Meta                  any // the parsed request value
+	ID, Document          *string // validated pks (existence and uniqueness are the service's)
+	Meta                  any     // the parsed request value
 	MetaPresent           bool
 	CreationDate          *time.Time
 }
@@ -35,15 +32,26 @@ func (e *MedicalAppointmentAddInvalid) Error() string { return "invalid medical 
 // MedicalAppointmentsSerializer (fields '__all__'); subscription is the
 // view's own value and always valid.
 func ParseMedicalAppointmentAdd(object domain.RequestObject) (MedicalAppointmentAddInput, error) {
-	if value, present := object.Lookup("medical_appointments_id"); present {
-		_ = value
-		return MedicalAppointmentAddInput{}, ErrMedicalAppointmentAddNotPorted
-	}
-	if value, present := object.Lookup("document"); present && value != nil {
-		return MedicalAppointmentAddInput{}, ErrMedicalAppointmentAddNotPorted
-	}
 	var input MedicalAppointmentAddInput
 	fields := map[string][]string{}
+	if value, present := object.Lookup("medical_appointments_id"); present {
+		if value == nil {
+			fields["medical_appointments_id"] = []string{PaymentCategoryValidationNull}
+		} else if id, ok := medicalAppointmentAddUUID(value); ok {
+			input.ID = &id
+		} else {
+			fields["medical_appointments_id"] = []string{PaymentCategoryValidationUUID}
+		}
+	}
+	if value, present := object.Lookup("document"); present && value != "" && value != nil {
+		// PrimaryKeyRelatedField: '' is None; the tenant check passes for a
+		// Document (no owning association); existence is the service's.
+		if id, code := supplierRelated(value); code != "" {
+			fields["document"] = []string{code}
+		} else {
+			input.Document = &id
+		}
+	}
 	if value, present := object.Lookup("region"); !present {
 		fields["region"] = []string{PaymentCategoryValidationRequired}
 	} else if text, codes := modelTextValue(SupplierField{Name: "region", Max: 100}, value, false); len(codes) > 0 {
@@ -96,7 +104,29 @@ func ParseMedicalAppointmentAdd(object domain.RequestObject) (MedicalAppointment
 		}
 	}
 	if len(fields) > 0 {
-		return MedicalAppointmentAddInput{}, &MedicalAppointmentAddInvalid{Fields: fields}
+		return input, &MedicalAppointmentAddInvalid{Fields: fields}
 	}
 	return input, nil
 }
+
+// medicalAppointmentAddUUID is UUIDField.to_internal_value: ints (a bool is
+// one) and strings; anything else is invalid.
+func medicalAppointmentAddUUID(value any) (string, bool) {
+	switch v := value.(type) {
+	case bool:
+		if v {
+			return "00000000-0000-0000-0000-000000000001", true
+		}
+		return "00000000-0000-0000-0000-000000000000", true
+	case string, json.Number:
+		if number, ok := v.(json.Number); ok && strings.ContainsAny(string(number), ".eE") {
+			return "", false
+		}
+		return supplierUUID(v)
+	}
+	return "", false
+}
+
+// UUIDFieldValue is UUIDField.to_python / to_internal_value for a request
+// value: an int (a bool is one) or a string in uuid.UUID's reading.
+func UUIDFieldValue(value any) (string, bool) { return medicalAppointmentAddUUID(value) }

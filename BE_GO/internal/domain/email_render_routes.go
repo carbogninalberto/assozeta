@@ -44,6 +44,10 @@ type CollaborationInviteAudit struct {
 	Context                       LoginAuditContext
 	AssociationID, ResolutionPath *string
 	At                            time.Time
+	// PermissionsMemory is json.dumps(sort_keys=True) of the request's permissions as the
+	// instance holds them, PermissionsLoaded the same after PostgreSQL's jsonb round trip;
+	// when they differ the second save() logs an update entry.
+	PermissionsMemory, PermissionsLoaded *string
 }
 
 type CollaboratorInviteTransaction interface {

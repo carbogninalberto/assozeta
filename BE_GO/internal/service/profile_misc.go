@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"strconv"
 	"strings"
 	"time"
@@ -560,21 +561,49 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 			changes[name] = [2]string{old, new}
 		}
 	}
+	// IntegerField.get_prep_value is int(value) in model field order: a value int() rejects raises before the
+	// statement; an integer outside 0..32767 or None (NOT NULL) is the database's refusal of the whole UPDATE.
+	var literals []domain.OnboardingLiteral
+	refused := false
 	for _, name := range []string{"balance_sheet_year", "balance_sheet_start_day", "balance_sheet_start_month", "subscription_start_day",
 		"subscription_start_month"} {
 		value, present := latest[name]
 		if !present {
 			continue
 		}
-		number, invalid, supported := dto.PythonPositiveSmallInt(value)
-		if !supported {
+		if value == nil {
+			refused = true
+			literals = append(literals, domain.OnboardingLiteral{Column: name, Literal: "NULL"})
+			continue
+		}
+		number, outcome := dto.PythonInt(value)
+		switch outcome {
+		case dto.PythonIntInvalid:
+			shown := dto.PythonStr(value)
+			if text, isText := value.(string); isText {
+				shown = dto.PythonStringRepr(text)
+			}
+			// The audit entry and the earlier saves roll back with the block.
+			return &OnboardingServerError{Message: "Field '" + name + "' expected a number but got " + shown + "."}
+		case dto.PythonIntOverflow:
+			return &OnboardingServerError{Message: "cannot convert float infinity to integer"}
+		}
+		if number.Sign() < 0 || number.Cmp(big.NewInt(32767)) > 0 {
+			refused = true
+		} else {
+			*targets[name] = number.Int64()
+		}
+		literals = append(literals, domain.OnboardingLiteral{Column: name, Literal: number.String()})
+	}
+	if refused {
+		text, err := tx.RefusedUserSave(ctx, person.ID, literals)
+		if err != nil {
+			return err
+		}
+		if text == "" {
 			return ErrOnboardingNotPorted
 		}
-		if invalid {
-			// The audit entry and the earlier saves roll back with the block.
-			return &OnboardingServerError{Message: "Field '" + name + "' expected a number but got " + dto.PythonStringRepr(value.(string)) + "."}
-		}
-		*targets[name] = number
+		return &OnboardingServerError{Message: text}
 	}
 	if err = s.onboardingUserAudit(ctx, tx, person, changes, auditContext); err != nil {
 		return err

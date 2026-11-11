@@ -524,6 +524,32 @@ ok('retrieve-url-name-parts', 'owner', 'urlparts', 'text/plain', query='download
 ok('retrieve-data-name-view', 'owner', 'dataname', 'text/css', query='download=false', view=True)
 ok('retrieve-data-name-download', 'owner', 'dataname', None)
 
+# A network location urlsplit refuses is a ValueError after the object was fetched: the exception text is the answer
+# (the object is looked up first, so a missing one answers 'File not found'). Valid bracketed hosts and non-ASCII
+# locations that keep their NFKC form are plain URLs; a data: type of any text is the guessed type (never inline).
+for key, filename, text in (
+        ('netloc-open', 'ab://[::1', 'Invalid IPv6 URL'),
+        ('netloc-ipv4', 'ab://[1.2.3.4]', 'An IPv4 address cannot be in brackets'),
+        ('netloc-host', 'ab://[abc]', "'abc' does not appear to be an IPv4 or IPv6 address"),
+        ('netloc-future', 'ab://[vz.x]', 'IPvFuture address is invalid'),
+        ('netloc-after', 'ab://[::1]x', 'Invalid IPv6 URL'),
+        ('netloc-nfkc', 'ab://h\u2100st', "netloc 'h\u2100st' contains invalid characters under NFKC normalization"),
+        ('netloc-fullwidth', 'ab://x\uff0f', "netloc 'x\uff0f' contains invalid characters under NFKC normalization")):
+    document(key, filename, created='2026-03-25T10:00:00+00:00', body='netloc', content_type='application/x-fixture-netloc')
+    add('retrieve-' + key, 'owner', retrieve(key), 500, {'exception': text})
+add('retrieve-netloc-open-view', 'owner', retrieve('netloc-open', 'download=false'), 500, {'exception': 'Invalid IPv6 URL'})
+document('netloc-missing', 'ab://[::1', filepath='named/netloc-missing', created='2026-03-25T11:00:00+00:00', body=None)
+add('retrieve-netloc-missing-object', 'owner', retrieve('netloc-missing'), 500, {'exception': 'File not found'})
+document('netloc-valid', 'ab://[::1]:80/c.pdf', created='2026-03-25T12:00:00+00:00', body='%PDF-netloc', content_type='application/x-fixture-netloc')
+document('netloc-unicode', 'ab://h\u00f4st/c.pdf', created='2026-03-25T13:00:00+00:00', body='%PDF-unicode host',
+         content_type='application/x-fixture-netloc')
+document('netloc-compat', 'ab://\uff48/c.png', created='2026-03-25T14:00:00+00:00', body='png', content_type='application/x-fixture-netloc')
+document('dataname-unicode', 'data:text/h\u00e9,x', created='2026-03-25T15:00:00+00:00', body='data', content_type='application/x-fixture-data')
+ok('retrieve-netloc-valid', 'owner', 'netloc-valid', 'application/pdf')
+ok('retrieve-netloc-unicode', 'owner', 'netloc-unicode', 'application/pdf')
+ok('retrieve-netloc-compat-view', 'owner', 'netloc-compat', 'image/png', query='download=false', view=True)
+ok('retrieve-data-name-unicode-view', 'owner', 'dataname-unicode', None, query='download=false', view=True)
+
 # Types outside the inline list are downloads on both paths; the object's own type is not used.
 document('webpage', 'pagina.html', created='2026-03-23T10:00:00+00:00', body='<p>pagina</p>', content_type='text/html')
 document('drawing', 'disegno.svg', created='2026-03-24T10:00:00+00:00', body='<svg xmlns="http://www.w3.org/2000/svg"/>',

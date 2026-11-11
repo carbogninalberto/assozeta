@@ -39,7 +39,7 @@
 ## Not ported
 
 - `subscription/associates-draft/list/approve`. Its main path calls `create_subscription` for every valid draft, and that call creates users, associates, subscriptions, payments and documents and sends emails. The route stays on Django.
-- In edit, `person_date` is the whole dateutil parser (`internal/pydateutil` with `dayfirst`, through `dto.PersonDate`): dashes, dots, month names, times, a year alone (the rest from today's date, UTC). Years before 1000 and texts over 64 KiB are refused with a 500 before any write, for the associate's and the tutor's date alike.
+- In edit, `person_date` is the whole dateutil parser (`internal/pydateutil` with `dayfirst`, through `dto.PersonDate`): dashes, dots, month names, times, a year alone (the rest from today's date, UTC). A year before 1000 is Django's `strftime('%d/%m/%Y')` round trip failing on Linux (the year is not padded): the associate's is the 500 page, the tutor's is ignored. Texts over 64 KiB are refused with a 500 before any write, for the associate's and the tutor's date alike.
 
 ## Evidence
 

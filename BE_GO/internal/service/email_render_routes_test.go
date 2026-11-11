@@ -97,12 +97,10 @@ func TestCollaboratorInviteWithoutAssociationKeepsRow(t *testing.T) {
 // Refused and failing inputs write nothing.
 func TestCollaboratorInviteRefusalsWriteNothing(t *testing.T) {
 	for name, body := range map[string]any{
-		"exponent float": updateBody("email", "x@example.test", "collaborator_permissions", updateBody("k", json.Number("1e+16"))),
-		"negative zero":  updateBody("email", "x@example.test", "collaborator_permissions", []any{json.Number("-0.0")}),
-		"nul":            updateBody("email", "x@example.test", "collaborator_permissions", "a\x00"),
-		"role":           updateBody("email", "x@example.test", "collaborator_role", "x"),
-		"null body":      nil,
-		"email list":     updateBody("email", []any{"@"}),
+		"nul":        updateBody("email", "x@example.test", "collaborator_permissions", "a\x00"),
+		"role":       updateBody("email", "x@example.test", "collaborator_role", "x"),
+		"null body":  nil,
+		"email list": updateBody("email", []any{"@"}),
 	} {
 		routes, publisher, events := inviteFixture()
 		err := routes.AddCollaborator(context.Background(), inviteIdentity(), body, domain.LoginAuditContext{}, "it")
@@ -115,7 +113,9 @@ func TestCollaboratorInviteRefusalsWriteNothing(t *testing.T) {
 	if err := routes.AddCollaborator(context.Background(), inviteIdentity(), updateBody("email", "bad"), domain.LoginAuditContext{}, "it"); !errors.As(err, &input) || input.Detail != "Email is not valid." {
 		t.Fatal(err)
 	}
-	if !permissionsRoundTrip(json.Number("0.0001")) || permissionsRoundTrip(json.Number("0.00001")) || !permissionsRoundTrip(json.Number("1e15")) {
-		t.Fatal("round trip bounds")
+	for in, want := range map[string]string{"0.00001": "0.00001", "1e15": "1e15", "1e16": "10000000000000000", "-1.5e+20": "-150000000000000000000", "-0.0": "0.0", "7": "7"} {
+		if got := permissionsLoaded(json.Number(in)); got != json.Number(want) {
+			t.Fatalf("%s -> %v", in, got)
+		}
 	}
 }

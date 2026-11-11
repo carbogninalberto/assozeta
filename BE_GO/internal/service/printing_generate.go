@@ -806,10 +806,10 @@ func printingCell(value any) (xlsxexport.Value, error) {
 			return xlsxexport.IntValue(number.Int64()), nil
 		}
 		number, err := strconv.ParseFloat(string(v), 64)
-		if err != nil {
+		if err != nil && !errors.Is(err, strconv.ErrRange) {
 			return xlsxexport.Value{}, domain.ErrPrintingGenerateNotPorted
 		}
-		return xlsxexport.FloatValue(number), nil
+		return xlsxexport.FloatValue(number), nil // float('1e999') is inf
 	}
 	return xlsxexport.ObjectValue(dto.PythonStr(value)), nil
 }

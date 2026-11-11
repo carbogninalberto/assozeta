@@ -254,7 +254,11 @@ func (s *SubscriptionRenewals) tags(ctx context.Context, tx domain.SubscriptionR
 		if _, isObject := value.(domain.RequestObject); isObject {
 			return pythonFailure("0") // data['tags'][0]: KeyError(0)
 		}
-		return domain.ErrSubscriptionCreateNotPorted
+		// A text: tag_id__in iterates its characters, the first is no UUID.
+		for _, character := range value.(string) {
+			return djangoInvalidUUID(string(character))
+		}
+		return nil
 	}
 	raw := list
 	if _, isText := list[0].(string); !isText {
@@ -285,7 +289,15 @@ func (s *SubscriptionRenewals) tags(ctx context.Context, tx domain.SubscriptionR
 				ids = append(ids, id)
 			}
 		default:
-			return domain.ErrSubscriptionCreateNotPorted
+			// UUIDField.to_python: an int (a bool is one) is uuid.UUID(int=...); the rest is no UUID.
+			id, valid := dto.UUIDFieldValue(v)
+			if !valid {
+				return djangoInvalidUUID(dto.PythonStr(v))
+			}
+			if !seen[id] {
+				seen[id] = true
+				ids = append(ids, id)
+			}
 		}
 	}
 	return tx.AddTags(ctx, created.id, ids)

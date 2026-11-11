@@ -129,13 +129,14 @@ Refused with the 500 page before anything is committed:
 - an association whose
   user is not an owner account, an integer `sport_association_id`; form bodies and a non-empty `X-Group-Id` on both routes;
 - `data['sport_association']` naming another association;
-- a `tags` string, tag ids that are not strings;
-- a `user.email` that is a list or dict;
 - `str(e)` bodies of the Python exceptions not listed above (non-dict tutors and similar; dateutil's own messages are ported with `internal/pydateutil`);
 - the inputs `subscription-create.md` refuses: preregistration, new member accounts, signature uploads, `type_of_associate`, and the
-  rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` it stays refused). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
+  rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` it stays refused): the renewed subscription's person, certificate, custom data, role and number, the request's type; an unknown or foreign one is the 400 `Iscrizione da rinnovare non trovata.`). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
   association account's certificate are created like in `subscription/add`.
   In approve, a draft hitting one of them refuses the whole request.
+
+A `tags` text (iterated by character), tag ids that are ints, bools, floats, lists or dicts, and a `user.email` that is a list or dict
+are ported (t2subsb): the tag errors are `['“<str(value)>” is not a valid UUID.']` in the 400 body; the e-mail is searched as its `str()`.
 
 ## Evidence
 

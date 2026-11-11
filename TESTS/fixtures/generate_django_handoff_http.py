@@ -6,9 +6,12 @@ such a request to Django and streams Django's response back. This sequence takes
 refused inputs from three families and expects, on every transport, exactly the
 response Django gives (and, for writes, Django's effect):
 
-- personas-reads: `GET personas/list` with a search term outside the ported
-  Unicode subset (ErrPersonaNotPorted). Django's search matches nothing, so the
-  response is the empty page of personas-reads-list-search-underscore-escaped.
+- personas-reads: ported controls only. Searches in a non-Latin script are served
+  by Go (no marker); Django's search matches nothing, so the response is the empty
+  page of personas-reads-list-search-underscore-escaped. Go keeps no refusal on a
+  personas read that this sequence can rely on, so the family carries no hand-off
+  case (the `sort[field]` relation paths are kept refused with no fixed result,
+  v2-refusals.md, personas-reads).
 - course-list: `GET course/list` ordered by a relation path
   (ErrCourseListUnported). With `query[status_flag]=1` one course is listed, so
   the response is the page of course-list-sort-relation-attname.
@@ -58,13 +61,13 @@ def add(family, name, *, handoff, path, response_of=None, status=None, response=
     cases.append(case)
 
 
-# personas-reads: the ported search (control), then a Cyrillic term Go refuses.
+# personas-reads: ported searches (controls): a Latin term, then Cyrillic terms Go serves itself.
 add('personas-reads', 'personas-search-ported', handoff=False, path='/personas/list?query[generalSearch]=presente_',
     response_of='personas-reads-list-search-underscore-escaped')
-add('personas-reads', 'personas-search-cyrillic', handoff=True,
+add('personas-reads', 'personas-search-cyrillic-ported', handoff=False,
     path='/personas/list?query[generalSearch]=%D0%96%D0%B0%D0%BD%D0%BD%D0%B0',
     response_of='personas-reads-list-search-underscore-escaped')
-add('personas-reads', 'personas-search-cyrillic-group', handoff=True, headers={'X-Group-Id': IDS['own_group']},
+add('personas-reads', 'personas-search-cyrillic-group-ported', handoff=False, headers={'X-Group-Id': IDS['own_group']},
     path='/personas/list?query[generalSearch]=%D0%96%D0%B0%D0%BD%D0%BD%D0%B0&pagination[perpage]=5',
     status=200, response={'data': [], 'meta': {'total': 0, 'page': 1, 'pages': 1, 'perpage': 5, 'rowIds': []}}, extra={'ordered': False})
 
@@ -132,7 +135,7 @@ add('workflow-update', 'workflow-multipart-tree', handoff=True, method='PATCH', 
     raw_body=BODY, content_type=CONTENT_TYPE, effect=saved('owner', {'description': 'Da parti', 'automation_tree': PART_TREE}))
 
 assert len({c['name'] for c in cases}) == len(cases)
-assert {c['family'] for c in cases if c['handoff']} == set(SOURCES)
+assert {c['family'] for c in cases if c['handoff']} == set(SOURCES) - {'personas-reads'}
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'API v2 handoff of refused inputs to Django', 'ids': IDS,
                               'sources': sorted(SOURCES), 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

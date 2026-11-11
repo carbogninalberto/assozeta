@@ -3183,6 +3183,880 @@
    }
   },
   {
+   "name": "profile-misc-onboarding-membership-float-day",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "1",
+        "2.9"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 2,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 2.9,
+      "month": 9
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-bool-day",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "2",
+        "True"
+       ],
+       "subscription_start_month": [
+        "9",
+        "False"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 0,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": true,
+      "month": false
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-unicode-digits",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "1",
+        "١٢"
+       ],
+       "subscription_start_month": [
+        "0",
+        " 3 "
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": "١٢",
+      "month": " 3 "
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-infinite-day",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "cannot convert float infinity to integer"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "raw_body": "{\"membership_data\": {\"season\": {\"day\": 1e999, \"month\": 1}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-misc-onboarding-membership-list-day",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Field 'subscription_start_day' expected a number but got [1, 'a']."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": [
+       1,
+       "a"
+      ],
+      "month": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-dict-month",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Field 'subscription_start_month' expected a number but got {'a': 1}."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 1,
+      "month": {
+       "a": 1
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-day-out-of-range",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "smallint out of range\n"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 40000,
+      "month": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-onboarding-membership-day-beyond-int64",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "smallint out of range\n"
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "raw_body": "{\"membership_data\": {\"fiscal\": {\"day\": 99999999999999999999, \"month\": 1}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-misc-onboarding-membership-invalid-before-range",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Field 'subscription_start_month' expected a number but got 'x'."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "20.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 1,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": false,
+     "view_membership": false,
+     "approve_payment": false,
+     "download_invoice": false,
+     "view_collaborators": false,
+     "view_settings": false
+    },
+    "instance_completed": false
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 40000,
+      "month": "x"
+     }
+    }
+   }
+  },
+  {
    "name": "profile-misc-onboarding-fresh-invalid",
    "actor": "foreign_owner",
    "method": "PATCH",
@@ -3231,8 +4105,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": null,
@@ -3337,8 +4211,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": null,
@@ -3435,8 +4309,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": null,
@@ -3526,8 +4400,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": null,
@@ -3613,8 +4487,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": null,
@@ -3762,8 +4636,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": null,
@@ -3861,8 +4735,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": null,
@@ -3973,8 +4847,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "Presidente",
@@ -4086,8 +4960,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4178,8 +5052,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4268,8 +5142,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4356,8 +5230,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4444,8 +5318,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4548,8 +5422,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4653,8 +5527,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4755,8 +5629,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4869,8 +5743,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -4967,8 +5841,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5077,8 +5951,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5175,8 +6049,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5273,8 +6147,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5383,8 +6257,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5493,8 +6367,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5585,8 +6459,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5695,8 +6569,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5801,8 +6675,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5893,8 +6767,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -5984,8 +6858,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6074,8 +6948,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6161,8 +7035,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6248,8 +7122,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6335,8 +7209,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6422,8 +7296,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6509,8 +7383,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6596,8 +7470,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6696,8 +7570,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6823,8 +7697,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -6934,8 +7808,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -7026,8 +7900,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -7136,8 +8010,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -7252,8 +8126,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -7369,8 +8243,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -7482,8 +8356,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "5",
@@ -7598,8 +8472,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -7711,8 +8585,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "['a', 1, None, True, {'k': 'v'}, \"d'q\", 'é\\n', 2.5, [], {}]",
@@ -7840,8 +8714,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "{'a': 1.5, 'b': \"it's\", 'c': [True, None], 'd': {'e': 'f'}}",
@@ -7966,8 +8840,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8070,8 +8944,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8183,8 +9057,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8296,8 +9170,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8409,8 +9283,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8511,8 +9385,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8613,8 +9487,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8715,8 +9589,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8817,8 +9691,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8907,8 +9781,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -8997,8 +9871,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",
@@ -9087,8 +9961,8 @@
     "users": {
      "owner": {
       "balance_sheet_year": 4,
-      "subscription_start_day": 1,
-      "subscription_start_month": 9,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
       "balance_sheet_start_day": 15,
       "balance_sheet_start_month": 3,
       "lead_sport_association_role": "1.5e+20",

@@ -8,7 +8,6 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 	"unicode"
@@ -404,16 +403,13 @@ func parseDjangoMultipart(raw []byte, boundary string) (domain.RequestObject, er
 		if err != nil {
 			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 		}
-		if part.Header.Get("Content-Transfer-Encoding") != "" {
+		header, outcome := djangoPartHeaders(part.Header)
+		if outcome == headerNotPorted {
 			return nil, domain.ErrDocumentWritesNotPorted
 		}
-		disposition := part.Header.Get("Content-Disposition")
-		if disposition == "" {
+		params, named := header.disposition, header.hasDisposition
+		if !named {
 			continue
-		}
-		params, ok := djangoHeaderParameters(disposition)
-		if !ok {
-			return nil, domain.ErrDocumentWritesNotPorted
 		}
 		name, named := params["name"]
 		if !named {
@@ -426,73 +422,29 @@ func parseDjangoMultipart(raw []byte, boundary string) (domain.RequestObject, er
 				return nil, domain.ErrDocumentWritesNotPorted
 			}
 			if sanitized != "" {
+				if header.base64 && len(content) > 0 {
+					// The chunk is decoded after its white space is stripped; any failure ends the request.
+					decoded, err := pyBase64Decode(stripASCIISpace(content))
+					if err != nil {
+						return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Could not decode base64 data."}
+					}
+					content = decoded
+				}
 				put(&files, name, domain.RequestFile{Name: sanitized, Content: content})
 			}
 			continue
 		}
-		put(&fields, name, string(content))
+		if header.base64 {
+			if decoded, err := pyBase64Decode(content); err == nil {
+				content = decoded
+			}
+		}
+		put(&fields, name, dto.PythonUTF8Replace(string(content)))
 	}
 	for _, file := range files {
 		put(&fields, file.Name, file.Value)
 	}
 	return fields, nil
-}
-
-// djangoHeaderParameters is django.utils.http.parse_header_parameters for a
-// Content-Disposition value: quoted values only unescape \\ and \", and an
-// RFC 2231 name* value is percent-decoded (UTF-8 only; others are refused).
-func djangoHeaderParameters(line string) (map[string]string, bool) {
-	params := map[string]string{}
-	s := ";" + line
-	first := true
-	for strings.HasPrefix(s, ";") {
-		s = s[1:]
-		end := strings.Index(s, ";")
-		for end > 0 && (strings.Count(s[:end], `"`)-strings.Count(s[:end], `\"`))%2 != 0 {
-			next := strings.Index(s[end+1:], ";")
-			if next < 0 {
-				end = -1
-				break
-			}
-			end += 1 + next
-		}
-		if end < 0 {
-			end = len(s)
-		}
-		part := strings.TrimSpace(s[:end])
-		s = s[end:]
-		if first {
-			first = false
-			continue
-		}
-		i := strings.Index(part, "=")
-		if i < 0 {
-			continue
-		}
-		name := strings.ToLower(strings.TrimSpace(part[:i]))
-		encoded := false
-		if strings.HasSuffix(name, "*") {
-			name = name[:len(name)-1]
-			encoded = strings.Count(part, "'") == 2
-		}
-		value := strings.TrimSpace(part[i+1:])
-		if len(value) >= 2 && value[0] == '"' && value[len(value)-1] == '"' {
-			value = strings.ReplaceAll(strings.ReplaceAll(value[1:len(value)-1], `\\`, `\`), `\"`, `"`)
-		}
-		if encoded {
-			pieces := strings.Split(value, "'")
-			if !strings.EqualFold(pieces[0], "utf-8") && !strings.EqualFold(pieces[0], "utf8") {
-				return nil, false
-			}
-			decoded, err := url.PathUnescape(strings.ReplaceAll(pieces[2], "+", "%2B"))
-			if err != nil || !utf8.ValidString(decoded) {
-				return nil, false
-			}
-			value = decoded
-		}
-		params[name] = value
-	}
-	return params, true
 }
 
 // djangoUploadName is MultiPartParser.sanitize_file_name followed by

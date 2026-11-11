@@ -40,8 +40,11 @@ requests' default headers, no timeout, every error swallowed. The PDF filling (p
 
 ## Not ported (refused with the 500 page before any write)
 
-- A non-null `document` (PrimaryKeyRelatedField with the tenant-scope check) and any `medical_appointments_id` key
-  (UUIDField with its UniqueValidator). The frontend sends neither.
+- Nothing is refused for lack of a port. A non-null `document` must be an existing Document (`Invalid pk "<id>" - object does not exist.`;
+  a malformed value is the UUID error; an empty string is None; a Document has no owning association, so the tenant check passes) and
+  is stored on the row and in the create entry. `medical_appointments_id` is a UUID (`Must be a valid UUID.`, an int or bool is read as
+  an int, null is rejected) with the unique validator (`medical appointments with this medical appointments id already exists.`) and
+  becomes the row key (t2subsb, 13 cases).
 - Not authored: a pending restore or busy lock (the restore middleware already answers those requests).
 
 ## Evidence (TDD)

@@ -77,9 +77,7 @@ active `SportAssociation`, gets `404 {"error": "Document not found."}`. The owne
 - **Retrieve** provider errors other than a client-error HEAD answer: a HEAD failing with 429 or a 5xx status or without
   an answer, and a `GetObject` failure other than a missing key. Django answers `500 {"exception": "<botocore text>"}`;
   the text carries botocore's retry count or the storage endpoint.
-- **Retrieve** names outside the modelled grammar: filenames `urllib.parse` reads as a URL whose network location has
-  brackets or non-ASCII text, and `data:` names whose type is not printable ASCII (the other URL-like names are served,
-  see the evidence).
+- **Retrieve** names outside the modelled grammar: none left (t2docs ported the bracketed and non-ASCII network locations and the `data:` types).
 - Rows Django cannot read either (both sides answer the 500 page): creation dates outside Python's range. Invalid UTF-8
   and NUL cannot be stored in the database.
 - **Retrieve** download-token payloads using JSON that Go's decoder rejects but Python accepts, such as `NaN` or
@@ -185,3 +183,13 @@ page on `retrieve-newline-name-view`. GREEN `v2doc3-versioned-r2`: 201/201 on th
 `v2doc3-mutation-r2` (the header check ignoring `\n`) fails `retrieve-newline-name-view`.
 Final run on the merged base (`v2doc3-final-r1`): 201/201 on the four transports; documents-writes re-run green natively
 (`v2doc3-rerun-r1`, 141/141).
+
+## Ported in t2docs
+
+`pkg/pymime` follows `urlsplit`'s network-location checks (Python 3.13.16): unbalanced brackets or data around them are
+`Invalid IPv6 URL`, a bracketed host is an IPvFuture literal or an IPv6 address (`ipaddress` grammar with scope ids), an IPv4
+address in brackets and any other host are `ValueError`s with their texts, and a non-ASCII location whose NFKC form gains one of
+`/?#@:` is the NFKC message. The retrieve view fetches the object first (a missing key answers its exception), then
+`guess_type` raises: `500 {"exception": "<text>"}`. Valid bracketed hosts and non-ASCII locations are plain URLs; a `data:` type
+of any text is the guessed type (never inline, so an octet-stream download). Unit test: 63 CPython answers
+(`pkg/pymime/testdata/url_vectors.json`). Cases added to `docmanager-reads`.

@@ -190,6 +190,9 @@ def seed_rows(source, created):
                                                          expiration_date=day(source['medical']['expiration'])))
     tag = put(Tags, Tags(tag_id=source['tag']['id'], tag_name=source['tag']['name'], sport_association_id=ids['own_association'],
                          creation_date=moment('2025-01-01T08:00:00Z')))
+    for extra in source.get('tags_extra', []):
+        put(Tags, Tags(tag_id=extra['id'], tag_name=extra['name'], sport_association_id=ids['own_association'],
+                       creation_date=moment('2025-01-01T08:00:00Z')))
     for row in source['subscriptions'].values():
         subscription = put(Subscription, Subscription(
             subscription_id=row['id'], sport_association_id=row.get('association', ids['own_association']), user_id=ids['owner'],

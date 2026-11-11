@@ -79,3 +79,7 @@
 Expected HTML and images come from bs4 and Pillow following the view's steps. Each case checks the response body and either an unchanged state or the complete values of the 23 assigned fields. It also checks the ordered audit entries with actor, impersonation record, correlation id and index row, and that every other row is unchanged.
 
 RED: Django 45/45, Go 404 (`native-r7`). GREEN: 45/45 on native Django, native Go, Caddy `/api/v1` and `/api/v2` (`versioned-r1`). Mutation control: removing the rule that an empty plan list switches the multiple fee off fails `profile-template-empty-values` on Go. Families re-run after the image-bound change: search-profile, oauth-accounts, sso-pairing and misc-routes, all green natively.
+
+## Ported in t2docs
+
+Section names are upper-cased with the full CPython table (`dto/python_upper_table.go`, generated from `str.upper()` of CPython 3.13.16): ß, ligatures and every other multi-character mapping are no longer refused. A case with `straße ﬁne ǰ ΐ` is added to the save sequence.

@@ -97,8 +97,9 @@ Django is not atomic: work saved before a failure stays, and the Go port commits
 
 ## Not ported (refused with a 500 before any write)
 
-- Archive and delete: a related unpaid payment that cannot be read, an unpaid payment hidden by `X-Group-Id` (the UI never sends it)
-  and a deleted payment without an association.
+- Archive and delete: a related unpaid payment whose row does not exist (a dangling foreign key, which the database constraints forbid).
+  An unpaid payment hidden by `X-Group-Id` is saved like a soft-deleted one: auditlog's old-row lookup misses it, so the update entry
+  diffs the saved payment against nothing (indexed through the actor's association when the payment has none).
 
 ## Evidence
 

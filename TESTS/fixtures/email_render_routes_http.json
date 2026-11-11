@@ -849,6 +849,7 @@
      "a1000000-0000-4000-8000-000000701001",
      "actor.sport_association"
     ],
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -953,6 +954,7 @@
      "a1000000-0000-4000-8000-000000701001",
      "actor.sport_association"
     ],
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -1048,6 +1050,7 @@
      "a1000000-0000-4000-8000-000000701001",
      "actor.sport_association"
     ],
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -1146,6 +1149,7 @@
      "a1000000-0000-4000-8000-000000701001",
      "actor.sport_association"
     ],
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -1245,6 +1249,7 @@
      "a1000000-0000-4000-8000-000000701001",
      "actor.sport_association"
     ],
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -1340,6 +1345,7 @@
      "a1000000-0000-4000-8000-000000701001",
      "actor.sport_association"
     ],
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -1431,6 +1437,7 @@
     "role": 1,
     "permissions": null,
     "index": null,
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -1530,6 +1537,7 @@
      "a1000000-0000-4000-8000-000000711001",
      "actor.sport_association"
     ],
+    "reading": null,
     "celery": [
      {
       "task": "core.tasks.send_mail_async",
@@ -1620,6 +1628,7 @@
     "role": 3,
     "permissions": null,
     "index": null,
+    "reading": null,
     "celery": [],
     "owner": "owner_without_association"
    },
@@ -1812,6 +1821,409 @@
     "email": "x@example.test",
     "collaborator_role": null
    }
+  },
+  {
+   "name": "email-render-routes-add-permissions-exponent-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "float-exponent-float@example.test",
+    "role": 3,
+    "permissions": {
+     "a": 100000000000000000000,
+     "b": [
+      15000000000000000
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": [
+     "{\"a\": 100000000000000000000, \"b\": [15000000000000000]}",
+     "{\"a\": 1e+20, \"b\": [1.5e+16]}"
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "float-exponent-float@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"float-exponent-float@example.test\", \"collaborator_permissions\": {\"a\": 1e20, \"b\": [1.5e+16]}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-permissions-negative-zero",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "float-negative-zero@example.test",
+    "role": 3,
+    "permissions": [
+     0.0,
+     1
+    ],
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": [
+     "[0.0, 1]",
+     "[-0.0, 1]"
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-zero@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "float-negative-zero@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-zero@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"float-negative-zero@example.test\", \"collaborator_permissions\": [-0.0, 1]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-permissions-negative-exponent-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "float-negative-exponent-float@example.test",
+    "role": 3,
+    "permissions": {
+     "k": -2000000000000000000000000000000
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": [
+     "{\"k\": -2000000000000000000000000000000}",
+     "{\"k\": -2e+30}"
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "float-negative-exponent-float@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"float-negative-exponent-float@example.test\", \"collaborator_permissions\": {\"k\": -2e30}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-permissions-small-exponent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "small@example.test",
+    "role": 3,
+    "permissions": [
+     1e-05,
+     1000000000000000.0,
+     0.0001
+    ],
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "small@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "small@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "small@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"small@example.test\", \"collaborator_permissions\": [1e-05, 1e15, 0.0001]}",
+   "content_type": "application/json"
   },
   {
    "name": "email-render-routes-add-permissions-nul",

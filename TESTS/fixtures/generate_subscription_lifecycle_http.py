@@ -288,6 +288,14 @@ CS['shi'] = course_subscription('d_shared_inst', payment='shi_p', multi_payments
 INSTALLMENTS['shi_i'] = installment('shi', 0, 'shi_p')
 STATE['cs'].update(copy.deepcopy({key: CS[key] for key in ('bad_cs', 'sh1', 'sh2', 'shs', 'shi')}))
 
+# archive: unpaid payments hidden from Payment.objects (outside the request's group, or soft-deleted without an association).
+PAYMENTS['ghp'] = payment()
+SUBSCRIPTIONS['a_ghid'] = subscription('elena', group='own_group', payment='ghp')
+PAYMENTS['ghp_orph'] = {**payment(), 'association': None}
+SUBSCRIPTIONS['a_ghid_orph'] = subscription('elena', group='own_group', payment='ghp_orph')
+PAYMENTS['dhp_orph'] = {**payment(deleted=True), 'association': None}
+SUBSCRIPTIONS['a_dhid_orph'] = subscription('elena', payment='dhp_orph')
+
 cases = []
 
 
@@ -611,6 +619,18 @@ add('delete-empty-dates-server-error', 'owner', route('d_nodate', 'delete'), 500
     updated('subscription', 'd_nodate', FLIP, DIRECT),
 ], subscriptions={'changed': {'d_nodate': {'archived': True}}}, payments={'deleted': ['dnd_sp']}))
 # A payment without an association: its entry is indexed through the actor.
+add('archive-group-hidden-payment', 'owner', route('a_ghid', 'archive'), 200, ARCHIVED, headers={'X-Group-Id': IDS['own_group']},
+    effect=effect('owner', [created_payment('ghp', {'archived': ['None', 'True']}), updated('subscription', 'a_ghid', FLIP, DIRECT)],
+                  subscriptions={'changed': {'a_ghid': {'archived': True}}}, payments={'changed': {'ghp': {'archived': True}}}))
+add('archive-group-hidden-payment-without-association', 'owner', route('a_ghid_orph', 'archive'), 200, ARCHIVED,
+    headers={'X-Group-Id': IDS['own_group']},
+    effect=effect('owner', [dict(created_payment('ghp_orph', {'archived': ['None', 'True']}), index=ACTOR),
+                            updated('subscription', 'a_ghid_orph', FLIP, DIRECT)],
+                  subscriptions={'changed': {'a_ghid_orph': {'archived': True}}}, payments={'changed': {'ghp_orph': {'archived': True}}}))
+add('archive-soft-deleted-payment-without-association', 'owner', route('a_dhid_orph', 'archive'), 200, ARCHIVED,
+    effect=effect('owner', [dict(created_payment('dhp_orph', {'archived': ['None', 'True']}), index=ACTOR),
+                            updated('subscription', 'a_dhid_orph', FLIP, DIRECT)],
+                  subscriptions={'changed': {'a_dhid_orph': {'archived': True}}}, payments={'changed': {'dhp_orph': {'archived': True}}}))
 add('archive-payment-without-association', 'owner', route('a_orphan', 'archive'), 200, ARCHIVED, effect=effect('owner', [
     updated('payment', 'orph', FLIP, ACTOR),
     updated('subscription', 'a_orphan', FLIP, DIRECT),

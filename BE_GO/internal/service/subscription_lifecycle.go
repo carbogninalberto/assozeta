@@ -226,15 +226,14 @@ func lifecycleMidnight(value *domain.CalendarDate) time.Time {
 	return time.Date(value.Year, time.Month(value.Month), value.Day, 0, 0, 0, 0, time.UTC)
 }
 
-// groupHiddenPayment: X-Group-Id hides the payment from Payment.objects, whose
-// auditlog diff the port does not reproduce for that case.
+// groupHiddenPayment: X-Group-Id hides the payment from Payment.objects, so
+// auditlog's lookup of the old row misses it (as for a soft-deleted one).
 func groupHiddenPayment(payment *domain.SubscriptionLifecyclePayment, group *string) bool {
 	return group != nil && (payment.GroupID == nil || *payment.GroupID != *group)
 }
 
-// archivable checks, before any write, the payments archive saves: an
-// unpaid payment hidden by X-Group-Id, one without an association or whose
-// Payment.save() fails is refused.
+// archivable checks, before any write, that the payments archive saves can be
+// read (a reference to a row that does not exist is refused).
 func (s *SubscriptionLifecycles) archivable(ctx context.Context, request *subscriptionLifecycleRequest, id *string) error {
 	if id == nil {
 		return nil
@@ -244,12 +243,6 @@ func (s *SubscriptionLifecycles) archivable(ctx context.Context, request *subscr
 		return err
 	}
 	if payment == nil {
-		return domain.ErrSubscriptionLifecycleNotPorted
-	}
-	if payment.Paid {
-		return nil
-	}
-	if groupHiddenPayment(payment, request.group) || (payment.Deleted && payment.AssociationID == "") {
 		return domain.ErrSubscriptionLifecycleNotPorted
 	}
 	return nil
@@ -301,11 +294,11 @@ func (s *SubscriptionLifecycles) archivePayment(ctx context.Context, request *su
 		}
 		return errSubscriptionLifecycleUnsavedRelated
 	}
-	if payment.Deleted {
-		// auditlog's Payment.objects lookup misses the soft-deleted row: the
-		// entry diffs the saved instance against None.
+	if payment.Deleted || groupHiddenPayment(payment, request.group) {
+		// auditlog's Payment.objects lookup misses the soft-deleted or group-hidden
+		// row: the entry diffs the saved instance against None.
 		row := payment.PaymentSaveRow
-		if err = paymentSaveDefaults(ctx, request.tx.PaymentSaves(), &row, map[string][2]string{}); err != nil {
+		if err = lifecycleSaveDefaults(ctx, request.tx.PaymentSaves(), &row, map[string][2]string{}); err != nil {
 			return err
 		}
 		if err = request.tx.PaymentSaves().SavePaymentArchive(ctx, row.ID, true, row.CategoryID, row.Description); err != nil {

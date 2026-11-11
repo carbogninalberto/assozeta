@@ -327,6 +327,36 @@ generated('full-collaborator', 'full_collaborator', 'Dojo', 'Dojo')
 generated('restricted-collaborator', 'restricted_collaborator', 'Dojo Ristretto', 'Dojo Ristretto')
 generated('admin-impersonating-owner', 'admin', 'Dojo Admin', 'Dojo Admin', headers=ADMIN_OWNER)
 generated('number', 'owner', 5, '5')
+def multipart(*parts, boundary='submiscboundary'):
+    """parts: (name, filename or None, content type or None, text) as a multipart/form-data body."""
+    chunks = []
+    for name, filename, content_type, text in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename is not None else '')
+        chunks.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n'
+                      + (f'Content-Type: {content_type}\r\n' if content_type else '') + f'\r\n{text}\r\n')
+    return ''.join(chunks) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
+
+# A file in gym_name: the row stores str(file) (its name) and the response echoes the in-memory file, which the
+# renderer turns into its decoded lines.
+for label, text, lines in (('lines', 'uno\ndue\r\ntre\rquattro', ['uno\n', 'due\r\n', 'tre\r', 'quattro']),
+                           ('empty', '', []), ('accents', 'caff\u00e8\n', ['caff\u00e8\n'])):
+    body, content_type = multipart(('gym_name', 'palestra.txt', 'text/plain', text))
+    add(f'generate-file-{label}', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': lines, 'expires_at': '$later'}, method='POST',
+        raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'palestra.txt', 'association': OWN})
+body, content_type = multipart(('gym_name', 'a/b/../percorso.csv', 'text/csv', 'x'))
+add('generate-file-path-name', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': ['x'], 'expires_at': '$later'}, method='POST',
+    raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'percorso.csv', 'association': OWN})
+body, content_type = multipart(('gym_name', 'bin.dat', 'application/octet-stream', 'x'), ('gym_name', None, None, 'dopo'))
+# request.data adds the files after the text values: the file is the last value of the key.
+add('generate-file-then-text', 'owner', GENERATE, 201, {'token': '$new', 'gym_name': ['x'], 'expires_at': '$later'}, method='POST',
+    raw_body=body, content_type=content_type, effect={'kind': 'link', 'gym_name': 'bin.dat', 'association': OWN})
+body, content_type = multipart(('other', 'a.txt', 'text/plain', 'x'))
+add('generate-file-other-key', 'owner', GENERATE, 400, {'error': 'gym_name is required'}, method='POST', raw_body=body,
+    content_type=content_type)
+body, content_type = multipart(('gym_name', 'palestra.txt', 'text/plain', 'x'))
+add('generate-file-athlete', 'athlete', GENERATE, 403, NOT_ASSOCIATION, method='POST', raw_body=body, content_type=content_type)
+
 generated('float', 'owner', 1.5, '1.5')
 generated('boolean', 'owner', True, 'True')
 generated('object', 'owner', {'a': [1, None]}, "{'a': [1, None]}")
