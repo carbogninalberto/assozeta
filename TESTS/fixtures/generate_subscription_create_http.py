@@ -417,6 +417,25 @@ add('type-of-associate-other-type-creates', 'owner', 200, SUCCESS(25.0), body=re
                    membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
                                'price': None}))
 
+# str.upper() is the full Unicode mapping: 'ß' becomes 'SS' (the sex choice message and the stored tax code show it), and strptime
+# reads the decimal digits of other scripts where its pattern has \d.
+add('sex-sharp-s-upper-cased', 'owner', 400, {'sex': ['"SS" is not a valid choice.']},
+    body=request(person('Rita', 'Esse', 'SSXRTI90C41H501K', sex='\u00df')))
+sharp = person('Greta', 'Esse', '\u00dfgrtgrt90c41h501k')
+add('tax-code-sharp-s-stored-upper', 'owner', 200, SUCCESS(25.0), body=request(sharp),
+    effect=success('owner', 'Greta Esse', associate=created_associate({**sharp, 'tax_code': 'SSGRTGRT90C41H501K'}, tax_code='SSGRTGRT90C41H501K'),
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': None}))
+digits = person('Ugo', 'Cifre', 'CFRGUO90C15H501K', born='1\u0665/03/1990')
+add('born-date-other-script-digits', 'owner', 200, SUCCESS(25.0), body=request(digits),
+    effect=success('owner', 'Ugo Cifre', associate=created_associate({**digits, 'born_date': '15/03/1990'}),
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': None}))
+
 # Another association's person with the same tax code is a different associate.
 abroad = person('Marco', 'Noto', 'NTOMRC80A01H501Z', born='01/01/1980')
 add('duplicate-after-create', 'owner', 409,

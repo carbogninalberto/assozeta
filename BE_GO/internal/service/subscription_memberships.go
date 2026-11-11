@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -264,8 +265,8 @@ func (s *SubscriptionMemberships) handleDocuments(ctx context.Context, tx domain
 		}
 		raw, _ := item.Lookup("filename")
 		filename, storable := storedText(raw)
-		if !storable {
-			// Document.objects.create(filename=...) fails (NULL, NUL, over 255): the 500 page, after the saved rows.
+		if !storable || utf8.RuneCountInString(filename) > 255 {
+			// Document.objects.create(filename=...) fails (NULL, NUL, over 255 characters): the 500 page, after the saved rows.
 			return added, ErrSubscriptionMembershipDocumentDecode
 		}
 		document := s.uploads.newDocument(filename)

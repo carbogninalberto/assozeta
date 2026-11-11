@@ -257,17 +257,26 @@ Refused with the 500 page before anything is committed:
   `new_member` flag; a signature upload whose generated key already exists;
 - the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
   control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
-  `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; expiration dates with non-ASCII digits (accepted by `strptime`);
-- a truthy `custom_data.type_of_associate` (its JSON `icontains` filter);
+  `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; 
 - an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
   itself is ported, see [subscription-renew](subscription-renew.md)), a born date that is a float or a container, a year before 1000 or a text
-  `internal/pydateutil` refuses (over 64 KiB), non-ASCII sex, born date or tax code, several tax-code matches with the same latest creation date, a tutor without
+  `internal/pydateutil` refuses (over 64 KiB), a tutor without
   `born_date`, an associate that already has tutors when a tutor is added, a tutor that matches the associate itself;
 - plan fees whose `float()` text is not a plain decimal, float plan ids, a non-string membership plan name used as membership type,
   amounts whose third decimal is not zero, two reusable payments with the same newest creation date.
 
 Routes (not routed in Go): `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
 parsing). The workers' tasks (`print_document_subscription`, `check_workflows_trigger`) stay in Django.
+
+## t2subsa: type of associate, Unicode text and tied tax codes
+
+- `custom_data['type_of_associate']` (truthy, any JSON type through `str()`) narrows both duplicate checks (`check_if_subscription_exists` and the
+  manager's `create()`): `UPPER(custom_data::text) LIKE UPPER('%value%')` with the LIKE characters escaped.
+- `sex` is `str.upper()` of the sent text (`ß` becomes `SS`, so the choice message and the stored tax code show it: `dto.PythonUpper`); a tax
+  code is upper-cased the same way, and the born date is read like `strptime('%d/%m/%Y')`, which accepts the decimal digits of other
+  scripts where its pattern has `\d` (the second day digit, the year).
+- Several associates with one tax code in the association: the pick is the `ORDER BY creation_date DESC LIMIT 1` query Django runs after
+  `MultipleObjectsReturned`, so the database breaks a tie in the creation date as it does for Django.
 
 ## v2subs: sessions, tutors, roles and day-first dates
 
