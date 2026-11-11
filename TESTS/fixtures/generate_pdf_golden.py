@@ -301,6 +301,49 @@ CASES += [
 ]
 
 
+# Fonts, sizes, colours, backgrounds, rises (font, span, nobr, sup, sub): lines of mixed sizes and colours.
+FONTED = ('il <font color="red">corso</font> di <font size="14">nuoto</font> e <font size="6" color="#0000ff">pallanuoto</font> '
+          '<font name="Helvetica-BoldOblique">agonistico</font> si tiene <font bgcolor="yellow">ogni</font> settimana m<sup>2</sup> H<sub>2</sub>O')
+FONTED_CELLS = [
+    '<font color="red">rosso</font>', '<font size="12">grande</font>', '<font size="5">piccolo</font>', 'a <font size="+3">b</font> c',
+    '<font size="-2" color="green">d</font> e', FONTED, '<font name="Symbol">abc</font> x', '<font name="ZapfDingbats">abc</font>',
+    '<span color="#aa00aa" size="9">span</span>', '<nobr>non spezzare questo testo</nobr> poi altro', 'm<sup>2</sup> e m<sup rise="4" size="5">3</sup>',
+    'H<sub>2</sub>O', '<sup>a</sup><sub>b</sub><sup>c</sup>', '<font bgcolor="#ffee00" color="#220000">sfondo</font> senza', '<b><font color="blue">b</font></b>',
+    '<font size="11">' + 'lungo testo che va a capo ' * 6 + '</font>', '<font color="red">poli\xadsportiva</font> ' + SHY,
+    '<font size="30">G</font>randi <font size="4">p</font>iccoli', '<sup rise="50%" size="50%">pct</sup>', '<font size="2mm">mm</font>',
+]
+CASES += [
+    balance('bs-font', header(None, 'ASD <font color="red" size="30">Aurora</font> club', city='<font size="10">Roma</font>',
+                              address='<font color="blue">Via</font> Roma 1')),
+    balance('bs-font-long', header(None, ' '.join([FONTED] * 3), city=FONTED, address='<font size="9" color="#444444">' + LONG + '</font>')),
+    balance('bs-font-background', header(None, 'ASD <font bgcolor="yellow">Aurora</font> club', city='<font bgcolor="red" color="white">Roma</font>')),
+    balance('bs-sup-sub', header(None, 'ASD m<sup>2</sup> H<sub>2</sub>O', city='<sup>alto</sup>', address='<sub rise="3" size="6">basso</sub> x')),
+    balance('bs-font-error', header(None, 'ASD <font color="nope">Aurora</font>')),
+    balance('bs-font-name-error', header(None, 'ASD <font name="Arial">Aurora</font>')),
+    balance('bs-font-size-error', header(None, 'ASD <font size="x">Aurora</font>')),
+    balance('bs-sup-error', header(None, 'ASD <sup rise="x">Aurora</sup>')),
+    balance('bs-span-style-error', header(None, 'ASD <span style="x">Aurora</span>')),
+    with_additional(balance('bs-font-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <font color="red">sono</font> riportati al <font size="14">31/12/2025</font>.'],
+                     ['altro', ' '.join([FONTED] * 4)], ['solo', '<font size="16" color="green">tutto grande</font>']]),
+    report('rt-font-cells', ['<font color="red">Nome</font>', 'Testo <font size="12">grande</font>', 'Note'],
+           [[FONTED_CELLS[i], FONTED_CELLS[(i + 5) % len(FONTED_CELLS)], FONTED_CELLS[(i + 9) % len(FONTED_CELLS)]]
+            for i in range(len(FONTED_CELLS))], 'Caratteri'),
+    report('rt-font-squeezed', ['<font size="6">Colonna</font> %d' % i for i in range(12)],
+           [[FONTED_CELLS[(i * 5 + j) % len(FONTED_CELLS)] for j in range(12)] for i in range(len(FONTED_CELLS))], 'Caratteri stretti'),
+    report('rt-font-pages', ['N', 'Testo'], [[str(i), ' '.join([FONTED_CELLS[i % len(FONTED_CELLS)]] * (1 + i % 4))] for i in range(120)],
+           'Caratteri su pagine'),
+    report('rt-font-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([FONTED] * 130), text_after=' '.join([FONTED + '<br/>'] * 70)),
+    report('rt-font-text-whole', ['Nome'], [['x']], 'Tutto', text_before='<font size="13" color="#334455">' + 'testo grande ' * 300 + '</font>',
+           text_after='<font size="5">' + 'testo piccolo ' * 600 + '</font>'),
+    report('rt-font-soft-hyphen-cut', ['Nome'], [['x']], 'Sillabe', text_before=' '.join(['<font size="8">' + SHY + '</font>'] * 400)),
+    report('rt-font-break', ['Nome'], [['x']], 'A capo', text_before='<br/>'.join(['<font size="%d">riga %d</font>' % (6 + i % 9, i) for i in range(120)])),
+    report('rt-font-cell-error', ['A'], [['<font size="">x</font>']], 'Errore'),
+    attendance('at-font', ('Yoga <font color="red">adulti</font>', ['01/01/2026', '<sup>x</sup>'],
+                           [('<font size="9">Rossi</font> Anna', ['P', '<font bgcolor="yellow">A</font>'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:

@@ -121,12 +121,13 @@ type imgDefn struct {
 // paraPorted are the tags whose effect on the layout is reproduced. Every
 // other tag ParaParser has a handler for is refused; tags it does not know
 // are ignored, as it does.
-var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true}
+var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true,
+	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true}
 
 // paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"a": true, "bullet": true, "font": true, "greek": true, "img": true, "index": true,
-	"link": true, "nobr": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true, "seqformat": true,
-	"seqreset": true, "span": true, "sub": true, "sup": true, "super": true, "unichar": true}
+var paraNotPortedTags = map[string]bool{"a": true, "bullet": true, "greek": true, "img": true, "index": true,
+	"link": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true, "seqformat": true,
+	"seqreset": true, "unichar": true}
 
 // lineAttr is what <u> and <strike> (and <link underline>) set on a frag.
 type lineAttr struct {
@@ -134,6 +135,13 @@ type lineAttr struct {
 	color              color
 	width, offset, gap *usVal
 	kind               string
+}
+
+// supSpec is the rise or size string of <sup> and <sub>, inherited by the
+// fragments inside.
+type supSpec struct {
+	raw string
+	set bool
 }
 
 type paraTag struct {
@@ -147,6 +155,7 @@ type paraTag struct {
 	us           []usLine
 	links        []linkRef
 	line         [2]lineAttr
+	supr, sups   supSpec
 	nobr         bool
 	selfClosing  string
 	lineBreak    bool
@@ -156,7 +165,6 @@ type paraTag struct {
 // paraParser is reportlab's ParaParser.
 type paraParser struct {
 	style   paraStyle
-	family  string
 	started bool
 	stack   []paraTag
 	frags   []*frag
@@ -390,7 +398,7 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		}
 		p.started = true
 		size := p.style.fontSize
-		p.stack = []paraTag{{tag: "para", family: p.family, bold: strings.Contains(p.style.fontName, "Bold"),
+		p.stack = []paraTag{{tag: "para", family: "helvetica", bold: strings.Contains(p.style.fontName, "Bold"),
 			italic: strings.Contains(p.style.fontName, "Oblique"), size: size, color: p.style.textColor}}
 		p.nlines, p.nlinks = 0, 0
 		return true
@@ -419,10 +427,152 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 			return false
 		}
 		return p.newLine(kind)
+	case "font", "span":
+		return p.startFont(tag, attrs)
+	case "nobr":
+		if len(p.stack) == 0 {
+			return p.fail("tag outside the paragraph")
+		}
+		if len(attrs) > 0 {
+			return p.fail("invalid attribute name %s", attrs[0].name)
+		}
+		return p.push(tag, func(t *paraTag) { t.nobr = true })
+	case "sup", "super", "sub":
+		return p.startSup(tag, attrs)
 	}
 	if paraNotPortedTags[tag] && !paraPorted[tag] {
 		return p.unsupported()
 	}
+	return true
+}
+
+// startFont is start_font and start_span (the style attribute of a span
+// raises: the parser does not know the styles).
+func (p *paraParser) startFont(tag string, attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	order, values := dedupeAttrs(attrs)
+	var size *numVal
+	var family string
+	var bold, italic, hasFamily bool
+	var textColor, backColor *color
+	for _, name := range order {
+		attr := values[name]
+		switch name {
+		case "size", "fontsize":
+			if !attr.has {
+				return p.fail("invalid size")
+			}
+			n, st := paraNum(attr.value, true)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid size")
+			}
+			size = &n
+		case "face", "name", "fontname":
+			if !attr.has {
+				return p.fail("invalid font name")
+			}
+			fam, b, i, st := ps2tt(attr.value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid font name")
+			}
+			family, bold, italic, hasFamily = fam, b, i, true
+		case "fg", "color", "textcolor", "backcolor", "bgcolor":
+			if !attr.has {
+				return p.fail("invalid color")
+			}
+			c, st := paraColor(attr.value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid color")
+			}
+			if name == "backcolor" || name == "bgcolor" {
+				backColor = &c
+			} else {
+				textColor = &c
+			}
+		case "style":
+			if tag == "span" {
+				return p.fail("findSpanStyle not implemented in this parser")
+			}
+		default:
+			return p.fail("invalid attribute name %s", name)
+		}
+	}
+	return p.push(tag, func(t *paraTag) {
+		if size != nil {
+			if size.rel {
+				t.size += size.v
+			} else {
+				t.size = size.v
+			}
+		}
+		if hasFamily {
+			t.family, t.bold, t.italic = family, bold, italic
+		}
+		if textColor != nil {
+			t.color = *textColor
+		}
+		if backColor != nil {
+			t.back = backColor
+		}
+	})
+}
+
+// startSup is start_super and start_sub.
+func (p *paraParser) startSup(tag string, attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	order, values := dedupeAttrs(attrs)
+	var rise, size supSpec
+	for _, name := range order {
+		attr := values[name]
+		if name != "rise" && name != "size" {
+			return p.fail("invalid attribute name %s", name)
+		}
+		if !attr.has {
+			return p.fail("invalid value for %s", name)
+		}
+		if _, st := fontSizeNormalize(supSpec{attr.value, true}, p.stack[len(p.stack)-1].size, 0); st != attrOK {
+			return p.attrFailure(st, "invalid value for "+name)
+		}
+		if name == "rise" {
+			rise = supSpec{attr.value, true}
+		} else {
+			size = supSpec{attr.value, true}
+		}
+	}
+	name := "super"
+	if tag == "sub" {
+		name = "sub"
+	}
+	if !p.push(name, func(t *paraTag) {
+		if rise.set {
+			t.supr = rise
+		}
+		if size.set {
+			t.sups = size
+		}
+	}) {
+		return false
+	}
+	top := &p.stack[len(p.stack)-1]
+	fraction := 0.5
+	delta, st := fontSizeNormalize(top.supr, top.size, top.size*fraction)
+	if st != attrOK {
+		return p.attrFailure(st, "invalid rise")
+	}
+	if name == "sub" {
+		top.rise -= delta
+	} else {
+		top.rise += delta
+	}
+	newSize, st := fontSizeNormalize(top.sups, top.size, top.size-min(2, 0.2*top.size))
+	if st != attrOK {
+		return p.attrFailure(st, "invalid size")
+	}
+	top.size = newSize
 	return true
 }
 
@@ -431,8 +581,14 @@ func (p *paraParser) endTag(tag string) bool {
 	case "para", "b", "strong", "i", "em":
 		_, ok := p.pop(tag)
 		return ok
-	case "u", "strike":
+	case "u", "strike", "font", "span", "nobr":
 		_, ok := p.pop(tag)
+		return ok
+	case "sup", "super":
+		_, ok := p.pop("super")
+		return ok
+	case "sub":
+		_, ok := p.pop("sub")
 		return ok
 	case "br":
 		if len(p.stack) == 0 || p.stack[len(p.stack)-1].selfClosing != "br" {
@@ -451,8 +607,14 @@ func (p *paraParser) endTag(tag string) bool {
 	return true
 }
 
-// fontName is tt2ps(family, bold, italic) of the Helvetica family.
+// fontName is tt2ps(family, bold, italic).
 func (t *paraTag) fontName() string {
+	switch t.family {
+	case "symbol":
+		return "Symbol"
+	case "zapfdingbats":
+		return "ZapfDingbats"
+	}
 	name := "Helvetica"
 	switch {
 	case t.bold && t.italic:
@@ -463,6 +625,57 @@ func (t *paraTag) fontName() string {
 		name += "-Oblique"
 	}
 	return name
+}
+
+// ps2tt is the mapping of reportlab.lib.fonts for the font names the markup
+// can use: the family and the bold and italic flags. The Courier and Times
+// families are not ported (their metrics are not in this package).
+func ps2tt(name string) (family string, bold, italic bool, st attrStatus) {
+	switch strings.ToLower(name) {
+	case "helvetica":
+		return "helvetica", false, false, attrOK
+	case "helvetica-bold":
+		return "helvetica", true, false, attrOK
+	case "helvetica-boldoblique":
+		return "helvetica", true, true, attrOK
+	case "helvetica-oblique":
+		return "helvetica", false, true, attrOK
+	case "symbol":
+		return "symbol", false, false, attrOK
+	case "zapfdingbats":
+		return "zapfdingbats", false, false, attrOK
+	case "courier", "courier-bold", "courier-boldoblique", "courier-oblique", "times", "times-bold", "times-bolditalic", "times-italic",
+		"times-roman":
+		return "", false, false, attrUnsupported
+	}
+	return "", false, false, attrInvalid
+}
+
+// fontSizeNormalize is paraparser.fontSizeNormalize for a rise or size
+// string of <sup> and <sub>.
+func fontSizeNormalize(spec supSpec, size, def float64) (float64, attrStatus) {
+	if !spec.set {
+		return def, attrOK
+	}
+	raw := spec.raw
+	if strings.HasSuffix(raw, "%") {
+		v, st := paraConvNum(raw[:len(raw)-1], 1, true)
+		if st != attrOK {
+			return 0, st
+		}
+		if v.rel {
+			return 0, attrInvalid // a tuple times 0.01
+		}
+		return (size * v.v) * 0.01, attrOK
+	}
+	v, st := paraNum(raw, true)
+	if st != attrOK {
+		return 0, st
+	}
+	if v.rel {
+		return v.v + size, attrOK
+	}
+	return v.v, attrOK
 }
 
 func (p *paraParser) data(text string) bool {
@@ -550,7 +763,7 @@ func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
 	if !style.linesSet {
 		style.lines, style.linesSet = defaultLines(), true
 	}
-	parser := &paraParser{style: style, family: "Helvetica"}
+	parser := &paraParser{style: style}
 	raw := []rune(text)
 	if !paraIsPara(raw) {
 		raw = []rune("<para>" + text + "</para>")

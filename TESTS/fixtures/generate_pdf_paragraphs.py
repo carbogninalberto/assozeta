@@ -11,6 +11,7 @@ Run with the project interpreter: ``python -I TESTS/fixtures/generate_pdf_paragr
 (``--check`` compares instead of writing).
 """
 import json
+import math
 import random
 import shutil
 import subprocess
@@ -24,8 +25,7 @@ from reportlab.platypus.paraparser import known_entities
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / 'BE_GO/internal/pdfexport'
-REFUSED = ('a', 'bullet', 'font', 'greek', 'img', 'index', 'link', 'nobr', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat',
-           'seqreset', 'span', 'sub', 'sup', 'super', 'unichar')
+REFUSED = ('a', 'bullet', 'greek', 'img', 'index', 'link', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat', 'seqreset', 'unichar')
 FONTS = ('Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique')
 
 TEXTS = [
@@ -42,6 +42,21 @@ TEXTS = [
     '&;', '& ;', '&#', '&#x', '&# 1', 'poli\xadsportiva', 'a\xad', '\xad', '<b>a</b >', '<b >a</b>', '<B>a</B>', '<b/>a', '<br />',
     '<BR/>a', '<br/><br/>', '<br><b></b></br>', '<br><br/></br>', '<b x>a</b>', '<b x=1>a</b>', '<b x="1" y=\'2\'>a</b>',
     '<b x="1>a</b>', '<b x= "1>a</b>', '<b x=\'>\'>a</b>', '<b x=>a</b>', '<b =>a</b>', '<b "x">a</b>', '<b/ >a</b>', '<b / x>a</b>',
+    '<font size="12">a</font>', '<font size="+2">a</font>', '<font size="-2">a</font>', '<font size="2mm">a</font>', '<font size=" 12 ">a</font>',
+    '<font color="red">a</font>', '<font color="#00ff00">a b</font>', '<font fg="blue">a</font>', '<font textcolor=red>a</font>',
+    '<font fontsize=12>a</font>', '<font name="Helvetica-Bold">a</font>', '<font face="helvetica-oblique">a</font>',
+    '<font name="Symbol">abc</font>', '<font name="ZapfDingbats">abc</font>', '<font name="Courier">a</font>', '<font name="Times-Roman">a</font>',
+    '<font name="Arial">a</font>', '<font name>a</font>', '<font size>a</font>', '<font size="x">a</font>', '<font size="">a</font>',
+    '<font color="nope">a</font>', '<font backcolor="yellow">a</font>', '<font bgcolor="#ffff00">a b c</font>', '<font style="x">a</font>',
+    '<font foo="1">a</font>', '<font size="12" color="red" name="Helvetica-BoldOblique">a b</font> c', '<b><font name="Helvetica">a</font></b>',
+    '<i><font name="Helvetica-Bold">a</font></i>', '<span>a</span>', '<span size="11" color="red">a</span>', '<span style="x">a</span>',
+    '<nobr>a b</nobr>', '<nobr x="1">a</nobr>', '<nobr>a</nobr> <nobr>b</nobr>', '<sup>2</sup>', 'm<sup>2</sup>', 'x<sub>i</sub>',
+    '<sup rise="3">a</sup>', '<sup size="5">a</sup>', '<sup rise="50%">a</sup>', '<sup size="50%">a</sup>', '<sub rise="+1" size="-1">a</sub>',
+    '<sup rise="x">a</sup>', '<sup rise>a</sup>', '<sup foo="1">a</sup>', '<super>a</super>', '<sup>a</super>', '<sup><sub>a</sub></sup>',
+    '<sup rise="2"><sub>a</sub></sup>', '<sup rise="+10%">a</sup>', '<sup size="2in">a</sup>', '<sup rise="1e2">a</sup>',
+    '<font size="0">a</font>', '<font size="1&#50;">a</font>', '<font size="inf">a</font>', '<font color="red" color="blue">a</font>',
+    '<font size="12">a</font><font size="12">b</font>', '<font size="12">a <b>b</b></font>', '<u><font size="14">a</font></u>',
+    '<sup><u>a</u></sup>', '<u><sup>a</sup></u>', 'a<sup>b</sup>c<sub>d</sub>e', '<font size="9">a</font>',
     '<u>a</u>', '<u>a b</u> c', '<u color="red">a</u>', '<u width="2">a</u>', '<u offset="-1">x</u>', '<u kind="double">a</u>',
     '<u kind="triple" gap="2">a</u>', '<u width="0.5*f">a</u>', '<u width="2*P">a</u>', '<u width=" 1.5 ">a</u>', '<u width="2mm">a</u>',
     '<u offset="0.1*F">a</u>', '<u offset="">a</u>', '<u gap="3">a</u>', '<strike>a</strike>', '<strike color="#ff0000" width="1">a</strike>',
@@ -63,7 +78,9 @@ TOKENS = [
     '&amp', '<', '>', '<b>', '</b>', '<i>', '</i>', '<br/>', '<br>', '</br>', '<strong>', '</strong>', '<em>', '</em>', '<x>', '</x>',
     '<x y="1">', "<x y='>'>", '<x y="', '<!-- c -->', '<!--', '<?pi?>', '<!DOCTYPE x>', '<![CDATA[x]]>', '<para>', '</para>',
     '<title>', '</title>', '<script>', '</script>', '<b/>', '</>', '< b>', '<b >', '<B>', '</B >', '<a href="x">', '</a>', '<u>',
-    '</u>', '<strike>', '</strike>', '<u color="red">', '<strike kind="double">', '<font size="12">', '\xad', 'é', '"', "'", '=', '/', '<x/>', '<x a=b c>', '<3', '&&', '&;', '&#', '&#x;', '-', '.', ';',
+    '</u>', '<strike>', '</strike>', '<u color="red">', '<strike kind="double">', '<font size="12">', '</font>', '<font color="red">',
+    '<sup>', '</sup>', '<sub>', '</sub>', '<span>', '</span>', '<nobr>', '</nobr>', '<font name="Symbol">', '<font size="+2">',
+    '<font bgcolor="yellow">', '\xad', 'é', '"', "'", '=', '/', '<x/>', '<x a=b c>', '<3', '&&', '&;', '&#', '&#x;', '-', '.', ';',
     '<plaintext>', '<textarea>', '</textarea>', '<b', '</b', '<x "a">', "<x 'a>", '\n', '\t', '\xa0', '<br />', '<BR/>', '&AMP;',
     '&Alpha;', '&#0;', '&#55296;', '&#1114112;', '&#955;', 'x= "y', '<x y= "z', '<x/y>', '<x//>', '<!>', '<!->', '-->', ']]>',
 ]
@@ -72,7 +89,8 @@ TOKENS = [
 def refusable(text):
     lowered = text.lower()
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or '<para' in lowered or 'blacker(' in lowered
-            or 'whiter(' in lowered)
+            or 'whiter(' in lowered or ('<' in text and (not text.isascii() or 'inf' in lowered or 'nan' in lowered
+                                                         or 'courier' in lowered or 'times' in lowered)))
 
 
 def rgb(colour):
@@ -84,16 +102,22 @@ def rgb(colour):
     return [colour.red, colour.green, colour.blue]
 
 
+def finite(value):
+    if isinstance(value, float) and not math.isfinite(value):
+        raise TypeError('not finite')
+    return value
+
+
 def us_value(value):
-    return value if isinstance(value, (str, int, float)) else repr(value)
+    return finite(value) if isinstance(value, (str, int, float)) else repr(value)
 
 
 def describe(frag):
     """What the Go writer compares: font, text, line break, size, colour, rise, lines, links, background and nobr."""
     lines = []
     for n, kind, colour, width, offset, rise, repeats, gap in frag.us_lines:
-        lines.append([n, kind, rgb(colour), us_value(width), us_value(offset), rise, repeats, us_value(gap)])
-    return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), frag.fontSize, rgb(frag.textColor), frag.rise, lines,
+        lines.append([n, kind, rgb(colour), us_value(width), us_value(offset), finite(rise), repeats, us_value(gap)])
+    return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), finite(frag.fontSize), rgb(frag.textColor), finite(frag.rise), lines,
             [list(link) for link in frag.link], rgb(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False))]
 
 
@@ -111,7 +135,7 @@ def outcome(text, font):
     other = paragraph.style is not style or bool(paragraph.bulletText)
     frags = []
     for frag in paragraph.frags:
-        if frag.greek or hasattr(frag, 'cbDefn') or frag.fontName not in FONTS:
+        if frag.greek or hasattr(frag, 'cbDefn') or frag.fontName not in FONTS + ('Symbol', 'ZapfDingbats'):
             other = True
             continue
         try:
@@ -187,7 +211,7 @@ def corpus():
     cases = [outcome(text, FONTS[i % 2] if i % 7 else FONTS[i % 4]) for i, text in enumerate(texts)]
     if not cases or not any('frags' in case for case in cases) or not any('error' in case for case in cases):
         raise SystemExit('the corpus is empty or one-sided')
-    return json.dumps({'cases': cases}, ensure_ascii=True, separators=(',', ':')) + '\n'
+    return json.dumps({'cases': cases}, ensure_ascii=True, separators=(',', ':'), allow_nan=False) + '\n'
 
 
 def main():

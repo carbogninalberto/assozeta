@@ -199,12 +199,16 @@ func paraConvNum(s string, unit float64, allowRelative bool) (numVal, attrStatus
 	return numVal{f * unit, false}, st
 }
 
-const (
+// The units of reportlab.lib.units, computed with float64 operations (not
+// exact constants).
+var (
 	unitInch = 72.0
-	unitCM   = unitInch / 2.54
+	unitCM   = divide(unitInch, 2.54)
 	unitMM   = unitCM * 0.1
 	unitPica = 12.0
 )
+
+func divide(a, b float64) float64 { return a / b }
 
 // paraNum is _num(s, allowRelative=...): a number with an optional unit.
 func paraNum(s string, allowRelative bool) (numVal, attrStatus) {
