@@ -6,6 +6,7 @@ from rest_framework import serializers
 
 from application.models.invoices_models import Invoice, InvoiceSuppliers, CustomerInvoice
 from application.serializers.payment_serializers import PaymentSerializer, SupplierSerializer
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
@@ -28,7 +29,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return doc
 
 
-class InvoiceSuppliersSerializer(serializers.ModelSerializer):
+class InvoiceSuppliersSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     payment = PaymentSerializer(required=False, allow_null=True)
     payment_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     document_token = serializers.SerializerMethodField()

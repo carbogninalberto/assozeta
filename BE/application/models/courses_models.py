@@ -5,7 +5,7 @@ import uuid
 
 from auditlog.registry import auditlog
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from application.mixin import GroupModelMixin, GroupAwareManager
@@ -246,11 +246,19 @@ class CourseSubscription(models.Model):
 
     def delete(self, *args, **kwargs):
         """
-        Override the delete method to implement soft delete
+        Override the delete method to implement soft delete.
+
+        All or nothing: the installments go (an unpaid installment payment goes with
+        them) and the row is marked deleted in one transaction.
         """
-        CourseSubscriptionInstallment.objects.filter(course_subscription=self).delete()
-        self.deleted = True
-        self.save()
+        with transaction.atomic():
+            CourseSubscriptionInstallment.objects.filter(course_subscription=self).delete()
+            if self.payment_id is not None:
+                # The row's own payment can also be an installment's unpaid payment:
+                # deleting it cleared the stored reference, so read it back.
+                self.refresh_from_db(fields=['payment'])
+            self.deleted = True
+            self.save()
 
     def hard_delete(self, *args, **kwargs):
         """
