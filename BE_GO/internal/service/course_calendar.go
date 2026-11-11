@@ -96,8 +96,8 @@ func calendarItems(value any) ([]any, bool) {
 }
 
 // calendarUUID prepares a value for a UUIDField lookup: canonical text, or
-// nil for None. Strings follow uuid.UUID; integers (uuid.UUID(int=...)) are
-// accepted by Django but not ported; anything else raises ValidationError.
+// nil for None. Strings follow uuid.UUID, integers (and booleans) read as
+// uuid.UUID(int=...); anything else raises ValidationError.
 func calendarUUID(value any) (*string, error) {
 	switch v := value.(type) {
 	case nil:
@@ -110,8 +110,9 @@ func calendarUUID(value any) (*string, error) {
 		text := id.String()
 		return &text, nil
 	case bool, json.Number:
-		if _, err := dto.DjangoUUIDFromInt(v); err == nil {
-			return nil, errCalendarNotPorted
+		// uuid.UUID(int=value); floats, negatives and values past 128 bits raise.
+		if text, err := dto.DjangoUUIDFromInt(v); err == nil {
+			return &text, nil
 		}
 	}
 	return nil, errCalendarRaised
