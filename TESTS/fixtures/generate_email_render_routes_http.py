@@ -210,6 +210,10 @@ add('add-missing-email', 'owner', ADD, 400, ['Email is required'], body={'collab
 add('add-invalid-email', 'owner', ADD, 400, ['Email is not valid.'], body={'email': 'not-an-email'})
 add('add-blank-email', 'owner', ADD, 400, ['Email is not valid.'], body={'email': ''})
 add('add-null-email', 'owner', ADD, 400, ['Email is not valid.'], body={'email': None})
+# NUL never passes the e-mail validator; a lone surrogate makes the request fail (500).
+add('add-nul-email', 'owner', ADD, 400, ['Email is not valid.'], raw_body='{"email": "a\\u0000@b.it"}', content_type='application/json')
+add('add-nul-domain-email', 'owner', ADD, 400, ['Email is not valid.'], raw_body='{"email": "a@b.it\\u0000"}', content_type='application/json')
+add('add-surrogate-email-server-error', 'owner', ADD, 500, SERVER, raw_body='{"email": "a@b\\ud800.it"}', content_type='application/json')
 add('add-list-email-without-at', 'owner', ADD, 400, ['Email is not valid.'], body={'email': ['a@b.it']})
 add('add-list-email-with-at', 'owner', ADD, 500, SERVER, body={'email': ['@']})
 add('add-number-email', 'owner', ADD, 500, SERVER, body={'email': 5})
