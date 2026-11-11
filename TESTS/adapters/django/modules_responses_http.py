@@ -190,6 +190,10 @@ def check_created_response(effect, row, source):
     contract.require((None if row.user_id is None else str(row.user_id)) == (ids[expected['user']] if expected['user'] else None),
                      'response.user')
     contract.require(recent(row.creation_date) and not row.attachments.exists(), 'response.created')
+    # The secret returned to the respondent: stored only as its SHA-256.
+    secret = (contract.RUNTIME.get('response') or {}).get('attachment_token')
+    contract.require(isinstance(secret, str) and len(secret) == 43 and re.fullmatch(r'[A-Za-z0-9_-]+', secret) is not None
+                     and row.attachment_token_hash == hashlib.sha256(secret.encode()).hexdigest(), 'response.attachment-secret')
 
 
 def assert_effect(case, before, after, source, context):

@@ -611,6 +611,18 @@ for label, url in (('credentials', 'https://user:secret@llm.example.test/v1'), (
                    ('fragment', 'https://llm.example.test/v1#top')):
     add(f'integration-ai-url-{label}', 'owner', integration('ai'), 400,
         {'base_url': ['Usa un URL HTTP o HTTPS senza credenziali, query o frammenti.']}, method='PUT', body={**AI, 'base_url': url})
+# URLValidator retries a rejected value with its network location encoded by the 'idna' codec: a valid internationalized
+# name is accepted (the model error shows alone), one the codec refuses (an over-long label) is not.
+add('integration-ai-url-idn-host-valid', 'owner', integration('ai'), 400, {'model': [BLANK]}, method='PUT',
+    body={**AI, 'model': '', 'base_url': 'https://llm.bücher.example/v1'})
+add('integration-ai-url-idn-host-fullwidth-valid', 'owner', integration('ai'), 400, {'model': [BLANK]}, method='PUT',
+    body={**AI, 'model': '', 'base_url': 'https://ｌｌｍ.日本語。example/v1'})
+add('integration-ai-url-idn-label-too-long', 'owner', integration('ai'), 400, {'base_url': ['Enter a valid URL.']}, method='PUT',
+    body={**AI, 'base_url': 'https://' + 'é' * 64 + '.example/v1'})
+add('integration-ai-url-idn-prohibited-character', 'owner', integration('ai'), 400, {'base_url': ['Enter a valid URL.']}, method='PUT',
+    body={**AI, 'base_url': 'https://é\u00a0x.example/v1'})
+add('integration-ai-url-non-ascii-path', 'owner', integration('ai'), 400, {'model': [BLANK]}, method='PUT',
+    body={**AI, 'model': '', 'base_url': 'https://llm.example.test/modèle'})
 add('integration-ai-url-too-long', 'owner', integration('ai'), 400,
     {'base_url': ['Ensure this field has no more than 2000 characters.']}, method='PUT',
     body={**AI, 'base_url': 'https://llm.example.test/' + 'p' * 1990})

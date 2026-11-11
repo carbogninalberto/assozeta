@@ -30557,6 +30557,421 @@
    "unordered": false
   },
   {
+   "name": "subscription-reads-list-sort-future-renewal",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?query[tags]=7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeade,7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadd&sort[field]=_has_future_renewal",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebbd",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-09-05T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 1,
+      "type": 1,
+      "role": 2,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": {
+       "tipo": "promozionale"
+      },
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "username": "message-reads-700001",
+       "email": "message-reads-700001@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeaec",
+       "address": null,
+       "address_cap": null,
+       "address_city": "Padova",
+       "born_city": null,
+       "born_date": "2016-03-15",
+       "email": "",
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": true,
+       "sex": "F",
+       "tax_code": "VRDGLI16C55L781X",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "payment": null,
+      "tags": [
+       {
+        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadd",
+        "tag_name": "Agonisti"
+       }
+      ],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0.0,
+       "to_be_paid": 0.0
+      },
+      "age": "{age:2016-03-15}",
+      "current_year": true,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": null,
+      "medical_document": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaae",
+      "document_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeaaf",
+      "plain_medical_label": "Mancante da {missing:2025-09-05T08:00:00Z}",
+      "signature_present": false
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebba",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-09-01T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": "2025-09-02",
+      "resignation_date": null,
+      "signature_url": "https://cdn.example.test/firma.png",
+      "deleted": false,
+      "archived": false,
+      "draft": false,
+      "trial": false,
+      "meta": {
+       "origine": "sportello"
+      },
+      "custom_data": {
+       "tipo": "agonista"
+      },
+      "additional_fields": {
+       "taglia": "M"
+      },
+      "subscription_number": "12",
+      "subscription_type": "annuale",
+      "competitive": true,
+      "notes": "iscrizione completa",
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "username": "message-reads-700001",
+       "email": "message-reads-700001@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeaea",
+       "address": "Via Mazzini 3",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": "https://cdn.example.test/mario.jpg"
+      },
+      "payment": {
+       "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaff",
+       "amount": 50.0,
+       "paid": true,
+       "payment_date": "2025-09-02T10:00:00.250000Z"
+      },
+      "tags": [
+       {
+        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadd",
+        "tag_name": "Agonisti"
+       },
+       {
+        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeade",
+        "tag_name": "Master"
+       }
+      ],
+      "all_payments_paid": false,
+      "payments_info": {
+       "total": 180.0,
+       "to_be_paid": 130.0
+      },
+      "age": "{age:1990-05-10}",
+      "current_year": true,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeada",
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaca",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacb",
+      "medical_expiration_date": "2031-06-30",
+      "document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaaa",
+      "document_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeaab",
+      "plain_medical_label": "{until:2031-06-30} rimanenti",
+      "signature_present": true
+     }
+    },
+    "meta": {
+     "total": 2,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebbd",
+      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebba"
+     ]
+    }
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-future-renewal-desc",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?query[tags]=7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeade,7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadd&sort[field]=_has_future_renewal&sort[sort]=desc",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "0": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebba",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-09-01T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 4,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": "2025-09-02",
+      "resignation_date": null,
+      "signature_url": "https://cdn.example.test/firma.png",
+      "deleted": false,
+      "archived": false,
+      "draft": false,
+      "trial": false,
+      "meta": {
+       "origine": "sportello"
+      },
+      "custom_data": {
+       "tipo": "agonista"
+      },
+      "additional_fields": {
+       "taglia": "M"
+      },
+      "subscription_number": "12",
+      "subscription_type": "annuale",
+      "competitive": true,
+      "notes": "iscrizione completa",
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "username": "message-reads-700001",
+       "email": "message-reads-700001@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeaea",
+       "address": "Via Mazzini 3",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": "https://cdn.example.test/mario.jpg"
+      },
+      "payment": {
+       "payment_id": "ba1dface-eeee-4eee-8eee-eeeeeeeeeaff",
+       "amount": 50.0,
+       "paid": true,
+       "payment_date": "2025-09-02T10:00:00.250000Z"
+      },
+      "tags": [
+       {
+        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadd",
+        "tag_name": "Agonisti"
+       },
+       {
+        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeade",
+        "tag_name": "Master"
+       }
+      ],
+      "all_payments_paid": false,
+      "payments_info": {
+       "total": 180.0,
+       "to_be_paid": 130.0
+      },
+      "age": "{age:1990-05-10}",
+      "current_year": true,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": "3ed1ca1e-eeee-4eee-8eee-eeeeeeeeeada",
+      "medical_document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaca",
+      "medical_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeacb",
+      "medical_expiration_date": "2031-06-30",
+      "document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaaa",
+      "document_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeaab",
+      "plain_medical_label": "{until:2031-06-30} rimanenti",
+      "signature_present": true
+     },
+     "1": {
+      "subscription_id": "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebbd",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "creation_date": "2025-09-05T08:00:00Z",
+      "start_date": "2025-09-01",
+      "end_date": "2030-08-31",
+      "status_flag": 1,
+      "type": 1,
+      "role": 2,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "signature_url": null,
+      "deleted": false,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "custom_data": {
+       "tipo": "promozionale"
+      },
+      "additional_fields": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "competitive": false,
+      "notes": null,
+      "user": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "username": "message-reads-700001",
+       "email": "message-reads-700001@example.test",
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "decafbad-eeee-4eee-8eee-eeeeeeeeeaec",
+       "address": null,
+       "address_cap": null,
+       "address_city": "Padova",
+       "born_city": null,
+       "born_date": "2016-03-15",
+       "email": "",
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": true,
+       "sex": "F",
+       "tax_code": "VRDGLI16C55L781X",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "payment": null,
+      "tags": [
+       {
+        "tag_id": "7a6b7a6b-eeee-4eee-8eee-eeeeeeeeeadd",
+        "tag_name": "Agonisti"
+       }
+      ],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0.0,
+       "to_be_paid": 0.0
+      },
+      "age": "{age:2016-03-15}",
+      "current_year": true,
+      "next_years": false,
+      "renewal_available": false,
+      "medical": null,
+      "medical_document": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": "d0c0d0c0-eeee-4eee-8eee-eeeeeeeeeaae",
+      "document_token": "70ce70ce-eeee-4eee-8eee-eeeeeeeeeaaf",
+      "plain_medical_label": "Mancante da {missing:2025-09-05T08:00:00Z}",
+      "signature_present": false
+     }
+    },
+    "meta": {
+     "total": 2,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebba",
+      "5ab5c0de-eeee-4eee-8eee-eeeeeeeeebbd"
+     ]
+    }
+   },
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-search-greek-and-dotted-i",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?query[generalSearch]=%CE%A3%CE%AF%CF%83%CF%85%CF%86%CE%BF%CF%82%20%C4%B0",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {},
+    "meta": {
+     "total": 0,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": []
+    }
+   },
+   "unordered": false
+  },
+  {
    "name": "subscription-reads-list-mode",
    "actor": "owner",
    "method": "GET",

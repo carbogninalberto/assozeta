@@ -36865,6 +36865,2460 @@
    "referrer_policy": null
   },
   {
+   "name": "data-restore-upload-form-urlencoded-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/data-restore",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "single": true,
+   "lock": null,
+   "setup": null,
+   "cache": null,
+   "objects": {},
+   "objects_after": [],
+   "effect": {
+    "receipts": {
+     "review": {
+      "id": "d7000000-0000-4000-8000-000000000101",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-03-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000101/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {
+       "Document:d7000000-0000-4000-8000-00000000c010": "restores/d7000000-0000-4000-8000-000000000101/media/m1/scheda.pdf"
+      },
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "media": {
+      "id": "d7000000-0000-4000-8000-000000000102",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-02-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000102/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 2,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "oldversion": {
+      "id": "d7000000-0000-4000-8000-000000000103",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-01-20T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000103/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "v0.0.1-fixture",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "moved": {
+      "id": "d7000000-0000-4000-8000-000000000104",
+      "owner": "owner",
+      "association_id": "d7000000-0000-4000-8000-00000000a5a5",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-01-10T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000104/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "stale": {
+      "id": "d7000000-0000-4000-8000-000000000105",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2020-06-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000105/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "failed": {
+      "id": "d7000000-0000-4000-8000-000000000106",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "failed",
+      "stage": "failed",
+      "created_at": "2026-03-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000106/recovery/d7000000-0000-4000-8000-000000000a06.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb6",
+      "media": {},
+      "error": "Ripristino non riuscito. I dati precedenti sono conservati. Verifica il backup e riprova.",
+      "allow_missing_media": false,
+      "attempts": 2
+     },
+     "completed": {
+      "id": "d7000000-0000-4000-8000-000000000107",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2026-02-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2026-02-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Solo riepilogo",
+       "records": 3
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000107/recovery/d7000000-0000-4000-8000-000000000a07.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb7",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "cancelled": {
+      "id": "d7000000-0000-4000-8000-000000000108",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "cancelled",
+      "stage": "cancelled",
+      "created_at": "2026-01-15T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {},
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "receipt": {
+      "id": "d7000000-0000-4000-8000-000000000109",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-12-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-12-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "foreign_association": {
+      "id": "d7000000-0000-4000-8000-00000000010a",
+      "owner": "owner",
+      "association_id": "d7000000-0000-4000-8000-00000000a5a5",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-11-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-11-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000010a/recovery/d7000000-0000-4000-8000-000000000a0a.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive01": {
+      "id": "d7000000-0000-4000-8000-000000000201",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:01Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 1
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000201/recovery/d7000000-0000-4000-8000-000000000b01.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive02": {
+      "id": "d7000000-0000-4000-8000-000000000202",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:02Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 2
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000202/recovery/d7000000-0000-4000-8000-000000000b02.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive03": {
+      "id": "d7000000-0000-4000-8000-000000000203",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:03Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 3
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000203/recovery/d7000000-0000-4000-8000-000000000b03.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb3",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive04": {
+      "id": "d7000000-0000-4000-8000-000000000204",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:04Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 4
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000204/recovery/d7000000-0000-4000-8000-000000000b04.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb4",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive05": {
+      "id": "d7000000-0000-4000-8000-000000000205",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:05Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 5
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000205/recovery/d7000000-0000-4000-8000-000000000b05.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive06": {
+      "id": "d7000000-0000-4000-8000-000000000206",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:05Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 6
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000206/recovery/d7000000-0000-4000-8000-000000000b06.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb6",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive07": {
+      "id": "d7000000-0000-4000-8000-000000000207",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:07Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 7
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000207/recovery/d7000000-0000-4000-8000-000000000b07.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb7",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive08": {
+      "id": "d7000000-0000-4000-8000-000000000208",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:08Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 8
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000208/recovery/d7000000-0000-4000-8000-000000000b08.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb8",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive09": {
+      "id": "d7000000-0000-4000-8000-000000000209",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:09Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 9
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000209/recovery/d7000000-0000-4000-8000-000000000b09.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb9",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive10": {
+      "id": "d7000000-0000-4000-8000-00000000020a",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:10Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 10
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020a/recovery/d7000000-0000-4000-8000-000000000b0a.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive11": {
+      "id": "d7000000-0000-4000-8000-00000000020b",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:11Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 11
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020b/recovery/d7000000-0000-4000-8000-000000000b0b.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive12": {
+      "id": "d7000000-0000-4000-8000-00000000020c",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:12Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 12
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020c/recovery/d7000000-0000-4000-8000-000000000b0c.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "admin": {
+      "id": "d7000000-0000-4000-8000-000000000301",
+      "owner": "admin",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2026-02-15T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2026-02-15T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 7
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000301/recovery/d7000000-0000-4000-8000-000000000c01.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "foreign_owner": {
+      "id": "d7000000-0000-4000-8000-000000000302",
+      "owner": "foreign_owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "failed",
+      "stage": "failed",
+      "created_at": "2026-02-20T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000302/recovery/d7000000-0000-4000-8000-000000000c02.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2",
+      "media": {},
+      "error": "Errore di prova.",
+      "allow_missing_media": false,
+      "attempts": 1
+     }
+    },
+    "celery": []
+   },
+   "cache_control": "no-store",
+   "stream": null,
+   "attachment": null,
+   "referrer_policy": null,
+   "raw_b64": "ZmlsZT1iYWNrdXAuemlw",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "data-restore-upload-text-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/data-restore",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"text/plain\" in request."
+   },
+   "single": true,
+   "lock": null,
+   "setup": null,
+   "cache": null,
+   "objects": {},
+   "objects_after": [],
+   "effect": {
+    "receipts": {
+     "review": {
+      "id": "d7000000-0000-4000-8000-000000000101",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-03-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000101/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {
+       "Document:d7000000-0000-4000-8000-00000000c010": "restores/d7000000-0000-4000-8000-000000000101/media/m1/scheda.pdf"
+      },
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "media": {
+      "id": "d7000000-0000-4000-8000-000000000102",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-02-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000102/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 2,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "oldversion": {
+      "id": "d7000000-0000-4000-8000-000000000103",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-01-20T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000103/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "v0.0.1-fixture",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "moved": {
+      "id": "d7000000-0000-4000-8000-000000000104",
+      "owner": "owner",
+      "association_id": "d7000000-0000-4000-8000-00000000a5a5",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-01-10T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000104/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "stale": {
+      "id": "d7000000-0000-4000-8000-000000000105",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2020-06-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000105/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "failed": {
+      "id": "d7000000-0000-4000-8000-000000000106",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "failed",
+      "stage": "failed",
+      "created_at": "2026-03-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000106/recovery/d7000000-0000-4000-8000-000000000a06.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb6",
+      "media": {},
+      "error": "Ripristino non riuscito. I dati precedenti sono conservati. Verifica il backup e riprova.",
+      "allow_missing_media": false,
+      "attempts": 2
+     },
+     "completed": {
+      "id": "d7000000-0000-4000-8000-000000000107",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2026-02-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2026-02-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Solo riepilogo",
+       "records": 3
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000107/recovery/d7000000-0000-4000-8000-000000000a07.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb7",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "cancelled": {
+      "id": "d7000000-0000-4000-8000-000000000108",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "cancelled",
+      "stage": "cancelled",
+      "created_at": "2026-01-15T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {},
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "receipt": {
+      "id": "d7000000-0000-4000-8000-000000000109",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-12-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-12-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "foreign_association": {
+      "id": "d7000000-0000-4000-8000-00000000010a",
+      "owner": "owner",
+      "association_id": "d7000000-0000-4000-8000-00000000a5a5",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-11-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-11-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000010a/recovery/d7000000-0000-4000-8000-000000000a0a.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive01": {
+      "id": "d7000000-0000-4000-8000-000000000201",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:01Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 1
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000201/recovery/d7000000-0000-4000-8000-000000000b01.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive02": {
+      "id": "d7000000-0000-4000-8000-000000000202",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:02Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 2
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000202/recovery/d7000000-0000-4000-8000-000000000b02.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive03": {
+      "id": "d7000000-0000-4000-8000-000000000203",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:03Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 3
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000203/recovery/d7000000-0000-4000-8000-000000000b03.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb3",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive04": {
+      "id": "d7000000-0000-4000-8000-000000000204",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:04Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 4
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000204/recovery/d7000000-0000-4000-8000-000000000b04.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb4",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive05": {
+      "id": "d7000000-0000-4000-8000-000000000205",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:05Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 5
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000205/recovery/d7000000-0000-4000-8000-000000000b05.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive06": {
+      "id": "d7000000-0000-4000-8000-000000000206",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:05Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 6
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000206/recovery/d7000000-0000-4000-8000-000000000b06.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb6",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive07": {
+      "id": "d7000000-0000-4000-8000-000000000207",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:07Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 7
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000207/recovery/d7000000-0000-4000-8000-000000000b07.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb7",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive08": {
+      "id": "d7000000-0000-4000-8000-000000000208",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:08Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 8
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000208/recovery/d7000000-0000-4000-8000-000000000b08.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb8",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive09": {
+      "id": "d7000000-0000-4000-8000-000000000209",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:09Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 9
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000209/recovery/d7000000-0000-4000-8000-000000000b09.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb9",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive10": {
+      "id": "d7000000-0000-4000-8000-00000000020a",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:10Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 10
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020a/recovery/d7000000-0000-4000-8000-000000000b0a.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive11": {
+      "id": "d7000000-0000-4000-8000-00000000020b",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:11Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 11
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020b/recovery/d7000000-0000-4000-8000-000000000b0b.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive12": {
+      "id": "d7000000-0000-4000-8000-00000000020c",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:12Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 12
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020c/recovery/d7000000-0000-4000-8000-000000000b0c.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "admin": {
+      "id": "d7000000-0000-4000-8000-000000000301",
+      "owner": "admin",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2026-02-15T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2026-02-15T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 7
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000301/recovery/d7000000-0000-4000-8000-000000000c01.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "foreign_owner": {
+      "id": "d7000000-0000-4000-8000-000000000302",
+      "owner": "foreign_owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "failed",
+      "stage": "failed",
+      "created_at": "2026-02-20T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000302/recovery/d7000000-0000-4000-8000-000000000c02.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2",
+      "media": {},
+      "error": "Errore di prova.",
+      "allow_missing_media": false,
+      "attempts": 1
+     }
+    },
+    "celery": []
+   },
+   "cache_control": "no-store",
+   "stream": null,
+   "attachment": null,
+   "referrer_policy": null,
+   "raw_b64": "YmFja3Vw",
+   "content_type": "text/plain"
+  },
+  {
+   "name": "data-restore-action-text-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/data-restore/d7000000-0000-4000-8000-000000000107/delete-backup",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"text/plain\" in request."
+   },
+   "single": true,
+   "lock": null,
+   "setup": null,
+   "cache": null,
+   "objects": {},
+   "objects_after": [],
+   "effect": {
+    "receipts": {
+     "review": {
+      "id": "d7000000-0000-4000-8000-000000000101",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-03-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000101/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {
+       "Document:d7000000-0000-4000-8000-00000000c010": "restores/d7000000-0000-4000-8000-000000000101/media/m1/scheda.pdf"
+      },
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "media": {
+      "id": "d7000000-0000-4000-8000-000000000102",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-02-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000102/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 2,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "oldversion": {
+      "id": "d7000000-0000-4000-8000-000000000103",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-01-20T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000103/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "v0.0.1-fixture",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "moved": {
+      "id": "d7000000-0000-4000-8000-000000000104",
+      "owner": "owner",
+      "association_id": "d7000000-0000-4000-8000-00000000a5a5",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2099-01-10T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000104/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "stale": {
+      "id": "d7000000-0000-4000-8000-000000000105",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "review",
+      "stage": "validated",
+      "created_at": "2020-06-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "restores/d7000000-0000-4000-8000-000000000105/upload/archive.zip",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "failed": {
+      "id": "d7000000-0000-4000-8000-000000000106",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "failed",
+      "stage": "failed",
+      "created_at": "2026-03-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000106/recovery/d7000000-0000-4000-8000-000000000a06.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb6",
+      "media": {},
+      "error": "Ripristino non riuscito. I dati precedenti sono conservati. Verifica il backup e riprova.",
+      "allow_missing_media": false,
+      "attempts": 2
+     },
+     "completed": {
+      "id": "d7000000-0000-4000-8000-000000000107",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2026-02-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2026-02-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Solo riepilogo",
+       "records": 3
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000107/recovery/d7000000-0000-4000-8000-000000000a07.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb7",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "cancelled": {
+      "id": "d7000000-0000-4000-8000-000000000108",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "cancelled",
+      "stage": "cancelled",
+      "created_at": "2026-01-15T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {},
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 0
+     },
+     "receipt": {
+      "id": "d7000000-0000-4000-8000-000000000109",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-12-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-12-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "",
+      "backup_sha256": "",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "foreign_association": {
+      "id": "d7000000-0000-4000-8000-00000000010a",
+      "owner": "owner",
+      "association_id": "d7000000-0000-4000-8000-00000000a5a5",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-11-01T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-11-01T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000010a/recovery/d7000000-0000-4000-8000-000000000a0a.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive01": {
+      "id": "d7000000-0000-4000-8000-000000000201",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:01Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 1
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000201/recovery/d7000000-0000-4000-8000-000000000b01.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive02": {
+      "id": "d7000000-0000-4000-8000-000000000202",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:02Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 2
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000202/recovery/d7000000-0000-4000-8000-000000000b02.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive03": {
+      "id": "d7000000-0000-4000-8000-000000000203",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:03Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 3
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000203/recovery/d7000000-0000-4000-8000-000000000b03.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb3",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive04": {
+      "id": "d7000000-0000-4000-8000-000000000204",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:04Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 4
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000204/recovery/d7000000-0000-4000-8000-000000000b04.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb4",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive05": {
+      "id": "d7000000-0000-4000-8000-000000000205",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:05Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 5
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000205/recovery/d7000000-0000-4000-8000-000000000b05.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb5",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive06": {
+      "id": "d7000000-0000-4000-8000-000000000206",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:05Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 6
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000206/recovery/d7000000-0000-4000-8000-000000000b06.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb6",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive07": {
+      "id": "d7000000-0000-4000-8000-000000000207",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:07Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 7
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000207/recovery/d7000000-0000-4000-8000-000000000b07.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb7",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive08": {
+      "id": "d7000000-0000-4000-8000-000000000208",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:08Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 8
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000208/recovery/d7000000-0000-4000-8000-000000000b08.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb8",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive09": {
+      "id": "d7000000-0000-4000-8000-000000000209",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:09Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 9
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000209/recovery/d7000000-0000-4000-8000-000000000b09.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb9",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive10": {
+      "id": "d7000000-0000-4000-8000-00000000020a",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:10Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 10
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020a/recovery/d7000000-0000-4000-8000-000000000b0a.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive11": {
+      "id": "d7000000-0000-4000-8000-00000000020b",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:11Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 11
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020b/recovery/d7000000-0000-4000-8000-000000000b0b.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "archive12": {
+      "id": "d7000000-0000-4000-8000-00000000020c",
+      "owner": "owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2025-06-01T00:00:12Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2025-06-01T01:00:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 12
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-00000000020c/recovery/d7000000-0000-4000-8000-000000000b0c.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "admin": {
+      "id": "d7000000-0000-4000-8000-000000000301",
+      "owner": "admin",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "completed",
+      "stage": "completed",
+      "created_at": "2026-02-15T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": "2026-02-15T00:30:00Z",
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "records": 7
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000301/recovery/d7000000-0000-4000-8000-000000000c01.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1",
+      "media": {},
+      "error": "",
+      "allow_missing_media": false,
+      "attempts": 1
+     },
+     "foreign_owner": {
+      "id": "d7000000-0000-4000-8000-000000000302",
+      "owner": "foreign_owner",
+      "association_id": "a1000000-0000-4000-8000-000000701001",
+      "state": "failed",
+      "stage": "failed",
+      "created_at": "2026-02-20T00:00:00Z",
+      "updated_at": "2026-04-01T08:00:00Z",
+      "completed_at": null,
+      "upload_path": "",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "version": "$version",
+      "preview": {
+       "association": "Associazione di prova",
+       "export_date": "2026-03-30T10:00:00",
+       "skipped_records": {
+        "BillingPlan": 1
+       },
+       "records": 42,
+       "files": 1,
+       "missing_media": 0,
+       "legacy_invoices": 0,
+       "reassigned_tutors": 1,
+       "tutor_tax_code_conflicts": 1,
+       "tutor_reassignment_details": [
+        {
+         "associate_id": "d7000000-0000-4000-8000-00000000c001",
+         "source_association_id": null,
+         "name": "Tutore Prova",
+         "original_tax_code": "PRVTTR80A01H501U",
+         "conflicting_associate_id": "d7000000-0000-4000-8000-00000000c002"
+        }
+       ],
+       "missing_relations": 1,
+       "missing_relation_details": [
+        {
+         "model": "Payment",
+         "record_id": "d7000000-0000-4000-8000-00000000c003",
+         "field": "course_id",
+         "target_model": "Course",
+         "target_id": "d7000000-0000-4000-8000-00000000c004"
+        }
+       ]
+      },
+      "backup_path": "restores/d7000000-0000-4000-8000-000000000302/recovery/d7000000-0000-4000-8000-000000000c02.zip",
+      "backup_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb2",
+      "media": {},
+      "error": "Errore di prova.",
+      "allow_missing_media": false,
+      "attempts": 1
+     }
+    },
+    "celery": []
+   },
+   "cache_control": "no-store",
+   "stream": null,
+   "attachment": null,
+   "referrer_policy": null,
+   "raw_b64": "Y29uZmlybQ==",
+   "content_type": "text/plain"
+  },
+  {
    "name": "data-restore-upload-file-as-field",
    "actor": "owner",
    "method": "POST",

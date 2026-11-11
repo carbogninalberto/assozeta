@@ -16,6 +16,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/djangoauth"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
@@ -148,6 +149,11 @@ func (s *OAuthAccounts) sendText(ctx context.Context, recipient, subject, messag
 	}})
 }
 
+// oauthPasswordUnencodable: a lone surrogate cannot be encoded by the password hasher; NUL is an ordinary character.
+func oauthPasswordUnencodable(text string) bool {
+	return !utf8.ValidString(text) || wtf8Surrogate(text)
+}
+
 func oauthTextUnsupported(text string) bool {
 	return strings.ContainsRune(text, 0) || !utf8.ValidString(text) || wtf8Surrogate(text)
 }
@@ -271,8 +277,8 @@ func (s *OAuthAccounts) Reset(ctx context.Context, body any, language string) (O
 	if stored == nil || !dto.OAuthPasswordMatches(password) {
 		return OAuthAnswer{400, oauthInvalid}, nil
 	}
-	if oauthTextUnsupported(password) {
-		return OAuthAnswer{}, ErrOAuthNotPorted
+	if oauthPasswordUnencodable(password) {
+		return OAuthAnswer{}, ErrOAuthServer // make_password: UnicodeEncodeError
 	}
 	id, err := paymentInfoParseUUID(*stored)
 	if err != nil {
@@ -448,9 +454,13 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 		return nil, ErrOAuthNotPorted
 	}
 	if fields.UsernameChecked {
-		taken, err := s.store.UsernameTaken(ctx, fields.Username)
-		if err != nil {
-			return nil, err
+		taken := false
+		if !fields.UsernameNUL {
+			// DRF's qs_exists answers False when the driver refuses the query (a NUL in the text).
+			var err error
+			if taken, err = s.store.UsernameTaken(ctx, fields.Username); err != nil {
+				return nil, err
+			}
 		}
 		var codes []string
 		if validation.UsernameInvalid {
@@ -480,14 +490,14 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	}
 	passwordValue, _ := object.Lookup("password")
 	password, ok := passwordValue.(string)
-	if !ok || oauthTextUnsupported(password) {
-		return nil, ErrOAuthNotPorted
+	if !ok || oauthPasswordUnencodable(password) {
+		return nil, ErrOAuthServer // make_password: UnicodeEncodeError
 	}
 	hash, err := s.hashes.Encode(ctx, password)
 	if err != nil {
 		return nil, err
 	}
-	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: strings.ToUpper(fields.Username), Email: normalizeEmail(fields.Email),
+	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: djangoauth.PythonUpper(fields.Username), Email: normalizeEmail(fields.Email),
 		PasswordHash: hash, FirstName: *fields.FirstName, LastName: *fields.LastName, Role: role, CollaboratorRole: collaboratorRole,
 		ConnectedUserID: connected, Permissions: permissions, Joined: s.now().UTC()}
 	if err = s.store.CreateUser(ctx, user, audit); errors.Is(err, domain.ErrOAuthUsernameConflict) {
@@ -613,8 +623,8 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	}
 	usernameValue, _ := object.Lookup("username")
 	username, usernameText := usernameValue.(string)
-	if !dto.IsASCII(email) || (usernameText && !dto.IsASCII(username)) {
-		return nil, ErrOAuthNotPorted // Python's Unicode lower()/upper()
+	if !dto.IsASCII(email) {
+		return nil, ErrOAuthNotPorted // the welcome mail to a non-ASCII address depends on the SMTP server's SMTPUTF8 support
 	}
 	membership, refusal, err := s.signupMembership(ctx, object, collaborator, audit)
 	if err != nil || refusal != nil {
@@ -627,7 +637,7 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
-	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: strings.ToUpper(username), Email: normalizeEmail(email),
+	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: djangoauth.PythonUpper(username), Email: normalizeEmail(email),
 		PasswordHash: hash, FirstName: names[0], LastName: names[1], Role: membership.role, CollaboratorRole: membership.collaboratorRole,
 		ConnectedUserID: membership.connected, Permissions: membership.permissions, Joined: s.now().UTC()}
 	if err = s.store.CreateUser(ctx, user, audit); errors.Is(err, domain.ErrOAuthUsernameConflict) {

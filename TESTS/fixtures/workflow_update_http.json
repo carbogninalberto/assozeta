@@ -1613,6 +1613,146 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "workflow-update-form-tree-lone-surrogate-kept-entry",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "kept": true,
+    "row": {
+     "name": "Modulo",
+     "description": "",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_payment",
+       "data": {
+        "k": "v",
+        "n": [
+         1,
+         2.5,
+         null,
+         true
+        ]
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "automation_tree": [
+        "[{\"data\": {\"k\": \"v\", \"n\": [1, 2.5, null, true]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]",
+        "[{\"data\": {\"k\": \"\\ud800\", \"n\": [1, 2.5]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "automation_tree=%5B%7B%22id%22%3A%20%22trigger%22%2C%20%22value%22%3A%20%22new_payment%22%2C%20%22data%22%3A%20%7B%22k%22%3A%20%22%5Cud800%22%2C%20%22n%22%3A%20%5B1%2C%202.5%5D%7D%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-lone-surrogate-with-name-kept-entry",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "kept": true,
+    "row": {
+     "name": "Modulo",
+     "description": "",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_payment",
+       "data": {
+        "k": "v",
+        "n": [
+         1,
+         2.5,
+         null,
+         true
+        ]
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "name": [
+        "Modulo",
+        "Mai salvato"
+       ],
+       "automation_tree": [
+        "[{\"data\": {\"k\": \"v\", \"n\": [1, 2.5, null, true]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]",
+        "[{\"data\": {\"k\": \"\\ud800\", \"n\": [1, 2.5]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "name=Mai+salvato&automation_tree=%5B%7B%22id%22%3A%20%22trigger%22%2C%20%22value%22%3A%20%22new_payment%22%2C%20%22data%22%3A%20%7B%22k%22%3A%20%22%5Cud800%22%2C%20%22n%22%3A%20%5B1%2C%202.5%5D%7D%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "workflow-update-form-tree-surrogate-pair-saved",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/workflows/a1000000-0000-4000-8000-000000962001/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow updated."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "label": "plain",
+    "row": {
+     "name": "Modulo",
+     "description": "",
+     "automation_tree": [
+      {
+       "id": "trigger",
+       "value": "new_payment",
+       "data": {
+        "k": "😀"
+       }
+      }
+     ],
+     "enabled": false
+    },
+    "audit": [
+     {
+      "changes": {
+       "automation_tree": [
+        "[{\"data\": {\"k\": \"v\", \"n\": [1, 2.5, null, true]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]",
+        "[{\"data\": {\"k\": \"\\ud83d\\ude00\"}, \"id\": \"trigger\", \"value\": \"new_payment\"}]"
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "automation_tree=%5B%7B%22id%22%3A%20%22trigger%22%2C%20%22value%22%3A%20%22new_payment%22%2C%20%22data%22%3A%20%7B%22k%22%3A%20%22%5Cud83d%5Cude00%22%7D%7D%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "workflow-update-form-tree-and-fields",
    "actor": "owner",
    "method": "PATCH",
@@ -1649,7 +1789,7 @@
         "Misto"
        ],
        "automation_tree": [
-        "[{\"data\": {\"k\": \"v\", \"n\": [1, 2.5, null, true]}, \"id\": \"trigger\", \"value\": \"new_payment\"}]",
+        "[{\"data\": {\"k\": \"\\ud83d\\ude00\"}, \"id\": \"trigger\", \"value\": \"new_payment\"}]",
         "[{\"data\": {\"a\": \"primo\", \"z\": \"ultimo\"}, \"id\": \"trigger\", \"value\": \"new_subscription\"}]"
        ]
       }

@@ -109,6 +109,12 @@ TASKS = {
     'other_task_failed': {'task_id': uid(807), 'status': 'FAILURE', 'task_name': 'export_association_data',
                           'result': '{"exc_type": "ValueError", "exc_message": ["altro task"], "exc_module": "builtins"}'},
 }
+TASKS['export_info'] = {'task_id': uid(813), 'status': 'PROGRESS', 'result': json.dumps(
+    {'task_id': uid(813), 'estimate': '55%', 'progress': {'percent': 55}, 'updated_at': '2026-02-02T10:00:00+00:00'})}
+TASKS['export_info_partial'] = {'task_id': uid(814), 'status': 'PROGRESS', 'result': json.dumps({'task_id': uid(814)})}
+TASKS['export_surrogate'] = {'task_id': uid(815), 'status': 'SUCCESS', 'result': '{"note": "\\ud800"}'}
+TASKS['export_infinite'] = {'task_id': uid(816), 'status': 'SUCCESS', 'result': '{"ratio": 1e999}'}
+TASKS['export_pair'] = {'task_id': uid(817), 'status': 'SUCCESS', 'result': '{"note": "\\ud83d\\ude00"}'}
 INSTANCE = {'id': 976090, 'domain': 'association-transfer.example.test', 'name': 'Association transfer', 'self_hosted': True,
             'setup_provenance': 'fresh', 'primary_association': 'own_association'}
 UNKNOWN = uid(999)
@@ -761,7 +767,78 @@ add('list-foreign-legacy-size', 'foreign_owner', LIST, 200, {'exports': [export_
 add('list-foreign-legacy-size-saved', 'foreign_owner', LIST, 200, {'exports': [export_row('foreign1'), LEGACY_SIZED], 'count': 2},
     association='foreign_association')
 
-import collections; assert len({c['name'] for c in cases}) == len(cases), [k for k, v in collections.Counter(c['name'] for c in cases).items() if v > 1]
+import collections; # === export/status of a registered task ==========================================================
+# The task's owner entry names the association; the result row, the active snapshot and the last snapshot are merged.
+OWNER_ENTRY = lambda association='own_association': {'sport_association_id': IDS[association], 'user_id': IDS['owner']}
+export_task = lambda key: STATUS + '?task_id=' + TASKS[key]['task_id']
+registered = lambda key, association='own_association': {TASK_KEY(TASKS[key]['task_id']): OWNER_ENTRY(association)}
+add('status-registered-without-row', 'owner', STATUS + '?task_id=' + UNKNOWN, 200,
+    {'task_id': UNKNOWN, 'status': 'PENDING', 'ready': False}, setup={'cache': {TASK_KEY(UNKNOWN): OWNER_ENTRY()}})
+add('status-registered-foreign-association', 'owner', export_task('export_done'), 404, NOT_FOUND,
+    setup={'cache': registered('export_done', 'foreign_association')})
+add('status-registered-empty-entry', 'owner', export_task('export_done'), 404, NOT_FOUND,
+    setup={'cache': {TASK_KEY(TASKS['export_done']['task_id']): {}}})
+add('status-registered-success', 'owner', export_task('export_done'), 200,
+    {'task_id': TASKS['export_done']['task_id'], 'status': 'SUCCESS', 'ready': True, 'result': {'success': True}},
+    setup={'cache': registered('export_done')})
+add('status-registered-progress-row', 'owner', export_task('export_running'), 200,
+    {'task_id': TASKS['export_running']['task_id'], 'status': 'PROGRESS', 'ready': False},
+    setup={'cache': registered('export_running')})
+add('status-registered-revoked', 'owner', export_task('export_revoked'), 200,
+    {'task_id': TASKS['export_revoked']['task_id'], 'status': 'REVOKED', 'ready': True, 'error': TASK_FAILED},
+    setup={'cache': registered('export_revoked')})
+add('status-registered-failed', 'owner', export_task('other_task_failed'), 200,
+    {'task_id': TASKS['other_task_failed']['task_id'], 'status': 'FAILURE', 'ready': True, 'error': TASK_FAILED},
+    setup={'cache': registered('other_task_failed')})
+add('status-registered-info-fields', 'owner', export_task('export_info'), 200,
+    {'task_id': TASKS['export_info']['task_id'], 'status': 'PROGRESS', 'ready': False, 'estimate': '55%',
+     'progress': {'percent': 55}, 'updated_at': '2026-02-02T10:00:00+00:00'}, setup={'cache': registered('export_info')})
+add('status-registered-info-defaults', 'owner', export_task('export_info_partial'), 200,
+    {'task_id': TASKS['export_info_partial']['task_id'], 'status': 'PROGRESS', 'ready': False, 'estimate': '0%',
+     'progress': None, 'updated_at': None}, setup={'cache': registered('export_info_partial')})
+add('status-registered-active-snapshot', 'owner', export_task('export_running'), 200,
+    {'task_id': TASKS['export_running']['task_id'], 'status': 'PROGRESS', 'ready': False, 'estimate': '40%',
+     'progress': PROGRESS, 'updated_at': '2026-02-01T10:00:00.123456+00:00'},
+    setup={'cache': {**registered('export_running'), **active(STARTED_ROW)}})
+add('status-registered-active-snapshot-defaults', 'owner', export_task('export_running'), 200,
+    {'task_id': TASKS['export_running']['task_id'], 'status': 'PROGRESS', 'ready': False, 'estimate': '0%',
+     'progress': None, 'updated_at': None},
+    setup={'cache': {**registered('export_running'), **active({'task_id': TASKS['export_running']['task_id']})}})
+add('status-registered-active-snapshot-of-another-task', 'owner', export_task('export_running'), 200,
+    {'task_id': TASKS['export_running']['task_id'], 'status': 'PROGRESS', 'ready': False},
+    setup={'cache': {**registered('export_running'), **active(RUNNING)}})
+add('status-registered-last-snapshot', 'owner', export_task('export_running'), 200,
+    {'task_id': TASKS['export_running']['task_id'], 'status': 'SUCCESS', 'ready': True, 'estimate': '100%',
+     'progress': None, 'updated_at': None},
+    setup={'cache': {**registered('export_running'), **last({'task_id': TASKS['export_running']['task_id'], 'status': 'SUCCESS'})}})
+add('status-registered-last-snapshot-with-result', 'owner', export_task('export_done'), 200,
+    {'task_id': TASKS['export_done']['task_id'], 'status': 'SUCCESS', 'ready': True, 'estimate': '40%',
+     'progress': PROGRESS, 'updated_at': '2026-02-01T10:00:00.123456+00:00', 'result': {'success': True}},
+    setup={'cache': {**registered('export_done'), **last(TERMINAL)}})
+add('status-registered-active-wins-over-last', 'owner', export_task('export_running'), 200,
+    {'task_id': TASKS['export_running']['task_id'], 'status': 'PROGRESS', 'ready': False, 'estimate': '40%',
+     'progress': PROGRESS, 'updated_at': '2026-02-01T10:00:00.123456+00:00'},
+    setup={'cache': {**registered('export_running'), **active(STARTED_ROW),
+                     **last(snapshot(TASKS['export_running']['task_id'], status='SUCCESS'))}})
+add('status-registered-result-with-surrogate', 'owner', export_task('export_surrogate'), 500, SERVER,
+    setup={'cache': registered('export_surrogate')})
+add('status-registered-result-with-infinity', 'owner', export_task('export_infinite'), 500, SERVER,
+    setup={'cache': registered('export_infinite')})
+add('status-registered-result-with-emoji-pair', 'owner', export_task('export_pair'), 200,
+    {'task_id': TASKS['export_pair']['task_id'], 'status': 'SUCCESS', 'ready': True, 'result': {'note': '\U0001F600'}},
+    setup={'cache': registered('export_pair')})
+add('status-registered-full-collaborator', 'full_collaborator', export_task('export_done'), 403, VIEW_DENIED,
+    setup={'cache': registered('export_done')})
+# import/status: a stored result Python cannot render answers the 500 page.
+add('import-status-owner-success-lone-surrogate', 'owner', task('export_surrogate'), 500, SERVER,
+    setup={'cache': {IMPORT_KEY(TASKS['export_surrogate']['task_id']): IMPORT_TASK}})
+add('import-status-owner-success-float-beyond-double', 'owner', task('export_infinite'), 500, SERVER,
+    setup={'cache': {IMPORT_KEY(TASKS['export_infinite']['task_id']): IMPORT_TASK}})
+add('import-status-owner-success-surrogate-pair', 'owner', task('export_pair'), 200,
+    {'task_id': TASKS['export_pair']['task_id'], 'status': 'SUCCESS', 'ready': True, 'result': {'note': '\U0001F600'}},
+    setup={'cache': {IMPORT_KEY(TASKS['export_pair']['task_id']): IMPORT_TASK}})
+
+assert len({c['name'] for c in cases}) == len(cases), [k for k, v in collections.Counter(c['name'] for c in cases).items() if v > 1]
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'association export/import routes: reads, refusals and pre-dispatch checks',
     'ids': IDS, 'documents': DOCUMENTS, 'archives': ARCHIVES, 'tasks': TASKS, 'setup_token': SETUP_TOKEN,

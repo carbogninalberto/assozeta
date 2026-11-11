@@ -139,12 +139,14 @@ func (h *InstanceBackupActionsHandler) Item(c echo.Context) error {
 	return h.notAllowed(c)
 }
 
-// serializerWrite runs a JSON-bodied serializer view; form and multipart
-// bodies are refused.
-func (h *InstanceBackupActionsHandler) serializerWrite(c echo.Context, actor *domain.Account,
+// serializerWrite runs a serializer view. Form and multipart bodies are
+// refused unless formSafe: every field is a required CharField, which reads
+// an HTML form value like a JSON string (booleans, defaults and integers
+// differ in HTML input).
+func (h *InstanceBackupActionsHandler) serializerWrite(c echo.Context, actor *domain.Account, formSafe bool,
 	run func(service.BackupActionsRequest, any) (*service.BackupActionsReply, error)) error {
 	return h.backupActionsWrite(c, actor, true, func(request service.BackupActionsRequest, body any, form bool) (*service.BackupActionsReply, error) {
-		if form {
+		if form && !formSafe {
 			return nil, service.ErrInstanceBackupsNotPorted
 		}
 		return run(request, body)
@@ -161,7 +163,7 @@ func (h *InstanceBackupActionsHandler) Schedule(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Backup Schedule", "")
 	case http.MethodPut:
-		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+		return h.serializerWrite(c, actor, false, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
 			return h.actions.Schedule(c.Request().Context(), request, body)
 		})
 	}
@@ -182,7 +184,7 @@ func (h *InstanceBackupActionsHandler) Restore(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Backup Restore", "Restore one server archive; the runner backs up the current data first.")
 	case http.MethodPost:
-		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+		return h.serializerWrite(c, actor, true, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
 			return h.actions.Restore(c.Request().Context(), request, name, body)
 		})
 	}
@@ -236,7 +238,7 @@ func (h *InstanceBackupActionsHandler) RemoteSettings(c echo.Context) error {
 		reply, err := h.actions.RemoteSettings(c.Request().Context())
 		return h.backupActionsReply(c, reply, err)
 	case http.MethodPut:
-		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+		return h.serializerWrite(c, actor, false, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
 			return h.actions.SaveRemoteSettings(c.Request().Context(), request, body)
 		})
 	}
@@ -253,7 +255,7 @@ func (h *InstanceBackupActionsHandler) RemoteTest(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Remote Backup Test", "")
 	case http.MethodPost:
-		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+		return h.serializerWrite(c, actor, false, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
 			return h.actions.TestRemote(c.Request().Context(), request, body)
 		})
 	}
@@ -270,7 +272,7 @@ func (h *InstanceBackupActionsHandler) RemoteKey(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Remote Backup Key", "Generate a key pair: the recovery key is in this response only.")
 	case http.MethodPost:
-		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+		return h.serializerWrite(c, actor, true, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
 			return h.actions.GenerateRemoteKey(c.Request().Context(), request, body)
 		})
 	}
@@ -287,7 +289,7 @@ func (h *InstanceBackupActionsHandler) RemoteKeyConfirm(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Remote Backup Key Confirm", "")
 	case http.MethodPost:
-		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+		return h.serializerWrite(c, actor, true, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
 			return h.actions.ConfirmRemoteKey(c.Request().Context(), request, body)
 		})
 	}
@@ -304,7 +306,7 @@ func (h *InstanceBackupActionsHandler) RemoteFetch(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Remote Backup Fetch", "Bring a remote-only copy back to the server; the key is held in memory only.")
 	case http.MethodPost:
-		return h.serializerWrite(c, actor, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
+		return h.serializerWrite(c, actor, true, func(request service.BackupActionsRequest, body any) (*service.BackupActionsReply, error) {
 			return h.actions.FetchRemote(c.Request().Context(), request, body)
 		})
 	}

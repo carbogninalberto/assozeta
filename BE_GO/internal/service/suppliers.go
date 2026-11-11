@@ -14,7 +14,8 @@ var (
 	// ErrSupplierForbidden is the views' bare 403 for athletes.
 	ErrSupplierForbidden = errors.New("supplier access forbidden")
 	// ErrSupplierOrdering is the FieldError 500 for an ordering Django cannot
-	// resolve; relation paths are not ported and fail the same way.
+	// resolve; reverse relations and the owner account's paths are not ported
+	// and fail the same way.
 	ErrSupplierOrdering = refusal.New("supplier ordering unsupported")
 )
 
@@ -25,6 +26,55 @@ var supplierOrderColumns = map[string]string{
 	"type": "type", "email": "email", "phone_number": "phone_number", "city": "city", "cap": "cap", "state": "state",
 	"country": "country", "nationality": "nationality", "note": "note", "group": "group_id", "group_id": "group_id",
 	"deleted": "deleted",
+}
+
+// supplierRelationColumns are the columns of the related tables a forward
+// path may end on (`group__name`, `sport_association__denomination`). The
+// owner account behind `sport_association__user` is not offered: its columns
+// are left out on purpose, so those paths stay refused.
+var supplierRelationColumns = map[string]map[string]string{
+	"group": {"group_id": "group_id", "pk": "group_id", "name": "name", "description": "description",
+		"sport_association": "sport_association_id", "sport_association_id": "sport_association_id"},
+	"sport_association": {"sport_association_id": "sport_association_id", "pk": "sport_association_id", "user": "user_id", "user_id": "user_id",
+		"denomination": "denomination", "address_city": "address_city", "address": "address", "address_cap": "address_cap",
+		"tax_code": "tax_code", "email": "email", "phone": "phone", "regulation": "regulation", "demand": "demand",
+		"additional_sections": "additional_sections", "logo": "logo", "subscription_fee": "subscription_fee",
+		"multiple_subscription_fee": "multiple_subscription_fee", "subscription_fee_plans": "subscription_fee_plans",
+		"membership_fee": "membership_fee", "multiple_membership_fee": "multiple_membership_fee",
+		"membership_fee_plans": "membership_fee_plans", "custom_subscription_form_data": "custom_subscription_form_data",
+		"document_header": "document_header", "invoice_footer": "invoice_footer", "enable_quotes_management": "enable_quotes_management",
+		"configuration": "configuration", "reviewed": "reviewed", "deleted": "deleted", "review_url": "review_url",
+		"review_url_enabled": "review_url_enabled", "president_first_name": "president_first_name",
+		"president_last_name": "president_last_name", "enroll_number": "enroll_number", "federation": "federation", "sport": "sport",
+		"enabled_for": "enabled_for", "checkout_info": "checkout_info", "additional_fields": "additional_fields",
+		"stripe_available_methods": "stripe_available_methods", "iban": "iban", "website": "website", "abbreviated": "abbreviated",
+		"vat_number": "vat_number", "whatsapp": "whatsapp", "imported_from_associami": "imported_from_associami",
+		"extra_text_invoices": "extra_text_invoices", "show_regulation_to_members": "show_regulation_to_members",
+		"show_regulation_to_both": "show_regulation_to_both", "show_regulation_to_athletes": "show_regulation_to_athletes",
+		"show_demand_to_members": "show_demand_to_members", "show_demand_to_both": "show_demand_to_both",
+		"show_demand_to_athletes": "show_demand_to_athletes", "invoice_template": "invoice_template",
+		"subscription_template": "subscription_template", "notes": "notes"},
+}
+
+var supplierRelationTables = map[string][2]string{
+	"group":             {"application_group", "group_id"},
+	"sport_association": {"application_sportassociation", "sport_association_id"},
+}
+
+// supplierRelationOrder resolves `relation__field` to the expression Django's
+// join would order by: the related row's column, NULL without a related row.
+func supplierRelationOrder(name string) (string, bool) {
+	relation, field, found := strings.Cut(name, "__")
+	columns, ok := supplierRelationColumns[relation]
+	if !found || !ok {
+		return "", false
+	}
+	column, ok := columns[field]
+	if !ok {
+		return "", false
+	}
+	table := supplierRelationTables[relation]
+	return "(SELECT r." + column + " FROM " + table[0] + " r WHERE r." + table[1] + "=application_supplierandcustomers." + relation + "_id)", true
 }
 
 type Suppliers struct{ store domain.SupplierStore }
@@ -86,6 +136,9 @@ func (s *Suppliers) List(ctx context.Context, identity domain.ResolvedIdentity, 
 		} else {
 			name, descending := strings.CutPrefix(field, "-")
 			column, ok := supplierOrderColumns[name]
+			if !ok {
+				column, ok = supplierRelationOrder(name)
+			}
 			if !ok {
 				return nil, ErrSupplierOrdering
 			}

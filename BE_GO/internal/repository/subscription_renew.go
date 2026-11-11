@@ -15,7 +15,7 @@ import (
 
 // --- AssociateSerializer.create's associate_id branch (subscription-renew.md) ---
 
-func (t *subscriptionCreateTransaction) oneAssociate(ctx context.Context, query string, args ...any) (*domain.SubscriptionEditAssociate, error) {
+func (t *subscriptionEditTransaction) oneAssociate(ctx context.Context, query string, args ...any) (*domain.SubscriptionEditAssociate, error) {
 	var row domain.SubscriptionEditAssociate
 	err := t.tx.GetContext(ctx, &row, `SELECT `+subscriptionEditColumns+` FROM application_associate WHERE `+query, args...)
 	if errors.Is(err, sql.ErrNoRows) {
@@ -27,21 +27,21 @@ func (t *subscriptionCreateTransaction) oneAssociate(ctx context.Context, query 
 	return &row, nil
 }
 
-func (t *subscriptionCreateTransaction) AssociateAny(ctx context.Context, id string) (*domain.SubscriptionEditAssociate, error) {
+func (t *subscriptionEditTransaction) AssociateAny(ctx context.Context, id string) (*domain.SubscriptionEditAssociate, error) {
 	return t.oneAssociate(ctx, `associate_id=$1 FOR UPDATE`, id)
 }
 
-func (t *subscriptionCreateTransaction) AssociateByTaxCode(ctx context.Context, taxCode, association string) (*domain.SubscriptionEditAssociate, error) {
+func (t *subscriptionEditTransaction) AssociateByTaxCode(ctx context.Context, taxCode, association string) (*domain.SubscriptionEditAssociate, error) {
 	return t.oneAssociate(ctx, `UPPER(tax_code::text)=UPPER($1) AND sport_association_id=$2 ORDER BY associate_id LIMIT 1 FOR UPDATE`,
 		taxCode, association)
 }
 
-func (t *subscriptionCreateTransaction) LiveTaxCodeTaken(ctx context.Context, taxCode, association, except string) (bool, error) {
+func (t *subscriptionEditTransaction) LiveTaxCodeTaken(ctx context.Context, taxCode, association, except string) (bool, error) {
 	return t.exists(ctx, `SELECT 1 FROM application_associate WHERE tax_code IS NOT NULL AND UPPER(tax_code)=UPPER($1)
  AND sport_association_id=$2 AND NOT deleted AND associate_id<>$3`, taxCode, association, except)
 }
 
-func (t *subscriptionCreateTransaction) SetAssociateDeleted(ctx context.Context, id string, deleted bool) error {
+func (t *subscriptionEditTransaction) SetAssociateDeleted(ctx context.Context, id string, deleted bool) error {
 	_, err := t.tx.ExecContext(ctx, `UPDATE application_associate SET deleted=$2 WHERE associate_id=$1`, id, deleted)
 	return err
 }

@@ -30,6 +30,8 @@ type PaymentEntryFieldError struct {
 	Name  string
 	Codes []string
 	Items []PaymentEntryItemError
+	// Nested is the error dictionary of a nested serializer (the `user` object).
+	Nested []PaymentEntryFieldError
 }
 
 type PaymentEntryItemError struct {
@@ -112,6 +114,8 @@ type PaymentEntryInput struct {
 	CreationDate                   *time.Time
 	AttachmentsPresent             bool
 	Attachments                    []domain.RequestObject
+	// UserPresent is a valid nested `user` object: the serializer's save() cannot write it.
+	UserPresent bool
 }
 
 func paymentEntryChoice(value any, choices []string) (string, string) {
@@ -213,6 +217,16 @@ func ParsePaymentEntry(object domain.RequestObject, partial bool) (PaymentEntryI
 			default:
 				input.Account = related
 			}
+		case "user":
+			if value == nil {
+				fail(PaymentCategoryValidationNull)
+				continue
+			}
+			if nested := paymentEntryUser(value); nested != nil {
+				invalid.add(PaymentEntryFieldError{Name: name, Nested: nested})
+			} else {
+				input.UserPresent = true
+			}
 		case "course":
 			input.Course = PaymentEntryJSON{Present: true, Value: value}
 		case "meta_payment_categories":
@@ -248,6 +262,41 @@ func ParsePaymentEntry(object domain.RequestObject, partial bool) (PaymentEntryI
 		return input, invalid
 	}
 	return input, nil
+}
+
+// paymentEntryUserFields is UserSerializer's Meta.fields with the model
+// field options DRF derives its validators from.
+var paymentEntryUserFields = []SupplierField{
+	{Name: "first_name", Max: 150, Blank: true},
+	{Name: "last_name", Max: 150, Blank: true},
+	{Name: "email", Max: 254, Blank: true, Email: true},
+	{Name: "phone", Max: 20, Null: true, Blank: true},
+	{Name: "username"},
+}
+
+// paymentEntryUser validates the nested UserSerializer (every field optional):
+// nil when the object is valid, else its error dictionary.
+func paymentEntryUser(value any) []PaymentEntryFieldError {
+	object, ok := value.(domain.RequestObject)
+	if !ok {
+		return []PaymentEntryFieldError{{Name: "non_field_errors", Codes: []string{"dictionary:" + pythonTypeName(value)}}}
+	}
+	var errors []PaymentEntryFieldError
+	for _, field := range paymentEntryUserFields {
+		item, present := object.Lookup(field.Name)
+		if !present {
+			continue
+		}
+		if _, codes := modelTextValue(field, item, false); len(codes) > 0 {
+			errors = append(errors, PaymentEntryFieldError{Name: field.Name, Codes: codes})
+		}
+	}
+	if item, present := object.Lookup("role"); present {
+		if _, code := paymentEntryChoice(item, []string{"1", "2", "3"}); code != "" {
+			errors = append(errors, PaymentEntryFieldError{Name: "role", Codes: []string{code}})
+		}
+	}
+	return errors
 }
 
 // --- Python numbers -----------------------------------------------------------

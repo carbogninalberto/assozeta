@@ -100,5 +100,5 @@ otherwise (kept-entry failures included).
 with Unicode digits and a final newline). Text fields holding NUL or a lone surrogate answer the 500 with nothing written;
 JSON fields keep the pre-save entry (json.dumps escapes both) before the 500. The medical reminder saves the associate's
 first tutor relation (by key) as primary, with its audit entry indexed through the associate, when the associate has no
-mail and no primary tutor; a deleted or group-hidden associate (another index resolution) is still refused.
+mail and no primary tutor; a deleted, group-hidden or association-less associate resolves the index the same way (the relation is read through base managers; without an association the entry falls back to the actor's, path `actor.sport_association`).
 Cases: `celery-routes-a-date-forms-*`, `*-nothing-saved`, `*-kept-entry`, `reminder-promotes-*`.

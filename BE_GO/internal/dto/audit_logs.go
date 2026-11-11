@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -141,6 +142,83 @@ func AuditJSONLoads(text string) (any, bool, error) {
 	return value, true, nil
 }
 
+// auditPythonJSONLoads is json.loads(text) with Python's NaN, Infinity and
+// -Infinity constants (float64) and lone surrogate escapes (kept as code
+// units) for the audit serializer; the response renderer then fails on
+// whatever reaches the output (AuditResponseEncodable). Nesting past the
+// limit stays refused: the recursion limit depends on the live call stack.
+func auditPythonJSONLoads(text string) (any, bool, error) {
+	if auditJSONDepth(text) > 500 {
+		return nil, false, ErrAuditNotPorted
+	}
+	data := []byte(text)
+	constants := map[int64]any{}
+	for i := 0; i < len(data); {
+		switch c := data[i]; {
+		case c == '"':
+			i++
+			for i < len(data) && data[i] != '"' {
+				if data[i] == '\\' {
+					i++
+				}
+				i++
+			}
+			i++
+		case c == 'N' && bytes.HasPrefix(data[i:], []byte("NaN")):
+			copy(data[i:i+3], "  0")
+			constants[int64(i+3)] = math.NaN()
+			i += 3
+		case c == 'I' && bytes.HasPrefix(data[i:], []byte("Infinity")):
+			sign, start := 1, i
+			if i > 0 && data[i-1] == '-' {
+				sign, start = -1, i-1
+			}
+			copy(data[start:i+8], strings.Repeat(" ", i+8-start-1)+"0")
+			constants[int64(i+8)] = math.Inf(sign)
+			i += 8
+		default:
+			i++
+		}
+	}
+	value, err := parseProfileTablesJSONConstants(data, constants, true)
+	switch {
+	case errors.Is(err, ErrLoginRateJSONValue):
+		return nil, false, ErrAuditUnhandled
+	case errors.Is(err, ErrReferenceNesting):
+		return nil, false, ErrAuditNotPorted
+	case err != nil:
+		return nil, false, nil
+	}
+	return value, true, nil
+}
+
+// AuditResponseEncodable reports whether DRF's JSONRenderer can write the
+// value: a non-finite float is refused by the strict dumps and a lone
+// surrogate by the UTF-8 encode.
+func AuditResponseEncodable(value any) bool {
+	switch v := value.(type) {
+	case float64:
+		return !math.IsInf(v, 0) && !math.IsNaN(v)
+	case string:
+		return !associateDraftSurrogate(v)
+	case domain.RequestObject:
+		for _, field := range v {
+			if associateDraftSurrogate(field.Name) || !AuditResponseEncodable(field.Value) {
+				return false
+			}
+		}
+		return true
+	case []any:
+		for _, item := range v {
+			if !AuditResponseEncodable(item) {
+				return false
+			}
+		}
+		return true
+	}
+	return AuditFiniteJSON(value)
+}
+
 // AuditStoredJSON loads a jsonb column the way Django's JSONField does.
 func AuditStoredJSON(text *string) (any, error) {
 	if text == nil {
@@ -178,6 +256,9 @@ func auditJSONDepth(text string) int {
 	}
 	return deepest
 }
+
+// AuditLoneSurrogate reports whether JSON text holds a lone surrogate escape (see auditLoneSurrogate).
+func AuditLoneSurrogate(text string) bool { return auditLoneSurrogate(text) }
 
 // auditLoneSurrogate reports a \uD800-\uDFFF escape that is not a high
 // surrogate immediately followed by a low surrogate escape.
@@ -257,7 +338,7 @@ func auditLoadText(value any) (any, bool, error) {
 	if !ok {
 		return value, false, nil
 	}
-	parsed, decoded, err := AuditJSONLoads(text)
+	parsed, decoded, err := auditPythonJSONLoads(text)
 	if err != nil || !decoded {
 		return text, err == nil, err
 	}
@@ -521,7 +602,7 @@ func AuditEnrich(value any, field string, resolver AuditResolver) (any, error) {
 	switch v := value.(type) {
 	case string:
 		if strings.HasPrefix(v, "[") || strings.HasPrefix(v, "{") {
-			parsed, decoded, err := AuditJSONLoads(v)
+			parsed, decoded, err := auditPythonJSONLoads(v)
 			if err != nil {
 				return nil, err
 			}

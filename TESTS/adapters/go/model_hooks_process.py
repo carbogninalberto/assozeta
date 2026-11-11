@@ -82,7 +82,6 @@ WRITERS = {
     'subscription_medical.go:SetSubscriptionMedical:UPDATE:subscription': ('save', ['http:subscription-medical']),
     'subscription_medical.go:DetachSubscription:UPDATE:subscription': ('save', ['http:subscription-medical']),
     'subscription_medical.go:DeleteCertificate:UPDATE:subscription': ('collector', ['http:subscription-medical']),
-    'subscription_renew.go:SetSubscriptionUser:UPDATE:subscription': ('save', ['http:subscription-renew']),
     'subscription_sign.go:Save:UPDATE:subscription': ('save', ['http:subscription-sign']),
     'subscription_signature_migration.go:Save:UPDATE:subscription': ('save', ['component:subscription-signature-migration']),
     'subscription_tags.go:SaveSubscriptionDates:UPDATE:subscription': ('save', ['http:subscription-tags']),
@@ -94,11 +93,22 @@ WRITERS = {
     'subscription_transfer.go:saveUser:UPDATE:table': ('save', ['http:subscription-transfer']),
     'document_render.go:Link:UPDATE:link.Table': ('save', ['http:document-render']),
     'carnet_writes.go:clearPaymentReferences:UPDATE:pq': ('collector', ['http:carnet-replace']),
-    'documents_archive.go:BulkDeleteArchives:UPDATE:ref.Table': ('collector', ['http:documents-bulk-delete']),
+    # Bulk archive delete and the other document / stock / subscription deletes run the shared collector
+    # (Collector.delete(): SET_NULL updates and cascade deletes, no save()).
+    'collaborator_delete_collector.go:delete:UPDATE:update.table': ('collector', ['http:documents-bulk-delete', 'http:documents-delete',
+                                                                                  'http:subscription-lifecycle']),
+    'collaborator_delete_collector.go:delete:DELETE:bucket.model.Table': ('collector', ['http:documents-bulk-delete', 'http:documents-delete',
+                                                                                        'http:subscription-lifecycle']),
+    'collaborator_delete_collector.go:delete:DELETE:fast.model.Table': ('collector', ['http:documents-bulk-delete', 'http:documents-delete',
+                                                                                      'http:subscription-lifecycle']),
     'instructor_hours.go:DeleteDocument:UPDATE:ref.Table': ('collector', ['http:instructor-hours']),
     'orphan_medical_cleanup.go:DeleteOrphanMedicalDocument:UPDATE:table': ('collector', ['process:orphan_medical_worker_process']),
     'supplier_writes.go:DeleteSupplier:UPDATE:pq': ('collector', ['http:supplier-deletes']),
 }
+# The shared deletion collector (Django's Collector.delete(): SET_NULL updates and cascade deletes by model graph)
+# writes payment and subscription rows through run-time table names and never calls save(). Its SQL carries no table
+# literal, so the scan reads the file anyway.
+COLLECTOR_FILES = {'collaborator_delete_collector.go'}
 # Generic writers in the same files whose tables are never application_payment / application_subscription.
 OTHER_TABLES = {
     'camps_periods.go:DeletePeriod:DELETE:campsPeriodLinks', 'camps_periods.go:DeletePeriod:DELETE:campsSubscriptionLinks',
@@ -187,7 +197,8 @@ def inventory():
             continue
         text = path.read_text()
         for pattern in (WRITE, GENERIC):
-            if pattern is GENERIC and 'application_payment' not in text and 'application_subscription' not in text:
+            if (pattern is GENERIC and path.name not in COLLECTOR_FILES
+                    and 'application_payment' not in text and 'application_subscription' not in text):
                 continue
             for match in pattern.finditer(text):
                 functions = re.findall(r'^func (?:\([^)]*\)\s*)?(\w+)', text[:match.start()], re.M)

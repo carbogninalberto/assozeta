@@ -154,7 +154,8 @@ func (h *ProfileMiscHandler) Onboarding(c echo.Context) error {
 	case errors.As(err, &fresh):
 		return c.JSON(400, map[string]any{"error": "Fresh self-host onboarding requires a complete membership payload.", "details": fresh.Details})
 	case errors.As(err, &server):
-		return c.JSON(500, map[string]string{"error": server.Message})
+		c.Logger().Errorf("onboarding update error: %s", server.Message)
+		return c.JSON(500, map[string]string{"error": service.OnboardingUpdateErrorMessage})
 	}
 	return messageReadsError(c, err)
 }

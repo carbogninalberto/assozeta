@@ -155,6 +155,16 @@ func (h *SubscriptionMembershipsHandler) write(c echo.Context, method, operation
 		allow = "DELETE, OPTIONS"
 	}
 	c.Response().Header().Set("Allow", allow)
+	if r := c.Request(); r.Method == method && method != http.MethodDelete {
+		// A multipart body keeps its files: parse it once, before identity resolution and the view read request.data.
+		raw, err := bufferMultipart(c)
+		if err != nil {
+			return restError(c, err)
+		}
+		if raw != nil {
+			_, _ = readAuthenticatedRESTBodyUsing(c, func(*http.Request) (any, error) { return uploadBody(c, raw)() })
+		}
+	}
 	identity, err := messageMutationsIdentity(c, h.actors, h.identities, method, operation)
 	if identity == nil {
 		return err

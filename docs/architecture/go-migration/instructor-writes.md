@@ -76,7 +76,7 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 `200 {'data': {'results': [...], 'report_file': base64}}`.
 
 ## Not ported
-- report: workbook inputs the writer refuses (cells starting with `=`, rich strings, links with `#`: the writer's formula and URL
+- report: workbook inputs the writer refuses (cells starting with `=`, links with `#`: the writer's formula and URL
   handling is not ported).
 - Refused with a 500 before any write: calculation amounts whose product falls in the subnormal range (below the context's
   smallest exponent) and NaN diagnostics of 28 digits or more.

@@ -144,17 +144,22 @@ func (t *carnetWriteTransaction) HoldingForUnassign(ctx context.Context, holding
 // deletes their rows. Every other foreign key to a payment is SET_NULL.
 var paymentThroughTables = map[string]bool{"application_payment_attachments": true, "application_coursesubscription_membership_payments": true}
 
-// DeleteUnpaidPayment mirrors payment.delete(): installments of the payment
-// would be deleted by a pre_delete signal (refused, not ported); SET_NULL
-// references are cleared and join rows removed without audit; the payment
-// gets a delete entry indexed through its changes.
-func (t *carnetWriteTransaction) DeleteUnpaidPayment(ctx context.Context, payment string, audit domain.LoginAuditContext, at time.Time) error {
+// DeleteUnpaidPayment mirrors payment.delete(): the pre_delete signal deletes
+// the payment's live installments first (deleteReplacePayment); without any
+// installment row SET_NULL references are cleared and join rows removed
+// without audit, and the payment gets a delete entry indexed through its
+// changes.
+func (t *carnetWriteTransaction) DeleteUnpaidPayment(ctx context.Context, payment string, group *string, audit domain.CarnetReplaceAudit) error {
 	var installments bool
 	if err := t.tx.GetContext(ctx, &installments, `SELECT EXISTS(SELECT 1 FROM application_coursesubscriptioninstallment WHERE payment_id=$1)`, payment); err != nil {
 		return err
 	}
 	if installments {
-		return domain.ErrPaymentCascadeUnsupported
+		row, err := t.loadReplacePayment(ctx, payment)
+		if err != nil || row == nil {
+			return err
+		}
+		return t.deleteReplacePayment(ctx, payment, row, group, audit)
 	}
 	if err := clearPaymentReferences(ctx, t.tx, payment); err != nil {
 		return err
@@ -167,7 +172,7 @@ func (t *carnetWriteTransaction) DeleteUnpaidPayment(ctx context.Context, paymen
 	association := changes["sport_association"][0]
 	path := "changes_json.sport_association"
 	entry := modelAuditEntry{Model: "payment", Key: payment, Representation: "Payment object (" + payment + ")", Action: 2,
-		Changes: changes, Context: audit, At: at}
+		Changes: changes, Context: audit.Context, At: audit.At}
 	if association != "" && association != "None" {
 		entry.AssociationID, entry.ResolutionPath = &association, &path
 	}

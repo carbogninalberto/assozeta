@@ -337,7 +337,7 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 	now := s.now().UTC()
 	today := calendarTime(subscriptionCreateDay(now))
 	duplicate, err := tx.Existing(ctx, association, associate.FirstName, associate.LastName, associate.TaxCode,
-		subscriptionCreateDay(today.AddDate(0, 0, -1)), subscriptionCreateDay(today.AddDate(0, 0, 1)))
+		subscriptionCreateDay(today.AddDate(0, 0, -1)), subscriptionCreateDay(today.AddDate(0, 0, 1)), nil)
 	if err != nil {
 		return nil, err
 	}

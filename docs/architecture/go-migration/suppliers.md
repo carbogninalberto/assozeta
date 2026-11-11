@@ -120,3 +120,15 @@ rest-b1: two more cases (36 in all) for the copy that clears `sport_association`
 (v2-refusals.md, suppliers row). GREEN `restb1-1` on the four transports (CI run in the ledger notes); mutation
 `restb1-mutation-r1` (the copy indexed as if it kept its association) CAUGHT. Deletes still refuse a database reference
 other than the four Django declares: a migrated schema has no other, so there is nothing to reproduce.
+
+## Forward relation ordering (t3pay)
+
+`supplier/list?sort[field]=group__name` and `sport_association__<column>` order by the related row's column (NULL
+without a group; one scalar subquery per request, so the order is the database's). `group__sport_association`,
+`sport_association__user` (the owner key) and `pk`/`id` spellings of the related tables are accepted too. Reverse
+relations repeat rows in an order only the planner fixes, and paths through the owner account are left out on purpose, so
+those stay refused (they reach the Django 500 or list as before). Nine more cases (57 in all): one grouped row with the
+header (ordered), the other paths compared as sets because every row of the association shares one related row. GREEN
+`t3pay-1` on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
+
+GREEN `t3pay-5` (run 43084300494) 57/57; mutation (a column dropped from the map) CAUGHT, run 43082154506.

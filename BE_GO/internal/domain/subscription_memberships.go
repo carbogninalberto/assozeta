@@ -71,6 +71,8 @@ type SubscriptionMembershipTransaction interface {
 	MembershipDocuments(ctx context.Context, id string) (string, error)
 	// CreateMembership inserts the row with its create entry.
 	CreateMembership(ctx context.Context, row SubscriptionMembership, audit LoginAuditContext, at time.Time) error
+	// CopyMembership inserts the row under a new key on update (auditlog: an update against None, then the creation).
+	CopyMembership(ctx context.Context, row SubscriptionMembership, audit LoginAuditContext, at time.Time) error
 	SaveMembership(ctx context.Context, row SubscriptionMembership, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
 	DeleteMembership(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
 	// CreateMembershipDocument is Document.objects.create(filename=...) with its create entry (indexed through the actor).

@@ -449,7 +449,7 @@ add('renew-tags-list-item', 'renew', 'owner', 400, error("['“[1, 2]” is not 
 add('renew-tags-negative-item', 'renew', 'owner', 400, error("['“-1” is not a valid UUID.']"), body=renewal(basic, tags=[{'tag_id': -1}]))
 add('renew-tags-first-text-then-number', 'renew', 'owner', 400, error("['“2.0” is not a valid UUID.']"),
     body=renewal(basic, tags=[TAGS['tag_a']['id'], 7, 2.0]))
-# data['user']['email'] as a list or a dict is searched as its text: no account, the renewal goes on (to the tags error).
+# The renewal no longer reads data['user'] at all: whatever it holds, the renewal goes on (to the tags error).
 add('renew-user-email-list', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
     body=renewal(basic, user={'email': ['a@example.test']}, tags=['x']))
 add('renew-user-email-dict', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),

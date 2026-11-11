@@ -249,7 +249,8 @@ func (h *DataRestoreHandler) data(c echo.Context) (any, error) {
 	case "multipart/form-data":
 		return parseDjangoMultipart(raw, params["boundary"])
 	}
-	return nil, domain.ErrDataRestoreNotPorted
+	// Neither parser takes the media type: DRF's UnsupportedMediaType.
+	return nil, &restInputError{Status: 415, Detail: restText(c.Request(), "media")}
 }
 
 // uploadedFile is request.FILES.get('file') with LimitedRestoreUploadHandler
@@ -270,7 +271,7 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, 
 		return nil, err
 	case "multipart/form-data":
 	default:
-		return nil, domain.ErrDataRestoreNotPorted
+		return nil, &restInputError{Status: 415, Detail: restText(c.Request(), "media")}
 	}
 	boundary := params["boundary"]
 	if boundary == "" {

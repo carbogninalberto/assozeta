@@ -15,11 +15,12 @@ response Django gives (and, for writes, Django's effect):
 - course-list: `GET course/list` ordered by a relation path
   (ErrCourseListUnported). With `query[status_flag]=1` one course is listed, so
   the response is the page of course-list-sort-relation-attname.
-- workflow-update: `PATCH communications/workflows/<id>/update` with a form or
-  multipart `automation_tree` (ErrAutomationWorkflowFormTreeNotPorted). Django
-  parses the field with json.loads: a valid tree is saved (200, audited), an
-  invalid one is 400 `workflow not valid.`; the audit entry of a saved update
-  carries the correlation id the client sent to Go.
+- workflow-update: `PATCH communications/workflows/<id>/update` with a form
+  `automation_tree` nested past 500 levels (ErrAutomationWorkflowFormTreeNotPorted;
+  Python's json.loads raises RecursionError, an unhandled 500, before anything is
+  written). Form and multipart trees of ordinary depth are ported controls: a
+  valid tree is saved (200, audited; the entry carries the correlation id the
+  client sent to Go), an invalid one is 400 `workflow not valid.`.
 
 Each family also has one ported control case that Go serves itself. Cases marked
 `handoff` must be attributed to Django on the Go transports and carry
@@ -125,14 +126,20 @@ JSON_TREE = [{'id': 'trigger', 'value': 'new_subscription', 'data': {'json': Tru
 PART_TREE = [{'id': 'trigger', 'value': 'new_subscription', 'data': {'parte': 'è'}}]
 add('workflow-update', 'workflow-json-tree-ported', handoff=False, method='PATCH', path=PATH, status=200, response=UPDATED,
     body={'automation_tree': JSON_TREE}, effect=saved('owner', {'automation_tree': JSON_TREE}))
-add('workflow-update', 'workflow-form-tree', handoff=True, method='PATCH', path=PATH, status=200, response=UPDATED,
+add('workflow-update', 'workflow-form-tree-ported', handoff=False, method='PATCH', path=PATH, status=200, response=UPDATED,
     raw_body=urlencode({'name': 'Dal modulo', 'automation_tree': json.dumps(FORM_TREE)}),
     content_type='application/x-www-form-urlencoded', effect=saved('owner', {'name': 'Dal modulo', 'automation_tree': FORM_TREE}))
-add('workflow-update', 'workflow-form-tree-invalid-json', handoff=True, method='PATCH', path=PATH, status=400, response=INVALID,
+add('workflow-update', 'workflow-form-tree-invalid-json-ported', handoff=False, method='PATCH', path=PATH, status=400, response=INVALID,
     raw_body='automation_tree=%5Bnot+json&name=Mai', content_type='application/x-www-form-urlencoded', effect=None)
 BODY, CONTENT_TYPE = multipart([('description', 'Da parti'), ('automation_tree', json.dumps(PART_TREE, ensure_ascii=False))])
-add('workflow-update', 'workflow-multipart-tree', handoff=True, method='PATCH', path=PATH, status=200, response=UPDATED,
+add('workflow-update', 'workflow-multipart-tree-ported', handoff=False, method='PATCH', path=PATH, status=200, response=UPDATED,
     raw_body=BODY, content_type=CONTENT_TYPE, effect=saved('owner', {'description': 'Da parti', 'automation_tree': PART_TREE}))
+
+# Past the C recursion limit (10000 levels in the pinned interpreter) json.loads raises RecursionError, which the
+# serializer does not catch: the stable 500 page, nothing written.
+DEEP = '[' * 30000 + ']' * 30000
+add('workflow-update', 'workflow-form-tree-too-deep', handoff=True, method='PATCH', path=PATH, status=500, response='<stable-server-error-page>',
+    raw_body=urlencode({'automation_tree': DEEP}), content_type='application/x-www-form-urlencoded', effect=None)
 
 assert len({c['name'] for c in cases}) == len(cases)
 assert {c['family'] for c in cases if c['handoff']} == set(SOURCES) - {'personas-reads'}

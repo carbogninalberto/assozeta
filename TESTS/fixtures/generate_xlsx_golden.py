@@ -24,6 +24,7 @@ XlsxWriter 3.2.2, no lxml): ``$GO_MIGRATION_PYTHON -I TESTS/fixtures/generate_xl
 import ast
 import base64
 import hashlib
+import importlib.util
 import io
 import json
 import logging
@@ -55,7 +56,17 @@ def django_function(relative, name, namespace):
     return namespace[name]
 
 
-NAMESPACE = {'pd': pandas, 'pandas': pandas, 'io': io, 'base64': base64, 'tempfile': tempfile, 'BytesIO': io.BytesIO,
+def load_xlsx_text():
+    """application/utils/xlsx_text.py, which imports no Django."""
+    path = ROOT / 'BE/application/utils/xlsx_text.py'
+    spec = importlib.util.spec_from_file_location('xlsx_text', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+xlsx_safe_frame = load_xlsx_text().xlsx_safe_frame
+NAMESPACE = {'xlsx_safe_frame': xlsx_safe_frame, 'pd': pandas, 'pandas': pandas, 'io': io, 'base64': base64, 'tempfile': tempfile, 'BytesIO': io.BytesIO,
              'logger': logging.getLogger('golden'), 'List': List, 'Any': Any, 'Union': Union, 'Optional': Optional}
 get_excel_base64 = django_function('application/utils/excel_utils.py', 'get_excel_base64', NAMESPACE)
 generate_xlsx_report_from_data = django_function('application/utils/instructors_utils.py', 'generate_xlsx_report_from_data', NAMESPACE)
@@ -68,7 +79,7 @@ def module_export(rows, cols):
     df.columns = cols
     f = io.BytesIO()
     writer = pandas.ExcelWriter(f, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='Risposte', index=False)
+    xlsx_safe_frame(df).to_excel(writer, sheet_name='Risposte', index=False)
     worksheet = writer.sheets['Risposte']
     for i, col in enumerate(df.columns):
         column_len = len(col) + 10
@@ -299,6 +310,8 @@ instructor('ir-strings', SCHEMA, [['  Luca', 'Bianchi ', 'città', '=1+1', 'http
 instructor('ir-mailto', SCHEMA, [['a', 'b', 'mailto:x@example.com', '{=SUM(1)}', 'ftp://h', 'd', I(3), 'internal:x', 'e']])
 instructor('ir-numeric-looking', SCHEMA, [['1', '2', '3.5', '1e3', 'inf', 'd', I(-1), '-', '']])
 instructor('ir-unicode-width', SCHEMA, [['日本語の名前', 'é' * 30, '😀😀', 't', 'd', 'x', I(100000), 'a', 'b']])
+instructor('ir-rich-text', SCHEMA, [['<r><t>b</t></r>', '<r>a & b</r>', 'x<r>y</r>', '<r>open', '</r>', '04/01/2024 10:00', I(1),
+                                      '<r>_x0041_\x01</r>', ' <r>sp</r> ']])
 
 # ---------------------------------------------------------------- subscription/list/export (xlsxwriter, index column)
 SIMPLE = ['Nome', 'Cognome', 'Codice fiscale', 'Stato', 'Certificato']
@@ -309,6 +322,8 @@ subscription('sub-zero', SIMPLE, [])
 subscription('sub-many', ['a' * n for n in range(1, 30)], [[f'{r}-{c}' for c in range(29)] for r in range(25)])
 subscription('sub-dups', ['x', 'y'], [['same', 'same'], ['same', 'other'], ['other', 'same']])
 subscription('sub-specials', SIMPLE, [['=x', 'http://a.b', ' sp', 'a\x02b', '_x0000_'], ['{=1}', 'mailto:a', 'b ', '\n', 'é']])
+subscription('sub-rich-text', ['<r>h</r>', 'Cognome', 'Codice fiscale', 'Stato', 'Certificato'],
+             [['<r><t>b</t></r>', 'a<r>', '<r>a & b "c"</r>', '<r></r>', '<r>x'], ['<r>', '</r>', '<r><r>n</r></r>', None, '']])
 subscription('sub-long', SIMPLE, [['x' * 33000, 'a', 'b', 'c', 'd']])
 # Formulas (a leading '=' or a {=...} token), rich strings (<r>...</r> is written raw) and links with anchors, internal: and
 # external: targets, as in XlsxWriter's Worksheet.write(). Dynamic array functions write extra parts and stay unported.
@@ -337,6 +352,8 @@ module('mod-int-none', ['n'] + STANDARD, [[I(5), 'd', I(1), '-', '-', '-', 'x', 
 module('mod-mixed', ['m'] + STANDARD, [[I(5), 'd', I(1), '-', '-', '-', 'x', ''], [{'bool': True}, 'd', I(2), '-', '-', '-', 'x', ''],
                                        ['s', 'd', I(3), '-', '-', '-', 'x', '']])
 module('mod-dup-labels', ['Firma', 'Firma'] + STANDARD, [['a', 'b', 'd', I(1), '-', '-', '-', 'x', '']])
+module('mod-rich-text', ['<r><t>q</t></r>'] + STANDARD, [['<r>a < b</r>', 'd', I(1), '-', '-', '-', 'x', ''],
+                                                          ['<r></r>', '<r>d</r>', I(2), '-', '-', '-', '<r>x</r>', '']])
 module('mod-strings', ['q'] + STANDARD, [['http://x.y/z', 'd', I(1), '-', '-', '-', 'x', ''], ['=A1', 'd', I(2), '-', '-', '-', 'x', '']])
 module('mod-floats', ['f'] + STANDARD, [[F(0.1), 'd', I(1), '-', '-', '-', 'x', ''], [F(1e16), 'd', I(2), '-', '-', '-', 'x', ''],
                                         [F(1e-5), 'd', I(3), '-', '-', '-', 'x', ''], [F(123456.75), 'd', I(4), '-', '-', '-', 'x', '']])

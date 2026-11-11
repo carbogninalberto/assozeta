@@ -4,6 +4,7 @@ Seeds modules of the own association, a soft-deleted association and none,
 their responses, documents and attachment links (audit disabled). Every
 route is a read: each case must leave the complete model state unchanged.
 """
+import hashlib
 from datetime import date, datetime
 
 from TESTS.contracts import test_modules_reads_http as contract
@@ -45,7 +46,8 @@ def seed_rows(source, created):
         ModuleResponses._base_manager.bulk_create([ModuleResponses(module_response_id=row['id'],
             module_id=source['modules'][row['module']]['id'], creation_date=moment(row['created']),
             progressive_response_number=row['number'], queue_position=row['queue'], response=row['response'],
-            approved=row['approved'], user_id=ids[row['user']] if row['user'] else None, payment_id=None)])
+            approved=row['approved'], user_id=ids[row['user']] if row['user'] else None, payment_id=None,
+            attachment_token_hash=hashlib.sha256(row['token'].encode()).hexdigest() if row.get('token') else '')])
         created.append((ModuleResponses, row['id']))
         ModuleResponses.attachments.through.objects.bulk_create([ModuleResponses.attachments.through(
             moduleresponses_id=row['id'], document_id=source['documents'][d]['id']) for d in row['attachments']])

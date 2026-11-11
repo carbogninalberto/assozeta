@@ -37,10 +37,10 @@ CSRF = 'chattestcsrfsecret00000000000001'
 cases = []
 
 
-def add(name, actor, path, status, response, *, method='GET', headers=None, location=None, cookie=None):
+def add(name, actor, path, status, response, *, method='GET', headers=None, location=None, cookie=None, vary=VARY, language='en'):
     cases.append({'name': f'chat-test-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-                  'status': status, 'response': response, 'location': location, 'set_cookie': cookie, 'vary': VARY,
-                  'effect': None})
+                  'status': status, 'response': response, 'location': location, 'set_cookie': cookie, 'vary': vary,
+                  'language': language, 'effect': None})
 
 
 def session(label, *, csrf=False):
@@ -64,6 +64,88 @@ for actor in ('owner', 'full_collaborator', 'athlete', 'admin'):
 for method in ('POST', 'PUT', 'PATCH', 'DELETE'):
     add(f'anonymous-{method.lower()}-csrf', 'anonymous', '/chat/test/', 302, '<empty>', method=method,
         headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': CSRF}, location=redirect)
+# CsrfViewMiddleware rejects an unsafe request with csrf_failure: 403 and the localized page (DEBUG off), in one of three
+# forms. The page is 200+ bytes, so GZipMiddleware varies the answer on Accept-Encoding too.
+PAGE_HEAD = (
+    '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta http-equiv="content-type" content="text/html; charset=utf-8">\n'
+    '  <meta name="robots" content="NONE,NOARCHIVE">\n  <title>403 Forbidden</title>\n  <style>\n'
+    '    html * { padding:0; margin:0; }\n    body * { padding:10px 20px; }\n    body * * { padding:0; }\n'
+    '    body { font-family: sans-serif; background:#eee; color:#000; }\n    body>div { border-bottom:1px solid #ddd; }\n'
+    '    h1 { font-weight:normal; margin-bottom:.4em; }\n    h1 span { font-size:60%; color:#666; font-weight:normal; }\n'
+    '    #info { background:#f6f6f6; }\n    #info ul { margin: 0.5em 4em; }\n    #info p, #summary p { padding-top:10px; }\n'
+    '    #summary { background: #ffc; }\n    #explanation { background:#eee; border-bottom: 0px none; }\n  </style>\n</head>\n')
+MESSAGES = {
+    'en': {'title': 'Forbidden', 'main': 'CSRF verification failed. Request aborted.',
+           'referer': ['You are seeing this message because this HTTPS site requires a “Referer header” to be sent by your web browser, '
+                       'but none was sent. This header is required for security reasons, to ensure that your browser is not being '
+                       'hijacked by third parties.',
+                       'If you have configured your browser to disable “Referer” headers, please re-enable them, at least for this site, '
+                       'or for HTTPS connections, or for “same-origin” requests.',
+                       'If you are using the &lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt; tag or including the '
+                       '“Referrer-Policy: no-referrer” header, please remove them. The CSRF protection requires the “Referer” header to do '
+                       'strict referer checking. If you’re concerned about privacy, use alternatives like &lt;a rel=&quot;noreferrer&quot; '
+                       '…&gt; for links to third-party sites.'],
+           'cookie': ['You are seeing this message because this site requires a CSRF cookie when submitting forms. This cookie is '
+                      'required for security reasons, to ensure that your browser is not being hijacked by third parties.',
+                      'If you have configured your browser to disable cookies, please re-enable them, at least for this site, '
+                      'or for “same-origin” requests.'],
+           'more': 'More information is available with DEBUG=True.'},
+    'it': {'title': 'Proibito', 'main': 'Verifica CSRF fallita. Richiesta interrotta.',
+           'referer': ['Vedi questo messaggio perchè questo sito HTTPS richiede l&#x27;invio da parte del tuo browser del “Referer header”, '
+                       'che non è invece stato inviato. Questo header è richiesto per motivi di sicurezza, per assicurare che il tuo '
+                       'browser non sia stato sabotato da terzi.',
+                       'Se hai configurato il tuo browser web per disattivare l&#x27;invio delle intestazioni &quot;Referer&quot;, '
+                       'riattiva questo invio, almeno per questo sito, o per le connessioni HTTPS, o per le connessioni '
+                       '&quot;same-origin&quot;.',
+                       'Se usi il tag &lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt; o includi header '
+                       '&#x27;Referrer-Policy: no-referrer&#x27;, per favore rimuovili. Per la protezione CSRF è necessario eseguire un '
+                       'controllo rigoroso sull&#x27;header &#x27;Referer&#x27;. Se ti preoccupano le ricadute sulla privacy, puoi '
+                       'ricorrere ad alternative come &lt;a rel=&quot;noreferrer&quot; …&gt; per i link a siti di terze parti.'],
+           'cookie': ['Stai vedendo questo messaggio perché questo sito richiede un cookie CSRF quando invii dei form. Questo cookie è '
+                      'necessario per ragioni di sicurezza, per assicurare che il tuo browser non sia stato dirottato da terze parti.',
+                      'Se hai configurato il tuo browser web per disattivare l&#x27;invio dei cookies, riattivalo almeno per questo sito, '
+                      'o per connessioni &quot;same-origin&quot;'],
+           'more': 'Maggiorni informazioni sono disponibili con DEBUG=True'},
+}
+
+
+def failure_page(kind, language='en'):
+    text = MESSAGES[language]
+    # The template keeps the line break after each {% if %} / {% endif %} tag.
+    summary = f'<body>\n<div id="summary">\n  <h1>{text["title"]} <span>(403)</span></h1>\n  <p>{text["main"]}</p>\n'
+    if kind == 'referer':
+        summary += '\n' + ''.join(f'  <p>{line}</p>\n' for line in text['referer'])
+    summary += '\n'
+    if kind == 'cookie':
+        summary += '\n' + ''.join(f'  <p>{line}</p>\n' for line in text['cookie'])
+    summary += '\n'
+    return (PAGE_HEAD + summary + f'</div>\n\n<div id="explanation">\n  <p><small>{text["more"]}</small></p>\n</div>\n\n</body>\n</html>\n')
+
+
+FAILED_VARY = VARY + ', Accept-Encoding'
+for method in ('POST', 'PUT', 'PATCH', 'DELETE'):
+    add(f'csrf-{method.lower()}-no-cookie', 'anonymous', '/chat/test/', 403, failure_page('cookie'), method=method, vary=FAILED_VARY)
+add('csrf-no-cookie-italian', 'anonymous', '/chat/test/', 403, failure_page('cookie', 'it'), method='POST', vary=FAILED_VARY,
+    headers={'Accept-Language': 'it'}, language='it')
+add('csrf-no-cookie-italian-quality', 'anonymous', '/chat/test/', 403, failure_page('cookie', 'it'), method='POST', vary=FAILED_VARY,
+    headers={'Accept-Language': 'xx;q=0.9, it-IT;q=0.5, en;q=0.4'}, language='it')
+add('csrf-session-no-cookie', 'anonymous', '/chat/test/', 403, failure_page('cookie'), method='POST', vary=FAILED_VARY,
+    headers=session('owner'))
+add('csrf-token-mismatch', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
+    headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': 'a' * 32})
+add('csrf-token-missing', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
+    headers={'Cookie': f'csrftoken={CSRF}'})
+# process_request replaces a malformed CSRF cookie by a new one on the answer (random value, whatever the method).
+NEW_CSRF_COOKIE = '<new-csrftoken-cookie>'
+add('csrf-cookie-wrong-length', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
+    headers={'Cookie': 'csrftoken=short', 'X-CSRFToken': 'short'}, cookie=NEW_CSRF_COOKIE)
+add('csrf-cookie-invalid-character', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
+    headers={'Cookie': 'csrftoken=' + '!' * 32, 'X-CSRFToken': CSRF}, cookie=NEW_CSRF_COOKIE)
+add('anonymous-get-malformed-csrf-cookie', 'anonymous', '/chat/test/', 302, '<empty>', headers={'Cookie': 'csrftoken=short'},
+    location=redirect, cookie=NEW_CSRF_COOKIE)
+add('csrf-bad-origin', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
+    headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': CSRF, 'Origin': 'http://evil.example'})
+# The HTTPS Referer checks are not authored: Caddy sets X-Forwarded-Proto itself, so the transports cannot send the header.
 # Sessions: an active authenticated owner reaches render() and its missing template.
 add('session-owner', 'anonymous', '/chat/test/', 500, SERVER, headers=session('owner'))
 add('session-owner-head', 'anonymous', '/chat/test/', 500, SERVER, method='HEAD', headers=session('owner'))

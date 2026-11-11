@@ -2,6 +2,11 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"math/big"
@@ -137,9 +142,43 @@ func modulesResponsesAssociation(ctx context.Context, tx domain.ModulesResponses
 	return tx.OwnerAssociation(ctx, identity.ScopeUser.ID)
 }
 
-// Add follows modules_response_add and returns the new response's id.
+// AddedResponse is the 200 body of modules_response_add: the response id and
+// the secret that lets the respondent change its attachments.
+type AddedResponse struct {
+	ID, AttachmentToken string
+}
+
+// Add follows modules_response_add.
 func (s *ModulesResponses) Add(ctx context.Context, identity domain.ResolvedIdentity, raw string, body ModuleBody,
-	audit domain.LoginAuditContext) (string, error) {
+	audit domain.LoginAuditContext) (AddedResponse, error) {
+	secret, err := newAttachmentToken()
+	if err != nil {
+		return AddedResponse{}, err
+	}
+	id, err := s.add(ctx, identity, raw, body, audit, attachmentTokenHash(secret))
+	if err != nil {
+		return AddedResponse{}, err
+	}
+	return AddedResponse{ID: id, AttachmentToken: secret}, nil
+}
+
+// newAttachmentToken is secrets.token_urlsafe(32).
+func newAttachmentToken() (string, error) {
+	random := make([]byte, 32)
+	if _, err := rand.Read(random); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(random), nil
+}
+
+// attachmentTokenHash is _attachment_token_hash: the SHA-256 (hex) of the token.
+func attachmentTokenHash(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
+}
+
+func (s *ModulesResponses) add(ctx context.Context, identity domain.ResolvedIdentity, raw string, body ModuleBody,
+	audit domain.LoginAuditContext, secretHash string) (string, error) {
 	id, err := paymentInfoParseUUID(raw)
 	if err != nil {
 		return "", err
@@ -227,7 +266,8 @@ func (s *ModulesResponses) Add(ctx context.Context, identity domain.ResolvedIden
 	at := s.at()
 	record := domain.ModuleResponseAudit{Context: subscriptionMiscAudit(identity, audit), At: at}
 	response := domain.ModuleResponseCreate{ID: s.ids(), ModuleID: module.ID, CreationDate: at, ProgressiveNumber: number,
-		QueuePosition: queue, Response: dto.ModuleJSONText(value), Approved: !module.RequireApproval}
+		QueuePosition: queue, Response: dto.ModuleJSONText(value), Approved: !module.RequireApproval,
+		AttachmentSecretHash: secretHash}
 	if err = tx.CreateResponse(ctx, response, module.AssociationID, record); err != nil {
 		return "", err
 	}
@@ -365,24 +405,86 @@ func (s *ModulesResponses) Attachment(ctx context.Context, identity domain.Resol
 		return "", err
 	}
 	defer tx.Rollback()
-	exists, err := tx.ResponseExists(ctx, id.String())
+	access, err := tx.ResponseAccess(ctx, id.String())
 	if err != nil {
 		return "", err
 	}
-	value, form, err := body()
+	if access == nil {
+		return "", domain.ErrModuleResponseNotFound
+	}
+	// request.data is parsed on its first access, which may be the secret check.
+	var value any
+	var parsed bool
+	var parseErr error
+	read := func() (any, error) {
+		if !parsed {
+			// A QueryDict body answers 'in' and [] like a dict of its last values.
+			value, _, parseErr = body()
+			parsed = true
+		}
+		return value, parseErr
+	}
+	allowed, err := s.mayChangeAttachments(ctx, tx, identity, *access, read)
 	if err != nil {
 		return "", err
 	}
-	// A QueryDict body answers 'in' and [] like a dict of its last values.
-	_ = form
+	if !allowed {
+		return "", domain.ErrModuleResponseNotFound
+	}
+	data, err := read()
+	if err != nil {
+		return "", err
+	}
 	record := domain.ModuleResponseAudit{Context: subscriptionMiscAudit(identity, audit), At: s.at()}
 	if method == "DELETE" {
-		return s.detach(ctx, tx, id.String(), exists, value, record)
+		return s.detach(ctx, tx, id.String(), data, record)
 	}
-	return s.attach(ctx, tx, id.String(), exists, value, record)
+	return s.attach(ctx, tx, id.String(), data, record)
 }
 
-func (s *ModulesResponses) detach(ctx context.Context, tx domain.ModulesResponsesTransaction, response string, exists bool, body any,
+// mayChangeAttachments is _can_manage_response_attachments: a signed-in
+// caller is the response's own user or acts for its association; any caller
+// may present the secret returned when the response was created.
+func (s *ModulesResponses) mayChangeAttachments(ctx context.Context, tx domain.ModulesResponsesTransaction, identity domain.ResolvedIdentity,
+	access domain.ModuleResponseAccess, read func() (any, error)) (bool, error) {
+	if identity.ScopeUser != nil {
+		if access.UserID != nil && *access.UserID == identity.ScopeUser.ID {
+			return true, nil
+		}
+		association, err := modulesResponsesAssociation(ctx, tx, identity)
+		var denied *domain.PermissionDenied
+		switch {
+		case err == nil:
+			if access.AssociationID != nil && *access.AssociationID == association {
+				return true, nil
+			}
+		case errors.Is(err, domain.ErrAssociationNotFound), errors.As(err, &denied):
+			// The caller has no association to act for.
+		default:
+			return false, err
+		}
+	}
+	body, err := read()
+	if err != nil {
+		return false, err
+	}
+	object, isDict := body.(domain.RequestObject)
+	if !isDict {
+		return false, nil
+	}
+	_, token, _ := moduleContains(object, "attachment_token")
+	text, isText := token.(string)
+	if !isText || text == "" || access.AttachmentSecret == "" {
+		return false, nil
+	}
+	if !utf8.ValidString(text) {
+		// token.encode('utf-8') raises on a lone surrogate.
+		return false, errors.New("module attachment token is not encodable")
+	}
+	return subtle.ConstantTimeCompare([]byte(attachmentTokenHash(text)), []byte(access.AttachmentSecret)) == 1, nil
+}
+
+func (s *ModulesResponses) detach(ctx context.Context, tx domain.ModulesResponsesTransaction, response string, body any,
 	record domain.ModuleResponseAudit) (AttachmentResult, error) {
 	present, value, err := moduleContains(body, "document_id")
 	if err != nil {
@@ -396,16 +498,12 @@ func (s *ModulesResponses) detach(ctx context.Context, tx domain.ModulesResponse
 		// The lookup's ValidationError is not handled by DRF.
 		return "", errors.New("module attachment document_id is not a UUID")
 	}
-	found, err := tx.DocumentExists(ctx, document.String())
+	found, err := tx.ResponseHasDocument(ctx, response, document.String())
 	if err != nil {
 		return "", err
 	}
 	if !found {
 		return "", domain.ErrModuleDocumentNotFound
-	}
-	if !exists {
-		// None.attachments raises before the document is touched.
-		return "", errors.New("module response is None")
 	}
 	elsewhere, err := tx.DocumentReferencedElsewhere(ctx, document.String())
 	if err != nil {
@@ -450,7 +548,7 @@ func moduleDocumentKey(value any) (uuid.UUID, bool) {
 	return uuid.UUID{}, false
 }
 
-func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponsesTransaction, response string, exists bool, body any,
+func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponsesTransaction, response string, body any,
 	record domain.ModuleResponseAudit) (AttachmentResult, error) {
 	hasName, _, nameErr := moduleContains(body, "filename")
 	if nameErr != nil && !hasName {
@@ -544,10 +642,6 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 	if err = s.storage.Save(ctx, stored, content, instancelogo.WriteParameters{ContentType: kind, ContentEncoding: encoding,
 		CacheControl: s.settings.CacheControl, ACL: s.settings.DefaultACL}); err != nil {
 		return "", err
-	}
-	if !exists {
-		// None.attachments raises after the upload.
-		return "", errors.New("module response is None")
 	}
 	link, err := s.store.BeginModulesResponses(ctx)
 	if err != nil {

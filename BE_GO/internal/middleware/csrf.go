@@ -23,6 +23,19 @@ func DjangoCSRF(trustedOrigins []string) echo.MiddlewareFunc {
 // DjangoCSRFRejecting is DjangoCSRF with the caller's answer for a request
 // the middleware rejects.
 func DjangoCSRFRejecting(trustedOrigins []string, rejected echo.HandlerFunc) echo.MiddlewareFunc {
+	return DjangoCSRFReasoned(trustedOrigins, func(c echo.Context, _ string) error { return rejected(c) })
+}
+
+// CSRF failure kinds the failure page tells apart: a request over HTTPS that
+// sent no Referer header, a request without a CSRF cookie, any other reason.
+const (
+	CSRFFailureOther     = "other"
+	CSRFFailureNoReferer = "referer"
+	CSRFFailureNoCookie  = "cookie"
+)
+
+// DjangoCSRFReasoned is DjangoCSRFRejecting that also tells the kind of failure.
+func DjangoCSRFReasoned(trustedOrigins []string, rejected func(echo.Context, string) error) echo.MiddlewareFunc {
 	trusted := append([]string(nil), trustedOrigins...)
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -31,7 +44,7 @@ func DjangoCSRFRejecting(trustedOrigins []string, rejected echo.HandlerFunc) ech
 			case "GET", "HEAD", "OPTIONS", "TRACE":
 				return next(c)
 			}
-			reject := func() error { return rejected(c) }
+			reject := func() error { return rejected(c, CSRFFailureOther) }
 			scheme := "http"
 			if request.TLS != nil || strings.TrimSpace(strings.Split(request.Header.Get("X-Forwarded-Proto"), ",")[0]) == "https" {
 				scheme = "https"
@@ -45,6 +58,9 @@ func DjangoCSRFRejecting(trustedOrigins []string, rejected echo.HandlerFunc) ech
 					return reject()
 				}
 			} else if scheme == "https" {
+				if _, sent := request.Header["Referer"]; !sent {
+					return rejected(c, CSRFFailureNoReferer)
+				}
 				referer, err := url.Parse(request.Referer())
 				if err != nil || referer.Scheme != "https" || referer.Host == "" || !trustedReferer(referer.Host, host, trusted) {
 					return reject()
@@ -52,7 +68,7 @@ func DjangoCSRFRejecting(trustedOrigins []string, rejected echo.HandlerFunc) ech
 			}
 			cookie, err := request.Cookie("csrftoken")
 			if err != nil {
-				return reject()
+				return rejected(c, CSRFFailureNoCookie)
 			}
 			secret, ok := csrfSecret(cookie.Value)
 			if !ok {

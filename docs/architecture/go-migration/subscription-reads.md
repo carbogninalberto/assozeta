@@ -157,8 +157,9 @@ resources reader (`repository.ScopedResources.Available`, kind `subscription`; `
 
 - In the POST export of subscription/list: workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`) and exports
   (both formats) sorted by an ordering compiled with the rows.
-- Orderings compiled with the rows (relations, paths, transforms, `?`, annotations), field-mode relation paths and
-  transforms (search terms beyond Latin are ported in tailpay, personas-reads).
+- Orderings compiled with the rows: relations, paths, transforms and `?`, and field-mode relation paths and transforms (search
+  terms beyond Latin are ported in tailpay, personas-reads). `sort[field]=_has_future_renewal`, the queryset's own annotation,
+  is ported (t2subsa): it orders by the `future_renewal_exists()` expression, false before true.
 
 Not authored: the Italian invalid-page message, two course subscriptions of one course in info, a null end date in the
 archived renewal lookup.

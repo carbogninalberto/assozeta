@@ -3,6 +3,7 @@ package dto
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"testing"
 	"time"
 
@@ -149,5 +150,34 @@ func TestAuditStoredDate(t *testing.T) {
 	early := "999"
 	if _, _, err := AuditStoredDate(&early, &dayMonth); !errors.Is(err, ErrAuditNotPorted) {
 		t.Error("years below 1000 are refused")
+	}
+}
+
+func TestAuditPythonJSONLoadsConstantsAndSurrogates(t *testing.T) {
+	value, ok, err := auditPythonJSONLoads(`[NaN, -Infinity, Infinity, {"a": "NaN"}, "\ud800"]`)
+	if err != nil || !ok {
+		t.Fatalf("loads: %v %v", ok, err)
+	}
+	list := value.([]any)
+	if f, _ := list[0].(float64); !math.IsNaN(f) {
+		t.Fatalf("NaN: %#v", list[0])
+	}
+	if f, _ := list[1].(float64); !math.IsInf(f, -1) {
+		t.Fatalf("-Infinity: %#v", list[1])
+	}
+	if f, _ := list[2].(float64); !math.IsInf(f, 1) {
+		t.Fatalf("Infinity: %#v", list[2])
+	}
+	if object := list[3].(domain.RequestObject); object[0].Value != "NaN" {
+		t.Fatalf("string left alone: %#v", object)
+	}
+	if AuditResponseEncodable(value) {
+		t.Fatal("non-finite values and surrogates are not encodable")
+	}
+	if text, ok, err := auditPythonJSONLoads(`[NaNx]`); ok || err != nil {
+		t.Fatalf("NaNx: %v %v %v", text, ok, err)
+	}
+	if _, ok, _ := auditPythonJSONLoads(`["😀", 1.5]`); !ok {
+		t.Fatal("paired surrogates and floats load")
 	}
 }

@@ -41,7 +41,7 @@ class ModuleResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ModuleResponses
-        fields = '__all__'
+        exclude = ('attachment_token_hash',)
 
     @staticmethod
     def get_attachments_docs(obj):
