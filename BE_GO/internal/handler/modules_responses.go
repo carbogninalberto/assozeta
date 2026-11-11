@@ -33,6 +33,17 @@ type ModulesResponsesHandler struct {
 	identities *service.IdentityResolver
 	audit      LoginAuditReader
 	operations *paymentcategorylifecycle.Lifecycle
+	limits     *PublicFlowLimits
+}
+
+// publicFlowScopes are the throttle scopes of the routes open without an account.
+var publicFlowScopes = map[string]string{"modules_response_add": "public-module-response",
+	"modules_response_add_attachment": "public-module-attachment"}
+
+// WithPublicLimits sets the request and size limits of the routes open without an account.
+func (h *ModulesResponsesHandler) WithPublicLimits(limits *PublicFlowLimits) *ModulesResponsesHandler {
+	h.limits = limits
+	return h
 }
 
 func NewModulesResponsesHandler(responses ModulesResponsesService, actors *service.ActorAuthentication, identities *service.IdentityResolver,
@@ -51,6 +62,12 @@ func (h *ModulesResponsesHandler) admit(c echo.Context, methods []string, operat
 	identity, err := messageMutationsIdentityFor(c, h.actors, h.identities, methods[0], operation, anonymous)
 	if identity == nil {
 		return nil, false, err
+	}
+	// check_throttles runs before the method dispatch.
+	if scope := publicFlowScopes[operation]; scope != "" {
+		if allowed, err := h.limits.Allow(c, scope, identity); !allowed {
+			return nil, false, err
+		}
 	}
 	request := c.Request()
 	if request.Method == http.MethodOptions {
@@ -92,9 +109,12 @@ func (h *ModulesResponsesHandler) write(c echo.Context, run func(ctx context.Con
 func (h *ModulesResponsesHandler) answer(c echo.Context, status int, result any, err error) error {
 	var invalidUUID *service.PaymentInfoUUIDError
 	var suspicious *documentkey.SuspiciousFileError
+	var tooLarge *service.PublicUploadTooLargeError
 	switch {
 	case err == nil:
 		return c.JSON(status, result)
+	case errors.As(err, &tooLarge):
+		return c.JSON(413, map[string]string{"error": tooLarge.Error()})
 	case errors.As(err, &suspicious):
 		// Storage.save's SuspiciousFileOperation: Django's 400 page.
 		c.Response().Header().Del("Allow")
@@ -132,6 +152,9 @@ func (h *ModulesResponsesHandler) Info(c echo.Context) error {
 func (h *ModulesResponsesHandler) Add(c echo.Context) error {
 	identity, ok, err := h.admit(c, []string{http.MethodPost}, "modules_response_add", "Modules Response Add", true)
 	if !ok {
+		return err
+	}
+	if large, err := h.limits.BodyTooLarge(c, identity); large {
 		return err
 	}
 	return h.write(c, func(ctx context.Context, body service.ModuleBody, audit domain.LoginAuditContext) error {

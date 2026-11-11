@@ -1031,16 +1031,8 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 			object = dropField(object, name)
 		}
 	}
-	if value, present := object.Lookup("payment_id"); present {
-		// The edit form posts the row's own key: UUIDField accepts it, the
-		// UniqueValidator excludes the instance and the save keeps the row.
-		// Any other key would move the primary key (not ported).
-		if text, isText := value.(string); isText {
-			if key, ok := dto.DjangoUUIDLookup(text); ok && key == row.ID {
-				object = dropField(object, "payment_id")
-			}
-		}
-	}
+	// The row is the one named by the path: a payment_id in the body is dropped.
+	object = dropField(object, "payment_id")
 	input, err := s.entry(ctx, tx, identity, object, true)
 	if err != nil {
 		return nil, err

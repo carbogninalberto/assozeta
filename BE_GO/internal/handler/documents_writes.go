@@ -5,12 +5,10 @@ import (
 	"context"
 	"errors"
 	"io"
-	"math"
 	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -67,41 +65,8 @@ func (h *DocumentUploadsHandler) certificateAllow(c echo.Context, identity *doma
 	if h.certificateThrottle == nil || identity.ScopeUser != nil {
 		return true, nil
 	}
-	request := c.Request()
-	key := "throttle_medical-certificate-upload_" + throttleIdent(request)
-	history, err := h.certificateThrottle.History(request.Context(), key)
-	if err != nil {
-		return false, messageReadsError(c, err)
-	}
-	now := float64(h.certificateNow().UnixNano()) / 1e9
-	for len(history) > 0 && history[len(history)-1] <= now-certificateThrottleWindow {
-		history = history[:len(history)-1]
-	}
-	if len(history) >= h.certificateRate {
-		detail := "Request was throttled."
-		if restLanguage(request) != "en" {
-			detail = "La richiesta è stata limitata (throttled)."
-		}
-		remaining := float64(certificateThrottleWindow)
-		if len(history) > 0 {
-			remaining = certificateThrottleWindow - (now - history[len(history)-1])
-		}
-		if available := h.certificateRate - len(history) + 1; available > 0 {
-			wait := int(math.Ceil(remaining / float64(available)))
-			unit := "seconds"
-			if wait == 1 {
-				unit = "second"
-			}
-			detail += " Expected available in " + strconv.Itoa(wait) + " " + unit + "."
-			c.Response().Header().Set("Retry-After", strconv.Itoa(wait))
-		}
-		return false, c.JSON(http.StatusTooManyRequests, map[string]string{"detail": detail})
-	}
-	history = append([]float64{now}, history...)
-	if err := h.certificateThrottle.Store(request.Context(), key, history, certificateThrottleWindow*time.Second); err != nil {
-		return false, messageReadsError(c, err)
-	}
-	return true, nil
+	return drfAnonThrottle(c, h.certificateThrottle, h.certificateNow, "throttle_medical-certificate-upload_", h.certificateRate,
+		certificateThrottleWindow)
 }
 
 func NewDocumentUploadsHandler(uploads DocumentUploadService, archive ArchiveWriteService, actors *service.ActorAuthentication,

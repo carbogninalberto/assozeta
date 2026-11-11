@@ -209,9 +209,15 @@ STATE = copy.deepcopy(RESPONSES)
 cases = []
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
+        throttle=None, retry_after=None):
+    """throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
     case = {'name': f'modules-responses-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
+    if throttle is not None:
+        case['throttle'] = throttle
+    if retry_after is not None:
+        case['retry_after'] = retry_after
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -737,9 +743,47 @@ add('attach-delete-form', 'anonymous', 'DELETE', attach('att_r'), 200, DOC_DELET
 add('attach-delete-referenced-by-payment', 'owner', 'DELETE', attach('full_r'), 200, DOC_DELETED, body={'document_id': DOCUMENTS['d8']['id']},
     effect=removed_document('d8', 'owner'))
 
+# --------------------------- limits of the routes open without an account
+# Requests without an account are counted per address and route (30 in 600 seconds): the next one is asked to wait.
+# A file above the upload limit (4096 bytes in this run) is refused before any write; the limit is for everyone.
+UPLOAD_LIMIT = 4096
+FULL = {'preload': 30, 'age': 10.2}
+THROTTLED = {'detail': 'Request was throttled. Expected available in 590 seconds.'}
+TOO_LARGE = {'error': f'Il file supera la dimensione massima consentita ({UPLOAD_LIMIT} byte).'}
+BIG_TEXT = 'x' * (UPLOAD_LIMIT + 100)
+add('add-anonymous-over-the-rate', 'anonymous', 'POST', respond('open'), 429, THROTTLED, body={'nome': 'Eva'}, throttle=FULL, retry_after='590')
+add('add-anonymous-wrong-method-over-the-rate', 'anonymous', 'GET', respond('open'), 429, THROTTLED, throttle=FULL, retry_after='590')
+add('add-anonymous-below-the-rate', 'anonymous', 'POST', respond('open'), 200, ADDED, body={'nome': 'Fabio'},
+    throttle={'preload': 29, 'age': 10.2}, effect=responded('open', None, None, {'nome': 'Fabio'}))
+add('add-anonymous-old-history', 'anonymous', 'GET', respond('open'), 405, METHOD('GET'), throttle={'preload': 30, 'age': 601})
+add('add-owner-full-history', 'owner', 'POST', respond('open'), 200, ADDED, body={'nome': 'Gina'}, throttle=FULL,
+    effect=responded('open', 'owner', 'owner', {'nome': 'Gina'}))
+add('add-anonymous-body-above-the-limit', 'anonymous', 'POST', respond('open'), 413, TOO_LARGE, body={'nota': BIG_TEXT})
+add('add-anonymous-body-above-the-limit-unknown-module', 'anonymous', 'POST', respond(UNKNOWN), 413, TOO_LARGE, body={'nota': BIG_TEXT})
+add('add-owner-body-above-the-limit', 'owner', 'POST', respond('open'), 200, ADDED, body={'nota': BIG_TEXT},
+    effect=responded('open', 'owner', 'owner', {'nota': BIG_TEXT}))
+add('attach-anonymous-over-the-rate', 'anonymous', 'POST', attach('att_r'), 429, THROTTLED, body={'filename': 'nota.txt', 'base64': 'Y2lhbw=='},
+    throttle=FULL, retry_after='590')
+add('attach-anonymous-delete-over-the-rate', 'anonymous', 'DELETE', attach('att_r'), 429, THROTTLED, body={}, throttle=FULL, retry_after='590')
+add('attach-anonymous-below-the-rate', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'nota.txt', 'base64': 'Y2lhbw=='},
+    throttle={'preload': 29, 'age': 10.2}, effect=uploaded(None, 'nota.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
+add('attach-owner-full-history', 'owner', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'nota.txt', 'base64': 'Y2lhbw=='},
+    throttle=FULL, effect=uploaded('owner', 'nota.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
+AT_LIMIT = base64.b64encode(b'z' * UPLOAD_LIMIT).decode()
+OVER_LIMIT = base64.b64encode(b'z' * (UPLOAD_LIMIT + 1)).decode()
+add('attach-anonymous-above-the-limit', 'anonymous', 'POST', attach('att_r'), 413, TOO_LARGE,
+    body={'filename': 'grande.bin', 'base64': OVER_LIMIT})
+add('attach-owner-above-the-limit-unknown-response', 'owner', 'POST', attach(UNKNOWN), 413, TOO_LARGE,
+    body={'filename': 'grande.bin', 'base64': 'data:application/octet-stream;base64,' + OVER_LIMIT})
+add('attach-anonymous-at-the-limit', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'limite.bin', 'base64': AT_LIMIT},
+    effect=uploaded(None, 'limite.bin', AT_LIMIT, link='att_r', content_type='application/octet-stream'))
+# Text that does not decode keeps the answer it had: the create, then the error.
+add('attach-anonymous-undecodable-keeps-its-answer', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
+    body={'filename': 'rotto.bin', 'base64': 'abcde'}, effect=uploaded(None, 'rotto.bin', None, link=None, stored=False))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module responses info/add/approve/delete/add-attachment/export authored sequence',
-                              'ids': IDS, 'location': LOCATION, 'modules': MODULES, 'documents': DOCUMENTS, 'responses': RESPONSES,
+                              'ids': IDS, 'location': LOCATION, 'public_upload_limit': UPLOAD_LIMIT, 'modules': MODULES, 'documents': DOCUMENTS, 'responses': RESPONSES,
                               'export_users': EXPORT_USERS, 'export_payments': EXPORT_PAYMENTS,
                               'payment_attachments': PAYMENT_ATTACHMENTS,
                               'cases': cases}, ensure_ascii=False, indent=1) + '\n')
