@@ -133,6 +133,10 @@ PAYMENTS = {
     # Rare inputs: another spelling of the group header, fees that round on a tie, meta names that are not text.
     'p_group_spelling': {'id': next(ids), **row(amount='9.00', group_id=GROUP_ID)},
     'p_tie': {'id': next(ids), **row(subject=1, amount='10.00', meta_payment_categories=[{'amount': '0.125'}], description='Iscrizione')},
+    # Sums that are not finite: Invoice.objects.create fails inside the transaction, nothing is kept.
+    'p_sum_inf': {'id': next(ids), **row(subject=1, amount='10.00', meta_payment_categories=[{'amount': 'inf'}], description='Iscrizione')},
+    'p_sum_nan': {'id': next(ids), **row(subject=1, amount='10.00', meta_payment_categories=[{'amount': 'nan'}], description='Iscrizione')},
+    'p_sum_huge': {'id': next(ids), **row(subject=1, amount='10.00', meta_payment_categories=[{'amount': '1e999'}], description='Iscrizione')},
     'p_name_float': {'id': next(ids), **row(subject=1, amount='26.00', meta={'subscription_data': {'name': 1.5}}, description='Iscrizione')},
     'p_name_list': {'id': next(ids), **row(subject=1, amount='27.00', description='Iscrizione',
                                            meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}})},
@@ -514,6 +518,8 @@ add('group-header-upper-case', 'owner', GENERATE('p_group_spelling'), 200, respo
 response, effect = generated('p_tie', 'sub_bruno', subscribed('', full_name('bruno')))
 assert (column(9.875), column(0.125), drf(0.125)) == ('9.88', '0.13', '0.12')
 add('subscription-subject-fee-tie', 'owner', GENERATE('p_tie'), 200, response, body={'subscription_id': SUB('sub_bruno')}, effect=effect)
+for key, label in (('p_sum_inf', 'infinite'), ('p_sum_nan', 'not-a-number'), ('p_sum_huge', 'overflowing')):
+    add(f'meta-sum-{label}-server-error', 'owner', GENERATE(key), 500, SERVER, body={'subscription_id': SUB('sub_bruno')}, effect=nothing())
 # meta.subscription_data.name is formatted with str(): floats, lists and dicts as Python writes them.
 for key, label, text in (('p_name_float', 'float', '(1.5) '), ('p_name_list', 'list', "(['Agonisti', {'ok': True, 'anno': None}, 2]) "),
                          ('p_name_dict', 'dict', '''({'it': 'l\\'anno "2026"'}) ''')):

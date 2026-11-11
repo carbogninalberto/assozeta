@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -159,19 +158,11 @@ var personaDatePatterns = []*regexp.Regexp{
 
 var personaLikeEscape = strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
 
-// personaSearch prepares sqlite_search(queryset, term) for Associate. Terms
-// outside Latin script below U+0250 (and U+0130, whose lower() differs) are
-// refused: Python's str.lower and \w classification are not ported for them.
+// personaSearch prepares sqlite_search(queryset, term) for Associate: the term
+// is decoded with replacement characters, stripped and lower-cased as Python
+// does, and split into \w+ words.
 func personaSearch(raw string, centuryYear int) (*domain.PersonaSearch, error) {
-	if !utf8.ValidString(raw) {
-		return nil, ErrPersonaNotPorted // Django decodes malformed UTF-8 with replacement characters
-	}
-	for _, r := range raw {
-		if r >= 0x250 || r == 0x130 {
-			return nil, ErrPersonaNotPorted
-		}
-	}
-	term := strings.ToLower(dto.PythonStripText(raw))
+	term := pythonLower(dto.PythonStripText(pythonReplaceInvalidUTF8(raw)))
 	escaped := personaLikeEscape.Replace(term)
 	search := &domain.PersonaSearch{Term: term, Prefix: escaped + "%", Contains: "%" + escaped + "%"}
 	var words []string

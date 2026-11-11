@@ -49,10 +49,24 @@ func TestPersonaSearchLatinLettersAndNumbers(t *testing.T) {
 	}
 }
 
-func TestPersonaSearchRefusals(t *testing.T) {
-	for _, raw := range []string{"Ωmega", "İstanbul", "a\xffb", "名前"} {
-		if _, err := personaSearch(raw, 26); !errors.Is(err, ErrPersonaNotPorted) {
+// Terms beyond Latin are lower-cased as Python does and split on \w+ (a malformed byte
+// is decoded to U+FFFD, which is not a word character).
+func TestPersonaSearchBeyondLatin(t *testing.T) {
+	for raw, want := range map[string][]string{
+		"Ωmega": {"%ωmega%"}, "İstanbul": {"%i%", "%stanbul%"}, "a\xffb": {"a", "b"}, "名前": {"%名前%"}, "ΑΣ ΣΑ": {"%ας%", "%σα%"},
+		"Иван": {"%иван%"}, "a\xe2\x82b": {"a", "b"},
+	} {
+		search, err := personaSearch(raw, 26)
+		if err != nil {
 			t.Fatalf("%q: %v", raw, err)
+		}
+		for i := range want {
+			if want[i][0] != '%' {
+				want[i] = "%" + want[i] + "%"
+			}
+		}
+		if !reflect.DeepEqual(search.Words, want) {
+			t.Fatalf("%q: words %q, want %q", raw, search.Words, want)
 		}
 	}
 }

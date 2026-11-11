@@ -799,8 +799,107 @@
    "group_id": null,
    "course": null
   },
-  "p_name_float": {
+  "p_sum_inf": {
    "id": "a1000000-0000-4000-8000-000000995040",
+   "type": "default",
+   "subject": 1,
+   "amount": "10.00",
+   "creation_date": "$year:-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Iscrizione",
+   "payment_category_id": "a1000000-0000-4000-8000-000000995003",
+   "meta_payment_categories": [
+    {
+     "amount": "inf"
+    }
+   ],
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_sum_nan": {
+   "id": "a1000000-0000-4000-8000-000000995041",
+   "type": "default",
+   "subject": 1,
+   "amount": "10.00",
+   "creation_date": "$year:-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Iscrizione",
+   "payment_category_id": "a1000000-0000-4000-8000-000000995003",
+   "meta_payment_categories": [
+    {
+     "amount": "nan"
+    }
+   ],
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_sum_huge": {
+   "id": "a1000000-0000-4000-8000-000000995042",
+   "type": "default",
+   "subject": 1,
+   "amount": "10.00",
+   "creation_date": "$year:-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Iscrizione",
+   "payment_category_id": "a1000000-0000-4000-8000-000000995003",
+   "meta_payment_categories": [
+    {
+     "amount": "1e999"
+    }
+   ],
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "p_name_float": {
+   "id": "a1000000-0000-4000-8000-000000995043",
    "type": "default",
    "subject": 1,
    "amount": "26.00",
@@ -833,7 +932,7 @@
    "course": null
   },
   "p_name_list": {
-   "id": "a1000000-0000-4000-8000-000000995041",
+   "id": "a1000000-0000-4000-8000-000000995044",
    "type": "default",
    "subject": 1,
    "amount": "27.00",
@@ -873,7 +972,7 @@
    "course": null
   },
   "p_name_dict": {
-   "id": "a1000000-0000-4000-8000-000000995042",
+   "id": "a1000000-0000-4000-8000-000000995045",
    "type": "default",
    "subject": 1,
    "amount": "28.00",
@@ -908,7 +1007,7 @@
    "course": null
   },
   "p_collab": {
-   "id": "a1000000-0000-4000-8000-000000995043",
+   "id": "a1000000-0000-4000-8000-000000995046",
    "type": "default",
    "subject": 0,
    "amount": "11.00",
@@ -937,7 +1036,7 @@
    "course": null
   },
   "p_admin": {
-   "id": "a1000000-0000-4000-8000-000000995044",
+   "id": "a1000000-0000-4000-8000-000000995047",
    "type": "default",
    "subject": 0,
    "amount": "13.00",
@@ -966,7 +1065,7 @@
    "course": null
   },
   "p_form": {
-   "id": "a1000000-0000-4000-8000-000000995045",
+   "id": "a1000000-0000-4000-8000-000000995048",
    "type": "default",
    "subject": 0,
    "amount": "14.00",
@@ -995,7 +1094,7 @@
    "course": null
   },
   "p_cross": {
-   "id": "a1000000-0000-4000-8000-000000995046",
+   "id": "a1000000-0000-4000-8000-000000995049",
    "type": "default",
    "subject": 0,
    "amount": "16.00",
@@ -1024,7 +1123,7 @@
    "course": null
   },
   "p_transfer": {
-   "id": "a1000000-0000-4000-8000-000000995047",
+   "id": "a1000000-0000-4000-8000-000000995050",
    "type": "default",
    "subject": 3,
    "amount": "17.00",
@@ -1053,7 +1152,7 @@
    "course": null
   },
   "p_foreign": {
-   "id": "a1000000-0000-4000-8000-000000995048",
+   "id": "a1000000-0000-4000-8000-000000995051",
    "type": "default",
    "subject": 0,
    "amount": "10.00",
@@ -1082,7 +1181,7 @@
    "course": null
   },
   "p_deleted": {
-   "id": "a1000000-0000-4000-8000-000000995049",
+   "id": "a1000000-0000-4000-8000-000000995052",
    "type": "default",
    "subject": 0,
    "amount": "10.00",
@@ -1111,7 +1210,7 @@
    "course": null
   },
   "p_invoiced": {
-   "id": "a1000000-0000-4000-8000-000000995050",
+   "id": "a1000000-0000-4000-8000-000000995053",
    "type": "default",
    "subject": 0,
    "amount": "25.00",
@@ -1140,7 +1239,7 @@
    "course": null
   },
   "p_foreign_invoiced": {
-   "id": "a1000000-0000-4000-8000-000000995051",
+   "id": "a1000000-0000-4000-8000-000000995054",
    "type": "default",
    "subject": 2,
    "amount": "10.00",
@@ -1169,7 +1268,7 @@
    "course": null
   },
   "f_dated": {
-   "id": "a1000000-0000-4000-8000-000000995052",
+   "id": "a1000000-0000-4000-8000-000000995055",
    "type": "default",
    "subject": 0,
    "amount": "15.00",
@@ -1198,7 +1297,7 @@
    "course": null
   },
   "f_undated": {
-   "id": "a1000000-0000-4000-8000-000000995053",
+   "id": "a1000000-0000-4000-8000-000000995056",
    "type": "default",
    "subject": 0,
    "amount": "15.00",
@@ -1227,7 +1326,7 @@
    "course": null
   },
   "f_tie": {
-   "id": "a1000000-0000-4000-8000-000000995054",
+   "id": "a1000000-0000-4000-8000-000000995057",
    "type": "default",
    "subject": 1,
    "amount": "10.00",
@@ -1262,7 +1361,7 @@
  },
  "subscriptions": {
   "sub_anna": {
-   "id": "a1000000-0000-4000-8000-000000995055",
+   "id": "a1000000-0000-4000-8000-000000995058",
    "associate": "a1000000-0000-4000-8000-000000995007",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "a1000000-0000-4000-8000-000000700001",
@@ -1273,7 +1372,7 @@
    "created": "$year:-01-10T08:00:00Z"
   },
   "sub_bruno": {
-   "id": "a1000000-0000-4000-8000-000000995056",
+   "id": "a1000000-0000-4000-8000-000000995059",
    "associate": "a1000000-0000-4000-8000-000000995008",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "a1000000-0000-4000-8000-000000700001",
@@ -1284,7 +1383,7 @@
    "created": "$year:-01-10T08:00:00Z"
   },
   "sub_none": {
-   "id": "a1000000-0000-4000-8000-000000995057",
+   "id": "a1000000-0000-4000-8000-000000995060",
    "associate": null,
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "a1000000-0000-4000-8000-000000700001",
@@ -1295,7 +1394,7 @@
    "created": "$year:-01-10T08:00:00Z"
   },
   "sub_carla": {
-   "id": "a1000000-0000-4000-8000-000000995058",
+   "id": "a1000000-0000-4000-8000-000000995061",
    "associate": "a1000000-0000-4000-8000-000000995009",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "a1000000-0000-4000-8000-000000700001",
@@ -1306,7 +1405,7 @@
    "created": "$year:-01-10T08:00:00Z"
   },
   "sub_hans": {
-   "id": "a1000000-0000-4000-8000-000000995059",
+   "id": "a1000000-0000-4000-8000-000000995062",
    "associate": "a1000000-0000-4000-8000-000000995010",
    "association": "a1000000-0000-4000-8000-000000701002",
    "user": "a1000000-0000-4000-8000-000000700007",
@@ -1317,7 +1416,7 @@
    "created": "$year:-01-10T08:00:00Z"
   },
   "sub_flavia": {
-   "id": "a1000000-0000-4000-8000-000000995060",
+   "id": "a1000000-0000-4000-8000-000000995063",
    "associate": "a1000000-0000-4000-8000-000000995011",
    "association": "a1000000-0000-4000-8000-000000995002",
    "user": "a1000000-0000-4000-8000-000000995001",
@@ -1330,8 +1429,8 @@
  },
  "memberships": {
   "mem_anna": {
-   "id": "a1000000-0000-4000-8000-000000995061",
-   "subscription": "a1000000-0000-4000-8000-000000995055",
+   "id": "a1000000-0000-4000-8000-000000995064",
+   "subscription": "a1000000-0000-4000-8000-000000995058",
    "start": "2026-01-01",
    "end": "2026-12-31",
    "type": "FIDAL"
@@ -1339,23 +1438,23 @@
  },
  "courses": {
   "nuoto": {
-   "id": "a1000000-0000-4000-8000-000000995062",
+   "id": "a1000000-0000-4000-8000-000000995065",
    "title": "Nuoto & Co"
   },
   "yoga": {
-   "id": "a1000000-0000-4000-8000-000000995063",
+   "id": "a1000000-0000-4000-8000-000000995066",
    "title": "Yoga"
   }
  },
  "course_subscriptions": {
   "cs_nuoto": {
-   "id": "a1000000-0000-4000-8000-000000995064",
+   "id": "a1000000-0000-4000-8000-000000995067",
    "course": "nuoto",
    "subscription": "sub_bruno",
    "payment": "p_course"
   },
   "cs_yoga": {
-   "id": "a1000000-0000-4000-8000-000000995065",
+   "id": "a1000000-0000-4000-8000-000000995068",
    "course": "yoga",
    "subscription": "sub_anna",
    "payment": null
@@ -1363,20 +1462,20 @@
  },
  "installments": {
   "inst_yoga": {
-   "id": "a1000000-0000-4000-8000-000000995066",
+   "id": "a1000000-0000-4000-8000-000000995069",
    "course_subscription": "cs_yoga",
    "payment": "p_install"
   }
  },
  "carnets": {
   "carnet": {
-   "id": "a1000000-0000-4000-8000-000000995067",
+   "id": "a1000000-0000-4000-8000-000000995070",
    "title": "Carnet <10>"
   }
  },
  "carnet_subscriptions": {
   "carsub": {
-   "id": "a1000000-0000-4000-8000-000000995068",
+   "id": "a1000000-0000-4000-8000-000000995071",
    "carnet": "carnet",
    "subscription": "sub_bruno",
    "payment": "p_carnet"
@@ -1501,7 +1600,7 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -1520,7 +1619,7 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -1558,14 +1657,14 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
    "name": "invoice-generate-deleted-payment-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995049/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995052/generate-invoice",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1577,7 +1676,7 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -1598,14 +1697,14 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
    "name": "invoice-generate-foreign-payment-denied",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995048/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995051/generate-invoice",
    "headers": {},
    "status": 403,
    "response": {
@@ -1619,7 +1718,7 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -1762,14 +1861,14 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
    "name": "invoice-generate-transfer-subject-server-error",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995047/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995050/generate-invoice",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1781,14 +1880,14 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
    "name": "invoice-generate-flag-null-payment-date-server-error",
    "actor": "flag_owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995053/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995056/generate-invoice",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -1800,7 +1899,7 @@
     "celery": []
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995060"
+    "subscription_id": "a1000000-0000-4000-8000-000000995063"
    }
   },
   {
@@ -1845,14 +1944,14 @@
    "name": "invoice-generate-only-print",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -1880,7 +1979,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -1959,14 +2058,14 @@
    "name": "invoice-generate-only-print-form-string",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -1994,7 +2093,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -2072,14 +2171,14 @@
    "name": "invoice-generate-only-print-foreign-payment",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995051/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995054/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995051",
+      "payment_id": "a1000000-0000-4000-8000-000000995054",
       "user": null,
       "associate": null,
       "subscription_id": null,
@@ -2196,7 +2295,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995056",
+      "subscription_id": "a1000000-0000-4000-8000-000000995059",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -2382,7 +2481,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056",
+    "subscription_id": "a1000000-0000-4000-8000-000000995059",
     "only_print": false
    }
   },
@@ -2425,7 +2524,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -2649,7 +2748,7 @@
     ]
    },
    "body": {
-    "subscription_id": "A1000000-0000-4000-8000-000000995055"
+    "subscription_id": "A1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -2889,7 +2988,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
@@ -2931,7 +3030,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995056",
+      "subscription_id": "a1000000-0000-4000-8000-000000995059",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -3117,7 +3216,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -3159,7 +3258,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -3345,7 +3444,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
@@ -3387,7 +3486,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995056",
+      "subscription_id": "a1000000-0000-4000-8000-000000995059",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -3573,7 +3672,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -3811,7 +3910,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
@@ -4035,7 +4134,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995057"
+    "subscription_id": "a1000000-0000-4000-8000-000000995060"
    }
   },
   {
@@ -4234,7 +4333,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995057"
+    "subscription_id": "a1000000-0000-4000-8000-000000995060"
    }
   },
   {
@@ -4276,7 +4375,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995056",
+      "subscription_id": "a1000000-0000-4000-8000-000000995059",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -4462,7 +4561,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
@@ -4506,7 +4605,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995058",
+      "subscription_id": "a1000000-0000-4000-8000-000000995061",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -4692,7 +4791,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995058"
+    "subscription_id": "a1000000-0000-4000-8000-000000995061"
    }
   },
   {
@@ -4736,7 +4835,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995058",
+      "subscription_id": "a1000000-0000-4000-8000-000000995061",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -4922,7 +5021,7 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995058"
+    "subscription_id": "a1000000-0000-4000-8000-000000995061"
    }
   },
   {
@@ -5162,21 +5261,78 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
+   }
+  },
+  {
+   "name": "invoice-generate-meta-sum-infinite-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000995040/generate-invoice",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "changed": {},
+    "invoice": null,
+    "audit": [],
+    "celery": []
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
+   }
+  },
+  {
+   "name": "invoice-generate-meta-sum-not-a-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000995041/generate-invoice",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "changed": {},
+    "invoice": null,
+    "audit": [],
+    "celery": []
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
+   }
+  },
+  {
+   "name": "invoice-generate-meta-sum-overflowing-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000995042/generate-invoice",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "changed": {},
+    "invoice": null,
+    "audit": [],
+    "celery": []
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
    "name": "invoice-generate-meta-name-float",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995040/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995043/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995040",
+      "payment_id": "a1000000-0000-4000-8000-000000995043",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5394,21 +5550,21 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
    "name": "invoice-generate-meta-name-list",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995041/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995044/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995041",
+      "payment_id": "a1000000-0000-4000-8000-000000995044",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5633,21 +5789,21 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
    "name": "invoice-generate-meta-name-dict",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995042/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995045/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995042",
+      "payment_id": "a1000000-0000-4000-8000-000000995045",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5867,21 +6023,21 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
    "name": "invoice-generate-full-collaborator",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995043/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995046/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995043",
+      "payment_id": "a1000000-0000-4000-8000-000000995046",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -5909,7 +6065,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -6095,14 +6251,14 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995055"
+    "subscription_id": "a1000000-0000-4000-8000-000000995058"
    }
   },
   {
    "name": "invoice-generate-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995044/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995047/generate-invoice",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -6112,7 +6268,7 @@
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995044",
+      "payment_id": "a1000000-0000-4000-8000-000000995047",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -6140,7 +6296,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995056",
+      "subscription_id": "a1000000-0000-4000-8000-000000995059",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -6322,21 +6478,21 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995056"
+    "subscription_id": "a1000000-0000-4000-8000-000000995059"
    }
   },
   {
    "name": "invoice-generate-form-body",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995045/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995048/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995045",
+      "payment_id": "a1000000-0000-4000-8000-000000995048",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -6364,7 +6520,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -6549,21 +6705,21 @@
      }
     ]
    },
-   "raw_body": "subscription_id=a1000000-0000-4000-8000-000000995055&only_print=",
+   "raw_body": "subscription_id=a1000000-0000-4000-8000-000000995058&only_print=",
    "content_type": "application/x-www-form-urlencoded"
   },
   {
    "name": "invoice-generate-subscription-resolved-by-id",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995046/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995049/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995046",
+      "payment_id": "a1000000-0000-4000-8000-000000995049",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -6591,7 +6747,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995059",
+      "subscription_id": "a1000000-0000-4000-8000-000000995062",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -6777,21 +6933,21 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995059"
+    "subscription_id": "a1000000-0000-4000-8000-000000995062"
    }
   },
   {
    "name": "invoice-generate-flag-payment-date-invoice-date",
    "actor": "flag_owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995052/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995055/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995052",
+      "payment_id": "a1000000-0000-4000-8000-000000995055",
       "user": {
        "first_name": "Flag",
        "last_name": "Owner",
@@ -6819,7 +6975,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995060",
+      "subscription_id": "a1000000-0000-4000-8000-000000995063",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -7029,21 +7185,21 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995060"
+    "subscription_id": "a1000000-0000-4000-8000-000000995063"
    }
   },
   {
    "name": "invoice-generate-flag-payment-date-fee-tie",
    "actor": "flag_owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995054/generate-invoice",
+   "path": "/payment/a1000000-0000-4000-8000-000000995057/generate-invoice",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "generated invoice.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995054",
+      "payment_id": "a1000000-0000-4000-8000-000000995057",
       "user": {
        "first_name": "Flag",
        "last_name": "Owner",
@@ -7297,21 +7453,21 @@
     ]
    },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000995060"
+    "subscription_id": "a1000000-0000-4000-8000-000000995063"
    }
   },
   {
    "name": "invoice-generate-approve-default-flag",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -7339,7 +7495,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -7417,14 +7573,14 @@
    "name": "invoice-generate-approve-string-flag-receipt",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -7452,7 +7608,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -7534,14 +7690,14 @@
    "name": "invoice-generate-approve-receipt-number",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -7569,7 +7725,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -7650,14 +7806,14 @@
    "name": "invoice-generate-approve-receipt-null",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -7685,7 +7841,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -7766,14 +7922,14 @@
    "name": "invoice-generate-approve-form-body",
    "actor": "full_collaborator",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -7801,7 +7957,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -7880,14 +8036,14 @@
    "name": "invoice-generate-approve-receipt-float",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -7915,7 +8071,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -7995,14 +8151,14 @@
    "name": "invoice-generate-approve-receipt-float-exponent",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8030,7 +8186,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -8110,14 +8266,14 @@
    "name": "invoice-generate-approve-receipt-float-small",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8145,7 +8301,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -8225,14 +8381,14 @@
    "name": "invoice-generate-approve-receipt-float-negative-zero",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8260,7 +8416,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -8340,14 +8496,14 @@
    "name": "invoice-generate-approve-receipt-large-integer",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8375,7 +8531,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -8455,14 +8611,14 @@
    "name": "invoice-generate-approve-receipt-list",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8490,7 +8646,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -8586,14 +8742,14 @@
    "name": "invoice-generate-approve-receipt-object",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8621,7 +8777,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -8719,14 +8875,14 @@
    "name": "invoice-generate-approve-receipt-empty-list",
    "actor": "owner",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8754,7 +8910,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,
@@ -8834,7 +8990,7 @@
    "name": "invoice-generate-approve-admin-impersonating-owner",
    "actor": "admin",
    "method": "POST",
-   "path": "/payment/a1000000-0000-4000-8000-000000995050/approve",
+   "path": "/payment/a1000000-0000-4000-8000-000000995053/approve",
    "headers": {
     "X-Impersonation-Id": "$session:admin_owner",
     "User-Id": "a1000000-0000-4000-8000-000000700001"
@@ -8844,7 +9000,7 @@
     "data": {
      "msg": "payment mark as payed.",
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000995050",
+      "payment_id": "a1000000-0000-4000-8000-000000995053",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -8872,7 +9028,7 @@
        "family": null,
        "family_role": null
       },
-      "subscription_id": "a1000000-0000-4000-8000-000000995055",
+      "subscription_id": "a1000000-0000-4000-8000-000000995058",
       "instructor_id": null,
       "instructor": null,
       "supplier": null,

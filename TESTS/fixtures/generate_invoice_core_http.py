@@ -391,6 +391,14 @@ INVOICE_INDEX = [OWN, 'changes_json.sport_association']
 
 # ------------------------------------------------------ invoice-bulk/archive ---
 
+
+def multipart_file(text, boundary='invoicecoreboundary'):
+    """A multipart body whose invoice_ids is a file part: iterating the upload yields its lines as bytes."""
+    body = (f'--{boundary}\r\nContent-Disposition: form-data; name="invoice_ids"; filename="ids.txt"\r\nContent-Type: text/plain\r\n\r\n'
+            f'{text}\r\n--{boundary}--\r\n')
+    return body, f'multipart/form-data; boundary={boundary}'
+
+
 BA = '/invoice-bulk/archive'
 access('bulk-archive', BA, 'POST', 'archive.update', 'Invoice Bulk Archive', 'GET')
 add('bulk-archive-missing-key-server-error', 'owner', 'POST', BA, 500, SERVER, body={'ids': []})
@@ -406,6 +414,11 @@ add('bulk-archive-form-empty', 'owner', 'POST', BA, 200, ARCHIVED, raw_body='inv
     effect=effect('owner'))
 add('bulk-archive-form-id-server-error', 'owner', 'POST', BA, 500, SERVER, raw_body=f"invoice_ids={INVOICES['plain']['invoice_id']}",
     content_type=FORM)
+# A file part is iterated by lines (bytes): an empty file matches nothing, any line fails the uuid lookup.
+raw, kind = multipart_file('')
+add('bulk-archive-file-empty', 'owner', 'POST', BA, 200, ARCHIVED, raw_body=raw, content_type=kind, effect=effect('owner'))
+raw, kind = multipart_file(INVOICES['plain']['invoice_id'] + '\n')
+add('bulk-archive-file-line-server-error', 'owner', 'POST', BA, 500, SERVER, raw_body=raw, content_type=kind)
 add('bulk-archive-empty-list', 'owner', 'POST', BA, 200, ARCHIVED, body={'invoice_ids': [None]}, effect=effect('owner'))
 add('bulk-archive-group-hidden', 'owner', 'POST', BA, 200, ARCHIVED, headers={'X-Group-Id': GROUP},
     body={'invoice_ids': [INVOICES['plain']['invoice_id']]}, effect=effect('owner'))
@@ -424,6 +437,10 @@ add('bulk-delete-missing-key-server-error', 'owner', 'DELETE', BD, 500, SERVER, 
 add('bulk-delete-athlete-server-error', 'athlete', 'DELETE', BD, 500, SERVER, body={'invoice_ids': []})
 add('bulk-delete-malformed-id-server-error', 'owner', 'DELETE', BD, 500, SERVER, body={'invoice_ids': ['x']})
 DELETED_ALL = {'message': 'All Invoices deleted'}
+raw, kind = multipart_file('')
+add('bulk-delete-file-empty', 'owner', 'DELETE', BD, 200, DELETED_ALL, raw_body=raw, content_type=kind, effect=effect('owner'))
+raw, kind = multipart_file(INVOICES['plain']['invoice_id'])
+add('bulk-delete-file-line-server-error', 'owner', 'DELETE', BD, 500, SERVER, raw_body=raw, content_type=kind)
 add('bulk-delete-nothing-matches', 'owner', 'DELETE', BD, 200, DELETED_ALL,
     body={'invoice_ids': [INVOICES['bulk_abroad']['invoice_id'], UNKNOWN]}, effect=effect('owner'))
 # The collector deletes each model's rows in descending key order.

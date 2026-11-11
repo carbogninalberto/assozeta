@@ -289,12 +289,13 @@ func floatFee(value float64) (invoiceFee, error) {
 // zero, the response half to even.
 func floatFeeAny(value float64) (invoiceFee, error) {
 	if math.IsNaN(value) || math.IsInf(value, 0) {
-		return invoiceFee{}, domain.ErrPaymentStateNotPorted
+		// The invoice insert rejects the value (a 500 inside the view's transaction).
+		return invoiceFee{}, domain.ErrPaymentStateServer
 	}
 	stored := dto.DecimalFromFloat9(value)
 	rat, ok := new(big.Rat).SetString(stored)
 	if !ok {
-		return invoiceFee{}, domain.ErrPaymentStateNotPorted
+		return invoiceFee{}, domain.ErrPaymentStateServer
 	}
 	scaled := new(big.Rat).Mul(rat, big.NewRat(1000, 1))
 	tie := scaled.IsInt() && new(big.Int).Rem(new(big.Int).Abs(scaled.Num()), big.NewInt(10)).Int64() == 5

@@ -1753,6 +1753,91 @@
    }
   },
   {
+   "name": "payment-export-search-cyrillic",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?query[generalSearch]=%D0%98%D0%B2%D0%B0%D0%BD",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads own.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-search-greek-final-sigma",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?query[generalSearch]=%CE%91%CE%A3%20%CE%A3%CE%91",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads own.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-search-dotted-capital-i",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?query[generalSearch]=%C4%B0sta",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads own.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-search-malformed-byte",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?query[generalSearch]=a%FFb",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\nMario Rossi,Pagato,cash,2024-02-01,2024-02-10,7,Iscrizione,,Quote sociali,Cassa sede,Entrata,,50.00,\"riga uno\nriga due\"\r\nArrotondamento,Pagato,pos,2024-02-28,2024-03-01,,Altro,,-,\"Banca, Intesa\",Entrata,,1.00,\r\nMario Rossi,In Attesa,transfer,2024-03-02,2024-03-05,,Corso,,Quote sociali,-,Entrata,Corso nuoto,120.00,\r\nMario Rossi,Pagato,pos,2024-04-01,2024-04-15,,Corso,,-,\"Banca, Intesa\",Entrata,Corso vecchio,40.00,\r\nMario Rossi,In Attesa,online,2024-05-02,2024-05-20,,Corso,,-,-,Entrata,Carnet JSON,30.00,\r\nNone Verdi,Pagato,-,2024-06-01,2024-06-03,,Altro,\"Quote sociali,Globale\",-,Cassa sede,Entrata,,15.50,\"nota, contanti\"\r\nChiusura,Pagato,cash,2024-06-20,2024-07-01,,Altro,,-,Cassa sede,Entrata,,3.00,\r\n\"Palestre \"\"Riunite\"\"\",Pagato,transfer,2024-07-01,2024-07-02,,Quote sociali,,Quote sociali,\"Banca, Intesa\",Uscita,,200.00,\r\nGiulia Bianchi,Pagato,cash,2024-08-15,2024-08-20,,Altro,,-,Cassa sede,Uscita,,60.00,\r\nGiroconto cassa,Pagato,-,2024-09-01,2024-09-01,,Giroconto,,-,Cassa sede,Uscita,7,25.00,\r\nMario Rossi,In Attesa,-,2024-10-01,2024-10-05,,Iscrizione,,-,-,Entrata,,12.00,\r\nQuota gruppo,Pagato,-,2024-10-02,2024-10-06,,Altro,,-,Cassa sede,Entrata,,8.25,\r\nCentesimi,Pagato,cash,2025-01-05,2025-01-10,,Altro,,-,Cassa sede,Entrata,,0.10,\r\nSenza conto,Pagato,-,2025-01-06,2025-01-20,,Altro,,-,-,Entrata,,4.00,\r\nQuota finanziaria,In Attesa,-,2025-02-01,,,Altro,,-,-,Entrata,,10.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads own.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-search-truncated-sequence",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/list/export?query[generalSearch]=a%E2%82b",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\nMario Rossi,Pagato,cash,2024-02-01,2024-02-10,7,Iscrizione,,Quote sociali,Cassa sede,Entrata,,50.00,\"riga uno\nriga due\"\r\nArrotondamento,Pagato,pos,2024-02-28,2024-03-01,,Altro,,-,\"Banca, Intesa\",Entrata,,1.00,\r\nMario Rossi,In Attesa,transfer,2024-03-02,2024-03-05,,Corso,,Quote sociali,-,Entrata,Corso nuoto,120.00,\r\nMario Rossi,Pagato,pos,2024-04-01,2024-04-15,,Corso,,-,\"Banca, Intesa\",Entrata,Corso vecchio,40.00,\r\nMario Rossi,In Attesa,online,2024-05-02,2024-05-20,,Corso,,-,-,Entrata,Carnet JSON,30.00,\r\nNone Verdi,Pagato,-,2024-06-01,2024-06-03,,Altro,\"Quote sociali,Globale\",-,Cassa sede,Entrata,,15.50,\"nota, contanti\"\r\nChiusura,Pagato,cash,2024-06-20,2024-07-01,,Altro,,-,Cassa sede,Entrata,,3.00,\r\n\"Palestre \"\"Riunite\"\"\",Pagato,transfer,2024-07-01,2024-07-02,,Quote sociali,,Quote sociali,\"Banca, Intesa\",Uscita,,200.00,\r\nGiulia Bianchi,Pagato,cash,2024-08-15,2024-08-20,,Altro,,-,Cassa sede,Uscita,,60.00,\r\nGiroconto cassa,Pagato,-,2024-09-01,2024-09-01,,Giroconto,,-,Cassa sede,Uscita,7,25.00,\r\nMario Rossi,In Attesa,-,2024-10-01,2024-10-05,,Iscrizione,,-,-,Entrata,,12.00,\r\nQuota gruppo,Pagato,-,2024-10-02,2024-10-06,,Altro,,-,Cassa sede,Entrata,,8.25,\r\nCentesimi,Pagato,cash,2025-01-05,2025-01-10,,Altro,,-,Cassa sede,Entrata,,0.10,\r\nSenza conto,Pagato,-,2025-01-06,2025-01-20,,Altro,,-,-,Entrata,,4.00,\r\nQuota finanziaria,In Attesa,-,2025-02-01,,,Altro,,-,-,Entrata,,10.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads own.csv"
+    }
+   }
+  },
+  {
    "name": "payment-export-search-empty-ignored",
    "actor": "owner",
    "method": "GET",
