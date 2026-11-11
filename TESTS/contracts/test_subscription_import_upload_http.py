@@ -1,5 +1,6 @@
 """Independently authored subscription/import/upload HTTP expectations; no Django imports."""
 from pathlib import Path
+import re
 
 from TESTS.contracts import http_family as family
 from TESTS.contracts.http_family import ResponseFailure, require  # noqa: F401  (runner interface)
@@ -23,6 +24,8 @@ def _remember(case, expected, actual):
 def _placed(value):
     """value with each '$document:<label>' replaced by the Document a kept upload created."""
     if isinstance(value, str):
+        # '$pad:<n>' is n characters of content (a request above the in-memory upload size).
+        value = re.sub(r'\$pad:(\d+)', lambda match: 'x' * int(match.group(1)), value)
         for label, key in DOCUMENTS.items():
             value = value.replace(f'$document:{label}', key)
         require('$document:' not in value, 'fixture.document-not-kept')

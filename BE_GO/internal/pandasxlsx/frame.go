@@ -35,6 +35,8 @@ type Frame struct {
 	// Labels is columns.tolist().
 	Labels []Value
 	Rows   [][]Value
+	// Index is the class of the column Index the labels make.
+	Index IndexClass
 }
 
 // TextLabels reports whether every column label is a str.
@@ -209,11 +211,11 @@ func build(rows [][]cell, text func(column string) bool) (*Frame, error) {
 		}
 		rows[index] = row
 	}
-	labels, err := columnLabels(rows[0])
+	labels, class, err := columnLabels(rows[0])
 	if err != nil {
 		return nil, err
 	}
-	frame := &Frame{Labels: labels, Columns: make([]string, width), Rows: make([][]Value, len(rows)-1)}
+	frame := &Frame{Labels: labels, Index: class, Columns: make([]string, width), Rows: make([][]Value, len(rows)-1)}
 	for index, label := range labels {
 		frame.Columns[index] = label.Str()
 	}
@@ -607,7 +609,7 @@ func labelKey(value cell) string {
 // Index (float64 when one is a float or nan), booleans only a bool one,
 // datetimes (or timedeltas) and nan only a DatetimeIndex (TimedeltaIndex)
 // with NaT, anything else keeps its objects.
-func columnLabels(header []cell) ([]Value, error) {
+func columnLabels(header []cell) ([]Value, IndexClass, error) {
 	columns := append([]cell(nil), header...)
 	unnamed := map[int]bool{}
 	for index, name := range columns {
@@ -616,7 +618,7 @@ func columnLabels(header []cell) ([]Value, error) {
 			columns[index] = cell{kind: cellString, s: "Unnamed: " + strconv.Itoa(index)}
 			unnamed[index] = true
 		case name.kind == cellInt && name.n != nil:
-			return nil, ErrUnsupported // a label outside int64
+			return nil, ObjectIndex, ErrUnsupported // a label outside int64
 		}
 	}
 	order := make([]int, 0, len(columns))
@@ -657,8 +659,9 @@ func columnLabels(header []cell) ([]Value, error) {
 	}
 	labels := make([]Value, len(columns))
 	numbers, booleans, fractional := true, true, false
-	datetimes, timedeltas, present := true, true, 0
+	datetimes, timedeltas, present, anyBoolean := true, true, 0, false
 	for index, column := range columns {
+		anyBoolean = anyBoolean || column.kind == cellBool
 		labels[index] = column.value()
 		numbers = numbers && (column.kind == cellInt || column.kind == cellFloat || column.kind == cellBool || column.kind == cellNaN)
 		booleans = booleans && column.kind == cellBool
@@ -690,10 +693,23 @@ func columnLabels(header []cell) ([]Value, error) {
 	for _, label := range labels {
 		if label.Kind == Float {
 			if floats[label.F] {
-				return nil, ErrUnsupported
+				return nil, ObjectIndex, ErrUnsupported
 			}
 			floats[label.F] = true
 		}
 	}
-	return labels, nil
+	class := ObjectIndex
+	switch {
+	case booleans:
+		class = BoolIndex
+	case numbers && !anyBoolean && fractional:
+		class = FloatIndex
+	case numbers && !anyBoolean:
+		class = IntIndex
+	case present > 0 && datetimes:
+		class = DatetimeIndex
+	case present > 0 && timedeltas:
+		class = TimedeltaIndex
+	}
+	return labels, class, nil
 }

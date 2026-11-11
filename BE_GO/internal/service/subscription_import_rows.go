@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"math"
 	"regexp"
 	"strconv"
@@ -63,10 +64,10 @@ func subscriptionImportTextColumns(mapping any) map[string]bool {
 // subscriptionImportDate is import_date(text) for a value that is no date
 // cell: dateutil.parser.parse(text, dayfirst=...) with the day first unless
 // the text starts with the year (dto.PersonDateText), at now. parsed is false
-// where parse raises (import_date answers None); a year before 1000 and the
-// texts internal/pydateutil refuses are not ported.
+// where parse raises (import_date answers None); the texts
+// internal/pydateutil refuses are not ported.
 func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed bool, err error) {
-	date, result, _ := dto.PersonDateText(text, now)
+	date, result := dto.PersonDateAnyYear(text, now)
 	switch result {
 	case dto.DateutilParsed:
 		return date, true, nil
@@ -84,8 +85,22 @@ type subscriptionImportUnstorable struct {
 	truthy bool
 }
 
-// subscriptionImportRefused is a cell whose Python text is not reproduced.
-type subscriptionImportRefused struct{}
+// subscriptionImportDayMonthYear is strftime('%d/%m/%Y').
+func subscriptionImportDayMonthYear(date time.Time) string {
+	return date.Format("02/01/") + dto.LibcYear(date.Year())
+}
+
+// subscriptionImportDateText is import_date(value) for a true value: a date
+// cell is formatted as it is, anything else is its str() read by dateutil.
+func subscriptionImportDateText(value any, text string, now time.Time) (formatted string, date time.Time, parsed bool, err error) {
+	if moment, cell := value.(subscriptionImportMoment); cell {
+		return subscriptionImportDayMonthYear(moment.at), moment.at, true, nil
+	}
+	if date, parsed, err = subscriptionImportDate(text, now); err != nil || !parsed {
+		return "", time.Time{}, false, err
+	}
+	return subscriptionImportDayMonthYear(date), date, true, nil
+}
 
 // subscriptionImportCell is the Python value of a workbook cell after
 // process_row_value's strip, 'nan' check, NaT check (an empty cell of a
@@ -110,14 +125,8 @@ func subscriptionImportCell(value pandasxlsx.Value) any {
 	case pandasxlsx.Bool, pandasxlsx.NumpyBool:
 		return value.B
 	case pandasxlsx.Time:
-		if value.T.Year() < 1000 {
-			return subscriptionImportRefused{} // strftime's year width
-		}
 		return subscriptionImportMoment{text: value.TimeText(), at: value.T}
 	case pandasxlsx.Date:
-		if value.T.Year() < 1000 {
-			return subscriptionImportRefused{}
-		}
 		return subscriptionImportMoment{text: value.Str(), at: value.T}
 	case pandasxlsx.TimeOfDay, pandasxlsx.Timedelta, pandasxlsx.PyTimedelta:
 		return subscriptionImportUnstorable{text: value.Str(), truthy: value.Truthy()}
@@ -201,12 +210,12 @@ func subscriptionImportUnique(object domain.RequestObject) domain.RequestObject 
 // subscriptionImportPlan is process_import_rows over the frame: the
 // certificates in the order they are created and the drafts bulk_create
 // stores. An exception rolls the rows back: the effects are Failed.
-func (s *SubscriptionImportUpload) subscriptionImportPlan(names []string, rows [][]any, data domain.RequestObject) (domain.SubscriptionImportEffects, error) {
+//
+// lookup is `column in row.keys()` and the position row[column] reads
+// (pandasxlsx.Frame.Lookup).
+func (s *SubscriptionImportUpload) subscriptionImportPlan(lookup func(column any) (position int, found, raises bool, err error), rows [][]any,
+	data domain.RequestObject) (domain.SubscriptionImportEffects, error) {
 	effects := domain.SubscriptionImportEffects{StatusID: s.uploads.ids()}
-	columns := make(map[string]int, len(names))
-	for index, name := range names {
-		columns[name] = index
-	}
 	mapping, _ := data.Lookup("map")
 	defaults, hasDefaults := data.Lookup("default")
 	static, hasStatic := data.Lookup("unmapped_static")
@@ -230,17 +239,18 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(names []string, rows [
 			var value any
 			switch column := entry.Value.(type) {
 			case nil:
-			case string:
-				if index, found := columns[column]; found {
-					value = cells[index]
-					if _, refused := value.(subscriptionImportRefused); refused {
-						return effects, ErrSubscriptionImportNotPorted
-					}
-				}
 			case domain.RequestObject, []any:
 				return failed() // unhashable in row.keys()
 			default:
-				// A number or a boolean is no column name.
+				index, found, raises, err := lookup(column)
+				switch {
+				case err != nil:
+					return effects, errors.Join(ErrSubscriptionImportNotPorted, err)
+				case raises:
+					return failed() // a position past the row's end
+				case found:
+					value = cells[index]
+				}
 			}
 			switch field {
 			case "membership_start_date", "membership_end_date", "born_date":
@@ -249,13 +259,13 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(names []string, rows [
 					return effects, err
 				}
 				if truthy {
-					date, parsed, err := subscriptionImportDate(text, s.uploads.now())
+					formatted, _, parsed, err := subscriptionImportDateText(value, text, s.uploads.now())
 					if err != nil {
 						return effects, err
 					}
 					value = nil
 					if parsed {
-						value = date.Format("02/01/2006")
+						value = formatted
 					}
 				}
 			case "sex":
@@ -269,21 +279,24 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(names []string, rows [
 				}
 				if truthy {
 					certificate := domain.SubscriptionImportCertificate{ID: s.uploads.ids()}
-					date, parsed, err := subscriptionImportDate(text, s.uploads.now())
+					formatted, date, parsed, err := subscriptionImportDateText(value, text, s.uploads.now())
 					if err != nil {
 						return effects, err
 					}
-					if parsed {
+					// strptime('%d/%m/%Y') takes the text back only with a
+					// four-digit year: otherwise the certificate is deleted.
+					if parsed && len(formatted) == len("02/01/2006") {
+						date = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 						certificate.Expiration = &date
 						row.medical = domain.RequestObject{{Name: "medical_id", Value: certificate.ID}, {Name: "filename", Value: nil},
-							{Name: "certificate_expring_date", Value: date.Format("02/01/2006")}}
+							{Name: "certificate_expring_date", Value: formatted}}
 					}
 					effects.Certificates = append(effects.Certificates, certificate)
 				}
 			}
 			if moment, cell := value.(subscriptionImportMoment); cell {
 				// stored_value: a date cell is stored as day/month/year.
-				value = moment.at.Format("02/01/2006")
+				value = subscriptionImportDayMonthYear(moment.at)
 			}
 			target := &row.associate
 			if strings.Contains(entry.Name, "tutore") {
