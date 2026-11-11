@@ -767,8 +767,8 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### document-render.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` with a stored president signature (PyMuPDF draws it on the form); the form without a signature and the regions without a form are ported (v2-documents-rest) | service/document_render.go, `medicalJob` (`ErrDocumentRenderNotPorted`) | A | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
-| document/* | filename with C0/DEL or `email.header` splitting chars and no line break (CR/LF ported in v2-documents-3) | service/document_render.go, `Render` | B (legacy: yes) | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
+| GET document/medical-appointment/<uid> | region `agonistica-piemonte-biella` with a stored president signature (PyMuPDF draws it on the form); the form without a signature and the regions without a form are ported (v2-documents-rest) | service/document_render.go, `medicalJob` (`ErrDocumentRenderNotPorted`) | A. Stays refused (taildocs): `fill_pdf_fields` inserts the image into the form with PyMuPDF (`first_page.insert_image`) and rewrites the whole file; the answer is those bytes (object numbering, stream compression, image recompression), and there is no Go PDF editor that writes them. The Go PDF code (`BE_GO/internal/pdfexport`) only builds new reportlab documents | The add-appointment form offers `agonistica-piemonte-biella` (`association/Members/detail/sections/modals/AddMedicalAppointment.svelte:30`, select :160-167). The route is requested by the printing call to `CURRENT_HOST` (`application/printing_tasks.py:47`), not by the browser, so it hits Go only when `CURRENT_HOST` points at the Go API. |
+| document/* | filename with C0/DEL or `email.header` splitting chars and no line break (CR/LF ported in v2-documents-3) | service/document_render.go, `Render` | B (legacy: yes). Stays refused (taildocs): probed on Django, a control character other than tab makes the ASGI server drop the connection (`RemoteDisconnected`), so there is no HTTP answer to reproduce; a tab is a plain header value and is served | Filenames derive from member/association names; control characters need pasted or imported data. Cost: cheap-medium. |
 | POST document/template/<uid> | body not none/JSON object/urlencoded, malformed JSON, non-object `additionalData`, `subscription` not str/int/bool/null | `planTemplateData` | ported (v2-documents-3) | UI sends `{template, additionalData: <object>}` as JSON (`association/archive/modals/GenerateFromTemplateModal.svelte:31-36`). Cost: cheap. |
 | GET document/invoice/<uid> | multipart/other body with falsy query flag | `documentRenderBody` | ported (v2-documents-3) | Called by the printing task with GET and no body (`application/printing_tasks.py:12`). |
 | GET document/compensation/<uid> | hours whose instructor's owner has no live association | service/document_render.go, `print` | ported (v2-documents-3) | Needs a soft-deleted owner association. legacy: no. Cost: medium. |
@@ -843,8 +843,8 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### folders.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST folders/add, PATCH folders/<pk>/update | uploaded file as `parent`/`sport_association` | `BE_GO/internal/dto/folder_writes.go:83`, `ErrFolderWriteNotPorted` | B | `routes/association/archive/modals/FolderModal.svelte:29,61` send JSON. cheap. |
-| same | float pk overflowing to infinity | `dto/folder_writes.go:120` | B | Django is 500 too. cheap. |
+| POST folders/add, PATCH folders/<pk>/update | uploaded file as `parent`/`sport_association` | `BE_GO/internal/dto/folder_writes.go:83`, `ErrFolderWriteNotPorted` | B (**ported** in taildocs: `parent` answers `Incorrect type. Expected pk value, received InMemoryUploadedFile.`, `sport_association` the invalid-UUID text with the file name; a request over 2621440 bytes keeps the file on disk and stays refused) | `routes/association/archive/modals/FolderModal.svelte:29,61` send JSON. cheap. |
+| same | float pk overflowing to infinity | `dto/folder_writes.go:120` | B (not a gap, case added in taildocs) | Django is 500 too and Go answers the same page. cheap. |
 
 ### instance-admin.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1106,8 +1106,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### personas-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET personas/list etc. | `query[generalSearch]` with chars ≥U+0250 / U+0130, or malformed UTF-8 | `service/personas_reads.go:166,170` | B | The search box can send them (Cyrillic, CJK, Greek names), but it is unusual for the user base. legacy: n/a. Cost: medium (Unicode case table). |
-| GET personas/list | `sort[field]` relation paths / reverse accessors | personas reads ordering | B | UI sortable fields are `last_name`, `tutors` (mapped to `tutors_count`, `service/personas_reads.go:122`) and `age` (`routes/association/personas/PersonasList.svelte:213-264`), all handled. |
+| GET personas/list etc. | `query[generalSearch]` with chars ≥U+0250 / U+0130, or malformed UTF-8 | `service/personas_reads.go:166,170` | B (**ported** in taildocs: `dto.PythonLower` (U+0130, final sigma), `dto.PythonUTF8Replace` (maximal-subpart replacement as Python decodes the query), Unicode `\d` in the date patterns; goldens from Python 3.13, Go's tables are Unicode 15.0 against 15.1, which adds only unnamed CJK ideographs) | The search box can send them (Cyrillic, CJK, Greek names), but it is unusual for the user base. legacy: n/a. Cost: medium (Unicode case table). |
+| GET personas/list | `sort[field]` relation paths / reverse accessors | personas reads ordering | B. Stays refused (taildocs): `order_by` on a relation or reverse accessor joins it, repeats a row once per related row and orders the ties as the Postgres plan returns them, so there is no fixed result for Go to match | UI sortable fields are `last_name`, `tutors` (mapped to `tutors_count`, `service/personas_reads.go:122`) and `age` (`routes/association/personas/PersonasList.svelte:213-264`), all handled. |
 
 ### payment-state.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1135,8 +1135,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | POST personas/add, PATCH personas/<pk>/update | `picture_path` containing `base64` | `service/personas_picture.go` | ported | Ported in v2-misc-3 and reworked with Django (`personas-writes.md`, `secoauth-versioned-r1`): the object goes under the persona's own id after validation. A list or object value and storage failures other than a refused ACL stay refused (B). |
 | same | tutor `is_primary` not bool, numeric tutor ids | `service/personas_writes.go` (`personaPrimary`, `handleTutors`) | ported (rest-prof) | Accepted flags keep the raw audit text, others are the 500 after the earlier writes; integers and booleans read as `UUID(int=n)` (`personas-writes.md`). |
-| same | non-ASCII-digit born_date, non-canonical X-Group-Id | `service/personas_writes.go` | B | The UI sends canonical group ids and ASCII dates (`associate-form.svelte:222-230,708-724`). |
-| DELETE personas-subscriptions/<pk>/list | found subscription | `service/personas_writes.go:224-228` | B | Route method not called by the UI (GET list only). |
+| same | non-ASCII-digit born_date, non-canonical X-Group-Id | `service/personas_writes.go` | B (**ported** in taildocs: the day's second digit and the year read any script as `strptime` does; a header in any spelling `UUID()` reads is stored as the uuid, the create entry and the 201 body show it as sent; an unknown group or a header that is not a UUID is the 500 after the writes already made) | The UI sends canonical group ids and ASCII dates (`associate-form.svelte:222-230,708-724`). |
+| DELETE personas-subscriptions/<pk>/list | found subscription | `service/personas_writes.go:224-228` | B (**ported** in taildocs: the soft delete runs `Subscription.save()` with its season fill and the audit entry, 204; cases in router-persona-subscriptions) | Route method not called by the UI (GET list only). |
 
 ### profile-template.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1150,7 +1150,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### profile-settings.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST profile/settings, PATCH profile/integrations | multipart with an uploaded file | `service/profile_settings.go:161,426` | B | The UI sends JSON. |
+| POST profile/settings, PATCH profile/integrations | multipart with an uploaded file | `service/profile_settings.go:161,426` | B (**ported** in taildocs: the typed settings reject the file like another object, a file under an ignored key saves the user and then fails on the card as Django does; `review_url` stores the file name and the answer lists the file lines, `review_url_enabled` keeps the audit entry and answers the 500 page; a request over 2621440 bytes stays refused) | The UI sends JSON. |
 
 ### router-stock.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1349,7 +1349,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST printing/generate | `format: 'pdf'` | `service/printing_generate.go:218-219`, `ErrPrintingGenerateNotPorted` | **A** (ported in v2-pdf) | `components/modals/PrintingModal.svelte:80` defaults `format: 'pdf'` and POSTs it at `:110`. Django `printing_views.py:22` (reportlab) |
-| GET instructor/report | dates other than `D/M/YYYY` | xlsx/instructor report service | B | UI sends `DD/MM/YYYY` (`course/instructor/modals/ReportModal.svelte:10-22,52`). legacy: no |
+| GET instructor/report | dates other than `D/M/YYYY` | xlsx/instructor report service | B (**ported** in taildocs: a text with a zone is the 500 page (`localize` of an aware value), years 1-999 are plain dates, the first minutes of year 1 overflow to a 500; only texts beyond the parser port's limits stay refused) | UI sends `DD/MM/YYYY` (`course/instructor/modals/ReportModal.svelte:10-22,52`). legacy: no |
 
 ### websockets.md
 | route | refusal condition | class | notes |

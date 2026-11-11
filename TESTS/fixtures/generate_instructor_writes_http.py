@@ -496,6 +496,12 @@ add('report-missing-end', 'owner', REPORT + q(start_date='14/09/2026'), 400, {'m
 add('report-missing-start', 'owner', REPORT + q(end_date='14/09/2026'), 400, {'msg': 'Entrambe le date sono richieste.'})
 add('report-nonexistent-date', 'owner', RQ('31/02/2026', '30/09/2026'), 500, SERVER)
 add('report-text-date', 'owner', RQ('ieri', '30/09/2026'), 500, SERVER)
+# A zone in the text is kept by the view and get_report's localize raises; years before 1000 are plain dates.
+add('report-zone-offset-server-error', 'owner', RQ('14/09/2026 10:00 +02:00', '30/09/2026'), 500, SERVER)
+add('report-zone-utc-end-server-error', 'owner', RQ('14/09/2026', '30/09/2026 12:00 UTC'), 500, SERVER)
+add('report-early-year', 'owner', RQ('01/01/0900', '30/09/2026'), 200, report(OWN, '01/01/0900', '30/09/2026'))
+add('report-year-one-second-day', 'owner', RQ('02/01/0001', '30/09/2026'), 200, report(OWN, '02/01/0001', '30/09/2026'))
+add('report-year-one-first-day-server-error', 'owner', RQ('01/01/0001', '30/09/2026'), 500, SERVER)
 add('report-empty-date', 'owner', RQ('', '30/09/2026'), 500, SERVER)
 add('report-athlete-denied', 'athlete', REPORT, 403, {'detail': 'User is not a sport association'})
 add('report-owner-without-association', 'owner_without_association', RQ('14/09/2026', '30/09/2026'), 500, SERVER)

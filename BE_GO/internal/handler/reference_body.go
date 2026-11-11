@@ -134,9 +134,17 @@ func readReferenceBodyJSON(r *http.Request, parseJSON func([]byte) (any, error))
 				return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 			}
 			if part.FileName() != "" {
-				var size int64
-				size, err = io.Copy(io.Discard, part)
-				put(&files, part.FormName(), domain.RequestUpload{Name: part.FileName(), Size: size})
+				// The first chunk (64 KiB, Django's File.chunks size) is kept for the consumers that read the lines.
+				head, _ := io.ReadAll(io.LimitReader(part, domain.RequestUploadHead+1))
+				size := int64(len(head))
+				var rest int64
+				rest, err = io.Copy(io.Discard, part)
+				size += rest
+				upload := domain.RequestUpload{Name: part.FileName(), Size: size, Temp: r.ContentLength > domain.RequestUploadMemory}
+				if size <= domain.RequestUploadHead {
+					upload.Content, upload.Whole = string(head), true
+				}
+				put(&files, part.FormName(), upload)
 			} else {
 				var value []byte
 				value, err = io.ReadAll(part)

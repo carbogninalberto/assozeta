@@ -49,11 +49,26 @@ func TestPersonaSearchLatinLettersAndNumbers(t *testing.T) {
 	}
 }
 
-func TestPersonaSearchRefusals(t *testing.T) {
-	for _, raw := range []string{"Ωmega", "İstanbul", "a\xffb", "名前"} {
-		if _, err := personaSearch(raw, 26); !errors.Is(err, ErrPersonaNotPorted) {
-			t.Fatalf("%q: %v", raw, err)
+func TestPersonaSearchOtherScripts(t *testing.T) {
+	// Expected words are re.findall(r'\w+', text.strip().lower()) of Python 3.13.
+	for raw, want := range map[string][]string{
+		"Ωmega":     {"%ωmega%"},
+		"İstanbul":  {"%i%", "%stanbul%"},
+		"ΑΣ ΣΑΣ.":   {"%ας%", "%σας%"},
+		"ΣΑΣ·Α":     {"%σασ%", "%α%"},
+		"名前 ΜΑΡΙΑΣ": {"%名前%", "%μαριας%"},
+		"a\xffb":    {"%a%", "%b%"},
+		"\u0663/\u0660\u0662/\u0662\u0660\u0661\u0660": {"%٣%", "%٠٢%", "%٢٠١٠%"},
+	} {
+		search, err := personaSearch(raw, 26)
+		if err != nil || !reflect.DeepEqual(search.Words, want) {
+			t.Fatalf("%q: %q %v", raw, search.Words, err)
 		}
+	}
+	// A numeric word of Unicode digits is a date component like an ASCII one.
+	search, err := personaSearch("\u0663/\u0660\u0662/\u0662\u0660\u0661\u0660", 26)
+	if err != nil || len(search.Dates[0]) != 10 || search.Dates[0][1] != "%٣.٠٢.٢٠١٠%" && search.Dates[0][0] == "" {
+		t.Fatalf("%q %v", search.Dates, err)
 	}
 }
 

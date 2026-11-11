@@ -282,6 +282,32 @@ add('post-form-invalid', 'owner', SETTINGS, 400, {'dark_mode': ['Must be a valid
     method='POST', raw_body='balance_sheet_year=&dark_mode=maybe&subscription_end_day=&default_payment_category=',
     content_type='application/x-www-form-urlencoded')
 
+BOUNDARY = 'profilesettingsboundary'
+MULTIPART = f'multipart/form-data; boundary={BOUNDARY}'
+
+
+def multipart(fields, files=()):
+    parts = [f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n' for key, value in fields]
+    parts += [f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="{key}"; filename="{filename}"\r\nContent-Type: text/plain\r\n\r\n'
+              f'{content}\r\n' for key, filename, content in files]
+    return ''.join(parts) + f'--{BOUNDARY}--\r\n'
+
+
+# A file part is the QueryDict value (an InMemoryUploadedFile): str() is its name, every typed field rejects it.
+add('post-multipart-file-fields-invalid', 'owner', SETTINGS, 400, {
+    'dark_mode': ['Must be a valid boolean.'], 'balance_sheet_year': ['"nota.txt" is not a valid choice.'],
+    'membership_starting_number': ['A valid integer is required.'], 'default_membership_type': ['Not a valid string.'],
+    'default_payment_category': ['“nota.txt” is not a valid UUID.'],
+    'default_payment_category_courses': ['“nota.txt” is not a valid UUID.']}, method='POST',
+    raw_body=multipart([('auto_archive', 'true')], [(key, 'nota.txt', 'ciao') for key in (
+        'dark_mode', 'balance_sheet_year', 'membership_starting_number', 'default_membership_type', 'default_payment_category',
+        'default_payment_category_courses')]), content_type=MULTIPART)
+# A file under a key the serializer ignores: the user is saved, then the card lookup fails on the file (500).
+add('post-multipart-file-saves-user-then-server-error', 'owner', SETTINGS, 500, SERVER, method='POST',
+    raw_body=multipart([(key, value) for key, value in FORM if key != 'membership_card_configuration'],
+                       [('membership_card_configuration', 'nota.txt', 'ciao')]), content_type=MULTIPART,
+    effect={'user': saved('owner', form_stored)})
+
 # --- profile/integrations ---------------------------------------------------------------
 add('integrations-anonymous', 'anonymous', INTEGRATIONS, 401, ANONYMOUS, method='PATCH', body={})
 add('integrations-admin-without-session', 'admin', INTEGRATIONS, 403, ADMIN)
@@ -321,6 +347,24 @@ add('integrations-form-patch', 'owner', INTEGRATIONS, 200, {'review_url': 'modul
 add('integrations-null-url', 'full_collaborator', INTEGRATIONS, 200, {'review_url': None, 'review_url_enabled': False}, method='PATCH',
     body={'review_url': None, 'review_url_enabled': False}, effect={'association': review_saved('full_collaborator', None, False)})
 add('integrations-get-after-patch', 'owner', INTEGRATIONS, 200, dict(REVIEW))
+
+# A file part under another key changes nothing; as review_url it is stored by name and the echo fails to render.
+add('integrations-multipart-unrelated-file', 'owner', INTEGRATIONS, 200, dict(REVIEW), method='PATCH',
+    raw_body=multipart([], [('other', 'nota.txt', 'ciao')]), content_type=MULTIPART,
+    effect={'association': review_saved('owner', REVIEW['review_url'], REVIEW['review_url_enabled'])})
+add('integrations-multipart-file-url-echoes-lines', 'owner', INTEGRATIONS, 200, {'review_url': ['ciao'], 'review_url_enabled': False},
+    method='PATCH', raw_body=multipart([], [('review_url', 'nota.txt', 'ciao')]), content_type=MULTIPART,
+    effect={'association': review_saved('owner', 'nota.txt', REVIEW['review_url_enabled'])})
+add('integrations-multipart-file-url-several-lines', 'owner', INTEGRATIONS, 200,
+    {'review_url': ['uno\r\n', 'due\r', 'tre\n', 'quattro'], 'review_url_enabled': False}, method='PATCH',
+    raw_body=multipart([], [('review_url', 'righe.txt', 'uno\r\ndue\rtre\nquattro')]), content_type=MULTIPART,
+    effect={'association': review_saved('owner', 'righe.txt', REVIEW['review_url_enabled'])})
+add('integrations-multipart-empty-file-url', 'owner', INTEGRATIONS, 200, {'review_url': [], 'review_url_enabled': False}, method='PATCH',
+    raw_body=multipart([], [('review_url', 'vuoto.txt', '')]), content_type=MULTIPART,
+    effect={'association': review_saved('owner', 'vuoto.txt', REVIEW['review_url_enabled'])})
+add('integrations-multipart-file-enabled-keeps-audit', 'owner', INTEGRATIONS, 500, SERVER, method='PATCH',
+    raw_body=multipart([], [('review_url_enabled', 'nota.txt', 'ciao')]), content_type=MULTIPART,
+    effect={'association': review_saved('owner', REVIEW['review_url'], 'nota.txt', stored=False)})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Profile settings and integrations authored sequence with audit effects',

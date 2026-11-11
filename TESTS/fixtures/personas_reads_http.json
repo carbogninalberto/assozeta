@@ -143,7 +143,7 @@
    "family_role": null,
    "id_number": null,
    "migrated": false,
-   "notes": null,
+   "notes": "ελένη σας",
    "user": null,
    "association": "a1000000-0000-4000-8000-000000701001",
    "group": null,
@@ -652,7 +652,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -851,7 +851,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -1053,7 +1053,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -2256,7 +2256,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -2377,7 +2377,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -2481,7 +2481,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -2602,7 +2602,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -2709,7 +2709,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -2830,7 +2830,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -3476,7 +3476,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -3647,7 +3647,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -3745,7 +3745,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -3843,7 +3843,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -4335,7 +4335,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -4526,7 +4526,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -4774,7 +4774,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -4945,7 +4945,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -5071,7 +5071,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -5270,7 +5270,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -5460,7 +5460,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -5682,7 +5682,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -5796,7 +5796,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -6023,7 +6023,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -6259,7 +6259,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -6458,7 +6458,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -6620,7 +6620,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -6856,7 +6856,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -7028,7 +7028,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -7240,7 +7240,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -7491,7 +7491,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -7597,7 +7597,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -7796,7 +7796,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -7995,7 +7995,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -8373,7 +8373,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -8548,7 +8548,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -8758,7 +8758,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -8933,7 +8933,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -9312,7 +9312,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -9530,7 +9530,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -9729,7 +9729,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -9928,7 +9928,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -10127,7 +10127,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -10412,7 +10412,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -10456,7 +10456,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -10655,7 +10655,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -11156,7 +11156,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -11355,7 +11355,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -11638,6 +11638,280 @@
    "ordered": true
   },
   {
+   "name": "personas-reads-list-search-greek-lowercase",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?query[generalSearch]=%CE%B5%CE%BB%CE%AD%CE%BD%CE%B7",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeae",
+      "first_name": "Carla",
+      "last_name": "Conti",
+      "born_date": "1982-02-02",
+      "is_tutor": true,
+      "age": {
+       "$age": "1982-02-02"
+      },
+      "notes": "ελένη σας",
+      "tutors": [
+       {
+        "tutor": {
+         "first_name": "Elena",
+         "last_name": "Ferri",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeba"
+        }
+       }
+      ],
+      "picture_path": null
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeae"
+     ]
+    }
+   },
+   "ordered": true
+  },
+  {
+   "name": "personas-reads-list-search-greek-final-sigma",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?query[generalSearch]=%CE%A3%CE%91%CE%A3",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeae",
+      "first_name": "Carla",
+      "last_name": "Conti",
+      "born_date": "1982-02-02",
+      "is_tutor": true,
+      "age": {
+       "$age": "1982-02-02"
+      },
+      "notes": "ελένη σας",
+      "tutors": [
+       {
+        "tutor": {
+         "first_name": "Elena",
+         "last_name": "Ferri",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeba"
+        }
+       }
+      ],
+      "picture_path": null
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeae"
+     ]
+    }
+   },
+   "ordered": true
+  },
+  {
+   "name": "personas-reads-list-search-dotted-capital-i-splits-word",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?query[generalSearch]=bassi%20%C4%B0",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeac",
+      "first_name": "Anna",
+      "last_name": "Bassi",
+      "born_date": "2010-03-12",
+      "is_tutor": false,
+      "age": {
+       "$age": "2010-03-12"
+      },
+      "notes": "nuoto",
+      "tutors": [
+       {
+        "tutor": {
+         "first_name": "Bruno",
+         "last_name": "Bellini",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeead"
+        }
+       },
+       {
+        "tutor": {
+         "first_name": "Carla",
+         "last_name": "Conti",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeae"
+        }
+       }
+      ],
+      "picture_path": "https://cdn.example.test/anna.jpg"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeac"
+     ]
+    }
+   },
+   "ordered": true
+  },
+  {
+   "name": "personas-reads-list-search-cjk-no-match",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?query[generalSearch]=%E5%90%8D%E5%89%8D",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [],
+    "meta": {
+     "total": 0,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": []
+    }
+   },
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-search-malformed-utf8-replaced",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?query[generalSearch]=bassi%FF",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeac",
+      "first_name": "Anna",
+      "last_name": "Bassi",
+      "born_date": "2010-03-12",
+      "is_tutor": false,
+      "age": {
+       "$age": "2010-03-12"
+      },
+      "notes": "nuoto",
+      "tutors": [
+       {
+        "tutor": {
+         "first_name": "Bruno",
+         "last_name": "Bellini",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeead"
+        }
+       },
+       {
+        "tutor": {
+         "first_name": "Carla",
+         "last_name": "Conti",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeae"
+        }
+       }
+      ],
+      "picture_path": "https://cdn.example.test/anna.jpg"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeac"
+     ]
+    }
+   },
+   "ordered": true
+  },
+  {
+   "name": "personas-reads-list-search-truncated-utf8-replaced",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?query[generalSearch]=bassi%E2%82",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeac",
+      "first_name": "Anna",
+      "last_name": "Bassi",
+      "born_date": "2010-03-12",
+      "is_tutor": false,
+      "age": {
+       "$age": "2010-03-12"
+      },
+      "notes": "nuoto",
+      "tutors": [
+       {
+        "tutor": {
+         "first_name": "Bruno",
+         "last_name": "Bellini",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeead"
+        }
+       },
+       {
+        "tutor": {
+         "first_name": "Carla",
+         "last_name": "Conti",
+         "associate_id": "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeae"
+        }
+       }
+      ],
+      "picture_path": "https://cdn.example.test/anna.jpg"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a55c1a7e-eeee-4eee-8eee-eeeeeeeeeeac"
+     ]
+    }
+   },
+   "ordered": true
+  },
+  {
+   "name": "personas-reads-list-search-unicode-digits-date",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?query[generalSearch]=%D9%A1%D9%A2/%D9%A0%D9%A3/%D9%A2%D9%A0%D9%A1%D9%A0",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [],
+    "meta": {
+     "total": 0,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": []
+    }
+   },
+   "ordered": false
+  },
+  {
    "name": "personas-reads-list-search-group",
    "actor": "owner",
    "method": "GET",
@@ -11703,7 +11977,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -11758,7 +12032,7 @@
       "age": {
        "$age": "1982-02-02"
       },
-      "notes": null,
+      "notes": "ελένη σας",
       "tutors": [
        {
         "tutor": {
@@ -11965,7 +12239,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -12205,7 +12479,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -12326,7 +12600,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -12794,7 +13068,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -12915,7 +13189,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -13179,7 +13453,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -13300,7 +13574,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -13404,7 +13678,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -13525,7 +13799,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,
@@ -13641,7 +13915,7 @@
          "id_number": null,
          "creation_date": "2024-05-23T07:00:00Z",
          "migrated": false,
-         "notes": null,
+         "notes": "ελένη σας",
          "user": null,
          "sport_association": "a1000000-0000-4000-8000-000000701001",
          "group": null,
@@ -13762,7 +14036,7 @@
        "id_number": null,
        "creation_date": "2024-05-23T07:00:00Z",
        "migrated": false,
-       "notes": null,
+       "notes": "ελένη σας",
        "user": null,
        "sport_association": "a1000000-0000-4000-8000-000000701001",
        "group": null,

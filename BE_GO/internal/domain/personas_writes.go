@@ -37,6 +37,8 @@ type PersonaWriteAudit struct {
 	Path        string
 	Context     LoginAuditContext
 	At          time.Time
+	// SentGroup is the X-Group-Id as sent, shown by the create entry instead of the stored uuid.
+	SentGroup string
 }
 
 type PersonaWritesTransaction interface {

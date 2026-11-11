@@ -26,3 +26,12 @@ Requests are not atomic. Go commits each Django autocommit step separately (conf
 Not ported: a multipart body carrying an uploaded file. Go refuses it with a 500 after the association check and before any write. The configuration get-or-create keeps the login service's association lock. That lock coordinates Go writers only; Django has none (see `BE_GO/internal/service/membership_card_configuration.md`).
 
 Evidence: `TESTS/fixtures/profile_settings_http.json` (59 cases, with the contract computing `current_year` at request time). RED: Django 59/59, Go 404. GREEN: 59/59 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact configuration, user, association, audit and index effects. Rolling back the configuration's pre_save audit when the model rejects the boolean fails `post-card-invalid-boolean-keeps-audit`.
+
+## Ported in taildocs
+
+`domain.RequestUpload` now keeps the first 64 KiB of a file part (`Content`, `Whole`) and whether the request was over
+the in-memory limit (`Temp`). `POST profile/settings`: the typed fields reject a file (boolean, choice quoting the file
+name, integer, text, related uuid). `PATCH profile/integrations`: `review_url` stores the file name and the answer lists
+the lines of `File.__iter__` (`bytes.splitlines(True)` decoded as UTF-8; invalid UTF-8 is the 500 after the save);
+`review_url_enabled` keeps the audit entry and answers the 500 page. Spooled files (request over 2621440 bytes) stay
+refused.

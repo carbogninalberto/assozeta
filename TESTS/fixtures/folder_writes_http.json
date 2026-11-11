@@ -1540,6 +1540,38 @@
    "content_type": "multipart/form-data; boundary=folderwritesboundary"
   },
   {
+   "name": "folder-writes-add-multipart-file-as-parent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "parent": [
+     "Incorrect type. Expected pk value, received InMemoryUploadedFile."
+    ]
+   },
+   "state": null,
+   "raw_body": "--folderwritesboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nAllegati\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"parent\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--folderwritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=folderwritesboundary"
+  },
+  {
+   "name": "folder-writes-add-multipart-file-as-name-and-parent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "parent": [
+     "Incorrect type. Expected pk value, received InMemoryUploadedFile."
+    ]
+   },
+   "state": null,
+   "raw_body": "--folderwritesboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nAllegati\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"created_at\"\r\n\r\n\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"parent\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--folderwritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=folderwritesboundary"
+  },
+  {
    "name": "folder-writes-add-empty-parent-is-root",
    "actor": "owner",
    "method": "POST",
@@ -2003,6 +2035,50 @@
     "sport_association": null,
     "created_at": null
    }
+  },
+  {
+   "name": "folder-writes-update-multipart-file-as-parent",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/folders/980004/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "parent": [
+     "Incorrect type. Expected pk value, received InMemoryUploadedFile."
+    ]
+   },
+   "state": null,
+   "raw_body": "--folderwritesboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nBilanci\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"parent\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--folderwritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=folderwritesboundary"
+  },
+  {
+   "name": "folder-writes-update-multipart-file-as-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/folders/980004/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "“nota.txt” is not a valid UUID."
+    ]
+   },
+   "state": null,
+   "raw_body": "--folderwritesboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nBilanci\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"sport_association\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--folderwritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=folderwritesboundary"
+  },
+  {
+   "name": "folder-writes-update-float-parent-overflow-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/folders/980004/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "state": null,
+   "raw_body": "{\"parent\": 1e999}",
+   "content_type": "application/json"
   },
   {
    "name": "folder-writes-update-empty-association",

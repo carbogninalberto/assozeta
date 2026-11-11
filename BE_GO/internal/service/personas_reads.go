@@ -152,26 +152,18 @@ func (s *Personas) queryset(ctx context.Context, identity domain.ResolvedIdentit
 }
 
 var personaDatePatterns = []*regexp.Regexp{
-	regexp.MustCompile(`([0-9]{1,2})[.]([0-9]{1,2})[.]([0-9]{2,4})`),
-	regexp.MustCompile(`([0-9]{1,2})[/]([0-9]{1,2})[/]([0-9]{2,4})`),
-	regexp.MustCompile(`([0-9]{1,2})[-]([0-9]{1,2})[-]([0-9]{2,4})`),
+	regexp.MustCompile(`(\p{Nd}{1,2})[.](\p{Nd}{1,2})[.](\p{Nd}{2,4})`),
+	regexp.MustCompile(`(\p{Nd}{1,2})[/](\p{Nd}{1,2})[/](\p{Nd}{2,4})`),
+	regexp.MustCompile(`(\p{Nd}{1,2})[-](\p{Nd}{1,2})[-](\p{Nd}{2,4})`),
 }
 
 var personaLikeEscape = strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
 
-// personaSearch prepares sqlite_search(queryset, term) for Associate. Terms
-// outside Latin script below U+0250 (and U+0130, whose lower() differs) are
-// refused: Python's str.lower and \w classification are not ported for them.
+// personaSearch prepares sqlite_search(queryset, term) for Associate: the
+// term is strip().lower() in Python's sense and its words are the \w+ runs.
 func personaSearch(raw string, centuryYear int) (*domain.PersonaSearch, error) {
-	if !utf8.ValidString(raw) {
-		return nil, ErrPersonaNotPorted // Django decodes malformed UTF-8 with replacement characters
-	}
-	for _, r := range raw {
-		if r >= 0x250 || r == 0x130 {
-			return nil, ErrPersonaNotPorted
-		}
-	}
-	term := strings.ToLower(dto.PythonStripText(raw))
+	// Django decodes the query string with errors='replace'.
+	term := dto.PythonLower(dto.PythonStripText(dto.PythonUTF8Replace(raw)))
 	escaped := personaLikeEscape.Replace(term)
 	search := &domain.PersonaSearch{Term: term, Prefix: escaped + "%", Contains: "%" + escaped + "%"}
 	var words []string
@@ -189,7 +181,7 @@ func personaSearch(raw string, centuryYear int) (*domain.PersonaSearch, error) {
 	variations := personaDateVariations(term, centuryYear)
 	for _, word := range words {
 		search.Words = append(search.Words, "%"+personaLikeEscape.Replace(word)+"%")
-		numeric := strings.Trim(word, "0123456789") == ""
+		numeric := strings.TrimFunc(word, unicode.IsDigit) == ""
 		dates := []string{}
 		if numeric {
 			for _, variation := range variations {
@@ -219,7 +211,7 @@ func personaDateVariations(term string, centuryYear int) []string {
 		}
 		day, month, year := match[1], match[2], match[3]
 		full := year
-		if len(year) == 2 {
+		if utf8.RuneCountInString(year) == 2 {
 			century := "19"
 			if pythonDecimal(year) <= centuryYear {
 				century = "20"
@@ -227,7 +219,7 @@ func personaDateVariations(term string, centuryYear int) []string {
 			full = century + year
 		}
 		zfill := func(text string) string {
-			if len(text) < 2 {
+			if utf8.RuneCountInString(text) < 2 {
 				return "0" + text
 			}
 			return text
@@ -241,11 +233,8 @@ func personaDateVariations(term string, centuryYear int) []string {
 }
 
 func pythonDecimal(text string) int {
-	value := 0
-	for _, r := range text {
-		value = value*10 + int(r-'0')
-	}
-	return value
+	value, _ := dto.PythonIntText(text)
+	return int(value.Int64())
 }
 
 func personaPage(count int64, query domain.RequestObject) (number int64, size *big.Int, pages int64, err error) {
@@ -474,4 +463,21 @@ func (s *Personas) AllWithSubscriptions(ctx context.Context, identity domain.Res
 		data = append(data, domain.RequestField{Name: row.AssociateID, Value: value})
 	}
 	return domain.RequestObject{{Name: "data", Value: data}}, nil
+}
+
+// PersonaSentGroup is the created instance as Associate.objects.create left
+// it: the group is the X-Group-Id text as sent (the serializer reads group_id
+// without a lookup), where the stored column holds the canonical uuid.
+func PersonaSentGroup(body any, header string) any {
+	object, ok := body.(domain.RequestObject)
+	group := supplierGroup(header)
+	if !ok || group == nil || *group == header {
+		return body
+	}
+	for i, field := range object {
+		if field.Name == "group" && field.Value == *group {
+			object[i].Value = header
+		}
+	}
+	return object
 }

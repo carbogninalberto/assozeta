@@ -79,10 +79,12 @@ func ParseFolderWrite(object domain.RequestObject, partial, form bool) (FolderWr
 	}
 	if value, present := object.Lookup("sport_association"); present && partial {
 		write.AssociationPresent = true
-		if _, upload := value.(domain.RequestUpload); upload {
-			return write, nil, domain.ErrFolderWriteNotPorted
-		}
-		if value == nil || value == "" {
+		if upload, ok := value.(domain.RequestUpload); ok {
+			if _, err := folderUploadCode(upload); err != nil {
+				return write, nil, err
+			}
+			invalid["sport_association"] = []string{"related-invalid-uuid:" + upload.Name}
+		} else if value == nil || value == "" {
 			invalid["sport_association"] = []string{PaymentCategoryValidationNull}
 		} else if id, code := supplierRelated(value); code != "" {
 			invalid["sport_association"] = []string{code}
@@ -117,7 +119,8 @@ func FolderPKValue(value any) (FolderPK, string, error) {
 	case bool:
 		return FolderPK{}, "related-incorrect-type:bool", nil
 	case domain.RequestUpload:
-		return FolderPK{}, "", domain.ErrFolderWriteNotPorted
+		code, err := folderUploadCode(v)
+		return FolderPK{}, code, err
 	case json.Number:
 		raw := string(v)
 		if strings.ContainsAny(raw, ".eE") {
@@ -229,3 +232,13 @@ func FolderNodeOf(folder domain.Folder, descendants []domain.Folder) FolderNode 
 
 // FolderBodyType is type(request.data).__name__ for a non-dict body.
 func FolderBodyType(value any) string { return pythonTypeName(value) }
+
+// folderUploadCode is the incorrect-type code of a related field given a file
+// part: the QueryDict value is an InMemoryUploadedFile up to the in-memory
+// limit; larger parts are temporary files whose handling stays refused.
+func folderUploadCode(upload domain.RequestUpload) (string, error) {
+	if upload.Temp {
+		return "", domain.ErrFolderWriteNotPorted
+	}
+	return "related-incorrect-type:InMemoryUploadedFile", nil
+}

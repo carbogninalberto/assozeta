@@ -64,6 +64,8 @@ type personaWriteRun struct {
 	ids     func() string
 	// saved is set once the request wrote anything (later exceptions keep it).
 	saved bool
+	// sent are the rows created through the manager: auditlog writes the group as the header spelled it.
+	sent map[string]bool
 }
 
 func (s *PersonaWrites) begin(ctx context.Context, identity domain.ResolvedIdentity, header string, audit domain.LoginAuditContext) (*personaWriteRun, error) {
@@ -103,8 +105,12 @@ func (r *personaWriteRun) finish(err error) error {
 
 func (r *personaWriteRun) record(ctx context.Context, model, key string, action int, changes map[string][2]string, created bool,
 	association *string, path string) error {
+	sent := ""
+	if created && model == "associate" && r.sent[key] {
+		sent = r.header
+	}
 	return r.tx.Audit(ctx, domain.PersonaWriteAudit{Model: model, Key: key, Action: action, Created: created, Changes: changes,
-		Association: association, Path: path, Context: r.context, At: r.at})
+		Association: association, Path: path, Context: r.context, At: r.at, SentGroup: sent})
 }
 
 // associateIndex resolves an Associate entry like the AuditLogIndex signal:
@@ -202,6 +208,12 @@ func (r *personaWriteRun) create(ctx context.Context, row domain.PersonaAssociat
 		return err
 	}
 	r.saved = true
+	if row.GroupID != nil && r.group != nil && *row.GroupID == *r.group {
+		if r.sent == nil {
+			r.sent = map[string]bool{}
+		}
+		r.sent[row.ID] = true
+	}
 	stored := row
 	association, path, err := r.associateIndex(ctx, &stored, map[string][2]string{"sport_association": {"None", personaValue(row.AssociationID)}})
 	if err != nil {
@@ -217,18 +229,18 @@ func personaValue(value *string) string {
 	return *value
 }
 
-// headerGroup is the X-Group-Id the manager's create stores: none, or a
-// canonical existing group (other values are not ported, or a Django 500).
+// headerGroup is the X-Group-Id the manager's create stores: none, or an
+// existing group in any spelling UUID() reads (auditlog keeps the spelling).
 func (r *personaWriteRun) headerGroup(ctx context.Context) (*string, error) {
 	if r.header == "" {
 		return nil, nil
 	}
-	if r.group == nil || *r.group != r.header {
-		return nil, ErrPersonaNotPorted
+	if r.group == nil {
+		return nil, ErrPersonaUnhandled // UUIDField.to_python of the raw header: ValidationError
 	}
 	if _, found, err := r.tx.GroupAssociation(ctx, *r.group); err != nil || !found {
 		if err == nil {
-			err = ErrPersonaNotPorted
+			err = ErrPersonaUnhandled // the deferred foreign key fails when the insert commits
 		}
 		return nil, err
 	}
@@ -292,36 +304,6 @@ func pictureUnported(body domain.RequestObject) error {
 		}
 	default:
 		return ErrPersonaUnhandled
-	}
-	return nil
-}
-
-// planTutors refuses tutors_data the port does not handle, before any write:
-// born dates with Unicode digits and a tutor create under an X-Group-Id the
-// manager would store raw.
-func planTutors(tutors any, header string, group *string) error {
-	items, ok := tutors.([]any)
-	if !ok {
-		return nil
-	}
-	creates := false
-	for _, item := range items {
-		data, ok := item.(domain.RequestObject)
-		if !ok {
-			continue
-		}
-		info, ok := data.Lookup("tutor")
-		object, isObject := info.(domain.RequestObject)
-		if !ok || !isObject || !dto.PersonaTruthy(info) {
-			continue
-		}
-		creates = true
-		if value, present := object.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
-			return ErrPersonaNotPorted
-		}
-	}
-	if creates && header != "" && (group == nil || *group != header) {
-		return ErrPersonaNotPorted
 	}
 	return nil
 }
@@ -685,12 +667,6 @@ func (s *PersonaWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	if upload {
 		rest = personaWithoutPicture(rest)
 	}
-	if value, present := rest.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
-		return "", ErrPersonaNotPorted
-	}
-	if err := planTutors(tutors, header, supplierGroup(header)); err != nil {
-		return "", err
-	}
 	run, err := s.begin(ctx, identity, header, audit)
 	if err != nil {
 		return "", err
@@ -754,12 +730,6 @@ func (s *PersonaWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	if upload {
 		object = personaWithoutPicture(object)
 	}
-	if value, present := object.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
-		return ErrPersonaNotPorted
-	}
-	if err := planTutors(tutors, header, supplierGroup(header)); err != nil {
-		return err
-	}
 	run, err := s.begin(ctx, identity, header, audit)
 	if err != nil {
 		return err
@@ -818,9 +788,6 @@ func (s *PersonaWrites) StockCreate(ctx context.Context, identity domain.Resolve
 	}
 	if err := pictureUnported(object); err != nil {
 		return "", err
-	}
-	if value, present := object.Lookup("born_date"); present && dto.PersonaDMYUnported(value) {
-		return "", ErrPersonaNotPorted
 	}
 	run, err := s.begin(ctx, identity, header, audit)
 	if err != nil {

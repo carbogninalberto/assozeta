@@ -74,11 +74,12 @@ func (ProfileSettingsUploadUnsupported) Error() string {
 	return "profile settings upload is not ported"
 }
 
-// ProfileSettingsHasUpload reports whether the parsed body carries a file.
+// ProfileSettingsHasUpload reports whether the parsed body carries a spooled file.
 func ProfileSettingsHasUpload(body any) bool {
 	switch value := body.(type) {
 	case domain.RequestUpload:
-		return true
+		// Only a spooled file (TemporaryUploadedFile) is refused; an in-memory one is a QueryDict value.
+		return value.Temp
 	case domain.RequestObject:
 		for _, field := range value {
 			if ProfileSettingsHasUpload(field.Value) {
@@ -143,6 +144,19 @@ func parseProfileSetting(field ProfileSettingsField, value any, form bool) (any,
 	if field.kind == profileSettingRelation && value == "" {
 		// RelatedField.run_validation forces '' to None.
 		value = nil
+	}
+	if upload, ok := value.(domain.RequestUpload); ok {
+		// A file part: str() is its name; the typed fields reject it like any other object.
+		switch field.kind {
+		case profileSettingBoolean:
+			return nil, []string{PaymentCategoryValidationBoolean}
+		case profileSettingChoice:
+			return nil, []string{"choice:" + upload.Name}
+		case profileSettingInteger:
+			return nil, []string{DRFValidationInteger}
+		case profileSettingText:
+			return nil, []string{PaymentCategoryValidationString}
+		}
 	}
 	if value == nil {
 		switch field.kind {

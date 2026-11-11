@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -89,7 +90,7 @@ func (s *PersonaSubscriptions) List(ctx context.Context, identity domain.Resolve
 // value the UUID field rejects is a bare 404); the soft delete of a found
 // subscription is not ported (Subscription.save() derives missing dates from
 // the association's settings) and is refused before any write.
-func (s *PersonaSubscriptions) Delete(ctx context.Context, identity domain.ResolvedIdentity, rawID string, header string) error {
+func (s *PersonaSubscriptions) Delete(ctx context.Context, identity domain.ResolvedIdentity, rawID string, header string, login domain.LoginAuditContext) error {
 	association, err := s.personas.association(ctx, identity)
 	if err != nil {
 		return err
@@ -105,5 +106,32 @@ func (s *PersonaSubscriptions) Delete(ctx context.Context, identity domain.Resol
 	if !found {
 		return domain.ErrPersonaSubscriptionNotFound
 	}
-	return ErrPersonaNotPorted
+	// The viewset's delete(): the soft delete, Subscription.save() over the loaded row.
+	group := supplierGroup(header)
+	tx, err := s.store.(domain.PersonaSubsWriteStore).BeginPersonaSubsWrite(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	stored, err := tx.Subscription(ctx, id.String())
+	if err != nil {
+		return err
+	}
+	if stored == nil {
+		return domain.ErrPersonaSubscriptionNotFound
+	}
+	row := *stored
+	row.Deleted = true
+	if err = personaSubsSeason(ctx, tx, &row); err != nil {
+		return err
+	}
+	changes, err := personaSubsChanges(*stored, row, nil)
+	if err != nil {
+		return err
+	}
+	audit := domain.CourseSubscriptionAudit{Context: paymentCategoryAuditContext(identity, login), At: s.personas.now().UTC().Truncate(time.Microsecond), Group: group}
+	if err = tx.SaveSubscription(ctx, row, changes, audit); err != nil {
+		return err
+	}
+	return tx.Commit()
 }

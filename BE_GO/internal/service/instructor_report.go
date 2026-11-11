@@ -44,7 +44,7 @@ var instructorReportSchema = []struct{ key, label string }{{"first_name", "Nome"
 	{"attendees", "Partecipanti"}, {"expected_absences", "Assenti previsti"}}
 
 // instructorReportParse is dateutil's parser.parse(text, dayfirst=True): the date of the parsed value. A value that raises is
-// the 500 page; a zone-aware value (the view keeps its zone) and the texts the parser port does not read are not ported.
+// the 500 page, as is a zone-aware value; the texts the parser port does not read are not ported.
 func instructorReportParse(text string, now time.Time) (time.Time, error) {
 	parsed, err := pydateutil.ParseDayFirst(text, now, time.UTC)
 	if err != nil {
@@ -54,8 +54,9 @@ func instructorReportParse(text string, now time.Time) (time.Time, error) {
 		}
 		return time.Time{}, ErrInstructorReportNotPorted
 	}
-	if parsed.HasTZ || parsed.Year < 1000 {
-		return time.Time{}, ErrInstructorReportNotPorted
+	if parsed.HasTZ {
+		// The view keeps the zone and get_report's rome_tz.localize raises "Not naive datetime".
+		return time.Time{}, ErrInstructorReportServer
 	}
 	return time.Date(parsed.Year, time.Month(parsed.Month), parsed.Day, 0, 0, 0, 0, time.UTC), nil
 }
@@ -100,6 +101,10 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 	}
 	from = time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, rome).UTC()
 	to = time.Date(to.Year(), to.Month(), to.Day(), 23, 59, 59, 0, rome).UTC()
+	if from.Year() < 1 || to.Year() < 1 {
+		// astimezone(UTC) of the first minutes of year 1: OverflowError.
+		return nil, ErrInstructorReportServer
+	}
 	instructors, err := s.store.Instructors(ctx, identity.ScopeUser.ID)
 	if err != nil {
 		return nil, err

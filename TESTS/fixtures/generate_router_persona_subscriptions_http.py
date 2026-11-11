@@ -34,10 +34,10 @@ LIST_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST']
 DETAIL_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'PUT']
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, headers=None, effect=None):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, headers=None, effect=None, allow=None):
     detail = path.split('?')[0].rstrip('/').count('/') > 1
     case = {'name': f'router-persona-subscriptions-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-            'status': status, 'response': response, 'allow': DETAIL_ALLOW if detail else LIST_ALLOW, 'effect': effect}
+            'status': status, 'response': response, 'allow': allow or (DETAIL_ALLOW if detail else LIST_ALLOW), 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
@@ -244,6 +244,19 @@ add('partial-update-own-group-deleted', 'owner', 'PATCH', detail('grouped'), 200
     body={'archived': 'no', 'deleted': 'on', 'group': OWN_GROUP}, headers={'X-Group-Id': OWN_GROUP},
     effect=updated('owner', 'grouped', {'archived': False, 'deleted': True}, changes={'archived': ['True', 'False'], 'deleted': ['False', 'True']}))
 add('update-deleted-by-patch-not-found', 'owner', 'PATCH', detail('grouped'), 404, SUB_NOT_FOUND, body={})
+
+# The class's own delete() on the <pk>/list route: get_object() on the live, group-aware subscriptions of the association,
+# then deleted=True and Subscription.save() (auditlog's update entry, indexed directly), 204.
+LEGACY = lambda label, group=None: f'/personas-subscriptions/{SUB_IDS.get(label, label)}/list'
+LEGACY_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS']
+add('legacy-delete-owner', 'owner', 'DELETE', LEGACY('future'), 204, EMPTY, allow=LEGACY_ALLOW,
+    effect=updated('owner', 'future', {'deleted': True}, changes={'deleted': ['False', 'True']}))
+add('legacy-delete-again-not-found', 'owner', 'DELETE', LEGACY('future'), 404, SUB_NOT_FOUND, allow=LEGACY_ALLOW)
+add('legacy-delete-foreign-association-not-found', 'owner', 'DELETE', LEGACY('far'), 404, SUB_NOT_FOUND, allow=LEGACY_ALLOW)
+add('legacy-delete-other-group-not-found', 'owner', 'DELETE', LEGACY('lone_past'), 404, SUB_NOT_FOUND,
+    headers={'X-Group-Id': FOREIGN_GROUP}, allow=LEGACY_ALLOW)
+add('legacy-delete-full-collaborator', 'full_collaborator', 'DELETE', LEGACY('lone_past'), 204, EMPTY, allow=LEGACY_ALLOW,
+    effect=updated('full_collaborator', 'lone_past', {'deleted': True}, changes={'deleted': ['False', 'True']}))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

@@ -181,6 +181,9 @@ func (t *personaWritesTransaction) Audit(ctx context.Context, entry domain.Perso
 		if changes, err = createdModelChanges(ctx, t.tx, "application_associate", "associate_id", entry.Key); err != nil {
 			return err
 		}
+		if pair, ok := changes["group"]; ok && entry.SentGroup != "" {
+			changes["group"] = [2]string{pair[0], entry.SentGroup}
+		}
 		for name, manager := range associateReverse {
 			changes[name] = [2]string{"None", manager}
 		}

@@ -59,6 +59,7 @@ Personal data is synthetic. Run with ``python3 -I``.
 import base64
 import copy
 import json
+import unicodedata
 import urllib.parse
 import uuid
 from pathlib import Path
@@ -367,12 +368,13 @@ class Effect:
     def created_refs(self):
         return [ref for ref, _ in self.created]
 
-    def create(self, **values):
+    def create(self, sent_group=None, **values):
         ref = f'$a{next(SERIAL)}'
         row = {**DEFAULTS, **values, 'id': ref, 'created': '$now' + ref[2:]}
         WORLD['assoc'][ref] = row
         self.created.append((ref, row))
-        changes = create_changes(row)
+        # The manager hands the raw X-Group-Id to the instance: auditlog writes it as sent, the column keeps the uuid.
+        changes = create_changes({**row, 'group': sent_group} if sent_group else row)
         self.audit.append({'model': 'associate', 'ref': ref, 'action': 0, 'changes': changes,
                            'index': associate_index(ref, changes, self.actor, self.group)})
         return ref
@@ -464,7 +466,7 @@ def handle_tutors(effect, associate, tutors_data):
         values = {k: v for k, v in info_.items() if k not in ('associate_id', 'creation_date', 'tutors', 'full_name')}
         values = {('association' if k == 'sport_association' else k): v for k, v in values.items()}
         if 'born_date' in values and values['born_date']:
-            d, m, y = values['born_date'].split('/')
+            d, m, y = (''.join(str(unicodedata.digit(ch)) for ch in part) for part in values['born_date'].split('/'))
             values['born_date'] = f'{y}-{m}-{d}'
         if found:
             tutor = found[0]
@@ -786,6 +788,13 @@ effect = Effect('owner', OWN_GROUP)
 ref = effect.create(user=OWNER, first_name='Gemma', last_name='Gruppata', group=OWN_GROUP)
 add('add-group-header', 'owner', 'POST', ADD, 201, info(ref, OWN_GROUP), body={'first_name': 'Gemma', 'last_name': 'Gruppata'},
     headers={'X-Group-Id': OWN_GROUP}, allow=ALLOW_ADD, effect=effect)
+# A spelling of the group id UUID() reads (upper case, braces, no hyphens, urn) is audited as sent.
+for label, spelling in (('upper-case', OWN_GROUP.upper()), ('braces', '{' + OWN_GROUP + '}'), ('no-hyphens', OWN_GROUP.replace('-', '')),
+                        ('urn', 'urn:uuid:' + OWN_GROUP)):
+    effect = Effect('owner', OWN_GROUP)
+    ref = effect.create(sent_group=spelling, user=OWNER, first_name='Gemma', last_name=label.title(), group=OWN_GROUP)
+    add(f'add-group-header-{label}', 'owner', 'POST', ADD, 201, {**info(ref, OWN_GROUP), 'group': spelling}, body={'first_name': 'Gemma', 'last_name': label.title()},
+        headers={'X-Group-Id': spelling}, allow=ALLOW_ADD, effect=effect)
 effect = Effect('owner')
 ref = effect.create(user=OWNER, first_name='Gaio', last_name='Corpo', group=OWN_GROUP)
 add('add-group-body', 'owner', 'POST', ADD, 201, info(ref), body={'first_name': 'Gaio', 'last_name': 'Corpo', 'group': OWN_GROUP},
@@ -833,6 +842,19 @@ handle_tutors(effect, ref, tutor_data)
 add('add-group-header-new-tutor', 'owner', 'POST', ADD, 201, info(ref, OWN_GROUP),
     body={'first_name': 'Gilda', 'last_name': 'Gruppotutore', 'tutors_data': tutor_data}, headers={'X-Group-Id': OWN_GROUP},
     allow=ALLOW_ADD, effect=effect)
+
+# strptime's \\d reads decimal digits of any script (the day's second digit after an ASCII 1 or 2, and the year; the month is ASCII).
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Bea', last_name='Cifre', born_date='2010-03-14')
+add('add-born-date-unicode-digits', 'owner', 'POST', ADD, 201, info(ref), body={'first_name': 'Bea', 'last_name': 'Cifre', 'born_date': '1٤/03/٢٠١٠'},
+    allow=ALLOW_ADD, effect=effect)
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Bruna', last_name='Cifre', born_date='2011-05-06')
+tutor_data = [{'tutor': {'associate_id': None, 'first_name': 'Tito', 'last_name': 'Cifre', 'born_date': '1२/01/१९७०', 'sport_association': OWN},
+               'is_primary': True}]
+handle_tutors(effect, ref, tutor_data)
+add('add-tutor-born-date-unicode-digits', 'owner', 'POST', ADD, 201, info(ref),
+    body={'first_name': 'Bruna', 'last_name': 'Cifre', 'born_date': '06/05/2011', 'tutors_data': tutor_data}, allow=ALLOW_ADD, effect=effect)
 
 # ================================================================= update
 add('update-malformed-pk', 'owner', 'PATCH', update_path('abc'), 404, NOT_FOUND, body={'notes': 'x'}, allow=ALLOW_UPDATE)
@@ -917,6 +939,10 @@ handle_tutors(effect, 'promote', tutor_data)
 add('update-promotes-first-relation', 'owner', 'PATCH', update_path('promote'), 200, info('promote'), body={'tutors_data': tutor_data},
     allow=ALLOW_UPDATE, effect=effect)
 
+effect = Effect('owner')
+effect.save('collab_upd', born_date='2013-02-13')
+add('update-born-date-unicode-digits', 'owner', 'PATCH', update_path('collab_upd'), 200, info('collab_upd'),
+    body={'born_date': '1३/02/२०१३'}, allow=ALLOW_UPDATE, effect=effect)
 effect = Effect('full_collaborator')
 effect.save('collab_upd', phone='3330001111', sex='M')
 add('update-full-collaborator', 'full_collaborator', 'PATCH', update_path('collab_upd'), 200, info('collab_upd'),

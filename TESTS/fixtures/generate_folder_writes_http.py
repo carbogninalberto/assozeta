@@ -263,6 +263,10 @@ forest.insert('n6', 'Allegati', 'b', OWN, '$now')
 add('add-multipart-with-file', 'owner', ADD, 201, forest.render('n6'),
     raw_body=multipart([('name', 'Allegati'), ('parent', str(ID('b'))), ('created_at', '')], [('file', 'nota.txt', 'ciao')]),
     content_type=MULTIPART, effect=True)
+add('add-multipart-file-as-parent', 'owner', ADD, 400, {'parent': [incorrect('InMemoryUploadedFile')]},
+    raw_body=multipart([('name', 'Allegati')], [('parent', 'nota.txt', 'ciao')]), content_type=MULTIPART)
+add('add-multipart-file-as-name-and-parent', 'owner', ADD, 400, {'parent': [incorrect('InMemoryUploadedFile')]},
+    raw_body=multipart([('name', 'Allegati'), ('created_at', '')], [('parent', 'nota.txt', '')]), content_type=MULTIPART)
 forest.insert('n7', 'Radice', None, OWN, '2026-05-01T00:00:00Z')
 add('add-empty-parent-is-root', 'owner', ADD, 201, forest.render('n7'),
     body={'name': 'Radice', 'parent': '', 'created_at': '2026-05-01T00:00:00Z'}, effect=True)
@@ -291,6 +295,12 @@ add('update-invalid-strings', 'owner', update('a2'), 400, {'name': [BLANK], 'par
     body={'name': ' ', 'parent': 'x', 'sport_association': 'abc', 'created_at': 'x'})
 add('update-null-values', 'owner', update('a2'), 400, {'name': [NULL], 'parent': [missing_pk(999999)], 'sport_association': [NULL],
     'created_at': [NULL]}, method='PATCH', body={'name': None, 'parent': 999999, 'sport_association': None, 'created_at': None})
+add('update-multipart-file-as-parent', 'owner', update('a2'), 400, {'parent': [incorrect('InMemoryUploadedFile')]}, method='PATCH',
+    raw_body=multipart([('name', 'Bilanci')], [('parent', 'nota.txt', 'ciao')]), content_type=MULTIPART)
+add('update-multipart-file-as-association', 'owner', update('a2'), 400, {'sport_association': ['“nota.txt” is not a valid UUID.']},
+    method='PATCH', raw_body=multipart([('name', 'Bilanci')], [('sport_association', 'nota.txt', 'ciao')]), content_type=MULTIPART)
+add('update-float-parent-overflow-server-error', 'owner', update('a2'), 500, SERVER, method='PATCH',
+    raw_body='{"parent": 1e999}', content_type='application/json')
 add('update-empty-association', 'owner', update('a2'), 400, {'sport_association': [NULL]}, method='PATCH', body={'sport_association': ''})
 add('update-unknown-association', 'owner', update('a2'), 400, {'sport_association': [missing_pk(UNKNOWN)]}, method='PATCH',
     body={'sport_association': UNKNOWN})
