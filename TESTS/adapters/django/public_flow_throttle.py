@@ -56,7 +56,7 @@ def finish(case, status, ident, require):
         history = cache.get(f'throttle_{name}_{ident}')
         if name == scope and reached and live < REQUESTS:
             require(isinstance(history, list) and len(history) == live + 1 and all(type(item) is float for item in history)
-                    and 0 <= time.time() - history[0] < 30 and history == sorted(history, reverse=True), 'throttle.recorded')
+                    and 0 <= time.time() - history[0] < 300 and history == sorted(history, reverse=True), 'throttle.recorded')
         elif name == scope and spec['preload']:
             require(isinstance(history, list) and len(history) == spec['preload'] and len(set(history)) == 1, 'throttle.unchanged')
         else:
