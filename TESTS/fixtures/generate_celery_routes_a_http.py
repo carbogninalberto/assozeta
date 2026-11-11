@@ -61,15 +61,18 @@ ASSOCIATES = {
     'empty': associate('Ivo', 'Gialli', ''),
     'quoted': associate("D'Arco", 'Ünal', 'darco@example.test'),
     'hans': associate('Hans', 'Muller', 'hans@example.test', FOREIGN),
+    'late': associate('Lia', 'Neri'),
+    'late_two': associate('Lea', 'Neri'),
 }
 # Primary tutor relations: luca -> tutor (with email), notutor_email -> silent_tutor (without email).
-RELATIONS = [('luca', 'tutor', True), ('notutor_email', 'silent_tutor', True)]
+RELATIONS = [('luca', 'tutor', True), ('notutor_email', 'silent_tutor', True), ('late', 'tutor', False),
+             ('late_two', 'silent_tutor', False), ('late_two', 'tutor', False)]
 
 CERTIFICATES = {label: {'id': next(ids), 'user': 'owner', 'expiration': expiration}
                 for label, expiration in (('main', '2026-06-30'), ('tutor', '2027-01-05'), ('user', '2026-12-31'),
                                           ('empty', '2026-03-01'), ('quoted', '2026-04-15'), ('silent', '2026-05-20'),
                                           ('none', None), ('orphan', '2026-07-01'), ('athlete', '2026-08-08'), ('abroad', '2026-09-09'),
-                                          ('grouped', '2026-10-10'), ('deleted', '2026-11-11'))}
+                                          ('grouped', '2026-10-10'), ('deleted', '2026-11-11'), ('late', '2027-02-02'), ('late_two', '2027-03-03'))}
 
 
 def subscription(associate='mario', association=OWN, **fields):
@@ -96,6 +99,9 @@ SUBSCRIPTIONS = {
     'bool_status': subscription(),
     'bad_acceptance': subscription(),
     'int_acceptance': subscription(),
+    'dates_basic': subscription(), 'dates_short': subscription(), 'dates_unicode': subscription(), 'dates_week': subscription(),
+    'nul_text': subscription(), 'surrogate_text': subscription(), 'nul_key': subscription(), 'surrogate_json': subscription(),
+    'dates_newline': subscription(), 'dates_space': subscription(), 'dates_month': subscription(), 'dates_start': subscription(),
     'stringified': subscription(),
     'long_kind': subscription(),
     'clear_json': subscription(document='json', custom={'b': [1, 2.5], 'a': 'è'}, additional={'k': True}),
@@ -123,6 +129,8 @@ SUBSCRIPTIONS = {
     'r_abroad': subscription('hans', FOREIGN, medical='abroad'),
     'r_grouped': subscription(group='own_group', medical='grouped'),
     'r_deleted': subscription(deleted=True, medical='deleted'),
+    'r_promote': subscription('late', medical='late'),
+    'r_promote_first': subscription('late_two', medical='late_two'),
 }
 cases = []
 
@@ -204,6 +212,29 @@ add('text-acceptance-kept-entry', 'owner', update('bad_acceptance'), 500, SERVER
     effect=updated('bad_acceptance', audit={'acceptance_date': ['None', 'domani']}, kept=True))
 add('int-resignation-kept-entry', 'owner', update('int_acceptance'), 500, SERVER, body={'resignation_date': 5},
     effect=updated('int_acceptance', audit={'resignation_date': ['None', '5']}, kept=True))
+# DateField.to_python (parse_date): date.fromisoformat (basic and week forms), then date_re whose \\d and int() take any Unicode digit.
+ARABIC = '\u0662\u0660\u0662\u0666-\u0660\u0662-\u0660\u0663'
+for label, field, text in (('basic', 'acceptance_date', '20260203'), ('short', 'resignation_date', '2026-2-3'),
+                           ('unicode', 'acceptance_date', ARABIC), ('week', 'resignation_date', '2026-W06-2'),
+                           ('newline', 'acceptance_date', '2026-02-03\n')):
+    add(f'date-forms-{label}', 'owner', update('dates_' + label), 200, UPDATED, body={field: text},
+        effect=updated('dates_' + label, columns={field: '2026-02-03'}, audit={field: ['None', text]}))
+add('date-forms-start-unicode', 'owner', update('dates_start'), 200, UPDATED, body={'start_date': ARABIC},
+    effect=updated('dates_start', columns={'start_date': '2026-02-03'}, audit={'start_date': ['2026-01-01', ARABIC]}))
+add('date-forms-space-kept-entry', 'owner', update('dates_space'), 500, SERVER, body={'acceptance_date': ' 2026-02-03'},
+    effect=updated('dates_space', audit={'acceptance_date': ['None', ' 2026-02-03']}, kept=True))
+add('date-forms-month-kept-entry', 'owner', update('dates_month'), 500, SERVER, body={'resignation_date': '2026-13-03'},
+    effect=updated('dates_month', audit={'resignation_date': ['None', '2026-13-03']}, kept=True))
+# PostgreSQL text refuses NUL and a lone surrogate cannot be encoded: the entry is not written and the save never runs.
+add('nul-notes-nothing-saved', 'owner', update('nul_text'), 500, SERVER, body={'notes': 'a\u0000b'}, effect=None)
+add('lone-surrogate-notes-nothing-saved', 'owner', update('surrogate_text'), 500, SERVER,
+    raw_body='{"notes": "\\ud800"}', content_type='application/json', effect=None)
+# json.dumps escapes both, so the JSON fields keep their entry and the column refuses the value.
+add('nul-json-key-kept-entry', 'owner', update('nul_key'), 500, SERVER, body={'custom_data': {'a\u0000b': 1}},
+    effect=updated('nul_key', audit={'custom_data': ['null', '{"a\\u0000b": 1}']}, kept=True))
+add('lone-surrogate-json-kept-entry', 'owner', update('surrogate_json'), 500, SERVER,
+    raw_body='{"additional_fields": ["\\ud800"]}', content_type='application/json',
+    effect=updated('surrogate_json', audit={'additional_fields': ['null', '["\\ud800"]']}, kept=True))
 add('stringified-values', 'owner', update('stringified'), 200, UPDATED,
     body={'notes': {'a': [1, True]}, 'subscription_type': False, 'acceptance_date': None, 'custom_data': 'testo'},
     effect=updated('stringified', columns={'notes': "{'a': [1, True]}", 'subscription_type': 'False', 'custom_data': 'testo'},
@@ -295,6 +326,12 @@ add('reminder-user-email', 'owner', reminder('r_user'), 200, SENT, method='POST'
 add('reminder-empty-associate-email', 'owner', reminder('r_empty'), 200, SENT, method='POST', effect=reminded('r_empty', ''))
 add('reminder-quoted-names', 'owner', reminder('r_quoted'), 200, SENT, method='POST', effect=reminded('r_quoted', 'darco@example.test'))
 add('reminder-tutor-without-email', 'owner', reminder('r_silent'), 200, SENT, method='POST', effect=reminded('r_silent', '$email:owner'))
+# get_main_tutor promotes the first relation (by key) of an associate without a primary one: an audited save.
+for label, spec, email in (('r_promote', {'associate': 'late', 'relations': 1, 'path': 'associate.sport_association'}, 'anna.tutor@example.test'),
+                           ('r_promote_first', {'associate': 'late_two', 'relations': 2, 'path': 'associate.sport_association'}, '$email:owner')):
+    promoted = reminded(label, email)
+    promoted['promotion'] = spec
+    add('reminder-promotes-' + label[2:], 'owner', reminder(label), 200, SENT, method='POST', effect=promoted)
 add('reminder-body-ignored', 'owner', reminder('r_main'), 200, SENT, method='POST', raw_body='{', content_type='application/json',
     effect=reminded('r_main', 'mario.rossi@example.test'))
 add('reminder-no-certificate', 'owner', reminder('r_no_certificate'), 500, SERVER, method='POST')

@@ -403,7 +403,7 @@ func run() (runErr error) {
 	e.Any("/subscription/:uid/update", subscriptionUpdateHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	subscriptionReminderHandler := handler.NewSubscriptionMedicalReminderHandler(service.NewSubscriptionMedicalReminders(repository.NewSubscriptionMedical(db),
 		tasks, service.MedicalReminderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, IsWhitelabel: cfg.IsWhitelabel}),
-		service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+		service.NewActorAuthentication(accounts, tokens), identities, middleware.SessionAuditContext, paymentCategoryOperations)
 	e.Any("/subscription/:uid/medical-certificate/send-email-reminder", subscriptionReminderHandler.Send, middleware.DjangoSessionAudit(sessionAuthentication))
 	emailRenderHandler := handler.NewEmailRenderHandler(service.NewEmailRenderRoutes(repository.NewEmailRenderRoutes(db), tasks,
 		service.EmailRenderSettings{AppURL: cfg.InstanceAdmin.AppURL, WhitelabelName: cfg.WhitelabelName, DefaultFromEmail: cfg.DefaultFromEmail,

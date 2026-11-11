@@ -13,7 +13,7 @@ import (
 
 type SubscriptionMedicalReminderService interface {
 	ParseUUID(raw string) (string, error)
-	Send(ctx context.Context, identity domain.ResolvedIdentity, id, group string) error
+	Send(ctx context.Context, identity domain.ResolvedIdentity, id, group string, audit domain.LoginAuditContext) error
 }
 
 // SubscriptionMedicalReminderHandler serves
@@ -21,14 +21,15 @@ type SubscriptionMedicalReminderService interface {
 // whose success path publishes send_email_template. The view never reads request.data.
 type SubscriptionMedicalReminderHandler struct {
 	reminders  SubscriptionMedicalReminderService
+	audit      LoginAuditReader
 	actors     *service.ActorAuthentication
 	identities *service.IdentityResolver
 	operations *paymentcategorylifecycle.Lifecycle
 }
 
 func NewSubscriptionMedicalReminderHandler(reminders SubscriptionMedicalReminderService, actors *service.ActorAuthentication,
-	identities *service.IdentityResolver, operations *paymentcategorylifecycle.Lifecycle) *SubscriptionMedicalReminderHandler {
-	return &SubscriptionMedicalReminderHandler{reminders: reminders, actors: actors, identities: identities, operations: operations}
+	identities *service.IdentityResolver, audit LoginAuditReader, operations *paymentcategorylifecycle.Lifecycle) *SubscriptionMedicalReminderHandler {
+	return &SubscriptionMedicalReminderHandler{reminders: reminders, audit: audit, actors: actors, identities: identities, operations: operations}
 }
 
 func (h *SubscriptionMedicalReminderHandler) Send(c echo.Context) error {
@@ -53,7 +54,11 @@ func (h *SubscriptionMedicalReminderHandler) Send(c echo.Context) error {
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
-	if err = h.reminders.Send(ctx, *identity, id, request.Header.Get("X-Group-Id")); err != nil {
+	login, err := h.audit(request)
+	if err != nil {
+		return messageReadsError(c, err)
+	}
+	if err = h.reminders.Send(ctx, *identity, id, request.Header.Get("X-Group-Id"), login); err != nil {
 		if errors.Is(err, domain.ErrSubscriptionMedicalNotFound) {
 			return c.JSON(http.StatusNotFound, map[string]string{"exception": "Subscription not found"})
 		}

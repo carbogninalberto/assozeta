@@ -826,73 +826,9 @@ func auditParseISO(text string) (auditISOMoment, bool) {
 			return out, false
 		}
 	}
-	year, ok := auditISOComponent(date[:4], 4)
+	out, ok = auditParseISODate(date)
 	if !ok {
 		return out, false
-	}
-	hasSep := date[4] == '-'
-	pos := 4
-	if hasSep {
-		pos = 5
-	}
-	if auditISOSlice(date, pos, pos+1) == "W" {
-		pos++
-		week, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
-		if !ok {
-			return out, false
-		}
-		pos += 2
-		weekday := 1
-		if len(date) > pos {
-			if (date[pos] == '-') != hasSep {
-				return out, false
-			}
-			if hasSep {
-				pos++
-			}
-			if weekday, ok = auditISOComponent(auditISOSlice(date, pos, pos+1), 1); !ok {
-				return out, false
-			}
-		}
-		if year < 1 || year > 9999 || weekday < 1 || weekday > 7 {
-			return out, false
-		}
-		if week < 1 || week > 53 {
-			return out, false
-		}
-		if week == 53 {
-			first := (int(time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Weekday()) + 6) % 7
-			if !(first == 3 || (first == 2 && auditISOLeap(year))) {
-				return out, false
-			}
-		}
-		fourth := time.Date(year, 1, 4, 0, 0, 0, 0, time.UTC)
-		monday := fourth.AddDate(0, 0, -((int(fourth.Weekday()) + 6) % 7))
-		day := monday.AddDate(0, 0, (week-1)*7+weekday-1)
-		if day.Year() < 1 || day.Year() > 9999 {
-			return out, false
-		}
-		out.year, out.month, out.day = day.Year(), int(day.Month()), day.Day()
-	} else {
-		month, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
-		if !ok {
-			return out, false
-		}
-		pos += 2
-		if (auditISOSlice(date, pos, pos+1) == "-") != hasSep {
-			return out, false
-		}
-		if hasSep {
-			pos++
-		}
-		day, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
-		if !ok {
-			return out, false
-		}
-		if year < 1 || month < 1 || month > 12 || day < 1 || day > auditDaysIn(year, month) {
-			return out, false
-		}
-		out.year, out.month, out.day = year, month, day
 	}
 	if dateOnly {
 		return out, true
@@ -1008,6 +944,84 @@ func auditParseISOTime(text string, date auditISOMoment) (auditISOMoment, bool) 
 	}
 	date.hour, date.minute = parts[0], parts[1]
 	return date, true
+}
+
+// auditParseISODate is the C parse_isoformat_date over a 7, 8 or 10 byte
+// ASCII date: YYYY-MM-DD, YYYYMMDD, YYYY-Www[-D] and YYYYWww[D].
+func auditParseISODate(date string) (auditISOMoment, bool) {
+	var out auditISOMoment
+	if len(date) != 7 && len(date) != 8 && len(date) != 10 {
+		return out, false
+	}
+	year, ok := auditISOComponent(date[:4], 4)
+	if !ok {
+		return out, false
+	}
+	hasSep := date[4] == '-'
+	pos := 4
+	if hasSep {
+		pos = 5
+	}
+	if auditISOSlice(date, pos, pos+1) == "W" {
+		pos++
+		week, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
+		if !ok {
+			return out, false
+		}
+		pos += 2
+		weekday := 1
+		if len(date) > pos {
+			if (date[pos] == '-') != hasSep {
+				return out, false
+			}
+			if hasSep {
+				pos++
+			}
+			if weekday, ok = auditISOComponent(auditISOSlice(date, pos, pos+1), 1); !ok {
+				return out, false
+			}
+		}
+		if year < 1 || year > 9999 || weekday < 1 || weekday > 7 {
+			return out, false
+		}
+		if week < 1 || week > 53 {
+			return out, false
+		}
+		if week == 53 {
+			first := (int(time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Weekday()) + 6) % 7
+			if !(first == 3 || (first == 2 && auditISOLeap(year))) {
+				return out, false
+			}
+		}
+		fourth := time.Date(year, 1, 4, 0, 0, 0, 0, time.UTC)
+		monday := fourth.AddDate(0, 0, -((int(fourth.Weekday()) + 6) % 7))
+		day := monday.AddDate(0, 0, (week-1)*7+weekday-1)
+		if day.Year() < 1 || day.Year() > 9999 {
+			return out, false
+		}
+		out.year, out.month, out.day = day.Year(), int(day.Month()), day.Day()
+	} else {
+		month, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
+		if !ok {
+			return out, false
+		}
+		pos += 2
+		if (auditISOSlice(date, pos, pos+1) == "-") != hasSep {
+			return out, false
+		}
+		if hasSep {
+			pos++
+		}
+		day, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
+		if !ok {
+			return out, false
+		}
+		if year < 1 || month < 1 || month > 12 || day < 1 || day > auditDaysIn(year, month) {
+			return out, false
+		}
+		out.year, out.month, out.day = year, month, day
+	}
+	return out, true
 }
 
 func auditDaysIn(year, month int) int {
@@ -1196,4 +1210,38 @@ func PythonUTF8Replace(text string) string {
 		i = j
 	}
 	return out.String()
+}
+
+// PythonParseDate is django.utils.dateparse.parse_date for a str: date.fromisoformat
+// (basic and ISO week forms), then date_re (\d{4}-\d{1,2}-\d{1,2}$ with Unicode
+// digits, and $ also before a final newline). It returns the date as YYYY-MM-DD;
+// ok=false covers both "not well formatted" (None) and "well formatted but not a
+// date" (ValueError): the model field rejects either.
+func PythonParseDate(text string) (string, bool) {
+	if moment, ok := auditParseISODate(text); ok {
+		return fmt.Sprintf("%04d-%02d-%02d", moment.year, moment.month, moment.day), true
+	}
+	text = strings.TrimSuffix(text, "\n")
+	parts := strings.Split(text, "-")
+	if len(parts) != 3 {
+		return "", false
+	}
+	var values [3]int
+	for index, part := range parts {
+		runes := []rune(part)
+		if len(runes) == 0 || (index == 0 && len(runes) != 4) || (index > 0 && len(runes) > 2) {
+			return "", false
+		}
+		for _, r := range runes {
+			digit, ok := pythonDigit(r)
+			if !ok {
+				return "", false
+			}
+			values[index] = values[index]*10 + digit
+		}
+	}
+	if values[0] < 1 || values[1] < 1 || values[1] > 12 || values[2] < 1 || values[2] > auditDaysIn(values[0], values[1]) {
+		return "", false
+	}
+	return fmt.Sprintf("%04d-%02d-%02d", values[0], values[1], values[2]), true
 }
