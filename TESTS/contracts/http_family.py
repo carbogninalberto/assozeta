@@ -124,6 +124,8 @@ def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), uno
     check(received.get('Content-Language') == 'en' and received.get('Set-Cookie') is None, 'response.headers')
     challenge = challenged(case, status) if challenged is not None else status == 401
     check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if challenge else None), 'response.authentication')
+    # DRF's Throttled answer names the wait in Retry-After.
+    check(received.get('Retry-After') == case.get('retry_after'), 'response.retry-after')
     if case['response'] == '<empty>':
         check(raw == b'', 'response.empty')
         return status

@@ -19,9 +19,9 @@ model BooleanField rejects (500) keeps its audit entry and not the row.
 
 profile_integrations (@api_view GET, PATCH; registry other.settings.read for
 every method; refused in association-scoped sessions) reads
-request.user.sport_association and on PATCH assigns request.data.get(...) for
-review_url and review_url_enabled without validation, saves the association
-and echoes the assigned (raw) values. Requests are not atomic.
+request.user.sport_association and on PATCH validates review_url and
+review_url_enabled with a serializer (a refused value answers 400 and writes
+nothing), saves the association atomically and echoes the saved values.
 Run with ``python3 -I``.
 """
 import copy
@@ -327,44 +327,60 @@ add('integrations-owner-patch', 'owner', INTEGRATIONS, 200, {'review_url': 'http
     effect={'association': effect})
 add('integrations-empty-patch-no-audit', 'full_collaborator', INTEGRATIONS, 200, dict(REVIEW), method='PATCH', body={},
     effect={'association': review_saved('full_collaborator', REVIEW['review_url'], True)})
-# The raw value is echoed; auditlog compares str() values.
+# The values go through the serializer: a boolean spelling is read as a boolean, a number as text.
 add('integrations-string-true-no-audit', 'owner', INTEGRATIONS, 200, {'review_url': 'https://example.test/recensioni',
-    'review_url_enabled': 'True'}, method='PATCH', body={'review_url_enabled': 'True'},
-    effect={'association': review_saved('owner', REVIEW['review_url'], 'True')})
+    'review_url_enabled': True}, method='PATCH', body={'review_url_enabled': 'True'},
+    effect={'association': review_saved('owner', REVIEW['review_url'], True)})
 # A collaborator with only other.settings.read may PATCH.
-add('integrations-restricted-read-patches', 'restricted_collaborator', INTEGRATIONS, 200, {'review_url': 5, 'review_url_enabled': 0},
-    method='PATCH', body={'review_url': 5, 'review_url_enabled': 0}, effect={'association': review_saved('restricted_collaborator', 5, 0, url_text='5')})
-add('integrations-invalid-boolean-keeps-audit', 'owner', INTEGRATIONS, 500, SERVER, method='PATCH', body={'review_url_enabled': 'yes'},
-    effect={'association': review_saved('owner', '5', 'yes', stored=False)})
-add('integrations-null-boolean-keeps-audit', 'owner', INTEGRATIONS, 500, SERVER, method='PATCH', body={'review_url_enabled': None},
-    effect={'association': review_saved('owner', '5', None, stored=False)})
-add('integrations-too-long-url-keeps-audit', 'owner', INTEGRATIONS, 500, SERVER, method='PATCH', body={'review_url': 'u' * 256},
-    effect={'association': review_saved('owner', 'u' * 256, False, stored=False)})
-add('integrations-list-body-server-error', 'owner', INTEGRATIONS, 500, SERVER, method='PATCH', body=[])
-add('integrations-form-patch', 'owner', INTEGRATIONS, 200, {'review_url': 'modulo è', 'review_url_enabled': 'True'}, method='PATCH',
+add('integrations-restricted-read-patches', 'restricted_collaborator', INTEGRATIONS, 200, {'review_url': '5', 'review_url_enabled': False},
+    method='PATCH', body={'review_url': 5, 'review_url_enabled': 0}, effect={'association': review_saved('restricted_collaborator', '5', False)})
+# A value the serializer refuses answers 400 and nothing is written (no audit entry either).
+STRING, BOOLEAN, NULL = 'Not a valid string.', 'Must be a valid boolean.', 'This field may not be null.'
+TOO_LONG, NUL = 'Ensure this field has no more than 255 characters.', 'Null characters are not allowed.'
+for name, body, answer in (
+        ('invalid-boolean', {'review_url_enabled': 'maybe'}, {'review_url_enabled': [BOOLEAN]}),
+        ('null-boolean', {'review_url_enabled': None}, {'review_url_enabled': [NULL]}),
+        ('too-long-url', {'review_url': 'u' * 256}, {'review_url': [TOO_LONG]}),
+        ('list-url', {'review_url': ['a']}, {'review_url': [STRING]}),
+        ('object-url', {'review_url': {'a': 1}}, {'review_url': [STRING]}),
+        ('boolean-url', {'review_url': True}, {'review_url': [STRING]}),
+        ('null-character-url', {'review_url': 'a\u0000b'}, {'review_url': [NUL]}),
+        ('list-boolean', {'review_url_enabled': [True]}, {'review_url_enabled': [BOOLEAN]}),
+        ('valid-url-with-invalid-boolean', {'review_url': 'https://after.example.test/', 'review_url_enabled': 'maybe'},
+         {'review_url_enabled': [BOOLEAN]}),
+        ('both-invalid', {'review_url': 'u' * 256, 'review_url_enabled': 'maybe'},
+         {'review_url': [TOO_LONG], 'review_url_enabled': [BOOLEAN]})):
+    add(f'integrations-{name}-answers-400', 'owner', INTEGRATIONS, 400, answer, method='PATCH', body=body)
+add('integrations-list-body-answers-400', 'owner', INTEGRATIONS, 400,
+    {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']}, method='PATCH', body=[])
+add('integrations-null-body-answers-400', 'owner', INTEGRATIONS, 400, {'non_field_errors': ['No data provided']}, method='PATCH',
+    raw_body='null', content_type='application/json')
+add('integrations-form-patch', 'owner', INTEGRATIONS, 200, {'review_url': 'modulo è', 'review_url_enabled': True}, method='PATCH',
     raw_body='review_url=modulo+%C3%A8&review_url_enabled=1&review_url_enabled=True', content_type='application/x-www-form-urlencoded',
-    effect={'association': review_saved('owner', 'modulo è', 'True')})
+    effect={'association': review_saved('owner', 'modulo è', True)})
+add('integrations-form-without-boolean-keeps-it', 'owner', INTEGRATIONS, 200, {'review_url': 'solo testo', 'review_url_enabled': True},
+    method='PATCH', raw_body='review_url=solo+testo', content_type='application/x-www-form-urlencoded',
+    effect={'association': review_saved('owner', 'solo testo', True)})
+# An empty HTML value of the boolean is not sent: the stored one stays.
+add('integrations-form-empty-boolean-keeps-it', 'owner', INTEGRATIONS, 200, {'review_url': 'nuovo', 'review_url_enabled': True},
+    method='PATCH', raw_body='review_url=nuovo&review_url_enabled=', content_type='application/x-www-form-urlencoded',
+    effect={'association': review_saved('owner', 'nuovo', True)})
+add('integrations-form-invalid-boolean-answers-400', 'owner', INTEGRATIONS, 400, {'review_url_enabled': [BOOLEAN]}, method='PATCH',
+    raw_body='review_url=altro&review_url_enabled=forse', content_type='application/x-www-form-urlencoded')
 add('integrations-null-url', 'full_collaborator', INTEGRATIONS, 200, {'review_url': None, 'review_url_enabled': False}, method='PATCH',
     body={'review_url': None, 'review_url_enabled': False}, effect={'association': review_saved('full_collaborator', None, False)})
 add('integrations-get-after-patch', 'owner', INTEGRATIONS, 200, dict(REVIEW))
 
-# A file part under another key changes nothing; as review_url it is stored by name and the echo fails to render.
+# A file part under another key changes nothing; as a value of the form it is refused.
 add('integrations-multipart-unrelated-file', 'owner', INTEGRATIONS, 200, dict(REVIEW), method='PATCH',
     raw_body=multipart([], [('other', 'nota.txt', 'ciao')]), content_type=MULTIPART,
     effect={'association': review_saved('owner', REVIEW['review_url'], REVIEW['review_url_enabled'])})
-add('integrations-multipart-file-url-echoes-lines', 'owner', INTEGRATIONS, 200, {'review_url': ['ciao'], 'review_url_enabled': False},
-    method='PATCH', raw_body=multipart([], [('review_url', 'nota.txt', 'ciao')]), content_type=MULTIPART,
-    effect={'association': review_saved('owner', 'nota.txt', REVIEW['review_url_enabled'])})
-add('integrations-multipart-file-url-several-lines', 'owner', INTEGRATIONS, 200,
-    {'review_url': ['uno\r\n', 'due\r', 'tre\n', 'quattro'], 'review_url_enabled': False}, method='PATCH',
-    raw_body=multipart([], [('review_url', 'righe.txt', 'uno\r\ndue\rtre\nquattro')]), content_type=MULTIPART,
-    effect={'association': review_saved('owner', 'righe.txt', REVIEW['review_url_enabled'])})
-add('integrations-multipart-empty-file-url', 'owner', INTEGRATIONS, 200, {'review_url': [], 'review_url_enabled': False}, method='PATCH',
-    raw_body=multipart([], [('review_url', 'vuoto.txt', '')]), content_type=MULTIPART,
-    effect={'association': review_saved('owner', 'vuoto.txt', REVIEW['review_url_enabled'])})
-add('integrations-multipart-file-enabled-keeps-audit', 'owner', INTEGRATIONS, 500, SERVER, method='PATCH',
-    raw_body=multipart([], [('review_url_enabled', 'nota.txt', 'ciao')]), content_type=MULTIPART,
-    effect={'association': review_saved('owner', REVIEW['review_url'], 'nota.txt', stored=False)})
+add('integrations-multipart-file-url-answers-400', 'owner', INTEGRATIONS, 400, {'review_url': [STRING]},
+    method='PATCH', raw_body=multipart([], [('review_url', 'nota.txt', 'ciao')]), content_type=MULTIPART)
+add('integrations-multipart-empty-file-url-answers-400', 'owner', INTEGRATIONS, 400, {'review_url': [STRING]}, method='PATCH',
+    raw_body=multipart([], [('review_url', 'vuoto.txt', '')]), content_type=MULTIPART)
+add('integrations-multipart-file-enabled-answers-400', 'owner', INTEGRATIONS, 400, {'review_url_enabled': [BOOLEAN]}, method='PATCH',
+    raw_body=multipart([], [('review_url_enabled', 'nota.txt', 'ciao')]), content_type=MULTIPART)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Profile settings and integrations authored sequence with audit effects',

@@ -2100,7 +2100,7 @@
    "status": 200,
    "response": {
     "review_url": "https://example.test/recensioni",
-    "review_url_enabled": "True"
+    "review_url_enabled": true
    },
    "effect": {
     "association": {
@@ -2124,8 +2124,8 @@
    "headers": {},
    "status": 200,
    "response": {
-    "review_url": 5,
-    "review_url_enabled": 0
+    "review_url": "5",
+    "review_url_enabled": false
    },
    "effect": {
     "association": {
@@ -2137,7 +2137,7 @@
       ],
       "review_url_enabled": [
        "True",
-       "0"
+       "False"
       ]
      },
      "stored": {
@@ -2152,87 +2152,216 @@
    }
   },
   {
-   "name": "profile-settings-integrations-invalid-boolean-keeps-audit",
+   "name": "profile-settings-integrations-invalid-boolean-answers-400",
    "actor": "owner",
    "method": "PATCH",
    "path": "/profile/integrations",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "effect": {
-    "association": {
-     "actor": "owner",
-     "changes": {
-      "review_url_enabled": [
-       "False",
-       "yes"
-      ]
-     },
-     "stored": null
-    }
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
    },
+   "effect": null,
    "body": {
-    "review_url_enabled": "yes"
+    "review_url_enabled": "maybe"
    }
   },
   {
-   "name": "profile-settings-integrations-null-boolean-keeps-audit",
+   "name": "profile-settings-integrations-null-boolean-answers-400",
    "actor": "owner",
    "method": "PATCH",
    "path": "/profile/integrations",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "effect": {
-    "association": {
-     "actor": "owner",
-     "changes": {
-      "review_url_enabled": [
-       "False",
-       "None"
-      ]
-     },
-     "stored": null
-    }
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "This field may not be null."
+    ]
    },
+   "effect": null,
    "body": {
     "review_url_enabled": null
    }
   },
   {
-   "name": "profile-settings-integrations-too-long-url-keeps-audit",
+   "name": "profile-settings-integrations-too-long-url-answers-400",
    "actor": "owner",
    "method": "PATCH",
    "path": "/profile/integrations",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "effect": {
-    "association": {
-     "actor": "owner",
-     "changes": {
-      "review_url": [
-       "5",
-       "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
-      ]
-     },
-     "stored": null
-    }
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Ensure this field has no more than 255 characters."
+    ]
    },
+   "effect": null,
    "body": {
     "review_url": "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
    }
   },
   {
-   "name": "profile-settings-integrations-list-body-server-error",
+   "name": "profile-settings-integrations-list-url-answers-400",
    "actor": "owner",
    "method": "PATCH",
    "path": "/profile/integrations",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": [
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "profile-settings-integrations-object-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": {
+     "a": 1
+    }
+   }
+  },
+  {
+   "name": "profile-settings-integrations-boolean-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": true
+   }
+  },
+  {
+   "name": "profile-settings-integrations-null-character-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Null characters are not allowed."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": "a\u0000b"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-list-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url_enabled": [
+     true
+    ]
+   }
+  },
+  {
+   "name": "profile-settings-integrations-valid-url-with-invalid-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": "https://after.example.test/",
+    "review_url_enabled": "maybe"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-both-invalid-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Ensure this field has no more than 255 characters."
+    ],
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu",
+    "review_url_enabled": "maybe"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-list-body-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
    "effect": null,
    "body": []
+  },
+  {
+   "name": "profile-settings-integrations-null-body-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "No data provided"
+    ]
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
   },
   {
    "name": "profile-settings-integrations-form-patch",
@@ -2243,7 +2372,7 @@
    "status": 200,
    "response": {
     "review_url": "modulo è",
-    "review_url_enabled": "True"
+    "review_url_enabled": true
    },
    "effect": {
     "association": {
@@ -2268,6 +2397,80 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "profile-settings-integrations-form-without-boolean-keeps-it",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "solo testo",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "modulo è",
+       "solo testo"
+      ]
+     },
+     "stored": {
+      "review_url": "solo testo",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "raw_body": "review_url=solo+testo",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-integrations-form-empty-boolean-keeps-it",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "nuovo",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "solo testo",
+       "nuovo"
+      ]
+     },
+     "stored": {
+      "review_url": "nuovo",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "raw_body": "review_url=nuovo&review_url_enabled=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-integrations-form-invalid-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "raw_body": "review_url=altro&review_url_enabled=forse",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "profile-settings-integrations-null-url",
    "actor": "full_collaborator",
    "method": "PATCH",
@@ -2283,7 +2486,7 @@
      "actor": "full_collaborator",
      "changes": {
       "review_url": [
-       "modulo è",
+       "nuovo",
        "None"
       ],
       "review_url_enabled": [
@@ -2340,119 +2543,50 @@
    "content_type": "multipart/form-data; boundary=profilesettingsboundary"
   },
   {
-   "name": "profile-settings-integrations-multipart-file-url-echoes-lines",
+   "name": "profile-settings-integrations-multipart-file-url-answers-400",
    "actor": "owner",
    "method": "PATCH",
    "path": "/profile/integrations",
    "headers": {},
-   "status": 200,
+   "status": 400,
    "response": {
     "review_url": [
-     "ciao"
-    ],
-    "review_url_enabled": false
+     "Not a valid string."
+    ]
    },
-   "effect": {
-    "association": {
-     "actor": "owner",
-     "changes": {
-      "review_url": [
-       "None",
-       "nota.txt"
-      ]
-     },
-     "stored": {
-      "review_url": "nota.txt",
-      "review_url_enabled": false
-     }
-    }
-   },
+   "effect": null,
    "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
    "content_type": "multipart/form-data; boundary=profilesettingsboundary"
   },
   {
-   "name": "profile-settings-integrations-multipart-file-url-several-lines",
+   "name": "profile-settings-integrations-multipart-empty-file-url-answers-400",
    "actor": "owner",
    "method": "PATCH",
    "path": "/profile/integrations",
    "headers": {},
-   "status": 200,
+   "status": 400,
    "response": {
     "review_url": [
-     "uno\r\n",
-     "due\r",
-     "tre\n",
-     "quattro"
-    ],
-    "review_url_enabled": false
+     "Not a valid string."
+    ]
    },
-   "effect": {
-    "association": {
-     "actor": "owner",
-     "changes": {
-      "review_url": [
-       "nota.txt",
-       "righe.txt"
-      ]
-     },
-     "stored": {
-      "review_url": "righe.txt",
-      "review_url_enabled": false
-     }
-    }
-   },
-   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"righe.txt\"\r\nContent-Type: text/plain\r\n\r\nuno\r\ndue\rtre\nquattro\r\n--profilesettingsboundary--\r\n",
-   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
-  },
-  {
-   "name": "profile-settings-integrations-multipart-empty-file-url",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/profile/integrations",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "review_url": [],
-    "review_url_enabled": false
-   },
-   "effect": {
-    "association": {
-     "actor": "owner",
-     "changes": {
-      "review_url": [
-       "righe.txt",
-       "vuoto.txt"
-      ]
-     },
-     "stored": {
-      "review_url": "vuoto.txt",
-      "review_url_enabled": false
-     }
-    }
-   },
+   "effect": null,
    "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"vuoto.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--profilesettingsboundary--\r\n",
    "content_type": "multipart/form-data; boundary=profilesettingsboundary"
   },
   {
-   "name": "profile-settings-integrations-multipart-file-enabled-keeps-audit",
+   "name": "profile-settings-integrations-multipart-file-enabled-answers-400",
    "actor": "owner",
    "method": "PATCH",
    "path": "/profile/integrations",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "effect": {
-    "association": {
-     "actor": "owner",
-     "changes": {
-      "review_url_enabled": [
-       "False",
-       "nota.txt"
-      ]
-     },
-     "stored": null
-    }
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
    },
+   "effect": null,
    "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url_enabled\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
    "content_type": "multipart/form-data; boundary=profilesettingsboundary"
   }

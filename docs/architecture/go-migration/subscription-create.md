@@ -243,6 +243,15 @@ For an account that is not an association `_prepare_subscription_request` leaves
 `{"detail": "User not allowed."}` (the quick re-subscription is for the association's own owner). Without both keys the answer is
 the 400 validation message. Go: `quickMember`.
 
+## Limits of requests without an account
+
+Requests without an account are counted per address (`PublicRequestThrottle`, history `throttle_public-subscription-add_<ident>` in the
+DRF cache; `PUBLIC_REQUESTS_PER_WINDOW`, default 30, in `PUBLIC_REQUEST_WINDOW_SECONDS`, default 600): a full history answers 429
+with `Retry-After` before the method dispatch (OPTIONS and a wrong method included), and requests with an account are not counted.
+A request without an account that declares a body above `PUBLIC_UPLOAD_MAX_BYTES` (default 10 MB) answers 413 `{'error':
+'Il file supera la dimensione massima consentita (<n>)'}` before the body is read. Cases `anonymous-*-over-the-rate`,
+`anonymous-below-the-rate`, `anonymous-old-history`, `owner-full-history`, `*-body-above-the-limit` (the run uses a limit of 32768 bytes).
+
 ## Not ported
 
 Refused with the 500 page before anything is committed:

@@ -688,7 +688,7 @@
    "group_id": null,
    "course": null
   },
-  "up_invoiced": {
+  "up_key_removed": {
    "id": "a1000000-0000-4000-8000-000000988033",
    "type": "default",
    "subject": 0,
@@ -700,7 +700,7 @@
    "description": "Quota",
    "payment_category_id": "a1000000-0000-4000-8000-000000988001",
    "meta_payment_categories": null,
-   "invoice_id": "a1000000-0000-4000-8000-000000988015",
+   "invoice_id": null,
    "user_id": "a1000000-0000-4000-8000-000000700001",
    "associate_id": null,
    "supplier_id": null,
@@ -717,7 +717,7 @@
    "group_id": null,
    "course": null
   },
-  "up_invoiced_print_fails": {
+  "up_key_foreign": {
    "id": "a1000000-0000-4000-8000-000000988034",
    "type": "default",
    "subject": 0,
@@ -729,7 +729,7 @@
    "description": "Quota",
    "payment_category_id": "a1000000-0000-4000-8000-000000988001",
    "meta_payment_categories": null,
-   "invoice_id": "a1000000-0000-4000-8000-000000988015",
+   "invoice_id": null,
    "user_id": "a1000000-0000-4000-8000-000000700001",
    "associate_id": null,
    "supplier_id": null,
@@ -746,7 +746,7 @@
    "group_id": null,
    "course": null
   },
-  "up_attach_one": {
+  "up_key_visible": {
    "id": "a1000000-0000-4000-8000-000000988035",
    "type": "default",
    "subject": 0,
@@ -775,7 +775,7 @@
    "group_id": null,
    "course": null
   },
-  "up_attach_partial": {
+  "up_key_garbage": {
    "id": "a1000000-0000-4000-8000-000000988036",
    "type": "default",
    "subject": 0,
@@ -804,7 +804,7 @@
    "group_id": null,
    "course": null
   },
-  "up_attach_bad64": {
+  "up_key_null": {
    "id": "a1000000-0000-4000-8000-000000988037",
    "type": "default",
    "subject": 0,
@@ -833,7 +833,7 @@
    "group_id": null,
    "course": null
   },
-  "up_attach_number": {
+  "up_invoiced": {
    "id": "a1000000-0000-4000-8000-000000988038",
    "type": "default",
    "subject": 0,
@@ -845,7 +845,7 @@
    "description": "Quota",
    "payment_category_id": "a1000000-0000-4000-8000-000000988001",
    "meta_payment_categories": null,
-   "invoice_id": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000988015",
    "user_id": "a1000000-0000-4000-8000-000000700001",
    "associate_id": null,
    "supplier_id": null,
@@ -862,7 +862,7 @@
    "group_id": null,
    "course": null
   },
-  "up_attach_long": {
+  "up_invoiced_print_fails": {
    "id": "a1000000-0000-4000-8000-000000988039",
    "type": "default",
    "subject": 0,
@@ -874,7 +874,7 @@
    "description": "Quota",
    "payment_category_id": "a1000000-0000-4000-8000-000000988001",
    "meta_payment_categories": null,
-   "invoice_id": null,
+   "invoice_id": "a1000000-0000-4000-8000-000000988015",
    "user_id": "a1000000-0000-4000-8000-000000700001",
    "associate_id": null,
    "supplier_id": null,
@@ -891,7 +891,7 @@
    "group_id": null,
    "course": null
   },
-  "up_attach_nul": {
+  "up_attach_one": {
    "id": "a1000000-0000-4000-8000-000000988040",
    "type": "default",
    "subject": 0,
@@ -920,8 +920,153 @@
    "group_id": null,
    "course": null
   },
-  "up_attach_null_name": {
+  "up_attach_partial": {
    "id": "a1000000-0000-4000-8000-000000988041",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_bad64": {
+   "id": "a1000000-0000-4000-8000-000000988042",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_number": {
+   "id": "a1000000-0000-4000-8000-000000988043",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_long": {
+   "id": "a1000000-0000-4000-8000-000000988044",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_nul": {
+   "id": "a1000000-0000-4000-8000-000000988045",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_null_name": {
+   "id": "a1000000-0000-4000-8000-000000988046",
    "type": "default",
    "subject": 0,
    "amount": "10.00",
@@ -14054,7 +14199,7 @@
    }
   },
   {
-   "name": "payment-writes-update-invoiced-prints-invoice",
+   "name": "payment-writes-update-body-key-of-removed-payment-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/payment/a1000000-0000-4000-8000-000000988033/update",
@@ -14064,6 +14209,436 @@
     "data": {
      "payment": {
       "payment_id": "a1000000-0000-4000-8000-000000988033",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Quote fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "21.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000988001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_key_removed": {
+      "amount": "21.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_key_removed",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "21.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000988028",
+    "amount": "21"
+   }
+  },
+  {
+   "name": "payment-writes-update-body-key-of-other-association-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988034/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000988034",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Quote fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "22.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000988001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_key_foreign": {
+      "amount": "22.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_key_foreign",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "22.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000988030",
+    "amount": "22"
+   }
+  },
+  {
+   "name": "payment-writes-update-body-key-of-visible-payment-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988035/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000988035",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Quote fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "23.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000988001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_key_visible": {
+      "amount": "23.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_key_visible",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "23.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000988016",
+    "amount": "23"
+   }
+  },
+  {
+   "name": "payment-writes-update-body-key-not-a-uuid-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988036/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000988036",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Quote fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "24.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000988001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_key_garbage": {
+      "amount": "24.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_key_garbage",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "24.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "not-a-uuid",
+    "amount": "24"
+   }
+  },
+  {
+   "name": "payment-writes-update-body-key-null-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988037/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000988037",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "subscription_id": null,
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Quote fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "25.00",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000000988001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_key_null": {
+      "amount": "25.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_key_null",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "25.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": null,
+    "amount": "25"
+   }
+  },
+  {
+   "name": "payment-writes-update-invoiced-prints-invoice",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988038/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "payment": {
+      "payment_id": "a1000000-0000-4000-8000-000000988038",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -14169,13 +14744,13 @@
    "name": "payment-writes-update-invoiced-print-failure-ignored",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988034/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988039/update",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000988034",
+      "payment_id": "a1000000-0000-4000-8000-000000988039",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -14275,7 +14850,7 @@
    ],
    "body": {
     "amount": "19",
-    "payment_id": "a1000000-0000-4000-8000-000000988034"
+    "payment_id": "a1000000-0000-4000-8000-000000988039"
    }
   },
   {
@@ -14554,13 +15129,13 @@
    "name": "payment-writes-update-attachment",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988035/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988040/update",
    "headers": {},
    "status": 200,
    "response": {
     "data": {
      "payment": {
-      "payment_id": "a1000000-0000-4000-8000-000000988035",
+      "payment_id": "a1000000-0000-4000-8000-000000988040",
       "user": {
        "first_name": "Message",
        "last_name": "Fixture",
@@ -14692,7 +15267,7 @@
    "name": "payment-writes-update-attachment-then-missing-keys",
    "actor": "full_collaborator",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988036/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988041/update",
    "headers": {},
    "status": 400,
    "response": {
@@ -14776,7 +15351,7 @@
    "name": "payment-writes-update-attachment-invalid-base64",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988037/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988042/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -14821,7 +15396,7 @@
    "name": "payment-writes-update-attachment-number-document",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988038/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988043/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -14907,7 +15482,7 @@
    "name": "payment-writes-update-attachment-long-filename",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988039/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988044/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -14952,7 +15527,7 @@
    "name": "payment-writes-update-attachment-nul-filename",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988040/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988045/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -14997,7 +15572,7 @@
    "name": "payment-writes-update-attachment-null-filename",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988041/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988046/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",

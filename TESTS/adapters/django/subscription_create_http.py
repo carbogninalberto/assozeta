@@ -38,6 +38,7 @@ from TESTS.adapters.django import message_read_scopes as scopes
 from TESTS.adapters.django import message_reads as shared
 from TESTS.adapters.django.workflow_writes_http import keyed
 from TESTS.adapters.django import default_payment_category
+from TESTS.adapters.django import public_flow_throttle as throttle
 
 SOURCES = ('TESTS/fixtures/subscription_create_http.json', 'TESTS/contracts/test_subscription_create_http.py',
            'TESTS/adapters/django/subscription_create_http.py', 'BE/application/views/subscriptions_views.py',
@@ -51,7 +52,8 @@ SOURCES = ('TESTS/fixtures/subscription_create_http.json', 'TESTS/contracts/test
            'BE/application/mixin.py', 'BE/application/permissions_registry.py', 'BE/application/impersonation_scope.py',
            'BE/core/celery.py', 'BE/core/settings.py', 'BE/application/services/subscription_service.py',
            'BE/application/views/auth_views.py', 'BE/templates/email/account/email_welcome_password_message.html',
-           'TESTS/adapters/django/instance_logo.py', 'TESTS/adapters/django/s3_objects.py') + harness.SOURCES + default_payment_category.SOURCES
+           'TESTS/adapters/django/instance_logo.py', 'TESTS/adapters/django/s3_objects.py',
+           'TESTS/adapters/django/public_flow_throttle.py', 'BE/application/public_limits.py') + harness.SOURCES + default_payment_category.SOURCES
 BUCKET = 'subscription-create-fixture'
 LOCATION = 'subscription-create'
 PUBLIC_BASE = 'https://cdn.example.test/firme'
@@ -119,7 +121,8 @@ def service_context(report, log):
             with override_settings(CHANNEL_LAYERS=layers, STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
                                    AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
                                    AWS_LOCATION=LOCATION, AWS_S3_ADDRESSING_STYLE='path', AWS_S3_USE_OBJECT_ACL=False,
-                                   AWS_S3_PUBLIC_BASE_URL=PUBLIC_BASE):
+                                   AWS_S3_PUBLIC_BASE_URL=PUBLIC_BASE), \
+                    throttle.upload_limit(contract.load_source()['public_upload_limit']):
                 yield
             contract.require(listing() == {SENTINEL[0]}, 'storage.objects-restored')
         finally:
@@ -923,9 +926,11 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
     fixture['raw'] = raw
     STATE['objects'] = listing()
     results, context = [], {'remote': {}, 'fixture': fixture}
+    ident = throttle.client_ident(base_url, contract.require)
     for case in source['cases']:
         if case.get('setup'):
             apply_settings(ids, case['setup'])
+        throttle.prepare(case, ident, contract.require)
         before = scopes.snapshot_state(apps)
         context['prepared'] = {'started': time.time(), 'store': fixture['store'].get(store_key(ids)), 'cache': raw.get(cache_key(ids)),
                                'targets': {user: {'store': fixture['store'].get(store_key(ids, user)), 'cache': raw.get(cache_key(ids, user))}
@@ -934,6 +939,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
         token = None if case['actor'] == 'anonymous' else fixture['tokens'][case['actor']]
         try:
             status = contract.assert_case(case, base_url, token=token, sessions=fixture['sessions'])
+            throttle.finish(case, status, ident, contract.require)
             after = scopes.snapshot_state(apps)
             shared.assert_attribution(backend, case['method'], case['path'].split('?')[0], status, observer.delta(cursor), case['name'])
             assert_effect(case, before, after, source, context)

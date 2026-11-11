@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
-	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -414,21 +412,19 @@ func (s *ProfileSettings) Integrations(ctx context.Context, identity domain.Reso
 	return ProfileIntegrations{URL: review.URL, Enabled: review.Enabled}, tx.Commit()
 }
 
-// UpdateIntegrations is profile_integrations PATCH: request.data.get(...)
-// with the stored values as defaults, assigned without validation. auditlog
-// compares str() values in pre_save; CharField.to_python is str(), the model
-// BooleanField and the varchar(255) NOT NULL columns may then reject the
-// values (500, the entry kept).
-func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domain.ResolvedIdentity, body any,
+// UpdateIntegrations is profile_integrations PATCH: the values are validated
+// by ProfileIntegrationsSerializer (a refused value is a 400 and nothing is
+// written), the stored values are the defaults of the fields not sent, and the
+// save with its audit entry is one transaction.
+func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domain.ResolvedIdentity, body any, form bool,
 	audit domain.LoginAuditContext) (ProfileIntegrations, error) {
 	_, association, err := s.owner(ctx, identity)
 	if err != nil {
 		return ProfileIntegrations{}, err
 	}
-	object, ok := body.(domain.RequestObject)
-	if !ok {
-		// request.data.get on a list, scalar or None: AttributeError.
-		return ProfileIntegrations{}, ErrProfileSettingsServer
+	input, invalid := dto.ParseProfileIntegrations(body, form)
+	if invalid != nil {
+		return ProfileIntegrations{}, &ProfileSettingsValidationError{Fields: invalid}
 	}
 	tx, err := s.store.BeginProfileSettings(ctx)
 	if err != nil {
@@ -439,38 +435,25 @@ func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domai
 	if err != nil {
 		return ProfileIntegrations{}, err
 	}
-	var url, enabled any = nil, review.Enabled
-	if review.URL != nil {
-		url = *review.URL
+	url, enabled := review.URL, review.Enabled
+	if input.URLPresent {
+		url = input.URL
 	}
-	if value, present := object.Lookup("review_url"); present {
-		url = value
-	}
-	if value, present := object.Lookup("review_url_enabled"); present {
-		enabled = value
-	}
-	// A file part is the QueryDict value: str() is its name and the response
-	// renders it as its lines (File.__iter__), which needs the whole content.
-	var echoed any = url
-	var echoErr error
-	if upload, isUpload := url.(domain.RequestUpload); isUpload {
-		echoed, echoErr = profileUploadLines(upload)
-		if echoErr != nil && !upload.Whole {
-			return ProfileIntegrations{}, ErrProfileSettingsUpload
-		}
-	}
-	if upload, isUpload := enabled.(domain.RequestUpload); isUpload && upload.Temp {
-		return ProfileIntegrations{}, ErrProfileSettingsUpload
+	if input.EnabledPresent {
+		enabled = input.Enabled
 	}
 	changes := map[string][2]string{}
-	oldURL := "None"
+	oldURL, newURL := "None", "None"
 	if review.URL != nil {
 		oldURL = *review.URL
 	}
-	if new := profileText(url); new != oldURL {
-		changes["review_url"] = [2]string{oldURL, new}
+	if url != nil {
+		newURL = *url
 	}
-	if old, new := pythonBool(review.Enabled), profileText(enabled); old != new {
+	if newURL != oldURL {
+		changes["review_url"] = [2]string{oldURL, newURL}
+	}
+	if old, new := pythonBool(review.Enabled), pythonBool(enabled); old != new {
 		changes["review_url_enabled"] = [2]string{old, new}
 	}
 	if len(changes) > 0 {
@@ -481,71 +464,15 @@ func (s *ProfileSettings) UpdateIntegrations(ctx context.Context, identity domai
 			return ProfileIntegrations{}, err
 		}
 	}
-	var storedURL *string
-	if url != nil {
-		text := profileText(url)
-		storedURL = &text
-	}
-	parsed, boolErr := profileBoolean(enabled)
-	if boolErr != nil || storedURL != nil && (utf8.RuneCountInString(*storedURL) > 255 || containsNUL(*storedURL)) {
-		if err = tx.Commit(); err != nil {
-			return ProfileIntegrations{}, err
-		}
-		return ProfileIntegrations{}, ErrProfileSettingsServer
-	}
-	if err = tx.SaveReview(ctx, association, storedURL, parsed); err != nil {
+	if err = tx.SaveReview(ctx, association, url, enabled); err != nil {
 		return ProfileIntegrations{}, err
 	}
 	if err = tx.Commit(); err != nil {
 		return ProfileIntegrations{}, err
 	}
-	if echoErr != nil {
-		// The renderer cannot encode the file's bytes: the data is saved, the answer is the 500 page.
-		return ProfileIntegrations{}, ErrProfileSettingsServer
+	var echoed any
+	if url != nil {
+		echoed = *url
 	}
 	return ProfileIntegrations{URL: echoed, Enabled: enabled}, nil
-}
-
-// profileText is str(value) for a QueryDict value: a file part is its name.
-func profileText(value any) string {
-	if upload, ok := value.(domain.RequestUpload); ok {
-		return upload.Name
-	}
-	return dto.PythonStr(value)
-}
-
-// profileUploadLines is tuple(file): the lines of File.__iter__ (bytes
-// splitlines(True) over the first chunk) decoded as UTF-8 by DRF's encoder.
-func profileUploadLines(upload domain.RequestUpload) ([]string, error) {
-	if !upload.Whole {
-		return nil, ErrProfileSettingsUpload
-	}
-	lines := []string{}
-	data := upload.Content
-	for len(data) > 0 {
-		end := strings.IndexAny(data, "\r\n")
-		if end < 0 {
-			end = len(data)
-		} else if data[end] == '\r' && end+1 < len(data) && data[end+1] == '\n' {
-			end += 2
-		} else {
-			end++
-		}
-		line := data[:end]
-		if !utf8.ValidString(line) {
-			return nil, ErrProfileSettingsServer
-		}
-		lines = append(lines, line)
-		data = data[end:]
-	}
-	return lines, nil
-}
-
-func containsNUL(text string) bool {
-	for _, r := range text {
-		if r == 0 {
-			return true
-		}
-	}
-	return false
 }

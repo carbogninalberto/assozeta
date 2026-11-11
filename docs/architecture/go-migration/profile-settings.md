@@ -19,13 +19,19 @@
 ## profile/integrations
 
 - `@api_view(['GET', 'PATCH'])`, and the registry maps every method to `other.settings.read`, so a read-only collaborator may PATCH. Any association-scoped session gets 403 `Torna al tuo account per gestire le credenziali.`. Athletes get 403 `User is not a sport association`, and an owner without an association gets a 500.
-- PATCH assigns `request.data.get(key, stored)` for `review_url` and `review_url_enabled` with no validation, saves the association and echoes the assigned raw values (`5`, `0`, `"True"`, form strings, the last value of a repeated form key). auditlog compares `str()` values in `pre_save`, resolved `self`. The column conversion then runs, which is `str()` for the URL and `BooleanField.to_python` for the flag. A rejected flag (`'yes'`, `'true'`), `null`, a URL over 255 characters or one containing NUL is a 500 after the audit entry. A non-dict body is an AttributeError 500.
+- PATCH validates the values with `ProfileIntegrationsSerializer(partial=True)`: `review_url` is a nullable CharField (255, blank allowed, whitespace trimmed; a number becomes its text, a boolean, list, object or file is `Not a valid string.`) and `review_url_enabled` a BooleanField (DRF's spellings, `null` and anything else is a 400). A refused value answers 400 with the field errors and nothing is written, no audit entry either; a non-dict body is `No data provided` / `Invalid data. Expected a dictionary, but got <type>.`. In a form body an empty `review_url_enabled` is not sent. The association save and its audit entry are one transaction, and the answer is the saved values.
 
-Requests are not atomic. Go commits each Django autocommit step separately (configuration creation, user save, configuration save) and commits a pre_save audit entry before refusing a value the model would reject.
+The rest of the route is not atomic. Go commits each Django autocommit step separately (configuration creation, user save, configuration save).
 
 Not ported: a multipart body carrying an uploaded file. Go refuses it with a 500 after the association check and before any write. The configuration get-or-create keeps the login service's association lock. That lock coordinates Go writers only; Django has none (see `BE_GO/internal/service/membership_card_configuration.md`).
 
 Evidence: `TESTS/fixtures/profile_settings_http.json` (59 cases, with the contract computing `current_year` at request time). RED: Django 59/59, Go 404. GREEN: 59/59 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact configuration, user, association, audit and index effects. Rolling back the configuration's pre_save audit when the model rejects the boolean fails `post-card-invalid-boolean-keeps-audit`.
+
+## Validated PATCH (integrations)
+
+`PATCH profile/integrations` no longer stores raw values: see the route section above. The earlier file-part handling (stored by
+name, echoed as lines, `review_url_enabled` with a file answering a 500) is gone; a file part is `Not a valid string.` or
+`Must be a valid boolean.`. Evidence: `profile_settings_http.json` (76 cases).
 
 ## Ported in taildocs
 

@@ -557,6 +557,10 @@ def payment_update(request, uid):
 
     if 'payment_date' in data.keys() and data['payment_date'] == '':
         del data['payment_date']
+
+    # the row is the one named by the path; a key in the body never moves the update to another row
+    if 'payment_id' in data.keys():
+        del data['payment_id']
     # update fields with serializer, if not valid return error
     serializer = PaymentEntrySerializer(payment, data=data, partial=True)
     if serializer.is_valid(raise_exception=True):

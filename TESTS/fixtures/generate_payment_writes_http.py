@@ -160,9 +160,14 @@ PAYMENTS = {
     'up_removed': payment(deleted=True),
     'up_orphan': payment(sport_association_id=None),
     'abroad': payment(sport_association_id=FOREIGN, user_id=IDS['foreign_owner'], payment_category_id=CATEGORIES['foreign']['id']),
-    # The edit form posts its hidden payment_id input: the row's own key, unchanged by the save.
+    # The edit form posts its hidden payment_id input; the body key is dropped.
     'up_own_id': payment(),
     'up_own_upper': payment(),
+    'up_key_removed': payment(),
+    'up_key_foreign': payment(),
+    'up_key_visible': payment(),
+    'up_key_garbage': payment(),
+    'up_key_null': payment(),
     'up_invoiced': payment(invoice_id=INVOICE['id']),
     'up_invoiced_print_fails': payment(invoice_id=INVOICE['id']),
     'up_attach_one': payment(),
@@ -902,12 +907,20 @@ updated('update-admin-impersonating-owner', 'admin', 'up_admin', {'amount': '14'
 updated('update-attachment-without-keys', 'owner', 'up_attachment', {'amount': '15', 'attachments_data': [{'filename': 'x.pdf'}]},
         {'amount': '15.00'}, status=400, response={'exception': 'document key not present'})
 updated('update-unchanged-no-audit', 'owner', 'up_collab', {'amount': '13.00'}, {})
-# payment_id is a writable serializer field (UUID primary key with a default): the row's own key validates
-# (UniqueValidator excludes the instance) and the save updates the same row.
+# A payment_id in the body is dropped: the update always applies to the row named by the path.
 updated('update-own-payment-id', 'owner', 'up_own_id', {'payment_id': PAYMENTS['up_own_id']['id'], 'amount': '16'}, {'amount': '16.00'})
 updated('update-own-payment-id-uppercase', 'owner', 'up_own_upper',
         {'payment_id': PAYMENTS['up_own_upper']['id'].upper(), 'amount': '17', 'description': 'Modificata'},
         {'amount': '17.00', 'description': 'Modificata'})
+# A key naming another row leaves that row untouched, whether the manager can see it or not.
+updated('update-body-key-of-removed-payment-ignored', 'owner', 'up_key_removed',
+        {'payment_id': PAYMENTS['up_removed']['id'], 'amount': '21'}, {'amount': '21.00'})
+updated('update-body-key-of-other-association-ignored', 'owner', 'up_key_foreign',
+        {'payment_id': PAYMENTS['abroad']['id'], 'amount': '22'}, {'amount': '22.00'})
+updated('update-body-key-of-visible-payment-ignored', 'owner', 'up_key_visible',
+        {'payment_id': PAYMENTS['up_plain']['id'], 'amount': '23'}, {'amount': '23.00'})
+updated('update-body-key-not-a-uuid-ignored', 'owner', 'up_key_garbage', {'payment_id': 'not-a-uuid', 'amount': '24'}, {'amount': '24.00'})
+updated('update-body-key-null-ignored', 'owner', 'up_key_null', {'payment_id': None, 'amount': '25'}, {'amount': '25.00'})
 
 PRINT_INVOICE = f'/document/invoice/{INVOICE["id"]}?send_receipt_email=False'
 # print_document_invoice.apply(args=[invoice_id, Authorization]) after the save: a GET of CURRENT_HOST whose

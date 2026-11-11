@@ -36,6 +36,7 @@ from TESTS.contracts import test_modules_responses_http as contract
 from TESTS.adapters.django import carnet_subscription_topup_http as topup
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django import modules_reads_http as reads
+from TESTS.adapters.django import public_flow_throttle as throttle
 from TESTS.adapters.django.workflow_writes_http import keyed
 
 SOURCES = ('TESTS/fixtures/modules_responses_http.json', 'TESTS/fixtures/generate_modules_responses_http.py',
@@ -46,7 +47,8 @@ SOURCES = ('TESTS/fixtures/modules_responses_http.json', 'TESTS/fixtures/generat
            'BE/application/serializers/auth_serializers.py', 'BE/application/models/user_models.py',
            'BE/application/models/invoices_models.py', 'BE/docmanager/models.py', 'BE/application/utils/api_utils.py',
            'BE/application/audit_resolvers.py', 'BE/application/signals.py', 'BE/application/permissions_registry.py',
-           'BE/application/impersonation_scope.py', 'BE/application/urls.py', 'BE/core/settings.py',
+           'BE/application/impersonation_scope.py', 'BE/application/urls.py', 'BE/core/settings.py', 'BE/application/public_limits.py',
+           'TESTS/adapters/django/public_flow_throttle.py',
            'BE/application/models/payment_models.py', 'TESTS/contracts/xlsx.py') + harness.SOURCES
 BUCKET = 'modules-responses-fixture'
 MODULE, RESPONSE, LINK = 'application.Module', 'application.ModuleResponses', 'application.ModuleResponses_attachments'
@@ -75,7 +77,8 @@ def service_context(report, log):
         try:
             with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
                                    AWS_STORAGE_BUCKET_NAME=BUCKET, AWS_S3_REGION_NAME='us-east-1', AWS_S3_ENDPOINT_URL=endpoint,
-                                   AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'):
+                                   AWS_LOCATION=source['location'], AWS_S3_ADDRESSING_STYLE='path'), \
+                    throttle.upload_limit(source['public_upload_limit']):
                 yield
         finally:
             STORAGE.clear()
@@ -314,7 +317,7 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
         cursor.execute('VACUUM application_moduleresponses')
     with _base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
         yield fixture
-_run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared_diffs)
+_run_workload = harness.run_workload_for(contract, assert_effect, prepare=prepared_diffs, throttle=throttle)
 
 
 def run_workload(label, backend, base_url, fixture, apps, raw, observer):

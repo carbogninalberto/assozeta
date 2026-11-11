@@ -103,7 +103,7 @@ func (h *ProfileSettingsHandler) Integrations(c echo.Context) error {
 			return err
 		}
 		defer release()
-		if result, err = h.settings.UpdateIntegrations(write.Context, *identity, write.Body, write.Audit); err != nil {
+		if result, err = h.settings.UpdateIntegrations(write.Context, *identity, write.Body, write.Form, write.Audit); err != nil {
 			return h.failure(c, err)
 		}
 	default:

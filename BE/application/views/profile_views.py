@@ -29,7 +29,7 @@ from application.models.payment_models import PaymentCategory, SupplierAndCustom
 from application.models.subscriptions_models import Subscription
 from application.models.user_models import SportAssociation, SportAssociationMembershipCardConfiguration, User, Associate, \
     Testimonial, Instructor
-from application.serializers.auth_serializers import UserAuthSerializer, SportAssociationSerializer, \
+from application.serializers.auth_serializers import ProfileIntegrationsSerializer, UserAuthSerializer, SportAssociationSerializer, \
     UserAuthUpdateSerializer, UserSettingsSerializer, UserTablesSettingsSerializer, SportAssociationToolSerializer
 from application.utils.api_utils import ApiMessages, is_valid_uuid, BalanceSheetData, compress_base64
 from core.middleware import IsAuthenticated
@@ -666,9 +666,13 @@ def profile_integrations(request):
 
     if request.method == 'PATCH':
         sport_association = request.user.sport_association
-        sport_association.review_url = request.data.get('review_url', sport_association.review_url)
-        sport_association.review_url_enabled = request.data.get('review_url_enabled', sport_association.review_url_enabled)
-        sport_association.save()
+        serializer = ProfileIntegrationsSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        values = serializer.validated_data
+        sport_association.review_url = values.get('review_url', sport_association.review_url)
+        sport_association.review_url_enabled = values.get('review_url_enabled', sport_association.review_url_enabled)
+        with transaction.atomic():
+            sport_association.save()
         return Response({
             'review_url': sport_association.review_url,
             'review_url_enabled': sport_association.review_url_enabled

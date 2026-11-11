@@ -116,10 +116,13 @@ BROADCAST = [False]
 CATEGORY_TITLE = 'Quota tesseramento'
 
 
-def add(name, actor, status, response, *, body=None, method='POST', query='', headers=None, effect=None, setup=None):
+def add(name, actor, status, response, *, body=None, method='POST', query='', headers=None, effect=None, setup=None, throttle=None,
+        retry_after=None):
+    """throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
     cases.append({'name': f'subscription-create-{name}', 'actor': actor, 'method': method, 'path': '/subscription/add' + query,
                   'headers': headers or {}, 'status': status, 'response': response, 'effect': effect, 'body': body,
-                  'setup': setup})
+                  'setup': setup, **({'throttle': throttle} if throttle is not None else {}),
+                  **({'retry_after': retry_after} if retry_after is not None else {})})
 
 
 def person(first, last, tax_code, born='15/03/1990', **extra):
@@ -1256,9 +1259,26 @@ effect = success('owner', 'Dina Giovane', associate=created_associate(young, is_
 effect['associate']['columns']['born_date'] = '$day_first_minor_iso'
 add('minor-day-first-birth-date', 'owner', 200, SUCCESS(25.0), body=request(young, tutor=young_tutor), effect=effect)
 
+# --- Limits of requests without an account --------------------------------------------------------------------
+# Requests without an account are counted per address (30 in 600 seconds): the next one is asked to wait before the body
+# is read. A body above the upload limit (32768 bytes in this run) is refused for them only.
+UPLOAD_LIMIT = 32768
+FULL = {'preload': 30, 'age': 10.2}
+THROTTLED = {'detail': 'Request was throttled. Expected available in 590 seconds.'}
+LIMITED = {'error': f'Il file supera la dimensione massima consentita ({UPLOAD_LIMIT} byte).'}
+without_signature = {k: v for k, v in request(person('Anna', 'A', 'X'), sport_association=OWNER_NAME).items() if k != 'signature'}
+add('anonymous-over-the-rate', 'anonymous', 429, THROTTLED, body=without_signature, throttle=FULL, retry_after='590')
+add('anonymous-wrong-method-over-the-rate', 'anonymous', 429, THROTTLED, method='GET', throttle=FULL, retry_after='590')
+add('anonymous-below-the-rate', 'anonymous', 400, VALIDATION, body=without_signature, throttle={'preload': 29, 'age': 10.2})
+add('anonymous-old-history', 'anonymous', 405, {'detail': 'Method "GET" not allowed.'}, method='GET', throttle={'preload': 30, 'age': 601})
+add('anonymous-options-over-the-rate', 'anonymous', 429, THROTTLED, method='OPTIONS', throttle=FULL, retry_after='590')
+add('owner-full-history', 'owner', 400, VALIDATION, body=without_signature, throttle=FULL)
+add('anonymous-body-above-the-limit', 'anonymous', 413, LIMITED, body={**without_signature, 'nota': 'x' * (UPLOAD_LIMIT + 100)})
+add('owner-body-above-the-limit', 'owner', 400, VALIDATION, body={**without_signature, 'nota': 'x' * (UPLOAD_LIMIT + 100)})
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',
     'ids': IDS, 'associates': ASSOCIATES, 'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'relations': RELATIONS,
-    'account': ACCOUNT, 'settings': BASE_SETTINGS, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'account': ACCOUNT, 'settings': BASE_SETTINGS, 'unknown': UNKNOWN, 'public_upload_limit': UPLOAD_LIMIT, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

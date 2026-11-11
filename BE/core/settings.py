@@ -696,6 +696,13 @@ SUBSCRIPTION_IMPORT_RETENTION_HOURS = env.int('SUBSCRIPTION_IMPORT_RETENTION_HOU
 MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES = env.int('MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES', 10 * 1024 * 1024)
 MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR = env.int('MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR', 60)
 
+# PUBLIC FORMS: the flows open without an account (form answers, form attachments, the subscription
+# link) accept files up to this size, and one address may send this many requests per endpoint in
+# the window below (requests with an account are not counted)
+PUBLIC_UPLOAD_MAX_BYTES = env.int('PUBLIC_UPLOAD_MAX_BYTES', 10 * 1024 * 1024)
+PUBLIC_REQUESTS_PER_WINDOW = env.int('PUBLIC_REQUESTS_PER_WINDOW', 30)
+PUBLIC_REQUEST_WINDOW_SECONDS = env.int('PUBLIC_REQUEST_WINDOW_SECONDS', 600)
+
 # AWS S3 CONFIGURATION
 AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
