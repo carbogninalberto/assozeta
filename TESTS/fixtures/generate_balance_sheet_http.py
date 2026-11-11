@@ -139,8 +139,9 @@ LOGO = ('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABsSFBcUERsXFhceHBsgKEIrKCUlKFE6PTBCYFV
         'MoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOk'
         'paanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwCjRRRXOewf/9k=')
 PROFILES = {
-    'foreign_association': {'denomination': 'Sport & Fun <i>club</i> A.S.D.', 'address_city': 'Città di Ca\xadstello &amp; dintorni',
-                            'address_cap': '06012', 'address': 'Via <b>Roma</b> 1 – R&D <3',
+    'foreign_association': {'denomination': 'Sport & Fun <i>club</i> A.S.D. <u color="#aa0000">1990</u> m<sup>2</sup>',
+                            'address_city': 'Città di Ca\xadstello &amp; <font color="#005599" size="14">dintorni</font>',
+                            'address_cap': '06012', 'address': 'Via <b>Roma</b> 1 – R&D <3 <a href="https://example.test/sede?a=1&amp;b=2">sede</a>',
                             'logo': 'data:image/jpeg;base64,' + '\n'.join(LOGO[i:i + 76] for i in range(0, len(LOGO), 76))},
     'deleted_association': {'address': 'Via <b>Roma 1'},
 }

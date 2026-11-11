@@ -48,13 +48,6 @@ func (t *courseLocationWriteTransaction) Location(ctx context.Context, id, assoc
 		AssociationID: row.AssociationID}, nil
 }
 
-func (t *courseLocationWriteTransaction) LocationIDTaken(ctx context.Context, id string, exclude *string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_courselocation
- WHERE course_location_id=$1 AND ($2::uuid IS NULL OR course_location_id<>$2::uuid))`, id, exclude)
-	return taken, err
-}
-
 func (t *courseLocationWriteTransaction) AssociationExists(ctx context.Context, id string) (bool, error) {
 	var exists bool
 	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1)`, id)
@@ -78,24 +71,6 @@ func (t *courseLocationWriteTransaction) CreateLocation(ctx context.Context, row
 	}
 	changes, err := createdModelChanges(ctx, t.tx, "application_courselocation", "course_location_id", row.ID)
 	if err != nil {
-		return err
-	}
-	return appendModelAudit(ctx, t.tx, courseLocationAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))
-}
-
-// CopyLocation is Model.save() under a key no row has: auditlog's pre_save
-// finds nothing under the new key and logs the whole row as an update (indexed
-// from its changes), then post_save logs the create (indexed directly).
-func (t *courseLocationWriteTransaction) CopyLocation(ctx context.Context, row domain.CourseLocation, audit domain.LoginAuditContext, at time.Time) error {
-	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_courselocation (course_location_id,title,description,address,sport_association_id)
- VALUES ($1,$2,$3,$4,$5)`, row.ID, row.Title, row.Description, row.Address, row.AssociationID); err != nil {
-		return err
-	}
-	changes, err := createdModelChanges(ctx, t.tx, "application_courselocation", "course_location_id", row.ID)
-	if err != nil {
-		return err
-	}
-	if err = appendModelAudit(ctx, t.tx, courseLocationAudit(row.ID, 1, changes, row.AssociationID, "changes_json.sport_association", audit, at)); err != nil {
 		return err
 	}
 	return appendModelAudit(ctx, t.tx, courseLocationAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))

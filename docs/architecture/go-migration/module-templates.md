@@ -28,12 +28,13 @@ to the router mount entry. Django remains the production execution owner.
 - **list (GET):** the association's rows, serialized with every field, no
   ordering (unordered comparison in tests), unpaginated.
 - **add (POST):** `request.data['sport_association'] = own id` (non-object and
-  form bodies raise, 500), then `ModelSerializer(fields='__all__')`: writable
-  UUID primary key with a cross-association `UniqueValidator`, `name` required
-  (150 chars, trimmed, not blank), text fields nullable but not blank,
-  booleans default `True/True/False` and reject `null`. Errors are DRF's field
-  dictionary (400); success is `201` with `serializer.data`. OPTIONS includes
-  the POST field metadata.
+  form bodies raise, 500), then `ModelSerializer(fields='__all__')`: read-only
+  UUID primary key (a key in the body is ignored and the add stores a
+  generated one), `name` required (150 chars, trimmed, not blank),
+  text fields nullable but not blank, booleans default `True/True/False` and
+  reject `null`. Errors are DRF's field dictionary (400); success is `201` with
+  `serializer.data`. OPTIONS includes the POST field metadata, with the key
+  read-only.
 - **delete (DELETE `templates/<pk>/delete`):** `get_object` on the scoped
   queryset: an unparseable pk is DRF's bare `404 Not found.`, an unknown or
   foreign pk is `404 No SportAssociationModuleTemplates matches the given query.`;
@@ -47,12 +48,23 @@ to the router mount entry. Django remains the production execution owner.
   deleted, each audited; `204`.
 - **update (PATCH):** see `templates-reports.md`.
 
+t5pk: `sport_association_module_templates_id` is read-only in
+`SportAssociationModuleTemplatesSerializer` (both the explicit routes and the
+router mount). A key in an add body is ignored and the template gets a
+generated one (`add-client-id-ignored`, `add-existing-id-ignored`,
+`add-malformed-id-ignored`, `add-null-id-ignored`); a key in an update body is
+ignored and the row the path names is updated in place, a plain update audit
+entry for the changed fields and none when only the key is sent
+(`update-key-only-ignored`, `update-unused-id-ignored`,
+`update-other-row-id-ignored`); OPTIONS describes the field `read_only: true`,
+`required: false`.
+
 ## Evidence (TDD)
 
-`TESTS/fixtures/module_templates_http.json` (generator alongside) authors 41
+`TESTS/fixtures/module_templates_http.json` (generator alongside) authors 43
 cases. The Django reference corrected three expectations, each confirmed in
 DRF or view source: `Allow` includes `DELETE` (and `HEAD` for list) because of
 the viewset's `delete` method; `DELETE` on list/add is dispatched and fails;
-and the bulk error string is not list-wrapped. RED: Django 41/41 and Go 404 on
+and the bulk error string is not list-wrapped. RED: Django 43/43 and Go 404 on
 the first case before any Go code. GREEN: native Django and native Go pass
-41/41, and so do Caddy `/api/v1` and `/api/v2`. Indexing deletes as `direct` fails the run.
+43/43, and so do Caddy `/api/v1` and `/api/v2`. Indexing deletes as `direct` fails the run.

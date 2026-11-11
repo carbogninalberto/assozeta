@@ -6529,10 +6529,18 @@ components:
       - user
     AssociateSubscription:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         subscription_id:
           type: string
           format: uuid
+          readOnly: true
         active:
           type: boolean
           readOnly: true
@@ -6672,6 +6680,7 @@ components:
       - renewal_available
       - signature_present
       - sport_association
+      - subscription_id
       - user
     AssociateSubscriptionRoleEnum:
       enum:
@@ -7006,10 +7015,18 @@ components:
       - ''
     CourseLocation:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         course_location_id:
           type: string
           format: uuid
+          readOnly: true
         documents:
           type: array
           items:
@@ -7038,13 +7055,22 @@ components:
           format: uuid
           nullable: true
       required:
+      - course_location_id
       - documents
     CourseSubscriptionOverview:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         course_subscription_id:
           type: string
           format: uuid
+          readOnly: true
         subscription_id:
           type: string
           format: uuid
@@ -7116,6 +7142,7 @@ components:
       required:
       - carnets
       - course
+      - course_subscription_id
       - installments
       - medical_label
       - membership_payments
@@ -7161,10 +7188,18 @@ components:
       - filename
     DocumentArchive:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         sport_association_documents_archive_id:
           type: string
           format: uuid
+          readOnly: true
         sport_association:
           type: string
           format: uuid
@@ -7182,6 +7217,7 @@ components:
       required:
       - document
       - sport_association
+      - sport_association_documents_archive_id
     Folder:
       type: object
       properties:
@@ -7214,6 +7250,13 @@ components:
       - sport_association
     Instructor:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         instructor_id:
           type: string
@@ -7619,10 +7662,18 @@ components:
           nullable: true
     PatchedAssociateSubscription:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         subscription_id:
           type: string
           format: uuid
+          readOnly: true
         active:
           type: boolean
           readOnly: true
@@ -7752,10 +7803,18 @@ components:
             format: uuid
     PatchedCourseLocation:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         course_location_id:
           type: string
           format: uuid
+          readOnly: true
         documents:
           type: array
           items:
@@ -7785,10 +7844,18 @@ components:
           nullable: true
     PatchedCourseSubscriptionOverview:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         course_subscription_id:
           type: string
           format: uuid
+          readOnly: true
         subscription_id:
           type: string
           format: uuid
@@ -7859,10 +7926,18 @@ components:
           readOnly: true
     PatchedDocumentArchive:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         sport_association_documents_archive_id:
           type: string
           format: uuid
+          readOnly: true
         sport_association:
           type: string
           format: uuid
@@ -7903,10 +7978,18 @@ components:
           readOnly: true
     PatchedSportAssociationModuleTemplates:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         sport_association_module_templates_id:
           type: string
           format: uuid
+          readOnly: true
         name:
           type: string
           maxLength: 150
@@ -7930,10 +8013,18 @@ components:
           format: uuid
     PatchedSubscriptionMembership:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         subscription_membership_id:
           type: string
           format: uuid
+          readOnly: true
         sport_association:
           type: string
           format: uuid
@@ -8142,10 +8233,18 @@ components:
         * `F` - female
     SportAssociationModuleTemplates:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         sport_association_module_templates_id:
           type: string
           format: uuid
+          readOnly: true
         name:
           type: string
           maxLength: 150
@@ -8170,6 +8269,7 @@ components:
       required:
       - name
       - sport_association
+      - sport_association_module_templates_id
     StatusFlagEnum:
       enum:
       - 1
@@ -8198,10 +8298,18 @@ components:
         * `3` - Giroconto
     SubscriptionMembership:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         subscription_membership_id:
           type: string
           format: uuid
+          readOnly: true
         sport_association:
           type: string
           format: uuid
@@ -8264,6 +8372,7 @@ components:
       - attached_membership_documents
       - paid
       - sport_association
+      - subscription_membership_id
     SubscriptionSerializerSimplify:
       type: object
       properties:
@@ -8280,6 +8389,13 @@ components:
       - current_year
     Supplier:
       type: object
+      description: |-
+        The model's primary key is never read from the request body.
+
+        On update the row the view loaded is saved in place and the answer shows its
+        key; on create the model default generates the key. Only the top-level
+        serializer (or the child of a top-level ``many=True`` list) is affected: a
+        serializer nested as a field of another one validates the key it is given.
       properties:
         supplier_id:
           type: string

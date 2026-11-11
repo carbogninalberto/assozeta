@@ -59,6 +59,8 @@ LENGTH = re.compile(rb'/Length (\d+)(?=[ \n])')
 FILTER = re.compile(rb'/Filter \[ ([A-Za-z0-9/ ]+) \]')
 DATES = re.compile(rb"/CreationDate \(D:(\d{14}[+-]\d\d'\d\d')\)(.*?)/ModDate \(D:(\d{14}[+-]\d\d'\d\d')\)", re.S)
 IMAGE = re.compile(rb'/FormXob\.[0-9a-f]{32}(?![0-9a-f])')
+IMAGE_REFERENCE = re.compile(rb'(/FormXob\.[0-9a-f]{32})(?![0-9a-f]) (\d+) 0 R')
+XOBJECTS = re.compile(rb'/XObject <<\n((?:/FormXob\.#\d+ \d+ 0 R[ \n]*)+)>>')
 TRAILER = re.compile(
     rb'trailer\n<<\n/ID \n\[<([0-9a-f]{32})><([0-9a-f]{32})>\]\n'
     rb'% ReportLab generated PDF document -- digest \(http://www\.reportlab\.com\)\n\n'
@@ -142,13 +144,26 @@ def normalize(data):
     if trailer.group(1) != trailer.group(2) or int(trailer.group(5)) != len(offsets) + 1 or int(trailer.group(6)) != position:
         raise Malformed('trailer /ID, /Size or startxref')
     parts.append(b'/Info %s /Root %s' % (trailer.group(3), trailer.group(4)))
-    names = {}
+    # An image is named after the pixels PIL decodes, which another decoder does not reproduce: the names are numbered by the
+    # order of the image objects, and the entries of each /XObject dictionary (sorted by name in the document) by that number.
+    numbers = {}
     for part in parts:
-        for name in IMAGE.findall(part):
-            names.setdefault(name, b'/FormXob.#%d' % len(names))
-    if names:
+        for name, number in IMAGE_REFERENCE.findall(part):
+            numbers[name] = int(number)
+    names = {name: b'/FormXob.#%d' % rank for rank, name in enumerate(sorted(numbers, key=numbers.get))}
+    if names or IMAGE.search(b''.join(parts)):
+        if any(name not in names for part in parts for name in IMAGE.findall(part)):
+            raise Malformed('an image name without an object')
         parts = [IMAGE.sub(lambda match: names[match.group(0)], part) for part in parts]
+        parts = [XOBJECTS.sub(_sorted_xobjects, part) for part in parts]
     return parts, stamp, trailer.group(1)
+
+
+def _sorted_xobjects(match):
+    entries = sorted(re.findall(rb'/FormXob\.#\d+ \d+ 0 R', match.group(1)), key=lambda entry: int(entry.split()[1]))
+    for index in reversed(range(6, len(entries), 6)):
+        entries.insert(index, b'\n ')
+    return b'/XObject <<\n' + b' '.join(entries) + b'\n>>'
 
 
 # --- the documents Django builds ------------------------------------------------------------------------------

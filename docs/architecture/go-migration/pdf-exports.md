@@ -92,9 +92,41 @@ alone. Go ports both:
   breaks the line, unknown tags are ignored, the 2121 entity names reportlab knows are replaced (`entities_gen.go`), an
   unknown one is drawn as written. A tag closed out of order or left open, text inside `<br>`, a character reference beyond
   U+10FFFF and the other inputs the parser raises on are `ErrLayout`: the export fails as in Django (`A<B` opens a tag `b`
-  that is never closed). The tags that draw lines, links, images, rises, other sizes or colours, bullets and sequences
-  (`u`, `strike`, `a`, `link`, `img`, `sup`, `sub`, `font`, `span`, `greek`, `unichar`, `nobr`, `bullet`, `seq*`, `onDraw`,
-  `index`) and a `<para>` with attributes are refused.
+  that is never closed). The tags that draw lines, links, images, rises, other sizes and colours are ported (t3pdf, below).
+  Still refused: `greek`, `unichar`, `bullet`, `seq*`, `onDraw`, `index` (callbacks the canvas has no hook for, or tables Go
+  does not carry), `<a name="..."/>` anchors and `#name` or `document:name` links (named destinations are not ported), `img`
+  whose `src` is not a base64 JPEG data URL (a file or URL read depends on the server; a PNG or other format is re-encoded by
+  PIL), the Courier and Times fonts (no metrics in Go), a colour that is CMYK, has an alpha, or is written as a Python
+  expression, `inf` or `nan` and non-ASCII digits as numbers, and in `<para>` the indents, justified lines, borders, text
+  transforms, `autoLeading`, `wordWrap`, end dots and hyphenation.
+
+### Fragments with their own style (t3pdf)
+
+A fragment (`ParaFrag`) now carries its font, size, colour, rise, background, `nobr`, its underline and strike lines and its
+links, and the layout measures each one at its own size (`paragraph.go`, `paraparser.go`):
+
+- `u` and `strike` (and `a` with `underline`) add a line entry `(n, kind, colour, width, offset, rise, repeats, gap)`; the
+  lines of a run are drawn after each text line (`paradraw.go`, `_do_post_text`: sorted by their number, with the font sizes of
+  the first fragment and of the largest one in the offset and width expressions `0.5*f`, `-0.125*F`, `*L`) as canvas lines
+  before the text object, with the stroke colour and line width compared to the canvas state (`canvasState` now tracks both);
+  a one-fragment paragraph draws them with `_do_under_line`;
+- `font`, `span` (without `style`, which raises), `nobr`, `sup`, `super`, `sub` change name, size, colour, background, rise
+  (`Ts`) and the space-shrinkage and line-height inputs; `font name=` goes through reportlab's `ps2tt`, a `link name=` through
+  `tt2ps` with its fall back to `ps2tt`; sizes and rises take `+n`, `n%` and units (`mm`, `in`, `pt`, `cm`, `pica`);
+- `a href` and `link` write one `/Link` annotation per run of a link on a line, numbered when the paragraph is drawn (before
+  the page that holds them, which lists them as `/Annots`), with the rectangle taken through the canvas matrix
+  (`canvasState.matrix`); `pdf:` targets are `GoToR`;
+- `img` with a base64 JPEG data URL is a word of its width laid out between text, drawn with `drawImage` at the baseline offset
+  of its `valign` and followed by a move of the text cursor; percentages are of the paragraph width (width) and the font size
+  (height, valign). Image names are numbered by the order of their objects in the parity standard (and the `/XObject` entries
+  sorted by that number), since their order in the document follows the PIL pixel digest;
+- `<para>` attributes change a copy of the style: size, font, colour, leading, spacing, left, centre and right alignment,
+  background colour, the underline and strike defaults, `spaceShrinkage`, `splitLongWords`, `allowWidows`, `allowOrphans`.
+  Attribute values go through reportlab's converters (`_num`, `_numpct`, `_bool`, `toColor`, `_CheckUS`), and every invalid one
+  is an exception of the export.
+
+Attribute values are those of CPython 3.13.16's `parse_starttag` (quotes removed, character references replaced with the
+attribute rules: `html5_gen.go`, `htmlattr.go`).
 
 One fragment is laid out as before (reportlab's kind 0), now with soft hyphens: a word is cut at its last soft hyphen that
 fits, with a `-`. Several fragments (text around `&amp;` is three of them) take the kind 1 layout: `_getFragWords`, the line

@@ -1621,7 +1621,7 @@
    }
   },
   {
-   "name": "medical-appointment-add-id-supplied",
+   "name": "medical-appointment-add-id-supplied-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
@@ -1635,7 +1635,7 @@
     "session": null,
     "association": "a1000000-0000-4000-8000-000000701001",
     "row": {
-     "id": "a1000000-0000-4000-8000-000000984004",
+     "id": "$id",
      "subscription": "a1000000-0000-4000-8000-000000983001",
      "region": "non-agonistica",
      "document": null,
@@ -1649,7 +1649,7 @@
     "changes": {
      "medical_appointments_id": [
       "None",
-      "a1000000-0000-4000-8000-000000984004"
+      "$id"
      ],
      "subscription": [
       "None",
@@ -1679,7 +1679,7 @@
    },
    "prints": [
     {
-     "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984004",
+     "path": "/document/medical-appointment/$id",
      "reply": {
       "status": 200,
       "body": "ok"
@@ -1694,91 +1694,7 @@
    }
   },
   {
-   "name": "medical-appointment-add-id-taken",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "medical_appointments_id": [
-     "medical appointments with this medical appointments id already exists."
-    ]
-   },
-   "effect": null,
-   "prints": [],
-   "restore": null,
-   "body": {
-    "region": "non-agonistica",
-    "date": "20/11/2026",
-    "medical_appointments_id": "a1000000-0000-4000-8000-000000984003"
-   }
-  },
-  {
-   "name": "medical-appointment-add-id-null",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "medical_appointments_id": [
-     "This field may not be null."
-    ]
-   },
-   "effect": null,
-   "prints": [],
-   "restore": null,
-   "body": {
-    "region": "non-agonistica",
-    "date": "20/11/2026",
-    "medical_appointments_id": null
-   }
-  },
-  {
-   "name": "medical-appointment-add-id-malformed",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "medical_appointments_id": [
-     "Must be a valid UUID."
-    ]
-   },
-   "effect": null,
-   "prints": [],
-   "restore": null,
-   "body": {
-    "region": "non-agonistica",
-    "date": "20/11/2026",
-    "medical_appointments_id": "abc"
-   }
-  },
-  {
-   "name": "medical-appointment-add-id-float",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "medical_appointments_id": [
-     "Must be a valid UUID."
-    ]
-   },
-   "effect": null,
-   "prints": [],
-   "restore": null,
-   "body": {
-    "region": "non-agonistica",
-    "date": "20/11/2026",
-    "medical_appointments_id": 1.5
-   }
-  },
-  {
-   "name": "medical-appointment-add-id-integer",
+   "name": "medical-appointment-add-id-taken-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
@@ -1792,7 +1708,7 @@
     "session": null,
     "association": "a1000000-0000-4000-8000-000000701001",
     "row": {
-     "id": "00000000-0000-0000-0000-000000003039",
+     "id": "$id",
      "subscription": "a1000000-0000-4000-8000-000000983001",
      "region": "non-agonistica",
      "document": null,
@@ -1806,7 +1722,7 @@
     "changes": {
      "medical_appointments_id": [
       "None",
-      "00000000-0000-0000-0000-000000003039"
+      "$id"
      ],
      "subscription": [
       "None",
@@ -1836,7 +1752,299 @@
    },
    "prints": [
     {
-     "path": "/document/medical-appointment/00000000-0000-0000-0000-000000003039",
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026",
+    "medical_appointments_id": "a1000000-0000-4000-8000-000000984003"
+   }
+  },
+  {
+   "name": "medical-appointment-add-id-null-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "id": "$id",
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026",
+    "medical_appointments_id": null
+   }
+  },
+  {
+   "name": "medical-appointment-add-id-malformed-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "id": "$id",
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026",
+    "medical_appointments_id": "abc"
+   }
+  },
+  {
+   "name": "medical-appointment-add-id-float-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "id": "$id",
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
+     "reply": {
+      "status": 200,
+      "body": "ok"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "region": "non-agonistica",
+    "date": "20/11/2026",
+    "medical_appointments_id": 1.5
+   }
+  },
+  {
+   "name": "medical-appointment-add-id-integer-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "medical appointment created."
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "row": {
+     "id": "$id",
+     "subscription": "a1000000-0000-4000-8000-000000983001",
+     "region": "non-agonistica",
+     "document": null,
+     "notes": null,
+     "sport": null,
+     "address": null,
+     "date": "2026-11-20",
+     "meta": {},
+     "creation_date": "$now"
+    },
+    "changes": {
+     "medical_appointments_id": [
+      "None",
+      "$id"
+     ],
+     "subscription": [
+      "None",
+      "a1000000-0000-4000-8000-000000983001"
+     ],
+     "region": [
+      "None",
+      "non-agonistica"
+     ],
+     "document": [
+      "None",
+      "None"
+     ],
+     "date": [
+      "None",
+      "2026-11-20"
+     ],
+     "meta": [
+      "None",
+      "{}"
+     ],
+     "creation_date": [
+      "None",
+      "$creation"
+     ]
+    }
+   },
+   "prints": [
+    {
+     "path": "/document/medical-appointment/$id",
      "reply": {
       "status": 200,
       "body": "ok"
@@ -1851,16 +2059,13 @@
    }
   },
   {
-   "name": "medical-appointment-add-id-and-document-errors",
+   "name": "medical-appointment-add-id-ignored-document-error",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/a1000000-0000-4000-8000-000000983001/medical-appointments/add",
    "headers": {},
    "status": 400,
    "response": {
-    "medical_appointments_id": [
-     "medical appointments with this medical appointments id already exists."
-    ],
     "document": [
      "Invalid pk \"a1000000-0000-4000-8000-000000984002\" - object does not exist."
     ]

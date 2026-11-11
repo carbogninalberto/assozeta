@@ -17,7 +17,7 @@ type MedicalAppointmentAddInput struct {
 	Date                  *string // ISO date; nil with DateNull false: the timezone.now() default
 	DateNull              bool
 	Notes, Sport, Address *string
-	ID, Document          *string // validated pks (existence and uniqueness are the service's)
+	Document              *string // the validated pk (existence is the service's); medical_appointments_id is read-only
 	Meta                  any     // the parsed request value
 	MetaPresent           bool
 	CreationDate          *time.Time
@@ -34,15 +34,6 @@ func (e *MedicalAppointmentAddInvalid) Error() string { return "invalid medical 
 func ParseMedicalAppointmentAdd(object domain.RequestObject) (MedicalAppointmentAddInput, error) {
 	var input MedicalAppointmentAddInput
 	fields := map[string][]string{}
-	if value, present := object.Lookup("medical_appointments_id"); present {
-		if value == nil {
-			fields["medical_appointments_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := medicalAppointmentAddUUID(value); ok {
-			input.ID = &id
-		} else {
-			fields["medical_appointments_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	if value, present := object.Lookup("document"); present && value != "" && value != nil {
 		// PrimaryKeyRelatedField: '' is None; the tenant check passes for a
 		// Document (no owning association); existence is the service's.

@@ -203,16 +203,6 @@ type CampsPeriodResult struct {
 
 func (r *campsRequest) validatePeriod(ctx context.Context, input *dto.CampsPeriodInput, instance *domain.CampsPeriod) (*CampsValidationError, error) {
 	errs := input.Errors
-	// UniqueValidator excludes the instance.
-	if input.ID.Present && (instance == nil || input.ID.ID != instance.ID) {
-		taken, err := r.tx.PeriodIDTaken(ctx, input.ID.ID)
-		if err != nil {
-			return nil, err
-		}
-		if taken {
-			errs["camps_and_retreats_period_id"] = []string{"unique:camps and retreats period:camps and retreats period id"}
-		}
-	}
 	if input.Camp.Present {
 		code, err := r.relation(ctx, input.Camp, r.tx.CampRelated)
 		if err != nil {
@@ -308,9 +298,6 @@ func (s *CampsPeriods) AddPeriod(ctx context.Context, identity domain.ResolvedId
 	}
 	row := domain.CampsPeriod{ID: s.ids(), CampID: input.Camp.ID, Start: input.Start.Value, End: input.End.Value, Fee: "0.00",
 		CreatedAt: r.at}
-	if input.ID.Present {
-		row.ID = input.ID.ID
-	}
 	// The model defaults: fee 0.00 (a float), max_participants 0.
 	fee, max := "0.0", int64(0)
 	row.Max = &max
@@ -472,27 +459,7 @@ func (s *CampsPeriods) UpdatePeriod(ctx context.Context, identity domain.Resolve
 	if input.CreatedAt.Present {
 		row.CreatedAt = input.CreatedAt.Value
 	}
-	if input.ID.Present && input.ID.ID != old.ID {
-		// Model.save() under a key no row has inserts a copy with the validated
-		// values and the period the path names stays. auditlog's pre_save finds
-		// no row under the new key and logs the whole row as an update (no row
-		// to resolve and no association in its changes: indexed under the
-		// actor's own association, if any), then post_save logs the create.
-		row.ID = input.ID.ID
-		if err = r.tx.InsertPeriod(ctx, row); err != nil {
-			return nil, err
-		}
-		changes := campsPeriodCreatedChanges(row, fee)
-		before, err := r.actorIndexed(ctx, domain.CampsAudit{Model: "CampsAndRetreatsPeriod", Key: row.ID, Action: 1, Changes: changes})
-		if err != nil {
-			return nil, err
-		}
-		association := row.CampAssociationID
-		if err = r.emit(ctx, before, domain.CampsAudit{Model: "CampsAndRetreatsPeriod", Key: row.ID, Action: 0, Changes: changes,
-			AssociationID: &association, Path: "camps_and_retreats.sport_association"}); err != nil {
-			return nil, err
-		}
-	} else if err = r.tx.UpdatePeriod(ctx, row); err != nil {
+	if err = r.tx.UpdatePeriod(ctx, row); err != nil {
 		return nil, err
 	} else if changes := campsPeriodChanges(*old, old.Fee, row, fee); len(changes) > 0 {
 		association := row.CampAssociationID
@@ -579,16 +546,6 @@ func (s *CampsPeriods) DeletePeriod(ctx context.Context, identity domain.Resolve
 
 func (r *campsRequest) validateService(ctx context.Context, input *dto.CampsServiceInput, instance *domain.CampsService) (*CampsValidationError, error) {
 	errs := input.Errors
-	// UniqueValidator excludes the instance.
-	if input.ID.Present && (instance == nil || input.ID.ID != instance.ID) {
-		taken, err := r.tx.ServiceIDTaken(ctx, input.ID.ID)
-		if err != nil {
-			return nil, err
-		}
-		if taken {
-			errs["camps_and_retreats_period_service_id"] = []string{"unique:camps and retreats periods service:camps and retreats period service id"}
-		}
-	}
 	if input.Period.Present {
 		code, err := r.relation(ctx, input.Period, r.tx.PeriodRelated)
 		if err != nil {
@@ -681,9 +638,6 @@ func (s *CampsPeriods) AddService(ctx context.Context, identity domain.ResolvedI
 		return nil, "", failure
 	}
 	row := domain.CampsService{ID: s.ids(), Fee: "0.00", CreatedAt: r.at}
-	if input.ID.Present {
-		row.ID = input.ID.ID
-	}
 	applyCampsService(&row, input)
 	if err = campsServiceIndex(ctx, r, &row); err != nil {
 		return nil, "", err
@@ -901,10 +855,6 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 	}
 	row := *old
 	applyCampsService(&row, input)
-	copied := input.ID.Present && input.ID.ID != old.ID
-	if copied {
-		row.ID = input.ID.ID
-	}
 	if err = campsServiceIndex(ctx, r, &row); err != nil {
 		return nil, err
 	}
@@ -914,26 +864,7 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 		return nil, err
 	}
 	changes := map[string][2]string{}
-	if copied {
-		// Model.save() under a key no row has inserts a copy with the validated
-		// values and the service the path names stays: auditlog logs the whole
-		// row as an update (indexed under the actor's own association, if
-		// any), then the create. The walk reads the copy's key.
-		if err = r.tx.InsertService(ctx, row); err != nil {
-			return nil, err
-		}
-		created := campsServiceCreatedChanges(row, row.Fee)
-		before, err := r.actorIndexed(ctx, domain.CampsAudit{Model: "CampsAndRetreatsPeriodsService", Key: row.ID, Action: 1, Changes: created})
-		if err != nil {
-			return nil, err
-		}
-		association := row.CampAssociationID
-		if err = r.emit(ctx, before, domain.CampsAudit{Model: "CampsAndRetreatsPeriodsService", Key: row.ID, Action: 0, Changes: created,
-			AssociationID: &association, Path: "period.camps_and_retreats.sport_association"}); err != nil {
-			return nil, err
-		}
-		old = &row
-	} else if err = r.tx.UpdateService(ctx, row); err != nil {
+	if err = r.tx.UpdateService(ctx, row); err != nil {
 		return nil, err
 	}
 	diff := func(name, before, after string) {

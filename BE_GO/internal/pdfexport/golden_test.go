@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -38,6 +39,9 @@ var (
 	testTrailer  = regexp.MustCompile(`^trailer\n<<\n/ID \n\[<([0-9a-f]{32})><([0-9a-f]{32})>\]\n% ReportLab generated PDF document -- digest \(http://www\.reportlab\.com\)\n\n/Info (\d+) 0 R\n/Root (\d+) 0 R\n/Size (\d+)\n>>\nstartxref\n(\d+)\n%%EOF\n$`)
 	testSeparate = "\n--part--\n"
 	testImage    = regexp.MustCompile(`/FormXob\.[0-9a-f]{32}`)
+	testImageRef = regexp.MustCompile(`(/FormXob\.[0-9a-f]{32}) (\d+) 0 R`)
+	testXObjects = regexp.MustCompile(`/XObject <<\n((?:/FormXob\.#\d+ \d+ 0 R[ \n]*)+)>>`)
+	testXEntry   = regexp.MustCompile(`/FormXob\.#\d+ (\d+) 0 R`)
 )
 
 // normalizeDocument is TESTS/contracts/pdf.py normalize: the decoded parts
@@ -137,12 +141,43 @@ func normalizeDocument(data []byte) (string, string, string, error) {
 	}
 	parts = append(parts, "/Info "+trailer[3]+" /Root "+trailer[4])
 	joined := strings.Join(parts, testSeparate)
-	names := map[string]string{}
-	joined = testImage.ReplaceAllStringFunc(joined, func(name string) string {
-		if _, ok := names[name]; !ok {
-			names[name] = "/FormXob.#" + strconv.Itoa(len(names))
+	// An image is named after the pixels PIL decodes, which another decoder does not reproduce: the names are numbered by the
+	// order of the image objects, and the entries of each /XObject dictionary by that number (normalize of
+	// TESTS/contracts/pdf.py).
+	numbers := map[string]int{}
+	var order []string
+	for _, match := range testImageRef.FindAllStringSubmatch(joined, -1) {
+		if _, ok := numbers[match[1]]; !ok {
+			order = append(order, match[1])
 		}
-		return names[name]
+		numbers[match[1]], _ = strconv.Atoi(match[2])
+	}
+	sort.Slice(order, func(i, j int) bool { return numbers[order[i]] < numbers[order[j]] })
+	names := map[string]string{}
+	for rank, name := range order {
+		names[name] = "/FormXob.#" + strconv.Itoa(rank)
+	}
+	for _, name := range testImage.FindAllString(joined, -1) {
+		if _, ok := names[name]; !ok {
+			return "", "", "", errors.New("an image name without an object")
+		}
+	}
+	joined = testImage.ReplaceAllStringFunc(joined, func(name string) string { return names[name] })
+	joined = testXObjects.ReplaceAllStringFunc(joined, func(block string) string {
+		entries := testXEntry.FindAllString(block, -1)
+		sort.SliceStable(entries, func(i, j int) bool {
+			a, _ := strconv.Atoi(testXEntry.FindStringSubmatch(entries[i])[1])
+			b, _ := strconv.Atoi(testXEntry.FindStringSubmatch(entries[j])[1])
+			return a < b
+		})
+		var items []string
+		for i, entry := range entries {
+			if i > 0 && i%6 == 0 {
+				items = append(items, "\n ")
+			}
+			items = append(items, entry)
+		}
+		return "/XObject <<\n" + strings.Join(items, " ") + "\n>>"
 	})
 	return joined, stamp, trailer[1], nil
 }

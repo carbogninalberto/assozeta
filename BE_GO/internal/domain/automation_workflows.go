@@ -42,9 +42,6 @@ type AutomationWorkflowAudit struct {
 	Changes           map[string][2]string
 	Context           LoginAuditContext
 	At                time.Time
-	// Path overrides the index resolution path (default: direct, or the
-	// changes JSON for a delete).
-	Path string
 }
 
 type AutomationWorkflowStore interface {
@@ -54,7 +51,6 @@ type AutomationWorkflowStore interface {
 type AutomationWorkflowTransaction interface {
 	OwnerForUpdate(context.Context, string) (int, bool, bool, error)
 	AssociationForOwner(context.Context, string, *string) (string, error)
-	AutomationWorkflowIDExists(ctx context.Context, id string) (bool, error)
 	InsertAutomationWorkflow(context.Context, AutomationWorkflowRecord) error
 	AutomationWorkflowForUpdate(ctx context.Context, id, association string) (AutomationWorkflowRecord, error)
 	DeleteAutomationWorkflow(ctx context.Context, id, association string) error

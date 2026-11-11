@@ -10,7 +10,7 @@
   - a list or scalar body, or a form body (an immutable `QueryDict`), is a 500;
   - a client `sport_association` never wins.
 - `SubscriptionMembershipSerializer` validates these fields:
-  - a writable `subscription_membership_id` with its UniqueValidator;
+  - a read-only `subscription_membership_id`: a key in the body is ignored (add generates one, update saves the path's row);
   - tenant-scoped relations: `sport_association` (all associations), `associate` (soft-delete, group-aware) and `payment` (live, group-aware). A relation to another tenant's row is DRF's generic 403, which escapes before the field errors. A missing row, including one hidden by `X-Group-Id`, is a 400. An empty value is None.
   - `creation_date` (DateTimeField, ISO input, rendered UTC);
   - `start_date` and `end_date`. `REST_FRAMEWORK['DATE_INPUT_FORMATS']` is `['%d/%m/%Y']`, ported as CPython's `_strptime` regex with Unicode digits; dates render ISO.
@@ -32,9 +32,10 @@ timestamp)>/<document id>/<filename>', bytes)` through the documents-writes uplo
 
 ## Pk change and multipart bodies (t2subsa)
 
-- `update` with a different `subscription_membership_id`: `Model.save()` updates nothing and inserts a copy under the new key. The old
-  row and its document links stay, the copy has no links of its own (new `documents_data` attach to it), and auditlog logs an update against None, then the creation
-  (not an update) for the copy.
+- t5pk: `update` with any `subscription_membership_id` (new, another row's, malformed) updates the row the path names in place
+  (cases `update-new-id-ignored`, `update-other-row-id-ignored`, `update-malformed-id-ignored`; router `update-primary-key-ignored`);
+  `add` with a key creates the membership under a new key (`add-existing-id-ignored`, `add-explicit-id-ignored-short-date`,
+  router `create-existing-id-ignored`, `create-form-body-id-ignored`).
 - A multipart `add` with at least one file part: DRF merges the files into a mutable copy of the data, so `sport_association` can be
   assigned and the request goes through the form path. A file is read by each field as `str(name)` for the related fields (`“x.txt” is not
   a valid UUID.`) and the price (a file named `12` is the price 12.00), and as an object the other fields reject (`Not a valid string.`,

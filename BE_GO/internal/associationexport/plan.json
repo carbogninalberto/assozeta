@@ -6089,13 +6089,18 @@
      "column": "payment_id",
      "kind": "fk",
      "target": "uuid"
+    },
+    {
+     "key": "attachment_token_hash",
+     "column": "attachment_token_hash",
+     "kind": "text"
     }
    ],
    "table": "application_moduleresponses",
    "pk": "module_response_id",
    "pk_kind": "uuid",
    "query": {
-    "sql": "SELECT \"application_moduleresponses\".\"module_response_id\", \"application_moduleresponses\".\"module_id\", \"application_moduleresponses\".\"creation_date\", \"application_moduleresponses\".\"progressive_response_number\", \"application_moduleresponses\".\"queue_position\", \"application_moduleresponses\".\"response\", \"application_moduleresponses\".\"approved\", \"application_moduleresponses\".\"user_id\", \"application_moduleresponses\".\"payment_id\" FROM \"application_moduleresponses\" INNER JOIN \"bakney_user\" ON (\"application_moduleresponses\".\"user_id\" = \"bakney_user\".\"user_id\") INNER JOIN \"application_module\" ON (\"application_moduleresponses\".\"module_id\" = \"application_module\".\"module_id\") WHERE ((\"application_moduleresponses\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s) AND \"application_module\".\"sport_association_id\" = %s)",
+    "sql": "SELECT \"application_moduleresponses\".\"module_response_id\", \"application_moduleresponses\".\"module_id\", \"application_moduleresponses\".\"creation_date\", \"application_moduleresponses\".\"progressive_response_number\", \"application_moduleresponses\".\"queue_position\", \"application_moduleresponses\".\"response\", \"application_moduleresponses\".\"approved\", \"application_moduleresponses\".\"user_id\", \"application_moduleresponses\".\"payment_id\", \"application_moduleresponses\".\"attachment_token_hash\" FROM \"application_moduleresponses\" INNER JOIN \"bakney_user\" ON (\"application_moduleresponses\".\"user_id\" = \"bakney_user\".\"user_id\") INNER JOIN \"application_module\" ON (\"application_moduleresponses\".\"module_id\" = \"application_module\".\"module_id\") WHERE ((\"application_moduleresponses\".\"user_id\" = %s OR \"bakney_user\".\"connected_user_id\" = %s) AND \"application_module\".\"sport_association_id\" = %s)",
     "params": [
      {
       "symbol": "owner"
@@ -6117,7 +6122,8 @@
     "response",
     "approved",
     "user_id",
-    "payment_id"
+    "payment_id",
+    "attachment_token_hash"
    ],
    "m2m": [
     {

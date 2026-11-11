@@ -11,9 +11,6 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
-// InstructorUnique is the instructor_id UniqueValidator message code.
-const InstructorUnique = "unique:instructor:instructor id"
-
 // InstructorTextFields are InstructorSerializer's text fields.
 var InstructorTextFields = []SupplierField{
 	{Name: "first_name", Max: 150, Required: true},
@@ -41,10 +38,9 @@ var InstructorDecimals = []InstructorHoursDecimal{
 }
 
 // InstructorWrite is InstructorSerializer's validated data before the
-// related lookups and the uniqueness check; maps hold present fields (nil
-// for None).
+// related lookups; maps hold present fields (nil for None). The read-only
+// instructor_id is not read from the body.
 type InstructorWrite struct {
-	ID                *string
 	Text              map[string]*string
 	Dates             map[string]*string
 	Booleans          map[string]bool
@@ -80,15 +76,6 @@ func instructorUUIDField(value any) (string, bool) {
 func ParseInstructorWrite(object domain.RequestObject) (InstructorWrite, map[string]any) {
 	write := InstructorWrite{Text: map[string]*string{}, Dates: map[string]*string{}, Booleans: map[string]bool{}, Decimals: map[string]*string{}}
 	errs := map[string]any{}
-	if value, present := object.Lookup("instructor_id"); present {
-		if value == nil {
-			errs["instructor_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := instructorUUIDField(value); ok {
-			write.ID = &id
-		} else {
-			errs["instructor_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	for _, field := range InstructorTextFields {
 		value, present := object.Lookup(field.Name)
 		if !present {
@@ -195,9 +182,6 @@ func ParseInstructorWrite(object domain.RequestObject) (InstructorWrite, map[str
 
 // ApplyInstructorWrite sets the validated fields on row.
 func ApplyInstructorWrite(row *domain.InstructorRecord, write InstructorWrite) {
-	if write.ID != nil {
-		row.ID = *write.ID
-	}
 	texts := map[string]**string{"email": &row.Email, "born_city": &row.BornCity, "born_province": &row.BornProvince, "tax_code": &row.TaxCode,
 		"address_city": &row.AddressCity, "address": &row.Address, "address_province": &row.AddressProvince, "civic_number": &row.CivicNumber,
 		"study_title": &row.StudyTitle, "role": &row.Role, "phone": &row.Phone, "phone_2": &row.Phone2, "phone_3": &row.Phone3,

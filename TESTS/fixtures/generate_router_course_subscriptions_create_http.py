@@ -93,7 +93,7 @@ add('restricted-unmapped', 'restricted_collaborator', LIST, 403, unmapped('cours
 add('owner-scoped-athlete-denied', 'owner', LIST, 403, {'detail': 'Operazione non disponibile nel contesto dell’associazione.'}, body={},
     headers={'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']})
 add('options', 'owner', LIST, 200, {**SUBSCRIPTION_OPTIONS, 'name': 'Course Subscription List'}, method='OPTIONS')
-for source in ('empty-body', 'field-errors', 'deleted-course', 'text-body', 'duplicate-key', 'membership-errors',
+for source in ('empty-body', 'field-errors', 'deleted-course', 'text-body', 'membership-errors',
                'membership-other-association', 'unknown-subscription', 'group-header-hides-subscription'):
     reissue(source, source)
 add('list-body-is-one-item', 'owner', LIST, 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']},

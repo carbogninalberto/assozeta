@@ -82,18 +82,8 @@ func instructorObject(body any, form bool) (domain.RequestObject, error) {
 	return object, nil
 }
 
-// related adds the uniqueness and document existence errors.
-func (s *InstructorWrites) related(ctx context.Context, tx domain.InstructorWritesTransaction, write dto.InstructorWrite, errs map[string]any,
-	exclude *string) error {
-	if write.ID != nil {
-		taken, err := tx.InstructorIDTaken(ctx, *write.ID, exclude)
-		if err != nil {
-			return err
-		}
-		if taken {
-			errs["instructor_id"] = []string{dto.InstructorUnique}
-		}
-	}
+// related adds the document existence errors.
+func (s *InstructorWrites) related(ctx context.Context, tx domain.InstructorWritesTransaction, write dto.InstructorWrite, errs map[string]any) error {
 	if _, failed := errs["documents"]; !failed {
 		for index, id := range write.Documents {
 			found, err := tx.DocumentExists(ctx, id)
@@ -139,7 +129,7 @@ func (s *InstructorWrites) Add(ctx context.Context, identity domain.ResolvedIden
 	if errs == nil {
 		errs = map[string]any{}
 	}
-	if err := s.related(ctx, tx, write, errs, nil); err != nil {
+	if err := s.related(ctx, tx, write, errs); err != nil {
 		return err
 	}
 	if len(errs) > 0 {
@@ -221,7 +211,7 @@ func (s *InstructorWrites) Update(ctx context.Context, identity domain.ResolvedI
 	if errs == nil {
 		errs = map[string]any{}
 	}
-	if err := s.related(ctx, tx, write, errs, &current.ID); err != nil {
+	if err := s.related(ctx, tx, write, errs); err != nil {
 		return err
 	}
 	if len(errs) > 0 {
@@ -230,17 +220,10 @@ func (s *InstructorWrites) Update(ctx context.Context, identity domain.ResolvedI
 	row := *current
 	row.UserID = owner
 	dto.ApplyInstructorWrite(&row, write)
-	if row.ID != current.ID {
-		// save() with a new primary key inserts a copy: auditlog's pre_save
-		// finds no row (a full diff logged as an update), then the create.
-		if err := tx.InsertInstructor(ctx, row); err != nil {
-			return err
-		}
-		changes, err := tx.CreatedChanges(ctx, "Instructor", row.ID)
-		if err != nil {
-			return err
-		}
-		association, path, err := s.actorIndex(ctx, tx, audit)
+	// The update entry precedes the save: the stored instructor's owner.
+	changes := dto.InstructorChanges(*current, row)
+	if len(changes) > 0 {
+		association, path, err := s.instructorIndex(ctx, tx, current.UserID, audit)
 		if err != nil {
 			return err
 		}
@@ -248,29 +231,9 @@ func (s *InstructorWrites) Update(ctx context.Context, identity domain.ResolvedI
 			path, audit); err != nil {
 			return err
 		}
-		if association, path, err = s.instructorIndex(ctx, tx, row.UserID, audit); err != nil {
-			return err
-		}
-		if err := s.append(ctx, tx, domain.InstructorWritesAudit{Model: "Instructor", Key: row.ID, Action: 0, Changes: changes}, association,
-			path, audit); err != nil {
-			return err
-		}
-	} else {
-		// The update entry precedes the save: the stored instructor's owner.
-		changes := dto.InstructorChanges(*current, row)
-		if len(changes) > 0 {
-			association, path, err := s.instructorIndex(ctx, tx, current.UserID, audit)
-			if err != nil {
-				return err
-			}
-			if err := s.append(ctx, tx, domain.InstructorWritesAudit{Model: "Instructor", Key: row.ID, Action: 1, Changes: changes}, association,
-				path, audit); err != nil {
-				return err
-			}
-		}
-		if err := tx.UpdateInstructor(ctx, row); err != nil {
-			return err
-		}
+	}
+	if err := tx.UpdateInstructor(ctx, row); err != nil {
+		return err
 	}
 	if write.DocumentsPresent {
 		if err := tx.SetDocuments(ctx, row.ID, write.Documents); err != nil {

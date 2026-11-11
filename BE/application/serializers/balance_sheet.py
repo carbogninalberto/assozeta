@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from application.models.balance_sheet_models import CustomAccounts, CustomAccountsTransfer
 from application.models.payment_models import Payment
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
 def custom_account_in_use(account):
@@ -15,7 +16,7 @@ def custom_account_in_use(account):
     return Payment.objects.filter(custom_accounts_id=account.custom_account_id).exists()
 
 
-class CustomAccountSerializer(serializers.ModelSerializer):
+class CustomAccountSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     deletable = serializers.SerializerMethodField()
     current_balance = serializers.SerializerMethodField()
 
@@ -141,7 +142,7 @@ class CustomAccountSerializerSimplify(serializers.ModelSerializer):
         )
 
 
-class CustomAccountTransferSerializer(serializers.ModelSerializer):
+class CustomAccountTransferSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

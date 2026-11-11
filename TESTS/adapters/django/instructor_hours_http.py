@@ -4,8 +4,7 @@ Seeds the instructor-list instructors plus documents, payments, associates,
 subscriptions, courses, course subscriptions (with membership payments),
 installments and instructor hours (audit disabled). Each case is checked
 against the complete model state: only the authored hours and documents
-change (created hours are matched as the one new key, or the authored key;
-a copied row equals its source but for the authored columns), and every new
+change (created hours are matched as the one new key), and every new
 auditlog entry matches an authored event with its index row: an hour stored
 when its entry is written resolves through its instructor's owner's
 association; otherwise (and when that owner has none) the actor's association,
@@ -213,11 +212,6 @@ def check_hours(case, before, after, effect, source, context):
         contract.require(actual in fresh, 'state.created-key')
         context['keys'][key] = actual
         row, columns = new[actual], dict(authored[key])
-        if '$copy' in columns:
-            source_row = old[source['hours'][columns.pop('$copy')]['id']]
-            expected = {**source_row, 'instructor_hours_id': actual, **columns}
-            contract.require(row == expected, 'state.copied-row')
-            continue
         moment = datetime.fromisoformat(row['creation_date'].replace('Z', '+00:00'))
         if 'creation_date' not in columns:
             contract.require(abs(datetime.now(timezone.utc) - moment) < timedelta(minutes=10), 'state.created-now')

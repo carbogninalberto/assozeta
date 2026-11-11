@@ -53,9 +53,9 @@ type CampsMany struct {
 }
 
 // CampsPeriodInput is CampsAndRetreatsPeriodSerializer's field-level
-// validation; Errors holds codes by field, the service adds the lookups.
+// validation; Errors holds codes by field, the service adds the lookups. The
+// primary key is read-only: a key in the body is ignored.
 type CampsPeriodInput struct {
-	ID          CampsRelation
 	Start, End  CampsValue[time.Time]
 	Title       CampsValue[*string]
 	Description CampsValue[*string]
@@ -69,9 +69,8 @@ type CampsPeriodInput struct {
 }
 
 // CampsServiceInput is CampsAndRetreatsPeriodsServiceAddSerializer's
-// field-level validation.
+// field-level validation (the read-only primary key is ignored).
 type CampsServiceInput struct {
-	ID          CampsRelation
 	Title       CampsValue[*string]
 	Description CampsValue[*string]
 	Fee         CampsValue[string]
@@ -82,11 +81,11 @@ type CampsServiceInput struct {
 }
 
 // CampsPeriodFieldOrder and CampsServiceFieldOrder are the serializers'
-// writable fields: the pk, model fields, then forward relations.
+// writable fields: model fields, then forward relations.
 var (
-	CampsPeriodFieldOrder = []string{"camps_and_retreats_period_id", "start_date", "end_date", "title", "description", "fee",
+	CampsPeriodFieldOrder = []string{"start_date", "end_date", "title", "description", "fee",
 		"max_participants", "created_at", "camps_and_retreats", "camps_and_Retreats_period_services"}
-	CampsServiceFieldOrder = []string{"camps_and_retreats_period_service_id", "title", "description", "fee", "created_at",
+	CampsServiceFieldOrder = []string{"title", "description", "fee", "created_at",
 		"camps_and_retreats_period", "payment_category"}
 )
 
@@ -312,7 +311,6 @@ func ParseCampsPeriodWrite(body any, form, partial bool) (*CampsPeriodInput, map
 	}
 	reader.partial = partial
 	input := &CampsPeriodInput{}
-	input.ID = reader.uuid("camps_and_retreats_period_id")
 	input.Start = reader.datetime("start_date", true)
 	input.End = reader.datetime("end_date", true)
 	input.Title = reader.text("title", 255)
@@ -401,7 +399,6 @@ func ParseCampsServiceWrite(body any, form, partial bool) (*CampsServiceInput, m
 	}
 	reader.partial = partial
 	input := &CampsServiceInput{}
-	input.ID = reader.uuid("camps_and_retreats_period_service_id")
 	input.Title = reader.text("title", 255)
 	input.Description = reader.text("description", 2048)
 	input.Fee = reader.decimal("fee")

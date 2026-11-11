@@ -64,9 +64,9 @@ add('add-invalid-fields', 'owner', ADD, 400, {'custom_account_from': missing_pk(
     'date': [DATE_ERROR]}, body={'custom_account_from': ACCOUNTS['abroad']['id'], 'amount': 'abc', 'date': 'nope'})
 add('add-unknown-and-malformed-accounts', 'owner', ADD, 400, {'custom_account_from': missing_pk(UNKNOWN),
     'custom_account_to': ['“abc” is not a valid UUID.']}, body={'custom_account_from': UNKNOWN, 'custom_account_to': 'abc', 'amount': '1'})
-add('add-existing-id', 'owner', ADD, 400,
-    {'custom_account_transfer_id': ['custom accounts transfer with this custom account transfer id already exists.']},
-    body={'custom_account_transfer_id': TRANSFERS['t1']['id'], 'amount': '1'})
+# custom_account_transfer_id is read-only: a key in the body is ignored and the transfer gets a new one.
+add('add-existing-id-ignored', 'owner', ADD, 200, item(None, None, '1', '$now'),
+    body={'custom_account_transfer_id': TRANSFERS['t1']['id'], 'amount': '1'}, effect=created('owner', item(None, None, '1', '$now')))
 add('add-list-body', 'owner', ADD, 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']}, body=[])
 add('add-owner-scoped-athlete-denied', 'owner', ADD, 403, {'detail': 'Operazione non disponibile nel contesto dell’associazione.'},
     body={'amount': '1'}, headers=SCOPED)
@@ -104,17 +104,18 @@ add('update-clear-and-move', 'full_collaborator', one('t3', 'update'), 200, exis
                                                'custom_account_to': [ACCOUNTS['other']['id'], 'None'],
                                                'date': ['2026-09-03 10:00:00', '2026-09-30 12:00:00']},
                    existing('t3', to=None, date='2026-09-30T12:00:00Z', **{'from': 'ghost'})))
-# An update naming a transfer id no row has: Model.save() inserts a copy with the validated values, the named row stays.
-COPY_ID = 'a1000000-0000-4000-8000-000000940001'
-COPY_TAKEN = {'custom_account_transfer_id': ['custom accounts transfer with this custom account transfer id already exists.']}
-add('update-new-id-copies-row', 'owner', one('t1', 'update'), 200, {**existing('t1', amount='32'), 'custom_account_transfer_id': COPY_ID},
-    method='PATCH', body={'custom_account_transfer_id': COPY_ID, 'amount': '32'},
-    effect={'kind': 'copy', 'actor': 'owner', 'id': COPY_ID, 'transfer': {**existing('t1', amount='32'), 'custom_account_transfer_id': COPY_ID}})
+# custom_account_transfer_id is read-only: a key in the body is ignored and the transfer the path names is updated in place.
+NEW_ID = 'a1000000-0000-4000-8000-000000940001'
+add('update-new-id-ignored', 'owner', one('t1', 'update'), 200, existing('t1', amount='32'), method='PATCH',
+    body={'custom_account_transfer_id': NEW_ID, 'amount': '32'},
+    effect=changed('owner', 't1', {'amount': ['31.00', '32.00']}, existing('t1', amount='32')))
 add('update-own-id-is-plain-update', 'owner', one('t1', 'update'), 200, existing('t1', amount='33'), method='PATCH',
     body={'custom_account_transfer_id': TRANSFERS['t1']['id'], 'amount': '33'},
-    effect=changed('owner', 't1', {'amount': ['31.00', '33.00']}, existing('t1', amount='33')))
-add('update-id-of-another-row-rejected', 'owner', one('t1', 'update'), 400, COPY_TAKEN, method='PATCH',
-    body={'custom_account_transfer_id': TRANSFERS['t3']['id']})
+    effect=changed('owner', 't1', {'amount': ['32.00', '33.00']}, existing('t1', amount='33')))
+add('update-id-of-another-row-ignored', 'owner', one('t1', 'update'), 200, existing('t1', amount='33'), method='PATCH',
+    body={'custom_account_transfer_id': TRANSFERS['t3']['id']}, effect=changed('owner', 't1', {}, existing('t1', amount='33')))
+add('update-malformed-id-ignored', 'owner', one('t1', 'update'), 200, existing('t1', amount='33'), method='PATCH',
+    body={'custom_account_transfer_id': 'abc'}, effect=changed('owner', 't1', {}, existing('t1', amount='33')))
 add('delete-malformed-not-found', 'owner', one('abc', 'delete'), 404, MISSING, method='DELETE')
 add('delete-foreign-not-found', 'owner', one('tf', 'delete'), 404, MISSING, method='DELETE')
 add('delete-athlete-forbidden', 'athlete', one('t2', 'delete'), 403, FORBIDDEN, method='DELETE')

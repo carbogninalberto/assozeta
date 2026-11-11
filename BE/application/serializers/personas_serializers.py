@@ -11,6 +11,7 @@ from rest_framework import serializers
 
 from application.models import Subscription
 from application.models.user_models import AssociateTutorRelation, Associate
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
 class BasicTutorsSerializer(serializers.ModelSerializer):
@@ -250,7 +251,7 @@ class AssociateSearchSerializer(serializers.ModelSerializer):
         return obj.calculate_age()
 
 
-class AssociateSubscriptionSerializer(serializers.ModelSerializer):
+class AssociateSubscriptionSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     active = serializers.BooleanField(read_only=True)
     is_current = serializers.BooleanField(read_only=True)
     is_next_year = serializers.BooleanField(read_only=True)

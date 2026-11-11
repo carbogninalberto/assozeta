@@ -62,7 +62,7 @@ document = {'document_id': info('string', 'Document id'), 'creation_date': info(
             'filepath': info('string', 'Filepath', max_length=1000), 'filename': info('string', 'Filename', True, max_length=255),
             'file_size_bytes': info('integer', 'File size bytes', min_value=0, max_value=9223372036854775807), 'token': info('string', 'Token')}
 add('options', 'owner', 'root1', 200, {'name': 'Document Archive', 'description': '', 'renders': ['application/json'], 'parses': ['application/json'],
-    'actions': {'POST': {'sport_association_documents_archive_id': info('string', 'Sport association documents archive id'),
+    'actions': {'POST': {'sport_association_documents_archive_id': info('string', 'Sport association documents archive id', read_only=True),
                          'sport_association': info('field', 'Sport association', True),
                          'document': {'type': 'field', 'required': False, 'read_only': True, 'label': 'Document',
                                       'child': {'type': 'nested object', 'required': False, 'read_only': True, 'children': document}},

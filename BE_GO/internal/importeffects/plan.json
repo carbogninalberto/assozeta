@@ -14826,11 +14826,30 @@
      "mapped": true,
      "one_to_one": false,
      "self_reference": false
+    },
+    {
+     "name": "attachment_token_hash",
+     "attname": "attachment_token_hash",
+     "column": "attachment_token_hash",
+     "null": false,
+     "db_type": "varchar(64)",
+     "default": {
+      "kind": "value",
+      "type": "str",
+      "value": ""
+     },
+     "type": "CharField",
+     "primary_key": false,
+     "kind": "text",
+     "parsed": false,
+     "max_length": 64
     }
    ],
    "audit": {
     "include": [],
-    "exclude": [],
+    "exclude": [
+     "attachment_token_hash"
+    ],
     "reverse": {},
     "additional_data": false
    },

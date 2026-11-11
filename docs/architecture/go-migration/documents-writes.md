@@ -67,14 +67,17 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   DELETE runs the viewset's `delete()` with this pk (`ArchiveWrites.Delete`, as on the move route).
 - `get_object()` (athletes 500; an unparsable pk is DRF's bare 404; an unknown or foreign row is the model 404), then
   `request.data` and `DocumentArchiveSerializer(instance, data, partial=True)`:
-  - `sport_association_documents_archive_id` is a UUIDField with its UniqueValidator;
+  - `sport_association_documents_archive_id` is read-only: a key in the body is ignored, never validated;
   - `sport_association` and `folder` are related fields (does-not-exist, incorrect type). `tenant_scope` turns a row of
     another association into DRF's generic 403, which escapes field validation;
   - `date` uses `DATE_INPUT_FORMATS` `['%d/%m/%Y']`;
   - `document` is read-only.
-- A valid request saves and then answers the 500 page: rendering the nested `many=True` document raises. The update entry
-  lists the changed fields (`direct`). A new primary key makes `save()` an INSERT. pre_save finds no row, so it logs an
-  update against None (indexed through `changes_json`, before the row exists), and post_save then logs the create.
+- A valid request saves the row the path names and then answers the 500 page: rendering the nested `many=True` document
+  raises. The update entry lists the changed fields (`direct`), and there is no entry when nothing changed. t5pk: a key
+  in the body (another row's, an unused one, a malformed one, null or a boolean) is ignored: cases
+  `update-other-row-id-ignored` (the other row stays as it is), `update-new-primary-key-ignored`,
+  `update-malformed-primary-key-ignored`, `update-null-primary-key-ignored` and
+  `update-boolean-primary-key-ignored` (a body whose only field is the key changes nothing and writes no entry).
 
 ## subscription/<uid>/upload-document
 
@@ -141,9 +144,9 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
   one `characters in position A-B` range), then a NUL character (`A string literal cannot contain NUL (0x00)
   characters.`). `documents/add` answers 400 `{'exception': <text>}` like its other pre-create errors;
   upload-document answers the 500 page without writes.
-- A boolean `sport_association_documents_archive_id` in the archive update is an int for UUIDField
-  (`uuid.UUID(int=True)` is `00000000-0000-0000-0000-000000000001`): the update inserts a row under that key, as with
-  any new primary key.
+- t5pk: a boolean `sport_association_documents_archive_id` in the archive update is ignored like any other value of the
+  read-only key: the row the path names is saved in place and the body's key is never used
+  (`update-boolean-primary-key-ignored`).
 
 ## Files as text and the season error (v2-rest-docs)
 

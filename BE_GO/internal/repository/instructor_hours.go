@@ -118,13 +118,6 @@ func (t *instructorHoursTransaction) Hours(ctx context.Context, query domain.Ins
 	return rows, err
 }
 
-func (t *instructorHoursTransaction) HourIDTaken(ctx context.Context, id string, exclude *string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_instructorhours
- WHERE instructor_hours_id=$1 AND ($2::uuid IS NULL OR instructor_hours_id<>$2::uuid))`, id, exclude)
-	return taken, err
-}
-
 func (t *instructorHoursTransaction) VisiblePayment(ctx context.Context, id string, group *string) (*domain.InstructorHoursPayment, error) {
 	var row domain.InstructorHoursPayment
 	err := t.tx.GetContext(ctx, &row, `SELECT payment_id, sport_association_id FROM application_payment

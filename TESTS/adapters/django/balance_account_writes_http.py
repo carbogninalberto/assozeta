@@ -97,14 +97,7 @@ def assert_effect(case, before, after, source, remote, fixture):
     own = ids['own_association']
     old_c, new_c = keyed(before[ACCOUNT], 'custom_account_id'), keyed(after[ACCOUNT], 'custom_account_id')
     entries = [(0 if effect['kind'] == 'add' else 1, 'direct')]
-    if effect['kind'] == 'copy':
-        # An update naming an unused custom_account_id: Model.save() inserts a copy, the named row stays. auditlog's pre_save finds
-        # no row under the new key (an update against nothing), then post_save logs the create.
-        key = effect['id']
-        contract.require(key not in old_c and set(new_c) == set(old_c) | {key} and all(new_c[k] == old_c[k] for k in old_c), 'state.kept')
-        changes = None
-        entries = [(1, 'changes_json.sport_association'), (0, 'direct')]
-    elif effect['kind'] == 'add':
+    if effect['kind'] == 'add':
         keys = set(new_c) - set(old_c)
         contract.require(len(keys) == 1 and len(new_c) == len(old_c) + 1 and all(new_c[k] == old_c[k] for k in old_c), 'state.created')
         key = keys.pop()

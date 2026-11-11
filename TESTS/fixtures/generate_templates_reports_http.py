@@ -2,10 +2,11 @@
 
 templates/<pk>/update is SportAssociationModuleTemplatesViewSet.update: get_object
 on the association queryset (bare 404 for an unparseable pk, model 404 otherwise),
-then ModelSerializer(fields='__all__', partial=True) and save(). A new primary key
-makes Model.save() insert a copy (auditlog logs a create); the related
-sport_association goes through the tenant scope (another tenant is DRF's generic
-403). Audit: changed fields only, no entry when nothing changed.
+then ModelSerializer(fields='__all__', partial=True) and save(). The primary key
+is read-only: a key in the body is ignored, the row the path names is saved in
+place and the response shows that row; the related sport_association goes through
+the tenant scope (another tenant is DRF's generic 403). Audit: changed fields
+only, no entry when nothing changed.
 
 saved-reports/<pk>/run is SavedReportViewSet.run: the report is resolved by id,
 association and creator; the stored params are merged with request.data
@@ -178,16 +179,17 @@ effect = updated('form', 'full_collaborator', {'name': 'Form nuovo', 'custom_foo
 add('update-form-full-collaborator', 'full_collaborator', 'PATCH', UPDATE('form'), 200, serialized(effect['row']), effect=effect,
     raw_body='custom_footer=&header=false&custom_footer_header=true&name=Form+nuovo', content_type='application/x-www-form-urlencoded')
 effect = updated('main', 'owner', {})
-add('update-unchanged-no-audit', 'owner', 'PATCH', UPDATE('main'), 200, serialized(effect['row']), effect=effect,
+add('update-own-id-ignored-no-audit', 'owner', 'PATCH', UPDATE('main'), 200, serialized(effect['row']), effect=effect,
     body={'sport_association_module_templates_id': TEMPLATES['main']['id'], 'sport_association': OWN})
-COPY = next(ids)
-copy_row = {**state['source'], 'id': COPY, 'header': False}
-add('update-new-id-inserts-copy', 'owner', 'PATCH', UPDATE('source'), 200, serialized(copy_row),
-    body={'sport_association_module_templates_id': COPY, 'header': False},
-    effect={'kind': 'template-copy', 'id': COPY, 'row': copy_row, 'actor': 'owner'})
-add('update-existing-id-unique', 'owner', 'PATCH', UPDATE('main'), 400,
-    {'sport_association_module_templates_id': ['sport association module templates with this sport association module templates id already exists.']},
-    body={'sport_association_module_templates_id': TEMPLATES['foreign']['id']})
+# The primary key is read-only: a key in the body (an unused one, another row's) is ignored and the template the
+# path names is updated in place, with at most its own changed-field audit entry.
+UNUSED = next(ids)
+effect = updated('source', 'owner', {'header': False})
+add('update-new-id-ignored', 'owner', 'PATCH', UPDATE('source'), 200, serialized(effect['row']), effect=effect,
+    body={'sport_association_module_templates_id': UNUSED, 'header': False})
+effect = updated('main', 'owner', {})
+add('update-other-row-id-ignored', 'owner', 'PATCH', UPDATE('main'), 200, serialized(effect['row']), effect=effect,
+    body={'sport_association_module_templates_id': TEMPLATES['form']['id']})
 add('update-foreign-association-denied', 'owner', 'PATCH', UPDATE('main'), 403, {'detail': 'You do not have permission to perform this action.'},
     body={'sport_association': FOREIGN, 'name': ''})
 add('update-unknown-association', 'owner', 'PATCH', UPDATE('main'), 400,
@@ -195,12 +197,11 @@ add('update-unknown-association', 'owner', 'PATCH', UPDATE('main'), 400,
 add('update-invalid-fields', 'owner', 'PATCH', UPDATE('main'), 400,
     {'name': ['This field may not be blank.'], 'template': ['This field may not be blank.'], 'footer': ['This field may not be null.'],
      'custom_header': ['Not a valid string.'], 'sport_association': ['“nope” is not a valid UUID.'],
-     'sport_association_module_templates_id': ['Must be a valid UUID.'], 'header': ['Must be a valid boolean.']},
+     'header': ['Must be a valid boolean.']},
     body={'name': '', 'template': '  ', 'footer': None, 'custom_header': True, 'sport_association': 'nope',
           'sport_association_module_templates_id': 'bad', 'header': 'maybe'})
 add('update-null-values', 'owner', 'PATCH', UPDATE('main'), 400,
-    {'name': ['This field may not be null.'], 'sport_association': ['This field may not be null.'],
-     'sport_association_module_templates_id': ['This field may not be null.']},
+    {'name': ['This field may not be null.'], 'sport_association': ['This field may not be null.']},
     body={'name': None, 'sport_association': None, 'sport_association_module_templates_id': None, 'custom_footer': None})
 add('update-too-long-name', 'owner', 'PATCH', UPDATE('main'), 400, {'name': ['Ensure this field has no more than 150 characters.']},
     body={'name': 'x' * 151})
@@ -527,6 +528,15 @@ run('export-pdf-footer-list', 'export_data', {**NUOTO_PDF, 'footer_text': [1, 'a
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': "[1, 'a', None]"}))
 # Labels and texts are reportlab paragraphs: '&', entities, tags and soft hyphens go through its markup parser, and a text
 # longer than a page is cut where it stands, inside a long word too. Markup the parser raises on fails the export.
+def image_base64(width, height, colour):
+    import base64
+    import io
+    from PIL import Image
+    out = io.BytesIO()
+    Image.new('RGB', (width, height), colour).save(out, 'JPEG')
+    return base64.b64encode(out.getvalue()).decode()
+
+
 MARKUP_LABELS = {'tag_name': 'Nome & <b>tag</b>', 'creation_date': 'A < B &lt;data&gt;'}
 MARKUP_TABLE = {**NUOTO_TABLE, 'headers': list(MARKUP_LABELS.values())}
 run('export-pdf-markup', 'export_data', {**NUOTO_PDF, 'column_labels': MARKUP_LABELS, 'text_before': 'Sport &amp; Fun<br/>R&D <i>club</i>',
@@ -539,6 +549,24 @@ run('export-pdf-markup-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': 
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': MARKUP_TEXT, 'text_after': WORD_TEXT}))
 run('export-pdf-markup-unclosed-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <b>b'}, 500, FAILED)
 run('export-pdf-label-markup-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': 'A<B'}}, 500, FAILED)
+
+# Tags that need the fragment model: lines, fonts, sizes and colours, rises, links and inline images.
+RICH_LABELS = {'tag_name': 'Nome <u>tag</u> <font color="#aa0000">rosso</font>', 'creation_date': 'Data m<sup>2</sup> <a href="https://example.test/d">link</a>'}
+RICH_TABLE = {**NUOTO_TABLE, 'headers': list(RICH_LABELS.values())}
+RICH_BEFORE = 'Il <u>corso</u> di <strike>nuoto</strike> <font size="14" color="#0000ff">grande</font> <a href="https://example.test/c?a=1&amp;b=2">info</a>'
+RICH_AFTER = 'H<sub>2</sub>O <font bgcolor="yellow">evidenziato</font> <u kind="double" color="red">doppio</u><br/><link href="mailto:a@example.test">posta</link>'
+run('export-pdf-rich-markup', 'export_data', {**NUOTO_PDF, 'column_labels': RICH_LABELS, 'text_before': RICH_BEFORE, 'text_after': RICH_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**RICH_TABLE, 'text_before': RICH_BEFORE, 'text_after': RICH_AFTER}))
+RICH_TEXT = ' '.join([RICH_BEFORE + ' ' + RICH_AFTER] * 90)
+run('export-pdf-rich-markup-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': RICH_TEXT, 'text_after': '<u>' + 'sottolineato ' * 500 + '</u>'}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': RICH_TEXT, 'text_after': '<u>' + 'sottolineato ' * 500 + '</u>'}))
+PIXEL = 'data:image/jpeg;base64,' + image_base64(30, 20, (200, 30, 30))
+IMAGE_TEXT = 'prima <img src="%s" width="15" height="10"/> dopo <img src="%s" valign="middle"/> fine' % (PIXEL, PIXEL)
+run('export-pdf-inline-image', 'export_data', {**NUOTO_PDF, 'text_before': IMAGE_TEXT, 'text_after': ' '.join([IMAGE_TEXT] * 40)}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': IMAGE_TEXT, 'text_after': ' '.join([IMAGE_TEXT] * 40)}))
+run('export-pdf-rich-color-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <font color="nope">b</font>'}, 500, FAILED)
+run('export-pdf-rich-underline-kind-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <u kind="quad">b</u>'}, 500, FAILED)
+run('export-pdf-rich-label-size-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': '<font size="x">A</font>'}}, 500, FAILED)
 
 run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
 run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})

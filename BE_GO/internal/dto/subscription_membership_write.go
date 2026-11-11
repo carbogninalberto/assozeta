@@ -19,7 +19,6 @@ var SubscriptionMembershipTextFields = []SupplierField{
 }
 
 const (
-	SubscriptionMembershipUnique = "unique:subscription membership:subscription membership id"
 	// SubscriptionMembershipDate is DateField's 'invalid' with the project's
 	// DATE_INPUT_FORMATS ['%d/%m/%Y'].
 	SubscriptionMembershipDate = "date:DD/MM/YYYY"
@@ -34,9 +33,9 @@ type SubscriptionMembershipRelation struct {
 
 // SubscriptionMembershipWrite is SubscriptionMembershipSerializer's validated
 // data before the related-field lookups. Text, Dates and Price hold present
-// fields (nil for None).
+// fields (nil for None). subscription_membership_id is read-only: a key in the
+// body is ignored.
 type SubscriptionMembershipWrite struct {
-	ID           *string
 	Association  SubscriptionMembershipRelation
 	Associate    SubscriptionMembershipRelation
 	Payment      SubscriptionMembershipRelation
@@ -160,15 +159,6 @@ func ParseSubscriptionMembershipWrite(body any, form bool) (SubscriptionMembersh
 	object = subscriptionMembershipFiles(object)
 	write := SubscriptionMembershipWrite{Dates: map[string]*string{}, Text: map[string]*string{}}
 	errs := map[string]any{}
-	if value, present := object.Lookup("subscription_membership_id"); present {
-		if value == nil {
-			errs["subscription_membership_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := supplierUUID(value); ok {
-			write.ID = &id
-		} else {
-			errs["subscription_membership_id"] = []string{PaymentCategoryValidationUUID}
-		}
-	}
 	relations := []struct {
 		name   string
 		null   bool

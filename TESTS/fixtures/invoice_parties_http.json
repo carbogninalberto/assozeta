@@ -5481,32 +5481,6 @@
    }
   },
   {
-   "name": "invoice-parties-supplier-add-existing-invoice-id",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/invoice-suppliers/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "invoice_supplier_id": [
-     "invoice suppliers with this invoice supplier id already exists."
-    ]
-   },
-   "effect": null,
-   "prints": [],
-   "body": {
-    "custom_accounts": null,
-    "supplier_id": "a1000000-0000-4000-8000-000000846110",
-    "payment_date": "2026-10-20T10:00:00Z",
-    "paid": true,
-    "amount": "50.5",
-    "invoice_identifier": "FN-100",
-    "expire_date": "2026-12-31T00:00:00Z",
-    "notes": "nuova",
-    "invoice_supplier_id": "a1000000-0000-4000-8000-000000846128"
-   }
-  },
-  {
    "name": "invoice-parties-supplier-add-negative-amount-server-error",
    "actor": "owner",
    "method": "POST",
@@ -5687,7 +5661,281 @@
    }
   },
   {
-   "name": "invoice-parties-supplier-add-collaborator-unpaid-now",
+   "name": "invoice-parties-supplier-add-existing-invoice-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     },
+     "invoicesuppliers": {
+      "invoice_supplier_id": "$invoice",
+      "invoice_identifier": "FN-100",
+      "amount": "50.50",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "expire_date": "2026-12-31T00:00:00Z",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_id": "$payment",
+      "paid": true,
+      "notes": "nuova",
+      "document_pdf_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110"
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "invoicesuppliers",
+      "key": "$invoice",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "payment",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "invoicesuppliers",
+      "key": "$invoice",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$payment"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "invoice_supplier_id": "a1000000-0000-4000-8000-000000846128"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-malformed-invoice-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     },
+     "invoicesuppliers": {
+      "invoice_supplier_id": "$invoice",
+      "invoice_identifier": "FN-100",
+      "amount": "50.50",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "expire_date": "2026-12-31T00:00:00Z",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_id": "$payment",
+      "paid": true,
+      "notes": "nuova",
+      "document_pdf_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110"
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "invoicesuppliers",
+      "key": "$invoice",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "payment",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "invoicesuppliers",
+      "key": "$invoice",
+      "action": 1,
+      "changes": {
+       "payment": [
+        "None",
+        "$payment"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "invoice_supplier_id": "not-a-uuid"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-collaborator-unpaid-now-id-ignored",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/invoice-suppliers/add",
@@ -5729,7 +5977,7 @@
       "course": null
      },
      "invoicesuppliers": {
-      "invoice_supplier_id": "a1000000-0000-4000-8000-000000846900",
+      "invoice_supplier_id": "$invoice",
       "invoice_identifier": "9",
       "amount": "9.00",
       "payment_date": "$now",
@@ -6100,9 +6348,6 @@
     ],
     "payment_id": [
      "Not a valid string."
-    ],
-    "invoice_supplier_id": [
-     "Must be a valid UUID."
     ]
    },
    "effect": null,
@@ -6258,6 +6503,191 @@
    "body": {
     "amount": "2.0",
     "notes": "prima nota"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-unused-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "FC-003 bis",
+       "amount": "2.50",
+       "payment_date": null,
+       "expire_date": "2027-01-31T09:00:00Z",
+       "payment": null,
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "invoicesuppliers",
+      "key": "a1000000-0000-4000-8000-000000846127",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "2.00",
+        "2.50"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "invoice_supplier_id": "a1000000-0000-4000-8000-000000846901",
+    "amount": "2.50"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-other-row-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "FC-003 bis",
+       "amount": "2.50",
+       "payment_date": null,
+       "expire_date": "2027-02-28T00:00:00Z",
+       "payment": null,
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "invoicesuppliers",
+      "key": "a1000000-0000-4000-8000-000000846127",
+      "action": 1,
+      "changes": {
+       "expire_date": [
+        "2027-01-31 09:00:00",
+        "2027-02-28 00:00:00"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "invoice_supplier_id": "a1000000-0000-4000-8000-000000846125",
+    "expire_date": "2027-02-28T00:00:00Z"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-malformed-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "FC-003 bis",
+       "amount": "2.75",
+       "payment_date": null,
+       "expire_date": "2027-02-28T00:00:00Z",
+       "payment": null,
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "invoicesuppliers",
+      "key": "a1000000-0000-4000-8000-000000846127",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "2.50",
+        "2.75"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "invoice_supplier_id": "not-a-uuid",
+    "amount": "2.75"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-key-only-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "FC-003 bis",
+       "amount": "2.75",
+       "payment_date": null,
+       "expire_date": "2027-02-28T00:00:00Z",
+       "payment": null,
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     }
+    },
+    "new": {},
+    "audits": []
+   },
+   "prints": [],
+   "body": {
+    "invoice_supplier_id": "a1000000-0000-4000-8000-000000846902"
    }
   },
   {
@@ -6736,9 +7166,9 @@
      "invoicesuppliers": {
       "a1000000-0000-4000-8000-000000846127": {
        "invoice_identifier": "Modulo",
-       "amount": "2.00",
+       "amount": "2.75",
        "payment_date": null,
-       "expire_date": "2027-01-31T09:00:00Z",
+       "expire_date": "2027-02-28T00:00:00Z",
        "payment": null,
        "paid": true,
        "notes": "prima nota",
@@ -6786,9 +7216,9 @@
      "invoicesuppliers": {
       "a1000000-0000-4000-8000-000000846127": {
        "invoice_identifier": "Modulo",
-       "amount": "2.00",
+       "amount": "2.75",
        "payment_date": null,
-       "expire_date": "2027-01-31T09:00:00Z",
+       "expire_date": "2027-02-28T00:00:00Z",
        "payment": null,
        "paid": true,
        "notes": "prima nota",

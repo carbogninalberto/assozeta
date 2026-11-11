@@ -203,7 +203,6 @@ add('completed-restore-still-prints', 'owner', 200, CREATED, body=BASIC,
 
 # Document and primary key fields.
 DATE = ('20/11/2026', '2026-11-20')
-UNIQUE = 'medical appointments with this medical appointments id already exists.'
 add('document-set', 'owner', 200, CREATED, body={**BASIC, 'document': DOC},
     effect=created('owner', region='non-agonistica', date=DATE, document=DOC), prints=printed())
 add('document-blank-is-none', 'owner', 200, CREATED, body={**BASIC, 'document': ''},
@@ -213,20 +212,13 @@ add('document-missing', 'owner', 400, {'document': [f'Invalid pk "{DOC_MISSING}"
 add('document-malformed', 'owner', 400, {'document': ['\u201cnope\u201d is not a valid UUID.']}, body={**BASIC, 'document': 'nope'})
 add('document-bool', 'owner', 400, {'document': ['Incorrect type. Expected pk value, received bool.']}, body={**BASIC, 'document': True})
 add('document-list', 'owner', 400, {'document': ['\u201c[1]\u201d is not a valid UUID.']}, body={**BASIC, 'document': [1]})
-add('id-supplied', 'owner', 200, CREATED, body={**BASIC, 'medical_appointments_id': FRESH.upper()},
-    effect=created('owner', region='non-agonistica', date=DATE, ident=FRESH), prints=printed(FRESH))
-add('id-taken', 'owner', 400, {'medical_appointments_id': [UNIQUE]}, body={**BASIC, 'medical_appointments_id': TAKEN})
-add('id-null', 'owner', 400, {'medical_appointments_id': ['This field may not be null.']},
-    body={**BASIC, 'medical_appointments_id': None})
-add('id-malformed', 'owner', 400, {'medical_appointments_id': ['Must be a valid UUID.']},
-    body={**BASIC, 'medical_appointments_id': 'abc'})
-add('id-float', 'owner', 400, {'medical_appointments_id': ['Must be a valid UUID.']},
-    body={**BASIC, 'medical_appointments_id': 1.5})
-add('id-integer', 'owner', 200, CREATED, body={**BASIC, 'medical_appointments_id': 12345},
-    effect=created('owner', region='non-agonistica', date=DATE, ident='00000000-0000-0000-0000-000000003039'),
-    prints=printed('00000000-0000-0000-0000-000000003039'))
-add('id-and-document-errors', 'owner', 400, {'medical_appointments_id': [UNIQUE],
-                                              'document': [f'Invalid pk "{DOC_MISSING}" - object does not exist.']},
+# medical_appointments_id is read-only: whatever key the body carries (new, taken, null, malformed, a number) is ignored
+# and the appointment gets a new one.
+for label, value in (('supplied', FRESH.upper()), ('taken', TAKEN), ('null', None), ('malformed', 'abc'), ('float', 1.5),
+                     ('integer', 12345)):
+    add(f'id-{label}-ignored', 'owner', 200, CREATED, body={**BASIC, 'medical_appointments_id': value},
+        effect=created('owner', region='non-agonistica', date=DATE), prints=printed())
+add('id-ignored-document-error', 'owner', 400, {'document': [f'Invalid pk "{DOC_MISSING}" - object does not exist.']},
     body={**BASIC, 'medical_appointments_id': TAKEN, 'document': DOC_MISSING})
 
 assert len({c['name'] for c in cases}) == len(cases)

@@ -4550,7 +4550,7 @@
       "course_subscription_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Course subscription id"
       },
       "subscription_id": {
@@ -6390,7 +6390,7 @@
       "course_subscription_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Course subscription id"
       },
       "subscription_id": {
@@ -7804,6 +7804,94 @@
    }
   },
   {
+   "name": "router-course-subscriptions-update-primary-key-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660063/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000660063",
+    "creation_date": "2026-09-10T08:00:00Z",
+    "paid": true,
+    "subscription": {
+     "subscription_id": "a1000000-0000-4000-8000-000000660017",
+     "associate": {
+      "associate_id": "a1000000-0000-4000-8000-000000660008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1970-03-03",
+      "email": null,
+      "sex": "M",
+      "first_name": "Gino",
+      "last_name": "Neri",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "current_year": "corrente"
+    },
+    "multi_payments": false,
+    "multiple_quote": null,
+    "one_fee_payment": false,
+    "installments": [],
+    "course": "a1000000-0000-4000-8000-000000660020",
+    "type": 1,
+    "billed_frequency": 3,
+    "billed_from": null,
+    "billed_until": null,
+    "billed_from_day_of_month": 1,
+    "membership_active": false,
+    "membership_fee": "0.00",
+    "auto_renewal": false,
+    "membership_payments": [],
+    "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
+    "carnets": []
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "cs_changed": {
+     "cs_gino": {
+      "billed_frequency": 3
+     }
+    },
+    "cs_deleted": [],
+    "installments_deleted": [],
+    "payments_deleted": [],
+    "payments_changed": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "label": "cs_gino",
+      "action": 1,
+      "changes": {
+       "billed_frequency": [
+        "2",
+        "3"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000660063'), 'course_id': UUID('a1000000-0000-4000-8000-000000660020'), 'paid': True, 'creation_date': datetime.datetime(2026, 9, 10, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000660017'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 3, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': False, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "body": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000660058",
+    "billed_frequency": 3
+   }
+  },
+  {
    "name": "router-course-subscriptions-destroy-deleted-not-found",
    "actor": "owner",
    "method": "DELETE",
@@ -7985,6 +8073,112 @@
        "course.sport_association"
       ],
       "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000660071'), 'course_id': UUID('a1000000-0000-4000-8000-000000660020'), 'paid': False, 'creation_date': datetime.datetime(2026, 9, 10, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000660017'), 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "router-course-subscriptions-destroy-shared-payment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000669930/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "cs_changed": {
+     "cs_shared": {
+      "deleted": true
+     }
+    },
+    "cs_deleted": [],
+    "installments_deleted": [
+     "sh_i_shared",
+     "sh_i_plain"
+    ],
+    "payments_deleted": [
+     "sh_pay_shared"
+    ],
+    "payments_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "sh_pay_shared",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "sh_i_shared",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "payment",
+      "label": "sh_pay_shared",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "sh_i_plain",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscriptioninstallment",
+      "label": "sh_i_shared",
+      "action": 2,
+      "changes": null,
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "repr": null
+     },
+     {
+      "model": "coursesubscription",
+      "label": "cs_shared",
+      "action": 1,
+      "changes": {
+       "deleted": [
+        "False",
+        "True"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000669930'), 'course_id': UUID('a1000000-0000-4000-8000-000000669911'), 'paid': False, 'creation_date': datetime.datetime(2026, 9, 10, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': None, 'payment_id': None, 'multi_payments': False, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      }
     ]
    }

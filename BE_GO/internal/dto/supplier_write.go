@@ -39,14 +39,14 @@ var SupplierTextFields = []SupplierField{
 	{Name: "note", Null: true, Blank: true},
 }
 
-// SupplierFieldOrder is the serializer's field order (model declaration).
-var SupplierFieldOrder = []string{"supplier_id", "name", "address", "tax_code", "sport_association", "vat_number", "type", "email",
+// SupplierFieldOrder is the serializer's field order (model declaration; the
+// read-only supplier_id is ignored).
+var SupplierFieldOrder = []string{"name", "address", "tax_code", "sport_association", "vat_number", "type", "email",
 	"phone_number", "city", "cap", "state", "country", "nationality", "note", "group", "deleted"}
 
 // SupplierWrite is the validated data before the related-field lookups:
 // Text holds present text fields (nil for None); IDs are canonical UUIDs.
 type SupplierWrite struct {
-	SupplierID         *string
 	Text               map[string]*string
 	AssociationPresent bool
 	AssociationID      *string
@@ -98,8 +98,6 @@ func SupplierDRFCode(code string) string {
 		return "null_characters_not_allowed"
 	case strings.HasPrefix(code, "surrogate:"):
 		return "surrogate_characters_not_allowed"
-	case code == SupplierValidationUnique:
-		return "unique"
 	case strings.HasPrefix(code, "related-does-not-exist:"):
 		return "does_not_exist"
 	case strings.HasPrefix(code, "related-incorrect-type:"):
@@ -109,10 +107,7 @@ func SupplierDRFCode(code string) string {
 	return "invalid"
 }
 
-const (
-	SupplierValidationEmail  = "supplier-email"
-	SupplierValidationUnique = "supplier-unique"
-)
+const SupplierValidationEmail = "supplier-email"
 
 var supplierUserRegexp = regexp.MustCompile(`(?i)(^[-!#$%&'*+/=?^_` + "`" + `{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_` + "`" + `{}|~0-9A-Z]+)*\z` +
 	`|^"([\x01-\x08\x0b\x0c\x0e-\x1f!#-\[\]-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*"\z)`)
@@ -268,8 +263,7 @@ func modelTextValue(field SupplierField, value any, form bool) (*string, []strin
 }
 
 // ParseSupplierWrite ports SupplierSerializer(data=..., partial=...) field
-// validation; related existence, tenant scope and uniqueness are checked by
-// the service.
+// validation; related existence and tenant scope are checked by the service.
 func ParseSupplierWrite(body any, partial, form bool) (SupplierWrite, *SupplierValidationError, error) {
 	object, ok := body.(domain.RequestObject)
 	if !ok {
@@ -279,15 +273,6 @@ func ParseSupplierWrite(body any, partial, form bool) (SupplierWrite, *SupplierV
 	}
 	write := SupplierWrite{Text: map[string]*string{}}
 	invalid := &SupplierValidationError{}
-	if value, present := object.Lookup("supplier_id"); present {
-		if value == nil {
-			invalid.Add("supplier_id", PaymentCategoryValidationNull)
-		} else if id, ok := supplierUUID(value); ok {
-			write.SupplierID = &id
-		} else {
-			invalid.Add("supplier_id", PaymentCategoryValidationUUID)
-		}
-	}
 	for _, field := range SupplierTextFields {
 		value, present := object.Lookup(field.Name)
 		if !present {

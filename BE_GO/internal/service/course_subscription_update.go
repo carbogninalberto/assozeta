@@ -29,9 +29,6 @@ const (
 
 // applyCourseSubscriptionWrite is ModelSerializer.update()'s setattr loop.
 func applyCourseSubscriptionWrite(row *domain.CourseSubscriptionRow, write dto.CourseSubscriptionWrite) {
-	if write.ID != nil {
-		row.ID = *write.ID
-	}
 	if write.SubscriptionID != nil {
 		row.SubscriptionID = write.SubscriptionID
 	}
@@ -386,15 +383,6 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 			course = *found
 		}
 	}
-	if write.ID != nil {
-		taken, err := tx.CourseSubscriptionIDTaken(ctx, *write.ID, instance.ID)
-		if err != nil {
-			return nil, err
-		}
-		if taken {
-			invalid["course_subscription_id"] = []string{dto.CourseSubscriptionUnique}
-		}
-	}
 	if len(invalid) > 0 {
 		return nil, courseSubscriptionInvalid(invalid)
 	}
@@ -437,10 +425,6 @@ func (s *CourseSubscriptions) Update(ctx context.Context, identity domain.Resolv
 	}
 	save := domain.CourseSubscriptionSave{Row: row, Changes: changes, Representation: dto.CourseSubscriptionRepr(row, memory),
 		AssociationID: instance.CourseAssociationID, ResolutionPath: "course.sport_association"}
-	if row.ID != instance.ID {
-		// Model.save() under another primary key writes that row, not this one.
-		save.Copy, save.AssociationID = true, course.AssociationID
-	}
 	if err = tx.SaveCourseSubscription(ctx, save, context); err != nil {
 		return nil, err
 	}

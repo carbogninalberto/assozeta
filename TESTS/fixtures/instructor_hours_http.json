@@ -2699,7 +2699,7 @@
    "effect": {
     "actor": "owner",
     "rows": {
-     "a1000000-0000-4000-8000-000000966095": {
+     "$new": {
       "compensation_type": "percentage",
       "hourly_billing": "12.50",
       "percentage_billing": "7.50",
@@ -2731,7 +2731,7 @@
     "audit": [
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000966095",
+      "key": "$new",
       "action": 0,
       "changes": "$created",
       "overrides": {}
@@ -2973,9 +2973,6 @@
    "headers": {},
    "status": 400,
    "response": {
-    "instructor_hours_id": [
-     "Must be a valid UUID."
-    ],
     "creation_date": [
      "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
     ],
@@ -3091,22 +3088,109 @@
    }
   },
   {
-   "name": "instructor-hours-add-existing-key",
+   "name": "instructor-hours-add-existing-key-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "instructor_hours_id": [
-     "instructor hours with this instructor hours id already exists."
-    ]
+    "msg": "hours added."
    },
-   "effect": null,
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "0.00",
+      "paid": false,
+      "payment_id": null,
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "hours": "1.00",
+      "date": "$today"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "percentage_billing": "0.0",
+       "amount": "0.0",
+       "date": "$now"
+      }
+     }
+    ],
+    "links": []
+   },
    "prints": [],
    "body": {
     "hours": "1",
     "instructor_hours_id": "a1000000-0000-4000-8000-000000966025"
+   }
+  },
+  {
+   "name": "instructor-hours-add-malformed-key-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "0.00",
+      "paid": false,
+      "payment_id": null,
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "hours": "1.00",
+      "date": "$today"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "percentage_billing": "0.0",
+       "amount": "0.0",
+       "date": "$now"
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": "1",
+    "instructor_hours_id": "nope"
    }
   },
   {
@@ -3709,25 +3793,29 @@
    "prints": []
   },
   {
-   "name": "instructor-hours-update-existing-key",
+   "name": "instructor-hours-update-existing-key-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "instructor_hours_id": [
-     "instructor hours with this instructor hours id already exists."
-    ]
+    "success": true
    },
-   "effect": null,
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "documents": {},
+    "audit": [],
+    "links": []
+   },
    "prints": [],
    "body": {
     "instructor_hours_id": "a1000000-0000-4000-8000-000000966025"
    }
   },
   {
-   "name": "instructor-hours-update-own-key-unchanged",
+   "name": "instructor-hours-update-own-key-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
@@ -3793,7 +3881,7 @@
    }
   },
   {
-   "name": "instructor-hours-update-new-key-copies-row",
+   "name": "instructor-hours-update-new-key-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966031/update",
@@ -3805,8 +3893,7 @@
    "effect": {
     "actor": "owner",
     "rows": {
-     "a1000000-0000-4000-8000-000000966094": {
-      "$copy": "copyable",
+     "copyable": {
       "hours": "9.50"
      }
     },
@@ -3814,17 +3901,14 @@
     "audit": [
      {
       "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000966094",
+      "key": "a1000000-0000-4000-8000-000000966031",
       "action": 1,
-      "changes": "$created",
-      "overrides": {}
-     },
-     {
-      "model": "InstructorHours",
-      "key": "a1000000-0000-4000-8000-000000966094",
-      "action": 0,
-      "changes": "$created",
-      "overrides": {}
+      "changes": {
+       "hours": [
+        "1.50",
+        "9.50"
+       ]
+      }
      }
     ],
     "links": []

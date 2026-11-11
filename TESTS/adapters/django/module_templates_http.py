@@ -92,7 +92,7 @@ def assert_effect(case, before, after, bindings, source, remote):
         added = set(new_t) - set(old_t)
         contract.require(len(added) == 1 and set(old_t) <= set(new_t), 'state.one-template')
         identifier = added.pop()
-        contract.require(identifier == (effect['fixed_id'] or bindings.get(effect['label'])), 'state.created-id')
+        contract.require(identifier == bindings.get(effect['label']), 'state.created-id')
         row = new_t[identifier]
         contract.require(row['sport_association_id'] == effect['row']['association']
                          and all(row[field] == effect['row'][field] for field in FIELDS), 'state.created-values')

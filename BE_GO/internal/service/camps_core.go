@@ -149,16 +149,6 @@ func (s *CampsCore) Info(ctx context.Context, identity domain.ResolvedIdentity, 
 
 func (r *campsCoreRequest) validateCamp(ctx context.Context, input *dto.CampInput, instance *domain.Camp) (*CampsValidationError, error) {
 	errs := input.Errors
-	// UniqueValidator excludes the instance.
-	if input.ID.Present && (instance == nil || input.ID.ID != instance.ID) {
-		taken, err := r.core.CampIDTaken(ctx, input.ID.ID)
-		if err != nil {
-			return nil, err
-		}
-		if taken {
-			errs["camps_and_retreats_id"] = []string{"unique:camps and retreats:camps and retreats id"}
-		}
-	}
 	if input.Association.Present {
 		code, err := r.relation(ctx, input.Association, r.core.AssociationRelated)
 		if err != nil {
@@ -184,9 +174,6 @@ func campCreatedChanges(row domain.Camp) map[string][2]string {
 }
 
 func applyCamp(row *domain.Camp, input *dto.CampInput) {
-	if input.ID.Present {
-		row.ID = input.ID.ID
-	}
 	if input.Title.Present {
 		row.Title = input.Title.Value
 	}
@@ -280,24 +267,6 @@ func (s *CampsCore) Update(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	row := *old
 	applyCamp(&row, input)
-	if row.ID != old.ID {
-		// Model.save() under a key no row has inserts a copy with the validated
-		// values and the camp the path names stays. auditlog's pre_save finds no
-		// row under the new key and logs the whole row as an update (indexed
-		// from its changes), then post_save logs the create (indexed directly).
-		if err = r.core.InsertCamp(ctx, row); err != nil {
-			return nil, err
-		}
-		before := r.campAudit(row, 1, campCreatedChanges(row))
-		before.Path = "changes_json.sport_association"
-		if err = r.emit(ctx, before); err != nil {
-			return nil, err
-		}
-		if err = r.emit(ctx, r.campAudit(row, 0, campCreatedChanges(row))); err != nil {
-			return nil, err
-		}
-		return &row, r.tx.Commit()
-	}
 	if err = r.core.UpdateCamp(ctx, row); err != nil {
 		return nil, err
 	}

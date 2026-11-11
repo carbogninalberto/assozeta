@@ -69,8 +69,9 @@ add('add-missing-name', 'owner', ADD, 400, {'msg': repr_errors(error('name', 'Th
 add('add-invalid-fields', 'owner', ADD, 400, {'msg': repr_errors(error('name', 'Ensure this field has no more than 255 characters.', 'max_length'),
                                                                    error('email', 'Enter a valid email address.', 'invalid'))},
     body={'name': 'x' * 256, 'email': 'not-an-email'})
-add('add-existing-id', 'owner', ADD, 400, {'msg': repr_errors(error('supplier_id', 'supplier and customers with this supplier id already exists.', 'unique'))},
-    body={'name': 'Copia', 'supplier_id': SUPPLIERS['acqua']['id']})
+# supplier_id is read-only: a key in the body is ignored and the supplier gets a new one.
+add('add-existing-id-ignored', 'owner', ADD, 201, item({'name': 'Copia'}), body={'name': 'Copia', 'supplier_id': SUPPLIERS['acqua']['id']},
+    effect=created('owner', item({'name': 'Copia'})))
 add('add-list-body', 'owner', ADD, 400, {'msg': repr_errors(error('non_field_errors', 'Invalid data. Expected a dictionary, but got list.', 'invalid'))},
     body=[])
 add('add-foreign-association-denied', 'owner', ADD, 403, TENANT, body={'name': 'Estero', 'sport_association': FOREIGN})
@@ -117,24 +118,18 @@ add('update-same-value-no-audit', 'owner', update('acqua'), 200, existing('acqua
 add('update-clear-and-set', 'full_collaborator', update('beta'), 200, existing('beta', address=None, note='Nuova'), method='PATCH',
     body={'address': None, 'note': 'Nuova'}, effect=changed('full_collaborator', 'beta', {'address': ['Via Rossi 1', 'None'], 'note': ['None', 'Nuova']}))
 
-# An update naming a supplier_id no row has: Model.save() inserts a copy with the validated values under that key
-# (auditlog: an update against nothing, then the create); the row the path names stays. A key another row has is the serializer's unique error.
-COPY_ID = 'a1000000-0000-4000-8000-00000064a901'
-add('update-new-id-inserts-copy', 'owner', update('beta'), 200, existing('beta', supplier_id=COPY_ID, address=None, note='Nuova', city='Bari'), method='PATCH',
-    body={'supplier_id': COPY_ID, 'city': 'Bari'}, effect={'kind': 'copy', 'actor': 'owner', 'supplier': 'beta', 'id': COPY_ID})
-add('update-new-id-taken', 'owner', update('beta'), 400, {'msg': 'validation errors.'}, method='PATCH',
-    body={'supplier_id': COPY_ID, 'city': 'Lecce'})
+# supplier_id is read-only: a key in the body (new, another supplier's, a soft-deleted one's) is ignored and the supplier
+# the path names is updated in place.
+BETA_CITY = SUPPLIERS['beta']['city'] if SUPPLIERS['beta']['city'] is not None else 'None'
+add('update-new-id-ignored', 'owner', update('beta'), 200, existing('beta', address=None, note='Nuova', city='Bari'), method='PATCH',
+    body={'supplier_id': 'a1000000-0000-4000-8000-00000064a901', 'city': 'Bari'}, effect=changed('owner', 'beta', {'city': [BETA_CITY, 'Bari']}))
+add('update-other-row-id-ignored', 'owner', update('beta'), 200, existing('beta', address=None, note='Nuova', city='Pisa'), method='PATCH',
+    body={'supplier_id': SUPPLIERS['acqua']['id'], 'city': 'Pisa'}, effect=changed('owner', 'beta', {'city': ['Bari', 'Pisa']}))
 add('update-own-id-kept', 'owner', update('beta'), 200, existing('beta', address=None, note='Nuova', city='Lecce'), method='PATCH',
-    body={'supplier_id': SUPPLIERS['beta']['id'], 'city': 'Lecce'},
-    effect=changed('owner', 'beta', {'city': [SUPPLIERS['beta']['city'] if SUPPLIERS['beta']['city'] is not None else 'None', 'Lecce']}))
-
-# The same copy with the association cleared in the body: the copy has none, and its two audit entries are indexed
-# through the actor's own association (an owner) or not at all (a collaborator).
-for actor, copy_id in (('owner', 'a1000000-0000-4000-8000-00000064a902'), ('full_collaborator', 'a1000000-0000-4000-8000-00000064a903')):
-    add(f'update-new-id-clears-association-{actor}', actor, update('beta'), 200,
-        dict(existing('beta', supplier_id=copy_id, address=None, note='Nuova', city='Lecce'), sport_association=None), method='PATCH',
-        body={'supplier_id': copy_id, 'sport_association': None},
-        effect={'kind': 'copy', 'actor': actor, 'supplier': 'beta', 'id': copy_id, 'cleared': True})
+    body={'supplier_id': SUPPLIERS['beta']['id'], 'city': 'Lecce'}, effect=changed('owner', 'beta', {'city': ['Pisa', 'Lecce']}))
+add('update-soft-deleted-row-id-ignored', 'full_collaborator', update('beta'), 200,
+    existing('beta', address=None, note='Ancora', city='Lecce'), method='PATCH', body={'supplier_id': SUPPLIERS['gone']['id'], 'note': 'Ancora'},
+    effect=changed('full_collaborator', 'beta', {'note': ['Nuova', 'Ancora']}))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'},

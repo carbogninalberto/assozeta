@@ -36,8 +36,6 @@ type SupplierWriteTransaction interface {
 	AssociationExists(ctx context.Context, id string) (bool, error)
 	// GroupAssociation is the group's association (found false when absent).
 	GroupAssociation(ctx context.Context, id string) (association *string, found bool, err error)
-	// SupplierIDTaken is UniqueValidator over the live, group-aware manager.
-	SupplierIDTaken(ctx context.Context, id string, group *string, exclude *string) (bool, error)
 	// LiveSupplier locks the first live, group-aware supplier by key.
 	LiveSupplier(ctx context.Context, id string, group *string) (*Supplier, error)
 	InsertSupplier(ctx context.Context, row Supplier) error

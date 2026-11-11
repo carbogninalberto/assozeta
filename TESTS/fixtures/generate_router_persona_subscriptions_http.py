@@ -58,7 +58,7 @@ choices = lambda pairs: [{'value': value, 'display_name': name} for value, name 
 # SimpleMetadata over AssociateSubscriptionSerializer: Meta.exclude signature_storage_key; the declared
 # read-only fields first, then the model's fields in order (forward relations last).
 SERIALIZER = {
-    'subscription_id': meta('string', 'subscription_id'),
+    'subscription_id': meta('string', 'subscription_id', read_only=True),
     **{name: meta('boolean', name, read_only=True) for name in ('active', 'is_current', 'is_next_year')},
     'current_year': meta('string', 'current_year', read_only=True),
     **{name: meta('field', name, read_only=True) for name in ('medical', 'medical_expiration_date', 'age', 'renewal_available',
@@ -144,7 +144,6 @@ DATE_FORMAT = 'Date has wrong format. Use one of these formats instead: DD/MM/YY
 DATETIME_FORMAT = 'Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].'
 VALID = {'sport_association': OWN, 'user': OWNER}
 REQUIRED_BODY = {'sport_association': [REQUIRED], 'user': [REQUIRED]}
-TAKEN = {'subscription_id': ['subscription with this subscription id already exists.']}
 STATE = {}  # label -> rendered fields changed by the authored updates
 
 
@@ -161,7 +160,7 @@ add('create-format-json-required', 'owner', 'POST', '/personas-subscriptions.jso
 add('create-not-a-dict', 'owner', 'POST', LIST, 400, {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']},
     body=[VALID])
 add('create-field-errors', 'owner', 'POST', LIST, 400, {
-    'subscription_id': ['Must be a valid UUID.'], 'type': ['"9" is not a valid choice.'], 'role': ['"True" is not a valid choice.'],
+    'type': ['"9" is not a valid choice.'], 'role': ['"True" is not a valid choice.'],
     'status_flag': [NULL], 'acceptance_date': [DATE_FORMAT], 'resignation_date': [DATE_FORMAT], 'creation_date': [DATETIME_FORMAT],
     'start_date': [DATE_FORMAT], 'signature_url': ['Ensure this field has no more than 1024 characters.'],
     'archived': ['Must be a valid boolean.'], 'draft': [NULL], 'subscription_number': ['This field may not be blank.'],
@@ -174,7 +173,9 @@ add('create-field-errors', 'owner', 'POST', LIST, 400, {
     'signature_url': 'u' * 1025, 'archived': 'maybe', 'draft': None, 'subscription_number': '  ', 'subscription_type': True, 'deleted': [],
     'notes': ['x'], 'sport_association': UNKNOWN, 'supplier': 'abc', 'instructor': True, 'user': None, 'document_pdf': 1.5, 'payment': [1],
     'tags': None})
-add('create-subscription-id-taken', 'full_collaborator', 'POST', LIST, 400, TAKEN, body={**VALID, 'subscription_id': SUB_IDS['future']})
+# subscription_id is read-only: another row's key in the body is ignored, and the stock create fails as without it.
+add('create-subscription-id-ignored-server-error', 'full_collaborator', 'POST', LIST, 500, SERVER,
+    body={**VALID, 'subscription_id': SUB_IDS['future']})
 add('create-tags-unknown', 'owner', 'POST', LIST, 400, {'tags': [f'Invalid pk "{UNKNOWN}" - object does not exist.']},
     body={**VALID, 'tags': [TAG['id'], UNKNOWN, 'abc']})
 add('create-tags-not-a-list', 'owner', 'POST', LIST, 400, {'tags': ['Expected a list of items but got type "str".']},
@@ -198,7 +199,8 @@ add('update-malformed-not-found', 'owner', 'PATCH', detail('abc'), 404, NOT_FOUN
 add('update-other-group-not-found', 'owner', 'PATCH', detail('future'), 404, SUB_NOT_FOUND, body={}, headers={'X-Group-Id': OWN_GROUP})
 add('update-not-found-before-parse', 'owner', 'PATCH', detail('gone'), 404, SUB_NOT_FOUND, raw_body='{')
 add('update-put-required', 'owner', 'PUT', detail('future'), 400, REQUIRED_BODY, body={'notes': 'x'})
-add('update-subscription-id-taken', 'owner', 'PATCH', detail('future'), 400, TAKEN, body={'subscription_id': SUB_IDS['lone_past']})
+add('update-subscription-id-ignored', 'owner', 'PATCH', detail('future'), 200, current('future'),
+    body={'subscription_id': SUB_IDS['lone_past']}, effect=updated('owner', 'future', {}))
 add('update-validation', 'owner', 'PATCH', detail('future'), 400, {
     'type': [NULL], 'start_date': [DATE_FORMAT], 'tags': ['Incorrect type. Expected pk value, received bool.']},
     body={'type': None, 'start_date': '2099-01-01', 'tags': [True]})
@@ -325,15 +327,16 @@ add('partial-update-form-constant-invalid', 'owner', 'PATCH', detail('lone_past'
 add('partial-update-json-surrogate-audited-server-error', 'owner', 'PATCH', detail('lone_past'), 500, SERVER,
     raw_body='{"meta": "\\ud800"}',
     effect={'kind': 'audit', 'actor': 'owner', 'subscription': SUB_IDS['lone_past'], 'changes': {'meta': ['null', '"\\ud800"']}})
-# A different subscription_id: Model.save() finds no row under it and inserts a copy (auditlog logs it as an update, then as
-# a create); the tags are set on the copy and the row the request names stays as it was.
+# subscription_id is read-only: a key in the body is ignored on update, which saves the row the path names in place with one
+# ordinary update entry.
 COPY = 'a1000000-0000-4000-8000-000000990201'
-add('partial-update-new-key-copy', 'owner', 'PATCH', detail('lone_past'), 200,
-    {**current('lone_past'), 'subscription_id': COPY, 'notes': 'copia', 'tags': [TAG['id']]},
+STATE['lone_past'].update({'notes': 'copia', 'tags': [TAG['id']]})
+add('partial-update-new-key-ignored', 'owner', 'PATCH', detail('lone_past'), 200, current('lone_past'),
     body={'subscription_id': COPY, 'notes': 'copia', 'tags': [TAG['id']]},
-    effect={'kind': 'copy', 'actor': 'owner', 'subscription': SUB_IDS['lone_past'], 'copy': COPY, 'columns': {'notes': 'copia'},
-            'tags': [TAG['id']]})
-add('partial-update-copy-key-taken', 'owner', 'PATCH', detail('lone_past'), 400, TAKEN, body={'subscription_id': COPY})
+    effect=updated('owner', 'lone_past', {'notes': 'copia'}, changes={'notes': ['', 'copia']}, tags=[TAG['id']]))
+# Another row's key: still ignored, so the path row and the audit log stay as they were.
+add('partial-update-other-row-key-ignored', 'owner', 'PATCH', detail('lone_past'), 200, current('lone_past'),
+    body={'subscription_id': SUB_IDS['future']}, effect=updated('owner', 'lone_past', {}))
 
 # The class's own delete() on the <pk>/list route: get_object() on the live, group-aware subscriptions of the association,
 # then deleted=True and Subscription.save() (auditlog's update entry, indexed directly), 204.

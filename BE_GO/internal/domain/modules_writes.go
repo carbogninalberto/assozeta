@@ -35,10 +35,6 @@ type ModulesWriteTransaction interface {
 	Taken(ctx context.Context, column, value string, exclude *string) (bool, error)
 	CreateModule(ctx context.Context, row ModuleRow, audit LoginAuditContext, at time.Time) error
 	SaveModule(ctx context.Context, row ModuleRow, audit LoginAuditContext, at time.Time) error
-	// CopyModule is Model.save() of a loaded module under a key no row has:
-	// the copy and its two entries. conflict is the database's text when the
-	// insert is refused (the first entry stays).
-	CopyModule(ctx context.Context, row ModuleRow, audit LoginAuditContext, at time.Time) (conflict string, err error)
 	DeleteModule(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
 	Commit() error
 	Rollback() error
