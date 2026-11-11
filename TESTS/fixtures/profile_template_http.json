@@ -4578,6 +4578,2529 @@
    }
   },
   {
+   "name": "profile-template-float-spellings-and-containers",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "role": "association",
+    "user_data": {
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Message",
+     "last_name": "Fixture",
+     "username": "message-reads-700001",
+     "email": "message-reads-700001@example.test",
+     "avatar_image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAEAAUDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDqvDfgDw9/Zo/0P07j/Ciiivz6rXq8795/eerlGLxH1Gl+8e3dn//Z",
+     "collaborator_role": 1,
+     "collaborator_permissions": null,
+     "google_sync_enabled": false,
+     "dashboard_layout": null,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "phone": null,
+     "subscription_duration_equal_sport_year": true,
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "balance_sheet_year": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "lead_sport_association_role": null,
+     "lead_sport_association_size": null,
+     "lead_sport_market_channel": null,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "can_impersonate": true,
+     "requires_welcome": true,
+     "onboarding": null,
+     "preview_and_custom_features": [
+      {
+       "name": "Iscrizione per famiglia",
+       "description": ""
+      }
+     ],
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": "Testo semplice\n",
+      "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+      "logo": "5",
+      "subscription_fee": "10.50",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [
+       {
+        "name": "Grande",
+        "subscription_fee": 12345678901234567000
+       },
+       {
+        "name": "Mille",
+        "subscription_fee": 1000.0
+       },
+       {
+        "name": "Spazi",
+        "subscription_fee": 7.0
+       },
+       {
+        "name": "Esponente",
+        "subscription_fee": 1000.0
+       }
+      ],
+      "membership_fee": "12.50",
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": null,
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": null,
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "['a', 1, None, 2.5, {'k': \"it's\"}]",
+      "subscription_template": "12345678901234567890123",
+      "extra_text_invoices": "{'k': 1.5, 'è': [True, 'x\\ny']}",
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": false,
+      "show_demand_to_both": false,
+      "show_demand_to_athletes": false
+     }
+    }
+   },
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "5",
+     "invoice_template": "['a', 1, None, 2.5, {'k': \"it's\"}]",
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": "{'k': 1.5, 'è': [True, 'x\\ny']}",
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "10.50",
+     "membership_fee": "12.50"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "logo": [
+        "data:image/png;base64,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",
+        "5"
+       ],
+       "subscription_fee": [
+        "1.00",
+        "  1_0.5\n"
+       ],
+       "subscription_fee_plans": [
+        "[]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ],
+       "membership_fee": [
+        "1234567.12",
+        "١٢.٥"
+       ],
+       "invoice_template": [
+        "7",
+        "['a', 1, None, 2.5, {'k': \"it's\"}]"
+       ],
+       "subscription_template": [
+        "True",
+        "12345678901234567890123"
+       ],
+       "extra_text_invoices": [
+        "2.5",
+        "{'k': 1.5, 'è': [True, 'x\\ny']}"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": 5,
+     "subscription_fee": "  1_0.5\n",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567890
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": "1_000"
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": " 7 "
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": "1e3"
+      }
+     ],
+     "membership_fee": "١٢.٥",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": [
+      "a",
+      1,
+      null,
+      2.5,
+      {
+       "k": "it's"
+      }
+     ],
+     "subscription_template": 12345678901234567890123,
+     "extra_text_invoices": {
+      "k": 1.5,
+      "è": [
+       true,
+       "x\ny"
+      ]
+     },
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-logo-object",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "role": "association",
+    "user_data": {
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Message",
+     "last_name": "Fixture",
+     "username": "message-reads-700001",
+     "email": "message-reads-700001@example.test",
+     "avatar_image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAEAAUDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDqvDfgDw9/Zo/0P07j/Ciiivz6rXq8795/eerlGLxH1Gl+8e3dn//Z",
+     "collaborator_role": 1,
+     "collaborator_permissions": null,
+     "google_sync_enabled": false,
+     "dashboard_layout": null,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "phone": null,
+     "subscription_duration_equal_sport_year": true,
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "balance_sheet_year": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "lead_sport_association_role": null,
+     "lead_sport_association_size": null,
+     "lead_sport_market_channel": null,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "can_impersonate": true,
+     "requires_welcome": true,
+     "onboarding": null,
+     "preview_and_custom_features": [
+      {
+       "name": "Iscrizione per famiglia",
+       "description": ""
+      }
+     ],
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": "Testo semplice\n",
+      "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+      "logo": "{'a': [1.5, None]}",
+      "subscription_fee": "0.50",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [
+       {
+        "name": "Grande",
+        "subscription_fee": 12345678901234567000
+       },
+       {
+        "name": "Mille",
+        "subscription_fee": 1000.0
+       },
+       {
+        "name": "Spazi",
+        "subscription_fee": 7.0
+       },
+       {
+        "name": "Esponente",
+        "subscription_fee": 1000.0
+       }
+      ],
+      "membership_fee": "5.00",
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": null,
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": null,
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": "['a', 1, None, 2.5, {'k': \"it's\"}]",
+      "subscription_template": "12345678901234567890123",
+      "extra_text_invoices": "{'k': 1.5, 'è': [True, 'x\\ny']}",
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": false,
+      "show_demand_to_both": false,
+      "show_demand_to_athletes": false
+     }
+    }
+   },
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "{'a': [1.5, None]}",
+     "invoice_template": "['a', 1, None, 2.5, {'k': \"it's\"}]",
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": "{'k': 1.5, 'è': [True, 'x\\ny']}",
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "logo": [
+        "5",
+        "{'a': [1.5, None]}"
+       ],
+       "subscription_fee": [
+        "10.50",
+        "+.5"
+       ],
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ],
+       "membership_fee": [
+        "12.50",
+        "5."
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": {
+      "a": [
+       1.5,
+       null
+      ]
+     },
+     "subscription_fee": "+.5",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": "['a', 1, None, 2.5, {'k': \"it's\"}]",
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": "{'k': 1.5, 'è': [True, 'x\\ny']}",
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-logo-boolean",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "role": "association",
+    "user_data": {
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Message",
+     "last_name": "Fixture",
+     "username": "message-reads-700001",
+     "email": "message-reads-700001@example.test",
+     "avatar_image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAEAAUDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDqvDfgDw9/Zo/0P07j/Ciiivz6rXq8795/eerlGLxH1Gl+8e3dn//Z",
+     "collaborator_role": 1,
+     "collaborator_permissions": null,
+     "google_sync_enabled": false,
+     "dashboard_layout": null,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "phone": null,
+     "subscription_duration_equal_sport_year": true,
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "balance_sheet_year": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "lead_sport_association_role": null,
+     "lead_sport_association_size": null,
+     "lead_sport_market_channel": null,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "can_impersonate": true,
+     "requires_welcome": true,
+     "onboarding": null,
+     "preview_and_custom_features": [
+      {
+       "name": "Iscrizione per famiglia",
+       "description": ""
+      }
+     ],
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": "Testo semplice\n",
+      "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+      "logo": "True",
+      "subscription_fee": "0.50",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [
+       {
+        "name": "Grande",
+        "subscription_fee": 12345678901234567000
+       },
+       {
+        "name": "Mille",
+        "subscription_fee": 1000.0
+       },
+       {
+        "name": "Spazi",
+        "subscription_fee": 7.0
+       },
+       {
+        "name": "Esponente",
+        "subscription_fee": 1000.0
+       }
+      ],
+      "membership_fee": "5.00",
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": null,
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": null,
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": null,
+      "subscription_template": "12345678901234567890123",
+      "extra_text_invoices": null,
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": false,
+      "show_demand_to_both": false,
+      "show_demand_to_athletes": false
+     }
+    }
+   },
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "logo": [
+        "{'a': [1.5, None]}",
+        "True"
+       ],
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ],
+       "invoice_template": [
+        "['a', 1, None, 2.5, {'k': \"it's\"}]",
+        "None"
+       ],
+       "extra_text_invoices": [
+        "{'k': 1.5, 'è': [True, 'x\\ny']}",
+        "None"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": true,
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-fee-string-past-float-range",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "subscription_fee": [
+        "0.50",
+        "1e400"
+       ],
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "1e400",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-flag-container",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "show_demand_to_members": [
+        "False",
+        "['t']"
+       ],
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": [
+      "t"
+     ],
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-flag-object",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ],
+       "enable_quotes_management": [
+        "True",
+        "{'a': 1}"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": {
+      "a": 1
+     },
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-json-with-nul",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ],
+       "enabled_for": [
+        "null",
+        "[\"a\\u0000\"]"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": [
+      "a\u0000"
+     ],
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-fee-number-past-float-range",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "subscription_fee": [
+        "0.50",
+        "inf"
+       ],
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "{\"sport_association\": {\"sport_association_id\": \"a1000000-0000-4000-8000-000000701001\", \"denomination\": \"Message reads own\", \"tax_code\": \"70000000001\", \"address\": null, \"address_cap\": null, \"address_city\": null, \"regulation\": \"Testo semplice\\n\", \"demand\": \"<p style=\\\"text-align: center\\\">\\n Il sottoscritto chiede di essere ammesso come\\n <em>\\n  socio\\n </em>\\n .\\n</p>\\n<p>\\n</p>\\n\", \"logo\": \"True\", \"subscription_fee\": 1e400, \"multiple_subscription_fee\": false, \"subscription_fee_plans\": [{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}], \"membership_fee\": \"5.00\", \"multiple_membership_fee\": false, \"membership_fee_plans\": [], \"custom_subscription_form_data\": null, \"document_header\": null, \"invoice_footer\": null, \"enable_quotes_management\": true, \"configuration\": {\"mandatory_phone\": false, \"mandatory_email\": false, \"mandatory_signature\": false}, \"reviewed\": true, \"affiliate_code\": null, \"additional_sections\": [], \"president_signature\": null, \"stamp\": null, \"president_first_name\": null, \"president_last_name\": null, \"federation\": null, \"enroll_number\": null, \"sport\": null, \"enabled_for\": null, \"checkout_info\": null, \"additional_fields\": null, \"stripe_available_methods\": null, \"iban\": null, \"website\": null, \"abbreviated\": null, \"vat_number\": null, \"whatsapp\": null, \"invoice_template\": null, \"subscription_template\": \"12345678901234567890123\", \"extra_text_invoices\": null, \"imported_from_associami\": false, \"groups\": [{\"label\": \"Scope own group\", \"value\": \"a1000000-0000-4000-8000-000000714001\"}], \"show_regulation_to_members\": true, \"show_regulation_to_both\": true, \"show_regulation_to_athletes\": true, \"show_demand_to_members\": false, \"show_demand_to_both\": false, \"show_demand_to_athletes\": false, \"empty_sections\": true, \"review_url\": null, \"review_url_enabled\": false}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-template-fee-integer-past-float-range",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-fee-double-underscore",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "1__0",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-fee-inner-space",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "1 0",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-text-with-nul",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": "a\u0000b",
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-flag-with-nul",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": "t\u0000",
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-logo-without-comma-with-nul",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "a\u0000b",
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-text-with-lone-surrogate",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"sport_association\": {\"sport_association_id\": \"a1000000-0000-4000-8000-000000701001\", \"denomination\": \"Message reads own\", \"tax_code\": \"70000000001\", \"address\": null, \"address_cap\": null, \"address_city\": null, \"regulation\": \"Testo semplice\\n\", \"demand\": \"<p style=\\\"text-align: center\\\">\\n Il sottoscritto chiede di essere ammesso come\\n <em>\\n  socio\\n </em>\\n .\\n</p>\\n<p>\\n</p>\\n\", \"logo\": \"True\", \"subscription_fee\": \"0.50\", \"multiple_subscription_fee\": false, \"subscription_fee_plans\": [{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}], \"membership_fee\": \"5.00\", \"multiple_membership_fee\": false, \"membership_fee_plans\": [], \"custom_subscription_form_data\": null, \"document_header\": null, \"invoice_footer\": null, \"enable_quotes_management\": true, \"configuration\": {\"mandatory_phone\": false, \"mandatory_email\": false, \"mandatory_signature\": false}, \"reviewed\": true, \"affiliate_code\": null, \"additional_sections\": [], \"president_signature\": null, \"stamp\": null, \"president_first_name\": null, \"president_last_name\": null, \"federation\": null, \"enroll_number\": null, \"sport\": null, \"enabled_for\": null, \"checkout_info\": null, \"additional_fields\": null, \"stripe_available_methods\": null, \"iban\": null, \"website\": null, \"abbreviated\": null, \"vat_number\": null, \"whatsapp\": null, \"invoice_template\": null, \"subscription_template\": \"12345678901234567890123\", \"extra_text_invoices\": \"a\\ud800b\", \"imported_from_associami\": false, \"groups\": [{\"label\": \"Scope own group\", \"value\": \"a1000000-0000-4000-8000-000000714001\"}], \"show_regulation_to_members\": true, \"show_regulation_to_both\": true, \"show_regulation_to_athletes\": true, \"show_demand_to_members\": false, \"show_demand_to_both\": false, \"show_demand_to_athletes\": false, \"empty_sections\": true, \"review_url\": null, \"review_url_enabled\": false}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-template-logo-data-with-lone-surrogate",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"sport_association\": {\"sport_association_id\": \"a1000000-0000-4000-8000-000000701001\", \"denomination\": \"Message reads own\", \"tax_code\": \"70000000001\", \"address\": null, \"address_cap\": null, \"address_city\": null, \"regulation\": \"Testo semplice\\n\", \"demand\": \"<p style=\\\"text-align: center\\\">\\n Il sottoscritto chiede di essere ammesso come\\n <em>\\n  socio\\n </em>\\n .\\n</p>\\n<p>\\n</p>\\n\", \"logo\": \"data:image/png;base64,AA\\ud800\", \"subscription_fee\": \"0.50\", \"multiple_subscription_fee\": false, \"subscription_fee_plans\": [{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}], \"membership_fee\": \"5.00\", \"multiple_membership_fee\": false, \"membership_fee_plans\": [], \"custom_subscription_form_data\": null, \"document_header\": null, \"invoice_footer\": null, \"enable_quotes_management\": true, \"configuration\": {\"mandatory_phone\": false, \"mandatory_email\": false, \"mandatory_signature\": false}, \"reviewed\": true, \"affiliate_code\": null, \"additional_sections\": [], \"president_signature\": null, \"stamp\": null, \"president_first_name\": null, \"president_last_name\": null, \"federation\": null, \"enroll_number\": null, \"sport\": null, \"enabled_for\": null, \"checkout_info\": null, \"additional_fields\": null, \"stripe_available_methods\": null, \"iban\": null, \"website\": null, \"abbreviated\": null, \"vat_number\": null, \"whatsapp\": null, \"invoice_template\": null, \"subscription_template\": \"12345678901234567890123\", \"extra_text_invoices\": null, \"imported_from_associami\": false, \"groups\": [{\"label\": \"Scope own group\", \"value\": \"a1000000-0000-4000-8000-000000714001\"}], \"show_regulation_to_members\": true, \"show_regulation_to_both\": true, \"show_regulation_to_athletes\": true, \"show_demand_to_members\": false, \"show_demand_to_both\": false, \"show_demand_to_athletes\": false, \"empty_sections\": true, \"review_url\": null, \"review_url_enabled\": false}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-template-json-key-with-lone-surrogate",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "True",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": null,
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ],
+       "additional_fields": [
+        "null",
+        "{\"a\\udc00\": 1}"
+       ]
+      }
+     }
+    ]
+   },
+   "raw_body": "{\"sport_association\": {\"sport_association_id\": \"a1000000-0000-4000-8000-000000701001\", \"denomination\": \"Message reads own\", \"tax_code\": \"70000000001\", \"address\": null, \"address_cap\": null, \"address_city\": null, \"regulation\": \"Testo semplice\\n\", \"demand\": \"<p style=\\\"text-align: center\\\">\\n Il sottoscritto chiede di essere ammesso come\\n <em>\\n  socio\\n </em>\\n .\\n</p>\\n<p>\\n</p>\\n\", \"logo\": \"True\", \"subscription_fee\": \"0.50\", \"multiple_subscription_fee\": false, \"subscription_fee_plans\": [{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}], \"membership_fee\": \"5.00\", \"multiple_membership_fee\": false, \"membership_fee_plans\": [], \"custom_subscription_form_data\": null, \"document_header\": null, \"invoice_footer\": null, \"enable_quotes_management\": true, \"configuration\": {\"mandatory_phone\": false, \"mandatory_email\": false, \"mandatory_signature\": false}, \"reviewed\": true, \"affiliate_code\": null, \"additional_sections\": [], \"president_signature\": null, \"stamp\": null, \"president_first_name\": null, \"president_last_name\": null, \"federation\": null, \"enroll_number\": null, \"sport\": null, \"enabled_for\": null, \"checkout_info\": null, \"additional_fields\": {\"a\\udc00\": 1}, \"stripe_available_methods\": null, \"iban\": null, \"website\": null, \"abbreviated\": null, \"vat_number\": null, \"whatsapp\": null, \"invoice_template\": null, \"subscription_template\": \"12345678901234567890123\", \"extra_text_invoices\": null, \"imported_from_associami\": false, \"groups\": [{\"label\": \"Scope own group\", \"value\": \"a1000000-0000-4000-8000-000000714001\"}], \"show_regulation_to_members\": true, \"show_regulation_to_both\": true, \"show_regulation_to_athletes\": true, \"show_demand_to_members\": false, \"show_demand_to_both\": false, \"show_demand_to_athletes\": false, \"empty_sections\": true, \"review_url\": null, \"review_url_enabled\": false}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-template-text-container-with-nul",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "role": "association",
+    "user_data": {
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "Message",
+     "last_name": "Fixture",
+     "username": "message-reads-700001",
+     "email": "message-reads-700001@example.test",
+     "avatar_image": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAEAAUDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDqvDfgDw9/Zo/0P07j/Ciiivz6rXq8795/eerlGLxH1Gl+8e3dn//Z",
+     "collaborator_role": 1,
+     "collaborator_permissions": null,
+     "google_sync_enabled": false,
+     "dashboard_layout": null,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "phone": null,
+     "subscription_duration_equal_sport_year": true,
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "balance_sheet_year": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "lead_sport_association_role": null,
+     "lead_sport_association_size": null,
+     "lead_sport_market_channel": null,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "can_impersonate": true,
+     "requires_welcome": true,
+     "onboarding": null,
+     "preview_and_custom_features": [
+      {
+       "name": "Iscrizione per famiglia",
+       "description": ""
+      }
+     ],
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "tax_code": "70000000001",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "regulation": "Testo semplice\n",
+      "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+      "logo": "['\\x00']",
+      "subscription_fee": "0.50",
+      "multiple_subscription_fee": false,
+      "subscription_fee_plans": [
+       {
+        "name": "Grande",
+        "subscription_fee": 12345678901234567000
+       },
+       {
+        "name": "Mille",
+        "subscription_fee": 1000.0
+       },
+       {
+        "name": "Spazi",
+        "subscription_fee": 7.0
+       },
+       {
+        "name": "Esponente",
+        "subscription_fee": 1000.0
+       }
+      ],
+      "membership_fee": "5.00",
+      "multiple_membership_fee": false,
+      "membership_fee_plans": [],
+      "custom_subscription_form_data": null,
+      "document_header": null,
+      "invoice_footer": null,
+      "enable_quotes_management": true,
+      "configuration": {
+       "mandatory_phone": false,
+       "mandatory_email": false,
+       "mandatory_signature": false
+      },
+      "reviewed": true,
+      "affiliate_code": null,
+      "additional_sections": [],
+      "president_signature": null,
+      "stamp": null,
+      "president_first_name": null,
+      "president_last_name": null,
+      "federation": null,
+      "enroll_number": null,
+      "sport": null,
+      "enabled_for": null,
+      "checkout_info": null,
+      "additional_fields": null,
+      "stripe_available_methods": null,
+      "iban": null,
+      "website": null,
+      "abbreviated": null,
+      "vat_number": null,
+      "whatsapp": null,
+      "invoice_template": null,
+      "subscription_template": "12345678901234567890123",
+      "extra_text_invoices": "['a\\x00b']",
+      "imported_from_associami": false,
+      "groups": [
+       {
+        "label": "Scope own group",
+        "value": "a1000000-0000-4000-8000-000000714001"
+       }
+      ],
+      "show_regulation_to_members": true,
+      "show_regulation_to_both": true,
+      "show_regulation_to_athletes": true,
+      "show_demand_to_members": false,
+      "show_demand_to_both": false,
+      "show_demand_to_athletes": false
+     }
+    }
+   },
+   "effect": {
+    "association": {
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": "['\\x00']",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": "['a\\x00b']",
+     "additional_sections": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee_plans": [],
+     "enabled_for": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": false,
+     "enable_quotes_management": true,
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
+    },
+    "audits": [
+     {
+      "actor": "owner",
+      "changes": {
+       "logo": [
+        "True",
+        "['\\x00']"
+       ],
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
+       ],
+       "extra_text_invoices": [
+        "None",
+        "['a\\x00b']"
+       ]
+      }
+     }
+    ]
+   },
+   "body": {
+    "sport_association": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "denomination": "Message reads own",
+     "tax_code": "70000000001",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "regulation": "Testo semplice\n",
+     "demand": "<p style=\"text-align: center\">\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </em>\n .\n</p>\n<p>\n</p>\n",
+     "logo": [
+      "\u0000"
+     ],
+     "subscription_fee": "0.50",
+     "multiple_subscription_fee": false,
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
+     "multiple_membership_fee": false,
+     "membership_fee_plans": [],
+     "custom_subscription_form_data": null,
+     "document_header": null,
+     "invoice_footer": null,
+     "enable_quotes_management": true,
+     "configuration": {
+      "mandatory_phone": false,
+      "mandatory_email": false,
+      "mandatory_signature": false
+     },
+     "reviewed": true,
+     "affiliate_code": null,
+     "additional_sections": [],
+     "president_signature": null,
+     "stamp": null,
+     "president_first_name": null,
+     "president_last_name": null,
+     "federation": null,
+     "enroll_number": null,
+     "sport": null,
+     "enabled_for": null,
+     "checkout_info": null,
+     "additional_fields": null,
+     "stripe_available_methods": null,
+     "iban": null,
+     "website": null,
+     "abbreviated": null,
+     "vat_number": null,
+     "whatsapp": null,
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": [
+      "a\u0000b"
+     ],
+     "imported_from_associami": false,
+     "groups": [
+      {
+       "label": "Scope own group",
+       "value": "a1000000-0000-4000-8000-000000714001"
+      }
+     ],
+     "show_regulation_to_members": true,
+     "show_regulation_to_both": true,
+     "show_regulation_to_athletes": true,
+     "show_demand_to_members": false,
+     "show_demand_to_both": false,
+     "show_demand_to_athletes": false,
+     "empty_sections": true,
+     "review_url": null,
+     "review_url_enabled": false
+    }
+   }
+  },
+  {
+   "name": "profile-template-multipart-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"sport_association\"\r\n\r\n{}\r\n--fixture\r\nContent-Disposition: form-data; name=\"logo\"; filename=\"logo.png\"\r\nContent-Type: image/png\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "profile-template-multipart-file-as-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/update/subscription/template",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"sport_association\"; filename=\"a.json\"\r\n\r\n{}\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
    "name": "profile-template-admin-session-save",
    "actor": "admin",
    "method": "PATCH",
@@ -4643,10 +7166,27 @@
       "regulation": "Testo semplice\n",
       "demand": "<pre><code>riga 1\n  riga 2</code></pre>\n",
       "logo": "data:image/jpeg;base64,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",
-      "subscription_fee": "1.00",
+      "subscription_fee": "0.50",
       "multiple_subscription_fee": false,
-      "subscription_fee_plans": [],
-      "membership_fee": "1234567.12",
+      "subscription_fee_plans": [
+       {
+        "name": "Grande",
+        "subscription_fee": 12345678901234567000
+       },
+       {
+        "name": "Mille",
+        "subscription_fee": 1000.0
+       },
+       {
+        "name": "Spazi",
+        "subscription_fee": 7.0
+       },
+       {
+        "name": "Esponente",
+        "subscription_fee": 1000.0
+       }
+      ],
+      "membership_fee": "5.00",
       "multiple_membership_fee": false,
       "membership_fee_plans": [],
       "custom_subscription_form_data": null,
@@ -4677,9 +7217,9 @@
       "abbreviated": null,
       "vat_number": null,
       "whatsapp": null,
-      "invoice_template": "7",
-      "subscription_template": "True",
-      "extra_text_invoices": "2.5",
+      "invoice_template": null,
+      "subscription_template": "12345678901234567890123",
+      "extra_text_invoices": "['a\\x00b']",
       "imported_from_associami": false,
       "groups": [
        {
@@ -4701,11 +7241,28 @@
      "regulation": "Testo semplice\n",
      "demand": "<pre><code>riga 1\n  riga 2</code></pre>\n",
      "logo": "data:image/jpeg;base64,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",
-     "invoice_template": "7",
-     "subscription_template": "True",
-     "extra_text_invoices": "2.5",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": "['a\\x00b']",
      "additional_sections": [],
-     "subscription_fee_plans": [],
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
      "membership_fee_plans": [],
      "enabled_for": null,
      "additional_fields": null,
@@ -4719,8 +7276,8 @@
      "multiple_subscription_fee": false,
      "multiple_membership_fee": false,
      "enable_quotes_management": true,
-     "subscription_fee": "1.00",
-     "membership_fee": "1234567.12"
+     "subscription_fee": "0.50",
+     "membership_fee": "5.00"
     },
     "audits": [
      {
@@ -4731,8 +7288,12 @@
         "<pre><code>riga 1\n  riga 2</code></pre>\n"
        ],
        "logo": [
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAk4AAACCCAIAAAA/jtBEAAAJw0lEQVR4nO2d224kxxIDR4aAfKr//13DECDv6jrT01WdjIoD4zzY1hAMMovS+kEvt//+V7dbvXz6/xl/M/GTMUZE1I1b4idrRES3wBa93l7G2z9e9RdYTmuJJMGpSTIRo6nVDJKvt3+WpWhdEkmCU5NkIkZTk2QdKMmaqfMSJGlJXAJfEh/JumpuZk8deOT87jIRo6lJ0pIU8dZ+kZs6df45WxxGU5OkJUHeWqHlfteaNHW9TMbKga1JMhGjqUmyQkty+tR1NKncxiS1JklLUsRze0zrxKnzTeHXJUoObE2SiRhNrS4kecrUWRcvwZL4XLoEPpLV9tuFJ6fOkUscOb+7TMRoapK0JHX4fA5PHfjIfVMSMZqaJC0J8tbqFLljU+d/cemSX1c5sDVJJmI0tdqc5KNTF2mynxzYmiQTMZqaJItdkvunLtjkxnJaSyQJTk2SiRgL0P97pk6mrSNsoKU1SVoS5K0VRu7nqYOYvFpLa5K0JMhbY8sNkrXvpg5lchtrkkzEaGqStCQ1+8o+Tx34yH1TEjGamiQtCfLWaqXch6nzp6uw/ExNkpYEemtsubHY2vvUkU1CtdhyWkskCU5NkhWI8X+5Nb+FfIdqegmJGE1NkpakiLf2UW7l1LmpcRhNTZKWBHlrhZb7QmvN1DlycRjZclpLJAlOTZI1G+PsqfMSJGlJeG8lW05rFUjyF615U2ddEkmamiQtCfLcxkKtjnIzpq6dyUwtrUnSkiBvjS03elo7d+qamkzTYstpLZEkODVJViDGh+XOmrrWJqPktJZIEpyaJBMxmlrNmDrflLhqmpokLQny1thy4/DXPjl1GSbby4GtSTIRo6lJsmAlOTx1SSaV24Ck1iRpSZDnNk75nANT55vSK8J+WlqTpCVB3lrlyj00dakmm2lpTZKWBHlrbLkRbe3Oqcs22UaLLae1RJLg1CSZiLEmyf06dQSTPeS0lkgSnJokEzGaWs2YOt+UuGqamiQtCfLW2HLTtb6bOpRJrUnSknjaviS3jR/Jz1MHNLmBnNYSSYJTk2QixgL3/8+pk2lihKYmSUuCPDfwadd6km9TBzcJlQNbk2QiRlOTZLUtyZrfQu4lSNKSuAS+JD6SddXWLJs6v7tMJGlqkrQkyHMbC7VayC2YuutNIrS0JklLgrw1ttxoYu319jLwJsO12HJaSyQJTk2SFYjxd7lJP9X1Mpksp7VEkuDUJJmIsez/jKnzTYnDaGqStCTIW2PLjfv/5XOnrqnJNDmwNUkmYjQ1SVZ6Sc6autYmlduPpNYkaUmQ5zaOfeHzU+ebslFdEuTA1iSZiNHUqgPJZ6bOulyfX28ttpzWEkmCU5NknT515pdYTS8hEaOpSdKS1PN39OjUgY/cNyURo6lJ0pIgb63OlXto6vxzhnb5NZMDW5NkIkZTk2Q9NHU+l3FXx5bTWiJJcGqSrOYYf506L6F7hFdraS0RI1tOa4kkx9TP/2HqrEtGhKYmSUviq+VLcnt86hy5xOEBpybJRIymJsnqU5IPU+clJB65b0oiRlOTpCWpZbf2PnXgI/dNScRoapK0JMhbq0vk3qbOP2dLzY+oxZbTWiJJcGq1CckFv4X8epMsLbac1hJJglOTZAVi/EJuzdSBq+klJGI0NUlakiLe2rdyC6bO7y7jMJqaJC0J8tYKLfeT1tSp62IyXA5sTZKJGE1NkhVXkklT18ukctuTBJcEbE2SiRirZ/9PnzqZJpI0NUlaEuS5gU+7HpI7cer6mozS0pokLQny1thyo7m1U6auu8kQLbac1hJJglOTZAViPC735NRlmEyQ01oiSXBqkkzEaGo1Y+p8U+KqaWqStCTIW2PLjec/5NjUhZnsKge2JslEjKYmyaKW5NGpizS5vRyYpNYkaUmQ5zbO/cD7p843pWmEbbS0JklLgrw1gtw9UxdvsoeW1iRpSZC3xpYbDGs/Tx3E5NVabDmtJZIEpybJRIw1W+67qUOZvFROa4kkwalJMhGjqdWMqfNNiaumqUnSkiBvjS03lml9mDqmSa1J0pJAb40tp7U6i+T71JlfYju9hESS4NQkmYixduj/mt9CvhdTnJbWJGlJkLdWaLm/tFZOnUsQh5Etp7VEkuDUJFnzMK6ZOi9BkpaE91ay5bRWgSS/1Zo9ddYlkaSpSdKSIM9tLNTqJTdv6hqZTNbSmiQtCfLW2HKjm7UZU9fOZKYWW05riSTBqUmyAjE+IHfu1DU1GSintUSS4NQkmYjR1Oodxevt5Sz0vilxGE1NkpYEeWtsuXHgq075qa67yRA5sDVJJmI0NUkWpiRPTl2GSeW2Iak1SVoS5LmNJz/h8NT5pnSJsKuW1iRpSZC3VolyB6Yuz2RLLa1J0pIgb40tN0KtPTR1qSababHltJZIEpyaJBMxni9359Rlm+wkp7VEkuDUJJmI0dRqxtT5psRV09QkaUmQt8aWG/M+/Oepg5i8Wg5sTZKJGE1NkrVbSb6bOpTJbeS0lkgSnJokEzEWsv+fp06mYRGamiQtycJb87QrkeSfU2dd8vJDpybJRIymJslqWJK3qfMSEo/cNyURo6lJ0pLU+ltb81vIfVOiSboEkrQkyHMbC7Uulls2dWCmWpOkJUGeG/i0azeSC6buepMILbac1hJJglOTZAVi/Elu6tR1MZkvp7VEkuDUJJmIsXbu/7yp25dprJbWJGlJkLdWaLm7tGZMXTuTmXJga5JMxGhqkqzckpw7dU1NKrcrSa1J0pIgz+1hrbOmzjdli7rkyIGtSTIRo6nVtSSfnzrr4iVYEp9Ll8BHsjp/u/DM1Dly1+fXXk5riSTBqUmyAjGeIHds6sJMNpbTWiJJcGqSTMRoalOmzjclrpqmJklLgrw1ttw48dMemrpUk83kwNYkmYjR1CRZ+JLcOXXZJneV01oiSXBqkkzEWIz+/zp1Mu0e4dVaWpOkJUHeWpHkfpg6jkmtSdKSeNq+JLeNH8kvp45mcg9rkkzEaGqStCS14NA+TB34yH1TEjGamiQtCfLWarHcn1PnT1d5+ZmaJC0J8dbYcmO9tbepg5skarHltJZIEpyaJCsQ419yC34L+fUmcXJaSyQJTk2SiRhrq/4vm7qNmFK0tCZJS4K8tULLfa21YOquN4mQA1uTZCJGU5NkBZVk6tR1MamcJOklAVuTZCLG6tb/SVO3NdNYOa1J0pIgz20s1Goqd/rUdTQZqKU1SVoS5K2x5UZbaydOXV+TUVpsOa0lkgSnJskKxHhE7pSp624yR05riSTBqUkyEaOp1Yyp802Jq6apSdKSIG+NLTee+fJnpi7GZG85sDVJJmI0NUkWryT/AnWqaW06P2RgAAAAAElFTkSuQmCC",
+        "['\\x00']",
         "data:image/jpeg;base64,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"
+       ],
+       "subscription_fee_plans": [
+        "[{\"name\": \"Grande\", \"subscription_fee\": 12345678901234567000}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]",
+        "[{\"name\": \"Grande\", \"subscription_fee\": 1.2345678901234567e+19}, {\"name\": \"Mille\", \"subscription_fee\": 1000.0}, {\"name\": \"Spazi\", \"subscription_fee\": 7.0}, {\"name\": \"Esponente\", \"subscription_fee\": 1000.0}]"
        ]
       },
       "impersonation": "admin_owner"
@@ -4750,10 +7311,27 @@
      "regulation": "Testo semplice\n",
      "demand": "<pre><code>riga 1\n  riga 2</code></pre>",
      "logo": "data:image/png;base64,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",
-     "subscription_fee": "1.00",
+     "subscription_fee": "0.50",
      "multiple_subscription_fee": false,
-     "subscription_fee_plans": [],
-     "membership_fee": "1234567.12",
+     "subscription_fee_plans": [
+      {
+       "name": "Grande",
+       "subscription_fee": 12345678901234567000
+      },
+      {
+       "name": "Mille",
+       "subscription_fee": 1000.0
+      },
+      {
+       "name": "Spazi",
+       "subscription_fee": 7.0
+      },
+      {
+       "name": "Esponente",
+       "subscription_fee": 1000.0
+      }
+     ],
+     "membership_fee": "5.00",
      "multiple_membership_fee": false,
      "membership_fee_plans": [],
      "custom_subscription_form_data": null,
@@ -4784,9 +7362,9 @@
      "abbreviated": null,
      "vat_number": null,
      "whatsapp": null,
-     "invoice_template": "7",
-     "subscription_template": "True",
-     "extra_text_invoices": "2.5",
+     "invoice_template": null,
+     "subscription_template": "12345678901234567890123",
+     "extra_text_invoices": "['a\\x00b']",
      "imported_from_associami": false,
      "groups": [
       {

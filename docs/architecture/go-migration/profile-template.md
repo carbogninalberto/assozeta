@@ -56,14 +56,7 @@
 
 - HTML outside the prettify subset in `regulation`, `demand` or a section `text`.
 - Section names with characters outside the upper-case subset, for example `ß` or ligatures.
-- `float()` inputs outside the subset:
-  - strings with whitespace, underscores or non-ASCII digits;
-  - integers above 15 digits;
-  - JSON numbers that overflow to infinity.
-
-  Python raises for most other strings too.
-- A non-string, non-null `logo`; containers in text or flag fields, whose Python `repr()` is not reproduced.
-- Strings with NUL or lone surrogates in any written field. Multipart uploads.
+- A logo string holding a NUL or a lone surrogate before its first comma, or a NUL in its data.
 - A logo or avatar the image processor cannot decode (for example TIFF or AVIF). The request logo and its response re-compression are both checked before writing.
 
 ## Evidence
@@ -83,3 +76,21 @@ RED: Django 45/45, Go 404 (`native-r7`). GREEN: 45/45 on native Django, native G
 ## Ported in t2docs
 
 Section names are upper-cased with the full CPython table (`dto/python_upper_table.go`, generated from `str.upper()` of CPython 3.13.16): ß, ligatures and every other multi-character mapping are no longer refused. A case with `straße ﬁne ǰ ΐ` is added to the save sequence.
+
+## Ported in t4l2
+
+- `float()` is the shared `dto.PythonFloatOf`: white space, underscores, any Unicode decimal digit, integers of any length
+  (`OverflowError` past the float range is the 500 page) and numbers or strings past the float range (inf). The fee column reads
+  the same spellings as `Decimal()` does.
+- A logo that is not a string is stored as its `str()`; containers and numbers in text and flag fields are written as their Python
+  repr (`dto.PythonStr`). A flag holding a container fails its conversion after the audit entry.
+- A NUL or lone surrogate in a text or flag string cannot enter the audit entry, the first statement of the save: the 500 page and
+  nothing written. Inside a JSON field the audit entry holds the escaped JSON text and the jsonb column then refuses it: the 500
+  page after the audit entry.
+- Form and multipart bodies always end in the 500 page (the association value is a string or a file), so uploads are no longer
+  handed off.
+
+Cases: `float-spellings-and-containers`, `logo-object`, `logo-boolean`, `fee-*-past-float-range`, `flag-container`, `flag-object`,
+`json-with-nul`, `json-key-with-lone-surrogate`, `text-container-with-nul`, `fee-double-underscore`, `fee-inner-space`,
+`*-with-nul`, `*-with-lone-surrogate`, `multipart-*` (65 cases in all). Mutation control: dropping the non-string logo fails
+`float-spellings-and-containers` on Go.
