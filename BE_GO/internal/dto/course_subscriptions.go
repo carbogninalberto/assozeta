@@ -318,7 +318,7 @@ type CourseSubscriptionWrite struct {
 	FeeSet         bool
 	Fee            *string
 	Events         any
-	// FormJSON marks form keys for the JSONFields (not ported).
+	// FormJSON marks a form JSON text the jsonb column rejects at save time (not ported).
 	FormJSON bool
 }
 
@@ -329,6 +329,9 @@ var courseSubscriptionIntegers = []struct {
 	name     string
 	min, max int64
 }{{"billed_frequency", 0, 32767}, {"billed_from_day_of_month", 1, 28}}
+
+// CourseSubscriptionJSONInvalid is JSONField's "Value must be valid JSON." for form text.
+const CourseSubscriptionJSONInvalid = "json-invalid"
 
 // CourseSubscriptionUnique is the UniqueValidator code of the primary key.
 const CourseSubscriptionUnique = "unique:course subscription:course subscription id"
@@ -420,8 +423,21 @@ func ParseCourseSubscriptionWrite(body any, form bool) (CourseSubscriptionWrite,
 			continue
 		}
 		if form {
-			write.FormJSON = true
-			continue
+			// JSONField.get_value marks an HTML value as JSON text: str(value) (a file's name) goes through json.loads.
+			text := value
+			if upload, isUpload := value.(domain.RequestUpload); isUpload {
+				text = upload.Name
+			}
+			tree, valid, rejected := automationFormTree(text)
+			switch {
+			case rejected:
+				write.FormJSON = true
+				continue
+			case !valid:
+				errs[name] = []string{CourseSubscriptionJSONInvalid}
+				continue
+			}
+			value = tree
 		}
 		if name == "events" {
 			write.Events = value

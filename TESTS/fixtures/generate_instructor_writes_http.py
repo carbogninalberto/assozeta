@@ -173,7 +173,7 @@ told = lambda who, title=None, **extra: {'start': '2026-09-01', 'end': '2026-09-
                                          'extendedProps': {'instructor': who, **extra.pop('props', {})},
                                          **({} if title is None else {'title': title}), **extra}
 # AttendanceDay.associated_event is a UUID: report events carry UUID event ids.
-EV = {name: next(rids) for name in ('r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14', 'r15', 'missing')}
+EV = {name: next(rids) for name in ('r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14', 'r15', 'missing', 'r16', 'r17', 'r18', 'r19', 'r20', 'r21', 'r22', 'r23')}
 REGISTRIES['reg_report'] = {'id': next(rids), 'course': 'ca', 'status': 2, 'events': [
     told([one('plain'), one('full')], 'Doppia', event_id=EV['r1'], props={'description': 'Descrizione & <b>'}),
     told(one('comp'), 'Numero', event_id=EV['r2'], props={'description': 42}),
@@ -190,6 +190,15 @@ REGISTRIES['reg_report'] = {'id': next(rids), 'course': 'ca', 'status': 2, 'even
     told(one('full'), 'Id lista', event_id=EV['r13']),
     told(one('full'), 'Id enorme', event_id=EV['r14']),
     told(one('full'), 'Id negativo', event_id=EV['r15']),
+    # Descriptions the workbook library reads as formulas, array formulas, dynamic array formulas, rich text and links.
+    told(one('full'), 'Formula', event_id=EV['r16'], props={'description': '=1+1'}),
+    told(one('full'), 'Dinamica', event_id=EV['r17'], props={'description': '=SEQUENCE(3)'}),
+    told(one('full'), 'Dinamiche annidate', event_id=EV['r18'], props={'description': '=1+FILTER(A1:A3,B1:B3)+SORT(C1)+XSORT(D1)'}),
+    told(one('full'), 'Matrice', event_id=EV['r19'], props={'description': '{=SUM(1,2)}'}),
+    told(one('full'), 'Testo ricco', event_id=EV['r20'], props={'description': '<r><t>grassetto</t></r>'}),
+    told(one('full'), 'Ancora', event_id=EV['r21'], props={'description': 'https://example.test/lezione#sezione'}),
+    told(one('full'), 'Espansa', event_id=EV['r22'], props={'description': '=_xlfn.UNIQUE(A1)'}),
+    told(one('full'), 'Con simboli', event_id=EV['r23'], props={'description': '=IF(1<2,"a&b",">")'}),
 ]}
 PEOPLE = {'mario': {'id': next(rids), 'first_name': 'Mario', 'last_name': 'Rossi'},
           'luisa': {'id': next(rids), 'first_name': 'Luisa', 'last_name': None},
@@ -229,6 +238,7 @@ DAYS = {
     'err_huge': attendance('reg_report', 'r14', '2026-10-18T06:00:00Z', None, [{'course_subscription_id': 2 ** 128}]),
     'err_negative': attendance('reg_report', 'r15', '2026-10-19T06:00:00Z', None, [{'course_subscription_id': -1}]),
     'err9': attendance('reg_report', 'r9', '2026-10-08T06:00:00Z', None, [{'course_subscription_id': 'non-un-uuid'}]),
+    **{f'w{n}': attendance('reg_report', f'r{n}', f'2026-10-{n + 5}T06:00:00Z', f'Giorno {n}') for n in range(16, 24)},
     'err_b2': attendance('reg_b', 'missing', '2026-10-12T06:00:00Z'),
     'err_e14': attendance('reg_a', 'missing', '2026-10-13T06:00:00Z'),
     'err_dict': attendance('reg_dict', 'missing', '2026-10-14T06:00:00Z'),
@@ -489,6 +499,9 @@ for name, day in (('instructor-text', '05/10/2026'), ('instructor-list-text', '0
 add('report-numeric-attendee-ids', 'owner', RQ('15/10/2026', '15/10/2026'), 200, report(OWN, '15/10/2026', '15/10/2026'))
 for name, day in (('float-id', '16/10/2026'), ('list-id', '17/10/2026'), ('huge-id', '18/10/2026'), ('negative-id', '19/10/2026')):
     add(f'report-{name}-server-error', 'owner', RQ(day, day), 500, SERVER)
+for n, name in zip(range(16, 24), ('formula', 'dynamic-formula', 'nested-dynamic-formulas', 'array-formula', 'rich-text', 'link-with-anchor',
+                                   'expanded-dynamic-formula', 'formula-with-symbols')):
+    add(f'report-workbook-{name}', 'owner', RQ(f'{n + 5}/10/2026', f'{n + 5}/10/2026'), 200, report(OWN, f'{n + 5}/10/2026', f'{n + 5}/10/2026'))
 add('report-unmatched-event', 'owner', RQ('12/10/2026', '12/10/2026'), 200, report(OWN, '12/10/2026', '12/10/2026'))
 add('report-foreign-owner', 'foreign_owner', RQ('01/09/2026', '30/09/2026'), 200, report(FOREIGN, '01/09/2026', '30/09/2026'))
 add('report-missing-both', 'owner', REPORT, 400, {'msg': 'Entrambe le date sono richieste.'})

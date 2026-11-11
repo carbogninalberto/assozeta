@@ -114,3 +114,7 @@ workbook ([xlsx-exports](xlsx-exports.md)) with `max(len(str(value)), len(label)
 
 `GET instructor/report`: a date text that carries a zone is a 500 (the view keeps the zone and `localize` raises), years
 1-999 are valid dates, and the first minutes of year 1 overflow `astimezone(UTC)` (500).
+
+## Round t3courses
+
+The report workbook writes dynamic array formulas (`cm="1"`, expanded `_xlfn.` names, `xl/metadata.xml`); the golden `sub-dynamic` case now matches Python byte for byte. 177 cases GREEN natively. Mutation (`cm` value) CAUGHT.

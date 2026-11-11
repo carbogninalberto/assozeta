@@ -196,6 +196,16 @@ add('update-primary-key-taken', 'owner', one('pool', 'update'), 400,
     body={'course_location_id': LOCATIONS['gym']['id']})
 add('update-primary-key-malformed', 'owner', one('pool', 'update'), 400, {'course_location_id': ['Must be a valid UUID.']}, method='PATCH',
     body={'course_location_id': 'abc'})
+FORM = 'application/x-www-form-urlencoded'
+quote = __import__('urllib.parse', fromlist=['quote']).quote
+NOT_DICT = lambda kind: [f'Expected a dictionary of items but got type "{kind}".']
+sixth, sixth_spec = upload('modulo.pdf', 'Modulo di iscrizione', 'application/pdf')
+response, effect = changed('owner', 'gym')
+add('update-form-indexed-keys-ignored', 'owner', one('gym', 'update'), 200, response, method='PATCH', effect=effect, content_type=FORM,
+    raw_body=f'documents_data[0].document={quote(sixth["document"])}&documents_data[0].filename={quote(sixth["filename"])}')
+add('update-form-documents-data-key', 'owner', one('gym', 'update'), 400, {'documents_data': {'0': NOT_DICT('str')}}, method='PATCH',
+    raw_body='documents_data=abc&documents_data[0].document=x', content_type=FORM)
+
 
 response, effect = changed('owner', 'gym', description='Nuova')
 add('update-document-missing-key-keeps-change', 'owner', one('gym', 'update'), 400, MISSING_KEY, method='PATCH',
@@ -214,6 +224,67 @@ effect['uploads'] = [fifth_spec]
 add('update-with-document', 'owner', one('gym', 'update'), 200, response, method='PATCH',
     body={'title': 'Palestra grande', 'documents_data': [fifth]}, effect=effect)
 
+# Form bodies: ListField reads the repeated key documents_data as a list of texts; without it, DRF's html list notation
+# documents_data[N].name=... builds one dict per index (sorted by number). A partial update ignores the indexed keys.
+FORM = 'application/x-www-form-urlencoded'
+quote = __import__('urllib.parse', fromlist=['quote']).quote
+NOT_DICT = lambda kind: [f'Expected a dictionary of items but got type "{kind}".']
+
+
+def multipart(*parts):
+    boundary = 'testboundary4f2a'
+    lines = []
+    for name, filename, content in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename else '')
+        lines.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n\r\n{content}\r\n')
+    return ''.join(lines) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
+
+add('add-form-documents-data-key', 'owner', ADD, 400, {'documents_data': {'0': NOT_DICT('str')}}, raw_body='title=Form&documents_data=abc',
+    content_type=FORM)
+add('add-form-documents-data-repeated', 'owner', ADD, 400, {'documents_data': {'0': NOT_DICT('str'), '1': NOT_DICT('str')}},
+    raw_body='documents_data=a&documents_data=b&documents_data[0].document=x', content_type=FORM)
+add('add-form-indexed-text', 'owner', ADD, 400, {'documents_data': {'0': NOT_DICT('str'), '1': NOT_DICT('str')}},
+    raw_body='documents_data[3]=a&documents_data[1]=b&documents_data[x]=ignored&other[0]=ignored', content_type=FORM)
+add('add-form-indexed-text-after-dict', 'owner', ADD, 400, {'documents_data': {'0': NOT_DICT('str')}},
+    raw_body='documents_data[0].document=b&documents_data[0]=a', content_type=FORM)
+response, effect = created('owner', {})
+add('add-form-indexed-dict-after-text-keeps-location', 'owner', ADD, 400, MISSING_KEY, effect=effect,
+    raw_body='documents_data[0]=a&documents_data[0].document=b', content_type=FORM)
+response, effect = created('owner', {'title': 'Indici non validi'})
+add('add-form-indexed-keys-not-matching', 'owner', ADD, 201, response, effect=effect,
+    raw_body='title=Indici+non+validi&documents_data[x]=1&documents_data[0=2&documents_data0=3&other[0].document=4', content_type=FORM)
+response, effect = created('owner', {'title': 'Senza nome'})
+add('add-form-indexed-without-dot-keeps-location', 'owner', ADD, 400, MISSING_KEY, effect=effect,
+    raw_body='title=Senza+nome&documents_data[0][document]=eA==&documents_data[0][filename]=a.pdf', content_type=FORM)
+response, effect = created('owner', {'title': 'Un file'})
+response['documents'] = new_documents(sixth_spec)
+effect['uploads'] = [sixth_spec]
+add('add-form-indexed-document', 'owner', ADD, 201, response, effect=effect, content_type=FORM,
+    raw_body=f'title=Un+file&documents_data[0].document={quote(sixth["document"])}&documents_data[0].filename={quote(sixth["filename"])}')
+response, effect = created('owner', {'title': 'Due file'})
+seventh, seventh_spec = upload('orari.txt', 'Orari estivi', 'text/plain')
+eighth, eighth_spec = upload('mappa.txt', 'Mappa del campo', 'text/plain')
+response['documents'] = new_documents(seventh_spec, eighth_spec)
+effect['uploads'] = [seventh_spec, eighth_spec]
+# Index 2 comes first in the body and 10 after it; the items are sorted by number, and 02 is the same index as 2.
+add('add-form-indexed-two-documents-sorted', 'owner', ADD, 201, response, effect=effect, content_type=FORM,
+    raw_body=(f'title=Due+file&documents_data[10].filename={quote(eighth["filename"])}&documents_data[02].document={quote(seventh["document"])}'
+              f'&documents_data[10].document={quote(eighth["document"])}&documents_data[2].filename={quote(seventh["filename"])}'))
+response, effect = created('owner', {'title': 'Multipart'})
+ninth, ninth_spec = upload('multipart.txt', 'Dal modulo con file', 'text/plain')
+response['documents'] = new_documents(ninth_spec)
+effect['uploads'] = [ninth_spec]
+body, content_type = multipart(('title', None, 'Multipart'), ('documents_data[0].document', None, ninth['document']),
+                               ('documents_data[0].filename', None, ninth['filename']), ('allegato', 'a.txt', 'dati'))
+add('add-multipart-indexed-document', 'owner', ADD, 201, response, effect=effect, raw_body=body, content_type=content_type)
+body, content_type = multipart(('title', None, 'Multipart'), ('documents_data', 'doc.bin', 'x'))
+add('add-multipart-documents-data-file', 'owner', ADD, 400, {'documents_data': {'0': NOT_DICT('InMemoryUploadedFile')}},
+    raw_body=body, content_type=content_type)
+response, effect = created('owner', {'title': 'File come documento'})
+body, content_type = multipart(('title', None, 'File come documento'), ('documents_data[0].document', 'doc.bin', 'eA=='),
+                               ('documents_data[0].filename', None, 'a.pdf'))
+add('add-multipart-indexed-document-as-file-server-error', 'owner', ADD, 500, SERVER, raw_body=body, content_type=content_type, effect=effect)
 add('delete-restricted-missing-permission', 'restricted_collaborator', one('pool', 'delete'), 403, missing('delete'), method='DELETE')
 add('delete-wrong-method', 'owner', one('pool', 'delete'), 405, {'detail': 'Method "GET" not allowed.'}, method='GET')
 add('delete-options', 'owner', one('pool', 'delete'), 200, OPTIONS, method='OPTIONS')

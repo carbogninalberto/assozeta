@@ -36,6 +36,7 @@ type xwCell struct {
 	format  int    // 0 none, 1 header, 2 hyperlink
 	formula string // 'f' and 'a'
 	ref     string // 'a'
+	dynamic bool   // 'a' written through write_dynamic_array_formula (cm="1")
 }
 
 // xwLink is one entry of the worksheet's hyperlinks: kind 1 is a link with a
@@ -59,6 +60,7 @@ type xwSheet struct {
 	colMin  int
 	colMax  int
 	used    bool
+	dynamic bool // has_dynamic_arrays: the workbook gains a metadata part
 }
 
 func (sheet *xwSheet) store(row, col int, cell xwCell) {
@@ -138,23 +140,63 @@ func xwHasDynamicFunction(formula string) bool {
 
 var xwSingleTypo = regexp.MustCompile(`\SINGLE\(`)
 
-// xwPrepareFormula is _prepare_formula without future functions: the braces
-// and '=' go and the spreadsheet-only SINGLE( typo of its dynamic-function list applies.
+// xwFutureFunctions is _prepare_formula's dynamic-function expansion, in its order
+// (the SINGLE typo pattern sits between SCAN and SEQUENCE).
+var xwFutureFunctions = []struct{ name, replacement string }{
+	{"ANCHORARRAY", "_xlfn.ANCHORARRAY("}, {"BYCOL", "_xlfn.BYCOL("}, {"BYROW", "_xlfn.BYROW("}, {"CHOOSECOLS", "_xlfn.CHOOSECOLS("},
+	{"CHOOSEROWS", "_xlfn.CHOOSEROWS("}, {"DROP", "_xlfn.DROP("}, {"EXPAND", "_xlfn.EXPAND("}, {"FILTER", "_xlfn._xlws.FILTER("},
+	{"HSTACK", "_xlfn.HSTACK("}, {"LAMBDA", "_xlfn.LAMBDA("}, {"MAKEARRAY", "_xlfn.MAKEARRAY("}, {"MAP", "_xlfn.MAP("},
+	{"RANDARRAY", "_xlfn.RANDARRAY("}, {"REDUCE", "_xlfn.REDUCE("}, {"SCAN", "_xlfn.SCAN("}, {"", ""}, {"SEQUENCE", "_xlfn.SEQUENCE("},
+	{"SORT", "_xlfn._xlws.SORT("}, {"SORTBY", "_xlfn.SORTBY("}, {"SWITCH", "_xlfn.SWITCH("}, {"TAKE", "_xlfn.TAKE("},
+	{"TEXTSPLIT", "_xlfn.TEXTSPLIT("}, {"TOCOL", "_xlfn.TOCOL("}, {"TOROW", "_xlfn.TOROW("}, {"UNIQUE", "_xlfn.UNIQUE("},
+	{"VSTACK", "_xlfn.VSTACK("}, {"WRAPCOLS", "_xlfn.WRAPCOLS("}, {"WRAPROWS", "_xlfn.WRAPROWS("}, {"XLOOKUP", "_xlfn.XLOOKUP("}}
+
+// xwReplaceFunction is re.sub(r"\bNAME\(", replacement, formula): the name starts at a word boundary.
+func xwReplaceFunction(formula, name, replacement string) string {
+	needle := name + "("
+	var out strings.Builder
+	for {
+		at := strings.Index(formula, needle)
+		if at < 0 {
+			break
+		}
+		before, _ := utf8.DecodeLastRuneInString(formula[:at])
+		if at == 0 || !xwWordRune(before) {
+			out.WriteString(formula[:at] + replacement)
+		} else {
+			out.WriteString(formula[:at+len(needle)])
+		}
+		formula = formula[at+len(needle):]
+	}
+	return out.String() + formula
+}
+
+// xwPrepareFormula is _prepare_formula without future functions: the braces and '='
+// go and the dynamic functions are expanded (including the SINGLE typo pattern).
 func xwPrepareFormula(formula string) string {
 	formula = strings.TrimPrefix(strings.TrimPrefix(formula, "{"), "=")
 	formula = strings.TrimSuffix(formula, "}")
 	if strings.Contains(formula, "_xlfn.") {
 		return formula
 	}
-	return xwSingleTypo.ReplaceAllString(formula, "_xlfn.SINGLE(")
+	for _, function := range xwFutureFunctions {
+		if function.name == "" {
+			formula = xwSingleTypo.ReplaceAllString(formula, "_xlfn.SINGLE(")
+			continue
+		}
+		formula = xwReplaceFunction(formula, function.name, function.replacement)
+	}
+	return formula
 }
 
 // writeFormula is Worksheet._write_formula for a str token: a plain formula
-// (value 0) or a one-cell array formula; dynamic array functions write extra
-// metadata parts and stay unported.
+// (value 0), a one-cell array formula, or, with a dynamic array function, a
+// dynamic array formula (cm="1", the workbook gains xl/metadata.xml).
 func (sheet *xwSheet) writeFormula(row, col int, text string, format int) error {
 	if xwHasDynamicFunction(text) {
-		return ErrNotPorted
+		sheet.store(row, col, xwCell{kind: 'a', formula: xwPrepareFormula(text), ref: xwCellRef(row, col), number: "0", format: format, dynamic: true})
+		sheet.dynamic = true
+		return nil
 	}
 	if strings.HasPrefix(text, "{") && strings.HasSuffix(text, "}") {
 		ref := xwCellRef(row, col)
@@ -397,6 +439,9 @@ func (sheet *xwSheet) xml(widths []float64) []byte {
 				case 'f':
 					out.WriteString("><f>" + xwEscapeData(cell.formula) + "</f><v>" + cell.number + "</v></c>")
 				case 'a':
+					if cell.dynamic {
+						out.WriteString(` cm="1"`)
+					}
 					out.WriteString(`><f t="array" ref="` + xwEscapeAttr(cell.ref) + `">` + xwEscapeData(cell.formula) + "</f><v>" + cell.number + "</v></c>")
 				default:
 					out.WriteString(`><v>` + cell.number + `</v></c>`)
@@ -529,6 +574,14 @@ func PandasXlsxwriter(frame Frame, now time.Time) ([]byte, error) {
 		types += `<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>`
 		rels += `<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>`
 	}
+	if sheet.dynamic {
+		types += `<Override PartName="/xl/metadata.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheetMetadata+xml"/>`
+		id := 4
+		if sharedStrings {
+			id = 5
+		}
+		rels += `<Relationship Id="rId` + strconv.Itoa(id) + `" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata" Target="metadata.xml"/>`
+	}
 	types += "</Types>"
 	rels += "</Relationships>"
 	entries := []zipEntry{
@@ -581,11 +634,20 @@ func PandasXlsxwriter(frame Frame, now time.Time) ([]byte, error) {
 	entries = append(entries,
 		zipEntry{name: "docProps/core.xml", data: []byte("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + `<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:creator></dc:creator><cp:lastModifiedBy></cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">` + stamp + `</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">` + stamp + `</dcterms:modified></cp:coreProperties>`)},
 		zipEntry{name: "docProps/app.xml", data: []byte("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Microsoft Excel</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><HeadingPairs><vt:vector size="2" baseType="variant"><vt:variant><vt:lpstr>Worksheets</vt:lpstr></vt:variant><vt:variant><vt:i4>1</vt:i4></vt:variant></vt:vector></HeadingPairs><TitlesOfParts><vt:vector size="1" baseType="lpstr"><vt:lpstr>` + xwEscapeData(frame.Sheet) + `</vt:lpstr></vt:vector></TitlesOfParts><Company></Company><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>false</HyperlinksChanged><AppVersion>12.0000</AppVersion></Properties>`)})
+	if sheet.dynamic {
+		entries = append(entries, zipEntry{name: "xl/metadata.xml", data: []byte("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + xwMetadata)})
+	}
 	for i := range entries {
 		entries[i].external = externalRegular
 	}
 	return writeZip(entries, now)
 }
+
+// xwMetadata is xl/metadata.xml of a workbook with dynamic array formulas.
+const xwMetadata = `<metadata xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:xda="http://schemas.microsoft.com/office/spreadsheetml/2017/dynamicarray">` +
+	`<metadataTypes count="1"><metadataType name="XLDAPR" minSupportedVersion="120000" copy="1" pasteAll="1" pasteValues="1" merge="1" splitFirst="1" rowColShift="1" clearFormats="1" clearComments="1" assign="1" coerce="1" cellMeta="1"/></metadataTypes>` +
+	`<futureMetadata name="XLDAPR" count="1"><bk><extLst><ext uri="{bdbb8cdc-fa1e-496e-a857-3c3f30c029c3}"><xda:dynamicArrayProperties fDynamic="1" fCollapsed="0"/></ext></extLst></bk></futureMetadata>` +
+	`<cellMetadata count="1"><bk><rc t="1" v="0"/></bk></cellMetadata></metadata>`
 
 // StrLength is max(len(str(value))) of DataFrame(...)[column].astype(str)
 // for the column's values (after the DataFrame's dtype inference), -1 for no

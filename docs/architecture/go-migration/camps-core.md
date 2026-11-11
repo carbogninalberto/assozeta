@@ -65,3 +65,7 @@ inserts (validated values under the new key; the camp the path names stays). aud
 pre-save update against nothing, indexed from its changes, then the create, indexed directly. A key another camp has is the
 unique error (400). Two cases (90 in all); RED is the documented refusal (v2-refusals.md, camps-core row). GREEN
 `v2restb-green-r1`: 90/90 on the four transports. Mutation `v2restb-mutation-r1` (the pre-save entry indexed directly) CAUGHT.
+
+## Round t3courses
+
+Multipart bodies with file parts (a mutable form copy) are ported. 96 cases GREEN on four transports (run 43085954222). Mutation (immutability test inverted) CAUGHT.

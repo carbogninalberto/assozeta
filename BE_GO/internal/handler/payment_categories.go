@@ -338,6 +338,11 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 		return "payment category con questo payment category id esiste già."
 	case code == "no-data":
 		return "No data provided"
+	case code == dto.CourseSubscriptionJSONInvalid:
+		if english {
+			return "Value must be valid JSON."
+		}
+		return "Il valore deve essere un JSON valido."
 	case code == "null-character":
 		if english {
 			return "Null characters are not allowed."

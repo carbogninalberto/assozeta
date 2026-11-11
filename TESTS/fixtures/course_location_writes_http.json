@@ -1131,6 +1131,53 @@
    }
   },
   {
+   "name": "course-location-writes-update-form-indexed-keys-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006",
+    "documents": [],
+    "title": "Palestra",
+    "description": null,
+    "address": "Via 3",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "gym",
+    "changes": {},
+    "stored": {
+     "title": "Palestra",
+     "description": null,
+     "address": "Via 3"
+    }
+   },
+   "raw_body": "documents_data[0].document=TW9kdWxvIGRpIGlzY3JpemlvbmU%3D&documents_data[0].filename=modulo.pdf",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-update-form-documents-data-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents_data": {
+     "0": [
+      "Expected a dictionary of items but got type \"str\"."
+     ]
+    }
+   },
+   "effect": null,
+   "raw_body": "documents_data=abc&documents_data[0].document=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "course-location-writes-update-document-missing-key-keeps-change",
    "actor": "owner",
    "method": "PATCH",
@@ -1263,6 +1310,346 @@
      }
     ]
    }
+  },
+  {
+   "name": "course-location-writes-add-form-documents-data-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents_data": {
+     "0": [
+      "Expected a dictionary of items but got type \"str\"."
+     ]
+    }
+   },
+   "effect": null,
+   "raw_body": "title=Form&documents_data=abc",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-documents-data-repeated",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents_data": {
+     "0": [
+      "Expected a dictionary of items but got type \"str\"."
+     ],
+     "1": [
+      "Expected a dictionary of items but got type \"str\"."
+     ]
+    }
+   },
+   "effect": null,
+   "raw_body": "documents_data=a&documents_data=b&documents_data[0].document=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-indexed-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents_data": {
+     "0": [
+      "Expected a dictionary of items but got type \"str\"."
+     ],
+     "1": [
+      "Expected a dictionary of items but got type \"str\"."
+     ]
+    }
+   },
+   "effect": null,
+   "raw_body": "documents_data[3]=a&documents_data[1]=b&documents_data[x]=ignored&other[0]=ignored",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-indexed-text-after-dict",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents_data": {
+     "0": [
+      "Expected a dictionary of items but got type \"str\"."
+     ]
+    }
+   },
+   "effect": null,
+   "raw_body": "documents_data[0].document=b&documents_data[0]=a",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-indexed-dict-after-text-keeps-location",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": null,
+     "description": null,
+     "address": null
+    }
+   },
+   "raw_body": "documents_data[0]=a&documents_data[0].document=b",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-indexed-keys-not-matching",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [],
+    "title": "Indici non validi",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Indici non validi",
+     "description": null,
+     "address": null
+    }
+   },
+   "raw_body": "title=Indici+non+validi&documents_data[x]=1&documents_data[0=2&documents_data0=3&other[0].document=4",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-indexed-without-dot-keeps-location",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Senza nome",
+     "description": null,
+     "address": null
+    }
+   },
+   "raw_body": "title=Senza+nome&documents_data[0][document]=eA==&documents_data[0][filename]=a.pdf",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-indexed-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "modulo.pdf",
+      "file_size_bytes": null,
+      "token": "$token"
+     }
+    ],
+    "title": "Un file",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Un file",
+     "description": null,
+     "address": null
+    },
+    "uploads": [
+     {
+      "filename": "modulo.pdf",
+      "body_b64": "TW9kdWxvIGRpIGlzY3JpemlvbmU=",
+      "content_type": "application/pdf",
+      "encoding": null
+     }
+    ]
+   },
+   "raw_body": "title=Un+file&documents_data[0].document=TW9kdWxvIGRpIGlzY3JpemlvbmU%3D&documents_data[0].filename=modulo.pdf",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-form-indexed-two-documents-sorted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "orari.txt",
+      "file_size_bytes": null,
+      "token": "$token"
+     },
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "mappa.txt",
+      "file_size_bytes": null,
+      "token": "$token"
+     }
+    ],
+    "title": "Due file",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Due file",
+     "description": null,
+     "address": null
+    },
+    "uploads": [
+     {
+      "filename": "orari.txt",
+      "body_b64": "T3JhcmkgZXN0aXZp",
+      "content_type": "text/plain",
+      "encoding": null
+     },
+     {
+      "filename": "mappa.txt",
+      "body_b64": "TWFwcGEgZGVsIGNhbXBv",
+      "content_type": "text/plain",
+      "encoding": null
+     }
+    ]
+   },
+   "raw_body": "title=Due+file&documents_data[10].filename=mappa.txt&documents_data[02].document=T3JhcmkgZXN0aXZp&documents_data[10].document=TWFwcGEgZGVsIGNhbXBv&documents_data[2].filename=orari.txt",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-location-writes-add-multipart-indexed-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "course_location_id": "$new",
+    "documents": [
+     {
+      "document_id": "$document",
+      "creation_date": "$now",
+      "filepath": null,
+      "filename": "multipart.txt",
+      "file_size_bytes": null,
+      "token": "$token"
+     }
+    ],
+    "title": "Multipart",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Multipart",
+     "description": null,
+     "address": null
+    },
+    "uploads": [
+     {
+      "filename": "multipart.txt",
+      "body_b64": "RGFsIG1vZHVsbyBjb24gZmlsZQ==",
+      "content_type": "text/plain",
+      "encoding": null
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nMultipart\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"documents_data[0].document\"\r\n\r\nRGFsIG1vZHVsbyBjb24gZmlsZQ==\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"documents_data[0].filename\"\r\n\r\nmultipart.txt\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "course-location-writes-add-multipart-documents-data-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents_data": {
+     "0": [
+      "Expected a dictionary of items but got type \"InMemoryUploadedFile\"."
+     ]
+    }
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nMultipart\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"documents_data\"; filename=\"doc.bin\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "course-location-writes-add-multipart-indexed-document-as-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/locations/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "File come documento",
+     "description": null,
+     "address": null
+    }
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nFile come documento\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"documents_data[0].document\"; filename=\"doc.bin\"\r\n\r\neA==\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"documents_data[0].filename\"\r\n\r\na.pdf\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
   },
   {
    "name": "course-location-writes-delete-restricted-missing-permission",
