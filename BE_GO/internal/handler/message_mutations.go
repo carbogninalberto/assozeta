@@ -174,7 +174,7 @@ func readMessageMutationsBody(c echo.Context) (any, error) {
 				if !utf8.Valid(raw) {
 					raw, _ = charmap.ISO8859_1.NewDecoder().Bytes(raw)
 				}
-				return parseImpersonationQuery(string(raw)), nil
+				return parseQueryPairs(string(raw), true), nil
 			case "latin1", "latin-1", "iso-8859-1", "iso8859-1":
 				// QueryDict decodes the raw body and percent escapes with the
 				// selected charset, preserving literal non-ASCII text.
@@ -208,7 +208,11 @@ func readMessageMutationsBody(c echo.Context) (any, error) {
 					key, value, _ := strings.Cut(pair, "=")
 					key, value = decode(key), decode(value)
 					if at, ok := positions[key]; ok {
+						if fields[at].All == nil {
+							fields[at].All = []any{fields[at].Value}
+						}
 						fields[at].Value = value
+						fields[at].All = append(fields[at].All, value)
 					} else {
 						positions[key] = len(fields)
 						fields = append(fields, domain.RequestField{Name: key, Value: value})

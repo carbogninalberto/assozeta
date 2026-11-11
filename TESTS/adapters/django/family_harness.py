@@ -104,11 +104,16 @@ def fixture_context_for(contract, seed, *, purge=()):
                 with disable_auditlog():
                     LogEntry.objects.exclude(pk__in=original_audit).delete()
                     if fixture is not None:
+                        kept = {}
                         for model, keep in original.items():
                             # Only this model's seeded keys: pk types differ between models.
                             seeded = [pk for created, pk in fixture['created'] if created is model]
-                            delete_unreadable(model, [*keep, *seeded])
-                            model._base_manager.exclude(pk__in=[*keep, *seeded]).delete()
+                            kept[model] = [*keep, *seeded]
+                        # Rows the driver cannot read go first: deleting a parent loads its children.
+                        for model, keys in kept.items():
+                            delete_unreadable(model, keys)
+                        for model, keys in kept.items():
+                            model._base_manager.exclude(pk__in=keys).delete()
                         shared.delete_created(fixture)
                 carnets.state_unchanged(before, scopes.snapshot_state(apps))
                 return True

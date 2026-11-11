@@ -896,7 +896,7 @@ add('update-integer-event-ids-merge', 'owner', UPD('omega'), 200, UPDATED, metho
            registry_update(OMEGA, 'owner', {'events': [dumps(old_events), dumps(STATE['registries'][OMEGA]['events'])]})])
 TRUE_EVENT = event(True, 'Vero', '2027-01-06T10:00:00.000Z', '2027-01-06T11:00:00.000Z', props={})
 old_events = copy.deepcopy(STATE['registries'][OMEGA]['events'])
-STATE['registries'][OMEGA]['events'][1] = {**I1, 'title': 'Vero'}
+STATE['registries'][OMEGA]['events'] = [STATE['registries'][OMEGA]['events'][0], {**I1, 'title': 'Vero'}, STATE['registries'][OMEGA]['events'][2]]
 STATE['days']['$new:day-omega-1']['title'] = 'Vero'
 add('update-boolean-event-id-matches-integer', 'owner', UPD('omega'), 200, UPDATED, method='POST',
     body={'events': [TRUE_EVENT], 'status': PUBLISHED},
@@ -977,7 +977,7 @@ KAPPA_A = event(NID(7), 'Dopo oggetto vuoto', '2027-04-03T10:00:00.000Z', '2027-
 KAPPA = stored('kappa', DRAFT, {})
 add('update-creates-registry-with-empty-object', 'owner', UPD('kappa'), 200, UPDATED, method='POST', body={'events': {}, 'status': DRAFT},
     audit=[registry_create(KAPPA, 'owner', '1')])
-STATE['registries'][KAPPA]['status'] = PUBLISHED
+STATE['registries'][KAPPA] = {**STATE['registries'][KAPPA], 'status': PUBLISHED}
 add('update-publishes-empty-object', 'owner', UPD('kappa'), 200, UPDATED, method='POST', body={'events': {}, 'status': PUBLISHED},
     audit=[registry_update(KAPPA, 'owner', {'status': ['1', '2']})])
 add('update-event-cannot-join-empty-object', 'owner', UPD('kappa'), 500, SERVER, method='POST', body={'events': [KAPPA_A], 'status': PUBLISHED})
@@ -987,7 +987,7 @@ add('update-empty-object-becomes-list', 'owner', UPD('kappa'), 200, UPDATED, met
 LAMBDA = stored('lambda', DRAFT, '')
 add('update-creates-registry-with-empty-text', 'owner', UPD('lambda'), 200, UPDATED, method='POST', body={'events': '', 'status': DRAFT},
     audit=[registry_create(LAMBDA, 'owner', '1')])
-STATE['registries'][LAMBDA]['status'] = PUBLISHED
+STATE['registries'][LAMBDA] = {**STATE['registries'][LAMBDA], 'status': PUBLISHED}
 add('update-publishes-empty-text', 'owner', UPD('lambda'), 200, UPDATED, method='POST', body={'events': '', 'status': PUBLISHED},
     audit=[registry_update(LAMBDA, 'owner', {'status': ['1', '2']})])
 audit = [registry_delete(LAMBDA, 'owner', STATE['registries'].pop(LAMBDA), [OWN, 'actor.sport_association'])]

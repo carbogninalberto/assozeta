@@ -1149,9 +1149,17 @@ func (s *CourseCalendars) UpdateDelete(ctx context.Context, identity domain.Reso
 	if err != nil {
 		return nil, err
 	}
+	// list(events or []): a falsy value is empty; a truthy non-list raises when it is iterated.
 	list, ok := parsed.([]any)
-	if parsed != nil && !ok {
-		return nil, errCalendarNotPorted
+	if !ok && dto.PythonTruthy(parsed) {
+		switch parsed.(type) {
+		case domain.RequestObject, string:
+			// list(dict) and list(str) iterate; the body is read next and the elements fail later.
+			if bodyErr != nil {
+				return nil, bodyErr
+			}
+		}
+		return nil, errCalendarRaised
 	}
 	if bodyErr != nil {
 		return nil, bodyErr
@@ -1368,14 +1376,12 @@ type calendarStart struct {
 // calendarParseStart is parse_datetime(str(value)): nil for None, a raise
 // for ValueError.
 func calendarParseStart(value any) (*calendarStart, error) {
-	moment, aware, result := dto.DjangoParseDateTime(dto.PythonStr(value))
+	moment, aware, result := dto.DjangoParseDateTimeWide(dto.PythonStr(value))
 	switch result {
 	case dto.DjangoDateTimeParsed:
 		return &calendarStart{moment: moment, aware: aware}, nil
 	case dto.DjangoDateTimeNone:
 		return nil, nil
-	case dto.DjangoDateTimeNotPorted:
-		return nil, errCalendarNotPorted
 	}
 	return nil, errCalendarRaised
 }
