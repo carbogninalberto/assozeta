@@ -23,9 +23,9 @@ jobs:
   golang:
     name: Go foundation and inventory
     runs-on: ubuntu-24.04
-    # The expanded real-Django/Go suite plus setup/image checks exceeds 15 min.
+    # The expanded real-Django/Go suite plus setup/image checks exceeds 30 min.
     # Individual adapters retain their own bounded subprocess deadlines.
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
