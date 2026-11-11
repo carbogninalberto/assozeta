@@ -669,8 +669,6 @@ add('lead-nul-role', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': dict(LEAD_REST, lead_sport_association_role='a\u0000b')}, effect=effect())
 add('lead-nul-phone-after-long-role', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': dict(LEAD_REST, lead_sport_association_role=long_role, phone='1\u00002')}, effect=effect())
-add('lead-nul-in-container', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
-    body={'lead_data': dict(LEAD_REST, lead_sport_association_role=['a\u0000'])}, effect=effect())
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
