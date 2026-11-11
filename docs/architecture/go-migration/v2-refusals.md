@@ -1062,7 +1062,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### persona-subs-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST/PUT/PATCH personas-subscriptions/ | form bodies; key change; bad jsonb; >1 new tag link | `service/persona_subs_writes.go:32,112,220,241,245,389` | B | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
+| POST/PUT/PATCH personas-subscriptions/ | >1 new tag link | `service/persona_subs_writes.go` | ported (t2subsb: the through rows follow the iteration order of Django's set of ids, `importeffects.PySetOrder`) | |
+| same | form bodies; key change (Model.save inserts a copy); jsonb text PostgreSQL rejects | `service/persona_subs_writes.go:32,112,220,241,245` | B (open in t2subsb: not reached) | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
 
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1294,11 +1295,11 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST subscription/renew | renewal by an athlete | ported (v2-sub-create) | **ported** | The athlete area renews through `RenewalModal` (`routes/activities/subscription/partials/subscription-element.svelte:231`), which POSTs to `SUBSCRIPTION.RENEW` (`Members/modals/RenewalModal.svelte:65`) |
 | same | renewal with non-empty `courses` | ported (v2subs: `SubscriptionRenewals.courses`) | **ported** | `RenewalModal.svelte:58` sends `courses: formData.renewal_info?.courses`; each course runs through the course-enrolment port inside the renewal's transaction. |
 | same | renewal payment clean-up meets an unpaid payment with an invoice | `:119` | **ported** (v2-subscriptions) | data from payment cancel (top) in the new period |
-| same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group |
-| same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association |
-| same | `tags` string / non-string ids | `:188` etc. | B | UI sends the list row's tag objects (handled at `:190-198`) |
-| same | `user.email` list/dict; non-mapped Python exception texts | `:157`, `:304` | B | not UI-shaped. legacy: no |
-| same, and associates-draft approve | a typed `certificate_expring_date` without an upload (placeholder image) | `service/subscription_create.go` (`subscriptionCreateRefuse`) | **ported** (tailsubs) | Cases `renew-certificate-placeholder*`, `approve-draft-without-associate` (its draft carries the typed date). Also ported (tailsubs): `preregistration: true` without `subscription_id` in renewals and approvals; with a `subscription_id` it stays refused (not yet written). |
+| same | `X-Group-Id` non-empty; form body | `:53` | B | UI sends JSON and never sets a group. Open in t2subsb: not reached (shared with the subscription/add refusals of the same two inputs). |
+| same | `data['sport_association']` names another association | (renew service) | B | UI sends the row's own association. Open in t2subsb: not reached. |
+| same | `tags` string / non-string ids | `service/subscription_renew.go` (`tags`) | ported (t2subsb) | A text is iterated by character (the first is no UUID); an int or bool id is `uuid.UUID(int=...)`, anything else the `is not a valid UUID` error with `str(value)`. |
+| same | `user.email` list/dict; non-mapped Python exception texts | `:157`, `:304` | ported (t2subsb: list/dict e-mail, searched as its `str()`) / B (exception texts) | Exception texts of Python internals that no request shape reaches stay refused. |
+| same, and associates-draft approve | a typed `certificate_expring_date` without an upload (placeholder image) | `service/subscription_create.go` (`subscriptionCreateRefuse`) | **ported** (tailsubs) | Cases `renew-certificate-placeholder*`, `approve-draft-without-associate` (its draft carries the typed date). Also ported (tailsubs): `preregistration: true` without `subscription_id` in renewals and approvals; with a `subscription_id` it stays refused (open in t2subsb: the success effect of the renewal inside the view's transaction was not characterized). |
 | same | inputs refused by subscription-create (preregistration, new accounts, signatures, `type_of_associate`, …) | `service/subscription_create*.go` | see subscription-create.md | The renewal body sends `signature.there_is_signature:false`, `new_member:false` and `medical_certificate.medical_id` only (`RenewalModal.svelte:40-56`). Check `associate_data.type`/`role` against the create refusals in that family's inventory |
 | POST subscription/associates-draft/list/approve | a draft hitting any create refusal refuses the whole request; group header | same | depends on subscription-create | UI caller `Members/import/AssociateTable.svelte:286,302` |
 

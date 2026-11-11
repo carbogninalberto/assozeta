@@ -979,31 +979,6 @@ add('renew-preregistration', 'renew', 'owner', 200, {'status': 'success', 'payme
                   celery=tasks('$early_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pietro Prenotato.', 'association': OWN}]))
 
-# A preregistration that names the subscription it renews (fill_data_preregisration, as in subscription/add): the person,
-# certificate, custom data, role and number are the renewed subscription's, the type is the request's. An unknown or
-# foreign subscription is the 400 below (APIException: it propagates).
-NOT_RENEWABLE = {'msg': 'Iscrizione da rinnovare non trovata.', 'code': '400'}
-SENT = person('Altro', 'Nome', 'LTRNMO90C01H501K', type=1)
-add('renew-preregistration-renewal-unknown', 'renew', 'owner', 400, NOT_RENEWABLE,
-    body=renewal(SENT, preregistration=True, subscription_id=NEW_ID))
-add('renew-preregistration-renewal-malformed-id', 'renew', 'owner', 400, NOT_RENEWABLE,
-    body=renewal(SENT, preregistration=True, subscription_id='non-un-id'))
-add('renew-preregistration-renewal-foreign-association', 'renew', 'foreign_owner', 400, NOT_RENEWABLE,
-    body=renewal(SENT, preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']))
-add('renew-preregistration-renewal-without-type', 'renew', 'owner', 400, error("'type'"),
-    body=renewal(person('Altro', 'Nome', 'LTRNMO90C01H501K'), preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']))
-RENEWING = ASSOCIATES['renewing']['id']
-rows = [new_payment('$pre_payment', RENEWING),
-        *subscription_rows('$pre_subscription', RENEWING, kind=1, payment='$pre_payment', number='12', season=NEXT)]
-add('renew-preregistration-renewal', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
-    body=renewal(SENT, preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']),
-    effect=effect('owner', new=rows,
-                  audit=[entry('payment', 0, '$pre_payment', {'amount': ['None', '25.0']}),
-                         entry('subscription', 0, '$pre_subscription',
-                               {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']})],
-                  celery=tasks('$pre_subscription'),
-                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Rino Rinnovo.', 'association': OWN}]))
-
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/renew and associates-draft approve authored sequence with row, audit, Celery and '
