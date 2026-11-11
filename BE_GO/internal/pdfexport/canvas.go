@@ -219,9 +219,11 @@ type jpegImage struct {
 }
 
 type canvasState struct {
-	fontName string
-	fontSize float64
-	leading  float64
+	fontName    string
+	fontSize    float64
+	leading     float64
+	lineWidth   float64
+	strokeColor color // color{named: true} is the initial (0,0,0) tuple, which no Color equals
 }
 
 type pageRecord struct {
@@ -256,7 +258,7 @@ func newCanvas(width, height float64) *canvas {
 }
 
 func (c *canvas) initState() {
-	c.state = canvasState{fontName: "Helvetica", fontSize: 12, leading: 14.4}
+	c.state = canvasState{fontName: "Helvetica", fontSize: 12, leading: 14.4, lineWidth: 1, strokeColor: color{named: true}}
 }
 
 // fontRef is doc.getInternalFontName: /F<n>, registering the font on first use.
@@ -321,18 +323,25 @@ func (c *canvas) drawImage(image *jpegImage, width, height float64) {
 }
 
 func (c *canvas) setFont(name string, size, leading float64) {
-	c.state = canvasState{fontName: name, fontSize: size, leading: leading}
+	c.state.fontName, c.state.fontSize, c.state.leading = name, size, leading
 	c.add("BT " + c.fontRef(fontsByName[name]) + " " + fpStr(size) + " Tf " + fpStr(leading) + " TL ET")
 }
 
 // setFontDefault is canvas.setFont(name, size): the leading is size * 1.2.
 func (c *canvas) setFontDefault(name string, size float64) { c.setFont(name, size, size*1.2) }
 
-func (c *canvas) setFillColor(col color)   { c.add(fpStrs(col.r, col.g, col.b) + " rg") }
-func (c *canvas) setStrokeColor(col color) { c.add(fpStrs(col.r, col.g, col.b) + " RG") }
-func (c *canvas) setLineWidth(w float64)   { c.add(fpStr(w) + " w") }
-func (c *canvas) setLineCap(v int)         { c.add(strconv.Itoa(v) + " J") }
-func (c *canvas) setLineJoin(v int)        { c.add(strconv.Itoa(v) + " j") }
+func (c *canvas) setFillColor(col color) { c.add(fpStrs(col.r, col.g, col.b) + " rg") }
+func (c *canvas) setStrokeColor(col color) {
+	c.state.strokeColor = col
+	c.add(fpStrs(col.r, col.g, col.b) + " RG")
+}
+
+func (c *canvas) setLineWidth(w float64) {
+	c.state.lineWidth = w
+	c.add(fpStr(w) + " w")
+}
+func (c *canvas) setLineCap(v int)  { c.add(strconv.Itoa(v) + " J") }
+func (c *canvas) setLineJoin(v int) { c.add(strconv.Itoa(v) + " j") }
 
 func (c *canvas) line(x1, y1, x2, y2 float64) {
 	c.add("n " + fpStrs(x1, y1) + " m " + fpStrs(x2, y2) + " l S")

@@ -17,6 +17,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from reportlab.lib.colors import Color
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Paragraph
 from reportlab.platypus.paraparser import known_entities
@@ -24,7 +25,7 @@ from reportlab.platypus.paraparser import known_entities
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / 'BE_GO/internal/pdfexport'
 REFUSED = ('a', 'bullet', 'font', 'greek', 'img', 'index', 'link', 'nobr', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat',
-           'seqreset', 'span', 'strike', 'sub', 'sup', 'super', 'u', 'unichar')
+           'seqreset', 'span', 'sub', 'sup', 'super', 'unichar')
 FONTS = ('Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique')
 
 TEXTS = [
@@ -41,7 +42,17 @@ TEXTS = [
     '&;', '& ;', '&#', '&#x', '&# 1', 'poli\xadsportiva', 'a\xad', '\xad', '<b>a</b >', '<b >a</b>', '<B>a</B>', '<b/>a', '<br />',
     '<BR/>a', '<br/><br/>', '<br><b></b></br>', '<br><br/></br>', '<b x>a</b>', '<b x=1>a</b>', '<b x="1" y=\'2\'>a</b>',
     '<b x="1>a</b>', '<b x= "1>a</b>', '<b x=\'>\'>a</b>', '<b x=>a</b>', '<b =>a</b>', '<b "x">a</b>', '<b/ >a</b>', '<b / x>a</b>',
-    '<u>a</u>', '<a href="x">a</a>', '<font size="12">a</font>', '<font color="red">a</font>', '<sup>2</sup>', '<sub>2</sub>',
+    '<u>a</u>', '<u>a b</u> c', '<u color="red">a</u>', '<u width="2">a</u>', '<u offset="-1">x</u>', '<u kind="double">a</u>',
+    '<u kind="triple" gap="2">a</u>', '<u width="0.5*f">a</u>', '<u width="2*P">a</u>', '<u width=" 1.5 ">a</u>', '<u width="2mm">a</u>',
+    '<u offset="0.1*F">a</u>', '<u offset="">a</u>', '<u gap="3">a</u>', '<strike>a</strike>', '<strike color="#ff0000" width="1">a</strike>',
+    '<strike color="rgb(0,128,0)">a</strike>', '<strike color="0x0000ff" kind="double">a</strike>', '<u><strike>a</strike></u>',
+    '<u>a<b>b</b></u>', '<u>a</u><u>b</u>', '<u color="blue">a<u>b</u></u>', '<u foo="1">a</u>', '<u color>a</u>',
+    '<u color="notacolor">a</u>', '<u kind="quad">a</u>', '<u width="x">a</u>', '<u width="">a</u>', '<u width>a</u>', '<u>a</strike>',
+    '<u>a', 'a</u>', '<br/><u>a</u>', '<u>a<br/>b</u>', '<u/>', '<u></u>', '<strike/>a', '<U>a</U>', '<u color="RED">a</u>',
+    '<u color="red" color="blue">a</u>', '<u kind=double>a</u>', "<u kind='single'>a</u>", '<u color="hsl(120,100%,50%)">a</u>',
+    '<u color="#f00">a</u>', '<u color="#ff00ff00">a</u>', '<u color="transparent">a</u>', '<u color="cmyk(1,0,0,0)">a</u>',
+    '<u color="rgba(255,0,0,0.5)">a</u>', '<u color="rgb(10%,20%,30%)">a</u>', '<u color="Blacker(red,0.5)">a</u>',
+    '<u width="1&amp;2">a</u>', '<u kind="&#100;ouble">a</u>', '<a href="x">a</a>', '<font size="12">a</font>', '<font color="red">a</font>', '<sup>2</sup>', '<sub>2</sub>',
     '<strike>a</strike>', '<span>a</span>', '<greek>a</greek>', '<img src="x"/>', '<bullet>a</bullet>b', '<seq/>', '<nobr>a b</nobr>',
     '<unichar code="65"/>', '<link href="x">a</link>', '<super>a</super>', '<onDraw name="x"/>', '<index item="a"/>',
     'a\nb', '  a   b  ', 'a\tb', 'a\xa0b', '<b>a</b> <i>b</i>', '<b>a </b>b', 'a<b> b</b>', '<b> </b>', 'x &#x1F600; y', 'è &egrave; €',
@@ -52,7 +63,7 @@ TOKENS = [
     '&amp', '<', '>', '<b>', '</b>', '<i>', '</i>', '<br/>', '<br>', '</br>', '<strong>', '</strong>', '<em>', '</em>', '<x>', '</x>',
     '<x y="1">', "<x y='>'>", '<x y="', '<!-- c -->', '<!--', '<?pi?>', '<!DOCTYPE x>', '<![CDATA[x]]>', '<para>', '</para>',
     '<title>', '</title>', '<script>', '</script>', '<b/>', '</>', '< b>', '<b >', '<B>', '</B >', '<a href="x">', '</a>', '<u>',
-    '</u>', '<font size="12">', '\xad', 'é', '"', "'", '=', '/', '<x/>', '<x a=b c>', '<3', '&&', '&;', '&#', '&#x;', '-', '.', ';',
+    '</u>', '<strike>', '</strike>', '<u color="red">', '<strike kind="double">', '<font size="12">', '\xad', 'é', '"', "'", '=', '/', '<x/>', '<x a=b c>', '<3', '&&', '&;', '&#', '&#x;', '-', '.', ';',
     '<plaintext>', '<textarea>', '</textarea>', '<b', '</b', '<x "a">', "<x 'a>", '\n', '\t', '\xa0', '<br />', '<BR/>', '&AMP;',
     '&Alpha;', '&#0;', '&#55296;', '&#1114112;', '&#955;', 'x= "y', '<x y= "z', '<x/y>', '<x//>', '<!>', '<!->', '-->', ']]>',
 ]
@@ -60,7 +71,30 @@ TOKENS = [
 
 def refusable(text):
     lowered = text.lower()
-    return any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or '<para' in lowered
+    return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or '<para' in lowered or 'blacker(' in lowered
+            or 'whiter(' in lowered)
+
+
+def rgb(colour):
+    """[r, g, b] of a plain RGB colour, or None for no colour; anything else makes the paragraph ``other``."""
+    if colour is None or colour == '':
+        return None
+    if type(colour) is not Color or colour.alpha != 1:
+        raise TypeError('colour')
+    return [colour.red, colour.green, colour.blue]
+
+
+def us_value(value):
+    return value if isinstance(value, (str, int, float)) else repr(value)
+
+
+def describe(frag):
+    """What the Go writer compares: font, text, line break, size, colour, rise, lines, links, background and nobr."""
+    lines = []
+    for n, kind, colour, width, offset, rise, repeats, gap in frag.us_lines:
+        lines.append([n, kind, rgb(colour), us_value(width), us_value(offset), rise, repeats, us_value(gap)])
+    return [frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False)), frag.fontSize, rgb(frag.textColor), frag.rise, lines,
+            [list(link) for link in frag.link], rgb(getattr(frag, 'backColor', None)), bool(getattr(frag, 'nobr', False))]
 
 
 def outcome(text, font):
@@ -77,11 +111,13 @@ def outcome(text, font):
     other = paragraph.style is not style or bool(paragraph.bulletText)
     frags = []
     for frag in paragraph.frags:
-        if (frag.rise or frag.us_lines or frag.link or frag.greek or hasattr(frag, 'cbDefn') or hasattr(frag, 'backColor')
-                or hasattr(frag, 'nobr') or frag.fontSize != style.fontSize or frag.textColor != style.textColor
-                or frag.fontName not in FONTS):
+        if frag.greek or hasattr(frag, 'cbDefn') or frag.fontName not in FONTS:
             other = True
-        frags.append([frag.fontName, frag.text, bool(getattr(frag, 'lineBreak', False))])
+            continue
+        try:
+            frags.append(describe(frag))
+        except TypeError:
+            other = True
     if other:
         entry['other'] = True
     else:
@@ -115,6 +151,34 @@ def entities():
     return subprocess.run([gofmt], input='\n'.join(lines + ['}', '']), capture_output=True, text=True, check=True).stdout
 
 
+def colours():
+    from reportlab.lib.colors import CMYKColor, getAllNamedColors
+    lines = ['// Code generated from reportlab 4.2.5 (colors.getAllNamedColors); DO NOT EDIT.', '', 'package pdfexport', '',
+             '// paraNamedColors are the plain RGB colour names toColor knows (lower case).',
+             'var paraNamedColors = map[string]color{']
+    other = []
+    for name, value in sorted(getAllNamedColors().items()):
+        if isinstance(value, CMYKColor) or value.alpha != 1 or name != name.lower():
+            other.append(name.lower())
+        else:
+            lines.append('\t%s: {r: %r, g: %r, b: %r},' % (go_string(name), value.red, value.green, value.blue))
+    lines += ['}', '', '// paraUnportedColors are the names of colours that are CMYK or transparent.',
+              'var paraUnportedColors = map[string]bool{']
+    lines += ['\t%s: true,' % go_string(name) for name in sorted(set(other))]
+    gofmt = shutil.which('gofmt')
+    return subprocess.run([gofmt], input='\n'.join(lines + ['}', '']), capture_output=True, text=True, check=True).stdout
+
+
+def html5_entities():
+    from html.entities import html5
+    lines = ['// Code generated from html.entities.html5 of the pinned interpreter; DO NOT EDIT.', '', 'package pdfexport', '',
+             '// html5Entities are the character references of HTML 5 (with and without the closing semicolon).',
+             'var html5Entities = map[string]string{']
+    lines += ['\t%s: %s,' % (go_string(name), go_string(html5[name])) for name in sorted(html5)]
+    gofmt = shutil.which('gofmt')
+    return subprocess.run([gofmt], input='\n'.join(lines + ['}', '']), capture_output=True, text=True, check=True).stdout
+
+
 def corpus():
     rng = random.Random(20261110)
     texts = list(TEXTS)
@@ -127,7 +191,7 @@ def corpus():
 
 
 def main():
-    outputs = {PACKAGE / 'entities_gen.go': entities(), PACKAGE / 'testdata/paragraphs.json': corpus()}
+    outputs = {PACKAGE / 'entities_gen.go': entities(), PACKAGE / 'colors_gen.go': colours(), PACKAGE / 'html5_gen.go': html5_entities(), PACKAGE / 'testdata/paragraphs.json': corpus()}
     if '--check' in sys.argv[1:]:
         stale = [str(path) for path, text in outputs.items() if not path.is_file() or path.read_text() != text]
         if stale:

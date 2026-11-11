@@ -259,6 +259,48 @@ CASES += [
 ]
 
 
+def with_additional(case, items):
+    case['spec']['additional'] = items
+    return case
+
+
+# Paragraph tags that draw lines (u, strike): single and several fragments, centred, over several lines, cut between pages.
+RICH = 'il <u>corso</u> di <strike>nuoto</strike> e <u color="red" width="2">pallanuoto</u> <u kind="double">agonistico</u> si tiene <b><u>ogni</u></b> settimana'
+RICH_CELLS = [
+    '<u>sottolineato</u>', '<strike>barrato</strike>', 'a <u>b</u> c', '<u>a b c d e f g h i j k l m n o p</u>', RICH,
+    '<u color="blue" kind="triple" gap="2">x</u> y', '<u width="0.5*f" offset="-0.2*F">z</u>', '<u><strike>entrambi</strike></u>',
+    '<u>a<br/>b</u>', '<strike color="#00aa00">verde</strike> <u color="rgb(255,0,255)">viola</u>', '<u width="1mm">mm</u>',
+    '<b><u>grassetto</u></b> <i><strike>corsivo</strike></i>', '<u>poli\xadsportiva</u> ' + SHY, '<u>' + 'lunga ' * 12 + '</u>',
+]
+CASES += [
+    balance('bs-underline', header(None, 'ASD <u>Aurora</u> club', city='<u>Roma</u>', address='<strike>Via</strike> Roma 1')),
+    balance('bs-underline-long', header(None, ' '.join([RICH] * 3), city=RICH, address='<u>' + LONG + '</u>')),
+    balance('bs-underline-style', header(None, '<u color="red" width="3" offset="-4" kind="triple" gap="2">ASD</u> Aurora',
+                                         city='<strike color="blue" width="2" kind="double">Roma</strike>')),
+    balance('bs-underline-error', header(None, 'ASD <u color="notacolor">Aurora</u>')),
+    balance('bs-underline-kind-error', header(None, 'ASD <u kind="quad">Aurora</u>')),
+    balance('bs-underline-width-error', header(None, 'ASD <u width="x">Aurora</u>')),
+    balance('bs-underline-unclosed', header(None, 'ASD <u>Aurora')),
+    with_additional(balance('bs-underline-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <u>sono</u> riportati al <strike>31/12/2025</strike>.'],
+                     ['altro', ' '.join([RICH] * 4)], ['solo', '<u>tutto sottolineato</u>']]),
+    report('rt-underline-cells', ['<u>Nome</u>', 'Testo <strike>barrato</strike>', 'Note'],
+           [[RICH_CELLS[i], RICH_CELLS[(i + 5) % len(RICH_CELLS)], RICH_CELLS[(i + 9) % len(RICH_CELLS)]] for i in range(len(RICH_CELLS))],
+           'Sottolineature'),
+    report('rt-underline-squeezed', ['<u>Colonna</u> %d' % i for i in range(12)],
+           [[RICH_CELLS[(i * 5 + j) % len(RICH_CELLS)] for j in range(12)] for i in range(len(RICH_CELLS))], 'Sottolineature strette'),
+    report('rt-underline-pages', ['N', 'Testo'], [[str(i), ' '.join([RICH_CELLS[i % len(RICH_CELLS)]] * (1 + i % 4))] for i in range(120)],
+           'Sottolineature su pagine'),
+    report('rt-underline-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([RICH] * 130),
+           text_after=' '.join([RICH + '<br/>'] * 70)),
+    report('rt-underline-text-whole', ['Nome'], [['x']], 'Tutto', text_before='<u>' + 'sottolineato ' * 400 + '</u>',
+           text_after='<strike>' + 'barrato ' * 300 + '</strike>'),
+    report('rt-underline-cell-error', ['A'], [['<u color="nope">x</u>']], 'Errore'),
+    attendance('at-underline', ('Yoga <u>adulti</u>', ['01/01/2026', '<u>x</u>'], [('<strike>Rossi</strike> Anna', ['P', '<u>A</u>'])]),
+               ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:
