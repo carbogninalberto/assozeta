@@ -600,6 +600,29 @@ def upload(name, actor, status, response, spec, **extra):
 
 IDLE = {'review': {'state': 'failed', 'stage': 'failed', 'attempts': 1}}
 upload('upload-archive-not-a-zip', 'owner', 400, error(DAMAGED), archive(raw=b'not a zip archive'), setup=IDLE)
+
+
+def multipart_headers(*parts, boundary='restore-fixture-boundary'):
+    """parts: (header lines as bytes, content bytes)."""
+    body = b''.join(b'--' + boundary.encode() + b'\r\n' + b''.join(line + b'\r\n' for line in lines) + b'\r\n' + content + b'\r\n'
+                    for lines, content in parts)
+    return body + b'--' + boundary.encode() + b'--\r\n', f'multipart/form-data; boundary={boundary}'
+
+
+FILE = b'Content-Disposition: form-data; name="file"; '
+B64 = b'Content-Transfer-Encoding: base64'
+# Django decodes a base64 transfer encoding (white space stripped; a failure ends the request), counts the decoded bytes towards
+# the limit and reads RFC 2231 file names.
+body, kind = multipart_headers(([FILE + b'filename="backup.zip"', B64], base64.b64encode(b'not a zip archive') + b'\r\n'))
+add('upload-base64-file', 'owner', ROOT, 400, error(DAMAGED), method='POST', raw=body, content_type=kind, setup=IDLE)
+body, kind = multipart_headers(([FILE + b'filename="backup.zip"', B64], b'abc'))
+add('upload-base64-file-undecodable', 'owner', ROOT, 400, {'detail': 'Multipart form parse error - Could not decode base64 data.'},
+    method='POST', raw=body, content_type=kind, setup=IDLE)
+body, kind = multipart_headers(([FILE + b"filename*=utf-8''backup%C3%A8.zip"], b'not a zip archive'))
+add('upload-rfc2231-file-name', 'owner', ROOT, 400, error(DAMAGED), method='POST', raw=body, content_type=kind, setup=IDLE)
+body, kind = multipart_headers(([b'Content-Disposition: form-data; name="extra"; filename="notes.zip"', B64], base64.b64encode(b'N' * 30000)),
+                               ([FILE + b'filename="backup.zip"', B64], base64.b64encode(b'not a zip archive' * 1700)))
+add('upload-base64-counts-decoded-bytes', 'owner', ROOT, 400, error(DAMAGED), method='POST', raw=body, content_type=kind, setup=IDLE)
 upload('upload-archive-without-manifest', 'owner', 400, error(DAMAGED), archive(raw=ZIP))
 upload('upload-archive-other-version', 'owner', 400, error('Formato non supportato. Carica un export ZIP Bakney versione 1.0.0.'),
        archive(manifest={'version': '2.0.0'}))
