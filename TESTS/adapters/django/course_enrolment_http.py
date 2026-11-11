@@ -40,7 +40,11 @@ SOURCES = ('TESTS/fixtures/course_enrolment_http.json', 'TESTS/contracts/test_co
            'BE/application/utils/api_utils.py') + harness.SOURCES + default_payment_category.SOURCES
 ROWS, LINKS, KEYS, NAMES = writes.ROWS, writes.LINKS, writes.KEYS, writes.NAMES
 MANAGED = writes.MANAGED
-TODAY = re.compile(r'\{today:([^}]+)\}')
+TODAY = contract.TODAY
+NOW_PLUS = contract.NOW_PLUS
+CREATED_PLUS = re.compile(r'\{created\+(\d+)m:(@\w+)\}')
+CREATED_TEXT = re.compile(r'\{createdtext(?:\+(\d+)m)?:(@\w+)\}')
+NAIVE = re.compile(r'\{naive\+(\d+)m:(\d+)\}')
 
 
 def seed_rows(source, created):
@@ -81,9 +85,30 @@ def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
 
 
 class Binder(writes.Binder):
+    def matches(self, expected, actual, final):
+        plus = NOW_PLUS.match(expected) if isinstance(expected, str) else None
+        if plus:
+            if not isinstance(actual, str):
+                return False
+            moment = datetime.fromisoformat(actual.replace('Z', '+00:00'))
+            return abs((contract.add_months(self.now, int(plus.group(1))) - moment).total_seconds()) < 600
+        return super().matches(expected, actual, final)
+
+    def text(self, template, created_times):
+        template = CREATED_PLUS.sub(lambda match: repr(contract.add_months(created_times[self.binds[match.group(2)]], int(match.group(1)))), template)
+        # Naive datetimes of strptime: midnight of the given day of the month N months from this one.
+        template = NAIVE.sub(lambda match: repr(contract.add_months(self.now.replace(day=1), int(match.group(1))).replace(
+            day=int(match.group(2)), tzinfo=None, hour=0, minute=0, second=0, microsecond=0)), template)
+        return super().text(template, created_times)
+
     def resolve(self, value):
-        if isinstance(value, str) and '{today:' in value:
-            value = TODAY.sub(lambda match: self.now.strftime(match.group(1)), value)
+        if isinstance(value, str) and '{createdtext' in value:
+            def moment_text(match):
+                moment = contract.add_months(self.created_times[self.binds[match.group(2)]], int(match.group(1) or 0))
+                return moment.strftime('%Y-%m-%d %H:%M:%S') + ('.%06d' % moment.microsecond if moment.microsecond else '')
+            value = CREATED_TEXT.sub(moment_text, value)
+        if isinstance(value, str) and '{today' in value:
+            value = contract.today_tokens(value, self.now)
             for sym in sorted(self.binds, key=len, reverse=True):
                 value = value.replace(sym, self.binds[sym])
             return value
@@ -119,6 +144,7 @@ def assert_effect(case, before, after, source, context):
     additional = writes.impersonation_additional(case, context, ids, actor)
     created_times = {str(row.pk): row.creation_date.astimezone(timezone.utc)
                      for row in writes.models()[writes.CSM]._base_manager.filter(pk__in=list(binder.binds.values()))}
+    binder.created_times = created_times
     for position, (event, spec) in enumerate(zip(added, effect['audit'])):
         name, label = NAMES[spec['model']]
         key = binder.resolve(spec['key'])

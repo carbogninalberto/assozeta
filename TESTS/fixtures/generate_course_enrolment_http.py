@@ -49,6 +49,8 @@ SERVER = '<stable-server-error-page>'
 UNKNOWN = 'e0000000-0000-4000-8000-000000999999'
 CATEGORY_NAME = 'entrate e proventi da attività tipiche'
 QUOTE_CATEGORY = next(ids)
+# UUID(int=7): a quote category given as the integer 7 looks this row up.
+INT_CATEGORY = '00000000-0000-0000-0000-000000000007'
 # Sorts first by key: Payment.get_default_bank_account(own association) picks it.
 BANK = '00000000-0000-4000-8000-0000000e0001'
 cases = []
@@ -68,14 +70,18 @@ for label, association, associate, user, group in (('mario', OWN, 'mario', ATHLE
                             'creation_date': '2026-01-01T09:00:00Z'}
 
 
+XIDS = iter(f'e0000000-0000-4000-8000-{n:012d}' for n in range(500, 800))
+
+
 def course(title, *, association=OWN, fee='50.00', one_fee='0.00', one_fee_payment=False, multi=False, events=None, deleted=False, group=None,
-           course_type=1, quotes=None):
-    return {'course_id': next(ids), 'sport_association_id': association, 'status_flag': 2, 'course_type': course_type,
+           course_type=1, quotes=None, course_id=None, billed_frequency=1, from_subscription=False, day_of_month=1,
+           auto_renewal=False, season=False):
+    return {'course_id': course_id or next(ids), 'sport_association_id': association, 'status_flag': 2, 'course_type': course_type,
             'creation_date': '2026-02-01T08:00:00Z', 'title': title, 'description': 'Descrizione ' + title, 'multi_payments': multi, 'fee': fee,
             'events': events, 'one_fee_payment': one_fee_payment, 'one_fee': one_fee, 'google_calendar_id': None,
             'google_background_color': '#123456', 'multiple_quotes': quotes, 'start_date': None, 'end_date': None, 'pinned': False,
-            'billed_duration_is_sport_season': False, 'billed_frequency': 1, 'billed_from_subscription_date': False,
-            'billed_from_day_of_month': 1, 'auto_renewal': False, 'deleted': deleted, 'group_id': group}
+            'billed_duration_is_sport_season': season, 'billed_frequency': billed_frequency, 'billed_from_subscription_date': from_subscription,
+            'billed_from_day_of_month': day_of_month, 'auto_renewal': auto_renewal, 'deleted': deleted, 'group_id': group}
 
 
 EVENTS = [{'id': 0, 'amount': '20.00', 'payment_date': '10/01/2020'}, {'id': 1, 'amount': '30.00', 'payment_date': '10/01/2099'}]
@@ -116,6 +122,41 @@ COURSES = {
     'ov_quote_text': course('Zumba', fee='0.00', course_type=2, quotes=TEXT_QUOTES),
     'ov_quote_word': course('Boxe', fee='0.00', course_type=2, quotes=WORD_QUOTES),
 }
+
+
+def extra_course(label, title, **kw):
+    COURSES[label] = course(title, course_id=next(XIDS), **kw)
+
+
+for number, label in enumerate(('x_form_empty', 'x_list', 'x_list_key', 'x_str', 'x_str_key', 'x_num', 'x_bool', 'x_multipart', 'x_form_quote'), 1):
+    extra_course(label, f'Prova {number}', fee='20.00', course_type=2 if label == 'x_form_quote' else 1, quotes=QUOTES if label == 'x_form_quote' else None)
+MEMBER = dict(course_type=3, fee='30.00')
+extra_course('m_dom', 'Quota giorno', course_type=3, fee='30.00', billed_frequency=2, auto_renewal=True)
+extra_course('m_dom5', 'Quota giorno 5', course_type=3, fee='15.00', day_of_month=5)
+extra_course('m_sub', 'Quota iscrizione', course_type=3, fee='20.00', billed_frequency=3, from_subscription=True, auto_renewal=True)
+extra_course('m_free', 'Quota gratis', course_type=3, fee='0.00')
+extra_course('m_day32', 'Quota giorno 32', course_type=3, fee='30.00', day_of_month=32)
+extra_course('m_season', 'Quota stagione', course_type=3, fee='30.00', season=True)
+extra_course('m_nofee', 'Quota nulla', course_type=3, fee=None)
+extra_course('m_nofreq', 'Quota senza durata', course_type=3, fee='30.00', billed_frequency=None)
+extra_course('x_form_one', 'Prova uno', fee='50.00', one_fee='40.00', one_fee_payment=True)
+extra_course('x_form_fee', 'Prova tariffa', fee='20.00')
+extra_course('x_empty_quotes_str', 'Quote vuote 1', fee='0.00', course_type=2, quotes=[])
+extra_course('x_empty_quotes_obj', 'Quote vuote 2', fee='0.00', course_type=2, quotes=[])
+extra_course('x_empty_quotes_null', 'Quote vuote 3', fee='0.00', course_type=2, quotes=[])
+extra_course('x_quote_int_id', 'Quote id 1', fee='0.00', course_type=2, quotes=[{'quote_id': 7, 'title': 'Sette', 'amount': '12'}])
+extra_course('x_quote_true_id', 'Quote id 2', fee='0.00', course_type=2, quotes=[{'quote_id': 1, 'title': 'Uno', 'amount': '13'}])
+extra_course('x_quote_text_id', 'Quote id 3', fee='0.00', course_type=2, quotes=[{'quote_id': '1', 'title': 'Uno', 'amount': '13'}])
+extra_course('x_sel_number', 'Selezione 1', fee='0.00', course_type=2, quotes=QUOTES)
+extra_course('x_sel_missing', 'Selezione 2', fee='0.00', course_type=2, quotes=QUOTES)
+extra_course('x_sel_str', 'Selezione 3', fee='0.00', course_type=2, quotes=QUOTES)
+extra_course('x_sel_list', 'Selezione 4', fee='0.00', course_type=2, quotes=QUOTES)
+extra_course('x_sel_null', 'Selezione 5', fee='0.00', course_type=2, quotes=QUOTES)
+PC_VARIANTS = {'none': None, 'number': 5, 'text': 'abc', 'list': ['value'], 'empty': {'label': 'x'}, 'value_null': {'value': None},
+               'value_int': {'value': 7}, 'value_float': {'value': 1.5}, 'value_list': {'value': ['a']}, 'value_true': {'value': True}}
+for name_, variant in PC_VARIANTS.items():
+    extra_course('x_pc_' + name_, 'Categoria ' + name_, fee='0.00', course_type=2,
+                 quotes=[{'quote_id': 'qc', 'title': 'Cat', 'amount': '10', 'payment_category': variant}])
 
 
 def payment(amount='10.00', *, paid=False, association=OWN, associate=None, user=None, meta=None, description='Quota', group=None):
@@ -171,7 +212,7 @@ INSTALLMENTS = {
 SEED = {'associates': copy.deepcopy(ASSOCIATES), 'subscriptions': copy.deepcopy(SUBSCRIPTIONS), 'locations': {}, 'tags': {},
         'courses': copy.deepcopy(COURSES), 'payments': copy.deepcopy(PAYMENTS), 'course_subscriptions': copy.deepcopy(CS),
         'installments': copy.deepcopy(INSTALLMENTS), 'registries': {}, 'days': {}, 'course_locations': [], 'course_tags': [],
-        'categories': {QUOTE_CATEGORY: 'Quote fixture'}, 'bank': BANK}
+        'categories': {QUOTE_CATEGORY: 'Quote fixture', INT_CATEGORY: 'Quote fixture'}, 'bank': BANK}
 
 # --- expectation helpers -----------------------------------------------------------
 
@@ -220,19 +261,19 @@ def cs_repr(sym, course_label, subscription, *, payment=None, multi=False, one_f
               'creation_date': '{created:' + sym + '}', 'subscription_id': uuid(sid(subscription)), 'payment_id': uuid(payment),
               'multi_payments': repr(multi), 'one_fee_payment': repr(one_fee), 'archived': 'False', 'type': repr(type_),
               'multiple_quote': py_repr(quote), 'billed_frequency': repr(frequency),
-              'billed_from': py_moment(billed_from, zone) if billed_from else 'None',
-              'billed_until': py_moment(billed_until, zone) if billed_until else 'None', 'billed_from_day_of_month': repr(day),
-              'membership_active': repr(active), 'membership_fee': fee if fee == '0.0' else f"Decimal('{fee}')", 'auto_renewal': repr(renewal),
+              'billed_from': (billed_from[1:] if billed_from.startswith('=') else py_moment(billed_from, zone)) if billed_from else 'None',
+              'billed_until': (billed_until[1:] if billed_until.startswith('=') else py_moment(billed_until, zone)) if billed_until else 'None', 'billed_from_day_of_month': repr(day),
+              'membership_active': repr(active), 'membership_fee': 'None' if fee is None else fee if fee == '0.0' else f"Decimal('{fee}')", 'auto_renewal': repr(renewal),
               'deleted': 'False'}
     return "{'_state': <django.db.models.base.ModelState object at 0x?>, " + ', '.join(f"'{k}': {v}" for k, v in fields.items()) + '}'
 
 
 def new_cs(sym, course_label, subscription, *, payment=None, multi=False, one_fee=False, type_=1, quote=None, fee='0.00', billed_from=None,
-           billed_until=None, frequency=1, renewal=False):
+           billed_until=None, frequency=1, renewal=False, active=True):
     return {'$sym': sym, 'course_subscription_id': sym, 'course_id': cid(course_label), 'paid': False, 'creation_date': '$now',
             'subscription_id': sid(subscription), 'payment_id': payment, 'multi_payments': multi, 'one_fee_payment': one_fee, 'archived': False,
             'type': type_, 'multiple_quote': quote, 'billed_frequency': frequency, 'billed_from': billed_from, 'billed_until': billed_until,
-            'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': fee, 'auto_renewal': renewal, 'deleted': False}
+            'billed_from_day_of_month': 1, 'membership_active': active, 'membership_fee': fee, 'auto_renewal': renewal, 'deleted': False}
 
 
 # The other association's own 'Entrate e proventi da attività tipiche' category (seeded by the
@@ -264,11 +305,13 @@ def effect(actor, *, rows=None, created=None, links=None, audit=()):
     return {'actor': actor, 'rows': rows or {}, 'created': created or {}, 'links': links or {}, 'audit': list(audit)}
 
 
-def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, result=None):
+def add(name, actor, path, status, response, *, method='POST', body=None, headers=None, result=None, raw_body=None, content_type=None):
     case = {'name': f'course-enrolment-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': result}
     if body is not None:
         case['body'] = body
+    if raw_body is not None:
+        case['raw_body'], case['content_type'] = raw_body, content_type
     cases.append(case)
 
 
@@ -359,7 +402,7 @@ def overview_item(row, subscription_label, *, installments=(), payments=(), crea
             'subscription': subscription(subscription_label), 'multi_payments': row['multi_payments'], 'multiple_quote': row['multiple_quote'],
             'one_fee_payment': row['one_fee_payment'], 'installments': list(installments), 'course': row['course_id'], 'type': row['type'],
             'billed_frequency': row['billed_frequency'], 'billed_from': row['billed_from'], 'billed_until': row['billed_until'],
-            'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': row['membership_fee'],
+            'billed_from_day_of_month': 1, 'membership_active': row['membership_active'], 'membership_fee': row['membership_fee'],
             'auto_renewal': row['auto_renewal'], 'membership_payments': list(payments), 'medical_label': medical_label(subscription_label),
             'carnets': []}
 
@@ -376,8 +419,9 @@ def course_item(label):
             'creation_date': row['creation_date'], 'title': row['title'], 'description': row['description'],
             'multi_payments': row['multi_payments'], 'fee': row['fee'], 'events': row['events'], 'one_fee_payment': row['one_fee_payment'],
             'one_fee': row['one_fee'], 'google_calendar_id': None, 'google_background_color': '#123456', 'multiple_quotes': row['multiple_quotes'],
-            'start_date': None, 'end_date': None, 'pinned': False, 'billed_duration_is_sport_season': False, 'billed_frequency': 1,
-            'billed_from_subscription_date': False, 'billed_from_day_of_month': 1, 'auto_renewal': False, 'deleted': False,
+            'start_date': None, 'end_date': None, 'pinned': False, 'billed_duration_is_sport_season': row['billed_duration_is_sport_season'],
+            'billed_frequency': row['billed_frequency'], 'billed_from_subscription_date': row['billed_from_subscription_date'],
+            'billed_from_day_of_month': row['billed_from_day_of_month'], 'auto_renewal': row['auto_renewal'], 'deleted': False,
             'sport_association': row['sport_association_id'], 'group': row['group_id']}
 
 
@@ -385,9 +429,9 @@ def simple_cs(row, course_label, payment=None):
     """CourseSubscriptionSerializer ('__all__', nested course) of the in-memory row."""
     return {'course_subscription_id': row['course_subscription_id'], 'course': course_item(course_label), 'paid': False, 'creation_date': '$now',
             'subscription': row['subscription_id'], 'payment': payment, 'multi_payments': row['multi_payments'], 'one_fee_payment': False,
-            'archived': False, 'type': 1, 'multiple_quote': row['multiple_quote'], 'billed_frequency': 1, 'billed_from': None,
-            'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': '0.00', 'auto_renewal': False,
-            'deleted': False, 'membership_payments': []}
+            'archived': False, 'type': 1, 'multiple_quote': row['multiple_quote'], 'billed_frequency': row['billed_frequency'],
+            'billed_from': row['billed_from'], 'billed_until': row['billed_until'], 'billed_from_day_of_month': 1, 'membership_active': True,
+            'membership_fee': row['membership_fee'], 'auto_renewal': row['auto_renewal'], 'deleted': False, 'membership_payments': []}
 
 
 def event_date(text):
@@ -486,7 +530,7 @@ def course_json(label):
 
 
 def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None, group=None, raw=None, kind='fee', quotes=QUOTES, stored_amount='25.50',
-                 memory='25.5', quote_category=QUOTE_CATEGORY):
+                 memory='25.5', quote_category=QUOTE_CATEGORY, raw_body=None, content_type=None, prefill=None):
     """add_course_to_subscription's row, payment(s) and saves for the authored kind."""
     association = SUBSCRIPTIONS[sub]['sport_association_id']
     user, associate_id = person[sub]
@@ -497,10 +541,14 @@ def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None
     raw_resave = lambda payment_sym, owner: [entry(PAYMENT, payment_sym, 1, {'group': [group, raw]}, [owner, DIRECT])] if raw else []
     created, audit, payment_json, rows_payment = {}, [], None, None
     quote = jsonb(quotes[0]) if kind == 'quote' else None
-    row = new_cs(cs_sym, course_label, sub, quote=quote, multi=kind == 'multi')
+    prefill = prefill or {'changes': None, 'row': {}, 'repr': {}, 'create': {}}
+    row = new_cs(cs_sym, course_label, sub, quote=quote, multi=kind == 'multi', **prefill['row'])
     multi_override = {'multi_payments': ['None', 'False']} if kind == 'multi' else {}
-    audit.append(entry(CSM, cs_sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None'], **multi_override),
+    audit.append(entry(CSM, cs_sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None'], **multi_override, **prefill.get('create', {})),
                        [course_association, COURSE_INDEX], cs_repr(cs_sym, course_label, sub, quote=quote)))
+    if prefill['changes'] is not None:
+        # The athlete's membership defaults are saved before the payments.
+        audit.append(entry(CSM, cs_sym, 1, prefill['changes'], [course_association, COURSE_INDEX], cs_repr(cs_sym, course_label, sub, **prefill['repr'])))
     pays = []
     if kind == 'fee':
         pays.append(new_payment(pay, course_row['fee'], user=user, associate=associate_id, association=association, group=group,
@@ -534,14 +582,15 @@ def overview_add(name, actor, course_label, sub, *, sym, body=None, headers=None
         payment_json = {'payment_id': pay, 'amount': float(event['amount']), 'paid': False, 'creation_date': date}
     if pays:
         row['payment_id'] = pay
-        audit.append(entry(CSM, cs_sym, 1, {'payment': ['None', pay], 'membership_fee': ['0.00', '0.0']}, [course_association, COURSE_INDEX],
-                           cs_repr(cs_sym, course_label, sub, quote=quote, multi=kind == 'multi', payment=pay)))
+        link = {'payment': ['None', pay]} if prefill['changes'] is not None else {'payment': ['None', pay], 'membership_fee': ['0.00', '0.0']}
+        audit.append(entry(CSM, cs_sym, 1, link, [course_association, COURSE_INDEX],
+                           cs_repr(cs_sym, course_label, sub, quote=quote, multi=kind == 'multi', payment=pay, **prefill['repr'])))
     created[CSM] = [row]
     if pays:
         created[PAYMENT] = pays
     response = {'data': {'msg': 'associate added.', 'payment': payment_json, 'course_subscription': simple_cs(row, course_label, row['payment_id'])}}
-    add(name, actor, oa(course_label, sub), 200, response, body=body if body is not None else {}, headers=headers,
-        result=effect(actor, created=created, audit=audit))
+    add(name, actor, oa(course_label, sub), 200, response, body=None if raw_body is not None else (body if body is not None else {}),
+        headers=headers, result=effect(actor, created=created, audit=audit), raw_body=raw_body, content_type=content_type)
 
 
 overview_add('overview-add-course-fee', 'owner', 'ov_fee', 'luisa', sym='oa1')
@@ -856,6 +905,208 @@ quote_case('add-quote-amount-two-separators', None, 'luisa', '1.000,50')
 quote_case('add-quote-amount-nan', None, 'luisa', 'nan')
 quote_case('add-quote-amount-overflow', None, 'luisa', '12345678')
 
+# --- inputs the earlier rounds left refused (t4l3) -------------------------------------
+
+import urllib.parse
+
+FORM = 'application/x-www-form-urlencoded'
+form = lambda **fields: urllib.parse.urlencode(fields)
+
+
+def fee_row(name, sym, label, subscription, **request):
+    """course-subscriptions/add of a course with a fee: the owner's payment, then the link save."""
+    row = new_cs('@' + sym, label, subscription, payment='@' + sym + 'p', active=False)
+    text = f"Quota corso del {today('%d/%m/%y')} {COURSES[label]['title']}"
+    pay = new_payment('@' + sym + 'p', COURSES[label]['fee'], user=OWNER, associate=aid(subscription), meta=fee_meta(label, text),
+                      course_json=course_json(label))
+    add(name, 'owner', CA, 201, [overview_item(row, subscription)], result=effect('owner', created={CSM: [row], PAYMENT: [pay]}, audit=[
+        entry(CSM, '@' + sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@' + sym, label, subscription, active=False)),
+        created_entry(PAYMENT, '@' + sym + 'p', [OWN, DIRECT]), link_save('@' + sym, label, subscription, '@' + sym + 'p', OWN, active=False)]), **request)
+
+
+# course-subscriptions/add with HTML form input: the values are QueryDict strings, the JSON fields JSON text.
+fee_row('add-form-urlencoded', 'cf1', 'x_form_fee', 'mario', raw_body=form(course=cid('x_form_fee'), subscription_id=sid('mario')), content_type=FORM)
+MULTIPART = 'testboundary9c1d'
+fee_row('add-form-multipart', 'cf2', 'x_form_empty', 'mario',
+        raw_body=''.join(f'--{MULTIPART}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n' for key, value in
+                         (('course', cid('x_form_empty')), ('subscription_id', sid('mario')))) + f'--{MULTIPART}--\r\n',
+        content_type=f'multipart/form-data; boundary={MULTIPART}')
+add('add-form-empty-body', 'owner', CA, 400, {'course': REQUIRED, 'subscription_id': REQUIRED}, raw_body='', content_type=FORM)
+add('add-form-invalid-json', 'owner', CA, 400, {'multiple_quote': ['Value must be valid JSON.']},
+    raw_body=form(course=cid('quotes'), subscription_id=sid('luisa'), multiple_quote='nope'), content_type=FORM)
+# one_fee_payment=false as text still marks the row; the payment follows the course's one-fee flag.
+row = new_cs('@cf3', 'one', 'luisa', payment='@cf3p', one_fee=True, active=False)
+text = "Pagamento in un'unica soluzione per Tennis"
+pay = new_payment('@cf3p', '40.00', user=OWNER, associate=aid('luisa'), meta=fee_meta('one', text, one_fee='true'), course_json={'label': 'Tennis', 'value': cid('one')})
+add('add-form-one-fee', 'owner', CA, 201, [overview_item(row, 'luisa')], raw_body=form(course=cid('one'), subscription_id=sid('luisa'), one_fee_payment='true'),
+    content_type=FORM, result=effect('owner', created={CSM: [row], PAYMENT: [pay]}, audit=[
+        entry(CSM, '@cf3', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@cf3', 'one', 'luisa', one_fee=True, active=False)),
+        created_entry(PAYMENT, '@cf3p', [OWN, DIRECT]), link_save('@cf3', 'one', 'luisa', '@cf3p', OWN, one_fee=True, active=False)]))
+# A multiple quote as JSON text, with a category.
+quote = {'quote_id': 'q1', 'title': 'Mensile', 'amount': '25,50', 'payment_category': {'value': QUOTE_CATEGORY}}
+row = new_cs('@cf4', 'quotes', 'mario', payment='@cf4p', type_=2, quote=quote, active=False)
+text = 'Quota Mensile a Pilates'
+pay = new_payment('@cf4p', '25.50', user=OWNER, associate=aid('mario'), category=QUOTE_CATEGORY,
+                  meta={'multiple_quote': quote, 'description': text, 'course_id': cid('quotes'), 'course_title': 'Pilates', 'course_type': '2'},
+                  course_json={'label': 'Pilates', 'value': cid('quotes')})
+add('add-form-quote', 'owner', CA, 201, [overview_item(row, 'mario')],
+    raw_body=form(course=cid('quotes'), subscription_id=sid('mario'), multiple_quote=json.dumps(quote)), content_type=FORM,
+    result=effect('owner', created={CSM: [row], PAYMENT: [pay]}, audit=[
+        entry(CSM, '@cf4', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@cf4', 'quotes', 'mario', type_=2, quote=quote, active=False)),
+        created_entry(PAYMENT, '@cf4p', [OWN, DIRECT], amount=['None', '25.5']), link_save('@cf4', 'quotes', 'mario', '@cf4p', OWN, type_=2, quote=quote, active=False)]))
+# Events as JSON text: one payment and installment each.
+event = {'id': 3, 'amount': '12', 'payment_date': '05/05/2099'}
+row = new_cs('@cf5', 'free', 'mario', active=False)
+text, meta = rata('free', event, '@cf5')
+pay = new_payment('@cf5p', '12.00', user=OWNER, associate=aid('mario'), description=text, meta=meta, created='2099-05-05T00:00:00Z')
+inst = new_installment('@cf5i', '@cf5', 3, '12.00', '@cf5p', '2099-05-05')
+add('add-form-events', 'owner', CA, 201, [overview_item(row, 'mario', installments=[installment_item(inst)])],
+    raw_body=form(course=cid('free'), subscription_id=sid('mario'), events=json.dumps([event])), content_type=FORM,
+    result=effect('owner', created={CSM: [row], PAYMENT: [pay], CSI: [inst]}, audit=[
+        entry(CSM, '@cf5', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX], cs_repr('@cf5', 'free', 'mario', active=False)),
+        created_entry(PAYMENT, '@cf5p', [OWN, DIRECT]), created_entry(CSI, '@cf5i', [OWN, CSI_INDEX])]))
+
+
+def quote_variant(name, sym, subscription, quote, *, category='$category', amount='10.00', memory='10.0'):
+    """A multiple-quote enrolment whose quote carries the authored payment_category."""
+    body = {'course': cid('quotes'), 'subscription_id': sid(subscription), 'multiple_quote': quote}
+    row = new_cs('@' + sym, 'quotes', subscription, payment='@' + sym + 'p', type_=2, quote=quote)
+    pay = new_payment('@' + sym + 'p', amount, user=OWNER, associate=aid(subscription), category=category,
+                      meta={'multiple_quote': quote, 'description': 'Quota Cat a Pilates', 'course_id': cid('quotes'), 'course_title': 'Pilates', 'course_type': '2'},
+                      course_json={'label': 'Pilates', 'value': cid('quotes')})
+    add(name, 'owner', CA, 201, [overview_item(row, subscription)], body=body, result=effect('owner', created={CSM: [row], PAYMENT: [pay]}, audit=[
+        entry(CSM, '@' + sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@' + sym, 'quotes', subscription, type_=2, quote=quote)),
+        created_entry(PAYMENT, '@' + sym + 'p', [OWN, DIRECT], amount=['None', memory]),
+        link_save('@' + sym, 'quotes', subscription, '@' + sym + 'p', OWN, type_=2, quote=quote)]))
+
+
+PC_QUOTE = lambda variant: {'quote_id': 'qc', 'title': 'Cat', 'amount': '10', 'payment_category': variant}
+# `'value' in payment_category` runs outside the try: None, numbers and booleans raise (rolled back).
+for number, (name_, variant) in enumerate((('none', None), ('number', 5), ('true', True)), 1):
+    add(f'add-quote-category-{name_}', 'owner', CA, 500, SERVER, result=effect('owner'),
+        body={'course': cid('quotes'), 'subscription_id': sid('luisa'), 'multiple_quote': PC_QUOTE(variant)})
+# Strings and lists never give a lookup; a dict's value goes through the UUID field.
+for number, (name_, variant, category) in enumerate((('text', 'abc', '$category'), ('list', ['value'], '$category'), ('empty', {'label': 'x'}, '$category'),
+                                                     ('value-null', {'value': None}, '$category'), ('value-int', {'value': 7}, INT_CATEGORY),
+                                                     ('value-int-unknown', {'value': 8}, '$category'), ('value-float', {'value': 1.5}, '$category'),
+                                                     ('value-list', {'value': ['a']}, '$category'), ('value-true', {'value': True}, '$category'),
+                                                     ('value-huge', {'value': 10 ** 40}, '$category'), ('value-negative', {'value': -1}, '$category')), 1):
+    quote_variant(f'add-quote-category-{name_}', f'cq{number}', ('luisa', 'mario')[number % 2], PC_QUOTE(variant), category=category)
+
+
+# --- course/<uid>/overview/<uid_subscription>/add: bodies and selections (t4l3) ----------
+
+def ov_failure(name, label, sub, body, *, quote=None, sym):
+    """The row exists (not atomic) when the payment step raises: the create entry only."""
+    row = new_cs('@' + sym, label, sub, quote=quote)
+    add(name, 'owner', oa(label, sub), 500, SERVER, body=body, result=effect('owner', created={CSM: [row]}, audit=[
+        entry(CSM, '@' + sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+              cs_repr('@' + sym, label, sub, quote=quote))]))
+
+
+overview_add('overview-add-form-one-fee', 'owner', 'x_form_one', 'luisa', sym='ox1', raw_body='one_fee_payment=1', content_type=FORM, kind='one')
+overview_add('overview-add-form-empty', 'owner', 'x_form_empty', 'luisa', sym='ox2', raw_body='', content_type=FORM)
+overview_add('overview-add-form-multipart', 'owner', 'x_multipart', 'luisa', sym='ox3', content_type=f'multipart/form-data; boundary={MULTIPART}',
+             raw_body=f'--{MULTIPART}\r\nContent-Disposition: form-data; name="ignored"\r\n\r\nx\r\n--{MULTIPART}--\r\n')
+# A form selection is a string: the first stored quote's comparison raises inside the try.
+overview_add('overview-add-form-quote-selection', 'owner', 'x_form_quote', 'luisa', sym='ox4', raw_body='multiple_quote=q1', content_type=FORM)
+overview_add('overview-add-list-body', 'owner', 'x_list', 'luisa', sym='ox5', body=[])
+ov_failure('overview-add-list-body-with-key', 'x_list_key', 'luisa', ['one_fee_payment'], sym='ox6')
+overview_add('overview-add-text-body', 'owner', 'x_str', 'luisa', sym='ox7', body='plain')
+ov_failure('overview-add-text-body-with-key', 'x_str_key', 'luisa', 'has one_fee_payment inside', sym='ox8')
+ov_failure('overview-add-number-body', 'x_num', 'luisa', 5, sym='ox9')
+ov_failure('overview-add-boolean-body', 'x_bool', 'luisa', True, sym='ox10')
+# The selection against the stored quotes.
+overview_add('overview-add-quote-integer-id', 'owner', 'x_quote_int_id', 'luisa', sym='ox11', body={'multiple_quote': {'value': 7}}, kind='quote',
+             quotes=[{'quote_id': 7, 'title': 'Sette', 'amount': '12'}], stored_amount='12.00', memory='12.0', quote_category='$category')
+overview_add('overview-add-quote-true-matches-one', 'owner', 'x_quote_true_id', 'luisa', sym='ox12', body={'multiple_quote': {'value': True}}, kind='quote',
+             quotes=[{'quote_id': 1, 'title': 'Uno', 'amount': '13'}], stored_amount='13.00', memory='13.0', quote_category='$category')
+# '1' != 1: the raw selection stays and has no amount.
+ov_failure('overview-add-quote-text-id-number-value', 'x_quote_text_id', 'luisa', {'multiple_quote': {'value': 1}}, quote={'value': 1}, sym='ox13')
+ov_failure('overview-add-quote-number-value', 'x_sel_number', 'luisa', {'multiple_quote': {'value': 5}}, quote={'value': 5}, sym='ox14')
+overview_add('overview-add-quote-selection-without-value', 'owner', 'x_sel_missing', 'luisa', sym='ox15', body={'multiple_quote': {'x': 1}}, kind='none')
+overview_add('overview-add-quote-selection-text', 'owner', 'x_sel_str', 'luisa', sym='ox16', body={'multiple_quote': 'q1'}, kind='none')
+overview_add('overview-add-quote-selection-list', 'owner', 'x_sel_list', 'luisa', sym='ox17', body={'multiple_quote': ['q1']}, kind='none')
+overview_add('overview-add-quote-selection-null', 'owner', 'x_sel_null', 'luisa', sym='ox18', body={'multiple_quote': None}, kind='none')
+# Without stored quotes the loop never runs: the selection is kept as it is.
+ov_failure('overview-add-no-quotes-text-selection', 'x_empty_quotes_str', 'luisa', {'multiple_quote': 'abc'}, quote='abc', sym='ox19')
+overview_add('overview-add-no-quotes-object-selection', 'owner', 'x_empty_quotes_obj', 'luisa', sym='ox20',
+             body={'multiple_quote': {'title': 'Libera', 'amount': '9,5'}}, kind='quote', quotes=[{'title': 'Libera', 'amount': '9,5'}],
+             stored_amount='9.50', memory='9.5', quote_category='$category')
+overview_add('overview-add-no-quotes-null-selection', 'owner', 'x_empty_quotes_null', 'luisa', sym='ox21', body={'multiple_quote': None}, kind='none')
+# The stored quote's payment_category.
+for number, (name_, variant) in enumerate(PC_VARIANTS.items(), 1):
+    stored_quote = PC_QUOTE(variant)
+    label = 'x_pc_' + name_
+    if name_ in ('none', 'number'):
+        ov_failure(f'overview-add-quote-category-{name_}', label, 'luisa', {'multiple_quote': {'value': 'qc'}}, quote=jsonb(stored_quote), sym=f'oq{number}')
+    else:
+        overview_add(f'overview-add-quote-category-{name_}', 'owner', label, 'luisa', sym=f'oq{number}', body={'multiple_quote': {'value': 'qc'}}, kind='quote',
+                     quotes=[stored_quote], stored_amount='10.00', memory='10.0', quote_category=INT_CATEGORY if name_ == 'value_int' else '$category')
+
+# --- an athlete enrolling in a membership course: the course's defaults (t4l3) ----------
+
+DAY_FROM = lambda day: '{today:%Y-%m}-' + f'{day:02d}' + 'T00:00:00Z'
+DAY_UNTIL = lambda months, day: '{today+' + str(months) + 'm:%Y-%m}-' + f'{day:02d}' + 'T00:00:00Z'
+CHANGE_FROM = lambda day: '{today:%Y-%m}-' + f'{day:02d}' + ' 00:00:00'
+CHANGE_UNTIL = lambda months, day: '{today+' + str(months) + 'm:%Y-%m}-' + f'{day:02d}' + ' 00:00:00'
+
+
+def prefill(label, sym, *, frequency, renewal, fee, day=1, kind='fee'):
+    """The season-less, day-of-month branch: naive datetimes from strptime of the current month."""
+    base = {'row': dict(fee=fee, billed_from=DAY_FROM(day), billed_until=DAY_UNTIL(frequency, day), frequency=frequency,
+                        renewal=renewal),
+            'repr': dict(fee=fee, billed_from='={naive+0m:%d}' % day, billed_until='={naive+%dm:%d}' % (frequency, day), frequency=frequency,
+                         renewal=renewal)}
+    changes = {'billed_from': ['None', CHANGE_FROM(day)], 'billed_until': ['None', CHANGE_UNTIL(frequency, day)]}
+    if frequency != 1:
+        changes['billed_frequency'] = ['1', str(frequency)]
+    if renewal:
+        changes['auto_renewal'] = ['False', 'True']
+    if fee != '0.00':
+        changes['membership_fee'] = ['0.00', fee]
+    base['changes'] = changes
+    # The create entry records the defaults the row was created with.
+    base['create'] = {'billed_frequency': ['None', '1'], 'billed_from': ['None', 'None'], 'billed_until': ['None', 'None'], 'auto_renewal': ['None', 'False']}
+    return base
+
+
+overview_add('overview-add-athlete-membership-day', 'athlete', 'm_dom', 'mario', sym='om1', prefill=prefill('m_dom', 'om1', frequency=2, renewal=True, fee='30.00'))
+overview_add('overview-add-athlete-membership-day-without-renewal', 'athlete', 'm_dom5', 'mario', sym='om2',
+             prefill=prefill('m_dom5', 'om2', frequency=1, renewal=False, fee='15.00', day=5))
+overview_add('overview-add-athlete-membership-free', 'athlete', 'm_free', 'mario', sym='om3', kind='none',
+             prefill=prefill('m_free', 'om3', frequency=1, renewal=False, fee='0.00'))
+# From the subscription date: the row's own creation date and that plus the frequency (aware datetimes).
+sub_prefill = {'row': dict(fee='20.00', billed_from='$now', billed_until='$now+3m', frequency=3, renewal=True),
+               'repr': dict(fee='20.00', billed_from='={created:@om4}', billed_until='={created+3m:@om4}', frequency=3, renewal=True),
+               'changes': {'billed_frequency': ['1', '3'], 'billed_from': ['None', '{createdtext:@om4}'], 'billed_until': ['None', '{createdtext+3m:@om4}'],
+                           'membership_fee': ['0.00', '20.00'], 'auto_renewal': ['False', 'True']},
+               'create': {'billed_frequency': ['None', '1'], 'billed_from': ['None', 'None'], 'billed_until': ['None', 'None'], 'auto_renewal': ['None', 'False']}}
+overview_add('overview-add-athlete-membership-subscription-date', 'athlete', 'm_sub', 'mario', sym='om4', prefill=sub_prefill)
+
+
+def prefill_failure(name, label, sym, *, changes=None):
+    """The row exists after the failed prefill (not atomic): the create entry, then what the failed save logged."""
+    row = new_cs('@' + sym, label, 'mario')
+    audit = [entry(CSM, '@' + sym, 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None']), [OWN, COURSE_INDEX],
+                   cs_repr('@' + sym, label, 'mario'))]
+    add(name, 'athlete', oa(label, 'mario'), 500, SERVER, body={}, result=effect('athlete', created={CSM: [row]}, audit=audit))
+
+
+prefill_failure('overview-add-athlete-membership-day-impossible', 'm_day32', 'om5')
+prefill_failure('overview-add-athlete-membership-season', 'm_season', 'om6')
+prefill_failure('overview-add-athlete-membership-without-duration', 'm_nofreq', 'om8')
+# A course without a fee: the null fee is saved with the period, then `None > 0` raises.
+row = new_cs('@om7', 'm_nofee', 'mario', fee=None, billed_from=DAY_FROM(1), billed_until=DAY_UNTIL(1, 1))
+add('overview-add-athlete-membership-without-fee', 'athlete', oa('m_nofee', 'mario'), 500, SERVER, body={}, result=effect('athlete', created={CSM: [row]}, audit=[
+    entry(CSM, '@om7', 0, stored('create', membership_fee=['None', '0.0'], payment=['None', 'None'], billed_from=['None', 'None'], billed_until=['None', 'None']),
+          [OWN, COURSE_INDEX], cs_repr('@om7', 'm_nofee', 'mario')),
+    entry(CSM, '@om7', 1, {'membership_fee': ['0.00', 'None'], 'billed_from': ['None', CHANGE_FROM(1)], 'billed_until': ['None', CHANGE_UNTIL(1, 1)]},
+          [OWN, COURSE_INDEX], cs_repr('@om7', 'm_nofee', 'mario', fee=None, billed_from='={naive+0m:1}', billed_until='={naive+1m:1}'))]))
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course enrolment (course-subscriptions add, course-overview add, installment '
                               'payment) authored sequence with row, link, audit and index effects', 'ids': IDS, 'unknown': UNKNOWN,

@@ -224,9 +224,11 @@ type CourseSubscriptionMemory struct {
 	Times    map[string]bool
 	QuoteSet bool
 	Quote    any
+	// Naive marks attributes holding a naive datetime (strptime).
+	Naive map[string]bool
 }
 
-func pythonDatetimeRepr(value time.Time, zoneinfo bool) string {
+func pythonDatetimeRepr(value time.Time, zoneinfo, naive bool) string {
 	value = value.UTC()
 	parts := []int{value.Year(), int(value.Month()), value.Day(), value.Hour(), value.Minute(), value.Second(), value.Nanosecond() / 1000}
 	if parts[6] == 0 {
@@ -238,6 +240,9 @@ func pythonDatetimeRepr(value time.Time, zoneinfo bool) string {
 	text := make([]string, len(parts))
 	for index, part := range parts {
 		text[index] = strconv.Itoa(part)
+	}
+	if naive {
+		return "datetime.datetime(" + strings.Join(text, ", ") + ")"
 	}
 	zone := "datetime.timezone.utc"
 	if zoneinfo {
@@ -266,7 +271,7 @@ func CourseSubscriptionRepr(row domain.CourseSubscriptionRow, memory CourseSubsc
 		if value == nil {
 			return "None"
 		}
-		return pythonDatetimeRepr(*value, memory.Times[name])
+		return pythonDatetimeRepr(*value, memory.Times[name], memory.Naive[name])
 	}
 	flag := func(value bool) string { return map[bool]string{true: "True", false: "False"}[value] }
 	quote := "None"
