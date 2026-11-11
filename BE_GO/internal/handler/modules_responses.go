@@ -15,7 +15,7 @@ import (
 )
 
 type ModulesResponsesService interface {
-	Info(ctx context.Context, link string, responseID *string) (map[string]any, error)
+	Info(ctx context.Context, identity domain.ResolvedIdentity, link string, responseID *string, secret string) (map[string]any, error)
 	Add(ctx context.Context, identity domain.ResolvedIdentity, raw string, body service.ModuleBody, audit domain.LoginAuditContext) (service.AddedResponse, error)
 	Approve(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error
 	Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error
@@ -135,16 +135,19 @@ func (h *ModulesResponsesHandler) answer(c echo.Context, status int, result any,
 
 // Info mirrors modules_custom_link_info.
 func (h *ModulesResponsesHandler) Info(c echo.Context) error {
-	_, ok, err := h.admit(c, []string{http.MethodGet}, "modules_custom_link_info", "Modules Custom Link Info", true)
+	identity, ok, err := h.admit(c, []string{http.MethodGet}, "modules_custom_link_info", "Modules Custom Link Info", true)
 	if !ok {
 		return err
 	}
+	query := parseImpersonationQuery(c.Request().URL.RawQuery)
 	var responseID *string
-	if value, present := parseImpersonationQuery(c.Request().URL.RawQuery).Lookup("response_id"); present {
+	if value, present := query.Lookup("response_id"); present {
 		text, _ := value.(string)
 		responseID = &text
 	}
-	body, err := h.responses.Info(c.Request().Context(), c.Param("module_id"), responseID)
+	secretValue, _ := query.Lookup("attachment_token")
+	secret, _ := secretValue.(string)
+	body, err := h.responses.Info(c.Request().Context(), *identity, c.Param("module_id"), responseID, secret)
 	return h.answer(c, 200, body, err)
 }
 

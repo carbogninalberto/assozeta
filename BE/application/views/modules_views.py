@@ -189,7 +189,9 @@ def modules_custom_link_info(request, custom_link):
     if response_id is not None and is_valid_uuid(response_id):
         # The public module page only reads responses of its own module.
         response = ModuleResponses.objects.filter(module_response_id=response_id, module=module).first()
-        if response is not None:
+        # The attachment list is shown to the respondent (token), the response's own user or the module's association.
+        if response is not None and _can_manage_response_attachments(
+                request, response, token=request.query_params.get('attachment_token', '')):
             response_data = PublicModuleResponseSerializer(response).data
 
     # check if module is active
@@ -218,7 +220,7 @@ def _attachment_token_hash(token):
     return hashlib.sha256(token.encode('utf-8')).hexdigest()
 
 
-def _can_manage_response_attachments(request, module_response):
+def _can_manage_response_attachments(request, module_response, token=None):
     """Who may attach to, or remove from, a response's attachments.
 
     The respondent proves it with the token returned when the response was
@@ -236,7 +238,8 @@ def _can_manage_response_attachments(request, module_response):
         if association_id is not None and module_response.module.sport_association_id == association_id:
             return True
 
-    token = request.data.get('attachment_token') if isinstance(request.data, dict) else None
+    if token is None:
+        token = request.data.get('attachment_token') if isinstance(request.data, dict) else None
     if not isinstance(token, str) or not token or not module_response.attachment_token_hash:
         return False
     return hmac.compare_digest(_attachment_token_hash(token), module_response.attachment_token_hash)

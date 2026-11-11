@@ -127,3 +127,32 @@ class ModuleResponseAttachmentTests(BaseAPITestCase):
         self.assertEqual(reply.status_code, 404)
         reply = self.anonymous.delete(f'/modules/response/{uuid.uuid4()}/add-attachment', {'document_id': 'x'}, format='json')
         self.assertEqual(reply.status_code, 404)
+
+    # The public module page lists a response's attachments only for its respondent or staff.
+    def info(self, client, response=None, token=None):
+        query = f'?response_id={(response or self.response).module_response_id}'
+        if token is not None:
+            query += f'&attachment_token={token}'
+        return client.get(f'/modules/{self.module.custom_link}/info{query}')
+
+    def test_token_shows_the_attachment_list(self):
+        reply = self.info(self.anonymous, token='mine')
+        self.assertEqual(reply.status_code, 200)
+        self.assertEqual([d['filename'] for d in reply.json()['response_data']['attachments_docs']], ['mine.txt'])
+
+    def test_missing_or_other_token_answers_as_unknown_response(self):
+        for token in (None, '', 'theirs', 'nope'):
+            reply = self.info(self.anonymous, token=token)
+            self.assertEqual(reply.status_code, 200)
+            self.assertIsNone(reply.json()['response_data'])
+
+    def test_association_staff_needs_no_token(self):
+        reply = self.info(self.client)
+        self.assertEqual([d['filename'] for d in reply.json()['response_data']['attachments_docs']], ['mine.txt'])
+
+    def test_signed_in_respondent_sees_their_own_response_only(self):
+        athlete = create_test_user(role=User.ATHLETE)
+        own = create_test_module_response(self.module, user=athlete)
+        client = self.create_authenticated_client(athlete)
+        self.assertIsNotNone(self.info(client, own).json()['response_data'])
+        self.assertIsNone(self.info(client).json()['response_data'])

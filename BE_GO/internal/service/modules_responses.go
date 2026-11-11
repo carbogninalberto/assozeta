@@ -86,8 +86,11 @@ func (s *ModulesResponses) enabled(row domain.ModuleRow) bool {
 	return *row.StartDate <= today && today <= *row.EndDate
 }
 
-// Info follows modules_custom_link_info. request.user is never read.
-func (s *ModulesResponses) Info(ctx context.Context, link string, responseID *string) (map[string]any, error) {
+// Info follows modules_custom_link_info. The attachment list of a response is
+// shown to the caller holding its secret (the attachment_token query value),
+// to the response's own user or to the module's association; for anyone else
+// the response reads as unknown.
+func (s *ModulesResponses) Info(ctx context.Context, identity domain.ResolvedIdentity, link string, responseID *string, secret string) (map[string]any, error) {
 	row, err := s.reader.ModuleByLink(ctx, link)
 	if err != nil {
 		return nil, err
@@ -119,7 +122,13 @@ func (s *ModulesResponses) Info(ctx context.Context, link string, responseID *st
 			return nil, err
 		}
 		if docs != nil {
-			data = map[string]any{"attachments_docs": json.RawMessage(*docs)}
+			allowed, err := s.mayReadAttachments(ctx, identity, id.String(), secret)
+			if err != nil {
+				return nil, err
+			}
+			if allowed {
+				data = map[string]any{"attachments_docs": json.RawMessage(*docs)}
+			}
 		}
 	}
 	if !s.enabled(*row) {
@@ -132,6 +141,19 @@ func (s *ModulesResponses) Info(ctx context.Context, link string, responseID *st
 		"sport_association": association,
 	}
 	return map[string]any{"data": module, "response_data": data}, nil
+}
+
+func (s *ModulesResponses) mayReadAttachments(ctx context.Context, identity domain.ResolvedIdentity, response, secret string) (bool, error) {
+	tx, err := s.store.BeginModulesResponses(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+	access, err := tx.ResponseAccess(ctx, response)
+	if err != nil || access == nil {
+		return false, err
+	}
+	return s.mayChangeAttachments(ctx, tx, identity, *access, func() (any, error) { return secret, nil })
 }
 
 // association is request.user.sport_association.
@@ -424,7 +446,18 @@ func (s *ModulesResponses) Attachment(ctx context.Context, identity domain.Resol
 		}
 		return value, parseErr
 	}
-	allowed, err := s.mayChangeAttachments(ctx, tx, identity, *access, read)
+	allowed, err := s.mayChangeAttachments(ctx, tx, identity, *access, func() (any, error) {
+		body, err := read()
+		if err != nil {
+			return nil, err
+		}
+		object, isDict := body.(domain.RequestObject)
+		if !isDict {
+			return nil, nil
+		}
+		_, token, _ := moduleContains(object, "attachment_token")
+		return token, nil
+	})
 	if err != nil {
 		return "", err
 	}
@@ -446,7 +479,7 @@ func (s *ModulesResponses) Attachment(ctx context.Context, identity domain.Resol
 // caller is the response's own user or acts for its association; any caller
 // may present the secret returned when the response was created.
 func (s *ModulesResponses) mayChangeAttachments(ctx context.Context, tx domain.ModulesResponsesTransaction, identity domain.ResolvedIdentity,
-	access domain.ModuleResponseAccess, read func() (any, error)) (bool, error) {
+	access domain.ModuleResponseAccess, tokenOf func() (any, error)) (bool, error) {
 	if identity.ScopeUser != nil {
 		if access.UserID != nil && *access.UserID == identity.ScopeUser.ID {
 			return true, nil
@@ -464,15 +497,10 @@ func (s *ModulesResponses) mayChangeAttachments(ctx context.Context, tx domain.M
 			return false, err
 		}
 	}
-	body, err := read()
+	token, err := tokenOf()
 	if err != nil {
 		return false, err
 	}
-	object, isDict := body.(domain.RequestObject)
-	if !isDict {
-		return false, nil
-	}
-	_, token, _ := moduleContains(object, "attachment_token")
 	text, isText := token.(string)
 	if !isText || text == "" || access.AttachmentSecret == "" {
 		return false, nil
