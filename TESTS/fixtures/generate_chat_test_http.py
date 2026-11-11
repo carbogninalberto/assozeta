@@ -145,10 +145,7 @@ add('anonymous-get-malformed-csrf-cookie', 'anonymous', '/chat/test/', 302, '<em
     location=redirect, cookie=NEW_CSRF_COOKIE)
 add('csrf-bad-origin', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
     headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': CSRF, 'Origin': 'http://evil.example'})
-add('csrf-https-no-referer', 'anonymous', '/chat/test/', 403, failure_page('referer'), method='POST', vary=FAILED_VARY,
-    headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': CSRF, 'X-Forwarded-Proto': 'https'})
-add('csrf-https-bad-referer', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
-    headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': CSRF, 'X-Forwarded-Proto': 'https', 'Referer': 'https://evil.example/x'})
+# The HTTPS Referer checks are not authored: Caddy sets X-Forwarded-Proto itself, so the transports cannot send the header.
 # Sessions: an active authenticated owner reaches render() and its missing template.
 add('session-owner', 'anonymous', '/chat/test/', 500, SERVER, headers=session('owner'))
 add('session-owner-head', 'anonymous', '/chat/test/', 500, SERVER, method='HEAD', headers=session('owner'))
