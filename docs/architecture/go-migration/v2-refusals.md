@@ -356,7 +356,7 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-lo
 | document-views | `GET document/{subscription,compensation,template,medical-appointment}/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes): the first tutor relation is saved as primary with its audit entry, for signed-in requests | 162 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 | document-views | same | `HEAD` (B): the views' 405 without a body. The slash-less paths already answered the `APPEND_SLASH` redirect (unknown-paths) | same receipts |
 | documents-writes | `POST documents/add`, `POST subscription/<uid>/upload-document` | filename with NUL or lone surrogates (B): the driver's text in `documents/add`, the 500 page without writes in upload-document | 147 cases; RED `v2doc4-red-r1` (refusal restored in Go); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (NUL check dropped) CAUGHT |
-| documents-writes | `PATCH documents/<pk>/update` | boolean primary key (B): `uuid.UUID(int=True)` | same receipts |
+| documents-writes | `PATCH documents/<pk>/update` | boolean primary key (B): `uuid.UUID(int=True)` — t5pk: the key is read-only in Django and Go, any key in the body is ignored (`update-boolean-primary-key-ignored`) | same receipts |
 | invoice-views | `GET document/invoice/<uid>/view/` | `get_main_tutor()` promotion (B, legacy: yes), for signed-in requests | 92 cases; RED `v2doc4-red-r1` (refusal restored); GREEN `v2doc4-final-r2` 4 transports; mutation `v2doc4-mutation-r1` (last relation promoted) CAUGHT |
 
 Left in these families after this change, with the reason:
@@ -489,8 +489,9 @@ Left refused in these families, with the reason:
 - documents-writes: storage provider failures (infrastructure errors, not inputs); archive update fields sent as files.
 - invoice-core: random ordering and orderings through relations (nothing to compare / open-ended); smart-search terms in other
   scripts (the database's case folding); bulk bodies with file parts (iterating an uploaded file).
-- invoice-parties: nested `payment`/`supplier` objects, `payment_id`, a new `invoice_supplier_id`, supplier payments whose nested
-  rendering needs the payment serializer's relations, linked payments the manager cannot load, relation-path ordering.
+- invoice-parties: nested `payment`/`supplier` objects, `payment_id`, supplier payments whose nested
+  rendering needs the payment serializer's relations, linked payments the manager cannot load, relation-path ordering
+  (t5pk: `invoice_supplier_id` is read-only and ignored).
 - invoice-sync-print: the restore that becomes pending between admission and task (a race window); dates before year 1000 and
   FatturaPA inputs outside the subset.
 - invoice-generate: `send_receipt_email` of other JSON types; approve without a configured producer (class C).
@@ -964,7 +965,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET invoice-customers/list | an invoice of the caller's association without a PDF | `BE_GO/internal/service/invoice_parties.go:97-104`, `ErrInvoicePartyNotPorted` | **A** (ported in v2-documents) | `accounting/customersInvoice/CustomersInvoiceList.svelte:513`. A customer invoice added from the UI (`:309`) whose eager print made no PDF (renderer error swallowed, or any completed data restore making the eager task raise `StaleDataTask`, per invoice-views.md) leaves `pdf_id` NULL; Django prints it on its association's list (`invoice_views.py:836`). |
-| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id`, new `invoice_supplier_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B (not reached in t3pay; the nested objects are validated by the full `PaymentSerializer` and `SupplierSerializer`, whose field errors embed further nested serializers (associate, instructor, invoice); a valid object is the 500 page) | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). |
+| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B (not reached in t3pay; the nested objects are validated by the full `PaymentSerializer` and `SupplierSerializer`, whose field errors embed further nested serializers (associate, instructor, invoice); a valid object is the 500 page) | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). Ported in t5pk: `invoice_supplier_id` is read-only in Django and Go; a key in the body is ignored (`invoice-parties.md`, cases `supplier-*-id-ignored`). |
 | PATCH invoice-suppliers/<uid>/update | linked payment not loadable or description None/"quota corso" | `service/invoice_parties.go:640-649` | B | Supplier add sets a description (`invoice_views.py:695`); needs a later edit blanking it. legacy: yes; medium. |
 | GET invoice-suppliers/list | payment linking an associate/instructor/invoice or with a subscription/course subject | `service/invoice_parties.go:370-371` | B | Auto-created supplier payment is `Payment.OTHER` with a supplier; needs a manual edit in the payment editor. legacy: yes; medium. |
 | lists | ordering by relation path or `?` | invoice_parties service | B | Not sent by the UI tables. |

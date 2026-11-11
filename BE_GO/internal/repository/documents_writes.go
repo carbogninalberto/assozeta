@@ -155,13 +155,6 @@ func (t *documentUploadTransaction) Archive(ctx context.Context, id, association
 	return domain.ArchiveRecord{ID: row.ID, Association: row.Association, Document: row.Document, Date: row.Date, Folder: row.Folder}, err
 }
 
-func (t *documentUploadTransaction) ArchiveIDTaken(ctx context.Context, id, except string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_sportassociationdocumentsarchive
- WHERE sport_association_documents_archive_id=$1 AND sport_association_documents_archive_id<>$2)`, id, except)
-	return taken, err
-}
-
 // SaveArchive writes every field; the update entry (logged before the save,
 // so its row resolves directly) lists the changed fields.
 func (t *documentUploadTransaction) SaveArchive(ctx context.Context, row domain.ArchiveRecord, changes map[string][2]string,
@@ -174,22 +167,6 @@ func (t *documentUploadTransaction) SaveArchive(ctx context.Context, row domain.
 	_, err := t.tx.ExecContext(ctx, `UPDATE application_sportassociationdocumentsarchive SET sport_association_id=$2, document_id=$3,
  date=$4::date, folder_id=$5 WHERE sport_association_documents_archive_id=$1`, row.ID, row.Association, row.Document, row.Date, row.Folder)
 	return err
-}
-
-func (t *documentUploadTransaction) InsertArchive(ctx context.Context, row domain.ArchiveRecord, audit domain.LoginAuditContext, at time.Time) error {
-	changes := map[string][2]string{"sport_association_documents_archive_id": {"None", row.ID}, "sport_association": {"None", row.Association},
-		"document": {"None", row.Document}, "date": {"None", row.Date}, "folder": {"None", folderText(row.Folder)}}
-	// pre_save finds no row under the new key: the update entry is indexed
-	// before the row exists, through its changes.
-	if err := appendModelAudit(ctx, t.tx, archiveAudit(row.ID, 1, changes, row.Association, "changes_json.sport_association", audit, at)); err != nil {
-		return err
-	}
-	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_sportassociationdocumentsarchive
- (sport_association_documents_archive_id, sport_association_id, document_id, date, folder_id) VALUES ($1, $2, $3, $4::date, $5)`,
-		row.ID, row.Association, row.Document, row.Date, row.Folder); err != nil {
-		return err
-	}
-	return appendModelAudit(ctx, t.tx, archiveAudit(row.ID, 0, changes, row.Association, "direct", audit, at))
 }
 
 func (t *documentUploadTransaction) UploadSubscription(ctx context.Context, id string, impersonation, group *string) (*domain.UploadSubscription, error) {

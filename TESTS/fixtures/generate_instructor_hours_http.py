@@ -16,11 +16,13 @@ add looks the instructor up by id and ``user=request.user``, sets ``data['instru
 model's in-memory values, which auditlog records). update and delete look the
 instructor up by id and ``user=request.user`` and the hour by instructor and
 id (404 ``{'error': 'hours not found'}``) before reading the body; update is a
-partial serializer save (a new primary key inserts a copy), delete removes the
-hour's document first. calculate looks the
-instructor up the same way and sums paid payments of the listed courses of
-the caller's association in the period (membership payments, installments, or
-the subscription payment) and applies an optional percentage. The
+partial serializer save, delete removes the hour's document first. The primary
+key ``instructor_hours_id`` is read-only: a key in the body is ignored, so an
+add stores a generated key and an update saves the hour the path names in
+place. calculate looks the instructor up the same way and sums paid payments
+of the listed courses of the caller's association in the period (membership
+payments, installments, or the subscription payment) and applies an optional
+percentage. The
 serializer's instructor relation answers 403 for another association's
 instructor (resolved through its owner). auditlog records every hour and
 document change; the index resolves an hour stored when its entry is written
@@ -293,7 +295,7 @@ FULL_BODY = {'instructor_hours_id': FULL_KEY, 'instructor': INSTRUCTORS['abroad'
              'amount': 30, 'paid': 'true', 'payment': PAYMENTS['unpaid']['id'], 'notes': '  Nota è ',
              'calculation_data': {'b': 1.5, 'a': ['x']}, 'document': DOCUMENTS['doc_free']['id']}
 add('add-full', 'owner', ADD(), 200, ADDED, method='POST', body=FULL_BODY,
-    effect=created('draft', 'owner', key=FULL_KEY, defaults=(), date=False, columns={
+    effect=created('draft', 'owner', defaults=(), date=False, columns={
         'creation_date': '2026-09-01T08:00:00Z', 'date': '2026-09-15', 'compensation_type': 'percentage', 'hours': '2.00',
         'hourly_billing': '12.50', 'percentage_billing': '7.50', 'courses': [{'course_id': 'c1'}, None], 'period': 'Settembre',
         'amount': '30.00', 'paid': True, 'payment_id': PAYMENTS['unpaid']['id'], 'notes': 'Nota è',
@@ -311,7 +313,7 @@ add('add-grouped-payment-with-group-header', 'owner', ADD(), 200, ADDED, method=
     body={'hours': '1', 'payment': PAYMENTS['grouped']['id']}, headers={'X-Group-Id': IDS['own_group']},
     effect=created('draft', 'owner', columns={'hours': '1.00', 'date': '$today', 'payment_id': PAYMENTS['grouped']['id']}))
 add('add-validation-errors', 'owner', ADD(), 400, {
-    'instructor_hours_id': ['Must be a valid UUID.'], 'creation_date': [
+    'creation_date': [
         'Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].'],
     'date': ['Date has wrong format. Use one of these formats instead: DD/MM/YYYY.'],
     'compensation_type': ['Ensure this field has no more than 15 characters.'],
@@ -329,8 +331,12 @@ add('add-hours-total-digits', 'owner', ADD(), 400, {'hours': ['Ensure that there
     method='POST', body={'hours': '12345', 'compensation_type': ' '})
 add('add-blank-hours', 'owner', ADD(), 400, {'hours': ['A valid number is required.'], 'percentage_billing': ['A valid number is required.']},
     method='POST', body={'hours': '', 'percentage_billing': 'x'})
-add('add-existing-key', 'owner', ADD(), 400, {'instructor_hours_id': ['instructor hours with this instructor hours id already exists.']},
-    method='POST', body={'hours': '1', 'instructor_hours_id': HOURS['plain']['id']})
+add('add-existing-key-ignored', 'owner', ADD(), 200, ADDED, method='POST',
+    body={'hours': '1', 'instructor_hours_id': HOURS['plain']['id']},
+    effect=created('draft', 'owner', columns={'hours': '1.00', 'date': '$today'}))
+add('add-malformed-key-ignored', 'owner', ADD(), 200, ADDED, method='POST',
+    body={'hours': '1', 'instructor_hours_id': 'nope'},
+    effect=created('draft', 'owner', columns={'hours': '1.00', 'date': '$today'}))
 add('add-removed-payment', 'owner', ADD(), 400, {'payment': [f'Invalid pk "{PAYMENTS["removed"]["id"]}" - object does not exist.']},
     method='POST', body={'hours': '1', 'payment': PAYMENTS['removed']['id']})
 add('add-group-header-hides-payment', 'owner', ADD(), 400, {'payment': [f'Invalid pk "{PAYMENTS["grouped"]["id"]}" - object does not exist.']},
@@ -394,22 +400,20 @@ add('update-list-body', 'owner', UPD('draft_row'), 400, {'non_field_errors': ['I
 add('update-null-body', 'owner', UPD('draft_row'), 400, {'non_field_errors': ['No data provided']}, method='PATCH', raw_body='null',
     content_type='application/json')
 add('update-empty-body-no-audit', 'full_collaborator', UPD('draft_row'), 200, SUCCESS, method='PATCH', effect=hours_effect('full_collaborator'))
-add('update-existing-key', 'owner', UPD('draft_row'), 400,
-    {'instructor_hours_id': ['instructor hours with this instructor hours id already exists.']}, method='PATCH',
-    body={'instructor_hours_id': HOURS['plain']['id']})
-add('update-own-key-unchanged', 'owner', UPD('draft_row'), 200, SUCCESS, method='PATCH',
+add('update-existing-key-ignored', 'owner', UPD('draft_row'), 200, SUCCESS, method='PATCH',
+    body={'instructor_hours_id': HOURS['plain']['id']}, effect=hours_effect('owner'))
+add('update-own-key-ignored', 'owner', UPD('draft_row'), 200, SUCCESS, method='PATCH',
     body={'instructor_hours_id': HOURS['draft_row']['id'].upper()}, effect=hours_effect('owner'))
 add('update-move-to-other-instructor', 'full_collaborator', UPD('movable'), 200, SUCCESS, method='PATCH',
     body={'instructor': INSTRUCTORS['full']['id'], 'amount': 0},
     effect=hours_effect('full_collaborator', rows={'movable': {'instructor_id': INSTRUCTORS['full']['id'], 'amount': '0.00'}},
                         audit=[{**updated('movable', {'instructor': [INSTRUCTORS['draft']['id'], INSTRUCTORS['full']['id']],
                                                       'amount': ['12.00', '0.00']})}]))
-add('update-new-key-copies-row', 'owner', UPD('copyable'), 200, SUCCESS, method='PATCH',
+add('update-new-key-ignored', 'owner', UPD('copyable'), 200, SUCCESS, method='PATCH',
     body={'instructor_hours_id': NEW_KEY, 'hours': '9.5'},
-    effect=hours_effect('owner', rows={NEW_KEY: {'$copy': 'copyable', 'hours': '9.50'}},
-                        # auditlog's pre_save finds no row under the new key and logs the full diff as an update, then post_save logs the create.
-                        audit=[{'model': 'InstructorHours', 'key': NEW_KEY, 'action': action, 'changes': '$created', 'overrides': {}}
-                               for action in (1, 0)]))
+    # The key is read-only: the hour the path names is saved in place.
+    effect=hours_effect('owner', rows={'copyable': {'hours': '9.50'}},
+                        audit=[updated('copyable', {'hours': ['1.50', '9.50']})]))
 add('update-unknown', 'owner', UPD(UNKNOWN, 'draft'), 404, NOT_HOURS, method='PATCH', raw_body='nope', content_type='application/json')
 add('update-other-instructor', 'owner', UPD('draft_row', 'full'), 404, NOT_HOURS, method='PATCH', body={'hours': '1'})
 add('update-foreign-instructor', 'owner', UPD('abroad_row'), 404, NOT_HOURS, method='PATCH', body={'hours': '1'})

@@ -19,7 +19,8 @@ missing), sets data['user'] (a non-dict or form body is a 500) and saves
 InstructorSerializer (fields '__all__'; documents in the create is a 500).
 update looks the instructor up by id and user=request.user (404), forces
 data['user'] and saves the full (non-partial) serializer: changed fields are
-audited, documents are set, a new instructor_id inserts a copy. delete looks
+audited, documents are set; the read-only instructor_id is ignored, so a key in
+the body leaves the path's row saved in place. delete looks
 the instructor up the same way and runs the collector: hours and reminders are
 deleted (audited, reverse key order), payments and subscriptions keep the row
 with instructor NULL, the document links go, then the instructor.
@@ -244,7 +245,7 @@ DAYS = {
     'err_dict': attendance('reg_dict', 'missing', '2026-10-14T06:00:00Z'),
     'foreign': attendance('reg_foreign', 'missing', '2026-09-25T06:00:00Z'),
 }
-NEW_ADD, NEW_COPY = next(ids), next(ids)
+NEW_ADD, UNUSED_KEY = next(ids), next(ids)
 cases = []
 
 
@@ -538,16 +539,28 @@ add('add-minimal', 'owner', ADD, 200, {'msg': 'instructor created'}, method='POS
     effect=effect('owner', rows={'Instructor': {'$new': created_columns(first_name='Nuovo', last_name='Istruttore')}},
                   audit=[{'model': 'Instructor', 'key': '$new', 'action': 0, 'changes': '$created', 'index': OWNER_INDEX,
                           'overrides': {'default_hourly_billing': '0.0', 'default_percentage_billing': '0.0'}}]))
+# The key is read-only: a key the body sends (another instructor's, a malformed text) is ignored and the add
+# stores a row under a generated key.
+add('add-existing-id-ignored', 'owner', ADD, 200, {'msg': 'instructor created'}, method='POST',
+    body={'first_name': 'Copia', 'last_name': 'Omonima', 'instructor_id': I('full')},
+    effect=effect('owner', rows={'Instructor': {'$new': created_columns(first_name='Copia', last_name='Omonima')}},
+                  audit=[{'model': 'Instructor', 'key': '$new', 'action': 0, 'changes': '$created', 'index': OWNER_INDEX,
+                          'overrides': {'default_hourly_billing': '0.0', 'default_percentage_billing': '0.0'}}]))
+add('add-malformed-id-ignored', 'owner', ADD, 200, {'msg': 'instructor created'}, method='POST',
+    body={'first_name': 'Testo', 'last_name': 'Non Valido', 'instructor_id': 'non-un-uuid'},
+    effect=effect('owner', rows={'Instructor': {'$new': created_columns(first_name='Testo', last_name='Non Valido')}},
+                  audit=[{'model': 'Instructor', 'key': '$new', 'action': 0, 'changes': '$created', 'index': OWNER_INDEX,
+                          'overrides': {'default_hourly_billing': '0.0', 'default_percentage_billing': '0.0'}}]))
 FULL_BODY = {'instructor_id': NEW_ADD.upper(), 'first_name': ' Giulia ', 'last_name': 'Bianchi', 'email': '', 'born_date': '03/04/1985',
              'born_city': None, 'tax_code': 'BNCGLI85D43H501X', 'address': 'Via Roma 1', 'civic_number': '10', 'role': 'Allenatrice',
              'phone': 393331234567, 'draft': 'true', 'associated_user_id': '', 'is_volunteer': 1, 'stipulated_contract_in': '1/2/2026',
              'default_hourly_billing': '12.5', 'default_percentage_billing': 7}
 add('add-full-collaborator', 'full_collaborator', ADD, 200, {'msg': 'instructor created'}, method='POST', body=FULL_BODY,
-    effect=effect('full_collaborator', rows={'Instructor': {NEW_ADD: created_columns(
+    effect=effect('full_collaborator', rows={'Instructor': {'$new': created_columns(
         first_name='Giulia', last_name='Bianchi', email='', born_date='1985-04-03', tax_code='BNCGLI85D43H501X', address='Via Roma 1',
         civic_number='10', role='Allenatrice', phone='393331234567', draft=True, is_volunteer=True, stipulated_contract_in='2026-02-01',
         default_hourly_billing='12.50', default_percentage_billing='7.00')}},
-        audit=[{'model': 'Instructor', 'key': NEW_ADD, 'action': 0, 'changes': '$created', 'index': OWNER_INDEX, 'overrides': {}}]))
+        audit=[{'model': 'Instructor', 'key': '$new', 'action': 0, 'changes': '$created', 'index': OWNER_INDEX, 'overrides': {}}]))
 INVALID_BODY = {'first_name': '', 'email': 'nope', 'born_date': '1985-04-03', 'associated_user_id': 'zzz', 'draft': 'forse',
                 'default_hourly_billing': 'abc', 'default_percentage_billing': '100.00', 'role': '', 'tax_code': 'X' * 26, 'documents': 'd1',
                 'is_volunteer': None, 'stipulated_contract_in': 20260101, 'phone': True}
@@ -561,7 +574,6 @@ INVALID = {'first_name': [BLANK], 'last_name': [REQUIRED], 'email': ['Enter a va
 add('add-validation', 'owner', ADD, 400, INVALID, method='POST', body=INVALID_BODY)
 add('add-required', 'owner', ADD, 400, {'first_name': [REQUIRED], 'last_name': [REQUIRED]}, method='POST', body={})
 add('add-related-errors', 'owner', ADD, 400, {'documents': [f'Invalid pk "{UNKNOWN}" - object does not exist.'],
-                                             'instructor_id': ['instructor with this instructor id already exists.'],
                                              'default_hourly_billing': ['Ensure that there are no more than 2 decimal places.']},
     method='POST', body={'first_name': 'A', 'last_name': 'B', 'documents': [DOCUMENTS['d1'], UNKNOWN], 'instructor_id': I('full'),
                          'default_hourly_billing': '1.234'})
@@ -599,20 +611,27 @@ add('update-documents-duplicates-admin', 'admin', UPD('tied'), 200, UPDATED, met
     body={'first_name': 'Tina', 'last_name': 'Gialli', 'documents': [DOCUMENTS['d1'], DOCUMENTS['d1']]},
     effect=effect('admin', rows={'Instructor': {'tied': {'last_name': 'Gialli'}}}, documents={'tied': ['d1']},
                   audit=[updated('tied', {'last_name': ['Rossi', 'Gialli']})]))
-add('update-copy-new-key', 'owner', UPD('plain'), 200, UPDATED, method='PATCH',
-    body={'instructor_id': NEW_COPY, 'first_name': 'Paolo', 'last_name': 'Copia'},
-    effect=effect('owner', rows={'Instructor': {NEW_COPY: {'$copy': 'plain', 'last_name': 'Copia'}}},
-                  audit=[{'model': 'Instructor', 'key': NEW_COPY, 'action': 1, 'changes': '$created', 'overrides': {},
-                          'index': index(OWN, 'actor.sport_association')},
-                         {'model': 'Instructor', 'key': NEW_COPY, 'action': 0, 'changes': '$created', 'overrides': {}, 'index': OWNER_INDEX}]))
+# The key is read-only: a key in the body (a new one, another instructor's) is ignored and the instructor the path
+# names is updated in place, with the ordinary update entry.
+add('update-new-id-ignored', 'owner', UPD('plain'), 200, UPDATED, method='PATCH',
+    body={'instructor_id': UNUSED_KEY, 'first_name': 'Paolo', 'last_name': 'Copia'},
+    effect=effect('owner', rows={'Instructor': {'plain': {'last_name': 'Copia'}}},
+                  audit=[updated('plain', {'last_name': ['Neri Bianchi', 'Copia']})]))
 add('update-orphan-no-index', 'owner_without_association', UPD('orphan'), 200, UPDATED, method='PATCH',
     body={'first_name': 'Olga', 'last_name': 'Nuova', 'associated_user_id': IDS['owner'].upper()},
     effect=effect('owner_without_association', rows={'Instructor': {'orphan': {'last_name': 'Nuova', 'associated_user_id': IDS['owner']}}},
                   audit=[updated('orphan', {'last_name': ['Rossi', 'Nuova'], 'associated_user_id': ['None', IDS['owner']]}, None)]))
-add('update-taken-key', 'owner', UPD('bare'), 400, {'instructor_id': ['instructor with this instructor id already exists.']}, method='PATCH',
-    body={'instructor_id': I('comp'), 'first_name': 'Bea', 'last_name': 'Rossi'})
-add('update-own-key-accepted', 'owner', UPD('bare'), 200, UPDATED, method='PATCH',
-    body={'instructor_id': I('bare'), 'first_name': 'Bea', 'last_name': 'Rossi'}, effect=effect('owner'))
+add('update-other-row-id-ignored', 'owner', UPD('bare'), 200, UPDATED, method='PATCH',
+    body={'instructor_id': I('comp'), 'first_name': 'Bea', 'last_name': 'Rossa'},
+    effect=effect('owner', rows={'Instructor': {'bare': {'last_name': 'Rossa'}}},
+                  audit=[updated('bare', {'last_name': ['Rossi', 'Rossa']})]))
+add('update-own-key-ignored', 'owner', UPD('bare'), 200, UPDATED, method='PATCH',
+    body={'instructor_id': I('bare'), 'first_name': 'Bea', 'last_name': 'Rossi'},
+    effect=effect('owner', rows={'Instructor': {'bare': {'last_name': 'Rossi'}}},
+                  audit=[updated('bare', {'last_name': ['Rossa', 'Rossi']})]))
+# A body with only the ignored key: no error for the key, the required fields are the ones reported.
+add('update-key-only-ignored', 'owner', UPD('bare'), 400, {'first_name': [REQUIRED], 'last_name': [REQUIRED]}, method='PATCH',
+    body={'instructor_id': UNUSED_KEY})
 add('update-validation', 'owner', UPD('bare'), 400, INVALID, method='PATCH', body=INVALID_BODY)
 add('update-full-required', 'owner', UPD('bare'), 400, {'last_name': [REQUIRED]}, method='PATCH', body={'first_name': 'Bea'})
 add('update-associated-user-blank', 'owner', UPD('bare'), 400, {'associated_user_id': ['Must be a valid UUID.']}, method='PATCH',

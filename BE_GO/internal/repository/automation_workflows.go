@@ -55,7 +55,6 @@ type automationWorkflowTransaction struct{ *paymentCategoryTransaction }
 
 var _ domain.AutomationWorkflowTransaction = (*automationWorkflowTransaction)(nil)
 
-// UniqueValidator checks every association, like the primary-key queryset.
 func (t *automationWorkflowTransaction) InsertAutomationWorkflow(ctx context.Context, row domain.AutomationWorkflowRecord) error {
 	_, err := t.tx.ExecContext(ctx, `INSERT INTO communications_automationworkflow
 (automation_workflow_id,sport_association_id,name,description,automation_tree,enabled,created_at,updated_at)

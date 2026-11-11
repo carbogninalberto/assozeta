@@ -33,11 +33,14 @@ Django semantics pinned here, in each view's order:
   "Pagamento Fornitore" category (the association's, else the shared one),
   then PaymentEntrySerializer and InvoiceSuppliersSerializer validation; the
   payment is created and saved, then the invoice is created and saved. Requests
-  are not atomic: a failing invoice insert keeps the payment.
+  are not atomic: a failing invoice insert keeps the payment. invoice_supplier_id
+  is read-only: a key in the body is ignored and the model default generates the
+  new invoice's key.
 - invoice-suppliers/<uid>/update: is_valid_uuid, the scoped association and
-  invoice (500), the partial serializer, the invoice save, then the linked
-  payment gets the raw paid value and the current time (a missing key or a
-  rejected value fails after the invoice save).
+  invoice (500), the partial serializer (its read-only invoice_supplier_id
+  ignores a key in the body, so the path's invoice is saved in place), the
+  invoice save, then the linked payment gets the raw paid value and the current
+  time (a missing key or a rejected value fails after the invoice save).
 Run with ``python3 -I``.
 """
 import copy
@@ -551,9 +554,6 @@ add('supplier-add-invoice-errors', 'owner', 'POST', SA, 400, {
 add('supplier-add-invoice-required', 'owner', 'POST', SA, 400, {'invoice_identifier': ['This field is required.'],
                                                                 'paid': ['This field may not be null.']},
     body={k: v for k, v in {**VALID, 'paid': None}.items() if k != 'invoice_identifier'})
-add('supplier-add-existing-invoice-id', 'owner', 'POST', SA, 400,
-    {'invoice_supplier_id': ['invoice suppliers with this invoice supplier id already exists.']},
-    body={**VALID, 'invoice_supplier_id': SUPPLIER_INVOICES['abroad']['invoice_supplier_id']})
 add('supplier-add-negative-amount-server-error', 'owner', 'POST', SA, 500, SERVER, body={**VALID, 'amount': '-5'})
 add('supplier-add-malformed-group-server-error', 'owner', 'POST', SA, 500, SERVER, body=VALID, headers={'X-Group-Id': 'zzz'})
 
@@ -594,13 +594,25 @@ add('supplier-add-owner', 'owner', 'POST', SA, 200, CREATED, body=VALID, effect=
     'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno'),
     'invoicesuppliers': new_invoice('FN-100', '50.50', True, '2026-10-20T10:00:00Z', '2026-12-31T00:00:00Z', 'nuova', 'uno')},
     audits=payment_audits(OWN, 'uno') + invoice_audits('uno')))
-add('supplier-add-collaborator-unpaid-now', 'full_collaborator', 'POST', SA, 200, CREATED,
+# invoice_supplier_id is read-only: a key in the body (another invoice's, a malformed one) is ignored and the model
+# default generates the new invoice's key.
+add('supplier-add-existing-invoice-id-ignored', 'owner', 'POST', SA, 200, CREATED,
+    body={**VALID, 'invoice_supplier_id': SUPPLIER_INVOICES['abroad']['invoice_supplier_id']}, effect=effect('owner', new={
+        'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno'),
+        'invoicesuppliers': new_invoice('FN-100', '50.50', True, '2026-10-20T10:00:00Z', '2026-12-31T00:00:00Z', 'nuova', 'uno')},
+    audits=payment_audits(OWN, 'uno') + invoice_audits('uno')))
+add('supplier-add-malformed-invoice-id-ignored', 'owner', 'POST', SA, 200, CREATED,
+    body={**VALID, 'invoice_supplier_id': 'not-a-uuid'}, effect=effect('owner', new={
+        'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno'),
+        'invoicesuppliers': new_invoice('FN-100', '50.50', True, '2026-10-20T10:00:00Z', '2026-12-31T00:00:00Z', 'nuova', 'uno')},
+    audits=payment_audits(OWN, 'uno') + invoice_audits('uno')))
+add('supplier-add-collaborator-unpaid-now-id-ignored', 'full_collaborator', 'POST', SA, 200, CREATED,
     body={'custom_accounts': ACCOUNTS['cash']['custom_account_id'], 'supplier_id': SUPPLIERS['beta']['supplier_id'], 'payment_date': None,
           'paid': 0, 'amount': 9, 'invoice_identifier': 9, 'invoice_supplier_id': 'a1000000-0000-4000-8000-000000846900',
           'payment': None, 'payment_id': None, 'notes': '', 'expire_date': None, 'document_pdf': DOCUMENTS['supplier_pdf']['document_id']},
     effect=effect('full_collaborator', new={
         'payment': new_payment('cash', '9.00', False, None, '$now', 'beta'),
-        'invoicesuppliers': {**new_invoice('9', '9.00', False, '$now', None, '', 'beta', 'a1000000-0000-4000-8000-000000846900'),
+        'invoicesuppliers': {**new_invoice('9', '9.00', False, '$now', None, '', 'beta'),
                              'document_pdf_id': DOCUMENTS['supplier_pdf']['document_id']}},
         audits=payment_audits(None, 'beta') + invoice_audits('beta')))
 add('supplier-add-long-notes-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
@@ -623,7 +635,7 @@ add('supplier-update-foreign-server-error', 'owner', 'PATCH', SU('abroad'), 500,
 add('supplier-update-field-errors', 'owner', 'PATCH', SU('a'), 400, {
     'amount': ['A valid number is required.'], 'invoice_identifier': ['This field may not be blank.'],
     'supplier': ['This field may not be null.'], 'paid': ['Must be a valid boolean.'], 'payment_date': [DATETIME],
-    'payment_id': ['Not a valid string.'], 'invoice_supplier_id': ['Must be a valid UUID.']},
+    'payment_id': ['Not a valid string.']},
     body={'amount': 'x', 'invoice_identifier': '', 'supplier': None, 'paid': 'maybe', 'payment_date': 5, 'payment_id': False,
           'invoice_supplier_id': 'abc'})
 add('supplier-update-foreign-association-forbidden', 'owner', 'PATCH', SU('a'), 403, FORBIDDEN, body={'sport_association': FOREIGN, 'amount': 'x'})
@@ -667,6 +679,17 @@ supplier_update('supplier-update-without-payment', 'owner', 'c', 200, UPDATED,
                  'invoice_supplier_id': SUPPLIER_INVOICES['c']['invoice_supplier_id'], 'sport_association': OWN},
                 invoice={'invoice_identifier': 'FC-003 bis', 'amount': '2.00', 'notes': 'prima nota', 'expire_date': '2027-01-31T09:00:00Z'})
 supplier_update('supplier-update-same-values-no-audit', 'full_collaborator', 'c', 200, UPDATED, {'amount': '2.0', 'notes': 'prima nota'})
+# invoice_supplier_id is read-only: a key in the body (a new one, another invoice's, a malformed one) is ignored and
+# the invoice the path names is saved in place; a body with only the key changes nothing and writes no entry.
+supplier_update('supplier-update-unused-id-ignored', 'owner', 'c', 200, UPDATED,
+                {'invoice_supplier_id': 'a1000000-0000-4000-8000-000000846901', 'amount': '2.50'}, invoice={'amount': '2.50'})
+supplier_update('supplier-update-other-row-id-ignored', 'owner', 'c', 200, UPDATED,
+                {'invoice_supplier_id': SUPPLIER_INVOICES['a']['invoice_supplier_id'], 'expire_date': '2027-02-28T00:00:00Z'},
+                invoice={'expire_date': '2027-02-28T00:00:00Z'})
+supplier_update('supplier-update-malformed-id-ignored', 'owner', 'c', 200, UPDATED,
+                {'invoice_supplier_id': 'not-a-uuid', 'amount': '2.75'}, invoice={'amount': '2.75'})
+supplier_update('supplier-update-key-only-ignored', 'owner', 'c', 200, UPDATED,
+                {'invoice_supplier_id': 'a1000000-0000-4000-8000-000000846902'})
 supplier_update('supplier-update-paid-updates-payment', 'owner', 'a', 200, UPDATED, {'paid': True},
                 invoice={'paid': True}, payment={'paid': True, 'paid_str': 'True'})
 supplier_update('supplier-update-collaborator-payment-text', 'full_collaborator', 'a', 200, UPDATED, {'paid': 'True', 'document_pdf': None},

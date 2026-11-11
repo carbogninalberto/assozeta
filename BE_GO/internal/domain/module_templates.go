@@ -29,10 +29,8 @@ type ModuleTemplateAudit struct {
 	Action   int
 	Context  LoginAuditContext
 	At       time.Time
-	// Changes overrides the create/delete rendering (updates); Path overrides
-	// the index resolution path.
+	// Changes overrides the create/delete rendering (updates).
 	Changes map[string][2]string
-	Path    string
 }
 
 type ModuleTemplateStore interface {
@@ -44,7 +42,6 @@ type ModuleTemplateStore interface {
 
 type ModuleTemplateTransaction interface {
 	AssociationForOwner(context.Context, string, *string) (string, error)
-	ModuleTemplateIDExists(ctx context.Context, id string) (bool, error)
 	InsertModuleTemplate(context.Context, ModuleTemplate) error
 	// ModuleTemplate is the association's row by id (ErrModuleTemplateNotFound).
 	ModuleTemplate(ctx context.Context, association, id string) (ModuleTemplate, error)

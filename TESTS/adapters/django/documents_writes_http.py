@@ -311,15 +311,14 @@ def assert_effect(case, before, after, source, context, raw, window):
     for key in expected_objects:
         client.delete_object(Bucket=BUCKET, Key=key)
 
-    # Archive rows created by add (kept or cascaded), updated, inserted or deleted.
+    # Archive rows created by add (kept or cascaded), updated, or deleted.
     archive_events = creates('application', 'sportassociationdocumentsarchive')
-    inserted = effect['archive_inserted']
-    contract.require(len(archive_events) == len([e for e in effect['audit'] if e['key'].startswith('$archive') and e['action'] == 0])
-                     + (1 if inserted else 0), 'state.archive-count')
+    contract.require(len(archive_events) == len([e for e in effect['audit'] if e['key'].startswith('$archive') and e['action'] == 0]),
+                     'state.archive-count')
     old_a, new_a = state[ARCHIVE]
     expected_a = {k: v for k, v in old_a.items() if k not in {source['archives'][label]['id'] for label in effect['archive_deleted']}}
     archive_dates = {}
-    for i, event in enumerate([] if inserted else archive_events):
+    for i, event in enumerate(archive_events):
         key = uuid4_text(event['changes']['sport_association_documents_archive_id'][1])
         refs[f'$archive{i}'] = key
         text = event['changes']['date'][1]
@@ -336,9 +335,6 @@ def assert_effect(case, before, after, source, context, raw, window):
         key = source['archives'][label]['id']
         expected_a[key] = {**old_a[key], **{k + ('_id' if k == 'folder' else ''): day(v) if k == 'date' else contract.bind(v, folders)
                                             for k, v in values.items()}}
-    if inserted:
-        origin = old_a[source['archives'][inserted['from']]['id']]
-        expected_a[inserted['id']] = {**origin, 'sport_association_documents_archive_id': inserted['id']}
     contract.require(new_a == expected_a, 'state.archives')
 
     # Subscription files and certificates.
@@ -404,11 +400,6 @@ def assert_effect(case, before, after, source, context, raw, window):
         if changes == '$created':
             changes = created(spec['model'], key, event, refs, effect, source, ids, folders, archive_dates, moments, new_f, new_c)
             created_changes[key] = changes
-        elif changes == '$inserted':
-            origin = source['archives'][inserted['from']]
-            changes = {'sport_association_documents_archive_id': ['None', key], 'sport_association': ['None', origin['association']],
-                       'document': ['None', source['documents'][origin['document']]['id']], 'date': ['None', origin['date']],
-                       'folder': ['None', 'None']}
         elif changes == '$deleted':
             if key in created_changes:
                 changes = {k: [v[1], 'None'] for k, v in created_changes[key].items()}
@@ -471,11 +462,11 @@ def created(model, key, event, refs, effect, source, ids, folders, archive_dates
                 'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}
     if model == 'SportAssociationDocumentsArchive':
         i = int([name for name, value in refs.items() if value == key and '.' not in name][0][8:])
-        spec = effect['archives'][i] if i < len(effect['archives']) else None
+        spec = effect['archives'][i]
         doc = event['changes']['document'][1]
         contract.require(doc in moments and archive_dates[key][1] >= moments[doc], 'audit.archive-document')
         folder = 'None'
-        if spec is not None and spec['folder']:
+        if spec['folder']:
             folder = str(folders[spec['folder']])
         return {'sport_association_documents_archive_id': ['None', key], 'sport_association': ['None', ids['own_association']],
                 'document': ['None', doc], 'date': ['None', archive_dates[key][0]], 'folder': ['None', folder]}
