@@ -142,6 +142,17 @@ NOT_FOUND = {'error': 'Camp or retreat not found'}
 NO_ASSOCIATION = {'error': 'SportAssociation matching query does not exist.'}
 DESCRIPTION = 'This method is used to get a list of all camps and retreats'
 FORM = 'application/x-www-form-urlencoded'
+
+
+def multipart(*parts):
+    """A multipart/form-data body: (name, filename or None, content) parts; returns (body, content type)."""
+    boundary = 'testboundary4f2a'
+    lines = []
+    for name, filename, content in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename else '')
+        lines.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n\r\n{content}\r\n')
+    return ''.join(lines) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
 L, A = '/camps-and-retreats/list', '/camps-and-retreats/add'
 
 
@@ -275,7 +286,7 @@ add('add-existing-id', 'owner', A, 400, {'error': repr_detail([('camps_and_retre
     body={'camps_and_retreats_id': CAMPS['winter']['id'], 'title': 'Copia'})
 
 
-def created_camp(actor, name, values, body, *, explicit_id=None):
+def created_camp(actor, name, values, body, *, explicit_id=None, raw=None):
     key = explicit_id or '$new'
     response = {'message': 'Camp or retreat added successfully',
                 'camp_and_retreat': {'camps_and_retreats_id': key, 'title': values['title'], 'description': values['description'],
@@ -287,7 +298,10 @@ def created_camp(actor, name, values, body, *, explicit_id=None):
     effect = {'actor': actor, 'rows': {CAMP: {key: {'title': values['title'], 'description': values['description'],
                                                     'sport_association_id': OWN}}},
               'audit': [audit('CampsAndRetreats', key, 0, changes, OWN, 'direct')]}
-    add(name, actor, A, 201, response, method='POST', body=body, effect=effect)
+    if raw is not None:
+        add(name, actor, A, 201, response, method='POST', raw_body=raw[0], content_type=raw[1], effect=effect)
+    else:
+        add(name, actor, A, 201, response, method='POST', body=body, effect=effect)
 
 
 created_camp('owner', 'add-owner', {'title': 'Campo invernale', 'description': 'Neve è'},
@@ -306,7 +320,7 @@ add('add-explicit-id-again', 'owner', A, 400, {'error': repr_detail([('camps_and
 CAMP_FIELDS = ('title', 'description', 'sport_association')
 
 
-def updated_camp(actor, name, label, values, *, body=None, form=None, path_id=None):
+def updated_camp(actor, name, label, values, *, body=None, form=None, path_id=None, form_type=None):
     row = STATE['camps'][label]
     before = {'title': text(row['title']), 'description': text(row['description']), 'sport_association': row['association']}
     row.update(values)
@@ -318,7 +332,7 @@ def updated_camp(actor, name, label, values, *, body=None, form=None, path_id=No
     response = {'message': 'Camp or retreat updated successfully', 'camp_and_retreat': camp_data(label)}
     path = f'/camps-and-retreats/{path_id or row["id"]}/update'
     if form is not None:
-        add(name, actor, path, 200, response, method='PATCH', raw_body=form, content_type=FORM, effect=effect)
+        add(name, actor, path, 200, response, method='PATCH', raw_body=form, content_type=form_type or FORM, effect=effect)
     else:
         add(name, actor, path, 200, response, method='PATCH', body=body, effect=effect)
 
@@ -424,6 +438,23 @@ add('delete-collaborator', 'full_collaborator', camp_path('winter', 'delete'), 2
     'audit': [audit('CampsAndRetreats', CAMPS['winter']['id'], 2, '$deleted', OWN, 'changes_json.sport_association')]})
 add('delete-again-not-found', 'owner', camp_path('summer', 'delete'), 404, NOT_FOUND, method='DELETE')
 add('info-after-delete-not-found', 'athlete', camp_path('summer', 'info'), 404, NOT_FOUND)
+
+# ---------------------------------------------------------------------------
+# multipart bodies with file parts: DRF hands the view a mutable copy of the form with the files merged in
+# ---------------------------------------------------------------------------
+created_camp('owner', 'add-multipart-with-file', {'title': 'Campo con allegato', 'description': 'Dal modulo'}, None,
+             raw=multipart(('title', None, 'Campo con allegato'), ('allegato', 'a.txt', 'dati'), ('description', None, 'Dal modulo')))
+add('add-multipart-file-as-title', 'owner', A, 400, {'error': repr_detail([('title', [NOT_STRING])])}, method='POST',
+    raw_body=multipart(('title', 'titolo.txt', 'x'))[0], content_type=multipart(('title', 'titolo.txt', 'x'))[1])
+add('add-multipart-file-as-id', 'full_collaborator', A, 400, {'error': repr_detail([('camps_and_retreats_id', [UUID_INVALID])])}, method='POST',
+    raw_body=multipart(('camps_and_retreats_id', 'id.bin', 'x'), ('title', None, 'Ok'))[0],
+    content_type=multipart(('camps_and_retreats_id', 'id.bin', 'x'), ('title', None, 'Ok'))[1])
+add('add-multipart-text-without-file-server-error', 'owner', A, 500, {'error': 'This QueryDict instance is immutable'}, method='POST',
+    raw_body=multipart(('title', None, 'Senza file'))[0], content_type=multipart(('title', None, 'Senza file'))[1])
+updated_camp('owner', 'update-multipart-with-file', 'spring', {'title': 'Con allegato'}, form=multipart(('title', None, 'Con allegato'),
+             ('allegato', 'b.txt', 'dati'))[0], form_type=multipart(('title', None, 'x'))[1])
+add('update-multipart-file-as-title', 'owner', camp_path('spring', 'update'), 400, {'error': repr_detail([('title', [NOT_STRING])])},
+    method='PATCH', raw_body=multipart(('title', 'titolo.txt', 'x'))[0], content_type=multipart(('title', 'titolo.txt', 'x'))[1])
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Camps and retreats list, add, info, update and delete authored sequence with audit effects',

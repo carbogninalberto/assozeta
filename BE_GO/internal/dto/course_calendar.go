@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"math"
 	"math/big"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -29,16 +31,28 @@ const (
 // datetime.fromisoformat, then Django's pattern. It returns the UTC instant
 // and whether the Python value is timezone-aware (naive values are UTC here).
 func DjangoParseDateTime(value string) (time.Time, bool, DjangoDateTime) {
+	moment, aware, result := DjangoParseDateTimeWide(value)
+	if result == DjangoDateTimeParsed && DjangoDateTimeOutside(moment) {
+		return time.Time{}, false, DjangoDateTimeNotPorted
+	}
+	return moment, aware, result
+}
+
+// DjangoDateTimeOutside reports a UTC instant Python's datetime cannot hold
+// (before year 1 or after year 9999), which an aware value with an offset can
+// have until it is converted.
+func DjangoDateTimeOutside(moment time.Time) bool {
+	return moment.Year() < 1 || moment.Year() > 9999
+}
+
+// DjangoParseDateTimeWide is DjangoParseDateTime that also returns instants
+// outside years 1..9999 (as Parsed): Python keeps those as aware values with
+// their own offset until something converts them.
+func DjangoParseDateTimeWide(value string) (time.Time, bool, DjangoDateTime) {
 	if parsed, ok := paymentCategoryISODateTime(value); ok {
-		if parsed.Year() < 1 || parsed.Year() > 9999 {
-			return time.Time{}, false, DjangoDateTimeNotPorted
-		}
 		return parsed, isoDateTimeAware(value), DjangoDateTimeParsed
 	}
 	if parsed, ok := paymentCategoryFallbackDateTime(value); ok {
-		if parsed.Year() < 1 || parsed.Year() > 9999 {
-			return time.Time{}, false, DjangoDateTimeNotPorted
-		}
 		match := djangoDateTimeFallbackMatch(value)
 		return parsed, match != nil && match[8] != "", DjangoDateTimeParsed
 	}
@@ -47,6 +61,37 @@ func DjangoParseDateTime(value string) (time.Time, bool, DjangoDateTime) {
 	}
 	return time.Time{}, false, DjangoDateTimeNone
 }
+
+// DjangoDateTimeWall is the wall-clock reading of an aware value parsed from
+// value (instant plus its own offset), the fields Python's arithmetic works on.
+func DjangoDateTimeWall(value string, instant time.Time) time.Time {
+	text := PythonASCIIDigits(value)
+	if strings.HasSuffix(text, "Z") {
+		return instant
+	}
+	match := djangoWallOffset.FindStringSubmatch(text)
+	if match == nil {
+		return instant
+	}
+	offset := time.Duration(0)
+	for i, unit := range []time.Duration{time.Hour, time.Minute, time.Second} {
+		if match[i+2] != "" {
+			number, _ := strconv.Atoi(match[i+2])
+			offset += time.Duration(number) * unit
+		}
+	}
+	if match[5] != "" {
+		fraction := match[5] + strings.Repeat("0", 6-len(match[5]))
+		number, _ := strconv.Atoi(fraction)
+		offset += time.Duration(number) * time.Microsecond
+	}
+	if match[1] == "-" {
+		offset = -offset
+	}
+	return instant.Add(offset)
+}
+
+var djangoWallOffset = regexp.MustCompile(`([+-])(\d\d)(?::?(\d\d)(?::?(\d\d)(?:\.(\d{1,6}))?)?)?$`)
 
 // isoDateTimeAware: fromisoformat returns an aware datetime when the time
 // part carries Z or an offset.

@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -23,9 +25,6 @@ type CourseLocationWrite struct {
 	AssociationID      *string
 	// Documents is the validated documents_data list (dicts).
 	Documents []domain.RequestObject
-	// IndexedDocuments marks form keys documents_data[n]...: parse_html_list
-	// input, not ported.
-	IndexedDocuments bool
 }
 
 const (
@@ -37,7 +36,7 @@ const (
 // ParseCourseLocationWrite ports CourseLocationSerializer(data=...,
 // partial=...) field validation; uniqueness and the sport_association
 // queryset and tenant scope are checked by the service.
-func ParseCourseLocationWrite(body any, form bool) (CourseLocationWrite, map[string]any) {
+func ParseCourseLocationWrite(body any, form, partial bool) (CourseLocationWrite, map[string]any) {
 	object, ok := body.(domain.RequestObject)
 	if !ok {
 		return CourseLocationWrite{}, map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(body)}}
@@ -53,13 +52,15 @@ func ParseCourseLocationWrite(body any, form bool) (CourseLocationWrite, map[str
 			errors["course_location_id"] = []string{PaymentCategoryValidationUUID}
 		}
 	}
+	var items any
+	var present bool
 	if form {
-		// ListField.get_value reads only documents_data[n] keys of HTML input.
-		for _, field := range object {
-			write.IndexedDocuments = write.IndexedDocuments || strings.HasPrefix(field.Name, "documents_data[")
-		}
-	} else if value, present := object.Lookup("documents_data"); present {
-		switch items := value.(type) {
+		items, present = courseLocationFormDocuments(object, partial)
+	} else {
+		items, present = object.Lookup("documents_data")
+	}
+	if present {
+		switch items := items.(type) {
 		case nil:
 			errors["documents_data"] = []string{PaymentCategoryValidationNull}
 		case []any:
@@ -78,7 +79,7 @@ func ParseCourseLocationWrite(body any, form bool) (CourseLocationWrite, map[str
 				errors["documents_data"] = children
 			}
 		default:
-			errors["documents_data"] = []string{courseLocationList + pythonTypeName(value)}
+			errors["documents_data"] = []string{courseLocationList + pythonTypeName(items)}
 		}
 	}
 	for _, field := range CourseLocationTextFields {
@@ -161,4 +162,95 @@ func pythonBase64(text string) bool {
 		quad = (quad + 1) % 4
 	}
 	return quad == 0
+}
+
+var courseLocationIndexed = regexp.MustCompile(`^documents_data\[([0-9]+)\](.*)$`)
+
+// courseLocationFormDocuments is ListField.get_value of an HTML input: every value of the key
+// documents_data when present, else (not for a partial update, which skips this) the list DRF's
+// parse_html_list builds from documents_data[N]<name> keys, each index a dict from its .name keys.
+func courseLocationFormDocuments(object domain.RequestObject, partial bool) (any, bool) {
+	if values, present := object.List("documents_data"); present {
+		return values, true
+	}
+	if partial {
+		return nil, false
+	}
+	type indexed struct {
+		number string
+		value  any
+		dict   domain.RequestObject
+		isDict bool
+	}
+	byIndex := map[string]*indexed{}
+	order := []*indexed{}
+	for _, field := range object {
+		// Python's `.` skips a newline and `$` also matches before one final newline.
+		candidate := strings.TrimSuffix(field.Name, "\n")
+		match := courseLocationIndexed.FindStringSubmatch(candidate)
+		if match == nil || strings.Contains(candidate, "\n") {
+			continue
+		}
+		number := strings.TrimLeft(match[1], "0")
+		if number == "" {
+			number = "0"
+		}
+		entry := byIndex[number]
+		if entry == nil {
+			entry = &indexed{number: number}
+			byIndex[number] = entry
+			order = append(order, entry)
+		}
+		if match[2] == "" {
+			entry.value, entry.isDict, entry.dict = field.Value, false, nil
+			continue
+		}
+		if !entry.isDict {
+			entry.value, entry.isDict, entry.dict = nil, true, domain.RequestObject{}
+		}
+		replaced := false
+		for i := range entry.dict {
+			if entry.dict[i].Name == match[2] {
+				entry.dict[i].Value, replaced = field.Value, true
+			}
+		}
+		if !replaced {
+			entry.dict = append(entry.dict, domain.RequestField{Name: match[2], Value: field.Value})
+		}
+	}
+	if len(order) == 0 {
+		return nil, false
+	}
+	sort.SliceStable(order, func(i, j int) bool {
+		if len(order[i].number) != len(order[j].number) {
+			return len(order[i].number) < len(order[j].number)
+		}
+		return order[i].number < order[j].number
+	})
+	items := make([]any, 0, len(order))
+	for _, entry := range order {
+		if !entry.isDict {
+			items = append(items, entry.value)
+			continue
+		}
+		// DictField reads the .name keys of the html dict (parse_html_dict with an empty prefix).
+		result := domain.RequestObject{}
+		for _, field := range entry.dict {
+			key := strings.TrimSuffix(field.Name, "\n")
+			if !strings.HasPrefix(key, ".") || len(key) < 2 || strings.Contains(key, "\n") {
+				continue
+			}
+			name, replaced := key[1:], false
+			for i := range result {
+				if result[i].Name == name {
+					result[i].Value, replaced = field.Value, true
+				}
+			}
+			if !replaced {
+				result = append(result, domain.RequestField{Name: name, Value: field.Value})
+			}
+		}
+		items = append(items, result)
+	}
+	return items, true
 }

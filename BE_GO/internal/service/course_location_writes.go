@@ -126,9 +126,6 @@ type courseLocationUpload struct {
 // reproduce (filenames that are not plain storable text of at most 255
 // characters, names Storage.save rejects) are refused before any write.
 func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationWrite) ([]courseLocationUpload, error, error) {
-	if write.IndexedDocuments {
-		return nil, nil, ErrCourseLocationUploadUnsupported
-	}
 	var uploads []courseLocationUpload
 	for _, item := range write.Documents {
 		switch dto.CourseLocationDocument(item) {
@@ -212,7 +209,7 @@ func (s *CourseLocationWrites) save(ctx context.Context, identity domain.Resolve
 			return nil, err
 		}
 	}
-	write, invalid := dto.ParseCourseLocationWrite(body, form)
+	write, invalid := dto.ParseCourseLocationWrite(body, form, raw != nil)
 	var exclude *string
 	if row != nil {
 		exclude = &row.ID

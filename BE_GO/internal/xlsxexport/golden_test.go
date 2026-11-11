@@ -41,7 +41,6 @@ type golden struct {
 // reproducing; every other case must match.
 var goldenNotPorted = map[string]bool{
 	"eu-long-digits": true, // 17+ significant digits: platform-dependent parse
-	"sub-dynamic":    true, // a dynamic array function (extra metadata parts)
 }
 
 func decodeValue(t *testing.T, raw json.RawMessage) Value {

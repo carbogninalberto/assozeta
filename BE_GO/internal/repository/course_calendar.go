@@ -177,14 +177,32 @@ func (t *courseCalendarTransaction) DayByDate(ctx context.Context, registry stri
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
-	return &day, err
+	if err != nil {
+		return nil, err
+	}
+	if err = t.requireReadable(ctx, "application_attendanceday", "attendance_day_id", day.ID, "date"); err != nil {
+		return nil, err
+	}
+	return &day, nil
 }
 
 func (t *courseCalendarTransaction) DaysByEvents(ctx context.Context, registry string, events []string, scope *string) ([]string, error) {
 	ids := []string{}
 	err := t.tx.SelectContext(ctx, &ids, `SELECT attendance_day_id FROM application_attendanceday WHERE attendance_registry_id=$1::uuid
  AND associated_event = ANY($2::uuid[])`+dayScope(3), registry, uuidArray(events), scope)
-	return ids, err
+	if err != nil || len(ids) == 0 {
+		return ids, err
+	}
+	// Deleting loads the rows: one the driver cannot read (a UTC instant outside years 1..9999) fails the request.
+	var outside bool
+	if err = t.tx.GetContext(ctx, &outside, `SELECT EXISTS(SELECT 1 FROM application_attendanceday WHERE attendance_day_id = ANY($1::uuid[])
+ AND (date < '0001-01-01 00:00:00+00'::timestamptz OR date >= '10000-01-01 00:00:00+00'::timestamptz))`, uuidArray(ids)); err != nil {
+		return nil, err
+	}
+	if outside {
+		return nil, domain.ErrCalendarRaised
+	}
+	return ids, nil
 }
 
 func (t *courseCalendarTransaction) LegacyDays(ctx context.Context, registry string, rows []domain.CalendarLegacyDay, scope *string) ([]string, error) {
@@ -221,7 +239,27 @@ func (t *courseCalendarTransaction) ReminderByEvent(ctx context.Context, event s
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
-	return &reminder, err
+	if err != nil {
+		return nil, err
+	}
+	if err = t.requireReadable(ctx, "application_reminders", "reminders_id", reminder.ID, "send_at"); err != nil {
+		return nil, err
+	}
+	return &reminder, nil
+}
+
+// requireReadable fails like the driver does when a loaded row holds a timestamp
+// Python cannot represent (a UTC instant before year 1 or after year 9999).
+func (t *courseCalendarTransaction) requireReadable(ctx context.Context, table, key, id, column string) error {
+	var outside bool
+	if err := t.tx.GetContext(ctx, &outside, `SELECT `+column+` < '0001-01-01 00:00:00+00'::timestamptz OR `+column+` >= '10000-01-01 00:00:00+00'::timestamptz
+ FROM `+table+` WHERE `+key+`=$1::uuid`, id); err != nil {
+		return err
+	}
+	if outside {
+		return domain.ErrCalendarRaised
+	}
+	return nil
 }
 
 func (t *courseCalendarTransaction) RemindersByEvents(ctx context.Context, events []string, association string) ([]string, error) {

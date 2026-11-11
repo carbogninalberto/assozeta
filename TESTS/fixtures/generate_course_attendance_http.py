@@ -562,6 +562,170 @@ for n, (label, props) in enumerate([('number-props', 5), ('text-props-naming-ins
     old_course(f's{n}', f'Storico forma {n}', [(f's{n}', week(0), old_event(event_id, week(0), props), event_id)])
     add(f'attendees-old-{label}', 'owner', list_path(f's{n}'), 500, SERVER)
 
+# ---------------------------------------------------------------------------
+# Integer and boolean ids, float and boolean carnet counters, lesson dates the
+# strict parsers read differently (full-width digits, years below 1000).
+# ---------------------------------------------------------------------------
+_ext_ids = iter(f'a1000000-0000-4000-8000-{950601 + n:012d}' for n in range(200))
+ext_new = lambda: next(_ext_ids)
+INT_CS, INT_DAY = '00000000-0000-0000-0000-00000000002a', '00000000-0000-0000-0000-00000000002b'
+# uuid.UUID(int=n) reads integers and booleans: 42 and 43 name rows seeded under these ids.
+
+
+def add_person(label, first, last, holding_meta, *, course='u', cs_id=None):
+    ASSOCIATES[label] = {'id': ext_new(), 'association': OWN, 'first': first, 'last': last, 'born': '1999-09-09',
+                         'tax': f'TAX{90 + len(ASSOCIATES):013d}'}
+    SUBSCRIPTIONS[label] = {'id': ext_new(), 'association': OWN, 'associate': label, 'user': 'owner', 'medical': None,
+                            'created': SUB_CREATED}
+    SUB[label] = SUBSCRIPTIONS[label]['id']
+    COURSE_SUBSCRIPTIONS[f'u_{label}'] = {'id': cs_id or ext_new(), 'course': course, 'subscription': label, 'deleted': False}
+    CS[f'u_{label}'] = COURSE_SUBSCRIPTIONS[f'u_{label}']['id']
+    HOLDINGS[label] = {'id': ext_new(), 'subscription': label, 'cs': [], 'created': '2026-02-01T10:00:00Z', 'payment': None,
+                       'meta': holding_meta}
+    H[label] = HOLDINGS[label]['id']
+
+
+def add_course(label, title, days):
+    """days: (label, date, attendees, expected_absences)."""
+    COURSES[label] = {'id': ext_new(), 'association': OWN, 'title': title, 'deleted': False}
+    C[label] = COURSES[label]['id']
+    REGISTRIES[label] = {'id': ext_new(), 'course': label, 'events': []}
+    R[label] = REGISTRIES[label]['id']
+    for day_label, date, attendees, absences in days:
+        DAYS[day_label] = {'id': INT_DAY if day_label == 'uA' else ext_new(), 'registry': label, 'title': f'Giorno {day_label}',
+                           'date': date, 'attendees': attendees, 'expected_absences': absences, 'associated_event': None}
+        D[day_label] = DAYS[day_label]['id']
+
+
+add_course('u', 'Judo', [
+    ('u1', '2020-07-06T09:00:00Z', None, None), ('uA', '2020-07-07T09:00:00Z', None, None),
+    ('u2', '2020-07-08T09:00:00Z', None, None), ('u3', '2020-07-09T09:00:00Z', None, None),
+    ('u_today', '{today}T10:00:00Z', None, None), ('u_big', '2020-07-10T09:00:00Z', None, None),
+    ('u9', '0999-03-01T09:00:00Z', None, None), ('u12', '0999-04-01T09:00:00Z', None, None),
+    ('u10', '2020-07-13T09:00:00Z', None, None), ('u11', '2020-07-14T09:00:00Z', None, None),
+    ('u13', '0999-05-01T09:00:00Z', None, None), ('u14', '2020-07-15T09:00:00Z', None, None)])
+add_course('w', 'Karate', [('wE', '2020-08-03T09:00:00Z', None, None), ('wN', '2020-08-04T09:00:00Z', None, None)])
+add_person('ugo', 'Ugo', 'Verdi', meta(2.5, []), cs_id=INT_CS)
+add_person('vera', 'Vera', 'Neri', meta(True, []))
+add_person('wanda', 'Wanda', 'Gialli', meta(3.0, []))
+L999 = {'date': '0999-03-01 09:00:00+00:00', 'attendance_day_id': D['u9'], 'course': {'id': C['u'], 'title': 'Judo'}, 'title': DAYS['u9']['title']}
+add_person('xena', 'Xena', 'Blu', meta(1, [L999]))
+DAYS['u9']['attendees'] = entry('u_xena')
+L_FULLWIDTH = {'date': '\uff12\uff10\uff12\uff10-07-13 09:00:00+00:00', 'attendance_day_id': None, 'course': {'id': C['u'], 'title': 'Judo'},
+               'title': 'x'}
+add_person('yara', 'Yara', 'Rosa', meta(1, [L_FULLWIDTH]))
+DAYS['u10']['attendees'] = entry('u_yara')
+L_NAIVE = {'date': '2020-07-14T09:00:00', 'course': {'id': C['u'], 'title': 'Judo'}, 'title': 'y'}
+add_person('zoe', 'Zoe', 'Viola', meta(1, [L_NAIVE]))
+DAYS['u11']['attendees'] = entry('u_zoe')
+add_person('ned', 'Ned', 'Grigi', meta(2, []))
+
+U = lambda day: update_path('u', day)
+cl = lambda day: lesson(day, course='u')
+f_meta = lambda left, lessons: dumps(meta(left, lessons))
+
+
+def consume_case(name, person, day, before, after, lessons_after):
+    add(name, 'owner', U(day), 200, UPDATED, method='POST', body={'attendees': entry(f'u_{person}')},
+        effect=effect(days={day: {'attendees': entry(f'u_{person}')}}, holdings={person: meta(after, lessons_after)},
+                      audit=[change('carnetsubscription', person, {'meta': [f_meta(before, []), f_meta(after, lessons_after)]}),
+                             change('attendanceday', day, {'attendees': ['null', dumps(entry(f'u_{person}'))]})]))
+
+
+def give_back_case(name, person, day, before, lessons_before, after):
+    add(name, 'owner', U(day), 200, UPDATED, method='POST', body={'attendees': []},
+        effect=effect(days={day: {'attendees': []}}, holdings={person: meta(after, [])},
+                      audit=[change('carnetsubscription', person, {'meta': [f_meta(before, lessons_before), f_meta(after, [])]}),
+                             change('attendanceday', day, {'attendees': [dumps(entry(f'u_{person}')), '[]']})]))
+
+
+# A float counter stays a float: 2.5 - 1 = 1.5, and back.
+consume_case('update-float-carnet-consumed', 'ugo', 'u1', 2.5, 1.5, [cl('u1')])
+give_back_case('update-float-carnet-given-back', 'ugo', 'u1', 1.5, [cl('u1')], 2.5)
+# A whole float keeps its fraction digit: 3.0 - 1 = 2.0.
+consume_case('update-whole-float-carnet-consumed', 'wanda', 'u3', 3.0, 2.0, [cl('u3')])
+# A boolean counter is an int once changed: True - 1 = 0, 0 + 1 = 1.
+consume_case('update-boolean-carnet-consumed', 'vera', 'u2', True, 0, [cl('u2')])
+give_back_case('update-boolean-carnet-given-back', 'vera', 'u2', 0, [cl('u2')], 1)
+
+# Integer ids name rows through uuid.UUID(int=...).
+INT_ENTRY = [{'course_subscription_id': 42}]
+add('update-integer-id-finds-subscription', 'owner', U('uA'), 200, UPDATED, method='POST', body={'attendees': INT_ENTRY},
+    effect=effect(days={'uA': {'attendees': INT_ENTRY}}, holdings={'ugo': meta(1.5, [cl('uA')])},
+                  audit=[change('carnetsubscription', 'ugo', {'meta': [f_meta(2.5, []), f_meta(1.5, [cl('uA')])]}),
+                         change('attendanceday', 'uA', {'attendees': ['null', dumps(INT_ENTRY)]})]))
+add('update-integer-id-same-kept', 'owner', U('uA'), 200, UPDATED, method='POST', body={'attendees': INT_ENTRY})
+add('update-integer-id-removed-gives-back', 'owner', U('uA'), 200, UPDATED, method='POST', body={'attendees': []},
+    effect=effect(days={'uA': {'attendees': []}}, holdings={'ugo': meta(2.5, [])},
+                  audit=[change('carnetsubscription', 'ugo', {'meta': [f_meta(1.5, [cl('uA')]), f_meta(2.5, [])]}),
+                         change('attendanceday', 'uA', {'attendees': [dumps(INT_ENTRY), '[]']})]))
+UNKNOWN_INT, TRUE_ENTRY, ONE_ENTRY = [{'course_subscription_id': 7}], [{'course_subscription_id': True}], [{'course_subscription_id': 1}]
+add('update-integer-id-unknown-kept', 'owner', U('u_big'), 200, UPDATED, method='POST', body={'attendees': UNKNOWN_INT},
+    effect=effect(days={'u_big': {'attendees': UNKNOWN_INT}}, audit=[change('attendanceday', 'u_big', {'attendees': ['null', dumps(UNKNOWN_INT)]})]))
+add('update-integer-id-unknown-removed', 'owner', U('u_big'), 500, SERVER, method='POST', body={'attendees': []})
+add('update-boolean-id-kept', 'owner', U('u12'), 200, UPDATED, method='POST', body={'attendees': TRUE_ENTRY},
+    effect=effect(days={'u12': {'attendees': TRUE_ENTRY}}, audit=[change('attendanceday', 'u12', {'attendees': ['null', dumps(TRUE_ENTRY)]})]))
+# True == 1 in Python: the stored attendee counts as present and the new list is saved as sent.
+add('update-integer-one-equals-boolean', 'owner', U('u12'), 200, UPDATED, method='POST', body={'attendees': ONE_ENTRY},
+    effect=effect(days={'u12': {'attendees': ONE_ENTRY}}, audit=[change('attendanceday', 'u12', {'attendees': [dumps(TRUE_ENTRY), dumps(ONE_ENTRY)]})]))
+for label, value in (('past-128-bits', 2 ** 128), ('negative', -1), ('float', 1.5), ('whole-float', 2.0)):
+    add(f'update-integer-id-{label}', 'owner', U('u14'), 500, SERVER, method='POST', body={'attendees': [{'course_subscription_id': value}]})
+
+# Check-in with a float counter and an integer day id.
+UGO_TODAY = {'date': '{today} 10:00:00+00:00', 'attendance_day_id': D['u_today'], 'course': {'id': C['u'], 'title': 'Judo'}, 'title': DAYS['u_today']['title']}
+UGO_ENTRY = entry('u_ugo')
+add('mark-float-carnet', 'owner', mark_path('ugo'), 200, checked('ugo'), method='POST', body={},
+    effect=effect(days={'u_today': {'attendees': UGO_ENTRY}}, holdings={'ugo': meta(1.5, [UGO_TODAY])},
+                  audit=[change('carnetsubscription', 'ugo', {'meta': [f_meta(2.5, []), f_meta(1.5, [UGO_TODAY])]}),
+                         change('attendanceday', 'u_today', {'attendees': ['null', dumps(UGO_ENTRY)]})]))
+for label, value, status, response in (('integer-unknown', 5, 404, {'msg': 'Giorno di presenza non trovato.'}),
+                                       ('boolean-unknown', False, 404, {'msg': 'Giorno di presenza non trovato.'}),
+                                       ('integer-existing-without-course-subscription', 43, 500, SERVER),
+                                       ('float', 1.5, 500, SERVER), ('past-128-bits', 2 ** 128, 500, SERVER)):
+    add(f'mark-selected-day-{label}', 'owner', mark_path('dario'), status, response, method='POST', body={'attendance_day_id': value})
+
+# Listing with integer ids in the stored attendees and expected absences.
+DAYS['wE']['attendees'], DAYS['wE']['expected_absences'] = INT_ENTRY, INT_ENTRY + [{'course_subscription_id': 99}]
+add('attendees-integer-ids', 'owner', list_path('w'), 200, {'data': {'events': [
+    {'title': DAYS['wE']['title'], 'allDay': False, 'extended_props': {}, 'attendance_day_id': D['wE'], 'attendance_registry': R['w'],
+     'date': DAYS['wE']['date'], 'start': None, 'end': None, 'attendees': INT_ENTRY, 'expected_absences': [name('ugo'), '<rimosso>']},
+    old_listed('wN')]}})
+
+# Lesson dates: a year below 1000 compares by its own digits; text outside the ISO forms raises; a naive T form matches.
+add('update-removes-lesson-year-999', 'owner', U('u9'), 200, UPDATED, method='POST', body={'attendees': []},
+    effect=effect(days={'u9': {'attendees': []}}, holdings={'xena': meta(2, [])},
+                  audit=[change('carnetsubscription', 'xena', {'meta': [f_meta(1, [L999]), f_meta(2, [])]}),
+                         change('attendanceday', 'u9', {'attendees': [dumps(entry('u_xena')), '[]']})]))
+add('update-lesson-date-full-width-digits', 'owner', U('u10'), 500, SERVER, method='POST', body={'attendees': []})
+add('update-removes-lesson-naive-date', 'owner', U('u11'), 200, UPDATED, method='POST', body={'attendees': []},
+    effect=effect(days={'u11': {'attendees': []}}, holdings={'zoe': meta(2, [])},
+                  audit=[change('carnetsubscription', 'zoe', {'meta': [f_meta(1, [L_NAIVE]), f_meta(2, [])]}),
+                         change('attendanceday', 'u11', {'attendees': [dumps(entry('u_zoe')), '[]']})]))
+NED_LESSON = {'date': '0999-05-01 09:00:00+00:00', 'attendance_day_id': D['u13'], 'course': {'id': C['u'], 'title': 'Judo'}, 'title': DAYS['u13']['title']}
+add('update-adds-attendee-on-year-999-day', 'owner', U('u13'), 200, UPDATED, method='POST', body={'attendees': entry('u_ned')},
+    effect=effect(days={'u13': {'attendees': entry('u_ned')}}, holdings={'ned': meta(1, [NED_LESSON])},
+                  audit=[change('carnetsubscription', 'ned', {'meta': [f_meta(2, []), f_meta(1, [NED_LESSON])]}),
+                         change('attendanceday', 'u13', {'attendees': ['null', dumps(entry('u_ned'))]})]))
+
+# Event starts: decimal digits of other scripts match \d only where the pattern has \d.
+event_r = old_event(old_new(), '2020-06-15T09:30:00Z')
+event_r['start'] = '\uff12\uff10\uff12\uff10-06-1\uff15T0\uff19:3\uff10:0\uff10.000Z'
+old_course('r', 'Storico cifre', [('r1', '2020-06-15T09:00:00Z', event_r, None)])
+add('attendees-event-start-full-width-digits', 'owner', list_path('r'), 200,
+    {'data': {'events': [{**old_listed('r1'), 'start': event_r['start'], 'end': event_r['end']}]}},
+    effect=effect(days={'r1': {'associated_event': event_r['event_id']}},
+                  audit=[change('attendanceday', 'r1', {'associated_event': ['None', event_r['event_id']]})]))
+event_s = old_event(old_new(), '2020-06-15T09:30:00Z')
+event_s['start'] = '2020-\uff10\uff16-15T09:30:00.000Z'
+old_course('s_month', 'Storico mese', [('s_month1', '2020-06-15T09:00:00Z', event_s, None)])
+add('attendees-event-start-full-width-month', 'owner', list_path('s_month'), 500, SERVER)
+event_y = old_event(old_new(), '0999-06-15T09:30:00Z')
+old_course('y999', 'Storico anno 999', [('y1', '0999-06-15T09:00:00Z', event_y, None)])
+add('attendees-event-start-year-999', 'owner', list_path('y999'), 200,
+    {'data': {'events': [{**old_listed('y1'), 'start': event_y['start'], 'end': event_y['end']}]}},
+    effect=effect(days={'y1': {'associated_event': event_y['event_id']}},
+                  audit=[change('attendanceday', 'y1', {'associated_event': ['None', event_y['event_id']]})]))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'Course attendance listing, update, subscription history and check-in with carnet and audit effects',

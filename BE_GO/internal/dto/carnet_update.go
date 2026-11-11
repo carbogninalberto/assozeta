@@ -35,6 +35,11 @@ func pythonTypeName(value any) string {
 		return "int"
 	case nil:
 		return "NoneType"
+	case domain.RequestUpload:
+		if v.Temp {
+			return "TemporaryUploadedFile"
+		}
+		return "InMemoryUploadedFile"
 	}
 	return "dict"
 }

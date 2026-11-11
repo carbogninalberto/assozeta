@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"strconv"
 	"strings"
@@ -166,8 +167,9 @@ func attendanceIn(container, item any) (bool, error) {
 	return false, errCalendarRaised
 }
 
-// attendanceNumber is a JSON number or bool as an exact value; ok=false for
-// anything else (whose comparison with an int raises TypeError).
+// attendanceNumber is a JSON number or bool as an exact value (a float reads
+// as the double Python holds); ok=false for anything else (whose comparison
+// with an int raises TypeError) and for an infinite float.
 func attendanceNumber(value any) (*big.Rat, bool) {
 	switch v := value.(type) {
 	case bool:
@@ -176,22 +178,65 @@ func attendanceNumber(value any) (*big.Rat, bool) {
 		}
 		return new(big.Rat), true
 	case json.Number:
+		if attendanceIsFloatText(string(v)) {
+			number, err := strconv.ParseFloat(string(v), 64)
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
+				return nil, false
+			}
+			if math.IsInf(number, 0) {
+				return nil, false
+			}
+			return new(big.Rat).SetFloat64(number), true
+		}
 		return calendarNumber(v)
 	}
 	return nil, false
 }
 
-// attendanceInteger is an int JSON number (floats and bools are not ported).
-func attendanceInteger(value any) (*big.Int, error) {
-	number, ok := attendanceNumber(value)
-	if !ok {
-		return nil, errCalendarRaised
+func attendanceIsFloatText(text string) bool { return strings.ContainsAny(text, ".eE") }
+
+// attendanceCount is a carnet's lessons_left: a Python int (bools too) or float.
+type attendanceCount struct {
+	float bool
+	whole *big.Int
+	real  float64
+}
+
+// attendanceCountOf reads lessons_left for `+= 1` / `-= 1`: other types raise
+// TypeError; an infinite float is not ported (jsonb cannot store it).
+func attendanceCountOf(value any) (attendanceCount, error) {
+	switch v := value.(type) {
+	case bool:
+		if v {
+			return attendanceCount{whole: big.NewInt(1)}, nil
+		}
+		return attendanceCount{whole: new(big.Int)}, nil
+	case json.Number:
+		if attendanceIsFloatText(string(v)) {
+			number, err := strconv.ParseFloat(string(v), 64)
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
+				return attendanceCount{}, errCalendarRaised
+			}
+			if math.IsInf(number, 0) {
+				return attendanceCount{}, errCalendarNotPorted
+			}
+			return attendanceCount{float: true, real: number}, nil
+		}
+		whole, ok := new(big.Int).SetString(string(v), 10)
+		if !ok {
+			return attendanceCount{}, errCalendarRaised
+		}
+		return attendanceCount{whole: whole}, nil
 	}
-	text := dto.PythonStr(value)
-	if _, isBool := value.(bool); isBool || strings.ContainsAny(text, ".eE") || !number.IsInt() {
-		return nil, errCalendarNotPorted
+	return attendanceCount{}, errCalendarRaised
+}
+
+// plus is `count + delta` as Python adds it; an int stays an int, a float a float.
+func (c attendanceCount) plus(delta int64) any {
+	if c.float {
+		return c.real + float64(delta)
 	}
-	return number.Num(), nil
+	return calendarNumberValue(new(big.Int).Add(c.whole, big.NewInt(delta)))
 }
 
 // attendanceEventStart is datetime.strptime(e['start'], '%Y-%m-%dT%H:%M:%S.%fZ').
@@ -203,9 +248,6 @@ func attendanceEventStart(event any) (time.Time, error) {
 	text, ok := value.(string)
 	if !ok {
 		return time.Time{}, errCalendarRaised
-	}
-	if dto.StrptimeUnicodeDigits(text) {
-		return time.Time{}, errCalendarNotPorted
 	}
 	start, ok := dto.StrptimeEventStart(text)
 	if !ok {
@@ -403,7 +445,7 @@ func pickCarnet(holdings []domain.AttendanceHolding) (*domain.AttendanceHolding,
 func (r *attendanceRun) consume(ctx context.Context, holding *domain.AttendanceHolding, meta any, lesson domain.RequestObject) error {
 	object := meta.(domain.RequestObject)
 	value, _ := object.Lookup("lessons_left")
-	left, err := attendanceInteger(value)
+	left, err := attendanceCountOf(value)
 	if err != nil {
 		return err
 	}
@@ -416,7 +458,7 @@ func (r *attendanceRun) consume(ctx context.Context, holding *domain.AttendanceH
 		return errCalendarRaised
 	}
 	updated := dto.PythonCopy(object).(domain.RequestObject)
-	updated = dto.PythonSet(updated, "lessons_left", calendarNumberValue(new(big.Int).Sub(left, big.NewInt(1))))
+	updated = dto.PythonSet(updated, "lessons_left", left.plus(-1))
 	updated = dto.PythonSet(updated, "lessons_registry", append(dto.PythonCopy(list).([]any), lesson))
 	return r.saveHolding(ctx, *holding, updated)
 }
@@ -1030,10 +1072,7 @@ func (r *attendanceRun) returnLessons(ctx context.Context, course domain.Attenda
 				if err != nil {
 					return err
 				}
-				moment, err := dto.AuditFromISOFormat(dateValue)
-				if errors.Is(err, dto.ErrAuditNotPorted) {
-					return errCalendarNotPorted
-				}
+				moment, err := dto.AuditFromISOFormatAnyYear(dateValue)
 				if err != nil {
 					return errCalendarRaised
 				}
@@ -1048,11 +1087,11 @@ func (r *attendanceRun) returnLessons(ctx context.Context, course domain.Attenda
 				if err != nil {
 					return err
 				}
-				left, err := attendanceInteger(leftValue)
+				left, err := attendanceCountOf(leftValue)
 				if err != nil {
 					return err
 				}
-				object = dto.PythonSet(object, "lessons_left", calendarNumberValue(new(big.Int).Add(left, big.NewInt(1))))
+				object = dto.PythonSet(object, "lessons_left", left.plus(1))
 				if err = r.saveHolding(ctx, holding, object); err != nil {
 					return err
 				}

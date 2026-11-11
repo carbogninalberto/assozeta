@@ -175,6 +175,10 @@ func PythonStr(value any) string {
 	if text, ok := value.(string); ok {
 		return text
 	}
+	if upload, ok := value.(domain.RequestUpload); ok {
+		// str() of an uploaded file is its name.
+		return upload.Name
+	}
 	var out strings.Builder
 	pythonRepr(&out, value)
 	return out.String()

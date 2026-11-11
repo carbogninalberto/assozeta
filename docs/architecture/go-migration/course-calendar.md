@@ -152,3 +152,7 @@ Lesson details (`get_lesson`, 164 cases):
 - GREEN (`v2c-green`): 164/164 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`v2c-mutation-lesson`): reading the lesson without the registry's events fails `events-lesson` (CAUGHT).
 - `course-attendance` and `statistic-reads` (shared attendance helper) re-ran green (`v2c-rerun-cal`).
+
+## Round t3courses
+
+Integer/boolean event ids, list/text extended properties, non-text and list starts (Python sort order), stored events that are an empty object or text, and instants outside years 1..9999 (row kept, no audit entry, reads fail; the family harness now reads and cleans such rows). 202 cases GREEN on four transports (run 43085954222). Mutation (range check disabled) CAUGHT by `update-reminder-outside-year-range-is-stored`.

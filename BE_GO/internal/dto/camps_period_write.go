@@ -240,13 +240,6 @@ func campsInput(body any, form bool) (*campsReader, error) {
 	if !ok {
 		return nil, nil
 	}
-	if form {
-		for _, field := range object {
-			if _, upload := field.Value.(domain.RequestUpload); upload {
-				return nil, ErrCampsFormNotPorted
-			}
-		}
-	}
 	return &campsReader{object: object, form: form, errors: map[string][]string{}}, nil
 }
 
@@ -269,7 +262,8 @@ func campsPeriodPreprocess(body any, form bool) (domain.RequestObject, error) {
 		case domain.RequestObject:
 			value, present := data.Lookup(key)
 			if present && value == "" {
-				if form {
+				if form && !data.HasUpload() {
+					// Only a form with files is a mutable copy.
 					return nil, &CampsPythonError{Message: "This QueryDict instance is immutable"}
 				}
 				copied := append(domain.RequestObject(nil), data...)
@@ -317,9 +311,6 @@ func ParseCampsPeriodWrite(body any, form, partial bool) (*CampsPeriodInput, map
 		return nil, nil, err
 	}
 	reader.partial = partial
-	if _, present := object.Lookup(campsServicesField); present && form {
-		return nil, nil, ErrCampsFormNotPorted
-	}
 	input := &CampsPeriodInput{}
 	input.ID = reader.uuid("camps_and_retreats_period_id")
 	input.Start = reader.datetime("start_date", true)
@@ -332,7 +323,11 @@ func ParseCampsPeriodWrite(body any, form, partial bool) (*CampsPeriodInput, map
 	}
 	input.CreatedAt = reader.datetime("created_at", false)
 	input.Camp = reader.relation("camps_and_retreats", true, false)
-	if value, present := object.Lookup(campsServicesField); present {
+	if value, present := object.Lookup(campsServicesField); present && form {
+		// ManyRelatedField.get_value: getlist() of an HTML key.
+		list, _ := object.List(campsServicesField)
+		input.Services = campsMany(reader, list)
+	} else if present {
 		input.Services = campsMany(reader, value)
 	} else if form && !partial {
 		// ManyRelatedField.get_value: getlist() of a missing HTML key is [].
