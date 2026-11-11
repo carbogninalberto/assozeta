@@ -26797,7 +26797,7 @@
         "target": "subscription_associates_draft_approve",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_renew.go",
         "BE_GO/internal/domain/subscription_create.go",
@@ -26845,21 +26845,28 @@
         "TESTS/adapters/django/subscription_renew_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-renew.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-renew --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-sweep-final-2/results.json",
-          "receipt_sha256": "6175409649fcd8cfb698032da63e014fd8c3cc49c7cd2c123dd9cf6af3e7c8d5",
-          "scope": "HTTP family subscription-renew: 95/95 cases on native Django and native Go, 95/95 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 99/99; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-tailsubs-m3/results.json",
+          "receipt_sha256": "ea505316c39d20986b3d7b2ee2c700c0215c4ec01f65369209b90680ec161c33"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-sweep-tailsubs-6/results.json",
+          "receipt_sha256": "82898f63f2c3ed894f51e06018f2a91d2acd899faa6f30a474cf14795eaf7370"
+        },
+        {
+          "revision": "refuse every preregistration in renewals again",
+          "result": "Mutation control: fails Go on subscription-renew-renew-preregistration (response.status)",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-tailsubs-m3/results.json",
+          "receipt_sha256": "ea505316c39d20986b3d7b2ee2c700c0215c4ec01f65369209b90680ec161c33"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). v2subs: a renewal with courses is ported (each course through add_course_to_subscription on the renewal's transaction, the course-enrolment port sharing it); in an impersonation session with an association scope the requester lookup finds the session's association and an athlete session's payment cleanup keeps to the payments it sees. RED v2subs-red-r4 (documented refusal: renew with courses, v2-refusals.md), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r3; course-enrolment and course-overview re-run green (v2subs-rerun-r1). v2subs3: two cases for a member renewal in an association-scoped session whose association's username is spelled like another association's id: the session's guard lets the value through and the view's lookup, which stays inside the session, answers the 500 page with nothing written. The rule 'create and renew are scoped to the caller's association' is now tested on the renewal's requester lookup; Django already enforced it (scoped_queryset), no Django change. RED: not applicable (Go already matched; the gap was an uncaught mutation, v2subs3-mutation-r1 before the final v2subs3-mutation-r2). The placeholder certificate stays refused in renewals and draft approvals.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-renew.md",
-        "Implementing evidence: RED: Django 95/95; Go 403 on the first case. (quality-reports/go-migration/subscription-renew-http-v2subs3-mutation-r1/results.json)",
-        "Implementing evidence: GREEN: 95/95 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity. (quality-reports/go-migration/subscription-renew-http-v2subs3-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-renew-renew-athlete-scoped-session-username-is-another-association-id (response.status). (quality-reports/go-migration/subscription-renew-http-v2subs3-mutation-r2/results.json)"
+        "Implementing: tailsubs: a typed certificate expiration date without an upload now draws the placeholder image in renewals and draft approvals (like subscription/add), and a renewal that preregisters the next season is served. A preregistration naming a subscription_id inside a renewal stays refused. RED: documented refusal, see v2-refusals.md rows. Schema data and manual pins need a refresh."
       ]
     },
     {
@@ -28007,7 +28014,7 @@
         "target": "subscription_renew",
         "syntax": "path"
       },
-      "status": "verified",
+      "status": "implementing",
       "go": [
         "BE_GO/internal/domain/subscription_renew.go",
         "BE_GO/internal/domain/subscription_create.go",
@@ -28055,21 +28062,28 @@
         "TESTS/adapters/django/subscription_renew_http.py"
       ],
       "evidence": [
+        "docs/architecture/go-migration/subscription-renew.md",
         {
-          "command": "python tools/go-migration/family.py run subscription-renew --versioned --label sweep-final-2",
-          "revision": "c3719752c3d5b2fb9fea1e640333dbd12b4f4f5d",
-          "result": "passed",
-          "artifact": "quality-reports/go-migration/subscription-renew-http-sweep-final-2/results.json",
-          "receipt_sha256": "6175409649fcd8cfb698032da63e014fd8c3cc49c7cd2c123dd9cf6af3e7c8d5",
-          "scope": "HTTP family subscription-renew: 95/95 cases on native Django and native Go, 95/95 on Caddy /api/v1 and /api/v2."
+          "revision": "committing change, before Go code",
+          "result": "RED: Django 99/99; Go 500 on the first case.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-tailsubs-m3/results.json",
+          "receipt_sha256": "ea505316c39d20986b3d7b2ee2c700c0215c4ec01f65369209b90680ec161c33"
+        },
+        {
+          "revision": "committing change",
+          "result": "GREEN: 99/99 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects.",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-sweep-tailsubs-6/results.json",
+          "receipt_sha256": "82898f63f2c3ed894f51e06018f2a91d2acd899faa6f30a474cf14795eaf7370"
+        },
+        {
+          "revision": "refuse every preregistration in renewals again",
+          "result": "Mutation control: fails Go on subscription-renew-renew-preregistration (response.status)",
+          "artifact": "quality-reports/go-migration/subscription-renew-http-tailsubs-m3/results.json",
+          "receipt_sha256": "ea505316c39d20986b3d7b2ee2c700c0215c4ec01f65369209b90680ec161c33"
         }
       ],
       "notes": [
-        "Implementing: Renewals set only the association's own tags (Tags filtered by the new subscription's association); renewals with courses stay refused. secsub2: a member account renews its own subscriptions and those of its family, in the association they belong to (a subscription of the requester, or of a person sharing a tax code or a family with one of the requester's subscriptions, for the associate of the request; otherwise 403 User not allowed. before any write); data.user.email sets the account only for an association account; the certificate follows subscription-create with the member as requester. The runner also knows Family rows and requests without an actor (used by subscription-create's family cases). secaw: the member renewal check matches persons by filled-in tax codes only (family_tax_codes in Django, familyTaxCodeFilled in Go). v2subs: a renewal with courses is ported (each course through add_course_to_subscription on the renewal's transaction, the course-enrolment port sharing it); in an impersonation session with an association scope the requester lookup finds the session's association and an athlete session's payment cleanup keeps to the payments it sees. RED v2subs-red-r4 (documented refusal: renew with courses, v2-refusals.md), GREEN v2subs-versioned-r1, mutation v2subs-mutation-r3; course-enrolment and course-overview re-run green (v2subs-rerun-r1). v2subs3: two cases for a member renewal in an association-scoped session whose association's username is spelled like another association's id: the session's guard lets the value through and the view's lookup, which stays inside the session, answers the 500 page with nothing written. The rule 'create and renew are scoped to the caller's association' is now tested on the renewal's requester lookup; Django already enforced it (scoped_queryset), no Django change. RED: not applicable (Go already matched; the gap was an uncaught mutation, v2subs3-mutation-r1 before the final v2subs3-mutation-r2). The placeholder certificate stays refused in renewals and draft approvals.",
-        "Implementing evidence: docs/architecture/go-migration/subscription-renew.md",
-        "Implementing evidence: RED: Django 95/95; Go 403 on the first case. (quality-reports/go-migration/subscription-renew-http-v2subs3-mutation-r1/results.json)",
-        "Implementing evidence: GREEN: 95/95 on native Django, native Go, Caddy /api/v1 and /api/v2 with exact effects, after merging codex/go-backend-parity. (quality-reports/go-migration/subscription-renew-http-v2subs3-versioned-r2/results.json)",
-        "Implementing evidence: Mutation control: fails Go on subscription-renew-renew-athlete-scoped-session-username-is-another-association-id (response.status). (quality-reports/go-migration/subscription-renew-http-v2subs3-mutation-r2/results.json)"
+        "Implementing: tailsubs: a typed certificate expiration date without an upload now draws the placeholder image in renewals and draft approvals (like subscription/add), and a renewal that preregisters the next season is served. A preregistration naming a subscription_id inside a renewal stays refused. RED: documented refusal, see v2-refusals.md rows. Schema data and manual pins need a refresh."
       ]
     },
     {
