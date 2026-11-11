@@ -2,8 +2,8 @@
 
 The shared family checks plus:
 - the Allow set of each view (add-attachment allows POST and DELETE);
-- '$new' module_response_id accepts the created id (the runner compares it
-  with the stored row through RUNTIME['response']);
+- '$new' module_response_id and attachment_token accept the generated values (the runner
+  compares them with the stored row through RUNTIME['response']);
 - a response's attachment pks and attachments_docs are unordered;
 - the export's ``{'$xlsx': spec}`` workbook is checked with the opt-in XLSX
   standard of TESTS/contracts/xlsx.py within the request window, and
@@ -77,5 +77,5 @@ def assert_case(case, base_url, *, token, sessions):
         if received.get('Content-Type', '').split(';')[0] != 'text/html':
             raise family.ResponseFailure('response.bad-request-type', status)
         return status
-    return family.assert_case(case, base_url, token=token, sessions=sessions, allowed=allowed, new=('module_response_id',),
+    return family.assert_case(case, base_url, token=token, sessions=sessions, allowed=allowed, new=('module_response_id', 'attachment_token'),
                               normalize=normalize)

@@ -79,6 +79,16 @@ func (sheet *xwSheet) writeString(row, col int, text string, format int) {
 	sheet.store(row, col, xwCell{kind: 's', sst: index, format: format})
 }
 
+func xwLooksRich(text string) bool {
+	return strings.HasPrefix(text, "<r>") && strings.HasSuffix(text, "</r>")
+}
+
+// xwRichRun is application.utils.xlsx_text.xlsx_cell_text for text that looks
+// like rich-string markup.
+func xwRichRun(text string) string {
+	return `<r><t xml:space="preserve">` + xwEscapeData(text) + `</t></r>`
+}
+
 var xwURLPrefix = regexp.MustCompile(`^((ftp|http)s?://|mailto:|(in|ex)ternal:)`)
 var xwEscaped = regexp.MustCompile(`%[0-9a-fA-F]{2}`)
 
@@ -93,8 +103,11 @@ func (sheet *xwSheet) writeToken(row, col int, text string, format int) error {
 		return nil
 	case strings.HasPrefix(text, "="), strings.HasPrefix(text, "{=") && strings.HasSuffix(text, "}"):
 		return ErrNotPorted // formulas (_prepare_formula) are not reproduced
-	case strings.HasPrefix(text, "<r>") && strings.HasSuffix(text, "</r>"):
-		return ErrNotPorted // written as a rich string
+	case xwLooksRich(text):
+		// The Django export hands such text over as one rich-string run with
+		// the characters escaped (xlsx_text.py), so the cell shows the text.
+		sheet.writeString(row, col, xwRichRun(text), format)
+		return nil
 	case strings.Contains(text, ":") && xwURLPrefix.MatchString(text):
 		return sheet.writeURL(row, col, text, format)
 	}
@@ -416,6 +429,11 @@ func PandasXlsxwriter(frame Frame, now time.Time) ([]byte, error) {
 		sst.WriteString(`<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="` + strconv.Itoa(sheet.count) + `" uniqueCount="` + strconv.Itoa(len(sheet.strings)) + `">`)
 		for _, text := range sheet.strings {
 			text = xwEscapeControl(text)
+			if xwLooksRich(text) {
+				// xlsxwriter writes a string of this shape without further tags.
+				sst.WriteString("<si>" + text + "</si>")
+				continue
+			}
 			first, _ := utf8.DecodeRuneInString(text)
 			last, _ := utf8.DecodeLastRuneInString(text)
 			if dto.PythonIsSpace(first) || dto.PythonIsSpace(last) {

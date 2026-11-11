@@ -50,7 +50,7 @@ Inputs Go refuses (`ErrNotPorted`; the callers answer the 500 page before any wr
 - numeric-looking text with 17 or more significant digits beyond 2**53: pandas accumulates digits with `number * 10 + digit`,
   which the compiler contracts into a fused multiply-add on arm64 (the macOS and aarch64 wheels) and not on x86-64, so the
   parsed value depends on the platform Django runs on;
-- xlsxwriter formulas (`=...`, `{=...}`), rich-string text (`<r>...</r>`), `internal:`/`external:` links and URLs with `#`;
+- xlsxwriter formulas (`=...`, `{=...}`), `internal:`/`external:` links and URLs with `#`;
 - integers beyond int64, booleans in a column `get_excel_base64` coerces, duplicate column names in `get_excel_base64`.
 
 ## Golden test

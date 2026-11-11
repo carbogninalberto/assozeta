@@ -35,7 +35,11 @@ var ErrProfileMiscServer = errors.New("profile misc server error")
 // not reproduce (see profile-misc.md).
 var ErrOnboardingNotPorted = refusal.New("onboarding update input not ported")
 
-// OnboardingServerError is the view's `except Exception`: 500 {'error': str(e)}.
+// OnboardingUpdateErrorMessage is the body the view sends for a save error.
+const OnboardingUpdateErrorMessage = "Unable to update the onboarding data."
+
+// OnboardingServerError is the view's `except Exception`: 500 with a fixed
+// message; Message is the detail the view logs and does not send.
 type OnboardingServerError struct{ Message string }
 
 func (e *OnboardingServerError) Error() string { return e.Message }
@@ -524,7 +528,7 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 		repr, ok := dto.PythonFloatRepr(raw)
 		if text, isText := raw.(string); !ok && isText && strings.TrimFunc(text, unicode.IsSpace) == "" {
 			// The serializer read a blank nullable fee as None; float() of the raw text raises.
-			return &OnboardingServerError{Message: "could not convert string to float: " + dto.PythonStringRepr(text)}
+			return &OnboardingServerError{Message: "a fee is not a number"}
 		} else if !ok {
 			return ErrOnboardingNotPorted
 		}
@@ -566,13 +570,10 @@ func (s *ProfileMisc) onboardingMembership(ctx context.Context, user string, dat
 		if !present {
 			continue
 		}
-		number, invalid, supported := dto.PythonPositiveSmallInt(value)
-		if !supported {
-			return ErrOnboardingNotPorted
-		}
-		if invalid {
+		number, ok := dto.PythonSmallIntColumn(value)
+		if !ok {
 			// The audit entry and the earlier saves roll back with the block.
-			return &OnboardingServerError{Message: "Field '" + name + "' expected a number but got " + dto.PythonStringRepr(value.(string)) + "."}
+			return &OnboardingServerError{Message: "the " + name + " value cannot be stored"}
 		}
 		*targets[name] = number
 	}
@@ -602,15 +603,15 @@ func onboardingStoredDecimal(text string) string {
 func pythonIntText(value int64) string { return strconv.FormatInt(value, 10) }
 
 // onboardingLeadValue is CharField.get_prep_value (str()) for the stored lead
-// values: containers are stored as their Python repr. A NUL character is
-// refused: the database error text quotes the audit row it failed to insert.
+// values: containers are stored as their Python repr. A NUL character cannot
+// be stored: the audit entry that quotes it is not inserted either.
 func onboardingLeadValue(value any) (*string, error) {
 	if value == nil {
 		return nil, nil
 	}
 	text := dto.PythonStr(value)
 	if strings.ContainsRune(text, 0) {
-		return nil, ErrOnboardingNotPorted
+		return nil, &OnboardingServerError{Message: "a lead value contains a NUL character"}
 	}
 	return &text, nil
 }
@@ -674,7 +675,7 @@ func (s *ProfileMisc) onboardingLead(ctx context.Context, user string, data any,
 		if err = tx.Commit(); err != nil {
 			return err
 		}
-		return &OnboardingServerError{Message: "value too long for type character varying(" + strconv.Itoa(tooLong) + ")\n"}
+		return &OnboardingServerError{Message: "a lead value is longer than " + strconv.Itoa(tooLong) + " characters"}
 	}
 	if err = tx.SaveUser(ctx, saved); err != nil {
 		return err

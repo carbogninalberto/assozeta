@@ -162,9 +162,9 @@ func (t *modulesResponsesTransaction) appendResponseAudit(ctx context.Context, a
 func (t *modulesResponsesTransaction) CreateResponse(ctx context.Context, row domain.ModuleResponseCreate, association *string,
 	audit domain.ModuleResponseAudit) error {
 	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_moduleresponses (module_response_id, module_id, creation_date,
- progressive_response_number, queue_position, response, approved, user_id, payment_id)
- VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,NULL,NULL)`, row.ID, row.ModuleID, row.CreationDate, row.ProgressiveNumber, row.QueuePosition,
-		row.Response, row.Approved); err != nil {
+ progressive_response_number, queue_position, response, approved, user_id, payment_id, attachment_token_hash)
+ VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,NULL,NULL,$8)`, row.ID, row.ModuleID, row.CreationDate, row.ProgressiveNumber, row.QueuePosition,
+		row.Response, row.Approved, row.AttachmentSecretHash); err != nil {
 		return err
 	}
 	changes, err := createdModelChanges(ctx, t.tx, "application_moduleresponses", "module_response_id", row.ID)
@@ -197,10 +197,25 @@ func (t *modulesResponsesTransaction) ResponseInAssociation(ctx context.Context,
 	return &ref, nil
 }
 
-// ResponseExists is filter(module_response_id=...).first() is not None.
-func (t *modulesResponsesTransaction) ResponseExists(ctx context.Context, id string) (bool, error) {
+// ResponseAccess is filter(module_response_id=...).select_related('module').first().
+func (t *modulesResponsesTransaction) ResponseAccess(ctx context.Context, id string) (*domain.ModuleResponseAccess, error) {
+	var access domain.ModuleResponseAccess
+	err := t.tx.GetContext(ctx, &access, `SELECT r.module_response_id, r.user_id, m.sport_association_id, r.attachment_token_hash
+ FROM application_moduleresponses r JOIN application_module m ON m.module_id=r.module_id WHERE r.module_response_id=$1`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &access, nil
+}
+
+// ResponseHasDocument is module_response.attachments.filter(document_id=...).exists().
+func (t *modulesResponsesTransaction) ResponseHasDocument(ctx context.Context, response, document string) (bool, error) {
 	var exists bool
-	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_moduleresponses WHERE module_response_id=$1)`, id)
+	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_moduleresponses_attachments
+ WHERE moduleresponses_id=$1 AND document_id=$2)`, response, document)
 	return exists, err
 }
 
@@ -276,13 +291,6 @@ func (t *modulesResponsesTransaction) UpdateQueue(ctx context.Context, module st
 		}
 	}
 	return nil
-}
-
-// DocumentExists is Document.objects.filter(document_id=...).first() is not None.
-func (t *modulesResponsesTransaction) DocumentExists(ctx context.Context, id string) (bool, error) {
-	var exists bool
-	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM docmanager_document WHERE document_id=$1)`, id)
-	return exists, err
 }
 
 // DocumentReferencedElsewhere reports a row of any table other than the

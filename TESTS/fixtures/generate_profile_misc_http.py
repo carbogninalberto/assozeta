@@ -229,6 +229,8 @@ add('image-wrong-method', 'anonymous', IMAGE + IDS['owner'], 405, method('POST')
 add('image-options', 'anonymous', IMAGE + IDS['owner'], 200, options('Profile Image'), method='OPTIONS')
 
 # === onboarding/update ==========================================================================
+# The view sends a fixed text for a save error and logs the detail.
+FIXED_ERROR = {'error': 'Unable to update the onboarding data.'}
 ONBOARD = '/onboarding/update'
 UPDATED = {'message': 'Updated successfully'}
 NOT_ASSOCIATION = {'error': 'You are not a sport association.'}
@@ -327,13 +329,13 @@ add('onboarding-athlete-denied', 'athlete', ONBOARD, 403, NOT_ASSOCIATION, metho
 add('onboarding-empty-body', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body={}, effect=effect())
 add('onboarding-list-body', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body=['membership'], effect=effect())
 # `'sport_association' in request.data` is a substring test on a string body.
-add('onboarding-string-body-server-error', 'owner', ONBOARD, 500, {'error': "string indices must be integers, not 'str'"},
+add('onboarding-string-body-server-error', 'owner', ONBOARD, 500, FIXED_ERROR,
     method='PATCH', raw_body='"has sport_association inside"', content_type='application/json', effect=effect())
 # The logging membership test runs before the view's try.
 add('onboarding-number-body-server-error', 'owner', ONBOARD, 500, SERVER, method='PATCH', raw_body='5',
     content_type='application/json', effect=effect())
 add('onboarding-without-association-server-error', 'owner_without_association', ONBOARD, 500,
-    {'error': 'User has no sportassociation.'}, method='PATCH', body={'sport_association': {'sport': 'Calcio'}})
+    FIXED_ERROR, method='PATCH', body={'sport_association': {'sport': 'Calcio'}})
 
 # --- sport_association ---------------------------------------------------------------------------
 add('onboarding-association-invalid', 'owner', ONBOARD, 400, {'error': repr_errors({
@@ -379,10 +381,10 @@ add('onboarding-membership-not-dict', 'owner', ONBOARD, 400, {'error': repr_erro
     'non_field_errors': [('Invalid data. Expected a dictionary, but got list.', 'invalid')]})}, method='PATCH',
     body={'membership_data': []}, effect=effect())
 # The association save happens, then membership_data['season']['day'] raises: everything rolls back.
-add('onboarding-membership-key-error-rolls-back', 'owner', ONBOARD, 500, {'error': "'day'"}, method='PATCH',
+add('onboarding-membership-key-error-rolls-back', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'membership_data': {'subscription_fee': '30', 'season': {'month': 3}}}, effect=effect())
 add('onboarding-membership-bad-day-rolls-back', 'owner', ONBOARD, 500,
-    {'error': "Field 'subscription_start_day' expected a number but got 'abc'."}, method='PATCH',
+    FIXED_ERROR, method='PATCH',
     body={'membership_data': {'membership_fee': '5', 'season': {'day': 'abc', 'month': 2}}}, effect=effect())
 first = association_save('own', {'subscription_fee': '20.00', 'membership_fee': '7.50'}, 'owner')
 second = association_save('own', {}, 'owner', audit_values={'subscription_fee': '20.0', 'membership_fee': '7.5'})
@@ -441,13 +443,13 @@ add('onboarding-lead-scalars', 'full_collaborator', ONBOARD, 200, UPDATED, metho
     body={'lead_data': {'lead_sport_association_role': 5, 'lead_sport_association_size': True, 'lead_sport_market_channel': None}},
     effect=effect(user_save('owner', {'lead_sport_association_role': 5, 'lead_sport_association_size': True,
                                       'lead_sport_market_channel': None}, 'full_collaborator')))
-add('onboarding-lead-missing-key', 'owner', ONBOARD, 500, {'error': "'lead_sport_association_size'"}, method='PATCH',
+add('onboarding-lead-missing-key', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': {'lead_sport_association_role': 'x'}}, effect=effect())
-add('onboarding-lead-string', 'owner', ONBOARD, 500, {'error': "string indices must be integers, not 'str'"}, method='PATCH',
+add('onboarding-lead-string', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': 'x'}, effect=effect())
-add('onboarding-lead-list', 'owner', ONBOARD, 500, {'error': 'list indices must be integers or slices, not str'}, method='PATCH',
+add('onboarding-lead-list', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': []}, effect=effect())
-add('onboarding-lead-null', 'owner', ONBOARD, 500, {'error': "'NoneType' object is not subscriptable"}, method='PATCH',
+add('onboarding-lead-null', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': None}, effect=effect())
 
 # --- onboarding_data (autocommit) ----------------------------------------------------------------
@@ -500,7 +502,7 @@ add('onboarding-flags-identity-values-null', 'owner', ONBOARD, 200, UPDATED, met
 add('onboarding-flags-invalid', 'owner', ONBOARD, 400, {'error': repr_errors({
     'show': [('Must be a valid boolean.', 'invalid')], 'approve_payment': [('This field may not be null.', 'null')]})},
     method='PATCH', body={'onboarding_data': {'approve_payment': None, 'show': 'maybe'}}, effect=effect())
-add('onboarding-flags-missing-row', 'foreign_owner', ONBOARD, 500, {'error': 'UsersOnboarding matching query does not exist.'},
+add('onboarding-flags-missing-row', 'foreign_owner', ONBOARD, 500, FIXED_ERROR,
     method='PATCH', body={'onboarding_data': {'show': True}}, effect=effect())
 
 # --- file parts in a multipart body (QueryDict values are uploaded files) -------------------------
@@ -508,9 +510,9 @@ UPLOAD_ERRORS = {'error': repr_errors({'non_field_errors': [(UPLOAD_DICT, 'inval
 for branch in ('sport_association', 'membership_data', 'onboarding_data'):
     add('multipart-file-' + branch, 'owner', ONBOARD, 400, UPLOAD_ERRORS, method='PATCH',
         raw_body=multipart((branch, 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
-add('multipart-file-lead-data', 'owner', ONBOARD, 500, {'error': "'InMemoryUploadedFile' object is not subscriptable"}, method='PATCH',
+add('multipart-file-lead-data', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     raw_body=multipart(('lead_data', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
-add('multipart-file-after-text-branch', 'owner', ONBOARD, 500, {'error': "string indices must be integers, not 'str'"}, method='PATCH',
+add('multipart-file-after-text-branch', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     raw_body=multipart(('lead_data', 'x'), ('doc', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
 add('multipart-file-without-branch', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
     raw_body=multipart(('doc', 'a.txt', 'ciao')), content_type=MULTI, effect=effect())
@@ -529,24 +531,23 @@ add('deleted-association-membership', DELETED, ONBOARD, 200, UPDATED, method='PA
 LEAD = {'lead_sport_association_role': 'a', 'lead_sport_association_size': 'b', 'lead_sport_market_channel': 'c'}
 add('deleted-association-lead', DELETED, ONBOARD, 200, UPDATED, method='PATCH', body={'lead_data': LEAD},
     effect=effect(user_save(DELETED, LEAD, DELETED)))
-add('deleted-association-flags-missing-row', DELETED, ONBOARD, 500, {'error': 'UsersOnboarding matching query does not exist.'},
+add('deleted-association-flags-missing-row', DELETED, ONBOARD, 500, FIXED_ERROR,
     method='PATCH', body={'onboarding_data': {'show': True}}, effect=effect())
 
 # --- lead values: containers are stored as their Python repr; a value too long for the column ------
 # fails the UPDATE after auditlog wrote its entry (autocommit), so the entry stays and the row does not change.
 LEAD_REST = {'lead_sport_association_size': 's', 'lead_sport_market_channel': 'c'}
-TOO_LONG = lambda n: {'error': f'value too long for type character varying({n})\n'}
 long_role = 'x' * 151
-add('lead-too-long-role', 'owner', ONBOARD, 500, TOO_LONG(150), method='PATCH',
+add('lead-too-long-role', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': dict(LEAD_REST, lead_sport_association_role=long_role)},
     effect=effect(user_save('owner', dict(LEAD_REST, lead_sport_association_role=long_role), 'owner', store=False)))
-add('lead-too-long-phone', 'full_collaborator', ONBOARD, 500, TOO_LONG(20), method='PATCH',
+add('lead-too-long-phone', 'full_collaborator', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': dict(LEAD_REST, lead_sport_association_role='r', phone='1' * 21)},
     effect=effect(user_save('owner', dict(LEAD_REST, lead_sport_association_role='r', phone='1' * 21), 'full_collaborator', store=False)))
-add('lead-too-long-phone-before-role', 'owner', ONBOARD, 500, TOO_LONG(20), method='PATCH',
+add('lead-too-long-phone-before-role', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': dict(LEAD_REST, lead_sport_association_role=long_role, phone='2' * 25)},
     effect=effect(user_save('owner', dict(LEAD_REST, lead_sport_association_role=long_role, phone='2' * 25), 'owner', store=False)))
-add('lead-too-long-size-unicode', 'owner', ONBOARD, 500, TOO_LONG(150), method='PATCH',
+add('lead-too-long-size-unicode', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'lead_data': {'lead_sport_association_role': 'r', 'lead_sport_association_size': 'è' * 151, 'lead_sport_market_channel': 'c'}},
     effect=effect(user_save('owner', {'lead_sport_association_role': 'r', 'lead_sport_association_size': 'è' * 151,
                                       'lead_sport_market_channel': 'c'}, 'owner', store=False)))
@@ -601,10 +602,48 @@ add('association-subscription-fee-blank', 'owner', ONBOARD, 400, {'error': repr_
     'subscription_fee': [('A valid number is required.', 'invalid')]})}, method='PATCH', body={'sport_association': {'subscription_fee': ''}},
     effect=effect())
 # float('') raises after the serializer saved: the atomic block rolls the association save back.
-add('membership-fee-blank-float-error', 'owner', ONBOARD, 500, {'error': "could not convert string to float: ''"}, method='PATCH',
+add('membership-fee-blank-float-error', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'membership_data': {'membership_fee': ''}}, effect=effect())
-add('membership-fee-spaces-float-error', 'owner', ONBOARD, 500, {'error': "could not convert string to float: '  '"}, method='PATCH',
+add('membership-fee-spaces-float-error', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
     body={'membership_data': {'membership_fee': '  ', 'subscription_fee': '9'}}, effect=effect())
+
+# --- season/fiscal values the column cannot take roll everything back; the ones int() reads are stored ----
+def season_body(day, month=2, section='season'):
+    return {'membership_data': {section: {'day': day, 'month': month}}}
+
+
+def season_raw(day_text, section='season'):
+    return '{"membership_data": {"%s": {"day": %s, "month": 2}}}' % (section, day_text)
+
+
+for label, value in (('too-large', 40000), ('negative', -1), ('null', None), ('list', [1]), ('dict', {}), ('huge', 2 ** 70),
+                     ('text', 'abc'), ('text-too-large', '99999'), ('text-negative', '-3'), ('empty-text', ''), ('float-negative', -1.5)):
+    add('membership-season-day-' + label, 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH', body=season_body(value), effect=effect())
+add('membership-fiscal-month-too-large', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH', body=season_body(1, 70000, 'fiscal'), effect=effect())
+add('membership-season-day-float-overflow', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH', raw_body=season_raw('1e400'),
+    content_type='application/json', effect=effect())
+add('membership-season-day-float-too-large', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH', raw_body=season_raw('1e5'),
+    content_type='application/json', effect=effect())
+add('membership-season-day-nul-text', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH', body=season_body('1\u0000'), effect=effect())
+for label, day, month, stored_day, stored_month in (
+        ('float', 2.5, 3, 2, 3), ('bool', True, False, 1, 0), ('padded-text', ' 7 ', '1_1', 7, 11), ('unicode-digits', '\u0661\u0662', '\u0663', 12, 3),
+        ('float-negative-zero', -0.5, 4, 0, 4), ('float-upper', 32767.9, 5, 32767, 5)):
+    add('membership-season-' + label, 'owner', ONBOARD, 200, UPDATED, method='PATCH', body=season_body(day, month),
+        effect=effect(user_save('owner', {'balance_sheet_year': 4, 'subscription_start_day': day, 'subscription_start_month': month}, 'owner')))
+    USERS['owner'].update({'subscription_start_day': stored_day, 'subscription_start_month': stored_month})
+add('membership-season-exponent-float', 'owner', ONBOARD, 200, UPDATED, method='PATCH', raw_body=season_raw('1e1'),
+    content_type='application/json',
+    effect=effect(user_save('owner', {'balance_sheet_year': 4, 'subscription_start_day': 10.0, 'subscription_start_month': 2}, 'owner')))
+add('membership-fiscal-bool-and-unicode', 'owner', ONBOARD, 200, UPDATED, method='PATCH', body=season_body(True, '\u0664', 'fiscal'),
+    effect=effect(user_save('owner', {'balance_sheet_year': 4, 'balance_sheet_start_day': True, 'balance_sheet_start_month': '\u0664'}, 'owner')))
+USERS['owner'].update({'balance_sheet_start_day': 1, 'balance_sheet_start_month': 4})
+# A NUL character cannot be written to a text column: the audit entry that quotes it fails first.
+add('lead-nul-role', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
+    body={'lead_data': dict(LEAD_REST, lead_sport_association_role='a\u0000b')}, effect=effect())
+add('lead-nul-phone-after-long-role', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
+    body={'lead_data': dict(LEAD_REST, lead_sport_association_role=long_role, phone='1\u00002')}, effect=effect())
+add('lead-nul-in-container', 'owner', ONBOARD, 500, FIXED_ERROR, method='PATCH',
+    body={'lead_data': dict(LEAD_REST, lead_sport_association_role=['a\u0000'])}, effect=effect())
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

@@ -495,7 +495,7 @@ Left refused in these families, with the reason:
   FatturaPA inputs outside the subset.
 - invoice-generate: `send_receipt_email` of other JSON types; approve without a configured producer (class C).
 - instructor-hours: document deletes that cascade to other models' rows (each with its own audit entry).
-- instructor-writes: report workbook inputs the writer treats as formulas, rich strings or links with an anchor; subnormal products.
+- instructor-writes: report workbook inputs the writer treats as formulas or links with an anchor; subnormal products.
 
 ## Remaining A items, per family
 
@@ -940,7 +940,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 |---|---|---|---|---|
 | GET instructor/report | other date spellings | report DTO | B (**ported** in v2-rest-docs) | UI sends `DD/MM/YYYY` (`course/instructor/modals/ReportModal.svelte:10-11,22`). |
 | GET instructor/report | course subscription ids not str/None in attendance JSON | report service | B (**ported** in v2-rest-docs) | legacy: yes (imported attendance); cheap. |
-| GET instructor/report | workbook inputs xlsxwriter port refuses: cells starting `=`/`{=…}`, `<r>…</r>`, URLs with `#` | `BE_GO/internal/xlsxexport/xlsxwriter.go:95,97,109` | B | Event titles/descriptions are free text; a description starting with `=` or a link with an anchor would hit it. legacy: yes; medium. |
+| GET instructor/report | workbook inputs xlsxwriter port refuses: cells starting `=`/`{=…}`, URLs with `#` (text shaped like `<r>…</r>` is ported: Django writes it as one escaped run, `xlsx_text.py`) | `BE_GO/internal/xlsxexport/xlsxwriter.go:95,97,109` | B | Event titles/descriptions are free text; a description starting with `=` or a link with an anchor would hit it. legacy: yes; medium. |
 | instructor writes | non-canonical `X-Group-Id` | instructor_writes service | B (**ported** in v2-rest-docs) | Not sent by UI. |
 | compensation | Decimal infinities/NaN, exponents beyond ±100000, >28-digit products | `service/instructor_writes.go:427,447-453`; `dto/instructor_writes.go:350-365` | B (**ported** in v2-rest-docs) | Values come from UI number inputs. legacy: no; cheap. |
 
@@ -1016,7 +1016,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### misc-exports.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/rich-string/`#` URL text in member fields. legacy: yes. Cost: medium. |
+| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/`#` URL text in member fields (text shaped like `<r>…</r>` is ported: written as an escaped run). legacy: yes. Cost: medium. |
 | GET invoice/list/export?m=xlsx | openpyxl-refused input | `service/misc_exports.go:493` | B | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
 
 ### modules-responses.md
@@ -1070,9 +1070,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | ported | Both keys are read-only serializer fields in Django; Go reads only the checklist flags (`profile-misc.md`, `seconb-green-r2`). |
 | PATCH onboarding/update | multipart file parts | `handler/profile_misc.go` (`Onboarding`) | ported (rest-prof) | The file is the QueryDict value: serializer branches answer `Expected a dictionary, but got InMemoryUploadedFile.`, `lead_data` the subscript 500. Bodies over 2621440 bytes with a file part stay refused (another file class, B). |
 | same | soft-deleted owner association | `service/profile_misc.go` (`association`) | ported (rest-prof) | The saves work; the audit entries have no index row (`profile-misc.md`). |
-| same | lead containers / values over the column length | `service/profile_misc.go` (`onboardingLead`) | ported (rest-prof) | Containers are stored as their `str()`; an over-long value leaves the audit entry and answers the varchar error text. A NUL character stays refused (the error text quotes the audit row, B). |
+| same | lead containers / values over the column length | `service/profile_misc.go` (`onboardingLead`) | ported (rest-prof) | Containers are stored as their `str()`; an over-long value leaves the audit entry and answers the varchar error text. A NUL character in a value answers the fixed 500 message with nothing written (ported in t2c: the view no longer sends database error text). |
 | same | fee repr with exponent | `dto/profile_misc.go` (`PythonFloatRepr`) | ported (rest-prof) | Python repr incl. exponent form; unit-tested, a serializer-valid fee never needs it. A blank nullable fee is `None` (serializer) and `float('')` raises in `membership_data` (ported). Non-ASCII-digit fee strings stay refused (B). |
-| same | season/fiscal not int 0..32767 (floats, bools, null, containers, out of range) | `service/profile_misc.go` (`onboardingMembership`) | B | The database error text quotes the row, so it cannot be matched without copying the data. The UI sends ints from selects (`routes/onboarding/partials/step1.svelte:59-75`). |
+| same | season/fiscal not int 0..32767 (floats, bools, null, containers, out of range) | `dto/profile_misc.go` (`PythonSmallIntColumn`) | ported (t2c) | The view answers a fixed message for a save error, so the stored values (floats truncated, booleans, Unicode digits) and the rolled-back failures are reproduced. |
 
 ### payment-export.md
 | route | refusal condition | Go site | class | evidence / notes |

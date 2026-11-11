@@ -31,26 +31,32 @@
   - The serializer save follows. The view then sets `balance_sheet_year = 4` and the raw `season` / `fiscal` day and month, and assigns `float()` of each non-null fee.
   - The association is saved a second time. auditlog compares the stored decimal with the float, so `['20.00', '20.0']` is a change entry even though the column value does not change.
   - Next comes the user save, audited with `user.sport_association`. Last, the configuration's `onboarding_completed_at` is set.
-  - Any later exception rolls back the earlier association save and its audit: a missing `day` key, or `Field 'subscription_start_day' expected a number but got 'abc'.`.
+  - Any later exception rolls back the earlier association save and its audit: a missing `day` key, or a season/fiscal value the column cannot take. Every exception the view catches (not a validation error) is answered with the fixed message `500 {"error": "Unable to update the onboarding data."}`; the detail goes to the server log only.
 - `lead_data`: three required keys (role, size, channel; a missing one is a KeyError 500 before any save) and an optional `phone`. CharField stores `str()` of numbers and booleans. The user save is autocommit.
 - `onboarding_data`: `UsersOnboarding.objects.get(user=request.user)`. A missing row is a 500 with the DoesNotExist text. `UsersOnboardingSerializer(partial=True)` validates the boolean flags. `users_onboarding_id` and `user` are read-only serializer fields: the update only changes the checklist fields of the caller's own row, and any value sent for those two keys is not read. The audit index resolves through the actor's association, so a collaborator's entry has no index row.
 
 ## Not ported (explicit refusals before any committed write)
 
 - **`profile/update/subscription/template` is ported separately** in [profile-template.md](profile-template.md), with a bs4 `prettify()` port and a rectangular image bound.
-- In `onboarding/update`, Go answers the 500 page instead of reproducing a database error text in these cases:
-  - Season/fiscal values that are not JSON integers or ASCII integer strings within 0..32767 (floats, booleans, `null`, containers, out-of-range values): the database error text quotes the row.
-  - A NUL character in a lead value: the error text quotes the audit row that failed to insert.
+- In `onboarding/update`, Go answers the 500 page instead of reproducing Django in these cases:
   - Fee strings with non-ASCII digits (`float()` reads them, the port does not).
   - Multipart bodies whose Content-Length is over 2621440 bytes and that carry a file part (Django uses another file class there).
   Inside the atomic block a refusal rolls back like Django's exception.
 
+## Season/fiscal values and NUL characters
+
+The membership day and month go through `IntegerField.get_prep_value` (`int(value)`) and the column's 0..32767 range
+(`dto.PythonSmallIntColumn`): integers, floats (truncated; `1e400` and values outside the range fail), booleans (1 and 0), ASCII and
+Unicode-digit strings with Python's white space and underscores are stored; `null`, containers, text `int()` rejects and numbers
+out of range fail the save, roll everything back and answer the fixed 500 message. A NUL character in a lead value fails the audit
+insert: nothing is written and the answer is the fixed message.
+
 ## Ported from the former refusals (rest-prof)
 
 - **Soft-deleted association.** `request.user.sportassociation` still loads it, so the `sport_association` and `membership_data` saves work. The association and user audit entries have no index row (no active association resolves). `lead_data` works the same way and `onboarding_data` still answers the missing-row 500.
-- **Lead values.** A container is stored as its Python `str()` (list and dict repr, floats as `1.5e+20`). A value longer than the column (150, phone 20) fails the UPDATE after auditlog wrote its entry and index row (autocommit), so the entry stays, the row does not change and the answer is `500 {"error": "value too long for type character varying(N)\n"}`. When several columns are too long the first in table order reports (phone, then role, size, channel).
+- **Lead values.** A container is stored as its Python `str()` (list and dict repr, floats as `1.5e+20`). A value longer than the column (150, phone 20) fails the UPDATE after auditlog wrote its entry and index row (autocommit), so the entry stays, the row does not change and the answer is the fixed 500 message. When several columns are too long the first in table order reports (phone, then role, size, channel).
 - **Fee repr.** The second save audits `str(float(fee))`; the repr now follows Python (exponent form included). A serializer-valid fee never needs the exponent form (nine digits, two places), so this is covered by a unit test only. A negative zero is stored as `0.00` and audited as `-0.00`, then `-0.0`.
-- **Blank nullable fee.** `membership_fee` of `''` or whitespace is `None` for the serializer (`DecimalField.validate_empty_values`): `sport_association` clears the fee. In `membership_data` the later `float('')` raises, so the answer is `500 {"error": "could not convert string to float: ''"}` and the earlier save rolls back. A blank `subscription_fee` stays invalid.
+- **Blank nullable fee.** `membership_fee` of `''` or whitespace is `None` for the serializer (`DecimalField.validate_empty_values`): `sport_association` clears the fee. In `membership_data` the later `float('')` raises, so the answer is the fixed 500 message and the earlier save rolls back. A blank `subscription_fee` stays invalid.
 - **Multipart file parts.** `request.data` holds the uploaded file: a serializer branch answers `Invalid data. Expected a dictionary, but got InMemoryUploadedFile.`, `lead_data` the 500 `'InMemoryUploadedFile' object is not subscriptable`, a text branch value its usual error, and a file under another key is ignored.
 
 ## Evidence

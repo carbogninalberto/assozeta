@@ -12949,6 +12949,167 @@ null,
 "flags": 0,
 "method": 8,
 "name": "xl/worksheets/sheet1.xml",
+"sha256": "93346ff2ac490f1136dac8facab771c8527a636d598a57439d77b38d1dc96df7"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/workbook.xml",
+"sha256": "43fb8fd7534fe4fc258a970c5e5b32929ddf426ea1b4d15c54d2c96e3e0a5822"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/sharedStrings.xml",
+"sha256": "b853494df09d89ead6c1e3b9df02cdf904f75e85b170ed30e571fe7ef2ada7b4"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/styles.xml",
+"sha256": "0691b7264b18062c2d45017177c3452e615ea8f4fe9098fdc36f4f119f4b39d7"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/theme/theme1.xml",
+"sha256": "75104b2164c20dab2578383d827deac3a7eec077c3f7c99a4099a551fdebb134"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "docProps/core.xml",
+"sha256": "b0baf02351dd28c526d634a9740d5a745d02300b58cdcab6b87b4c97c1c016f4"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "docProps/app.xml",
+"sha256": "aaf87fd9766ba5ed8c0542b38411d0c6b1a5980408edf8daebf1ecd5045f2300"
+}
+],
+"input": {
+"rows": [
+[
+"<r><t>b</t></r>",
+"<r>a & b</r>",
+"x<r>y</r>",
+"<r>open",
+"</r>",
+"04/01/2024 10:00",
+{
+"int": "1"
+},
+"<r>_x0041_\u0001</r>",
+" <r>sp</r> "
+]
+],
+"schema": [
+[
+"first_name",
+"Nome"
+],
+[
+"last_name",
+"Cognome"
+],
+[
+"course",
+"Corso"
+],
+[
+"title",
+"Titolo"
+],
+[
+"description",
+"Descrizione"
+],
+[
+"date",
+"Data"
+],
+[
+"attendees_count",
+"Numero di partecipanti"
+],
+[
+"attendees",
+"Partecipanti"
+],
+[
+"expected_absences",
+"Assenti previsti"
+]
+]
+},
+"kind": "instructor",
+"name": "ir-rich-text"
+},
+{
+"entries": [
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "[Content_Types].xml",
+"sha256": "d922d7af45a35a5613fc4bc66aa64635e127b0c538d7e78b2e028f8b4e23b812"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "_rels/.rels",
+"sha256": "1285b20099c64699001f9d90ea040ca1c177fa99bc3ae8a841128874820f01a4"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/_rels/workbook.xml.rels",
+"sha256": "596e47c094f3062e266034ee698571b56b247550b9e1035f0300d54d2f0692b2"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/worksheets/sheet1.xml",
 "sha256": "5686ae854ebbdf52c23cafb6a2d01cb1bc69053a7542651d8a20f31fb280108c"
 },
 {
@@ -14533,6 +14694,137 @@ null,
 "flags": 0,
 "method": 8,
 "name": "xl/worksheets/sheet1.xml",
+"sha256": "9c62d23f2d2a1c08ced5e7c1b24556078b8335ece07d7126f6e1b54839e33c34"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/workbook.xml",
+"sha256": "3948b6884b366fe5d5f975c5cdb017c03efaca3b2d6558a8babae116564b8ff8"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/sharedStrings.xml",
+"sha256": "14d90542a250d9f7e102cb5a724eaa333d650a75a72f7bfdc98ab28f8d8929ed"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/styles.xml",
+"sha256": "0691b7264b18062c2d45017177c3452e615ea8f4fe9098fdc36f4f119f4b39d7"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/theme/theme1.xml",
+"sha256": "75104b2164c20dab2578383d827deac3a7eec077c3f7c99a4099a551fdebb134"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "docProps/core.xml",
+"sha256": "b0baf02351dd28c526d634a9740d5a745d02300b58cdcab6b87b4c97c1c016f4"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "docProps/app.xml",
+"sha256": "3629eeb317e398282059ab70c6371ee5eb5c068903f56d31a570a169bdcbf730"
+}
+],
+"input": {
+"columns": [
+"<r>h</r>",
+"Cognome",
+"Codice fiscale",
+"Stato",
+"Certificato"
+],
+"rows": [
+[
+"<r><t>b</t></r>",
+"a<r>",
+"<r>a & b \"c\"</r>",
+"<r></r>",
+"<r>x"
+],
+[
+"<r>",
+"</r>",
+"<r><r>n</r></r>",
+null,
+""
+]
+]
+},
+"kind": "subscription",
+"name": "sub-rich-text"
+},
+{
+"entries": [
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "[Content_Types].xml",
+"sha256": "d922d7af45a35a5613fc4bc66aa64635e127b0c538d7e78b2e028f8b4e23b812"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "_rels/.rels",
+"sha256": "1285b20099c64699001f9d90ea040ca1c177fa99bc3ae8a841128874820f01a4"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/_rels/workbook.xml.rels",
+"sha256": "596e47c094f3062e266034ee698571b56b247550b9e1035f0300d54d2f0692b2"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/worksheets/sheet1.xml",
 "sha256": "a0523630c16235cd315e951bee4c15570fb3cd69d715f48bbd418b133efcc4a6"
 },
 {
@@ -15393,6 +15685,150 @@ null,
 },
 "kind": "module",
 "name": "mod-dup-labels"
+},
+{
+"entries": [
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "[Content_Types].xml",
+"sha256": "d922d7af45a35a5613fc4bc66aa64635e127b0c538d7e78b2e028f8b4e23b812"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "_rels/.rels",
+"sha256": "1285b20099c64699001f9d90ea040ca1c177fa99bc3ae8a841128874820f01a4"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/_rels/workbook.xml.rels",
+"sha256": "596e47c094f3062e266034ee698571b56b247550b9e1035f0300d54d2f0692b2"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/worksheets/sheet1.xml",
+"sha256": "ebec24f48ad93bcdaa9977f44d9db533f7cb757f0fd69cc4b970e8ed7241e613"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/workbook.xml",
+"sha256": "11167824c67fd9c1db44f27f8c9bbb486ac2d8a27ecc12a19cb0fb68e656af3e"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/sharedStrings.xml",
+"sha256": "242208a3abd8ac6adeb89e313b29017984186d613fb06446067b9df53607c240"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/styles.xml",
+"sha256": "0691b7264b18062c2d45017177c3452e615ea8f4fe9098fdc36f4f119f4b39d7"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "xl/theme/theme1.xml",
+"sha256": "75104b2164c20dab2578383d827deac3a7eec077c3f7c99a4099a551fdebb134"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "docProps/core.xml",
+"sha256": "b0baf02351dd28c526d634a9740d5a745d02300b58cdcab6b87b4c97c1c016f4"
+},
+{
+"create_system": 3,
+"create_version": 20,
+"external": 2172649472,
+"extract_version": 20,
+"flags": 0,
+"method": 8,
+"name": "docProps/app.xml",
+"sha256": "d8703069be7a217e2ff00f7811b21a94a04040c7a31d5562c489cfa5bb1721c5"
+}
+],
+"input": {
+"columns": [
+"<r><t>q</t></r>",
+"Data creazione",
+"Progressivo risposta",
+"Posizione in coda",
+"Utente",
+"Pagamento",
+"Approvato",
+"Allegati"
+],
+"rows": [
+[
+"<r>a < b</r>",
+"d",
+{
+"int": "1"
+},
+"-",
+"-",
+"-",
+"x",
+""
+],
+[
+"<r></r>",
+"<r>d</r>",
+{
+"int": "2"
+},
+"-",
+"-",
+"-",
+"<r>x</r>",
+""
+]
+]
+},
+"kind": "module",
+"name": "mod-rich-text"
 },
 {
 "entries": [
@@ -25696,6 +26132,7 @@ null
 "11167824c67fd9c1db44f27f8c9bbb486ac2d8a27ecc12a19cb0fb68e656af3e": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<workbook xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><fileVersion appName=\"xl\" lastEdited=\"4\" lowestEdited=\"4\" rupBuild=\"4505\"/><workbookPr defaultThemeVersion=\"124226\"/><bookViews><workbookView xWindow=\"240\" yWindow=\"15\" windowWidth=\"16095\" windowHeight=\"9660\"/></bookViews><sheets><sheet name=\"Risposte\" sheetId=\"1\" r:id=\"rId1\"/></sheets><calcPr calcId=\"124519\" fullCalcOnLoad=\"1\"/></workbook>",
 "1285b20099c64699001f9d90ea040ca1c177fa99bc3ae8a841128874820f01a4": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/><Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/><Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/></Relationships>",
 "14a3e0f4a63731687aef23e44e1203f99f33052c5e93fd70b2be83a126212d3d": "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\" /><Default Extension=\"xml\" ContentType=\"application/xml\" /><Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\" /><Override PartName=\"/xl/theme/theme1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\" /><Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\" /><Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\" /><Override PartName=\"/xl/worksheets/sheet1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/worksheets/sheet2.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/worksheets/sheet3.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/worksheets/sheet4.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/worksheets/sheet5.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\" /><Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\" /></Types>",
+"14d90542a250d9f7e102cb5a724eaa333d650a75a72f7bfdc98ab28f8d8929ed": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"13\" uniqueCount=\"13\"><si><r><t xml:space=\"preserve\">&lt;r&gt;h&lt;/r&gt;</t></r></si><si><t>Cognome</t></si><si><t>Codice fiscale</t></si><si><t>Stato</t></si><si><t>Certificato</t></si><si><r><t xml:space=\"preserve\">&lt;r&gt;&lt;t&gt;b&lt;/t&gt;&lt;/r&gt;</t></r></si><si><t>&lt;r&gt;</t></si><si><t>a&lt;r&gt;</t></si><si><t>&lt;/r&gt;</t></si><si><r><t xml:space=\"preserve\">&lt;r&gt;a &amp; b \"c\"&lt;/r&gt;</t></r></si><si><r><t xml:space=\"preserve\">&lt;r&gt;&lt;r&gt;n&lt;/r&gt;&lt;/r&gt;</t></r></si><si><r><t xml:space=\"preserve\">&lt;r&gt;&lt;/r&gt;</t></r></si><si><t>&lt;r&gt;x</t></si></sst>",
 "15586b8b5fa62b6cbe80c791dc12827c15c2c511f84901daf48e025d77259225": "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet1.xml\" Id=\"rId1\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet2.xml\" Id=\"rId2\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\" Id=\"rId3\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\" Id=\"rId4\" /></Relationships>",
 "15c84b8f583c28e9508ad872670f8ea82a1315f0b2f85a25f8c247f4ba7957a5": "<workbook xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><workbookPr /><workbookProtection /><bookViews><workbookView visibility=\"visible\" minimized=\"0\" showHorizontalScroll=\"1\" showVerticalScroll=\"1\" showSheetTabs=\"1\" tabRatio=\"600\" firstSheet=\"0\" activeTab=\"0\" autoFilterDateGrouping=\"1\" /></bookViews><sheets><sheet name=\"Calcio\" sheetId=\"1\" state=\"visible\" r:id=\"rId1\" /><sheet name=\"Foglio\" sheetId=\"2\" state=\"visible\" r:id=\"rId2\" /></sheets><definedNames /><calcPr calcId=\"124519\" fullCalcOnLoad=\"1\" /></workbook>",
 "1644572d4aff5ba611f68de4ab68e1e0c98cd5d96da4912d8b9be2a1b4222fb2": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A7\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"14\" customWidth=\"1\" min=\"1\" max=\"1\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>col 0</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>445605104654</v></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\" /></row><row r=\"4\"><c r=\"A4\" t=\"n\"><v>61350922682</v></c></row><row r=\"5\"><c r=\"A5\" t=\"n\"><v>679808138584</v></c></row><row r=\"6\"><c r=\"A6\" t=\"inlineStr\"><is><t>0+07</t></is></c></row><row r=\"7\"><c r=\"A7\" t=\"inlineStr\"><is><t xml:space=\"preserve\">e3 </t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
@@ -25713,6 +26150,7 @@ null
 "214dc028bebfa39bcc1ff5f0dbc90acb2ea70abf3fefceb18bc57db746468a1e": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:B4\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"24\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"24\" customWidth=\"1\" min=\"2\" max=\"2\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"n\"><v>1.180591620717411e+21</v></c><c r=\"B1\" s=\"1\" t=\"n\"><v>1.180591620717411e+21</v></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>x</t></is></c><c r=\"B2\" t=\"inlineStr\"><is><t>12</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>zz</t></is></c><c r=\"B3\" t=\"inlineStr\"><is><t>7</t></is></c></row><row r=\"4\"><c r=\"A4\" t=\"inlineStr\"><is><t>wwwwwwwwwwwwwwwwwwwwwwwwwwwwww</t></is></c><c r=\"B4\" t=\"inlineStr\"><is><t>8</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "21e5723dc93682706dfc71c6e78f7cc737ddcafc17611bb1f4cc764d095c4a61": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:B3\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"4\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"4\" customWidth=\"1\" min=\"2\" max=\"2\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>a</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>a</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>1</t></is></c><c r=\"B2\" t=\"inlineStr\"><is><t>x</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>2</t></is></c><c r=\"B3\" t=\"inlineStr\"><is><t>y</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "220ec971e9d9d929ba107a8079d49666fff8022a37b5b66aba664c73fc14e4ce": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><dimension ref=\"A1:C4\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15\"/><cols><col min=\"1\" max=\"2\" width=\"11.7109375\" customWidth=\"1\"/></cols><sheetData><row r=\"1\" spans=\"1:3\"><c r=\"B1\" s=\"1\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"1\" t=\"s\"><v>1</v></c></row><row r=\"2\" spans=\"1:3\"><c r=\"A2\" s=\"1\"><v>0</v></c><c r=\"B2\" t=\"s\"><v>2</v></c><c r=\"C2\" t=\"s\"><v>2</v></c></row><row r=\"3\" spans=\"1:3\"><c r=\"A3\" s=\"1\"><v>1</v></c><c r=\"B3\" t=\"s\"><v>2</v></c><c r=\"C3\" t=\"s\"><v>3</v></c></row><row r=\"4\" spans=\"1:3\"><c r=\"A4\" s=\"1\"><v>2</v></c><c r=\"B4\" t=\"s\"><v>3</v></c><c r=\"C4\" t=\"s\"><v>2</v></c></row></sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>",
+"242208a3abd8ac6adeb89e313b29017984186d613fb06446067b9df53607c240": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"20\" uniqueCount=\"15\"><si><r><t xml:space=\"preserve\">&lt;r&gt;&lt;t&gt;q&lt;/t&gt;&lt;/r&gt;</t></r></si><si><t>Data creazione</t></si><si><t>Progressivo risposta</t></si><si><t>Posizione in coda</t></si><si><t>Utente</t></si><si><t>Pagamento</t></si><si><t>Approvato</t></si><si><t>Allegati</t></si><si><r><t xml:space=\"preserve\">&lt;r&gt;a &lt; b&lt;/r&gt;</t></r></si><si><r><t xml:space=\"preserve\">&lt;r&gt;&lt;/r&gt;</t></r></si><si><t>d</t></si><si><r><t xml:space=\"preserve\">&lt;r&gt;d&lt;/r&gt;</t></r></si><si><t>-</t></si><si><t>x</t></si><si><r><t xml:space=\"preserve\">&lt;r&gt;x&lt;/r&gt;</t></r></si></sst>",
 "245e681e8bda85d7234e1ed186ced19eba3bc7e986431bb3db748c940c0dacdd": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A3\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"50\" customWidth=\"1\" min=\"1\" max=\"1\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>h</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>short</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "24b42f68f70e83a3a6bd707e5a58f9d2ba87b850db0569f0e090dafc80dbb573": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:E4\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"4\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"5\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"3\" customWidth=\"1\" min=\"3\" max=\"3\" /><col width=\"6\" customWidth=\"1\" min=\"4\" max=\"4\" /><col width=\"3\" customWidth=\"1\" min=\"5\" max=\"5\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>x</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>y</t></is></c><c r=\"C1\" s=\"1\" t=\"inlineStr\"><is><t>z</t></is></c><c r=\"D1\" s=\"1\" t=\"inlineStr\"><is><t>w</t></is></c><c r=\"E1\" s=\"1\" t=\"inlineStr\"><is><t>n</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>a</t></is></c><c r=\"B2\" t=\"n\"><v>1.5</v></c><c r=\"C2\" t=\"inlineStr\"><is><t>1</t></is></c><c r=\"D2\" t=\"inlineStr\" /><c r=\"E2\" t=\"n\"><v>3</v></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>bé</t></is></c><c r=\"B3\" t=\"n\"><v>2</v></c><c r=\"C3\" t=\"inlineStr\"><is><t>2</t></is></c><c r=\"D3\" t=\"inlineStr\" /><c r=\"E3\" t=\"n\"><v>4</v></c></row><row r=\"4\"><c r=\"A4\" t=\"inlineStr\"><is><t>c</t></is></c><c r=\"B4\" t=\"inlineStr\" /><c r=\"C4\" t=\"inlineStr\"><is><t>x</t></is></c><c r=\"D4\" t=\"inlineStr\" /><c r=\"E4\" t=\"n\"><v>5</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "27dd57ec40870158fcbffa923ca9a73ad2f5e9240757bfec66d35fa7630fa1c7": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:C2\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"5\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"6\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"6\" customWidth=\"1\" min=\"3\" max=\"3\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"n\"><v>1.5</v></c><c r=\"B1\" s=\"1\" t=\"b\"><v>1</v></c><c r=\"C1\" s=\"1\" t=\"inlineStr\" /></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>x</t></is></c><c r=\"B2\" t=\"inlineStr\"><is><t>yy</t></is></c><c r=\"C2\" t=\"inlineStr\"><is><t>z</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
@@ -25841,6 +26279,7 @@ null
 "8e0807b1deaf065d914af5b00622e5ea1d266e8f00a0587ef1d4e2e4b98c64a3": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A3\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"11\" customWidth=\"1\" min=\"1\" max=\"1\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>col 0</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>-54118.38</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>E31+</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "90aef7a5f1755f14a7d5cbdec60f87e7036912dd4aedcd1f1979e6a3ba8338fd": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A7\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"20\" customWidth=\"1\" min=\"1\" max=\"1\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>col 0</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>-830809.6020055418</v></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\" /></row><row r=\"4\"><c r=\"A4\" t=\"n\"><v>36776631581.30444</v></c></row><row r=\"5\"><c r=\"A5\" t=\"inlineStr\"><is><t>-3e629</t></is></c></row><row r=\"6\"><c r=\"A6\" t=\"inlineStr\"><is><t>- 559918+</t></is></c></row><row r=\"7\"><c r=\"A7\" t=\"inlineStr\"><is><t>86e38e475</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "91b00ad66794f2021804642e47514a9f478a09b6861a7433893f3decd6ae5240": "<workbook xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><workbookPr /><workbookProtection /><bookViews><workbookView visibility=\"visible\" minimized=\"0\" showHorizontalScroll=\"1\" showVerticalScroll=\"1\" showSheetTabs=\"1\" tabRatio=\"600\" firstSheet=\"0\" activeTab=\"0\" autoFilterDateGrouping=\"1\" /></bookViews><sheets><sheet name=\"A &amp; &lt;B&gt; &quot;c&quot; è\" sheetId=\"1\" state=\"visible\" r:id=\"rId1\" /></sheets><definedNames /><calcPr calcId=\"124519\" fullCalcOnLoad=\"1\" /></workbook>",
+"93346ff2ac490f1136dac8facab771c8527a636d598a57439d77b38d1dc96df7": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><dimension ref=\"A1:I2\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15\"/><cols><col min=\"1\" max=\"1\" width=\"17.7109375\" customWidth=\"1\"/><col min=\"2\" max=\"2\" width=\"14.7109375\" customWidth=\"1\"/><col min=\"3\" max=\"3\" width=\"11.7109375\" customWidth=\"1\"/><col min=\"4\" max=\"4\" width=\"9.7109375\" customWidth=\"1\"/><col min=\"5\" max=\"5\" width=\"13.7109375\" customWidth=\"1\"/><col min=\"6\" max=\"6\" width=\"18.7109375\" customWidth=\"1\"/><col min=\"7\" max=\"7\" width=\"24.7109375\" customWidth=\"1\"/><col min=\"8\" max=\"8\" width=\"17.7109375\" customWidth=\"1\"/><col min=\"9\" max=\"9\" width=\"18.7109375\" customWidth=\"1\"/></cols><sheetData><row r=\"1\" spans=\"1:9\"><c r=\"A1\" s=\"1\" t=\"s\"><v>0</v></c><c r=\"B1\" s=\"1\" t=\"s\"><v>1</v></c><c r=\"C1\" s=\"1\" t=\"s\"><v>2</v></c><c r=\"D1\" s=\"1\" t=\"s\"><v>3</v></c><c r=\"E1\" s=\"1\" t=\"s\"><v>4</v></c><c r=\"F1\" s=\"1\" t=\"s\"><v>5</v></c><c r=\"G1\" s=\"1\" t=\"s\"><v>6</v></c><c r=\"H1\" s=\"1\" t=\"s\"><v>7</v></c><c r=\"I1\" s=\"1\" t=\"s\"><v>8</v></c></row><row r=\"2\" spans=\"1:9\"><c r=\"A2\" t=\"s\"><v>9</v></c><c r=\"B2\" t=\"s\"><v>10</v></c><c r=\"C2\" t=\"s\"><v>11</v></c><c r=\"D2\" t=\"s\"><v>12</v></c><c r=\"E2\" t=\"s\"><v>13</v></c><c r=\"F2\" t=\"s\"><v>14</v></c><c r=\"G2\"><v>1</v></c><c r=\"H2\" t=\"s\"><v>15</v></c><c r=\"I2\" t=\"s\"><v>16</v></c></row></sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>",
 "94e8850c97dbbd83cd8fd86a67a9be851bb65c667a377c7188c5ce17c8770f5a": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:B41\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"4\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"8\" customWidth=\"1\" min=\"2\" max=\"2\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>n</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>s</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>0</v></c><c r=\"B2\" t=\"inlineStr\"><is><t>row 0</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"n\"><v>1</v></c><c r=\"B3\" t=\"inlineStr\"><is><t>row 1</t></is></c></row><row r=\"4\"><c r=\"A4\" t=\"n\"><v>2</v></c><c r=\"B4\" t=\"inlineStr\"><is><t>row 2</t></is></c></row><row r=\"5\"><c r=\"A5\" t=\"n\"><v>3</v></c><c r=\"B5\" t=\"inlineStr\"><is><t>row 3</t></is></c></row><row r=\"6\"><c r=\"A6\" t=\"n\"><v>4</v></c><c r=\"B6\" t=\"inlineStr\"><is><t>row 4</t></is></c></row><row r=\"7\"><c r=\"A7\" t=\"n\"><v>5</v></c><c r=\"B7\" t=\"inlineStr\"><is><t>row 5</t></is></c></row><row r=\"8\"><c r=\"A8\" t=\"n\"><v>6</v></c><c r=\"B8\" t=\"inlineStr\"><is><t>row 6</t></is></c></row><row r=\"9\"><c r=\"A9\" t=\"n\"><v>7</v></c><c r=\"B9\" t=\"inlineStr\"><is><t>row 7</t></is></c></row><row r=\"10\"><c r=\"A10\" t=\"n\"><v>8</v></c><c r=\"B10\" t=\"inlineStr\"><is><t>row 8</t></is></c></row><row r=\"11\"><c r=\"A11\" t=\"n\"><v>9</v></c><c r=\"B11\" t=\"inlineStr\"><is><t>row 9</t></is></c></row><row r=\"12\"><c r=\"A12\" t=\"n\"><v>10</v></c><c r=\"B12\" t=\"inlineStr\"><is><t>row 10</t></is></c></row><row r=\"13\"><c r=\"A13\" t=\"n\"><v>11</v></c><c r=\"B13\" t=\"inlineStr\"><is><t>row 11</t></is></c></row><row r=\"14\"><c r=\"A14\" t=\"n\"><v>12</v></c><c r=\"B14\" t=\"inlineStr\"><is><t>row 12</t></is></c></row><row r=\"15\"><c r=\"A15\" t=\"n\"><v>13</v></c><c r=\"B15\" t=\"inlineStr\"><is><t>row 13</t></is></c></row><row r=\"16\"><c r=\"A16\" t=\"n\"><v>14</v></c><c r=\"B16\" t=\"inlineStr\"><is><t>row 14</t></is></c></row><row r=\"17\"><c r=\"A17\" t=\"n\"><v>15</v></c><c r=\"B17\" t=\"inlineStr\"><is><t>row 15</t></is></c></row><row r=\"18\"><c r=\"A18\" t=\"n\"><v>16</v></c><c r=\"B18\" t=\"inlineStr\"><is><t>row 16</t></is></c></row><row r=\"19\"><c r=\"A19\" t=\"n\"><v>17</v></c><c r=\"B19\" t=\"inlineStr\"><is><t>row 17</t></is></c></row><row r=\"20\"><c r=\"A20\" t=\"n\"><v>18</v></c><c r=\"B20\" t=\"inlineStr\"><is><t>row 18</t></is></c></row><row r=\"21\"><c r=\"A21\" t=\"n\"><v>19</v></c><c r=\"B21\" t=\"inlineStr\"><is><t>row 19</t></is></c></row><row r=\"22\"><c r=\"A22\" t=\"n\"><v>20</v></c><c r=\"B22\" t=\"inlineStr\"><is><t>row 20</t></is></c></row><row r=\"23\"><c r=\"A23\" t=\"n\"><v>21</v></c><c r=\"B23\" t=\"inlineStr\"><is><t>row 21</t></is></c></row><row r=\"24\"><c r=\"A24\" t=\"n\"><v>22</v></c><c r=\"B24\" t=\"inlineStr\"><is><t>row 22</t></is></c></row><row r=\"25\"><c r=\"A25\" t=\"n\"><v>23</v></c><c r=\"B25\" t=\"inlineStr\"><is><t>row 23</t></is></c></row><row r=\"26\"><c r=\"A26\" t=\"n\"><v>24</v></c><c r=\"B26\" t=\"inlineStr\"><is><t>row 24</t></is></c></row><row r=\"27\"><c r=\"A27\" t=\"n\"><v>25</v></c><c r=\"B27\" t=\"inlineStr\"><is><t>row 25</t></is></c></row><row r=\"28\"><c r=\"A28\" t=\"n\"><v>26</v></c><c r=\"B28\" t=\"inlineStr\"><is><t>row 26</t></is></c></row><row r=\"29\"><c r=\"A29\" t=\"n\"><v>27</v></c><c r=\"B29\" t=\"inlineStr\"><is><t>row 27</t></is></c></row><row r=\"30\"><c r=\"A30\" t=\"n\"><v>28</v></c><c r=\"B30\" t=\"inlineStr\"><is><t>row 28</t></is></c></row><row r=\"31\"><c r=\"A31\" t=\"n\"><v>29</v></c><c r=\"B31\" t=\"inlineStr\"><is><t>row 29</t></is></c></row><row r=\"32\"><c r=\"A32\" t=\"n\"><v>30</v></c><c r=\"B32\" t=\"inlineStr\"><is><t>row 30</t></is></c></row><row r=\"33\"><c r=\"A33\" t=\"n\"><v>31</v></c><c r=\"B33\" t=\"inlineStr\"><is><t>row 31</t></is></c></row><row r=\"34\"><c r=\"A34\" t=\"n\"><v>32</v></c><c r=\"B34\" t=\"inlineStr\"><is><t>row 32</t></is></c></row><row r=\"35\"><c r=\"A35\" t=\"n\"><v>33</v></c><c r=\"B35\" t=\"inlineStr\"><is><t>row 33</t></is></c></row><row r=\"36\"><c r=\"A36\" t=\"n\"><v>34</v></c><c r=\"B36\" t=\"inlineStr\"><is><t>row 34</t></is></c></row><row r=\"37\"><c r=\"A37\" t=\"n\"><v>35</v></c><c r=\"B37\" t=\"inlineStr\"><is><t>row 35</t></is></c></row><row r=\"38\"><c r=\"A38\" t=\"n\"><v>36</v></c><c r=\"B38\" t=\"inlineStr\"><is><t>row 36</t></is></c></row><row r=\"39\"><c r=\"A39\" t=\"n\"><v>37</v></c><c r=\"B39\" t=\"inlineStr\"><is><t>row 37</t></is></c></row><row r=\"40\"><c r=\"A40\" t=\"n\"><v>38</v></c><c r=\"B40\" t=\"inlineStr\"><is><t>row 38</t></is></c></row><row r=\"41\"><c r=\"A41\" t=\"n\"><v>39</v></c><c r=\"B41\" t=\"inlineStr\"><is><t>row 39</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "960874572491b61c829921ccd0668271a09563344a7214547a324a6fdfb7c68c": "<workbook xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><workbookPr /><workbookProtection /><bookViews><workbookView visibility=\"visible\" minimized=\"0\" showHorizontalScroll=\"1\" showVerticalScroll=\"1\" showSheetTabs=\"1\" tabRatio=\"600\" firstSheet=\"0\" activeTab=\"0\" autoFilterDateGrouping=\"1\" /></bookViews><sheets><sheet name=\"Tags\" sheetId=\"1\" state=\"visible\" r:id=\"rId1\" /><sheet name=\"Carnet\" sheetId=\"2\" state=\"visible\" r:id=\"rId2\" /></sheets><definedNames /><calcPr calcId=\"124519\" fullCalcOnLoad=\"1\" /></workbook>",
 "9617e054ab5f2ab0a119c8a369491610f5cbfdae04c9cdb57ab31507d6e5dc93": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><dimension ref=\"A1:H4\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15\"/><cols><col min=\"1\" max=\"1\" width=\"11.7109375\" customWidth=\"1\"/><col min=\"2\" max=\"2\" width=\"24.7109375\" customWidth=\"1\"/><col min=\"3\" max=\"3\" width=\"30.7109375\" customWidth=\"1\"/><col min=\"4\" max=\"4\" width=\"27.7109375\" customWidth=\"1\"/><col min=\"5\" max=\"5\" width=\"16.7109375\" customWidth=\"1\"/><col min=\"6\" max=\"7\" width=\"19.7109375\" customWidth=\"1\"/><col min=\"8\" max=\"8\" width=\"18.7109375\" customWidth=\"1\"/></cols><sheetData><row r=\"1\" spans=\"1:8\"><c r=\"A1\" s=\"1\" t=\"s\"><v>0</v></c><c r=\"B1\" s=\"1\" t=\"s\"><v>1</v></c><c r=\"C1\" s=\"1\" t=\"s\"><v>2</v></c><c r=\"D1\" s=\"1\" t=\"s\"><v>3</v></c><c r=\"E1\" s=\"1\" t=\"s\"><v>4</v></c><c r=\"F1\" s=\"1\" t=\"s\"><v>5</v></c><c r=\"G1\" s=\"1\" t=\"s\"><v>6</v></c><c r=\"H1\" s=\"1\" t=\"s\"><v>7</v></c></row><row r=\"2\" spans=\"1:8\"><c r=\"A2\"><v>5</v></c><c r=\"B2\" t=\"s\"><v>9</v></c><c r=\"C2\"><v>1</v></c><c r=\"D2\" t=\"s\"><v>10</v></c><c r=\"E2\" t=\"s\"><v>10</v></c><c r=\"F2\" t=\"s\"><v>10</v></c><c r=\"G2\" t=\"s\"><v>11</v></c></row><row r=\"3\" spans=\"1:8\"><c r=\"A3\" t=\"b\"><v>1</v></c><c r=\"B3\" t=\"s\"><v>9</v></c><c r=\"C3\"><v>2</v></c><c r=\"D3\" t=\"s\"><v>10</v></c><c r=\"E3\" t=\"s\"><v>10</v></c><c r=\"F3\" t=\"s\"><v>10</v></c><c r=\"G3\" t=\"s\"><v>11</v></c></row><row r=\"4\" spans=\"1:8\"><c r=\"A4\" t=\"s\"><v>8</v></c><c r=\"B4\" t=\"s\"><v>9</v></c><c r=\"C4\"><v>3</v></c><c r=\"D4\" t=\"s\"><v>10</v></c><c r=\"E4\" t=\"s\"><v>10</v></c><c r=\"F4\" t=\"s\"><v>10</v></c><c r=\"G4\" t=\"s\"><v>11</v></c></row></sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>",
@@ -25854,6 +26293,7 @@ null
 "9a7f584c4d831a228e817882ab2aa48326e3edfe546e733ecb881d1f4fcbb293": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:B3\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"4\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"4\" customWidth=\"1\" min=\"2\" max=\"2\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>f</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>f</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>1</v></c><c r=\"B2\" t=\"n\"><v>3</v></c></row><row r=\"3\"><c r=\"A3\" t=\"n\"><v>2.5</v></c><c r=\"B3\" t=\"n\"><v>4</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "9ad0aa05dfe1bcd356845efc6d772687af1dd3a3267a3b4e88a6856c2f339acd": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:G3\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"6\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"7\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"16\" customWidth=\"1\" min=\"3\" max=\"3\" /><col width=\"5\" customWidth=\"1\" min=\"4\" max=\"4\" /><col width=\"5\" customWidth=\"1\" min=\"5\" max=\"5\" /><col width=\"5\" customWidth=\"1\" min=\"6\" max=\"6\" /><col width=\"10\" customWidth=\"1\" min=\"7\" max=\"7\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>#</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>Corso</t></is></c><c r=\"C1\" s=\"1\" t=\"inlineStr\"><is><t>Nome e Cognome</t></is></c><c r=\"D1\" s=\"2\" t=\"inlineStr\"><is><t>01/09/2026</t></is></c><c r=\"E1\" s=\"2\" t=\"inlineStr\"><is><t>08/09/2026</t></is></c><c r=\"F1\" s=\"2\" t=\"inlineStr\"><is><t>15/09/2026</t></is></c><c r=\"G1\" s=\"1\" t=\"inlineStr\"><is><t>Presenze</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>1</v></c><c r=\"B2\" t=\"inlineStr\" /><c r=\"C2\" t=\"inlineStr\"><is><t>Rossi Mario</t></is></c><c r=\"D2\" t=\"inlineStr\"><is><t>P</t></is></c><c r=\"E2\" t=\"inlineStr\" /><c r=\"F2\" t=\"inlineStr\" /><c r=\"G2\" t=\"n\"><v>1</v></c></row><row r=\"3\"><c r=\"A3\" t=\"n\"><v>1</v></c><c r=\"B3\" t=\"inlineStr\" /><c r=\"C3\" t=\"inlineStr\"><is><t>Bianchi Anna</t></is></c><c r=\"D3\" t=\"inlineStr\" /><c r=\"E3\" t=\"inlineStr\" /><c r=\"F3\" t=\"inlineStr\"><is><t>P</t></is></c><c r=\"G3\" t=\"n\"><v>1</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "9b39a3e1bab42bd3583a02dc77fdc0d328f902b99e423cc095cf3c38d408587b": "<workbook xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><workbookPr /><workbookProtection /><bookViews><workbookView visibility=\"visible\" minimized=\"0\" showHorizontalScroll=\"1\" showVerticalScroll=\"1\" showSheetTabs=\"1\" tabRatio=\"600\" firstSheet=\"0\" activeTab=\"0\" autoFilterDateGrouping=\"1\" /></bookViews><sheets><sheet name=\"Corso di nuoto agonistico per a\" sheetId=\"1\" state=\"visible\" r:id=\"rId1\" /></sheets><definedNames /><calcPr calcId=\"124519\" fullCalcOnLoad=\"1\" /></workbook>",
+"9c62d23f2d2a1c08ced5e7c1b24556078b8335ece07d7126f6e1b54839e33c34": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><dimension ref=\"A1:F3\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15\"/><cols><col min=\"1\" max=\"1\" width=\"18.7109375\" customWidth=\"1\"/><col min=\"2\" max=\"2\" width=\"17.7109375\" customWidth=\"1\"/><col min=\"3\" max=\"3\" width=\"24.7109375\" customWidth=\"1\"/><col min=\"4\" max=\"4\" width=\"15.7109375\" customWidth=\"1\"/><col min=\"5\" max=\"5\" width=\"21.7109375\" customWidth=\"1\"/></cols><sheetData><row r=\"1\" spans=\"1:6\"><c r=\"B1\" s=\"1\" t=\"s\"><v>0</v></c><c r=\"C1\" s=\"1\" t=\"s\"><v>1</v></c><c r=\"D1\" s=\"1\" t=\"s\"><v>2</v></c><c r=\"E1\" s=\"1\" t=\"s\"><v>3</v></c><c r=\"F1\" s=\"1\" t=\"s\"><v>4</v></c></row><row r=\"2\" spans=\"1:6\"><c r=\"A2\" s=\"1\"><v>0</v></c><c r=\"B2\" t=\"s\"><v>5</v></c><c r=\"C2\" t=\"s\"><v>7</v></c><c r=\"D2\" t=\"s\"><v>9</v></c><c r=\"E2\" t=\"s\"><v>11</v></c><c r=\"F2\" t=\"s\"><v>12</v></c></row><row r=\"3\" spans=\"1:6\"><c r=\"A3\" s=\"1\"><v>1</v></c><c r=\"B3\" t=\"s\"><v>6</v></c><c r=\"C3\" t=\"s\"><v>8</v></c><c r=\"D3\" t=\"s\"><v>10</v></c></row></sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>",
 "9ce719cc3b94b1182ca6f533923571238b50b3788f1580589c5be0bb23df1133": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A1\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><sheetData><row r=\"1\"><c r=\"A1\" t=\"inlineStr\"><is><t>h</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "9d14ec2132235100b038a2b0deedf61140c92cdefa2e8ffd5d49078b817fd4ac": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:E2\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"11\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"7\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"14\" customWidth=\"1\" min=\"3\" max=\"3\" /><col width=\"7\" customWidth=\"1\" min=\"4\" max=\"4\" /><col width=\"7\" customWidth=\"1\" min=\"5\" max=\"5\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>col 0</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>col 1</t></is></c><c r=\"C1\" s=\"1\" t=\"inlineStr\"><is><t>col 2</t></is></c><c r=\"D1\" s=\"1\" t=\"inlineStr\"><is><t>col 3</t></is></c><c r=\"E1\" s=\"1\" t=\"inlineStr\"><is><t>col 4</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>02.7758Ee</t></is></c><c r=\"B2\" t=\"n\"><v>0</v></c><c r=\"C2\" t=\"n\"><v>479414127942</v></c><c r=\"D2\" t=\"n\"><v>-3192</v></c><c r=\"E2\" t=\"n\"><v>23</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "9d9989a2fc91c8028f7de511737239860340196f758a8addf6737df30f7b081a": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:C3\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"6\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"5\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"6\" customWidth=\"1\" min=\"3\" max=\"3\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>Nome</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>Tag</t></is></c><c r=\"C1\" s=\"1\" t=\"inlineStr\"><is><t>Nome</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</t></is></c><c r=\"B2\" t=\"n\"><v>1</v></c><c r=\"C2\" t=\"inlineStr\"><is><t>assegnato</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>y</t></is></c><c r=\"B3\" t=\"n\"><v>2</v></c><c r=\"C3\" t=\"inlineStr\" /></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
@@ -25877,12 +26317,14 @@ null
 "ae5fec371b4ce6317f2c839ffb8259653fc9e3ce9e1cd1e7f9d8c244cbf64d8b": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:B2\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"8\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"9\" customWidth=\"1\" min=\"2\" max=\"2\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>Titolo</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>Lezioni</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>Dieci</t></is></c><c r=\"B2\" t=\"n\"><v>10</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "af1ab06d0f733c07292030211d4f54e7406ea07b3a8353350fd94c81026f2011": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:D2\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"6\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"16\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"5\" customWidth=\"1\" min=\"3\" max=\"3\" /><col width=\"10\" customWidth=\"1\" min=\"4\" max=\"4\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>#</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>Nome e Cognome</t></is></c><c r=\"C1\" s=\"2\" t=\"inlineStr\"><is><t>01/09/2026</t></is></c><c r=\"D1\" s=\"1\" t=\"inlineStr\"><is><t>Presenze</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>1</v></c><c r=\"B2\" t=\"inlineStr\"><is><t>b</t></is></c><c r=\"C2\" t=\"inlineStr\" /><c r=\"D2\" t=\"n\"><v>0</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "b0959506c44ed5a4eca6db02bc678f74d204f575461606bfd72af0453c2c157c": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"18\" uniqueCount=\"11\"><si><t>n</t></si><si><t>Data creazione</t></si><si><t>Progressivo risposta</t></si><si><t>Posizione in coda</t></si><si><t>Utente</t></si><si><t>Pagamento</t></si><si><t>Approvato</t></si><si><t>Allegati</t></si><si><t>d</t></si><si><t>-</t></si><si><t>x</t></si></sst>",
+"b0baf02351dd28c526d634a9740d5a745d02300b58cdcab6b87b4c97c1c016f4": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns:dcmitype=\"http://purl.org/dc/dcmitype/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><dc:creator></dc:creator><cp:lastModifiedBy></cp:lastModifiedBy><dcterms:created xsi:type=\"dcterms:W3CDTF\">2026-11-11T14:13:08Z</dcterms:created><dcterms:modified xsi:type=\"dcterms:W3CDTF\">2026-11-11T14:13:08Z</dcterms:modified></cp:coreProperties>",
 "b275401c320ffe72c71263936f2c5082d6ac36d42915fd1189e12e1e27c3b252": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:F2\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"6\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"16\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"5\" customWidth=\"1\" min=\"3\" max=\"3\" /><col width=\"5\" customWidth=\"1\" min=\"4\" max=\"4\" /><col width=\"5\" customWidth=\"1\" min=\"5\" max=\"5\" /><col width=\"5\" customWidth=\"1\" min=\"6\" max=\"6\" /><col width=\"10\" customWidth=\"1\" min=\"7\" max=\"7\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>#</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>Nome e Cognome</t></is></c><c r=\"C1\" s=\"2\" t=\"inlineStr\"><is><t>01/09/2026</t></is></c><c r=\"D1\" s=\"2\" t=\"inlineStr\"><is><t>Presenze</t></is></c><c r=\"E1\" s=\"3\" t=\"n\" /><c r=\"F1\" s=\"3\" t=\"n\" /></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>1</v></c><c r=\"B2\" t=\"inlineStr\"><is><t>Rossi Mario</t></is></c><c r=\"C2\" t=\"inlineStr\" /><c r=\"D2\" t=\"n\"><v>2</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "b2f5fb2346b8e87ba58c06e021e7e3f03e8d380b954969ba79bf50ad28372c4e": "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet1.xml\" Id=\"rId1\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet2.xml\" Id=\"rId2\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"/xl/worksheets/sheet3.xml\" Id=\"rId3\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\" Id=\"rId4\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\" Id=\"rId5\" /></Relationships>",
 "b31e6fa74392f15cb789beb162d568edd51a0de4128933a38e40d5ef4194f844": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"22\" uniqueCount=\"19\"><si><t>Nome</t></si><si><t>Età</t></si><si><t>Data creazione</t></si><si><t>Progressivo risposta</t></si><si><t>Posizione in coda</t></si><si><t>Utente</t></si><si><t>Pagamento</t></si><si><t>Approvato</t></si><si><t>Allegati</t></si><si><t>Mario</t></si><si><t>Anna</t></si><si><t>-</t></si><si><t>02/01/2024 10:00</t></si><si><t>03/01/2024 11:00</t></si><si><t>Mario Rossi</t></si><si><t>Pagato</t></si><si><t>Approvata</t></si><si><t>Non approvata</t></si><si><t>a.pdf,b.pdf</t></si></sst>",
 "b373835f58dae9e929de229d346a900bd11b3447e6e1997de06d92f3ede234e4": "<workbook xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><workbookPr /><workbookProtection /><bookViews><workbookView visibility=\"visible\" minimized=\"0\" showHorizontalScroll=\"1\" showVerticalScroll=\"1\" showSheetTabs=\"1\" tabRatio=\"600\" firstSheet=\"0\" activeTab=\"0\" autoFilterDateGrouping=\"1\" /></bookViews><sheets><sheet name=\"Iscrizioni\" sheetId=\"1\" state=\"visible\" r:id=\"rId1\" /><sheet name=\"Pagamenti\" sheetId=\"2\" state=\"visible\" r:id=\"rId2\" /></sheets><definedNames /><calcPr calcId=\"124519\" fullCalcOnLoad=\"1\" /></workbook>",
 "b52a4085545957ff487b6013cc6653edf6b16831ba6e313393f88fdf1c1edaf3": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A7\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"10\" customWidth=\"1\" min=\"1\" max=\"1\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>col 0</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>8 .e288E</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>E3e0-</t></is></c></row><row r=\"4\"><c r=\"A4\" t=\"inlineStr\"><is><t>E6</t></is></c></row><row r=\"5\"><c r=\"A5\" t=\"inlineStr\"><is><t>00</t></is></c></row><row r=\"6\"><c r=\"A6\" t=\"inlineStr\"><is><t xml:space=\"preserve\">9e+ </t></is></c></row><row r=\"7\"><c r=\"A7\" t=\"inlineStr\"><is><t>e1  .92</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "b65b4fd63077ec3248335df13f20fb75fdc60c00ce6f5352335ab62162bbc528": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:G3\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"6\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"8\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"16\" customWidth=\"1\" min=\"3\" max=\"3\" /><col width=\"5\" customWidth=\"1\" min=\"4\" max=\"4\" /><col width=\"5\" customWidth=\"1\" min=\"5\" max=\"5\" /><col width=\"5\" customWidth=\"1\" min=\"6\" max=\"6\" /><col width=\"10\" customWidth=\"1\" min=\"7\" max=\"7\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>#</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>Corso</t></is></c><c r=\"C1\" s=\"1\" t=\"inlineStr\"><is><t>Nome e Cognome</t></is></c><c r=\"D1\" s=\"2\" t=\"inlineStr\"><is><t>01/09/2026</t></is></c><c r=\"E1\" s=\"2\" t=\"inlineStr\"><is><t>08/09/2026</t></is></c><c r=\"F1\" s=\"2\" t=\"inlineStr\"><is><t>15/09/2026</t></is></c><c r=\"G1\" s=\"1\" t=\"inlineStr\"><is><t>Presenze</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>1</v></c><c r=\"B2\" t=\"inlineStr\"><is><t>Calcio</t></is></c><c r=\"C2\" t=\"inlineStr\"><is><t>Rossi Mario</t></is></c><c r=\"D2\" t=\"inlineStr\"><is><t>P</t></is></c><c r=\"E2\" t=\"inlineStr\" /><c r=\"F2\" t=\"inlineStr\" /><c r=\"G2\" t=\"n\"><v>1</v></c></row><row r=\"3\"><c r=\"A3\" t=\"n\"><v>1</v></c><c r=\"B3\" t=\"inlineStr\" /><c r=\"C3\" t=\"inlineStr\"><is><t>Bianchi Anna</t></is></c><c r=\"D3\" t=\"inlineStr\" /><c r=\"E3\" t=\"inlineStr\" /><c r=\"F3\" t=\"inlineStr\"><is><t>P</t></is></c><c r=\"G3\" t=\"n\"><v>1</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
+"b853494df09d89ead6c1e3b9df02cdf904f75e85b170ed30e571fe7ef2ada7b4": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<sst xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" count=\"17\" uniqueCount=\"17\"><si><t>Nome</t></si><si><t>Cognome</t></si><si><t>Corso</t></si><si><t>Titolo</t></si><si><t>Descrizione</t></si><si><t>Data</t></si><si><t>Numero di partecipanti</t></si><si><t>Partecipanti</t></si><si><t>Assenti previsti</t></si><si><r><t xml:space=\"preserve\">&lt;r&gt;&lt;t&gt;b&lt;/t&gt;&lt;/r&gt;</t></r></si><si><r><t xml:space=\"preserve\">&lt;r&gt;a &amp; b&lt;/r&gt;</t></r></si><si><t>x&lt;r&gt;y&lt;/r&gt;</t></si><si><t>&lt;r&gt;open</t></si><si><t>&lt;/r&gt;</t></si><si><t>04/01/2024 10:00</t></si><si><r><t xml:space=\"preserve\">&lt;r&gt;_x005F_x0041__x0001_&lt;/r&gt;</t></r></si><si><t xml:space=\"preserve\"> &lt;r&gt;sp&lt;/r&gt; </t></si></sst>",
 "b8f4ac9e89eb66ea8a8c3d460fea76ca1a25e9fd8f9afca42011ad61d92c9406": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A7\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"8\" customWidth=\"1\" min=\"1\" max=\"1\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>col 0</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>E</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>e324</t></is></c></row><row r=\"4\"><c r=\"A4\" t=\"inlineStr\"><is><t>0.1</t></is></c></row><row r=\"5\"><c r=\"A5\" t=\"inlineStr\"><is><t>983E-6</t></is></c></row><row r=\"6\"><c r=\"A6\" t=\"inlineStr\"><is><t>9E610+</t></is></c></row><row r=\"7\"><c r=\"A7\" t=\"inlineStr\" /></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "b8fe7db13d4bde2878110cb52754fa86e67e025876921bb524ca4bff26efea31": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:B2\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"7\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"7\" customWidth=\"1\" min=\"2\" max=\"2\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>col 0</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>col 1</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>0.1</v></c><c r=\"B2\" t=\"inlineStr\" /></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "b955eec7bf81e3497213a0e029a3d7837f6dd31fc9c30c829ac7358fe294b23c": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<styleSheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><fonts count=\"1\"><font><sz val=\"11\"/><color theme=\"1\"/><name val=\"Calibri\"/><family val=\"2\"/><scheme val=\"minor\"/></font></fonts><fills count=\"2\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill></fills><borders count=\"1\"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs><cellXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\" xfId=\"0\"/></cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles><dxfs count=\"0\"/><tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium9\" defaultPivotStyle=\"PivotStyleLight16\"/></styleSheet>",
@@ -25938,6 +26380,7 @@ null
 "e92cd3f20104857d67c5859c5b9e69b5ca81651eabeaff1f758973a0ae151712": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:C4\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"5\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"3\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"5\" customWidth=\"1\" min=\"3\" max=\"3\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>n</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>x</t></is></c><c r=\"C1\" s=\"1\" t=\"inlineStr\"><is><t>n</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>1</v></c><c r=\"B2\" t=\"n\"><v>5</v></c><c r=\"C2\" t=\"n\"><v>3</v></c></row><row r=\"3\"><c r=\"A3\" t=\"n\"><v>2</v></c><c r=\"B3\" t=\"n\"><v>6</v></c><c r=\"C3\" t=\"inlineStr\" /></row><row r=\"4\"><c r=\"A4\" t=\"n\"><v>30</v></c><c r=\"B4\" t=\"n\"><v>7</v></c><c r=\"C4\" t=\"n\"><v>4</v></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "e92fd62938afc4a7389b4a6e2d32ca0630447be6649d92aa86d7afcf65a5a6f3": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:C1\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"3\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"\" customWidth=\"1\" min=\"2\" max=\"2\" /><col width=\"3\" customWidth=\"1\" min=\"3\" max=\"3\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>a</t></is></c><c r=\"B1\" s=\"1\" t=\"inlineStr\"><is><t>b</t></is></c><c r=\"C1\" s=\"1\" t=\"inlineStr\"><is><t>a</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "eb22f3aec7f6453c3360b09424f3e00ac1438e5b8f65035b58fff39507f2e653": "<workbook xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><workbookPr /><workbookProtection /><bookViews><workbookView visibility=\"visible\" minimized=\"0\" showHorizontalScroll=\"1\" showVerticalScroll=\"1\" showSheetTabs=\"1\" tabRatio=\"600\" firstSheet=\"0\" activeTab=\"0\" autoFilterDateGrouping=\"1\" /></bookViews><sheets><sheet name=\"Tags\" sheetId=\"1\" state=\"visible\" r:id=\"rId1\" /><sheet name=\"Tags (2)\" sheetId=\"2\" state=\"visible\" r:id=\"rId2\" /><sheet name=\"Tags (3)\" sheetId=\"3\" state=\"visible\" r:id=\"rId3\" /></sheets><definedNames /><calcPr calcId=\"124519\" fullCalcOnLoad=\"1\" /></workbook>",
+"ebec24f48ad93bcdaa9977f44d9db533f7cb757f0fd69cc4b970e8ed7241e613": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"><dimension ref=\"A1:H3\"/><sheetViews><sheetView tabSelected=\"1\" workbookViewId=\"0\"/></sheetViews><sheetFormatPr defaultRowHeight=\"15\"/><cols><col min=\"1\" max=\"1\" width=\"25.7109375\" customWidth=\"1\"/><col min=\"2\" max=\"2\" width=\"24.7109375\" customWidth=\"1\"/><col min=\"3\" max=\"3\" width=\"30.7109375\" customWidth=\"1\"/><col min=\"4\" max=\"4\" width=\"27.7109375\" customWidth=\"1\"/><col min=\"5\" max=\"5\" width=\"16.7109375\" customWidth=\"1\"/><col min=\"6\" max=\"7\" width=\"19.7109375\" customWidth=\"1\"/><col min=\"8\" max=\"8\" width=\"18.7109375\" customWidth=\"1\"/></cols><sheetData><row r=\"1\" spans=\"1:8\"><c r=\"A1\" s=\"1\" t=\"s\"><v>0</v></c><c r=\"B1\" s=\"1\" t=\"s\"><v>1</v></c><c r=\"C1\" s=\"1\" t=\"s\"><v>2</v></c><c r=\"D1\" s=\"1\" t=\"s\"><v>3</v></c><c r=\"E1\" s=\"1\" t=\"s\"><v>4</v></c><c r=\"F1\" s=\"1\" t=\"s\"><v>5</v></c><c r=\"G1\" s=\"1\" t=\"s\"><v>6</v></c><c r=\"H1\" s=\"1\" t=\"s\"><v>7</v></c></row><row r=\"2\" spans=\"1:8\"><c r=\"A2\" t=\"s\"><v>8</v></c><c r=\"B2\" t=\"s\"><v>10</v></c><c r=\"C2\"><v>1</v></c><c r=\"D2\" t=\"s\"><v>12</v></c><c r=\"E2\" t=\"s\"><v>12</v></c><c r=\"F2\" t=\"s\"><v>12</v></c><c r=\"G2\" t=\"s\"><v>13</v></c></row><row r=\"3\" spans=\"1:8\"><c r=\"A3\" t=\"s\"><v>9</v></c><c r=\"B3\" t=\"s\"><v>11</v></c><c r=\"C3\"><v>2</v></c><c r=\"D3\" t=\"s\"><v>12</v></c><c r=\"E3\" t=\"s\"><v>12</v></c><c r=\"F3\" t=\"s\"><v>12</v></c><c r=\"G3\" t=\"s\"><v>14</v></c></row></sheetData><pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>",
 "ec869ae44fc833c25e58afa6ae766147aa72a99147522f6070e511475222827d": "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\" Id=\"rId1\" /><Relationship Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\" Id=\"rId2\" /><Relationship Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\" Id=\"rId3\" /></Relationships>",
 "eef889fdfe8f19e7b75294e51d8be5b7b0bf382204c4333ca767bf208ce2d515": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:B4\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"7\" customWidth=\"1\" min=\"1\" max=\"1\" /><col width=\"5\" customWidth=\"1\" min=\"2\" max=\"2\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"b\"><v>0</v></c><c r=\"B1\" s=\"1\" t=\"n\"><v>0</v></c></row><row r=\"2\"><c r=\"A2\" t=\"inlineStr\"><is><t>x</t></is></c><c r=\"B2\" t=\"inlineStr\"><is><t>12</t></is></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>zz</t></is></c><c r=\"B3\" t=\"inlineStr\"><is><t>7</t></is></c></row><row r=\"4\"><c r=\"A4\" t=\"inlineStr\"><is><t>wwwwwwwwwwwwwwwwwwwwwwwwwwwwww</t></is></c><c r=\"B4\" t=\"inlineStr\"><is><t>8</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",
 "ef0f0253778f25c9c4d0b29ecb7183916bdc69f0b3a0104f65a594d411cebe39": "<worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetPr><outlinePr summaryBelow=\"1\" summaryRight=\"1\" /><pageSetUpPr /></sheetPr><dimension ref=\"A1:A4\" /><sheetViews><sheetView workbookViewId=\"0\"><selection activeCell=\"A1\" sqref=\"A1\" /></sheetView></sheetViews><sheetFormatPr baseColWidth=\"8\" defaultRowHeight=\"15\" /><cols><col width=\"3\" customWidth=\"1\" min=\"1\" max=\"1\" /></cols><sheetData><row r=\"1\"><c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>a</t></is></c></row><row r=\"2\"><c r=\"A2\" t=\"n\"><v>1</v></c></row><row r=\"3\"><c r=\"A3\" t=\"inlineStr\"><is><t>2</t></is></c></row><row r=\"4\"><c r=\"A4\" t=\"inlineStr\"><is><t>x</t></is></c></row></sheetData><pageMargins left=\"0.75\" right=\"0.75\" top=\"1\" bottom=\"1\" header=\"0.5\" footer=\"0.5\" /></worksheet>",

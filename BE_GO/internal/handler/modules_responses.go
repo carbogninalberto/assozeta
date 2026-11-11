@@ -16,7 +16,7 @@ import (
 
 type ModulesResponsesService interface {
 	Info(ctx context.Context, link string, responseID *string) (map[string]any, error)
-	Add(ctx context.Context, identity domain.ResolvedIdentity, raw string, body service.ModuleBody, audit domain.LoginAuditContext) (string, error)
+	Add(ctx context.Context, identity domain.ResolvedIdentity, raw string, body service.ModuleBody, audit domain.LoginAuditContext) (service.AddedResponse, error)
 	Approve(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error
 	Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, audit domain.LoginAuditContext) error
 	Attachment(ctx context.Context, identity domain.ResolvedIdentity, method, raw string, body service.ModuleBody, audit domain.LoginAuditContext) (service.AttachmentResult, error)
@@ -158,8 +158,9 @@ func (h *ModulesResponsesHandler) Add(c echo.Context) error {
 		return err
 	}
 	return h.write(c, func(ctx context.Context, body service.ModuleBody, audit domain.LoginAuditContext) error {
-		id, err := h.responses.Add(ctx, *identity, c.Param("module_id"), body, audit)
-		return h.answer(c, 200, map[string]string{"msg": "response added", "module_response_id": id}, err)
+		added, err := h.responses.Add(ctx, *identity, c.Param("module_id"), body, audit)
+		return h.answer(c, 200, map[string]string{"msg": "response added", "module_response_id": added.ID,
+			"attachment_token": added.AttachmentToken}, err)
 	})
 }
 

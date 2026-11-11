@@ -167,11 +167,12 @@ RESPONSES = {
     'open_r1': {**R, 'id': next(ids), 'module': 'open', 'number': 0, 'response': {'nome': 'Anna è', 'eta': 12}, 'user': 'athlete',
                 'created': '2026-09-02T10:00:00.500000Z', 'attachments': ['d1']},
     'del_r': {**R, 'id': next(ids), 'module': 'open', 'number': 1, 'approved': False, 'attachments': ['d2'], 'response': [1, 'due']},
-    'att_r': {**R, 'id': next(ids), 'module': 'open', 'number': 2, 'attachments': ['d4']},
+    'att_r': {**R, 'id': next(ids), 'module': 'open', 'number': 2, 'attachments': ['d4', 'd3', 'd9', 'd42']},
     'full_r': {**R, 'id': next(ids), 'module': 'full', 'number': 0},
     'q1': {**R, 'id': next(ids), 'module': 'queue', 'number': 0, 'queue': 1, 'approved': False, 'response': {'nome': 'Uno'}},
     'q2': {**R, 'id': next(ids), 'module': 'queue', 'number': 1, 'queue': 2, 'approved': False, 'response': {'nome': 'Due'}},
-    'q3': {**R, 'id': next(ids), 'module': 'queue', 'number': 2, 'queue': 3, 'approved': False, 'response': {'nome': 'Tre'}},
+    'q3': {**R, 'id': next(ids), 'module': 'queue', 'number': 2, 'queue': 3, 'approved': False, 'response': {'nome': 'Tre'},
+           'attachments': ['d5']},
     'qa': {**R, 'id': next(ids), 'module': 'queue', 'number': 3},
     'foreign_r': {**R, 'id': next(ids), 'module': 'foreign', 'number': 0, 'approved': False, 'response': {'nome': 'Estero'}},
     'other_r': {**R, 'id': next(ids), 'module': 'foreign', 'number': 1, 'attachments': ['d4']},
@@ -201,7 +202,10 @@ RESPONSES = {
 RESPONSES['full_r']['attachments'] = ['d8']
 # Payment.attachments links (payment label, document label).
 PAYMENT_ATTACHMENTS = [['paid', 'd8']]
-for _row in RESPONSES.values():
+# The secret each seeded response was created with (the rows keep its SHA-256).
+TOKENS = {'att_r': 'respondent-token-a', 'open_r1': 'respondent-token-b', 'q3': 'respondent-token-c'}
+for _label, _row in RESPONSES.items():
+    _row['token'] = TOKENS.get(_label, '')
     _row.setdefault('export_user', None)
     _row.setdefault('payment', None)
 # Running state: queue positions and approvals change across cases.
@@ -209,9 +213,21 @@ STATE = copy.deepcopy(RESPONSES)
 cases = []
 
 
+def with_response_token(actor, method, path, body, *, enabled=True):
+    """Requests without an account prove the response they change with its secret (sent in the body)."""
+    if actor != 'anonymous' or method not in ('POST', 'DELETE') or not enabled or not path.endswith('/add-attachment') \
+            or not isinstance(body, dict):
+        return body
+    for label, row in RESPONSES.items():
+        if row['token'] and f"/response/{row['id']}/" in path:
+            return {**body, 'attachment_token': row['token']}
+    return body
+
+
 def add(name, actor, method, path, status, response, *, body=None, raw_body=None, content_type=None, headers=None, effect=None,
-        throttle=None, retry_after=None):
-    """throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
+        throttle=None, retry_after=None, token=True):
+    """token=False: an anonymous request keeps the body as authored (no response secret).
+    throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
     case = {'name': f'modules-responses-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'effect': effect}
     if throttle is not None:
@@ -219,6 +235,7 @@ def add(name, actor, method, path, status, response, *, body=None, raw_body=None
     if retry_after is not None:
         case['retry_after'] = retry_after
     if body is not None:
+        body = with_response_token(actor, method, path, body, enabled=token)
         case['body'] = body
     if raw_body is not None:
         case['raw_body'], case['content_type'] = raw_body, content_type
@@ -523,7 +540,7 @@ add('info-deleted-association-bad-response-id', 'anonymous', 'GET', info('rispos
 
 # ------------------------------------------- modules/<id>/response/add
 respond = lambda label: f'/modules/{mid(label)}/response/add'
-ADDED = {'msg': 'response added', 'module_response_id': '$new'}
+ADDED = {'msg': 'response added', 'module_response_id': '$new', 'attachment_token': '$new'}
 add('add-admin-without-session', 'admin', 'POST', respond('open'), 403, NO_SESSION, body={})
 add('add-restricted-missing-permission', 'restricted_collaborator', 'POST', respond('open'), 403,
     PERMISSION('association.modules.create'), body={})
@@ -618,6 +635,7 @@ attach = lambda label: f'/modules/response/{rid(label)}/add-attachment'
 ATTACHED = {'msg': 'attachment added'}
 DOC_DELETED = {'msg': 'attachment deleted'}
 NO_DOCUMENT = {'error': 'document not found'}
+NO_RESPONSE = {'error': 'response not found'}
 add('attach-admin-without-session', 'admin', 'POST', attach('att_r'), 403, NO_SESSION, body={})
 add('attach-restricted-missing-permission', 'restricted_collaborator', 'POST', attach('att_r'), 403,
     PERMISSION('association.modules.update'), body={})
@@ -630,11 +648,11 @@ add('attach-options', 'anonymous', 'OPTIONS', attach('att_r'), 200, OPTIONS('Mod
 add('attach-malformed', 'anonymous', 'POST', attach('abc'), 400, BAD_UUID, body={'filename': 'a.txt', 'base64': 'YQ=='})
 add('attach-delete-malformed', 'anonymous', 'DELETE', attach('abc'), 400, BAD_UUID, body={'document_id': DOCUMENTS['d3']['id']})
 add('attach-nothing-sent', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'a.txt'})
-add('attach-unknown-response-nothing-sent', 'anonymous', 'POST', attach(UNKNOWN), 200, ATTACHED, body={})
+add('attach-unknown-response-nothing-sent', 'anonymous', 'POST', attach(UNKNOWN), 404, NO_RESPONSE, body={})
 # 'in' on a list body: only 'filename' is present.
-add('attach-list-body', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body=['filename'])
+add('attach-list-body', 'owner', 'POST', attach('att_r'), 200, ATTACHED, body=['filename'])
 # 'in' on a str body finds both substrings; request.data['filename'] raises.
-add('attach-string-body-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body='filename base64')
+add('attach-string-body-server-error', 'owner', 'POST', attach('att_r'), 500, SERVER, body='filename base64')
 add('attach-anonymous', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'nota.txt', 'base64': 'Y2lhbw=='},
     effect=uploaded(None, 'nota.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
 PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE'
@@ -658,10 +676,9 @@ for name, filename, kind, encoding in [('tar-gz', 'archivio.tar.gz', 'applicatio
     add(f'attach-compressed-{name}', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED,
         body={'filename': filename, 'base64': 'H4sIAAAAAAAAA0vOz0nJBAA='},
         effect=uploaded(None, filename, 'H4sIAAAAAAAAA0vOz0nJBAA=', link='att_r', content_type=kind, content_encoding=encoding))
-# The document is created (and the object stored) before the missing response raises.
-add('attach-unknown-response-server-error', 'athlete', 'POST', attach(UNKNOWN), 500, SERVER,
-    body={'filename': 'orfano.txt', 'base64': 'b3JmYW5v'},
-    effect=uploaded('athlete', 'orfano.txt', 'b3JmYW5v', link=None, content_type='text/plain'))
+# A response that does not exist: nothing is created or stored.
+add('attach-unknown-response-not-found', 'athlete', 'POST', attach(UNKNOWN), 404, NO_RESPONSE,
+    body={'filename': 'orfano.txt', 'base64': 'b3JmYW5v'})
 # A base64 text with one character more than a multiple of four raises after the create.
 add('attach-bad-padding-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER, body={'filename': 'rotto.txt', 'base64': 'abcde'},
     effect=uploaded(None, 'rotto.txt', None, link=None, stored=False))
@@ -701,32 +718,32 @@ for name, value in [('integer', 5), ('null', None), ('list', ['Y2lh']), ('object
     add(f'attach-base64-{name}-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
         body={'filename': f'dati-{name}.txt', 'base64': value}, effect=uploaded(None, f'dati-{name}.txt', None, link=None, stored=False))
 # Form bodies.
-add('attach-form', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, raw_body='filename=modulo.txt&base64=Y2lhbw%3D%3D&filename=ultimo.txt',
+add('attach-form', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, raw_body='filename=modulo.txt&base64=Y2lhbw%3D%3D&filename=ultimo.txt&attachment_token=' + TOKENS['att_r'],
     content_type=FORM, effect=uploaded(None, 'ultimo.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
-add('attach-form-nothing-sent', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, raw_body='filename=modulo.txt', content_type=FORM)
+add('attach-form-nothing-sent', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, raw_body='filename=modulo.txt&attachment_token=' + TOKENS['att_r'], content_type=FORM)
 add('attach-multipart', 'owner', 'POST', attach('att_r'), 200, ATTACHED,
     raw_body=multipart(('filename', 'parti.txt'), ('base64', 'data:text/plain;base64,Y2lhbw')), content_type=MULTIPART,
     effect=uploaded('owner', 'parti.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
 # An uploaded file as base64 is not a str.
 add('attach-multipart-file-server-error', 'anonymous', 'POST', attach('att_r'), 500, SERVER,
-    raw_body=multipart(('filename', 'caricato.txt'), ('base64', 'a.txt', 'Y2lhbw==')), content_type=MULTIPART,
+    raw_body=multipart(('filename', 'caricato.txt'), ('attachment_token', TOKENS['att_r']), ('base64', 'a.txt', 'Y2lhbw==')), content_type=MULTIPART,
     effect=uploaded(None, 'caricato.txt', None, link=None, stored=False))
 add('attach-delete-missing-key', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={})
 add('attach-delete-null-document', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': None})
 add('attach-delete-unknown-document', 'owner', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': UNKNOWN})
-add('attach-delete-unknown-response-unknown-document', 'owner', 'DELETE', attach(UNKNOWN), 404, NO_DOCUMENT, body={'document_id': UNKNOWN})
-add('attach-delete-list-without-key', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body=['x'])
-add('attach-delete-list-key-server-error', 'anonymous', 'DELETE', attach('att_r'), 500, SERVER, body=['document_id'])
+add('attach-delete-unknown-response-unknown-document', 'owner', 'DELETE', attach(UNKNOWN), 404, NO_RESPONSE, body={'document_id': UNKNOWN})
+add('attach-delete-list-without-key', 'owner', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body=['x'])
+add('attach-delete-list-key-server-error', 'owner', 'DELETE', attach('att_r'), 500, SERVER, body=['document_id'])
 add('attach-delete-malformed-document-server-error', 'owner', 'DELETE', attach('att_r'), 500, SERVER, body={'document_id': 'xyz'})
-# The response is None: .attachments raises before the document is touched.
-add('attach-delete-unknown-response-server-error', 'owner', 'DELETE', attach(UNKNOWN), 500, SERVER,
+# A response that does not exist: the document is not touched.
+add('attach-delete-unknown-response-not-found', 'owner', 'DELETE', attach(UNKNOWN), 404, NO_RESPONSE,
     body={'document_id': DOCUMENTS['d1']['id']})
-add('attach-delete-owner-unlinked', 'owner', 'DELETE', attach('att_r'), 200, DOC_DELETED, body={'document_id': DOCUMENTS['d3']['id']},
+add('attach-delete-owner-own-document', 'owner', 'DELETE', attach('att_r'), 200, DOC_DELETED, body={'document_id': DOCUMENTS['d3']['id']},
     effect=removed_document('d3', 'owner'))
 add('attach-delete-repeat', 'owner', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': DOCUMENTS['d3']['id']})
 add('attach-delete-full-collaborator-shared', 'full_collaborator', 'DELETE', attach('att_r'), 200, DOC_DELETED,
     body={'document_id': DOCUMENTS['d4']['id'].upper()}, effect=removed_document('d4', 'full_collaborator'))
-add('attach-delete-anonymous-other-response', 'anonymous', 'DELETE', attach('q3'), 200, DOC_DELETED,
+add('attach-delete-anonymous-own-response', 'anonymous', 'DELETE', attach('q3'), 200, DOC_DELETED,
     body={'document_id': DOCUMENTS['d5']['id']}, effect=removed_document('d5', None))
 # UUIDField.to_python of the lookup value: an int is uuid.UUID(int=...); other values raise.
 add('attach-delete-boolean-unknown', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT, body={'document_id': True})
@@ -737,11 +754,46 @@ add('attach-delete-list-value-server-error', 'anonymous', 'DELETE', attach('att_
     body={'document_id': [DOCUMENTS['d42']['id']]})
 add('attach-delete-integer', 'owner', 'DELETE', attach('att_r'), 200, DOC_DELETED, body={'document_id': 42},
     effect=removed_document('d42', 'owner'))
-add('attach-delete-form', 'anonymous', 'DELETE', attach('att_r'), 200, DOC_DELETED, raw_body='document_id=' + DOCUMENTS['d9']['id'],
+add('attach-delete-form', 'anonymous', 'DELETE', attach('att_r'), 200, DOC_DELETED, raw_body='document_id=' + DOCUMENTS['d9']['id'] + '&attachment_token=' + TOKENS['att_r'],
     content_type=FORM, effect=removed_document('d9', None))
 # A document a payment lists too: document.delete() removes that link with the row.
 add('attach-delete-referenced-by-payment', 'owner', 'DELETE', attach('full_r'), 200, DOC_DELETED, body={'document_id': DOCUMENTS['d8']['id']},
     effect=removed_document('d8', 'owner'))
+
+# --- who may change a response's attachments, and which documents -------------------------------
+# Without an account the response's secret is needed; with one, the response's own user or its association.
+# A document that is not an attachment of the response is never touched (404, nothing deleted).
+for method_name, request_body in (('post', {'filename': 'nota.txt', 'base64': 'Y2lhbw=='}), ('delete', {'document_id': DOCUMENTS['d2']['id']})):
+    verb = method_name.upper()
+    add(f'attach-{method_name}-anonymous-no-secret', 'anonymous', verb, attach('att_r'), 404, NO_RESPONSE, body=request_body, token=False)
+    add(f'attach-{method_name}-anonymous-wrong-secret', 'anonymous', verb, attach('att_r'), 404, NO_RESPONSE,
+        body={**request_body, 'attachment_token': 'respondent-token-x'}, token=False)
+    add(f'attach-{method_name}-anonymous-empty-secret', 'anonymous', verb, attach('att_r'), 404, NO_RESPONSE,
+        body={**request_body, 'attachment_token': ''}, token=False)
+    add(f'attach-{method_name}-anonymous-secret-not-text', 'anonymous', verb, attach('att_r'), 404, NO_RESPONSE,
+        body={**request_body, 'attachment_token': 5}, token=False)
+    add(f'attach-{method_name}-anonymous-other-response-secret', 'anonymous', verb, attach('att_r'), 404, NO_RESPONSE,
+        body={**request_body, 'attachment_token': TOKENS['open_r1']}, token=False)
+    add(f'attach-{method_name}-anonymous-response-without-secret', 'anonymous', verb, attach('del_r'), 404, NO_RESPONSE,
+        body={**request_body, 'attachment_token': TOKENS['att_r']}, token=False)
+    add(f'attach-{method_name}-foreign-owner', 'foreign_owner', verb, attach('att_r'), 404, NO_RESPONSE, body=request_body)
+    add(f'attach-{method_name}-athlete-not-respondent', 'athlete', verb, attach('att_r'), 404, NO_RESPONSE, body=request_body)
+add('attach-delete-other-response-document', 'owner', 'DELETE', attach('att_r'), 404, NO_DOCUMENT,
+    body={'document_id': DOCUMENTS['d2']['id']})
+add('attach-delete-anonymous-other-response-document', 'anonymous', 'DELETE', attach('att_r'), 404, NO_DOCUMENT,
+    body={'document_id': DOCUMENTS['d1']['id']})
+add('attach-delete-unlinked-document', 'full_collaborator', 'DELETE', attach('att_r'), 404, NO_DOCUMENT,
+    body={'document_id': DOCUMENTS['d8']['id']})
+add('attach-delete-foreign-owner-other-response', 'foreign_owner', 'DELETE', attach('q3'), 404, NO_RESPONSE,
+    body={'document_id': DOCUMENTS['d5']['id']})
+add('attach-post-foreign-owner-with-secret', 'foreign_owner', 'POST', attach('att_r'), 200, ATTACHED,
+    body={'filename': 'ospite.txt', 'base64': 'Y2lhbw==', 'attachment_token': TOKENS['att_r']},
+    effect=uploaded('foreign_owner', 'ospite.txt', 'Y2lhbw==', link='att_r', content_type='text/plain'))
+add('attach-post-athlete-respondent', 'athlete', 'POST', attach('open_r1'), 200, ATTACHED,
+    body={'filename': 'mio.txt', 'base64': 'Y2lhbw=='},
+    effect=uploaded('athlete', 'mio.txt', 'Y2lhbw==', link='open_r1', content_type='text/plain'))
+add('attach-delete-athlete-respondent', 'athlete', 'DELETE', attach('open_r1'), 200, DOC_DELETED,
+    body={'document_id': DOCUMENTS['d1']['id']}, effect=removed_document('d1', 'athlete'))
 
 # --------------------------- limits of the routes open without an account
 # Requests without an account are counted per address and route (30 in 600 seconds): the next one is asked to wait.
@@ -773,7 +825,7 @@ AT_LIMIT = base64.b64encode(b'z' * UPLOAD_LIMIT).decode()
 OVER_LIMIT = base64.b64encode(b'z' * (UPLOAD_LIMIT + 1)).decode()
 add('attach-anonymous-above-the-limit', 'anonymous', 'POST', attach('att_r'), 413, TOO_LARGE,
     body={'filename': 'grande.bin', 'base64': OVER_LIMIT})
-add('attach-owner-above-the-limit-unknown-response', 'owner', 'POST', attach(UNKNOWN), 413, TOO_LARGE,
+add('attach-owner-above-the-limit-unknown-response', 'owner', 'POST', attach(UNKNOWN), 404, NO_RESPONSE,
     body={'filename': 'grande.bin', 'base64': 'data:application/octet-stream;base64,' + OVER_LIMIT})
 add('attach-anonymous-at-the-limit', 'anonymous', 'POST', attach('att_r'), 200, ATTACHED, body={'filename': 'limite.bin', 'base64': AT_LIMIT},
     effect=uploaded(None, 'limite.bin', AT_LIMIT, link='att_r', content_type='application/octet-stream'))

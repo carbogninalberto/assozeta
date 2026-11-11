@@ -52,16 +52,19 @@ is read; `add-attachment` answers the same 413 for a decoded file above the limi
   so a response without a number makes `None + 1` a 500) plus 1, or 0; `queue_mode` takes the highest queue position plus 1, or 1.
   `request.data` is read only then (any JSON value is stored; JSON `null` is a 500). The create (`approved = not require_approval`),
   then for an authenticated request the user save (`request.user`, the owner for collaborators and impersonation), then
-  `update_queue`. `200 {'msg': 'response added', 'module_response_id': id}`.
+  `update_queue`. `200 {'msg': 'response added', 'module_response_id': id, 'attachment_token': secret}`: the secret is
+  `secrets.token_urlsafe(32)`; only its SHA-256 is stored (`attachment_token_hash`, excluded from audit entries and serializers).
 - **approve:** `request.user.sport_association` (athletes 403 `User is not a sport association`, owners without an active association
   500), the response by id within it (404 `response not found`), `approved = True` (an entry only when it changes), `update_queue` for
   queue modules. `200 {'msg': 'response approved'}`.
 - **delete:** the same lookup; the response's attachment links and the row (documents stay), one delete entry, `update_queue`.
   `200 {'msg': 'response deleted'}`.
-- **add-attachment:** the response by id (it may be missing), then `request.data`. `in` on a list answers membership and indexing it
-  raises; on a str it is a substring test; other JSON scalars raise (500).
-  - DELETE: no `document_id` key, or None, or no such document: 404 `document not found`; a value the UUID lookup rejects is a 500; a
-    missing response is a 500 before any write. Otherwise the link is removed and `document.delete()` removes every attachment link
+- **add-attachment:** the response by id (404 `response not found` when missing), then who may change it: a signed-in caller that is the
+  response's own user or acts for the association of its module; otherwise the body (a dict) must carry the `attachment_token` returned
+  by `response/add` (compared by hash; a response stored without a secret accepts none). Anything else is the same 404. Then `request.data`:
+  `in` on a list answers membership and indexing it raises; on a str it is a substring test; other JSON scalars raise (500).
+  - DELETE: no `document_id` key, or None, or no such attachment of this response (a document attached elsewhere is not touched): 404
+    `document not found`; a value the UUID lookup rejects is a 500. Otherwise the link is removed and `document.delete()` removes every attachment link
     of the document and the row (one delete entry with auditlog's diff, including `customer_invoice_pdf`).
     `200 {'msg': 'attachment deleted'}`.
   - POST: without both `filename` and `base64`, `200 {'msg': 'attachment added'}` and nothing else. Otherwise
