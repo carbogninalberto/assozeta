@@ -26,6 +26,15 @@ type PersonaSubsWriteTransaction interface {
 	// SaveSubscription is Model.save(): the update entry (when changes is not
 	// empty), then every column.
 	SaveSubscription(ctx context.Context, row PersonaSubscriptionRow, changes map[string][2]string, audit CourseSubscriptionAudit) error
+	// AuditSubscription is the pre_save update entry alone: the save that
+	// follows fails.
+	AuditSubscription(ctx context.Context, id string, changes map[string][2]string, audit CourseSubscriptionAudit) error
+	// InsertSubscription is Model.save() under a key no row has: the pre_save
+	// update entry, the INSERT, then the post_save create entry.
+	InsertSubscription(ctx context.Context, row PersonaSubscriptionRow, changes map[string][2]string, audit CourseSubscriptionAudit) error
+	// AuditSubscriptionCopy is one entry of a copy: the pre_save update
+	// (created false) or the post_save create.
+	AuditSubscriptionCopy(ctx context.Context, row PersonaSubscriptionRow, changes map[string][2]string, audit CourseSubscriptionAudit, created bool) error
 	RemoveTags(ctx context.Context, subscription string, tags []string) error
 	AddTag(ctx context.Context, subscription, tag string) error
 	Commit() error

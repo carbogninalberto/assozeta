@@ -41,13 +41,23 @@ custom `create()` or `update()`, so `POST personas-subscriptions/`, `PUT` and `P
 - The response is the serializer over the in-memory instance: JSON fields keep the request's values, the rest is the saved row
   (`renewal_available` and the nested associate are read again). A subscription without an associate is a 500 after the save.
 
+## Form bodies, key changes and rejected JSON (t4l1)
+
+- Form and multipart bodies are `Field.get_value` over the QueryDict: a key the form lacks is `False` for a boolean and `[]` for
+  `tags` unless the update is partial; an empty input is `None` for a nullable field (`''` when the field may be blank) and skipped
+  for a field with a default; a JSON field is `json.loads` of its text (a file's name), so empty text is `Value must be valid JSON.`;
+  `tags` is `getlist`.
+- An update whose `subscription_id` differs from the row's key: `Model.save()` finds no row under it and inserts a copy with the
+  validated values. auditlog logs the copy twice with the same full diff (an update indexed from its changes, then the create
+  indexed directly); `tags.set()` runs on the copy and the row the request names stays as it was.
+- A JSON value the `jsonb` column rejects (NUL characters, lone surrogates; an infinite number from a form's text): auditlog's
+  pre_save entry is written, then the save fails: the 500 page with that entry kept. In a JSON body an infinite number is
+  `Value must be valid JSON.` (JSONField's `json.dumps(allow_nan=False)`).
+
 ## Not ported (refused with the 500 page before any write)
 
-- Form and multipart bodies (create and update).
-- An update whose `subscription_id` differs from the row's key (`Model.save()` would insert a second row).
-- JSON values PostgreSQL rejects in a `jsonb` column (NUL characters, lone surrogates, infinite numbers): Django keeps the audit entry
-  and fails the UPDATE.
-- Adding more than one new tag link in one request (`bulk_create` order follows a Python set of UUIDs).
+- Form JSON text nested past 500 levels (Python's recursion limit depends on the live call stack).
+- A new `subscription_id` that the group-aware unique check accepts while a row of another group holds it: left out on purpose.
 
 ## Evidence
 
@@ -62,3 +72,7 @@ state; update cases check the exact subscription columns, its tag links, and the
 - Mutation (`mutation-writes-r1`): dropping the `X-Group-Id` filter of the `subscription_id` unique check fails Go on
   `router-persona-subscriptions-create-group-header-id-free-server-error` (400 instead of 500), CAUGHT.
 - Re-runs (`rerun-persona-subs-writes-r1`, native): personas-writes 168/168, subscription-create 40/40, subscription-renew 54/54.
+- t4l1 (94 cases): form and multipart bodies, the key-change copy and rejected JSON values (cases `create-form-*`,
+  `partial-update-form*`, `update-multipart-put`, `partial-update-json-*`, `partial-update-new-key-copy`,
+  `partial-update-copy-key-taken`). Mutation `t4l1-mut-ps` (a missing form boolean read as true) fails Go on
+  `update-multipart-put`, CAUGHT.

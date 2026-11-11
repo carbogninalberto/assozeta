@@ -8149,6 +8149,737 @@
    "body": {}
   },
   {
+   "name": "router-persona-subscriptions-create-form-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas-subscriptions/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "This field is required."
+    ],
+    "user": [
+     "This field is required."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "notes=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-create-form-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas-subscriptions/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "custom_data": [
+     "Value must be valid JSON."
+    ],
+    "type": [
+     "\"9\" is not a valid choice."
+    ],
+    "start_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "archived": [
+     "Must be a valid boolean."
+    ],
+    "meta": [
+     "Value must be valid JSON."
+    ],
+    "sport_association": [
+     "This field may not be null."
+    ],
+    "user": [
+     "This field may not be null."
+    ],
+    "tags": [
+     "“” is not a valid UUID."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "type=9&role=&status_flag=&acceptance_date=&start_date=x&archived=maybe&draft=&notes=&subscription_number=&custom_data=%7B&meta=&sport_association=&user=&tags=&supplier=&creation_date=&signature_url=&subscription_id=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-create-form-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas-subscriptions/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": null,
+   "raw_body": "sport_association=a1000000-0000-4000-8000-000000701001&user=a1000000-0000-4000-8000-000000700001&custom_data=%5B1%5D&tags=a1000000-0000-4000-8000-000000677070",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-form",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
+    "active": false,
+    "is_current": false,
+    "is_next_year": false,
+    "current_year": "precedente",
+    "medical": null,
+    "medical_expiration_date": null,
+    "age": {
+     "$age": "1991-01-01"
+    },
+    "renewal_available": true,
+    "signature_present": false,
+    "associate": {
+     "associate_id": "a1000000-0000-4000-8000-000000677050",
+     "full_name": "Leo Solitario",
+     "tutors": [],
+     "picture_path": null,
+     "first_name": "Leo",
+     "last_name": "Solitario",
+     "sex": "A",
+     "tax_code": "LNOSLT91A01H501L",
+     "born_date": "1991-01-01",
+     "born_city": null,
+     "address_city": null,
+     "address": null,
+     "address_cap": null,
+     "nationality": "Italiana",
+     "nationality_residence": "Italia",
+     "email": null,
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "phone_label": null,
+     "phone_2_label": null,
+     "phone_3_label": null,
+     "phone_4_label": null,
+     "is_minor": false,
+     "disabled": false,
+     "draft": false,
+     "deleted": false,
+     "family_role": null,
+     "id_number": null,
+     "migrated": false,
+     "notes": null,
+     "creation_date": "2024-02-21T07:00:00Z",
+     "user": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "group": null,
+     "family": null
+    },
+    "custom_data": {
+     "a": 1
+    },
+    "additional_fields": [
+     1,
+     "a"
+    ],
+    "type": 1,
+    "role": 5,
+    "acceptance_date": null,
+    "resignation_date": "2025-06-05",
+    "status_flag": 2,
+    "creation_date": "2024-03-01T09:30:00.250000Z",
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
+    "signature_url": null,
+    "deleted": false,
+    "archived": false,
+    "draft": true,
+    "trial": false,
+    "meta": null,
+    "subscription_number": null,
+    "subscription_type": "Agonistica",
+    "competitive": true,
+    "notes": "ciao",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "supplier": null,
+    "instructor": null,
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "document_pdf": null,
+    "payment": null,
+    "group": null,
+    "tags": [
+     "a1000000-0000-4000-8000-000000677070",
+     "a1000000-0000-4000-8000-000000990101"
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "columns": {
+     "notes": "ciao",
+     "competitive": true,
+     "custom_data": {
+      "a": 1
+     },
+     "type": 1,
+     "resignation_date": "2025-06-05",
+     "acceptance_date": null,
+     "subscription_number": null
+    },
+    "changes": {
+     "notes": [
+      "None",
+      "ciao"
+     ],
+     "competitive": [
+      "False",
+      "True"
+     ],
+     "custom_data": [
+      "null",
+      "{\"a\": 1}"
+     ],
+     "type": [
+      "3",
+      "1"
+     ],
+     "resignation_date": [
+      "None",
+      "2025-06-05"
+     ],
+     "acceptance_date": [
+      "2018-03-15",
+      "None"
+     ],
+     "subscription_number": [
+      "0",
+      "None"
+     ]
+    },
+    "tags": [
+     "a1000000-0000-4000-8000-000000677070",
+     "a1000000-0000-4000-8000-000000990101"
+    ]
+   },
+   "raw_body": "notes=ciao&competitive=on&custom_data=%7B%22a%22%3A1%7D&tags=a1000000-0000-4000-8000-000000677070&tags=a1000000-0000-4000-8000-000000990101&type=1&resignation_date=05/06/2025&meta=null&subscription_number=&acceptance_date=&draft=&role=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-form-json-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "additional_fields": [
+     "Value must be valid JSON."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": null,
+   "raw_body": "additional_fields=&notes=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-update-multipart-put",
+   "actor": "full_collaborator",
+   "method": "PUT",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
+    "active": false,
+    "is_current": false,
+    "is_next_year": false,
+    "current_year": "precedente",
+    "medical": null,
+    "medical_expiration_date": null,
+    "age": {
+     "$age": "1991-01-01"
+    },
+    "renewal_available": true,
+    "signature_present": false,
+    "associate": {
+     "associate_id": "a1000000-0000-4000-8000-000000677050",
+     "full_name": "Leo Solitario",
+     "tutors": [],
+     "picture_path": null,
+     "first_name": "Leo",
+     "last_name": "Solitario",
+     "sex": "A",
+     "tax_code": "LNOSLT91A01H501L",
+     "born_date": "1991-01-01",
+     "born_city": null,
+     "address_city": null,
+     "address": null,
+     "address_cap": null,
+     "nationality": "Italiana",
+     "nationality_residence": "Italia",
+     "email": null,
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "phone_label": null,
+     "phone_2_label": null,
+     "phone_3_label": null,
+     "phone_4_label": null,
+     "is_minor": false,
+     "disabled": false,
+     "draft": false,
+     "deleted": false,
+     "family_role": null,
+     "id_number": null,
+     "migrated": false,
+     "notes": null,
+     "creation_date": "2024-02-21T07:00:00Z",
+     "user": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "group": null,
+     "family": null
+    },
+    "custom_data": {
+     "a": 1
+    },
+    "additional_fields": [
+     1,
+     "a"
+    ],
+    "type": 1,
+    "role": 5,
+    "acceptance_date": null,
+    "resignation_date": "2025-06-05",
+    "status_flag": 2,
+    "creation_date": "2024-03-01T09:30:00.250000Z",
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
+    "signature_url": null,
+    "deleted": false,
+    "archived": false,
+    "draft": false,
+    "trial": false,
+    "meta": null,
+    "subscription_number": null,
+    "subscription_type": null,
+    "competitive": false,
+    "notes": "",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "supplier": null,
+    "instructor": null,
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "document_pdf": null,
+    "payment": null,
+    "group": null,
+    "tags": []
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "columns": {
+     "notes": "",
+     "competitive": false,
+     "draft": false,
+     "subscription_type": null
+    },
+    "changes": {
+     "notes": [
+      "ciao",
+      ""
+     ],
+     "competitive": [
+      "True",
+      "False"
+     ],
+     "draft": [
+      "True",
+      "False"
+     ],
+     "subscription_type": [
+      "Agonistica",
+      "None"
+     ]
+    },
+    "tags": []
+   },
+   "raw_body": "--t4l1\r\nContent-Disposition: form-data; name=\"sport_association\"\r\n\r\na1000000-0000-4000-8000-000000701001\r\n--t4l1\r\nContent-Disposition: form-data; name=\"user\"\r\n\r\na1000000-0000-4000-8000-000000700001\r\n--t4l1\r\nContent-Disposition: form-data; name=\"notes\"\r\n\r\n\r\n--t4l1\r\nContent-Disposition: form-data; name=\"subscription_type\"\r\n\r\n\r\n--t4l1--\r\n",
+   "content_type": "multipart/form-data; boundary=t4l1"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-json-nul-audited-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": {
+    "kind": "audit",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "changes": {
+     "custom_data": [
+      "{\"a\": 1}",
+      "{\"a\": \"x\\u0000y\"}"
+     ],
+     "notes": [
+      "",
+      "mai"
+     ]
+    }
+   },
+   "body": {
+    "custom_data": {
+     "a": "x\u0000y"
+    },
+    "notes": "mai"
+   }
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-json-infinite",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "meta": [
+     "Value must be valid JSON."
+    ],
+    "custom_data": [
+     "Value must be valid JSON."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": null,
+   "raw_body": "{\"meta\": [1e999], \"custom_data\": {\"a\": {\"b\": -1e999}}, \"additional_fields\": 1e308}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-form-infinite-audited-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": {
+    "kind": "audit",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "changes": {
+     "meta": [
+      "null",
+      "[Infinity, -Infinity]"
+     ]
+    }
+   },
+   "raw_body": "meta=%5B1e999%2C-1e999%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-form-surrogate-audited-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": {
+    "kind": "audit",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "changes": {
+     "additional_fields": [
+      "[1, \"a\"]",
+      "{\"k\": \"a\\ud800\"}"
+     ]
+    }
+   },
+   "raw_body": "additional_fields=%7B%22k%22%3A%22a%5Cud800%22%7D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-form-constant-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "meta": [
+     "Value must be valid JSON."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": null,
+   "raw_body": "meta=NaN",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-json-surrogate-audited-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": {
+    "kind": "audit",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "changes": {
+     "meta": [
+      "null",
+      "\"\\ud800\""
+     ]
+    }
+   },
+   "raw_body": "{\"meta\": \"\\ud800\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-new-key-copy",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_id": "a1000000-0000-4000-8000-000000990201",
+    "active": false,
+    "is_current": false,
+    "is_next_year": false,
+    "current_year": "precedente",
+    "medical": null,
+    "medical_expiration_date": null,
+    "age": {
+     "$age": "1991-01-01"
+    },
+    "renewal_available": true,
+    "signature_present": false,
+    "associate": {
+     "associate_id": "a1000000-0000-4000-8000-000000677050",
+     "full_name": "Leo Solitario",
+     "tutors": [],
+     "picture_path": null,
+     "first_name": "Leo",
+     "last_name": "Solitario",
+     "sex": "A",
+     "tax_code": "LNOSLT91A01H501L",
+     "born_date": "1991-01-01",
+     "born_city": null,
+     "address_city": null,
+     "address": null,
+     "address_cap": null,
+     "nationality": "Italiana",
+     "nationality_residence": "Italia",
+     "email": null,
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "phone_label": null,
+     "phone_2_label": null,
+     "phone_3_label": null,
+     "phone_4_label": null,
+     "is_minor": false,
+     "disabled": false,
+     "draft": false,
+     "deleted": false,
+     "family_role": null,
+     "id_number": null,
+     "migrated": false,
+     "notes": null,
+     "creation_date": "2024-02-21T07:00:00Z",
+     "user": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "group": null,
+     "family": null
+    },
+    "custom_data": {
+     "a": 1
+    },
+    "additional_fields": [
+     1,
+     "a"
+    ],
+    "type": 1,
+    "role": 5,
+    "acceptance_date": null,
+    "resignation_date": "2025-06-05",
+    "status_flag": 2,
+    "creation_date": "2024-03-01T09:30:00.250000Z",
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
+    "signature_url": null,
+    "deleted": false,
+    "archived": false,
+    "draft": false,
+    "trial": false,
+    "meta": null,
+    "subscription_number": null,
+    "subscription_type": null,
+    "competitive": false,
+    "notes": "copia",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "supplier": null,
+    "instructor": null,
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "document_pdf": null,
+    "payment": null,
+    "group": null,
+    "tags": [
+     "a1000000-0000-4000-8000-000000677070"
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": {
+    "kind": "copy",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "copy": "a1000000-0000-4000-8000-000000990201",
+    "columns": {
+     "notes": "copia"
+    },
+    "tags": [
+     "a1000000-0000-4000-8000-000000677070"
+    ]
+   },
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000990201",
+    "notes": "copia",
+    "tags": [
+     "a1000000-0000-4000-8000-000000677070"
+    ]
+   }
+  },
+  {
+   "name": "router-persona-subscriptions-partial-update-copy-key-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "subscription_id": [
+     "subscription with this subscription id already exists."
+    ]
+   },
+   "allow": [
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "PUT"
+   ],
+   "effect": null,
+   "body": {
+    "subscription_id": "a1000000-0000-4000-8000-000000990201"
+   }
+  },
+  {
    "name": "router-persona-subscriptions-legacy-delete-owner",
    "actor": "owner",
    "method": "DELETE",

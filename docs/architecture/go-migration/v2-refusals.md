@@ -1063,7 +1063,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST/PUT/PATCH personas-subscriptions/ | >1 new tag link | `service/persona_subs_writes.go` | ported (t2subsb: the through rows follow the iteration order of Django's set of ids, `importeffects.PySetOrder`) | |
-| same | form bodies; key change (Model.save inserts a copy); jsonb text PostgreSQL rejects | `service/persona_subs_writes.go:32,112,220,241,245` | B (open in t2subsb: not reached) | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
+| same | form bodies; key change (Model.save inserts a copy); jsonb text PostgreSQL rejects | `service/persona_subs_writes.go` | B (ported in t4l1: form and multipart bodies, the copy under a new key with its two audit entries, the 500 page with the pre-save entry kept for a rejected JSON value. Kept: form JSON text nested past 500 levels, Python's recursion limit depends on the live call stack; a new key held by a row of another group, left out on purpose) | Route not called by the UI. The UI only lists via `personas-subscriptions/<uid>/list` (`routes/association/personas/detail/sections/Subscriptions.svelte:315`). |
 
 ### profile-misc.md
 | route | refusal condition | Go site | class | evidence / notes |
