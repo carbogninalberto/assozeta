@@ -312,8 +312,7 @@ var supplierInvoiceOrder = map[string]string{
 	"invoice_supplier_id": "invoice_supplier_id", "pk": "invoice_supplier_id", "invoice_identifier": "invoice_identifier",
 	"amount": "amount", "payment_date": "payment_date", "expire_date": "expire_date", "paid": "paid", "notes": "notes",
 	"sport_association": "sport_association_id", "sport_association_id": "sport_association_id", "payment": "payment_id",
-	"payment_id": "payment_id", "document_pdf": "document_pdf_id", "document_pdf_id": "document_pdf_id", "supplier": "supplier_id",
-	"supplier_id": "supplier_id",
+	"payment_id": "payment_id", "supplier": "supplier_id", "supplier_id": "supplier_id",
 }
 
 // invoicePartyRenderable refuses payments whose nested renderings are not
@@ -347,11 +346,16 @@ func (s *InvoiceParties) SupplierList(ctx context.Context, request InvoicePartyR
 		if supplierText(request.Query, "sort[sort]") == "desc" {
 			field = "-" + field
 		}
+		if field == "?" {
+			// A random order has no answer to reproduce.
+			return nil, domain.ErrInvoicePartyNotPorted
+		}
 		name, descending := strings.CutPrefix(field, "-")
 		column, ok := supplierInvoiceOrder[name]
 		if !ok {
-			// Unknown names and relation paths ("supplier__name", "?") are
-			// refused; Django raises FieldError for the former.
+			// Only the model's own columns order the list; a relation path,
+			// a transform or the stored document is an unknown ordering
+			// (FieldError, 500).
 			return nil, domain.ErrInvoicePartyOrdering
 		}
 		query.OrderColumn, query.Descending = column, descending

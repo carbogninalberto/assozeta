@@ -155,8 +155,7 @@ course subscription by key (`all_objects()`), else the first installment's (`all
 - In the athlete list: a receipt whose filename is not a valid header value (the association's denomination with control
   characters; `document-render.md`) is refused before any write, where Django stores the Document and ignores the failed
   response.
-- Orderings Django resolves only when compiling the rows (relations other than `user`, relation paths and transforms, the
-  `full_name` annotation of the subscription search), refused after the count and page checks; random ordering together with
+- Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (`payment_intent_id`, the signature) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`. Only the `full_name` annotation of the subscription search is resolved when compiling the rows, refused after the count and page checks; random ordering together with
   the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are refused as unknown.
 - (Ported in tailpay.) Smart-search terms with characters Python lower-cases differently: see personas-reads.
 

@@ -71,11 +71,7 @@ names: pandas keeps them, skips the numeric coercion for those columns and sizes
 
 - **Exports:** workbook inputs `xlsxexport` does not reproduce (formula-like text and the other cases in
   `xlsx-exports.md`) and an export (either format) whose ordering is one of the lazy names below.
-- **Lazy orderings:** names Django resolves only when compiling the rows — transforms of a field (`title__lower`, JSON keys,
-  chains; the single extracts `year`, `month`, `hour`, `date`, `time`... of `creation_date`, `start_date` and `end_date` are ported), M2M/reverse relations (`tags`, `locations`, `coursesubscription`,
-  `attendanceregistry`) and relation paths (`sport_association__...`). Go refuses them where Django compiles: after
-  the count and page checks (an invalid page is still the 404) or on `all=1`. Django answers a valid one with rows
-  and an invalid one with a 500.
+- **Orderings:** Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (none of the course's own columns are held back) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`. Transforms of a field (`title__lower`, JSON keys, chains, the date extracts that earlier rounds ported), M2M/reverse relations (`tags`, `locations`, `coursesubscription`, `attendanceregistry`) and relation paths (`sport_association__...`) are therefore the 500 page, before the page checks.
 - The order of one course's athletes is the database's (no `ORDER BY` in either backend); with a broken associate
   among several athletes, which entries precede the stop depends on it. The contract compares athletes as a set.
 

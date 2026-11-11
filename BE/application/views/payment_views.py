@@ -44,7 +44,7 @@ from application.serializers.subscriptions_serializers import SignatureRequestSe
 from application.serializers.auth_serializers import SportAssociationBasicInfo
 from application.models.subscriptions_models import Subscription
 from application.utils import api_utils
-from application.utils.api_utils import is_valid_uuid, KTDatatablePagination
+from application.utils.api_utils import is_valid_uuid, KTDatatablePagination, checked_ordering
 from application.utils.excel_utils import get_excel_base64
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import calculate_simulation, generate_invoice_description
@@ -980,7 +980,7 @@ def payment_list(request):
                 payments = smart_search(payments, general_search)
         # sort by field
         if sort_field:
-            payments = payments.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+            payments = payments.order_by(checked_ordering(payments, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
         # pagination
         payments = paginator.paginate_queryset(queryset=payments, request=request)

@@ -51,20 +51,16 @@ func invoiceCoreModelUUID(raw string) (string, error) {
 }
 
 // invoiceCoreFields are Invoice's concrete field names and attnames by column.
-var invoiceCoreFields = map[string]string{"invoice_id": "invoice_id", "pk": "invoice_id", "document_pdf_id": "document_pdf_id",
-	"sport_association_id": "sport_association_id", "creation_date": "creation_date", "membership_fee": "membership_fee",
+var invoiceCoreFields = map[string]string{"invoice_id": "invoice_id", "pk": "invoice_id", "sport_association_id": "sport_association_id",
+	"sport_association": "sport_association_id", "selected_tutor": "selected_tutor_id", "group": "group_id", "creation_date": "creation_date", "membership_fee": "membership_fee",
 	"activity_fee": "activity_fee", "meta_payment_categories": "meta_payment_categories", "description": "description", "number": "number",
 	"archived": "archived", "cancelled": "cancelled", "selected_tutor_id": "selected_tutor_id", "meta": "meta",
 	"imported_from_associami": "imported_from_associami", "group_id": "group_id", "deleted": "deleted"}
 
-// invoiceCoreRelations are Invoice's relations: order_by() accepts them and
-// paths through them, and Django resolves them only when compiling the rows.
-var invoiceCoreRelations = map[string]bool{"document_pdf": true, "sport_association": true, "selected_tutor": true, "group": true,
-	"attached_documents": true, "payment": true, "invoicerows": true}
-
 // invoiceCoreOrder is order_by(f"{'-' if desc else ”}{field}"): one leading
-// '-' is stripped, then the name must resolve (FieldError, 500); random,
-// relations and transforms are refused (not ported).
+// '-' is stripped, then the name must be one of the model's own columns
+// (a path through a relation or a transform is an unknown ordering:
+// FieldError, 500); random stays refused (a random order has no answer).
 func invoiceCoreOrder(filter *domain.InvoiceCoreFilter, field, direction string) error {
 	if direction == "desc" {
 		field = "-" + field
@@ -76,10 +72,6 @@ func invoiceCoreOrder(filter *domain.InvoiceCoreFilter, field, direction string)
 	if column, ok := invoiceCoreFields[name]; ok {
 		filter.Order = []domain.PaymentReadsOrder{{Column: column, Descending: descending}}
 		return nil
-	}
-	first, _, _ := strings.Cut(name, "__")
-	if _, ok := invoiceCoreFields[first]; ok || invoiceCoreRelations[first] {
-		return domain.ErrInvoiceCoreNotPorted
 	}
 	return domain.ErrInvoiceCoreServer
 }

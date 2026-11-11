@@ -141,7 +141,7 @@ func TestPersonaOrdering(t *testing.T) {
 			t.Fatalf("%s %s: %+v %v", c.field, c.direction, got, err)
 		}
 	}
-	for _, field := range []string{"?x", "nope", "relevance", "tutor_relations", "user__username", "last_name.x", "LAST_NAME"} {
+	for _, field := range []string{"?x", "nope", "relevance", "tutor_relations", "user__username", "sport_association__user__email", "id_number", "last_name.x", "LAST_NAME"} {
 		if _, err := order(field, "asc"); !errors.Is(err, ErrPersonaUnhandled) {
 			t.Fatalf("%s: %v", field, err)
 		}

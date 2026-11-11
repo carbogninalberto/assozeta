@@ -88,29 +88,6 @@ func courseListFrom(query domain.CourseListQuery) (string, []any) {
 	return " FROM application_course c" + joins.String() + where.String(), args
 }
 
-// courseListOrderExpression is the column, or its datetime extract in UTC
-// (Django's EXTRACT(... FROM col AT TIME ZONE 'UTC'); week_day counts from Sunday = 1).
-func courseListOrderExpression(query domain.CourseListQuery) string {
-	column := "c." + query.OrderColumn
-	zoned := column + " AT TIME ZONE 'UTC'"
-	switch query.OrderTransform {
-	case "":
-		return column
-	case "date":
-		return "(" + zoned + ")::date"
-	case "time":
-		return "(" + zoned + ")::time"
-	case "week_day":
-		return "EXTRACT(DOW FROM " + zoned + ") + 1"
-	case "iso_week_day":
-		return "EXTRACT(ISODOW FROM " + zoned + ")"
-	case "iso_year":
-		return "EXTRACT(ISOYEAR FROM " + zoned + ")"
-	}
-	// The service only passes the names of its transform list.
-	return "EXTRACT(" + strings.ToUpper(query.OrderTransform) + " FROM " + zoned + ")"
-}
-
 func courseListOrder(query domain.CourseListQuery) string {
 	switch {
 	case query.Random:
@@ -118,9 +95,9 @@ func courseListOrder(query domain.CourseListQuery) string {
 	case query.OrderColumn == "":
 		return " ORDER BY c.creation_date DESC"
 	case query.Descending:
-		return " ORDER BY " + courseListOrderExpression(query) + " DESC"
+		return " ORDER BY " + "c." + query.OrderColumn + " DESC"
 	}
-	return " ORDER BY " + courseListOrderExpression(query) + " ASC"
+	return " ORDER BY " + "c." + query.OrderColumn + " ASC"
 }
 
 func (r *CourseLists) CountCourses(ctx context.Context, query domain.CourseListQuery) (int64, error) {

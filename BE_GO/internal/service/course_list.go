@@ -95,17 +95,6 @@ var courseListColumns = map[string]string{
 	"group": "group_id", "group_id": "group_id",
 }
 
-// courseListRelations are the other names Options.get_field resolves on
-// Course (M2M and reverse relations): order_by accepts them and paths
-// through any known name, and only the compiled query uses or rejects them.
-var courseListRelations = map[string]bool{"tags": true, "locations": true, "coursesubscription": true, "attendanceregistry": true}
-
-// courseListDateColumns are the DateTimeFields; courseListExtracts the transforms
-// registered on them (a single transform: chains and lookups stay refused).
-var courseListDateColumns = map[string]bool{"creation_date": true, "start_date": true, "end_date": true}
-var courseListExtracts = map[string]bool{"year": true, "iso_year": true, "month": true, "day": true, "week": true, "week_day": true,
-	"iso_week_day": true, "quarter": true, "hour": true, "minute": true, "second": true, "date": true, "time": true}
-
 func courseListText(query domain.RequestObject, name string) string {
 	value, _ := query.Lookup(name)
 	text, _ := value.(string)
@@ -121,31 +110,24 @@ func courseListScope(identity domain.ResolvedIdentity) *string {
 }
 
 // courseListOrdering is order_by(name): '?' is random; one leading '-' is
-// descending; an unknown first name is a FieldError at order_by() (a 500
-// now); anything else is resolved lazily and not ported (unported=true).
+// descending; only the course's own columns order the list, so any other
+// name (a relation, a path through one, a transform) is a FieldError at
+// order_by() (a 500).
 func courseListOrdering(query *domain.CourseListQuery, name string) (unported bool, err error) {
 	if name == "?" {
 		query.Random = true
 		return false, nil
 	}
 	field, descending := strings.CutPrefix(name, "-")
-	parts := strings.Split(field, "__")
-	first := parts[0]
-	if first == "pk" {
-		first = "course_id"
+	if field == "pk" {
+		field = "course_id"
 	}
-	column, local := courseListColumns[first]
-	switch {
-	case local && len(parts) == 1:
-		query.OrderColumn, query.Descending = column, descending
-		return false, nil
-	case local && len(parts) == 2 && courseListDateColumns[column] && courseListExtracts[parts[1]]:
-		query.OrderColumn, query.OrderTransform, query.Descending = column, parts[1], descending
-		return false, nil
-	case local || courseListRelations[first]:
-		return true, nil
+	column, ok := courseListColumns[field]
+	if !ok {
+		return false, ErrCourseListServer
 	}
-	return false, ErrCourseListServer
+	query.OrderColumn, query.Descending = column, descending
+	return false, nil
 }
 
 // List follows course_list.

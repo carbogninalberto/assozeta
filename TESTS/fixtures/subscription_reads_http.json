@@ -30538,6 +30538,116 @@
    "method": "GET",
    "path": "/subscription/list?sort[field]=user__username&pagination[page]=9",
    "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-user-password-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=user__password&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-owner-account-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=sport_association__user__password&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-owner-account-email-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=sport_association__user__email&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-associate-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=associate__tax_code&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-payment-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=payment__payment_intent_id&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-signature-key-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=signature_storage_key&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-signature-url-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=signature_url&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-document-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=document_pdf&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-transform-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=creation_date__year&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-reverse-relation-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=tags&sort[sort]=desc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "unordered": false
+  },
+  {
+   "name": "subscription-reads-list-sort-own-relation-invalid-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list?sort[field]=user&pagination[page]=9",
+   "headers": {},
    "status": 404,
    "response": {
     "detail": "Invalid page."
@@ -42681,7 +42791,7 @@
    "unordered": false
   },
   {
-   "name": "subscription-reads-archived-sort-relation-invalid-page",
+   "name": "subscription-reads-archived-sort-own-relation-invalid-page",
    "actor": "owner",
    "method": "GET",
    "path": "/subscription/list/archived?sort[field]=payment&pagination[page]=4",

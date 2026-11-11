@@ -355,6 +355,13 @@ add('list-sort-random-desc', 'owner', LIST + '?sort[field]=?&sort[sort]=desc', 5
 add('list-sort-unknown', 'owner', LIST + '?sort[field]=nope&sort[sort]=asc', 500, SERVER)
 add('list-sort-relevance-without-search', 'owner', LIST + '?sort[field]=relevance&sort[sort]=asc', 500, SERVER)
 add('list-sort-dotted', 'owner', LIST + '?sort[field]=last_name.x&sort[sort]=asc', 500, SERVER)
+# Only the associate's own columns order the list: paths through a relation or the owner account, reverse
+# accessors and the identity document number answer as an unknown ordering.
+for _name, _field in (('user-password', 'user__password'), ('user-email', 'user__email'), ('owner-account-path', 'sport_association__user__password'),
+                      ('association-path', 'sport_association__denomination'), ('group-path', 'group__name'),
+                      ('tutor-path', 'tutors__last_name'), ('reverse-path', 'subscription__notes'), ('document-number', 'id_number'),
+                      ('transform', 'last_name__lower')):
+    add('list-sort-' + _name + '-server-error', 'owner', LIST + '?sort[field]=' + _field + '&sort[sort]=asc', 500, SERVER)
 
 add('list-page-two', 'owner', LIST + '?sort[field]=last_name&sort[sort]=asc&pagination[perpage]=3&pagination[page]=2', 200,
     page(BY_LAST, number=2, size=3), ordered=True)

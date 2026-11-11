@@ -9099,6 +9099,96 @@
    "ordered": false
   },
   {
+   "name": "personas-reads-list-sort-user-password-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=user__password&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-user-email-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=user__email&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-owner-account-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=sport_association__user__password&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-association-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=sport_association__denomination&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-group-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=group__name&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-tutor-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=tutors__last_name&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-reverse-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=subscription__notes&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-document-number-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=id_number&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
+   "name": "personas-reads-list-sort-transform-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/personas/list?sort[field]=last_name__lower&sort[sort]=asc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "ordered": false
+  },
+  {
    "name": "personas-reads-list-page-two",
    "actor": "owner",
    "method": "GET",

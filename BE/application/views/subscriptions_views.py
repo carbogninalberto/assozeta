@@ -67,7 +67,7 @@ from application.models.subscriptions_models import Subscription, future_renewal
 from application.serializers.user_serializers import AssociateSerializer, MedicalAppointmentsSerializer
 from application.utils.xlsx_text import xlsx_safe_frame
 from application.utils.api_utils import is_valid_uuid, SubscriptionMaps, BalanceSheetData, KTDatatablePagination, \
-    check_date, generate_image_with_text
+    check_date, generate_image_with_text, checked_ordering
 from application.utils.notification_utils import NotificationUtils
 from application.views.auth_views import AuthUtils
 from django.core.files.storage import default_storage
@@ -1084,9 +1084,8 @@ def _apply_sorting(subscriptions, params):
                 f"{'-' if params['sort_type'] == 'desc' else ''}age"
             )
         else:
-            subscriptions = subscriptions.order_by(
-                f"{'-' if params['sort_type'] == 'desc' else ''}{params['sort_field']}"
-            )
+            subscriptions = subscriptions.order_by(checked_ordering(
+                subscriptions, f"{'-' if params['sort_type'] == 'desc' else ''}{params['sort_field']}"))
 
     return subscriptions
 
@@ -1219,7 +1218,7 @@ def subscription_list_archived(request):
                 f"{'-' if sort_type == 'desc' else ''}associate__last_name"
             )
         else:
-            subscriptions = subscriptions.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+            subscriptions = subscriptions.order_by(checked_ordering(subscriptions, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
         # apply the sort by lastname asc or desc if one of the two is present
     if sort_lastname_asc_flag or sort_lastname_desc_flag:
@@ -1927,7 +1926,7 @@ def subscription_payments(request, uid):
             )
     # sort by field
     if sort_field:
-        payments = payments.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+        payments = payments.order_by(checked_ordering(payments, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
     payments = paginator.paginate_queryset(queryset=payments, request=request)
     payments_data = PaymentOptimizedSerializer(payments, many=True).data

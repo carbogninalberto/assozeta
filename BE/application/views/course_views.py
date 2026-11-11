@@ -34,7 +34,7 @@ from application.serializers.courses_serializers import CourseSerializer, Course
 
 import logging
 
-from application.utils.api_utils import is_valid_uuid, BalanceSheetData, KTDatatablePagination
+from application.utils.api_utils import is_valid_uuid, BalanceSheetData, KTDatatablePagination, checked_ordering
 
 logger = logging.getLogger(__name__)
 
@@ -552,9 +552,9 @@ def course_list(request):
 
     if sort_field and sort_type:
         if sort_type == 'asc':
-            courses = courses.order_by(sort_field)
+            courses = courses.order_by(checked_ordering(courses, sort_field))
         else:
-            courses = courses.order_by(f'-{sort_field}')
+            courses = courses.order_by(checked_ordering(courses, f'-{sort_field}'))
 
     if all is not None and all == '1':
         if optimized is not None and optimized == '1':

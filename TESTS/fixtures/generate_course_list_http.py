@@ -270,16 +270,15 @@ add('sort-other-direction-is-desc', 'owner', {'sort[field]': 'title', 'sort[sort
 add('sort-minus-field-asc', 'owner', {'sort[field]': '-title', 'sort[sort]': 'asc'}, 200, page(['old', 'draft', 'internal', 'full', 'grouped']))
 add('sort-creation-asc', 'owner', {'sort[field]': 'creation_date', 'sort[sort]': 'asc'}, 200,
     page(['old', 'draft', 'internal', 'grouped', 'full']))
-# order_by('<datetime field>__<transform>'): the extract in UTC (values distinct across the five courses).
-for transform, direction, labels in (
-        ('month', 'asc', ['internal', 'old', 'grouped', 'full', 'draft']),
-        ('hour', 'desc', ['draft', 'old', 'grouped', 'full', 'internal']),
-        ('date', 'desc', ['full', 'grouped', 'internal', 'draft', 'old']),
-        ('time', 'asc', ['internal', 'full', 'grouped', 'old', 'draft'])):
-    add(f'sort-creation-{transform}-{direction}', 'owner', {'sort[field]': f'creation_date__{transform}', 'sort[sort]': direction}, 200,
-        page(labels))
-add('sort-creation-month-all', 'owner', {'sort[field]': 'creation_date__month', 'sort[sort]': 'desc', 'all': '1'}, 200,
-    listed(['draft', 'full', 'grouped', 'old', 'internal']))
+# Only the course's own columns order the list: a transform of a column, a relation or a path through one is an unknown ordering.
+for transform in ('month', 'hour', 'date', 'time'):
+    add(f'sort-creation-{transform}-server-error', 'owner', {'sort[field]': f'creation_date__{transform}', 'sort[sort]': 'asc'}, 500, SERVER)
+add('sort-creation-month-all-server-error', 'owner', {'sort[field]': 'creation_date__month', 'sort[sort]': 'desc', 'all': '1'}, 500, SERVER)
+for _name, _field in (('association-path', 'sport_association__denomination'), ('owner-account-path', 'sport_association__user__password'),
+                      ('owner-account-email', 'sport_association__user__email'), ('group-path', 'group__name'),
+                      ('title-transform', 'title__lower'), ('tags', 'tags'), ('tags-path', 'tags__tag_name'),
+                      ('reverse-relation', 'coursesubscription__payment'), ('locations', 'locations')):
+    add(f'sort-{_name}-server-error', 'owner', {'sort[field]': _field, 'sort[sort]': 'asc'}, 500, SERVER)
 add('sort-pk-desc', 'owner', {'sort[field]': 'pk', 'sort[sort]': 'desc'}, 200, page(by_id[::-1]))
 add('sort-course-id-asc', 'owner', {'sort[field]': 'course_id', 'sort[sort]': 'asc'}, 200, page(by_id))
 add('sort-relation-attname', 'owner', {'sort[field]': 'sport_association_id', 'sort[sort]': 'asc', 'query[status_flag]': '1'}, 200,
@@ -294,9 +293,9 @@ add('sort-unknown-transform', 'owner', {'sort[field]': 'title__nope', 'sort[sort
 # An unknown first name fails in order_by() itself; names past a known field
 # (transforms, relations) are only compiled with the rows, after the page checks.
 add('sort-unknown-field-before-page', 'owner', {'sort[field]': 'nope', 'sort[sort]': 'asc', 'pagination[page]': '0'}, 500, SERVER)
-add('sort-unknown-transform-after-page', 'owner', {'sort[field]': 'title__nope', 'sort[sort]': 'asc', 'pagination[page]': '0'}, 404,
-    INVALID_PAGE)
-add('sort-relation-after-page', 'owner', {'sort[field]': 'tags', 'sort[sort]': 'asc', 'pagination[page]': 'abc'}, 404, INVALID_PAGE)
+add('sort-unknown-transform-before-page', 'owner', {'sort[field]': 'title__nope', 'sort[sort]': 'asc', 'pagination[page]': '0'}, 500, SERVER)
+add('sort-relation-before-page', 'owner', {'sort[field]': 'tags', 'sort[sort]': 'asc', 'pagination[page]': 'abc'}, 500, SERVER)
+add('sort-own-relation-after-page', 'owner', {'sort[field]': 'sport_association', 'sort[sort]': 'asc', 'pagination[page]': 'abc'}, 404, INVALID_PAGE)
 add('sort-unknown-transform-all', 'owner', {'sort[field]': 'title__nope', 'sort[sort]': 'asc', 'all': '1'}, 500, SERVER)
 
 # KTDatatablePagination.
@@ -415,8 +414,8 @@ add('excel-sort-title-asc', 'owner', {'sort[field]': 'title', 'sort[sort]': 'asc
     export(['grouped', 'full', 'internal', 'draft', 'old']), method='POST', body=EXCEL)
 add('excel-sort-creation-asc', 'owner', {'sort[field]': 'creation_date', 'sort[sort]': 'asc'}, 200,
     export(['old', 'draft', 'internal', 'grouped', 'full']), method='POST', body=EXCEL)
-add('excel-sort-creation-hour-asc', 'owner', {'sort[field]': 'creation_date__hour', 'sort[sort]': 'asc'}, 200,
-    export(['internal', 'full', 'grouped', 'old', 'draft']), method='POST', body=EXCEL)
+add('excel-sort-creation-hour-server-error', 'owner', {'sort[field]': 'creation_date__hour', 'sort[sort]': 'asc'}, 500, SERVER, method='POST',
+    body=EXCEL)
 add('excel-sort-random-one-row', 'owner', {'sort[field]': '?', 'sort[sort]': 'asc', 'query[status_flag]': '3'}, 200,
     export(['internal']), method='POST', body=EXCEL)
 add('excel-sort-unknown-field', 'owner', {'sort[field]': 'nope', 'sort[sort]': 'asc'}, 500, SERVER, method='POST', body=EXCEL)
