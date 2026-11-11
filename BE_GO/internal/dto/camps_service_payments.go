@@ -258,6 +258,25 @@ func CampsStoredAmount(value float64) (string, string, bool) {
 	return nine, stored, true
 }
 
+// CampsAmountOverflows is whether numeric(9,2) rejects the amount PostgreSQL
+// rounds from the float's nine significant digits (absolute value >= 10^7).
+func CampsAmountOverflows(value float64) bool {
+	if math.IsInf(value, 0) || math.IsNaN(value) {
+		return false
+	}
+	rational, ok := new(big.Rat).SetString(strconv.FormatFloat(value, 'e', 8, 64))
+	if !ok {
+		return false
+	}
+	scaled := new(big.Rat).Mul(rational, big.NewRat(100, 1))
+	scaled.Abs(scaled)
+	quotient, remainder := new(big.Int).QuoRem(scaled.Num(), scaled.Denom(), new(big.Int))
+	if new(big.Int).Mul(remainder, big.NewInt(2)).Cmp(scaled.Denom()) >= 0 {
+		quotient.Add(quotient, big.NewInt(1))
+	}
+	return quotient.Cmp(big.NewInt(1_000_000_000)) >= 0
+}
+
 // CampsJSONText is json.dumps of the metas Django writes to the JSONField.
 func CampsJSONText(value any) string { return string(PythonJSONDumps(value)) }
 

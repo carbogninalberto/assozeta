@@ -729,6 +729,56 @@ add('services-update-new-key-taken', 'owner', service_path('bus', 'update'), 400
                                               'unique')])])}, method='PATCH',
     body={'camps_and_retreats_period_service_id': SERVICES['kayak']['id']})
 
+# A fee that pushes a payment's recomputed amount past numeric(9,2): the meta saves before it stay, the failing save is audited
+# (auditlog writes before the UPDATE) and then raises; later payments are not walked.
+def overflow_service(actor, name, label, fee):
+    row = STATE['services'][label]
+    before = service_audit_view(row)
+    row.update({'fee': fee})
+    events = [audit('CampsAndRetreatsPeriodsService', row['id'], 1, stored_changes(before, service_audit_view(row), SERVICE_FIELDS),
+                    CAMPS[PERIODS[row['period']]['camp']]['association'], SERVICE_PATH)]
+    rows = {SERVICE: {row['id']: service_row(row)}}
+    service = STATE['services'][label]
+    for sp in SUBSCRIPTION_PERIODS.values():
+        if sp['period'] != service['period'] or sp['payment'] is None or STATE['payments'][sp['payment']]['paid']:
+            continue
+        payment = STATE['payments'][sp['payment']]
+        for item in payment['meta']:
+            if item['camps_and_retreats_period_service_id'] == service['id']:
+                old = dumps(payment['meta'])
+                item['amount'] = float(service['fee'])
+                item['title'] = service['title']
+                item['payment_category_id'] = CATEGORIES[service['category']]['id'] if service['category'] else 'None'
+                if dumps(payment['meta']) != old:
+                    events.append(audit('Payment', payment['id'], 1, {'meta_payment_categories': [old, dumps(payment['meta'])]}, OWN, 'direct'))
+        period = STATE['periods'][sp['period']]
+        camp = CAMPS[SUBSCRIPTIONS[sp['subscription']]['camp']]
+        notes = f"Iscrizione al periodo {period['title']} del campo {camp['title']}"
+        notes += f"\n{camp['description']}"
+        amount = 0
+        notes += '\n'
+        for item in payment['meta']:
+            notes += f"\n{item['title']} - {item['amount']}€"
+            amount += item['amount']
+        amount += float(period['fee'])
+        changes = {}
+        if repr(amount) != payment['amount']:
+            changes['amount'] = [payment['amount'], repr(amount)]
+        if notes != payment['notes']:
+            changes['notes'] = [text(payment['notes']), notes]
+        if changes:
+            events.append(audit('Payment', payment['id'], 1, changes, OWN, 'direct'))
+        rows.setdefault(PAYMENT, {})[payment['id']] = {'meta_payment_categories': copy.deepcopy(payment['meta'])}
+        if amount >= 10 ** 7:
+            break
+        payment['amount'], payment['notes'] = f'{amount:.2f}', notes
+        rows[PAYMENT][payment['id']].update({'amount': payment['amount'], 'notes': notes})
+    add(name, actor, service_path(label, 'update'), 500, {'error': 'numeric field overflow\nDETAIL:  A field with precision 9, scale 2 must round to an absolute value less than 10^7.\n'},
+        method='PATCH', body={'fee': fee}, effect={'actor': actor, 'rows': rows, 'audit': events})
+
+
+overflow_service('owner', 'services-update-amount-overflow', 'kayak', '9999999.99')
+
 # The walk raises on the payment without metas after the service was saved.
 guide = STATE['services']['guide']
 guide_before = service_audit_view(guide)

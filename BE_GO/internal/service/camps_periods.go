@@ -744,10 +744,19 @@ func (a campsPaymentAdapter) PaymentLinkedName(ctx context.Context, payment stri
 	return a.tx.PaymentLinkedName(ctx, payment)
 }
 
+// The driver's text for the two refusals a payment save can meet.
+const (
+	campsNumericOverflow = "numeric field overflow\nDETAIL:  A field with precision 9, scale 2 must round to an absolute value less than 10^7.\n"
+	campsNotesTooLong    = "value too long for type character varying(5120)\n"
+)
+
 type campsPaymentSave struct {
 	row     domain.CampsPayment
 	event   *domain.CampsAudit
 	failure *dto.CampsPythonError
+	// rejected is a save the database refuses: auditlog's entry is written
+	// first, then the UPDATE raises and stops the request.
+	rejected *dto.CampsPythonError
 }
 
 // campsWalk plans the view's payment loop before any write: every save with
@@ -787,6 +796,7 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 			association = &value
 		}
 		for _, step := range walk.Steps {
+			var rejected *dto.CampsPythonError
 			changes := map[string][2]string{}
 			if err = paymentSaveDefaults(ctx, campsPaymentAdapter{tx: r.tx}, &payment.PaymentSaveRow, changes); err != nil {
 				if errors.Is(err, ErrPaymentSaveFailed) {
@@ -796,8 +806,14 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 			}
 			if step.Final {
 				_, stored, ok := dto.CampsStoredAmount(step.Amount)
-				if !ok || utf8.RuneCountInString(step.Notes) > 5120 {
+				switch {
+				case !ok && dto.CampsAmountOverflows(step.Amount):
+					rejected = &dto.CampsPythonError{Message: campsNumericOverflow}
+				case !ok:
+					// A negative amount fails the check constraint, whose message dumps the row (generated ids).
 					return nil, ErrCampsPaymentNotPorted
+				case utf8.RuneCountInString(step.Notes) > 5120:
+					rejected = &dto.CampsPythonError{Message: campsNotesTooLong}
 				}
 				if repr := dto.CampsFloat(step.Amount); repr != payment.Amount {
 					changes["amount"] = [2]string{payment.Amount, repr}
@@ -819,7 +835,7 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 				text := dto.CampsJSONText(step.Meta)
 				payment.Metas = &text
 			}
-			save := campsPaymentSave{row: payment}
+			save := campsPaymentSave{row: payment, rejected: rejected}
 			if hidden {
 				// The instance holds the float amount after the final step; every other field renders as stored.
 				full := map[string][2]string{}
@@ -833,6 +849,9 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 				save.event = &event
 			}
 			saves = append(saves, save)
+			if rejected != nil {
+				return saves, nil
+			}
 		}
 		copied := payment
 		state[payment.ID] = &copied
@@ -942,8 +961,10 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 			}
 			return nil, &CampsSaveFailure{Err: save.failure}
 		}
-		if err = r.tx.SavePayment(ctx, save.row); err != nil {
-			return nil, err
+		if save.rejected == nil {
+			if err = r.tx.SavePayment(ctx, save.row); err != nil {
+				return nil, err
+			}
 		}
 		if save.event != nil {
 			event := *save.event
@@ -955,6 +976,12 @@ func (s *CampsPeriods) UpdateService(ctx context.Context, identity domain.Resolv
 			if err = r.emit(ctx, event); err != nil {
 				return nil, err
 			}
+		}
+		if save.rejected != nil {
+			if err = r.tx.Commit(); err != nil {
+				return nil, err
+			}
+			return nil, &CampsSaveFailure{Err: save.rejected}
 		}
 	}
 	return &row, r.tx.Commit()

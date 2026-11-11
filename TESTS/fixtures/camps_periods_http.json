@@ -3969,6 +3969,97 @@
    }
   },
   {
+   "name": "camps-periods-services-update-amount-overflow",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "numeric field overflow\nDETAIL:  A field with precision 9, scale 2 must round to an absolute value less than 10^7.\n"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985014": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Kayak doppio",
+       "description": "Mezza giornata",
+       "fee": "9999999.99",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak doppio",
+         "amount": 9999999.99,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985014",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "16.00",
+        "9999999.99"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 9999999.99, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "146.00",
+        "10000129.99"
+       ],
+       "notes": [
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 9999999.99€\nBus - 30.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "fee": "9999999.99"
+   }
+  },
+  {
    "name": "camps-periods-services-update-null-metas-server-error",
    "actor": "owner",
    "method": "PATCH",

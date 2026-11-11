@@ -432,19 +432,30 @@ func (r *campsSubscriptionRequest) generatePayment(ctx context.Context, cs domai
 	var group *string
 	if r.group != "" {
 		if group = supplierGroup(r.group); group == nil {
-			return ErrCampsPaymentNotPorted
+			// UUIDField.get_db_prep_value raises its ValidationError.
+			return &dto.CampsPythonError{Message: dto.CampsInvalidUUIDMessage(r.group)}
 		}
 		found, err := r.subs.GroupExists(ctx, *group)
 		if err != nil {
 			return err
 		}
 		if !found {
+			// Registrations resolve inside the group, so only a group removed
+			// during the request gets here; the foreign key error names a
+			// constraint the Go side cannot know.
 			return ErrCampsPaymentNotPorted
 		}
 	}
 	_, stored, ok := dto.CampsStoredAmount(amount)
-	if !ok || utf8.RuneCountInString(notes) > 5120 {
+	if !ok {
+		if dto.CampsAmountOverflows(amount) {
+			return &dto.CampsPythonError{Message: campsNumericOverflow}
+		}
+		// A negative amount fails the check constraint, whose message dumps the new row (generated ids).
 		return ErrCampsPaymentNotPorted
+	}
+	if utf8.RuneCountInString(notes) > 5120 {
+		return &dto.CampsPythonError{Message: campsNotesTooLong}
 	}
 	account, err := r.subs.DefaultBankAccount(ctx, cs.CampAssociationID)
 	if err != nil {
