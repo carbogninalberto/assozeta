@@ -121,10 +121,13 @@ BROADCAST = [False]
 CATEGORY_TITLE = 'Quota tesseramento'
 
 
-def add(name, actor, status, response, *, body=None, method='POST', query='', headers=None, effect=None, setup=None):
+def add(name, actor, status, response, *, body=None, method='POST', query='', headers=None, effect=None, setup=None, throttle=None,
+        retry_after=None):
+    """throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
     cases.append({'name': f'subscription-create-{name}', 'actor': actor, 'method': method, 'path': '/subscription/add' + query,
                   'headers': headers or {}, 'status': status, 'response': response, 'effect': effect, 'body': body,
-                  'setup': setup})
+                  'setup': setup, **({'throttle': throttle} if throttle is not None else {}),
+                  **({'retry_after': retry_after} if retry_after is not None else {})})
 
 
 def person(first, last, tax_code, born='15/03/1990', **extra):
@@ -645,8 +648,8 @@ quick('owner', 'quick_fallback', 'Fabio Ripiego', plan='nessuno',
 # base64.b64decode(validate=True) (invalid: 400 'Firma non valida.', rolled back) is stored at
 # '<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png' and save(update_fields=[signature_url, signature_storage_key])
 # writes the name and the public URL (update entry).
-# new_user_account.new_member: the live user with new_member_info's e-mail (first by key) becomes create_subscription's
-# user; without one UserSerializer(raise_exception) creates the account (create_user with a token_hex username: create
+# new_user_account.new_member: an e-mail that already has an account links nothing (the request's user owns the rows, as
+# without new_member); without one UserSerializer(raise_exception) creates the account (create_user with a token_hex username: create
 # entry; then first_name[:3] + last_name[:3] + 8 random upper-case characters and set_password: the username update
 # entry) and the welcome e-mail with the password is queued on commit before the other tasks. That user owns the
 # associate, the payment, the signature and the subscription and gets the notification; an athlete user also queues
@@ -756,7 +759,8 @@ add('new-member-account', 'owner', 200, SUCCESS(25.0),
 known_member = person('Elsa', 'Esistente', 'SSTLSE90C41H501K')
 add('new-member-existing-email', 'owner', 200, SUCCESS(25.0),
     body=request(known_member, account={'new_member': True, 'new_member_info': {'first_name': 'X', 'last_name': 'Y', 'email': ATHLETE_EMAIL}}),
-    effect=member_effect('Elsa Esistente', known_member, member=IDS['athlete'], member_label='athlete'))
+    effect=success('owner', 'Elsa Esistente', associate=created_associate(known_member), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
 
 # --- The public forms -------------------------------------------------------------------------------------
 # An anonymous request is attributed to the user named by data['sport_association'] (User.objects.get(username=...): a
@@ -796,6 +800,14 @@ add('anonymous-form-new-account', 'anonymous', 200, SUCCESS(25.0),
                                    'last_name': 'Registrato', 'phone': None},
                          signature='https://firme.example.test/remo.png'))
 
+known_anonymous = person('Ada', 'Anonima', 'DANNDA90C41H501K')
+add('anonymous-form-existing-email', 'anonymous', 200, SUCCESS(25.0),
+    body=request(known_anonymous, sport_association=OWNER_NAME, **FORM,
+                 account={'new_member': True, 'new_member_info': {'first_name': 'Ada', 'last_name': 'Anonima', 'phone': None,
+                                                                  'email': ATHLETE_EMAIL}}),
+    effect=success('anonymous', 'Ada Anonima', associate=created_associate(known_anonymous), payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription=dict(PLAIN), membership=dict(MEMBER)))
+
 add('athlete-form-unknown-username-server-error', 'athlete', 500, SERVER,
     body=request(person('Tina', 'Atleta', 'TLTTNI90C41H501K'), sport_association='nessuno'))
 add('athlete-form-athlete-username-server-error', 'athlete', 500, SERVER,
@@ -806,7 +818,7 @@ add('athlete-form-invalid-fields', 'athlete', 400, {'sex': ['"X" is not a valid 
     body=request(person('Tina', 'Atleta', 'TLTTNI90C41H501K', sex='X'), sport_association=OWNER_NAME, **FORM))
 athlete_form = person('Tina', 'Atleta', 'TLTTNI90C41H501K')
 add('athlete-form', 'athlete', 200, SUCCESS(25.0), body=request(athlete_form, sport_association=OWNER_NAME, **FORM),
-    effect=member_effect('Tina Atleta', athlete_form, member=IDS['athlete'], member_label='athlete', actor='athlete', broadcast=False))
+    effect=member_effect('Tina Atleta', athlete_form, member=IDS['athlete'], member_label='athlete', actor='athlete'))
 # A minor with a tutor: both belong to the athlete.
 minor_form = person('Mino', 'Minore', 'MNRMNI15C01H501K', born='01/03/2015', is_minor=True)
 tutor_form = person('Tea', 'Tutrice', 'TTRTEA80C41H501K', born='01/03/1980', sex='f')
@@ -1073,6 +1085,13 @@ add('family-wizard-owner', 'owner', 200, FAMILY_SUCCESS,
     body=family_body([family_entry(owner_child)], sport_association=OWNER_NAME, type='altro'),
     effect=family_effect('owner', [owner_child], through_actor=(OWN, 'actor.sport_association')))
 
+# An entry whose member e-mail already has an account is created with the owner, like one without new_member.
+linked_child = person('Elio', 'Famiglia', 'FMGLEI12A01H501M')
+add('family-wizard-owner-existing-email', 'owner', 200, FAMILY_SUCCESS,
+    body=family_body([family_entry(linked_child, new_user_account={'new_member': True, 'new_member_info': {
+        'first_name': 'Elio', 'last_name': 'Famiglia', 'phone': None, 'email': ATHLETE_EMAIL}})], sport_association=OWNER_NAME),
+    effect=family_effect('owner', [linked_child], through_actor=(OWN, 'actor.sport_association')))
+
 # --- A preregistration that renews a subscription ------------------------------------------------------------
 # data['preregistration'] is True with a subscription_id: fill_data_preregisration reads the subscription in the
 # association of the registration (data['sport_association'], else user.sport_association) when the requester is
@@ -1279,9 +1298,26 @@ effect = success('owner', 'Dina Giovane', associate=created_associate(young, is_
 effect['associate']['columns']['born_date'] = '$day_first_minor_iso'
 add('minor-day-first-birth-date', 'owner', 200, SUCCESS(25.0), body=request(young, tutor=young_tutor), effect=effect)
 
+# --- Limits of requests without an account --------------------------------------------------------------------
+# Requests without an account are counted per address (30 in 600 seconds): the next one is asked to wait before the body
+# is read. A body above the upload limit (32768 bytes in this run) is refused for them only.
+UPLOAD_LIMIT = 32768
+FULL = {'preload': 30, 'age': 10.2}
+THROTTLED = {'detail': 'Request was throttled. Expected available in 590 seconds.'}
+LIMITED = {'error': f'Il file supera la dimensione massima consentita ({UPLOAD_LIMIT} byte).'}
+without_signature = {k: v for k, v in request(person('Anna', 'A', 'X'), sport_association=OWNER_NAME).items() if k != 'signature'}
+add('anonymous-over-the-rate', 'anonymous', 429, THROTTLED, body=without_signature, throttle=FULL, retry_after='590')
+add('anonymous-wrong-method-over-the-rate', 'anonymous', 429, THROTTLED, method='GET', throttle=FULL, retry_after='590')
+add('anonymous-below-the-rate', 'anonymous', 400, VALIDATION, body=without_signature, throttle={'preload': 29, 'age': 10.2})
+add('anonymous-old-history', 'anonymous', 405, {'detail': 'Method "GET" not allowed.'}, method='GET', throttle={'preload': 30, 'age': 601})
+add('anonymous-options-over-the-rate', 'anonymous', 429, THROTTLED, method='OPTIONS', throttle=FULL, retry_after='590')
+add('owner-full-history', 'owner', 400, VALIDATION, body=without_signature, throttle=FULL)
+add('anonymous-body-above-the-limit', 'anonymous', 413, LIMITED, body={**without_signature, 'nota': 'x' * (UPLOAD_LIMIT + 100)})
+add('owner-body-above-the-limit', 'owner', 400, VALIDATION, body={**without_signature, 'nota': 'x' * (UPLOAD_LIMIT + 100)})
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/add authored sequence with row, audit, Celery and notification effects',
     'ids': IDS, 'associates': ASSOCIATES, 'certificates': CERTIFICATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'relations': RELATIONS,
-    'account': ACCOUNT, 'settings': BASE_SETTINGS, 'unknown': UNKNOWN, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
+    'account': ACCOUNT, 'settings': BASE_SETTINGS, 'unknown': UNKNOWN, 'public_upload_limit': UPLOAD_LIMIT, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

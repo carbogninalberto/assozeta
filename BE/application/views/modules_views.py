@@ -12,11 +12,14 @@ from django.core.files.storage import default_storage
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from django.conf import settings as django_settings
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 
 from application.models import Module, ModuleResponses
 from application.serializers.modules_serializers import ModulesSerializer, ModulesSerializerWithResponses, \
     ModuleResponseSerializer, ModulesAddSerializer, PublicModuleSerializer, PublicModuleResponseSerializer
+from application.public_limits import (PublicModuleAttachmentThrottle, PublicModuleResponseThrottle, body_too_large,
+                                       upload_too_large_message)
 from core.middleware import IsAuthenticated
 
 import logging
@@ -208,8 +211,12 @@ def modules_overview(request, module_id):
 
 
 @api_view(['POST'])
+@throttle_classes([PublicModuleResponseThrottle])
 def modules_response_add(request, module_id):
 
+    if body_too_large(request):
+        return Response({'error': upload_too_large_message(django_settings.PUBLIC_UPLOAD_MAX_BYTES)},
+                        status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
     is_valid_uuid(module_id)
     logger.info("Adding module response", extra={'module_id': module_id, 'user_authenticated': request.user.is_authenticated if hasattr(request, 'user') else False})
 
@@ -333,7 +340,21 @@ def modules_response_delete(request, module_response_id):
     return Response({'msg': 'response deleted'}, status=status.HTTP_200_OK)
 
 
+def _decode_base64(data):
+    # Remove data URI prefix if it exists
+    if ';base64,' in data:
+        data = data.split(';base64,')[1]
+
+    # Add necessary padding
+    missing_padding = len(data) % 4
+    if missing_padding:
+        data += '=' * (4 - missing_padding)
+
+    return base64.b64decode(data)
+
+
 @api_view(['POST', 'DELETE'])
+@throttle_classes([PublicModuleAttachmentThrottle])
 def modules_response_add_attachment(request, module_response_id):
 
     is_valid_uuid(module_response_id)
@@ -358,25 +379,21 @@ def modules_response_add_attachment(request, module_response_id):
     if 'filename' in request.data and \
             'base64' in request.data:
 
+        try:
+            content = _decode_base64(request.data['base64'])
+        except Exception:
+            content = None
+        limit = django_settings.PUBLIC_UPLOAD_MAX_BYTES
+        if content is not None and len(content) > limit:
+            return Response({'error': upload_too_large_message(limit)}, status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+
         document = Document.objects.create(filename=request.data['filename'])
         document.save()
 
         storing_path = os.path.join(STORAGE_DIR, str(document.creation_date.timestamp()), str(document.document_id))
         file = os.path.join(storing_path, document.filename)
 
-        def decode_base64(data):
-            # Remove data URI prefix if it exists
-            if ';base64,' in data:
-                data = data.split(';base64,')[1]
-
-            # Add necessary padding
-            missing_padding = len(data) % 4
-            if missing_padding:
-                data += '=' * (4 - missing_padding)
-
-            return base64.b64decode(data)
-
-        default_storage.save(file, ContentFile(decode_base64(request.data['base64'])))
+        default_storage.save(file, ContentFile(_decode_base64(request.data['base64'])))
         module_response.attachments.add(document)
         module_response.save()
 

@@ -108,11 +108,6 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	if err = s.cleanPayments(ctx, tx, identity, created, request); err != nil {
 		return nil, renewError(err)
 	}
-	if byAssociation {
-		if err = s.subscriptionUser(ctx, tx, data, created, request); err != nil {
-			return nil, renewError(err)
-		}
-	}
 	if err = s.tags(ctx, tx, data, created); err != nil {
 		return nil, renewError(err)
 	}
@@ -241,47 +236,6 @@ func (s *SubscriptionRenewals) cleanPayments(ctx context.Context, tx domain.Subs
 		return err
 	}
 	return tx.DeletePayments(ctx, ids, domain.CourseSubscriptionAudit{Context: request.Audit, ActorAssociation: actor, At: s.creates.now().UTC()})
-}
-
-// subscriptionUser is `'user' in data and 'email' in data['user']`: the first
-// user with that e-mail becomes the subscription's user (save()).
-func (s *SubscriptionRenewals) subscriptionUser(ctx context.Context, tx domain.SubscriptionRenewTransaction, data domain.RequestObject,
-	created *subscriptionCreated, request SubscriptionCreateRequest) error {
-	value, present := data.Lookup("user")
-	if !present {
-		return nil
-	}
-	has, err := pythonIn(value, "email")
-	if err != nil || !has {
-		return err
-	}
-	object, ok := value.(domain.RequestObject)
-	if !ok {
-		return pythonSubscriptError(value)
-	}
-	raw, _ := object.Lookup("email")
-	var email *string
-	switch v := raw.(type) {
-	case nil:
-	case string:
-		email = &v
-	case json.Number, bool:
-		text := dto.PythonStr(v)
-		email = &text
-	default:
-		return domain.ErrSubscriptionCreateNotPorted
-	}
-	found, err := tx.UserByEmail(ctx, email)
-	if err != nil || found == nil || *found == created.userID {
-		return err
-	}
-	if err = tx.SetSubscriptionUser(ctx, created.id, *found); err != nil {
-		return err
-	}
-	audit := subscriptionAudit{tx: tx, context: request.Audit, now: s.creates.now}
-	association := created.association
-	return audit.updated(ctx, "subscription", "Subscription", created.id, map[string][2]string{"user": {created.userID, *found}},
-		&association, "direct")
 }
 
 // tags is fresh_sub.tags.set(Tags.objects.filter(tag_id__in=..., sport_association=...)).

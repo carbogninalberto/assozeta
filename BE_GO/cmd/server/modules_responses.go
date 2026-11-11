@@ -21,7 +21,7 @@ import (
 // composeModulesResponses builds the module response routes. Attachments are
 // written to the default (S3) storage with the same settings as the other
 // default-storage writes, through their own client.
-func composeModulesResponses(cfg config.Config, db *sqlx.DB, actors *service.ActorAuthentication, identities *service.IdentityResolver,
+func composeModulesResponses(cfg config.Config, db *sqlx.DB, limits *handler.PublicFlowLimits, actors *service.ActorAuthentication, identities *service.IdentityResolver,
 	operations *paymentcategorylifecycle.Lifecycle) *handler.ModulesResponsesHandler {
 	settings := cfg.Storage
 	optional := func(value *string) string {
@@ -45,7 +45,8 @@ func composeModulesResponses(cfg config.Config, db *sqlx.DB, actors *service.Act
 	store := repository.NewModulesResponses(db)
 	responses := service.NewModulesResponses(store, store, service.NewAssociationProfiles(repository.NewAssociationProfiles(db), time.Now),
 		storage, service.ModuleAttachmentSettings{CacheControl: settings.CacheControl, DefaultACL: settings.DefaultACL,
-			FileOverwrite: settings.FileOverwrite}, time.Now, uuid.NewString)
+			FileOverwrite: settings.FileOverwrite, PublicUploadLimit: cfg.PublicFlows.MaxUploadBytes}, time.Now, uuid.NewString)
 	return handler.NewModulesResponsesHandler(responses, actors, identities, middleware.SessionAuditContext, operations).
+		WithPublicLimits(limits).
 		WithExport(service.NewModulesExport(repository.NewModulesExport(db), time.Now))
 }

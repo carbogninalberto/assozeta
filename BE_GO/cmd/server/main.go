@@ -666,7 +666,11 @@ func run() (runErr error) {
 	e.Any("/modules/:module_id/update", modulesWritesHandler.Update, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/duplicate", modulesWritesHandler.Duplicate, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/delete", modulesWritesHandler.Delete, middleware.DjangoSessionAudit(sessionAuthentication))
-	modulesResponsesHandler := composeModulesResponses(cfg, db, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
+	publicLimits, err := composePublicFlowLimits(cfg, cache)
+	if err != nil {
+		return err
+	}
+	modulesResponsesHandler := composeModulesResponses(cfg, db, publicLimits, service.NewActorAuthentication(accounts, tokens), identities, paymentCategoryOperations)
 	e.Any("/modules/:module_id/info", modulesResponsesHandler.Info, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/export", modulesResponsesHandler.Export, middleware.DjangoSessionAudit(sessionAuthentication))
 	e.Any("/modules/:module_id/response/add", modulesResponsesHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
@@ -964,7 +968,7 @@ func run() (runErr error) {
 				DefaultFromEmail: cfg.DefaultFromEmail, IsWhitelabel: cfg.IsWhitelabel, Debug: cfg.Debug},
 			InstanceConfig: repository.NewEmailRenderRoutes(db).InstanceConfig})
 	subscriptionCreateHandler := handler.NewSubscriptionCreateHandler(subscriptionCreates, service.NewActorAuthentication(accounts, tokens),
-		identities, middleware.SessionAuditContext, paymentCategoryOperations)
+		identities, middleware.SessionAuditContext, paymentCategoryOperations).WithPublicLimits(publicLimits)
 	e.Any("/subscription/add", subscriptionCreateHandler.Add, middleware.DjangoSessionAudit(sessionAuthentication))
 	// subscription/renew and associates-draft approve run create_subscription (subscription-renew.md).
 	subscriptionRenewHandler := handler.NewSubscriptionRenewHandler(

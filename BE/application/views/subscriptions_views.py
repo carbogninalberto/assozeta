@@ -33,7 +33,9 @@ from django.utils.timezone import make_aware
 from rest_framework.exceptions import APIException, ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from django.conf import settings as django_settings
+from application.public_limits import PublicSubscriptionThrottle, body_too_large, upload_too_large_message
 
 from application.printing_tasks import print_document_medical_appointment
 from application.signals import subscription_signed, subscription_approved
@@ -260,13 +262,6 @@ def subscription_renew(request):
                 payments = payments.exclude(payment_id=fresh_sub.payment.payment_id)
             payments.order_by('creation_date').delete()
 
-            # Only the association chooses the account of the renewed subscription.
-            if requester.role == User.ASSOCIATION and 'user' in data and 'email' in data['user']:
-                user = User.objects.filter(email=data['user']['email']).first()
-                if user is not None:
-                    fresh_sub.user = user
-                    fresh_sub.save()
-
             if 'tags' in data and len(data['tags']) > 0:
                 if isinstance(data['tags'][0], str):
                     tag_ids = data['tags']
@@ -457,6 +452,7 @@ def _prepare_subscription_request(request, data, mode):
 
 
 @api_view(['POST'])
+@throttle_classes([PublicSubscriptionThrottle])
 # @permission_classes([IsAuthenticated])
 def subscription_add(request):
     """
@@ -464,6 +460,9 @@ def subscription_add(request):
     :param request: data: {newUserAccount, newAssociate, signature, paymentMethod}
     :return: token, refresh token
     """
+    if body_too_large(request):
+        return Response({'error': upload_too_large_message(django_settings.PUBLIC_UPLOAD_MAX_BYTES)},
+                        status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
     logger.info("Adding new subscription", extra={'user_id': str(request.user.user_id) if request.user.is_authenticated else 'anonymous'})
     data = request.data
     mode = request.GET.get('m', None)

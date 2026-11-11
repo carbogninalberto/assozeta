@@ -25,6 +25,17 @@ and `GET modules/<module_id>/export` (`modules_response_export`) are implemented
 - `update_queue(module)`: responses with a queue position, by position; approved ones lose it, the others are renumbered from 1. Every
   `save()` writes all fields; auditlog records the changed position only.
 
+## Limits of the routes open without an account
+
+`response/add` and `add-attachment` count requests without an account per address and route (`PublicRequestThrottle`, DRF cache
+history `throttle_public-module-response_<ident>` / `throttle_public-module-attachment_<ident>`; `PUBLIC_REQUESTS_PER_WINDOW`, default 30,
+in `PUBLIC_REQUEST_WINDOW_SECONDS`, default 600): a full history answers 429 with `Retry-After`, before the method dispatch, and
+requests with an account are not counted. `response/add` answers 413 `{'error': 'Il file supera la dimensione massima consentita
+(<n>)'}` when a request without an account declares a body above `PUBLIC_UPLOAD_MAX_BYTES` (default 10 MB), before anything else
+is read; `add-attachment` answers the same 413 for a decoded file above the limit (for everyone), before the document is created
+(text that does not decode keeps its earlier answer). Cases: `add-*-over-the-rate`, `*-below-the-rate`, `*-full-history`,
+`*-above-the-limit`, `attach-anonymous-at-the-limit` (the run uses a limit of 4096 bytes).
+
 ## Routes
 
 - **info:** `Module.objects.filter(custom_link=...).first()` by link, exact match (404 `module not found`). A module whose

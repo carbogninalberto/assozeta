@@ -488,3 +488,9 @@ class UserAccountSerializer(serializers.Serializer):
         return instance
 
 
+
+
+class ProfileIntegrationsSerializer(serializers.Serializer):
+    """The values of the profile integrations form (profile/integrations)."""
+    review_url = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    review_url_enabled = serializers.BooleanField(required=False)

@@ -874,9 +874,9 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         # extract the new user data and validate id
         logger.debug('new user account')
         new_member_info = UserSerializer(data=data['new_user_account']['new_member_info'])
-        # try getting the user
-        user = User.objects.filter(email=new_member_info.initial_data['email']).first()
-        if user is None:
+        # An account that already has this e-mail is never attached here: the member
+        # stays with the account of the request and is linked by the account holder.
+        if not User.objects.filter(email=new_member_info.initial_data['email']).exists():
             new_member_info.is_valid(raise_exception=True)
             user = new_member_info.save()
             alphabet = string.ascii_letters + string.digits

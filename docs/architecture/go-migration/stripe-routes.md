@@ -58,8 +58,10 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
   <amount> euro per <denomination>', payment_method_types=<association methods>)` (no associate or user: 500 before the
   call) and `payment.save()`. Answer `{'data': {'client_secret': client_secret or None}}`.
 - **multiple-pay** (AllowAny): `len(request.data.get('payments', []))` (a non-dict body, or a payments value without
-  `len`, is a 500); empty: `400 {'data': {'msg': 'no payments provided.'}}`. A list starting with a string is
-  `PaymentSerializer` of `filter(payment_id__in=...)`; otherwise the objects are kept and echoed as sent. Payments are
+  `len`, is a 500); empty: `400 {'data': {'msg': 'no payments provided.'}}`. A list of strings, or of objects holding a
+  `payment_id`, is the ids: `PaymentSerializer` of `filter(payment_id__in=...)` (the rows are loaded and nothing else an
+  object carries is read, so the association, the checkout text and the amounts come from the stored rows; an object without
+  `payment_id` is a 500, a null `payment_id` drops out of the list). Payments are
   grouped by `sport_association`; `checkout_info` comes from the first payment's association (scoped, live); only the
   first group is processed: each payment `.get()` (missing: 500), online check (409 — after any earlier marks), the
   association's methods (default `['card', 'sepa_debit']`), a stored intent of an unpaid payment retrieved and marked when

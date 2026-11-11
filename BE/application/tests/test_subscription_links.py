@@ -208,10 +208,10 @@ class MemberRenewalTests(Base):
         self.assertEqual(response.status_code, 200, response.data)
         self.assertNotEqual(self.created(previous.associate.tax_code).user_id, other.pk)
 
-    def test_association_renewal_sets_the_account(self):
+    def test_association_renewal_does_not_link_an_account_found_by_email(self):
         previous = self.past_subscription(self.sport_association, self.user)
         body = payload(tax_code=previous.associate.tax_code, user={'email': self.member.email})
         body['associate_data'].update(first_name=previous.associate.first_name, last_name=previous.associate.last_name)
         response = self.client.post('/subscription/renew', body, format='json')
         self.assertEqual(response.status_code, 200, response.data)
-        self.assertEqual(self.created(previous.associate.tax_code).user_id, self.member.pk)
+        self.assertEqual(self.created(previous.associate.tax_code).user_id, self.user.pk)

@@ -14,8 +14,9 @@ the permission registry's EXCLUDED_ENDPOINTS (no registry key):
   (200 'paid'), the stored intent retrieved (succeeded: mark_payment_as_paid;
   InvalidRequestError: dropped; another amount: cleared and saved) and a new
   PaymentIntent created and saved. The answer is the client_secret.
-- stripe/multiple-pay (POST, AllowAny): request.data.get('payments') (ids are
-  serialized with PaymentSerializer, objects are kept as sent), grouped by
+- stripe/multiple-pay (POST, AllowAny): request.data.get('payments') (ids, or
+  objects whose payment_id is used as the id: the rows are loaded here and
+  serialized with PaymentSerializer, nothing else of an object is read), grouped by
   association; only the first group is processed: each payment is fetched
   (409 when online payments are off; a stored intent that succeeded marks it
   paid), the unpaid ones are summed into one PaymentIntent whose metadata maps
@@ -117,6 +118,9 @@ PAYMENTS = {
     'mp_two_plain': payment(amount='2.50', association=PLAIN['association']),
     'mp_paid': payment(amount='4.00', paid=True, paid_on='2026-04-02T00:00:00Z'),
     'mp_group': payment(amount='1.50', group='own_group'),
+    'mp_forged': payment(amount='3.00'),
+    'mp_bare': payment(amount='3.25', association=PLAIN['association']),
+    'mp_second_key': payment(amount='2.75'),
     # stripe/webhook
     'wh_invoiced': payment(amount='50.00', intent='pi_stub_wh', invoice=True, supplier_invoice=True),
     'wh_paid': payment(amount='51.00', paid=True, paid_on='2026-04-03T00:00:00Z', intent='pi_stub_wh_paid'),
@@ -253,13 +257,20 @@ def associate():
 
 
 def payment_item(label):
-    """PaymentSerializer of the payment's current authored state (payments without an invoice)."""
+    """PaymentSerializer of the payment's current authored state."""
     row = STATE[label]
-    assert not row['invoice']
+    invoice = None
+    if row['invoice']:
+        number = INVOICES[label]
+        invoice = {'invoice_id': number['id'], 'document_token': None, 'creation_date': '2026-09-01T08:00:00Z', 'membership_fee': '0.00',
+                   'activity_fee': row['amount'], 'meta_payment_categories': None, 'description': 'Ricevuta Stripe', 'number': number['number'],
+                   'archived': False, 'cancelled': False, 'meta': None, 'imported_from_associami': False, 'deleted': False,
+                   'document_pdf': None, 'sport_association': row['association'], 'selected_tutor': None, 'group': None,
+                   'attached_documents': []}
     subscription = SUBSCRIPTION['id'] if row['subject'] == 0 and row['associate'] else None
     return {'payment_id': row['id'], 'user': OWNER_USER if row['user'] else None, 'associate': associate() if row['associate'] else None,
             'subscription_id': subscription, 'instructor_id': None, 'instructor': None, 'supplier': None, 'supplier_id': None,
-            'custom_account_type': None, 'custom_account_name': None, 'invoice': None, 'attachments': [],
+            'custom_account_type': None, 'custom_account_name': None, 'invoice': invoice, 'attachments': [],
             'payment_category_name': CATEGORY_NAME if row['category'] == CATEGORY else None, 'type': row['type'], 'subject': row['subject'],
             'amount': row['amount'], 'creation_date': row['created'], 'payment_date': row['payment_date'], 'paid': row['paid'],
             'expense': False, 'description': row['description'], 'meta_payment_categories': None, 'payment_intent_id': row['intent'],
@@ -453,7 +464,11 @@ add('multiple-pay-form-server-error', 'anonymous', MULTI, 500, SERVER, raw_body=
     content_type='application/x-www-form-urlencoded')
 add('multiple-pay-unknown-ids-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [IDS['missing']]})
 add('multiple-pay-malformed-id-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': ['not-a-uuid']})
-add('multiple-pay-object-without-association-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [{'payment_id': P('mp_dict')}]})
+add('multiple-pay-object-without-id-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [{'sport_association': OWN}]})
+add('multiple-pay-object-with-unknown-id-server-error', 'anonymous', MULTI, 500, SERVER,
+    body={'payments': [{'payment_id': IDS['missing'], 'sport_association': OWN}]})
+add('multiple-pay-object-with-null-id-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [{'payment_id': None}]})
+add('multiple-pay-object-list-item-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [{'payment_id': P('mp_dict')}, 5]})
 add('multiple-pay-offline-conflict', 'anonymous', MULTI, 409, OFFLINE_ANSWER,
     body={'payments': [{'payment_id': P('mp_offline'), 'sport_association': OFFLINE['association']}]})
 add('multiple-pay-no-associate-server-error', 'anonymous', MULTI, 500, SERVER,
@@ -472,16 +487,34 @@ add('multiple-pay-ids', 'anonymous', MULTI, 200,
 # The paid payment is serialized and grouped, then left out of the unpaid sum.
 CASE = cases[-1]
 CASE['response']['payments'].append(payment_item('mp_paid'))
-sent = [{'payment_id': P('mp_dict'), 'sport_association': PLAIN['association'], 'note': 'kept as sent', 'amount': 1}]
+# Objects only name the payments: the answer carries the stored rows, not what the request held.
+sent = [{'payment_id': P('mp_dict'), 'sport_association': PLAIN['association'], 'note': 'ignored', 'amount': 1}]
+serialized = [payment_item('mp_dict')]
 params = multi_params(['mp_dict'])
-add('multiple-pay-objects-kept', 'owner', MULTI, 200,
-    {'data': {'client_secret': 'pi_stub_multi_dict_secret_stub', 'info': {'checkout_info': PLAIN['checkout']}}, 'payments': sent},
+add('multiple-pay-objects-use-stored-rows', 'owner', MULTI, 200,
+    {'data': {'client_secret': 'pi_stub_multi_dict_secret_stub', 'info': {'checkout_info': PLAIN['checkout']}}, 'payments': serialized},
     body={'payments': sent}, stripe=[create(params, intent('pi_stub_multi_dict', params['amount']))],
     effect=effect(payments={'mp_dict': {'intent': 'pi_stub_multi_dict'}}, audit=[set_intent('mp_dict', 'pi_stub_multi_dict', 'owner')]))
+# The association and the amount an object holds are not read: the checkout text and the sum come from the stored rows.
+sent = [{'payment_id': P('mp_forged'), 'sport_association': PLAIN['association'], 'amount': 99, 'paid': True}]
+serialized = [payment_item('mp_forged')]
+params = multi_params(['mp_forged'])
+add('multiple-pay-objects-ignore-sent-association-and-amount', 'anonymous', MULTI, 200,
+    {'data': {'client_secret': 'pi_stub_multi_forged_secret_stub', 'info': {'checkout_info': None}}, 'payments': serialized},
+    body={'payments': sent}, stripe=[create(params, intent('pi_stub_multi_forged', params['amount']))],
+    effect=effect(payments={'mp_forged': {'intent': 'pi_stub_multi_forged'}}, audit=[set_intent('mp_forged', 'pi_stub_multi_forged', 'anonymous')]))
+sent = [{'payment_id': P('mp_bare')}]
+serialized = [payment_item('mp_bare')]
+params = multi_params(['mp_bare'])
+add('multiple-pay-objects-with-only-an-id', 'anonymous', MULTI, 200,
+    {'data': {'client_secret': 'pi_stub_multi_bare_secret_stub', 'info': {'checkout_info': PLAIN['checkout']}}, 'payments': serialized},
+    body={'payments': sent}, stripe=[create(params, intent('pi_stub_multi_bare', params['amount']))],
+    effect=effect(payments={'mp_bare': {'intent': 'pi_stub_multi_bare'}}, audit=[set_intent('mp_bare', 'pi_stub_multi_bare', 'anonymous')]))
 sent = [{'payment_id': P('mp_succeeded'), 'sport_association': OWN}]
+serialized = [payment_item('mp_succeeded')]
 # The marked payment is saved paid, so the unpaid set is empty: a zero-amount intent without metadata.
 add('multiple-pay-succeeded-marked-then-zero-amount', 'anonymous', MULTI, 200,
-    {'data': {'client_secret': 'pi_stub_multi_ok_secret_stub', 'info': {'checkout_info': None}}, 'payments': sent},
+    {'data': {'client_secret': 'pi_stub_multi_ok_secret_stub', 'info': {'checkout_info': None}}, 'payments': serialized},
     body={'payments': sent},
     stripe=[retrieve('pi_stub_mp_ok', intent('pi_stub_mp_ok', 850, status='succeeded')),
             create({'amount': 0, 'currency': 'eur', 'description': '', 'payment_method_types': ['card', 'sepa_debit'], 'metadata': {}},
@@ -489,14 +522,15 @@ add('multiple-pay-succeeded-marked-then-zero-amount', 'anonymous', MULTI, 200,
     effect=effect(payments={'mp_succeeded': marked_state('mp_succeeded')}, invoices={'mp_succeeded': {'paid': True, 'payment_date': '$now'}},
                   audit=[supplier_paid('mp_succeeded', 'anonymous'), stripe_marked('mp_succeeded', 'anonymous')]))
 sent = [{'payment_id': P('mp_two_own'), 'sport_association': OWN}, {'payment_id': P('mp_two_plain'), 'sport_association': PLAIN['association']}]
+serialized = [payment_item('mp_two_own'), payment_item('mp_two_plain')]
 params = multi_params(['mp_two_own'])
 add('multiple-pay-first-association-only', 'anonymous', MULTI, 200,
-    {'data': {'client_secret': 'pi_stub_multi_two_secret_stub', 'info': {'checkout_info': None}}, 'payments': sent},
+    {'data': {'client_secret': 'pi_stub_multi_two_secret_stub', 'info': {'checkout_info': None}}, 'payments': serialized},
     body={'payments': sent}, stripe=[create(params, intent('pi_stub_multi_two', params['amount']))],
     effect=effect(payments={'mp_two_own': {'intent': 'pi_stub_multi_two'}}, audit=[set_intent('mp_two_own', 'pi_stub_multi_two', 'anonymous')]))
 sent = [{'payment_id': P('mp_paid'), 'sport_association': OWN}]
 add('multiple-pay-nothing-unpaid-zero-amount', 'anonymous', MULTI, 200,
-    {'data': {'client_secret': 'pi_stub_zero_secret_stub', 'info': {'checkout_info': None}}, 'payments': sent},
+    {'data': {'client_secret': 'pi_stub_zero_secret_stub', 'info': {'checkout_info': None}}, 'payments': [payment_item('mp_paid')]},
     body={'payments': sent}, stripe=[create({'amount': 0, 'currency': 'eur', 'description': '', 'payment_method_types': ['card', 'sepa_debit'],
                                              'metadata': {}}, intent('pi_stub_zero', 0))])
 
@@ -709,8 +743,9 @@ add('pay-succeeded-anonymous-creates-invoice', 'anonymous', PAY('pf_pay_anonymou
     stripe=[retrieve('pi_stub_pf_anon', intent('pi_stub_pf_anon', 1600, status='succeeded'))],
     effect=paid_flow('pf_pay_anonymous', 'anonymous', description=other_text(CATEGORY_NAME), notified='Quota', token=None))
 sent = [{'payment_id': P('pf_mp'), 'sport_association': PLAIN['association']}]
+serialized = [payment_item('pf_mp')]
 add('multiple-pay-succeeded-creates-invoice', 'anonymous', MULTI, 200,
-    {'data': {'client_secret': 'pi_stub_pf_zero_secret_stub', 'info': {'checkout_info': PLAIN['checkout']}}, 'payments': sent},
+    {'data': {'client_secret': 'pi_stub_pf_zero_secret_stub', 'info': {'checkout_info': PLAIN['checkout']}}, 'payments': serialized},
     body={'payments': sent},
     stripe=[retrieve('pi_stub_pf_mp', intent('pi_stub_pf_mp', 1700, status='succeeded')),
             create({'amount': 0, 'currency': 'eur', 'description': '', 'payment_method_types': ['card', 'sepa_debit'], 'metadata': {}},

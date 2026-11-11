@@ -141,8 +141,9 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   back) is stored at `<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png` (the subscription/sign upload, shared; a storage
   failure is the 503 `signature_storage` body) and `save(update_fields=[signature_url, signature_storage_key])` writes the name and
   the public URL (one update entry; the create entry was written without them). A later failure deletes the stored object.
-- `new_user_account.new_member` true: `new_member_info['email']` (missing: 500) names the user create_subscription continues with
-  (the first live user with that exact e-mail by key); without one `UserSerializer(raise_exception)` (400 field errors) and
+- `new_user_account.new_member` true: `new_member_info['email']` (missing: 500) is checked for an account:
+  one with that exact e-mail links nothing (the rows stay with the request's user, as without `new_member`, and no account or
+  welcome e-mail is created); without one `UserSerializer(raise_exception)` (400 field errors) and
   `create_user` with a `token_hex(10)` username (create entry, indexed through the actor), then `first_name[:3] + last_name[:3]` plus 8
   random upper-case characters and `set_password` (the username update entry; the password is not audited). That user owns the
   associate (and tutor), the signature, the payment and the subscription; the membership dates follow its season settings; it gets
@@ -241,6 +242,15 @@ For an account that is not an association `_prepare_subscription_request` leaves
 `Associate.objects.get(associate_id=...)`: a miss or a malformed id is the 500 page, otherwise the answer is 403
 `{"detail": "User not allowed."}` (the quick re-subscription is for the association's own owner). Without both keys the answer is
 the 400 validation message. Go: `quickMember`.
+
+## Limits of requests without an account
+
+Requests without an account are counted per address (`PublicRequestThrottle`, history `throttle_public-subscription-add_<ident>` in the
+DRF cache; `PUBLIC_REQUESTS_PER_WINDOW`, default 30, in `PUBLIC_REQUEST_WINDOW_SECONDS`, default 600): a full history answers 429
+with `Retry-After` before the method dispatch (OPTIONS and a wrong method included), and requests with an account are not counted.
+A request without an account that declares a body above `PUBLIC_UPLOAD_MAX_BYTES` (default 10 MB) answers 413 `{'error':
+'Il file supera la dimensione massima consentita (<n>)'}` before the body is read. Cases `anonymous-*-over-the-rate`,
+`anonymous-below-the-rate`, `anonymous-old-history`, `owner-full-history`, `*-body-above-the-limit` (the run uses a limit of 32768 bytes).
 
 ## Not ported
 

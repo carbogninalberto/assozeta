@@ -171,24 +171,6 @@ func (t *subscriptionRenewTransaction) DeletePayments(ctx context.Context, ids [
 	return t.courses.deletePayments(ctx, snapshots, true, audit)
 }
 
-func (t *subscriptionRenewTransaction) UserByEmail(ctx context.Context, email *string) (*string, error) {
-	var id string
-	err := t.tx.GetContext(ctx, &id, `SELECT user_id FROM bakney_user WHERE NOT deleted AND email IS NOT DISTINCT FROM $1
- ORDER BY user_id LIMIT 1`, email)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	return &id, nil
-}
-
-func (t *subscriptionRenewTransaction) SetSubscriptionUser(ctx context.Context, subscription, user string) error {
-	_, err := t.tx.ExecContext(ctx, `UPDATE application_subscription SET user_id=$2 WHERE subscription_id=$1`, subscription, user)
-	return err
-}
-
 func (t *subscriptionRenewTransaction) AddTags(ctx context.Context, subscription string, ids []string) error {
 	if len(ids) == 0 {
 		return nil

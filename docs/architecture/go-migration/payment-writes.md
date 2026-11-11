@@ -87,9 +87,9 @@ payment dates are a 500 with nothing written. Response `201`.
   name). Ported in tailpay: a `document` that is not base64 text (`b64decode` raises before any Document exists) and a filename
   that is null, holds NUL or has more than 255 characters (the INSERT fails) answer the 500 page after the save and the documents
   stored before the item (four update cases, 160 in all).
-- `user` in the add or update body (nested user write), `payment_id` on add, and on update a `payment_id` other than the
-  row's own key (a primary key change). The edit form's own key (any spelling `uuid.UUID` accepts) is accepted: the
-  UniqueValidator excludes the instance and the save keeps the row.
+- `user` in the add or update body (nested user write) and `payment_id` on add. On update a `payment_id` in the body is
+  dropped: the row is always the one named by the path (the edit form's own key, another row's key, a value that is not a
+  UUID and `null` all give the same answer).
 - Update form bodies and add multipart bodies carrying files (mutable QueryDict).
 
 ## Attachments (`attachments_data`)

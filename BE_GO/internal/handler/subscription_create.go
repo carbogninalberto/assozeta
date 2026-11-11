@@ -25,6 +25,13 @@ type SubscriptionCreateHandler struct {
 	identities *service.IdentityResolver
 	audit      LoginAuditReader
 	operations *paymentcategorylifecycle.Lifecycle
+	limits     *PublicFlowLimits
+}
+
+// WithPublicLimits sets the request and size limits of requests without an account.
+func (h *SubscriptionCreateHandler) WithPublicLimits(limits *PublicFlowLimits) *SubscriptionCreateHandler {
+	h.limits = limits
+	return h
 }
 
 func NewSubscriptionCreateHandler(creates SubscriptionCreateService, actors *service.ActorAuthentication, identities *service.IdentityResolver,
@@ -53,12 +60,19 @@ func (h *SubscriptionCreateHandler) Add(c echo.Context) error {
 	if identity == nil {
 		return err
 	}
+	// check_throttles runs before the method dispatch.
+	if allowed, err := h.limits.Allow(c, "public-subscription-add", identity); !allowed {
+		return err
+	}
 	request := c.Request()
 	if request.Method == http.MethodOptions {
 		return supplierOptions(c, "Subscription Add", subscriptionAddDescription)
 	}
 	if request.Method != http.MethodPost {
 		return restError(c, &restInputError{Status: 405, Detail: restText(request, "method")})
+	}
+	if large, err := h.limits.BodyTooLarge(c, identity); large {
+		return err
 	}
 	write, release, err := admitRESTWrite(c, h.operations, h.audit)
 	if write == nil {

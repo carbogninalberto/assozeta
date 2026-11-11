@@ -36,7 +36,15 @@ type ModuleAttachmentSettings struct {
 	CacheControl  string
 	DefaultACL    *string
 	FileOverwrite bool
+	// PublicUploadLimit is PUBLIC_UPLOAD_MAX_BYTES (0: no limit).
+	PublicUploadLimit int64
 }
+
+// PublicUploadTooLargeError is the 413 of an attachment above the upload limit,
+// answered before any write.
+type PublicUploadTooLargeError struct{ Limit int64 }
+
+func (e *PublicUploadTooLargeError) Error() string { return PublicUploadTooLarge(e.Limit) }
 
 // ModulesResponses follows modules_custom_link_info, modules_response_add,
 // modules_response_approve, modules_response_delete and
@@ -464,6 +472,13 @@ func (s *ModulesResponses) attach(ctx context.Context, tx domain.ModulesResponse
 	}
 	_, name, _ := moduleContains(body, "filename")
 	_, data, _ := moduleContains(body, "base64")
+	if text, textual := data.(string); textual && s.settings.PublicUploadLimit > 0 {
+		// The decoded size is checked before the document is created; a value that
+		// does not decode goes on to fail where it always did.
+		if decoded, err := pythonB64Decode(text); err == nil && int64(len(decoded)) > s.settings.PublicUploadLimit {
+			return "", &PublicUploadTooLargeError{Limit: s.settings.PublicUploadLimit}
+		}
+	}
 	if _, upload := name.(domain.RequestUpload); upload {
 		// str(UploadedFile) is the name the multipart parser sanitized (not ported).
 		return "", domain.ErrModuleResponsesNotPorted

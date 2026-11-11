@@ -645,69 +645,79 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 	}
 	group := supplierGroup(request.GroupHeader)
 	query := stripeQuery(identity, group)
-	rendered := make([]any, len(list))
 	items := make([]domain.RequestObject, 0, len(list))
-	if _, ids := list[0].(string); ids {
-		values := []string{}
-		for _, item := range list {
-			text, ok := item.(string)
-			if !ok {
-				return nil, domain.ErrStripeNotPorted
-			}
-			id, err := paymentInfoParseUUID(text)
-			if err != nil {
-				return nil, domain.ErrStripeServer
-			}
-			values = append(values, id.String())
-		}
-		found, err := s.store.PaymentIDs(ctx, values, false, query)
-		if err != nil {
-			return nil, err
-		}
-		rendered = make([]any, 0, len(found))
-		tx, err := s.store.BeginStripe(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, id := range found {
-			render, err := tx.RenderPayment(ctx, id, group)
-			if err != nil {
-				tx.Rollback()
-				return nil, err
-			}
-			item, err := dto.PaymentStateItem(render)
-			if err != nil {
-				tx.Rollback()
-				return nil, err
-			}
-			rendered = append(rendered, item)
-			// The serialized sport_association (a UUID string or null).
-			var association *string
-			encoded, err := json.Marshal(item["sport_association"])
-			if err == nil {
-				err = json.Unmarshal(encoded, &association)
-			}
-			if err != nil {
-				tx.Rollback()
-				return nil, err
-			}
-			var associationValue any
-			if association != nil {
-				associationValue = *association
-			}
-			items = append(items, domain.RequestObject{{Name: "payment_id", Value: id}, {Name: "sport_association", Value: associationValue}})
-		}
-		tx.Rollback()
-	} else {
-		for index, item := range list {
+	// Payments sent as objects are only a list of ids: the stored rows are loaded and rendered either way.
+	_, idsOnly := list[0].(string)
+	values := []string{}
+	for _, item := range list {
+		raw := item
+		if !idsOnly {
 			object, ok := item.(domain.RequestObject)
 			if !ok {
 				return nil, domain.ErrStripeServer
 			}
-			rendered[index] = json.RawMessage(dto.PythonJSONDumps(item))
-			items = append(items, object)
+			value, present := object.Lookup("payment_id")
+			if !present {
+				return nil, domain.ErrStripeServer
+			}
+			raw = value
 		}
+		if raw == nil && !idsOnly {
+			// A null id drops out of the IN list.
+			continue
+		}
+		text, ok := raw.(string)
+		if !ok {
+			return nil, domain.ErrStripeNotPorted
+		}
+		id, err := paymentInfoParseUUID(text)
+		if err != nil {
+			return nil, domain.ErrStripeServer
+		}
+		values = append(values, id.String())
 	}
+	if len(values) == 0 {
+		// payments[0] on an empty queryset.
+		return nil, domain.ErrStripeServer
+	}
+	found, err := s.store.PaymentIDs(ctx, values, false, query)
+	if err != nil {
+		return nil, err
+	}
+	rendered := make([]any, 0, len(found))
+	tx, err := s.store.BeginStripe(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, id := range found {
+		render, err := tx.RenderPayment(ctx, id, group)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		item, err := dto.PaymentStateItem(render)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		rendered = append(rendered, item)
+		// The serialized sport_association (a UUID string or null).
+		var association *string
+		encoded, err := json.Marshal(item["sport_association"])
+		if err == nil {
+			err = json.Unmarshal(encoded, &association)
+		}
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		var associationValue any
+		if association != nil {
+			associationValue = *association
+		}
+		items = append(items, domain.RequestObject{{Name: "payment_id", Value: id}, {Name: "sport_association", Value: associationValue}})
+	}
+	tx.Rollback()
 	// payments_groups: the first association key's payments, in order.
 	if len(items) == 0 {
 		return nil, domain.ErrStripeServer
@@ -752,7 +762,7 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 	var stripe *stripeapi.Session
 	var methods any = []any{"card", "sepa_debit"}
 	var ids []string
-	err := func() error {
+	err = func() error {
 		for _, item := range firstGroup {
 			value, present := item.Lookup("payment_id")
 			if !present {
