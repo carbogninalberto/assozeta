@@ -163,3 +163,12 @@ pickles for the scripted feed, with its TTL and the refresh bound.
 - The Django side runs each probe in a fresh interpreter under a 10 s deadline; on a heavily
   loaded host that start-up can exceed the deadline and Django answers the timeout message
   (seen once with two parity runs in parallel). Run the family alone.
+
+## Ported in t4l2
+
+AI base URL of the integration test: `requests` sends the scheme and the host in lower case, so an upper-case spelling is
+served with the lower-case target (`instanceprobe.IntegrationTarget`); a URL with a user name or password is the probe's
+`URL del provider non valido.` answer without a request. Still handed off: characters `requests` quotes, percent-escape and
+dot-segment rewriting, an empty user information pair, non-ASCII hosts. Cases `integration-test-ai-upper-case-host`,
+`integration-test-ai-user-info-10/11/12` (110 cases). Mutation control: keeping the host's case fails
+`integration-test-ai-upper-case-host` on Go.
