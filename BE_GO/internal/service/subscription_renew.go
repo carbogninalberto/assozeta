@@ -138,12 +138,16 @@ func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domai
 	}
 	raw, _ := association.Lookup("sport_association_id")
 	text, ok := raw.(string)
-	if !ok {
-		// A missing key, None (IS NULL) or another type: KeyError, DoesNotExist or ValidationError
-		// (an int is uuid.UUID(int=...), not ported).
-		if _, isNumber := raw.(json.Number); isNumber {
-			return nil, domain.ErrSubscriptionCreateNotPorted
+	if number, isNumber := raw.(json.Number); isNumber {
+		// UUIDField.to_python: an int is uuid.UUID(int=...); a float, a negative
+		// or a value past 128 bits is a ValidationError.
+		var err error
+		if text, err = dto.DjangoUUIDFromInt(number); err != nil {
+			return nil, domain.ErrSubscriptionCreateServer
 		}
+	} else if !ok {
+		// A missing key, None (IS NULL) or another type: KeyError, DoesNotExist or ValidationError
+		// (a bool is uuid.UUID(int=...), the key of no association).
 		return nil, domain.ErrSubscriptionCreateServer
 	}
 	id, err := paymentInfoParseUUID(text)

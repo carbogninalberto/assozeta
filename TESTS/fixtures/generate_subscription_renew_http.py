@@ -695,6 +695,21 @@ def member_body(label, **extra):
 
 add('renew-athlete-in-another-association', 'renew', 'athlete', 403, NOT_ALLOWED,
     body=renewal(athlete_member, sport_association={'sport_association_id': FOREIGN}))
+# t4l1: an integer id is uuid.UUID(int=...): the association it names is found; a float, a negative or a value past 128 bits
+# fails the lookup (the 500 page).
+add('renew-athlete-association-integer-id', 'renew', 'athlete', 403, NOT_ALLOWED,
+    body=renewal(athlete_member, sport_association={'sport_association_id': uuid.UUID(FOREIGN).int}))
+add('renew-athlete-association-integer-id-duplicate', 'renew', 'athlete', 409,
+    {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=renewal(athlete_member, sport_association={'sport_association_id': uuid.UUID(OWN).int}))
+add('renew-athlete-association-integer-unknown', 'renew', 'athlete', 500, SERVER,
+    body=renewal(athlete_member, sport_association={'sport_association_id': 7}))
+add('renew-athlete-association-negative-id', 'renew', 'athlete', 500, SERVER,
+    body=renewal(athlete_member, sport_association={'sport_association_id': -1}))
+add('renew-athlete-association-float-id', 'renew', 'athlete', 500, SERVER,
+    body=renewal(athlete_member, sport_association={'sport_association_id': 1.5}))
+add('renew-athlete-association-oversized-id', 'renew', 'athlete', 500, SERVER,
+    body=renewal(athlete_member, sport_association={'sport_association_id': 2 ** 128}))
 add('renew-athlete-another-member', 'renew', 'athlete', 403, NOT_ALLOWED, body=renewal(member_body('stranger'), sport_association=HERE))
 add('renew-athlete-another-member-by-tax-code', 'renew', 'athlete', 403, NOT_ALLOWED,
     body=renewal({k: v for k, v in member_body('stranger').items() if k != 'associate_id'}, sport_association=HERE))
