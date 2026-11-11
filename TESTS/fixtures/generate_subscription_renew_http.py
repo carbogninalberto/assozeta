@@ -944,6 +944,26 @@ add('renew-certificate-number-date-skipped', 'renew', 'owner', 200, {'status': '
 
 
 
+# data['preregistration'] is True: the subscription is created on the next season's first day with that season's dates.
+form = {'associate_id': 'a1000000-0000-4000-8000-000000948004', 'first_name': 'Pietro', 'last_name': 'Prenotato', 'born_date': '08/08/1994',
+        'sex': 'M', 'type': 1}
+NEXT = {'creation_date': '$next_season_created', 'start_date': '$next_season_start', 'end_date': '$next_season_end'}
+rows = [{'label': 'associate', 'bind': '$early_associate', 'match': {'associate_id': form['associate_id']},
+         'columns': {'first_name': 'Pietro', 'last_name': 'Prenotato', 'born_date': '1994-08-08', 'sex': 'M', 'tax_code': None,
+                     'sport_association_id': OWN, 'user_id': '$owner'}},
+        new_payment('$early_payment', form['associate_id']),
+        *subscription_rows('$early_subscription', form['associate_id'], kind=1, payment='$early_payment', season=NEXT)]
+add('renew-preregistration', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(form, preregistration=True),
+    effect=effect('owner', new=rows,
+                  audit=[entry('associate', 0, '$early_associate', {'user': ['None', 'None']}),
+                         entry('associate', 1, '$early_associate', {'user': ['None', OWNER]}),
+                         entry('payment', 0, '$early_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$early_subscription',
+                               {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']})],
+                  celery=tasks('$early_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pietro Prenotato.', 'association': OWN}]))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/renew and associates-draft approve authored sequence with row, audit, Celery and '
