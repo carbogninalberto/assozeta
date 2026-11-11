@@ -9358,8 +9358,11 @@
    "method": "POST",
    "path": "/subscription/renew",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": {
+    "status": "error",
+    "msg": "'type'"
+   },
    "effect": null,
    "body": {
     "new_user_account": {

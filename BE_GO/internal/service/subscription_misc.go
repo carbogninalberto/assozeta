@@ -257,9 +257,11 @@ func (s *SubscriptionMisc) GenerateLink(ctx context.Context, identity domain.Res
 	// CharField(max_length=255) stores str(value); PostgreSQL rejects a NUL,
 	// psycopg a lone surrogate, varchar(255) a longer text (no row is written).
 	// str() of an uploaded file is its name.
-	stored := dto.PythonStr(gym)
+	var stored string
 	echoed := gym
-	if upload, isUpload := gym.(domain.RequestUpload); isUpload {
+	if upload, isUpload := gym.(domain.RequestUpload); !isUpload {
+		stored = dto.PythonStr(gym)
+	} else {
 		if !upload.Whole && upload.Size > 0 {
 			return nil, domain.ErrSubscriptionMiscNotPorted // the lines of a file over one chunk are not retained
 		}

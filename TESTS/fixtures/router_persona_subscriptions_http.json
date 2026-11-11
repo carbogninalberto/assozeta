@@ -7595,49 +7595,6 @@
    }
   },
   {
-   "name": "router-persona-subscriptions-partial-update-nul-in-json-server-error",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
-   "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "allow": [
-    "DELETE",
-    "GET",
-    "HEAD",
-    "OPTIONS",
-    "PATCH",
-    "PUT"
-   ],
-   "effect": null,
-   "body": {
-    "custom_data": {
-     "a": "x\u0000y"
-    }
-   }
-  },
-  {
-   "name": "router-persona-subscriptions-partial-update-infinity-in-json-server-error",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
-   "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
-   "allow": [
-    "DELETE",
-    "GET",
-    "HEAD",
-    "OPTIONS",
-    "PATCH",
-    "PUT"
-   ],
-   "effect": null,
-   "raw_body": "{\"meta\": {\"n\": 1e999}}",
-   "content_type": "application/json"
-  },
-  {
    "name": "router-persona-subscriptions-partial-update-user-without-association",
    "actor": "owner",
    "method": "PATCH",

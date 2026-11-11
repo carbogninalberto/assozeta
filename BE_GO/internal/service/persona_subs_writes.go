@@ -213,7 +213,7 @@ func pythonBoolText(value bool) string {
 // (missing dates from the owner's settings, auditlog's update entry, every
 // column), tags.set(), then the serializer over the in-memory instance.
 // Refused before any write: form bodies and a different primary key (Model.save
-// would insert a copy). JSON values PostgreSQL rejects are the 500 page; several
+// would insert a copy). JSON values PostgreSQL rejects stay refused; several
 // new tag links are created in the iteration order of Django's set of ids.
 func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain.ResolvedIdentity, id, header string, body any, form, partial bool,
 	login domain.LoginAuditContext) (any, error) {
@@ -243,8 +243,7 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 	}
 	for _, value := range write.JSON {
 		if !dto.TextStorable(value) || !jsonFinite(value) {
-			// PostgreSQL rejects the jsonb text (NUL escape, NaN): the UPDATE fails, the 500 page, nothing written.
-			return nil, ErrPersonaUnhandled
+			return nil, ErrPersonaNotPorted
 		}
 	}
 	row := *stored

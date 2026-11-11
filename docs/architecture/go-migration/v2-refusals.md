@@ -641,7 +641,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### associates-draft.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/associates-draft/<uid>/edit | `edit_data.associate.born_date` (or tutor's) in a form outside `YYYY-MM-DD`, ISO datetime, `A/B/YYYY`, or year < 1000 | service/associates_draft.go:286,310 (`ErrAssociateDraftNotPorted`) | B (legacy: yes) | UI stores `DD/MM/YYYY` (date input `src/routes/association/Members/import/EditData.svelte:572-574`, sent at :123) and the spreadsheet import normalises to `%d/%m/%Y` (`application/services/subscription_service.py:757-760`); both handled. Only a typed year < 1000 or a draft row written with another date text. Cost: medium (more dateutil forms). |
+| POST subscription/associates-draft/<uid>/edit | `edit_data.associate.born_date` (or tutor's) in a form outside `YYYY-MM-DD`, ISO datetime, `A/B/YYYY`, or year < 1000 | service/associates_draft.go:286,310 (`ErrAssociateDraftNotPorted`) | ported (t2subsb) | UI stores `DD/MM/YYYY` (date input `src/routes/association/Members/import/EditData.svelte:572-574`, sent at :123) and the spreadsheet import normalises to `%d/%m/%Y` (`application/services/subscription_service.py:757-760`); both handled. Ported in t2subsb: a year < 1000 makes the associate's `strftime`/`strptime` round trip fail (500, as Django on Linux) and is ignored for the tutor. The date forms dateutil reads were already ported. |
 | POST subscription/associates-draft/list/approve | whole route "stays on Django" per this doc | — | n/a | Superseded: now registered in Go at `BE_GO/cmd/server/main.go:900` (`subscriptionRenewHandler.Approve`, subscription-renew family, not in this group). UI calls it (`Members/import/AssociateTable.svelte:286,302`), so its refusals must be classified under subscription-renew. |
 
 ### camps-periods.md
@@ -995,7 +995,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### medical-appointment-add.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/medical-appointments/add | non-null `document` or any `medical_appointments_id` | `BE_GO/internal/dto/medical_appointment_add.go:39,42` | B | `Members/detail/sections/modals/AddMedicalAppointment.svelte:69-83` sends date/region/sport/address/creation_date/meta only. cheap. |
+| POST subscription/<uid>/medical-appointments/add | non-null `document` or any `medical_appointments_id` | `BE_GO/internal/dto/medical_appointment_add.go` | ported (t2subsb) | `Members/detail/sections/modals/AddMedicalAppointment.svelte:69-83` sends date/region/sport/address/creation_date/meta only. Ported in t2subsb: `document` (existing Document, `Invalid pk` otherwise) and `medical_appointments_id` (UUID, unique). |
 
 ### mcp-server.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1187,7 +1187,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | GET subscription/validate-token-link-and-get-subscriptions | unknown canonical token while pairing pending/paired | `service/bakney_public_links.go` | ported | Ported in v2-misc-3 (`subscription-misc.md`, `v2misc3-final-r1`). |
 | POST subscription/calculate-tax-code | NFKD outside ranges, entities, >30 combining marks, lettered date slugs | `service/subscription_misc.go:119` | B | Exotic names. The UI sends `DD/MM/YYYY`-type dates. |
 | DELETE subscription/<uid>/delete-document/<id> | Document referenced by another row | ported (`DeleteSharedDocument`, the shared deletion collector) | ported (v2-rest-c; was B, legacy: yes) | `upload-document` creates a fresh Document per file (`subscriptions_views.py:2779-2792`). legacy: yes (imports). Cost: medium. |
-| POST subscription/generate-token-link | multipart `gym_name` file | `service/subscription_misc.go:250` | B | `components/modals/ShareModuleMultipleSubscriptionLink.svelte:37` sends JSON. |
+| POST subscription/generate-token-link | multipart `gym_name` file | `service/subscription_misc.go` | ported (t2subsb) | `str(file)` is the stored name; the response carries the file's decoded lines (files over one 64 KiB chunk stay refused: only the first chunk is read). |
 
 ### subscription-create.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1242,21 +1242,21 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/archive | unpaid payment **with an invoice** on the subscription, a course subscription or an installment | `service/subscription_lifecycle.go:203`, `ErrSubscriptionLifecycleNotPorted` | **ported** (v2-subscriptions) | The UI archive buttons are at `MembersList.svelte:1504`, `MembersBook.svelte:1258`, `MembersListArchive.svelte:237` and `personas/detail/sections/Subscriptions.svelte:126`. The data comes from payment cancel (see top) |
-| same | payment hidden from `Payment.objects` (soft-deleted, or outside `X-Group-Id`) | `:203` (`hiddenPayment`) | **ported** (soft-deleted, v2-subscriptions) / B (group) | Soft-deleted: the payment bulk delete in the UI leaves `subscription.payment` / `course_subscription.payment` pointing at a `deleted=True` row. Group: the UI never sets a group |
-| same | payment missing (`payment == nil`) / payment without association | `:197`, `:207`, `:342` | B | Dangling FK or NULL association. legacy: yes. cheap |
-| same | `Payment.save()` raises (account transfer, subject 3, without description) on a reached or in-range payment | `:207`, `:346` (`ErrPaymentSaveFailed`, `service/payment_archive.go:50-68`) | B | The range query (`repository/subscription_lifecycle.go:133`) takes the associate's unpaid payments. Account transfers rarely carry an associate. legacy: yes. medium |
-| same | subscription dates still empty after save defaults (no season settings) | `:300` | B | legacy: yes (old rows, or an association without season settings). cheap |
+| same | payment hidden from `Payment.objects` (soft-deleted, or outside `X-Group-Id`) | `:203` (`hiddenPayment`) | **ported** (soft-deleted, v2-subscriptions; group-hidden, t2subsb) | Soft-deleted: the payment bulk delete in the UI leaves `subscription.payment` / `course_subscription.payment` pointing at a `deleted=True` row. Group: the UI never sets a group |
+| same | payment missing (`payment == nil`) / payment without association | `:197`, `:207`, `:342` | ported (a payment without an association, rare-data change) / kept (payment row missing) | Missing row: a dangling FK, which the database constraints forbid, so no request can reach it. |
+| same | `Payment.save()` raises (account transfer, subject 3, without description) on a reached or in-range payment | `:207`, `:346` (`ErrPaymentSaveFailed`, `service/payment_archive.go:50-68`) | ported (rare-data change) | The range query (`repository/subscription_lifecycle.go:133`) takes the associate's unpaid payments. Account transfers rarely carry an associate. legacy: yes. medium |
+| same | subscription dates still empty after save defaults (no season settings) | `:300` | ported (rare-data change) | Old rows, or an association without season settings. |
 | POST subscription/<uid>/delete | subscription has `signature_storage_key` | `:378` | **ported** (v2-subscriptions) | Every signature upload sets `signature_storage_key` (`BE/application/models/subscriptions_models.py:660-720`). The UI signs from `SignatureModal.svelte:13`. Delete is called from `MembersList.svelte:1637`, `MembersBook.svelte:1391`, `personas/detail/sections/Subscriptions.svelte:173` |
 | same | any row referencing the subscription other than course subscriptions/tags (carnet subscriptions, medical appointments, memberships, sold products, tokens, files, transfers, camp subscriptions; includes soft-deleted rows) | `:385` via `repository/subscription_lifecycle.go:140-157` | **ported** (v2-subscriptions, generic Collector) | The FKs are at `carnet_models.py:44`, `subscriptions_models.py:94,782,872,895,904,1001`, `courses_models.py:358`. The UI creates them all: medical appointment add (`SUBSCRIPTION.MEDICAL_APPOINTMENTS.ADD`), carnet assign, transfer (`MembersList.svelte:1405`), upload-document, camp subscriptions. Most active members have at least one |
 | same | unpaid payment with invoice | `:408` | **ported** (v2-subscriptions) | same cancel-payment data as archive |
-| same | unpaid payment reached twice | `:402` | B | needs two links to one unpaid payment. legacy: yes. medium |
-| same | dates empty | `:438` area | B | as archive. legacy: yes |
+| same | unpaid payment reached twice | `:402` | ported (rare-data change) | Two links to one unpaid payment. |
+| same | dates empty | `:438` area | ported (rare-data change) | as archive. |
 | (reject/approve) | — | — | — | nothing refused |
 
 ### subscription-transfer.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/transfer | recipient branch on a subscription with empty `start_date`/`end_date` | `service/subscription_transfer.go:209` → `:261`, `ErrSubscriptionTransferNotPorted` | B | `Subscription.save()` fills the dates, so only rows never re-saved, or associations without season settings, have them empty. legacy: yes. cheap (season defaults are already ported elsewhere) |
+| POST subscription/<uid>/transfer | recipient branch on a subscription with empty `start_date`/`end_date` | `service/subscription_transfer.go` | ported (rare-data change) | `Subscription.save()` fills the dates, so only rows never re-saved, or associations without season settings, have them empty. The recipient save fills them from the season settings. |
 | same | e-mail branch when the first 3 chars of the tutor's (else the associate's) first or last name are non-ASCII | `:226+` → `:261`; also `:396` | **ported** (v2-subscriptions) | UI sends `{recipient, email}` (`MembersList.svelte:1405-1411`, `MembersBook.svelte:1159`). When the e-mail has no account, `recipient` is undefined and the e-mail branch runs. Names come from the member forms, which accept any Unicode (e.g. `Émile`, `Çelik`, `Šimić`, `Ángel`) |
 | same | e-mail domain non-ASCII | same | **ported** (v2-subscriptions) | IDN e-mail domains. legacy: no. cheap |
 

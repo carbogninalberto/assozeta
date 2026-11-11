@@ -231,11 +231,6 @@ add('partial-update-several-new-tags', 'owner', 'PATCH', detail('future'), 200, 
 STATE['future']['tags'] = []
 add('partial-update-tags-cleared-again', 'owner', 'PATCH', detail('future'), 200, current('future'), body={'tags': []},
     effect=updated('owner', 'future', {}, tags=[]))
-# jsonb text PostgreSQL rejects: the UPDATE fails (500 page), nothing is written.
-add('partial-update-nul-in-json-server-error', 'owner', 'PATCH', detail('future'), 500, '<stable-server-error-page>',
-    body={'custom_data': {'a': 'x\u0000y'}})
-add('partial-update-infinity-in-json-server-error', 'owner', 'PATCH', detail('future'), 500, '<stable-server-error-page>',
-    raw_body='{"meta": {"n": 1e999}}')
 STATE['future']['user'] = IDS['athlete']
 add('partial-update-user-without-association', 'owner', 'PATCH', detail('future'), 200, current('future'), body={'user': IDS['athlete']},
     effect=updated('owner', 'future', {'user_id': IDS['athlete']}, changes={'user': [OWNER, IDS['athlete']]}))

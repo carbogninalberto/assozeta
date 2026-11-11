@@ -990,7 +990,7 @@ add('renew-preregistration-renewal-malformed-id', 'renew', 'owner', 400, NOT_REN
     body=renewal(SENT, preregistration=True, subscription_id='non-un-id'))
 add('renew-preregistration-renewal-foreign-association', 'renew', 'foreign_owner', 400, NOT_RENEWABLE,
     body=renewal(SENT, preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']))
-add('renew-preregistration-renewal-without-type', 'renew', 'owner', 500, SERVER,
+add('renew-preregistration-renewal-without-type', 'renew', 'owner', 400, error("'type'"),
     body=renewal(person('Altro', 'Nome', 'LTRNMO90C01H501K'), preregistration=True, subscription_id=SUBSCRIPTIONS['previous']['id']))
 RENEWING = ASSOCIATES['renewing']['id']
 rows = [new_payment('$pre_payment', RENEWING),
