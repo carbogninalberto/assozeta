@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 type CarnetDeleteStore interface {
@@ -55,10 +53,6 @@ type CarnetUpdateStore interface {
 	BeginCarnetUpdate(context.Context) (CarnetUpdateTransaction, error)
 }
 
-// ErrPaymentCascadeUnsupported refuses a payment delete whose pre_delete
-// signal would also delete course installments (not ported).
-var ErrPaymentCascadeUnsupported = refusal.New("payment delete cascade unsupported")
-
 type CarnetHoldingPayment struct {
 	PaymentID *string `db:"payment_id"`
 	Paid      *bool   `db:"paid"`
@@ -67,7 +61,9 @@ type CarnetHoldingPayment struct {
 type CarnetUnassignTransaction interface {
 	// HoldingForUnassign locks a carnet subscription of the owner's subscriptions.
 	HoldingForUnassign(ctx context.Context, holding, owner string, scope *string) (CarnetHoldingPayment, error)
-	DeleteUnpaidPayment(ctx context.Context, payment string, audit LoginAuditContext, at time.Time) error
+	// DeleteUnpaidPayment is payment.delete(): its pre_delete signal first deletes the live (group-aware)
+	// installments of the payment, each deleting the unpaid payment again.
+	DeleteUnpaidPayment(ctx context.Context, payment string, group *string, audit CarnetReplaceAudit) error
 	DeleteHolding(ctx context.Context, holding string, actorAssociation *string, audit LoginAuditContext, at time.Time) error
 	ActiveAssociationOf(ctx context.Context, user string) (*string, error)
 	Commit() error

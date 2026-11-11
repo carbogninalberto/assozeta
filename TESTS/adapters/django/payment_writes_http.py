@@ -298,6 +298,8 @@ def check_documents(case, before, after, source, fresh, events, types):
         refs.update({f'$doc{index}': key, f'$doc{index}_token': str(row['token']), f'$doc{index}_created': auditlog_moment(stamp),
                      f'doc{index}': key, f'doc{index}_token': str(row['token'])})
         payment = fresh[0] if spec['payment'] == '$id' else source['payments'][spec['payment']]['id']
+        if spec.get('unlinked'):
+            continue  # created, then the name was refused: no link and no stored object
         expected_links.add((payment, key))
         expected_objects[object_key(stamp, key, spec['filename'])] = spec
     contract.require(links_after - links_before == expected_links, 'state.links')

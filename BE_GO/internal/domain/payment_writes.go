@@ -121,7 +121,7 @@ type PaymentWritesTransaction interface {
 	InsertPaymentRow(ctx context.Context, row PaymentWriteRow) error
 	// AttachPaymentDocument is Document.objects.create(filename=...) with its audited create
 	// and obj.attachments.add(document) (no audit entry for the through row).
-	AttachPaymentDocument(ctx context.Context, payment string, document NewDocument, actorAssociation *string, audit LoginAuditContext,
+	AttachPaymentDocument(ctx context.Context, payment string, document NewDocument, link bool, actorAssociation *string, audit LoginAuditContext,
 		at time.Time) error
 	SavePaymentRow(ctx context.Context, row PaymentWriteRow) error
 	// PaymentAuditValues renders the stored row as auditlog's get_field_value strings by field name.

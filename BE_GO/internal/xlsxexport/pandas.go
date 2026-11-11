@@ -90,7 +90,7 @@ func toNumeric(column frameColumn) (numericResult, error) {
 	case dtInt64, dtFloat64, dtBool:
 		return numericResult{dtype: column.dtype, values: column.values}, nil
 	}
-	var sawFloat, sawInt, sawBool bool
+	var sawFloat, sawInt, sawBool, sawBig bool
 	floats := make([]float64, len(column.values))
 	ints := make([]int64, len(column.values))
 	for i, value := range column.values {
@@ -117,7 +117,15 @@ func toNumeric(column frameColumn) (numericResult, error) {
 			sawFloat = true
 			floats[i] = number
 		case Object:
-			return numericResult{}, ErrNotPorted
+			// floatify(list) raises TypeError: coerced to NaN.
+			sawFloat = true
+			floats[i] = math.NaN()
+		case BigInt:
+			// An int beyond int64: a column of numbers only is not ported; next to text it only decides the mask.
+			sawBig = true
+			sawFloat = true
+			number, _ := new(big.Float).SetString(value.Text)
+			floats[i], _ = number.Float64()
 		case Str:
 			if value.Text == "" {
 				sawFloat = true
@@ -153,6 +161,16 @@ func toNumeric(column frameColumn) (numericResult, error) {
 			default:
 				sawFloat = true
 			}
+		}
+	}
+	if sawBig {
+		// Numbers only would need pandas' uint64/float rules for the big int.
+		sawNaN := false
+		for _, number := range floats {
+			sawNaN = sawNaN || math.IsNaN(number)
+		}
+		if !sawNaN {
+			return numericResult{}, ErrNotPorted
 		}
 	}
 	result := numericResult{values: make([]Value, len(column.values))}

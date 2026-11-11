@@ -64,7 +64,7 @@ func (t *paymentMiscTransaction) SimulationSubscriptions(ctx context.Context, qu
 
 func (t *paymentMiscTransaction) QuoteExists(ctx context.Context, check domain.PaymentQuoteCheck) (bool, error) {
 	return t.exists(ctx, `SELECT 1 FROM application_payment WHERE user_id=$1 AND subject=1 AND UPPER(meta::text) LIKE UPPER($2)
- AND associate_id IS NOT DISTINCT FROM $3::uuid AND amount=$4::numeric AND NOT deleted AND ($5::uuid IS NULL OR group_id=$5::uuid)`,
+ AND associate_id IS NOT DISTINCT FROM $3::uuid AND amount IS NOT DISTINCT FROM NULLIF($4, '')::numeric AND NOT deleted AND ($5::uuid IS NULL OR group_id=$5::uuid)`,
 		check.User, check.Pattern, check.Associate, check.Amount, check.Group)
 }
 

@@ -447,6 +447,10 @@ func paymentExportCourseLabel(text *string) (string, error) {
 		if !ok {
 			return "", nil
 		}
+		switch label.(type) {
+		case []any, map[string]any:
+			return paymentExportLabelRepr(text)
+		}
 		return paymentExportPythonStr(label)
 	}
 	return "", domain.ErrPaymentReadsServer // 'in' on a number or bool
@@ -659,20 +663,80 @@ func paymentExportCourseValue(text *string) (xlsxexport.Value, error) {
 			return xlsxexport.NoneValue(), nil
 		case string:
 			return xlsxexport.StrValue(item), nil
+		case bool:
+			return xlsxexport.BoolValue(item), nil
+		case []any, map[string]any:
+			repr, err := paymentExportLabelRepr(text)
+			if err != nil {
+				return xlsxexport.Value{}, err
+			}
+			return xlsxexport.ObjectValue(repr), nil
 		case json.Number:
 			if number, err := strconv.ParseInt(item.String(), 10, 64); err == nil {
 				return xlsxexport.IntValue(number), nil
 			}
 			if !strings.ContainsAny(item.String(), ".eE") {
-				return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted // beyond int64
+				return xlsxexport.BigIntValue(item.String()), nil
 			}
+			// float() of a huge exponent is inf, of a tiny one 0.0.
 			number, err := strconv.ParseFloat(item.String(), 64)
-			if err != nil || math.IsInf(number, 0) {
+			if err != nil && !errors.Is(err, strconv.ErrRange) {
 				return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted
 			}
 			return xlsxexport.FloatValue(number), nil
 		}
-		return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted // a bool, list or object label
+		return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted
 	}
 	return xlsxexport.Value{}, domain.ErrPaymentReadsServer
+}
+
+// paymentExportOrderedValue decodes JSON keeping the key order (jsonb text order).
+func paymentExportOrderedValue(decoder *json.Decoder) (any, error) {
+	token, err := decoder.Token()
+	if err != nil {
+		return nil, err
+	}
+	delim, ok := token.(json.Delim)
+	if !ok {
+		return token, nil
+	}
+	if delim == '[' {
+		items := []any{}
+		for decoder.More() {
+			item, err := paymentExportOrderedValue(decoder)
+			if err != nil {
+				return nil, err
+			}
+			items = append(items, item)
+		}
+		_, err = decoder.Token()
+		return items, err
+	}
+	object := domain.RequestObject{}
+	for decoder.More() {
+		key, err := decoder.Token()
+		if err != nil {
+			return nil, err
+		}
+		item, err := paymentExportOrderedValue(decoder)
+		if err != nil {
+			return nil, err
+		}
+		object = dto.PythonSet(object, key.(string), item)
+	}
+	_, err = decoder.Token()
+	return object, err
+}
+
+// paymentExportLabelRepr is str(course['label']) of a list or object label.
+func paymentExportLabelRepr(text *string) (string, error) {
+	decoder := json.NewDecoder(strings.NewReader(*text))
+	decoder.UseNumber()
+	whole, err := paymentExportOrderedValue(decoder)
+	object, ok := whole.(domain.RequestObject)
+	if err != nil || !ok {
+		return "", domain.ErrPaymentReadsServer
+	}
+	label, _ := object.Lookup("label")
+	return dto.PythonRepr(label), nil
 }

@@ -130,6 +130,25 @@ PLAN_Y = {'id': 'plan-y', 'name': 'Quota Y', 'subscription_fee': '11', 'auto_ass
           'previous_subscription_fee_plan': 'prev-y', 'from_day': 1, 'from_month': 7, 'to_day': 31, 'to_month': 7}
 PLANS = {OWN: OWN_PLANS, FOREIGN: FOREIGN_PLANS, PLANS_OWNER['association']: [PLAN_Z, PLAN_Y]}
 
+# Plans whose fields are not plain strings (September): numbers, booleans, lists and objects reach `icontains` as their
+# Python str(); a null plan id raises in the lookup, a null, list or non-numeric fee in the amount lookup.
+def odd_plan(plan_id, name, fee, previous, day, **extra):
+    return {'id': plan_id, 'name': name, 'subscription_fee': fee, 'auto_assign': True, 'advanced_options': True,
+            'previous_subscription_fee_plan': previous, 'from_day': day, 'from_month': 9, 'to_day': 30, 'to_month': 9, **extra}
+
+
+PLAN_NUM = odd_plan(77, 'Numeri', 3, 4242, 1)
+PLAN_BOOL = odd_plan(True, 'Booleani', True, True, 2)
+PLAN_LIST = odd_plan(['i1'], 'Liste', '4.5', ['p1'], 3)
+PLAN_DICT = odd_plan({'k': 1}, 'Oggetti', '2', {'k': 'v'}, 4)
+PLAN_NULL_ID = odd_plan(None, 'Senza id', '5', 'prev-null-id', 5)
+PLAN_NULL_FEE = odd_plan('plan-null-fee', 'Senza importo', None, 'prev-null-fee', 6)
+PLAN_LIST_FEE = odd_plan('plan-list-fee', 'Importo lista', [1], 'prev-list-fee', 7)
+PLAN_TEXT_FEE = odd_plan('plan-text-fee', 'Importo testo', 'abc', 'prev-text-fee', 8)
+PLAN_MESSAGE = odd_plan('plan-message', ['a', 1], 6.5, 'prev-message', 9)
+ODD_PLANS = [PLAN_NUM, PLAN_BOOL, PLAN_LIST, PLAN_DICT, PLAN_NULL_ID, PLAN_NULL_FEE, PLAN_LIST_FEE, PLAN_TEXT_FEE, PLAN_MESSAGE]
+OWN_PLANS.extend(ODD_PLANS)
+
 
 def previous(plan_id):
     return {'subscription_data': {'id': plan_id, 'name': 'Quota precedente'}}
@@ -164,6 +183,15 @@ SUBSCRIPTIONS = {
     's8': subscription('luca', 'prev-g', user=ATHLETE),
     's9': subscription('paolo', 'prev-h', group='own_group'),
     's_y': subscription('nina', 'prev-y', association=PLANS_OWNER['association'], user=PLANS_MEMBER['id']),
+    's_num': subscription('mario', 'q4242'),
+    's_bool': subscription('luca', 'x-true-y'),
+    's_list': subscription('giulia', "a ['p1'] b"),
+    's_dict': subscription('paolo', "z {'k': 'v'} z", group='own_group'),
+    's_null_id': subscription('mario', 'prev-null-id'),
+    's_null_fee': subscription('luca', 'prev-null-fee'),
+    's_list_fee': subscription('giulia', 'prev-list-fee'),
+    's_text_fee': subscription('mario', 'prev-text-fee'),
+    's_message': subscription('luca', 'prev-message', user=ATHLETE),
 }
 
 # Payments: the subscriptions' previous-plan payments are seeded by the runner from SUBSCRIPTIONS.
@@ -271,7 +299,7 @@ def considered(plan):
 def message(associate, plan):
     person = ASSOCIATES[associate]
     return ('\n                            <p>Ciao ' + person['first'] + ' ' + person['last'] + ',</p>\n'
-            '                            <p>Ti è stata assegnata la quota associativa "' + plan['name'] + '" con importo '
+            '                            <p>Ti è stata assegnata la quota associativa "' + str(plan['name']) + '" con importo '
             + str(plan['subscription_fee']) + ' €.</p>\n                            <br>\n'
             '                            <p>Per maggiori informazioni, visita il tuo profilo su $whitelabel.</p>\n    \n'
             '                            <p>Cordialmente, <br />\n                             ' + DENOMINATION + '</p>\n                        ')
@@ -317,6 +345,19 @@ add('simulation-plan-error-empty', 'foreign_owner', SIMULATE + '?date=2026-03-15
 add('simulation-missing-associate-stops', 'plans_owner', SIMULATE + '?date=2026-03-15', 200, simulation([PLAN_Z]))
 add('simulation-april-before-apply', 'owner', SIMULATE + '?date=2026-04-01', 200, simulation([PLAN_D], [quote('s4', PLAN_D), quote('s5', PLAN_D)]))
 add('simulation-may-before-apply', 'owner', SIMULATE + '?date=2026-05-01', 200, simulation([PLAN_E], [quote('s6', PLAN_E), quote('s7', PLAN_E)]))
+
+# Odd plan values (September 1st..9th).
+add('simulation-number-plan', 'owner', SIMULATE + '?date=2026-09-01', 200, simulation([PLAN_NUM], [quote('s_num', PLAN_NUM)]))
+add('simulation-boolean-plan', 'owner', SIMULATE + '?date=2026-09-02', 200, simulation([PLAN_BOOL], [quote('s_bool', PLAN_BOOL)]))
+add('simulation-list-plan', 'owner', SIMULATE + '?date=2026-09-03', 200, simulation([PLAN_LIST], [quote('s_list', PLAN_LIST)]))
+add('simulation-object-plan-group', 'owner', SIMULATE + '?date=2026-09-04', 200, simulation([PLAN_DICT], [quote('s_dict', PLAN_DICT)]),
+    headers=GROUP)
+add('simulation-object-plan-no-group', 'owner', SIMULATE + '?date=2026-09-04', 200, simulation([PLAN_DICT], []), headers=OTHER_GROUP)
+add('simulation-null-plan-id-stops', 'owner', SIMULATE + '?date=2026-09-05', 200, simulation([PLAN_NULL_ID]))
+add('simulation-null-fee', 'owner', SIMULATE + '?date=2026-09-06', 200, simulation([PLAN_NULL_FEE], [quote('s_null_fee', PLAN_NULL_FEE)]))
+add('simulation-list-fee-stops', 'owner', SIMULATE + '?date=2026-09-07', 200, simulation([PLAN_LIST_FEE]))
+add('simulation-text-fee-stops', 'owner', SIMULATE + '?date=2026-09-08', 200, simulation([PLAN_TEXT_FEE]))
+add('simulation-list-name-message', 'owner', SIMULATE + '?date=2026-09-09', 200, simulation([PLAN_MESSAGE], [quote('s_message', PLAN_MESSAGE)]))
 
 # --- apply -----------------------------------------------------------------------
 
@@ -395,6 +436,21 @@ add('apply-missing-associate-created', 'plans_owner', APPLY + '?date=2026-03-15'
     effect=created('plans_owner', quote_row(None, PLAN_Z, '5.00', association=PLANS_OWNER['association'], user=PLANS_OWNER['id'],
                                             account=None), '5', PLANS_OWNER['association']))
 add('apply-missing-associate-again-nothing', 'plans_owner', APPLY + '?date=2026-03-15', 200, APPLIED, effect=effect('plans_owner'))
+# Odd plan values on apply: numbers and booleans are stored as the numeric column converts them (the audit entry keeps
+# str() of the raw value), a null plan id or an unusable fee raises before any payment is created.
+add('apply-number-plan', 'owner', APPLY + '?date=2026-09-01', 200, APPLIED,
+    effect=created('owner', quote_row('mario', PLAN_NUM, '3.00'), '3'))
+add('apply-number-plan-again-nothing', 'owner', APPLY + '?date=2026-09-01', 200, APPLIED, effect=effect())
+add('apply-boolean-plan', 'owner', APPLY + '?date=2026-09-02', 200, APPLIED,
+    effect=created('owner', quote_row('luca', PLAN_BOOL, '1.00'), 'True'))
+add('apply-list-plan', 'owner', APPLY + '?date=2026-09-03', 200, APPLIED,
+    effect=created('owner', quote_row('giulia', PLAN_LIST, '4.50'), '4.5'))
+add('apply-object-plan-group', 'owner', APPLY + '?date=2026-09-04', 200, APPLIED, headers=GROUP,
+    effect=created('owner', quote_row('paolo', PLAN_DICT, '2.00', group=IDS['own_group']), '2'))
+add('apply-null-plan-id-nothing', 'owner', APPLY + '?date=2026-09-05', 200, APPLIED, effect=effect())
+add('apply-null-fee-nothing', 'owner', APPLY + '?date=2026-09-06', 200, APPLIED, effect=effect())
+add('apply-list-fee-nothing', 'owner', APPLY + '?date=2026-09-07', 200, APPLIED, effect=effect())
+add('apply-text-fee-nothing', 'owner', APPLY + '?date=2026-09-08', 200, APPLIED, effect=effect())
 TASK = 'core.tasks.send_mail_async'
 
 

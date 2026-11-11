@@ -37,6 +37,10 @@ func NewPaymentWritesHandler(payments PaymentWritesService, actors *service.Acto
 
 // paymentEntryErrorsRepr is f"validation errors: {serializer.errors}".
 func paymentEntryErrorsRepr(request *http.Request, invalid *dto.PaymentEntryValidationError) string {
+	return "validation errors: " + paymentEntryFieldsRepr(request, invalid.Fields)
+}
+
+func paymentEntryFieldsRepr(request *http.Request, errors []dto.PaymentEntryFieldError) string {
 	english := restLanguage(request) == "en"
 	details := func(codes []string) string {
 		parts := make([]string, 0, len(codes))
@@ -46,10 +50,12 @@ func paymentEntryErrorsRepr(request *http.Request, invalid *dto.PaymentEntryVali
 		}
 		return "[" + strings.Join(parts, ", ") + "]"
 	}
-	fields := make([]string, 0, len(invalid.Fields))
-	for _, field := range invalid.Fields {
+	fields := make([]string, 0, len(errors))
+	for _, field := range errors {
 		value := details(field.Codes)
-		if field.Items != nil {
+		if field.Nested != nil {
+			value = paymentEntryFieldsRepr(request, field.Nested)
+		} else if field.Items != nil {
 			items := make([]string, 0, len(field.Items))
 			for _, item := range field.Items {
 				items = append(items, strconv.Itoa(item.Index)+": "+details(item.Codes))
@@ -58,11 +64,15 @@ func paymentEntryErrorsRepr(request *http.Request, invalid *dto.PaymentEntryVali
 		}
 		fields = append(fields, dto.PythonStringRepr(field.Name)+": "+value)
 	}
-	return "validation errors: {" + strings.Join(fields, ", ") + "}"
+	return "{" + strings.Join(fields, ", ") + "}"
 }
 
 // paymentEntryErrors is serializer.errors as raise_exception renders it.
 func paymentEntryErrors(request *http.Request, invalid *dto.PaymentEntryValidationError) map[string]any {
+	return paymentEntryFieldMessages(request, invalid.Fields)
+}
+
+func paymentEntryFieldMessages(request *http.Request, errors []dto.PaymentEntryFieldError) map[string]any {
 	english := restLanguage(request) == "en"
 	messages := func(codes []string) []string {
 		out := make([]string, 0, len(codes))
@@ -72,7 +82,11 @@ func paymentEntryErrors(request *http.Request, invalid *dto.PaymentEntryValidati
 		return out
 	}
 	result := map[string]any{}
-	for _, field := range invalid.Fields {
+	for _, field := range errors {
+		if field.Nested != nil {
+			result[field.Name] = paymentEntryFieldMessages(request, field.Nested)
+			continue
+		}
 		if field.Items != nil {
 			items := map[string]any{}
 			for _, item := range field.Items {
