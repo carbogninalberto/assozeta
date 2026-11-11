@@ -171,6 +171,10 @@ type SupplierInvoiceRow struct {
 
 	Payment  *InvoicePartyPayment
 	Supplier *Supplier
+	// Render is the payment with every relation PaymentSerializer nests (an
+	// associate, instructor or invoice, or a subscription or course subject);
+	// nil when Payment alone renders it.
+	Render *PaymentStateRender
 }
 
 // SupplierInvoiceQuery is invoice_suppliers_list's filtered, ordered page.
@@ -210,6 +214,10 @@ type NewSupplierInvoice struct {
 	Paid                                  bool
 	Notes                                 *string
 	DocumentID                            *string
+	// PaymentID is the validated payment_id text stored by create() before the
+	// view links the new payment (nil: NULL); PaymentText is its str() in the
+	// create entry (nil: None).
+	PaymentID, PaymentText *string
 }
 
 type InvoicePartyStore interface {
@@ -237,7 +245,11 @@ type InvoicePartyStore interface {
 	BankAccount(ctx context.Context, association string, id *string) (*string, error)
 	LiveSupplier(ctx context.Context, id, association string, group *string) (*Supplier, error)
 	SupplierPaymentCategory(ctx context.Context, association string) (*string, error)
-	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
+	DefaultPaymentCategory(ctx context.Context, association *string) (id, name *string, err error)
+	// PaymentLinkedName is get_course_carnet_name's linked row of a course payment.
+	PaymentLinkedName(ctx context.Context, payment string) (PaymentLinkedName, error)
+	// PaymentCreatedChanges is auditlog's diff of the stored payment against None.
+	PaymentCreatedChanges(ctx context.Context, payment string) (map[string][2]string, error)
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 
 	// Writes, each its own transaction (Django autocommit).

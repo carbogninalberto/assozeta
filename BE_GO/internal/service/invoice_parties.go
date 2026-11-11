@@ -117,13 +117,23 @@ func (s *InvoiceParties) CustomerList(ctx context.Context, request InvoicePartyR
 }
 
 // requestObject is the view writing into request.data: a QueryDict (form)
-// is immutable and any non-dict raises TypeError.
+// is immutable and any non-dict raises TypeError. A multipart body with file
+// parts is the mutable copy DRF merges the files into.
 func invoicePartyObject(request InvoicePartyRequest) (domain.RequestObject, error) {
 	object, ok := request.Body.(domain.RequestObject)
-	if request.Form || !ok {
+	if !ok || request.Form && !invoicePartyUploads(object) {
 		return nil, domain.ErrInvoicePartyServer
 	}
 	return object, nil
+}
+
+func invoicePartyUploads(object domain.RequestObject) bool {
+	for _, field := range object {
+		if _, upload := field.Value.(domain.RequestUpload); upload {
+			return true
+		}
+	}
+	return false
 }
 
 // related resolves a PrimaryKeyRelatedField: a missing row is does_not_exist.
@@ -168,6 +178,11 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 	object, err := invoicePartyObject(request)
 	if err != nil {
 		return err
+	}
+	if request.Form {
+		// A multipart body with file parts: the form reading of the customer
+		// invoice's fields is not ported.
+		return domain.ErrInvoicePartyNotPorted
 	}
 	// Missing or null dates default to today; both go through
 	// strptime('%Y-%m-%d') (TypeError/ValueError: 500).
@@ -315,13 +330,6 @@ var supplierInvoiceOrder = map[string]string{
 	"payment_id": "payment_id", "supplier": "supplier_id", "supplier_id": "supplier_id",
 }
 
-// invoicePartyRenderable refuses payments whose nested renderings are not
-// ported (associate, instructor, invoice, subscription and course lookups).
-func invoicePartyRenderable(payment *domain.InvoicePartyPayment) bool {
-	return payment == nil || payment.AssociateID == nil && payment.InstructorID == nil && payment.InvoiceID == nil &&
-		(payment.Subject == 0 || payment.Subject == 3)
-}
-
 // SupplierList follows invoice_suppliers_list.
 func (s *InvoiceParties) SupplierList(ctx context.Context, request InvoicePartyRequest) (map[string]any, error) {
 	association, err := s.scopedAssociation(ctx, request.Identity)
@@ -376,10 +384,11 @@ func (s *InvoiceParties) SupplierList(ctx context.Context, request InvoicePartyR
 	}
 	data, ids := map[string]any{}, make([]string, 0, len(rows))
 	for index, row := range rows {
-		if !invoicePartyRenderable(row.Payment) {
-			return nil, domain.ErrInvoicePartyNotPorted
+		item, err := dto.SupplierInvoiceItem(row)
+		if err != nil {
+			return nil, domain.ErrInvoicePartyServer
 		}
-		data[strconv.Itoa(index)] = dto.SupplierInvoiceItem(row)
+		data[strconv.Itoa(index)] = item
 		ids = append(ids, row.ID)
 	}
 	return map[string]any{"data": data, "meta": map[string]any{"total": page.Count, "page": page.Number, "pages": page.Pages,
@@ -426,6 +435,10 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	object, err := invoicePartyObject(request)
 	if err != nil {
 		return err
+	}
+	if request.Form {
+		// A QueryDict: data[key] is the last value of the key.
+		object = invoicePartyLast(object)
 	}
 	group := invoicePartyGroup(request.Group)
 	lookup := func(name string) (any, error) {
@@ -509,7 +522,7 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 		data = append(data, field)
 	}
 	data = append(data, domain.RequestField{Name: "sport_association", Value: association})
-	input, errors := dto.ParseSupplierInvoice(data, false, false)
+	input, errors := dto.ParseSupplierInvoice(data, false, request.Form)
 	if err = s.supplierRelations(ctx, input, errors, association, ""); err != nil {
 		return err
 	}
@@ -560,8 +573,22 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 		invoice.ID = *input.ID
 	}
 	invoice.DocumentID = input.Document.ID
+	stored := "None"
+	if input.PaymentID != nil {
+		// create(payment_id=text): '' is stored as NULL, anything else must be a
+		// UUID (ValidationError: 500 with the payment kept) of a stored payment
+		// (the key constraint: 500); the entry carries the text as sent.
+		invoice.PaymentText = input.PaymentID
+		if *input.PaymentID != "" {
+			id, ok := dto.DjangoUUIDLookup(*input.PaymentID)
+			if !ok {
+				return domain.ErrInvoicePartyServer
+			}
+			invoice.PaymentID, stored = &id, id
+		}
+	}
 	linked := domain.InvoicePartyAudit{Model: "invoicesuppliers", Key: invoice.ID, Action: 1, Changes: map[string][2]string{
-		"payment": {"None", payment.ID}, "supplier": {"None", supplier.ID}}, AssociationID: &association, ResolutionPath: &direct}
+		"payment": {stored, payment.ID}, "supplier": {"None", supplier.ID}}, AssociationID: &association, ResolutionPath: &direct}
 	return s.store.CreateSupplierInvoice(ctx, invoice, domain.InvoicePartyAudit{Model: "invoicesuppliers", Key: invoice.ID, Action: 0,
 		AssociationID: &association, ResolutionPath: &direct}, linked, payment.ID, supplier.ID, auditContext, now)
 }
@@ -596,8 +623,8 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		return &dto.InvoicePartyValidationError{Errors: errors}
 	}
 	if input.NotPorted || input.ID != nil && *input.ID != row.ID {
-		// Nested writes, a payment_id to store, or a new primary key (save()
-		// would insert a copy) are not ported.
+		// Nested writes are not ported; a new primary key stays refused pending
+		// the read-only key change.
 		return domain.ErrInvoicePartyNotPorted
 	}
 	updated := *row
@@ -635,31 +662,44 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		text("document_pdf", invoicePartyOptional(row.DocumentID), invoicePartyOptional(input.Document.ID))
 		updated.DocumentID = input.Document.ID
 	}
-	if input.PaymentNull || input.PaymentIDSet {
+	// payment_id is assigned after the nested payment: its text is audited as
+	// sent, '' is stored as NULL (the payment access after the save then
+	// raises), other text must be the UUID of a stored payment.
+	blank, rejected := false, false
+	group := invoicePartyGroup(request.Group)
+	var payment *domain.InvoicePartyPayment
+	visible := false
+	switch {
+	case input.PaymentIDSet && input.PaymentID != nil:
+		text("payment", invoicePartyOptional(row.PaymentID), *input.PaymentID)
+		updated.PaymentID = nil
+		if *input.PaymentID == "" {
+			blank = true
+		} else if id, ok := dto.DjangoUUIDLookup(*input.PaymentID); ok {
+			updated.PaymentID = &id
+		} else {
+			rejected = true
+		}
+	case input.PaymentNull || input.PaymentIDSet:
 		text("payment", invoicePartyOptional(row.PaymentID), "None")
 		updated.PaymentID = nil
 	}
-	group := invoicePartyGroup(request.Group)
-	var payment *domain.InvoicePartyPayment
+	if updated.PaymentID != nil {
+		if payment, visible, err = s.store.Payment(ctx, *updated.PaymentID, group); err != nil {
+			return err
+		}
+		if payment == nil {
+			rejected = true // the key constraint rejects the save
+		} else if (row.PaymentID == nil || *row.PaymentID != payment.ID) &&
+			(payment.AssociationID == nil || *payment.AssociationID != row.AssociationID) {
+			// Linking a payment outside the invoice's association is not ported.
+			return domain.ErrInvoicePartyNotPorted
+		}
+	}
 	var paid any
 	paidPresent := false
 	if object, ok := request.Body.(domain.RequestObject); ok {
 		paid, paidPresent = object.Lookup("paid")
-	}
-	description := (*string)(nil)
-	if updated.PaymentID != nil && paidPresent {
-		var visible bool
-		if payment, visible, err = s.store.Payment(ctx, *updated.PaymentID, group); err != nil {
-			return err
-		}
-		_, upload := paid.(domain.RequestUpload)
-		// auditlog diffs against None for a payment the manager cannot load.
-		if payment == nil || !visible || upload {
-			return domain.ErrInvoicePartyNotPorted
-		}
-		if description, err = invoicePartySaveDescription(ctx, *payment); err != nil {
-			return err
-		}
 	}
 	at := s.now().UTC().Truncate(time.Microsecond)
 	auditContext := paymentCategoryAuditContext(identity, request.Audit)
@@ -670,8 +710,14 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 			return err
 		}
 	}
+	if rejected {
+		return domain.ErrInvoicePartyServer
+	}
 	if err = s.store.UpdateSupplierInvoice(ctx, updated); err != nil {
 		return err
+	}
+	if blank {
+		return domain.ErrInvoicePartyServer // invoice.payment looks up ''
 	}
 	if updated.PaymentID == nil {
 		return nil
@@ -679,7 +725,9 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	if !paidPresent {
 		return domain.ErrInvoicePartyServer // data['paid']: KeyError after the invoice save
 	}
-	category := payment.CategoryID
+	// Payment.save(): the default category, then the description hook (an
+	// exception there is a 500 before the payment's entry).
+	category, categoryName := payment.CategoryID, payment.CategoryName
 	paymentChanges := map[string][2]string{}
 	if text := dto.PythonAuditStr(paid); text != invoicePartyStr(payment.Paid) {
 		paymentChanges["paid"] = [2]string{invoicePartyStr(payment.Paid), text}
@@ -688,19 +736,44 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		paymentChanges["payment_date"] = [2]string{old, new}
 	}
 	if category == nil {
-		if category, err = s.store.DefaultPaymentCategory(ctx, payment.AssociationID); err != nil {
+		if category, categoryName, err = s.store.DefaultPaymentCategory(ctx, payment.AssociationID); err != nil {
 			return err
 		}
 		if category != nil {
 			paymentChanges["payment_category"] = [2]string{"None", *category}
 		}
 	}
+	description, err := s.saveDescription(ctx, *payment, categoryName)
+	if err != nil {
+		return err
+	}
 	if !samePointer(payment.Description, description) {
 		paymentChanges["description"] = [2]string{pythonOptional(payment.Description), pythonOptional(description)}
+	}
+	if !visible {
+		// Payment.objects (live, group-aware) does not see the row: auditlog
+		// diffs the whole instance against None.
+		stored, err := s.store.PaymentCreatedChanges(ctx, payment.ID)
+		if err != nil {
+			return err
+		}
+		stored["paid"] = [2]string{"None", dto.PythonAuditStr(paid)}
+		stored["payment_date"] = [2]string{"None", invoicePartyNaive(&at)}
+		for _, name := range []string{"payment_category", "description"} {
+			if pair, changed := paymentChanges[name]; changed {
+				stored[name] = [2]string{"None", pair[1]}
+			}
+		}
+		paymentChanges = stored
 	}
 	entry := domain.InvoicePartyAudit{Model: "payment", Key: payment.ID, Action: 1, Changes: paymentChanges}
 	if payment.AssociationID != nil {
 		entry.AssociationID, entry.ResolutionPath = payment.AssociationID, &direct
+		if !visible {
+			// The index does not find the row either and reads the entry's changes.
+			path := "changes_json.sport_association"
+			entry.ResolutionPath = &path
+		}
 	} else if actor, err := s.store.ActorAssociation(ctx, identity.Actor.ID); err != nil {
 		return err
 	} else if actor != nil {
@@ -719,29 +792,47 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	return s.store.UpdatePaymentPaid(ctx, payment.ID, *converted, at, category, description)
 }
 
-// invoicePartySaveDescription is Payment.save()'s description hook for the linked
-// payment, decided before any write. A NULL course description (its reverse
-// relation lookups), a NULL description that needs the default category's name
-// and a calculation that raises are not ported.
-func invoicePartySaveDescription(ctx context.Context, payment domain.InvoicePartyPayment) (*string, error) {
-	if payment.Description != nil && strings.ToLower(*payment.Description) != "quota corso" {
-		return payment.Description, nil
+// invoicePartyLast is QueryDict.__getitem__ for every key: the last value sent.
+func invoicePartyLast(object domain.RequestObject) domain.RequestObject {
+	last := map[string]int{}
+	for index, field := range object {
+		last[field.Name] = index
 	}
-	if payment.Description == nil && (payment.Subject == 2 || payment.Subject == 0 && payment.CategoryID == nil) {
-		return nil, domain.ErrInvoicePartyNotPorted
+	result := make(domain.RequestObject, 0, len(last))
+	for index, field := range object {
+		if last[field.Name] == index {
+			result = append(result, field)
+		}
 	}
+	return result
+}
+
+// saveDescription is Payment.save()'s description hook for the linked payment
+// (categoryName: the stored or default category's name). A Python exception
+// in the hook is the view's 500.
+func (s *InvoiceParties) saveDescription(ctx context.Context, payment domain.InvoicePartyPayment, categoryName *string) (*string, error) {
 	meta, err := paymentJSON(payment.Meta)
 	if err != nil {
-		return nil, domain.ErrInvoicePartyNotPorted
+		return nil, domain.ErrInvoicePartyServer
 	}
 	course, err := paymentJSON(payment.Course)
 	if err != nil {
-		return nil, domain.ErrInvoicePartyNotPorted
+		return nil, domain.ErrInvoicePartyServer
 	}
-	description, err := ResolvePaymentDescription(ctx, domain.PaymentDescriptionInput{Subject: payment.Subject, Description: payment.Description,
-		CategoryName: payment.CategoryName, Meta: meta, Course: course})
+	input := domain.PaymentDescriptionInput{Subject: payment.Subject, Description: payment.Description, CategoryName: categoryName,
+		Meta: meta, Course: course}
+	if payment.Subject == 2 && payment.Description == nil {
+		linked, err := s.store.PaymentLinkedName(ctx, payment.ID)
+		if err != nil {
+			return nil, err
+		}
+		if linked.Found {
+			input.Related[linked.Slot] = &domain.PaymentDescriptionRelation{Title: linked.Title, Meta: meta, MissingCarnet: linked.MissingCarnet}
+		}
+	}
+	description, err := ResolvePaymentDescription(ctx, input)
 	if errors.Is(err, domain.ErrPaymentDescription) {
-		return nil, domain.ErrInvoicePartyNotPorted
+		return nil, domain.ErrInvoicePartyServer
 	}
 	return description, err
 }

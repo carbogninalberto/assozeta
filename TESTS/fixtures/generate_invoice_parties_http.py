@@ -180,6 +180,33 @@ CUSTOMER_INVOICES['pending'].update(
 for label, number, created in (('pending_own', 5, '2026-10-09T08:00:00Z'), ('pending_own_old', 6, '2026-10-01T08:00:00Z')):
     CUSTOMER_INVOICES[label] = {**copy.deepcopy(CUSTOMER_INVOICES['pending']), 'customer_invoice_id': uid(), 'number': number,
                                 'creation_date': created, 'sport_association': OWN, 'assignor_denomination': 'ASD Casa & Co'}
+# Payments PaymentSerializer nests more for, and Payment.save() branches, in the foreign association (its owner lists and
+# updates them): an associate, instructor and invoice; a deleted payment (the manager auditlog reads does not see it); a
+# course payment without a description (its course label); no description and no category; an account transfer.
+_more = iter(f'a1000000-0000-4000-8000-{846700 + n:012d}' for n in range(40))
+FOREIGN_OWNER = IDS['foreign_owner']
+ASSOCIATES = {'socio': {'associate_id': next(_more), 'first_name': 'Mario', 'last_name': 'Rossi', 'sex': 'M', 'tax_code': 'RSSMRA90E10H501Z',
+                        'born_date': '1990-05-10', 'email': 'mario@example.test', 'is_minor': False, 'sport_association': FOREIGN}}
+INSTRUCTORS = {'docente': {'instructor_id': next(_more), 'user': FOREIGN_OWNER, 'first_name': 'Anna è', 'last_name': 'Bianchi',
+                           'email': 'anna@example.test', 'tax_code': 'BNCNNA80A41H501X', 'default_hourly_billing': '12.50'}}
+INVOICES = {'ricevuta': {'invoice_id': next(_more), 'sport_association': FOREIGN, 'creation_date': '2026-02-01T10:00:00Z',
+                         'membership_fee': '0.00', 'activity_fee': '30.00', 'description': 'Ricevuta 901', 'number': 901, 'archived': True}}
+
+
+def foreign_payment(label, identifier, **values):
+    PAYMENTS[label] = payment(FOREIGN, 'abroad', **{'user': None, 'custom_accounts': ACCOUNTS['abroad']['custom_account_id'],
+                                                    'payment_category': CATEGORIES['abroad']['payment_category_id'],
+                                                    'payment_id': next(_more), **values})
+    SUPPLIER_INVOICES[label] = supplier_invoice(FOREIGN, identifier, payment=PAYMENTS[label]['payment_id'],
+                                                supplier=SUPPLIERS['abroad']['supplier_id'], invoice_supplier_id=next(_more))
+
+
+foreign_payment('f', 'FF-006', associate=ASSOCIATES['socio']['associate_id'], instructor=INSTRUCTORS['docente']['instructor_id'],
+                invoice=INVOICES['ricevuta']['invoice_id'], description='Con socio')
+foreign_payment('g', 'FG-007', deleted=True, description='Cancellato')
+foreign_payment('h', 'FH-008', subject=2, description=None, course={'label': 'Corso base'})
+foreign_payment('i', 'FI-009', description=None, payment_category=None)
+foreign_payment('j', 'FJ-010', subject=3, description=None)
 SEED_PAYMENTS, SEED_SUPPLIER_INVOICES, SEED_CUSTOMER_INVOICES = (copy.deepcopy(PAYMENTS), copy.deepcopy(SUPPLIER_INVOICES),
                                                                  copy.deepcopy(CUSTOMER_INVOICES))
 
@@ -198,16 +225,53 @@ def render_document(label):
     return dict(DOCUMENTS[label])
 
 
+def render_associate(label):
+    """AssociateSerializer (user_serializers): an associate without an account answers its association's owner as user."""
+    row = ASSOCIATES[label]
+    return {'associate_id': row['associate_id'], 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None,
+            'born_date': row['born_date'], 'email': row['email'], 'sex': row['sex'], 'first_name': row['first_name'],
+            'last_name': row['last_name'], 'is_minor': False, 'sport_association': row['sport_association'], 'tax_code': row['tax_code'],
+            'user': FOREIGN_OWNER, 'phone': None, 'family': None, 'family_role': None}
+
+
+def render_instructor(label):
+    row = INSTRUCTORS[label]
+    return {'instructor_id': row['instructor_id'], 'user': row['user'], 'first_name': row['first_name'], 'last_name': row['last_name'],
+            'email': row['email'], 'born_date': None, 'born_city': None, 'born_province': None, 'tax_code': row['tax_code'],
+            'address_city': None, 'address': None, 'address_province': None, 'civic_number': None, 'study_title': None, 'role': 'Istruttore',
+            'phone': None, 'phone_2': None, 'phone_3': None, 'phone_4': None, 'draft': False, 'associated_user_id': None,
+            'is_volunteer': False, 'stipulated_contract_in': None, 'default_hourly_billing': row['default_hourly_billing'],
+            'default_percentage_billing': '0.00', 'documents': []}
+
+
+def render_invoice(label):
+    row = INVOICES[label]
+    return {'invoice_id': row['invoice_id'], 'document_token': None, 'creation_date': row['creation_date'],
+            'membership_fee': row['membership_fee'], 'activity_fee': row['activity_fee'], 'meta_payment_categories': None,
+            'description': row['description'], 'number': row['number'], 'archived': row['archived'], 'cancelled': False, 'meta': None,
+            'imported_from_associami': False, 'deleted': False, 'document_pdf': None, 'sport_association': row['sport_association'],
+            'selected_tutor': None, 'group': None, 'attached_documents': []}
+
+
+def find(table, key, value):
+    return next((label for label, row in table.items() if row[key] == value), None)
+
+
 def render_payment(label):
     row = PAYMENTS[label]
     supplier_row = next(s for s in SUPPLIERS.values() if s['supplier_id'] == row['supplier'])
     account_row = next(a for a in ACCOUNTS.values() if a['custom_account_id'] == row['custom_accounts'])
-    category_row = next(c for c in CATEGORIES.values() if c['payment_category_id'] == row['payment_category'])
-    return {'payment_id': row['payment_id'], 'user': OWNER_USER if row['user'] == OWNER else None, 'associate': None,
-            # subject OTHER: the first unarchived subscription without an associate (none exist).
-            'subscription_id': None, 'instructor_id': None, 'instructor': None, 'supplier': dict(supplier_row),
+    category_row = next((c for c in CATEGORIES.values() if c['payment_category_id'] == row['payment_category']), {'name': None})
+    person, teacher, bill = (find(ASSOCIATES, 'associate_id', row['associate']), find(INSTRUCTORS, 'instructor_id', row['instructor']),
+                             find(INVOICES, 'invoice_id', row['invoice']))
+    return {'payment_id': row['payment_id'], 'user': OWNER_USER if row['user'] == OWNER else None,
+            'associate': render_associate(person) if person else None,
+            # subject OTHER: the associate's first unarchived subscription (none exist); the authored subscription and
+            # course payments have no subscription, installment, course subscription or carnet.
+            'subscription_id': None, 'instructor_id': row['instructor'], 'instructor': render_instructor(teacher) if teacher else None,
+            'supplier': dict(supplier_row),
             'supplier_id': supplier_row['supplier_id'], 'custom_account_type': account_row['account_type'],
-            'custom_account_name': account_row['name'], 'invoice': None,
+            'custom_account_name': account_row['name'], 'invoice': render_invoice(bill) if bill else None,
             'attachments': [render_document(doc) for pay, doc in ATTACHMENTS if pay == label],
             'payment_category_name': category_row['name'], 'type': row['type'], 'subject': row['subject'], 'amount': row['amount'],
             'creation_date': row['creation_date'], 'payment_date': row['payment_date'], 'paid': row['paid'], 'expense': row['expense'],
@@ -401,6 +465,11 @@ for _name, _field in (('supplier-path', 'supplier__name'), ('association-path', 
                       ('payment-path', 'payment__amount'), ('document', 'document_pdf'), ('document-key', 'document_pdf_id'),
                       ('transform', 'amount__nope')):
     add('supplier-list-sort-' + _name + '-server-error', 'owner', 'GET', query(**{'sort[field]': _field}), 500, SERVER)
+
+# The foreign association's list: payments with a subscription or course subject, an associate, instructor and invoice, and
+# a deleted payment (the relation reads through the base manager).
+add('supplier-list-foreign-owner-nested-payments', 'foreign_owner', 'GET', query(**{'sort[field]': 'invoice_identifier'}), 200,
+    supplier_page(['d', 'e', 'f', 'g', 'h', 'i', 'j', 'abroad']))
 
 # ------------------------------------------------------- customer add ---
 
@@ -616,6 +685,41 @@ add('supplier-add-long-notes-keeps-payment-server-error', 'owner', 'POST', SA, 5
         'payment': new_payment('bank', '50.50', False, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno')},
         audits=payment_audits(OWN, 'uno')))
 
+# payment_id is a CharField: create() stores it before the view links the new payment. '' is stored as NULL and audited as
+# sent; other text must be the UUID of a stored payment (a 500 with the new payment kept otherwise).
+BRACED = '{' + PAYMENTS['a']['payment_id'].upper() + '}'
+for _name, _text, _stored in (('blank', '', 'None'), ('other-spelling', BRACED, PAYMENTS['a']['payment_id'])):
+    _audits = invoice_audits('uno')
+    _audits[0]['changes']['$override'] = {'payment': ['None', _text]}
+    _audits[1]['changes']['payment'][0] = _stored
+    add(f'supplier-add-payment-id-{_name}', 'owner', 'POST', SA, 200, CREATED,
+        body={**VALID, 'invoice_identifier': 'FP-' + _name, 'payment_id': _text}, effect=effect('owner', new={
+            'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno'),
+            'invoicesuppliers': new_invoice('FP-' + _name, '50.50', True, '2026-10-20T10:00:00Z', '2026-12-31T00:00:00Z', 'nuova', 'uno')},
+            audits=payment_audits(OWN, 'uno') + _audits))
+for _name, _text in (('not-a-uuid', 'zzz'), ('unknown', UNKNOWN)):
+    add(f'supplier-add-payment-id-{_name}-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
+        body={**VALID, 'payment_id': _text}, effect=effect('owner', new={
+            'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno')},
+            audits=payment_audits(OWN, 'uno')))
+
+# A multipart body with a file part is a mutable copy: the view reads it as a form (every value is text, never None).
+FORM_VALID = [('custom_accounts', None, None, ACCOUNTS['bank']['custom_account_id']), ('supplier_id', None, None, SUPPLIERS['uno']['supplier_id']),
+              ('payment_date', None, None, '2026-10-21T10:00:00Z'), ('paid', None, None, 'true'), ('amount', None, None, '7.25'),
+              ('invoice_identifier', None, None, 'FM-300')]
+mp, ct = multipart(*FORM_VALID, ('allegato', 'fattura.txt', 'text/plain', 'x'))
+add('supplier-add-multipart-with-file', 'owner', 'POST', SA, 200, CREATED, raw_body=mp, content_type=ct, effect=effect('owner', new={
+    'payment': new_payment('bank', '7.25', True, '2026-10-21T10:00:00Z', '2026-10-21T10:00:00Z', 'uno'),
+    'invoicesuppliers': new_invoice('FM-300', '7.25', True, '2026-10-21T10:00:00Z', None, None, 'uno')},
+    audits=payment_audits(OWN, 'uno') + invoice_audits('uno')))
+mp, ct = multipart(*FORM_VALID[1:], ('allegato', 'fattura.txt', 'text/plain', 'x'))
+add('supplier-add-multipart-with-file-missing-account-server-error', 'owner', 'POST', SA, 500, SERVER, raw_body=mp, content_type=ct)
+mp, ct = multipart(*FORM_VALID, ('notes', 'nota.txt', 'text/plain', 'x'))
+add('supplier-add-multipart-file-as-notes', 'owner', 'POST', SA, 400, {'notes': ['Not a valid string.']}, raw_body=mp, content_type=ct)
+mp, ct = multipart(*[part for part in FORM_VALID if part[0] != 'custom_accounts'], ('custom_accounts', None, None, ''),
+                   ('allegato', 'fattura.txt', 'text/plain', 'x'))
+add('supplier-add-multipart-blank-account-server-error', 'owner', 'POST', SA, 500, SERVER, raw_body=mp, content_type=ct)
+
 # ------------------------------------------------------- supplier update ---
 
 SU = lambda label: f'/invoice-suppliers/{SUPPLIER_INVOICES[label]["invoice_supplier_id"] if label in SUPPLIER_INVOICES else label}/update'
@@ -699,9 +803,53 @@ add('supplier-update-long-notes-audited-server-error', 'owner', 'PATCH', SU('c')
     effect=effect('owner', rows={'invoicesuppliers': {key_c: {f: SUPPLIER_INVOICES['c'][f] for f in INVOICE_FIELDS}}},
                   audits=[audit('invoicesuppliers', key_c, 1, {'notes': ['prima nota', 'n' * 256]})]))
 
+# payment_id on update: the text is audited as sent, then '' is stored as NULL and the payment access raises; text that is
+# not a UUID, or the UUID of no payment, fails the save after the entry.
+for _name, _text in (('blank', ''), ('not-a-uuid', 'zzz'), ('unknown', UNKNOWN)):
+    add(f'supplier-update-payment-id-{_name}-audited-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER, body={'payment_id': _text},
+        effect=effect('owner', rows={'invoicesuppliers': {key_c: {f: SUPPLIER_INVOICES['c'][f] for f in INVOICE_FIELDS}}},
+                      audits=[audit('invoicesuppliers', key_c, 1, {'payment': ['None', _text]})]))
+# The association's own payment in another spelling: linked, then saved with the raw paid value.
+supplier_update('supplier-update-payment-id-links-payment', 'owner', 'c', 200, UPDATED,
+                {'payment_id': PAYMENTS['b']['payment_id'].upper(), 'paid': False},
+                invoice={'payment': PAYMENTS['b']['payment_id'], 'paid': False}, payment={'paid': False, 'paid_str': 'False'})
+cases[-1]['effect']['audits'][0]['changes']['payment'][1] = PAYMENTS['b']['payment_id'].upper()
+
+
+def hidden_payment_update(name, actor, label, body, association, **extra):
+    """A linked payment the live, group-aware manager does not see: auditlog diffs the saved instance against None."""
+    key, pkey = SUPPLIER_INVOICES[label]['invoice_supplier_id'], PAYMENTS[label]['payment_id']
+    pairs = changed(SUPPLIER_INVOICES, label, paid=body['paid'])
+    PAYMENTS[label].update(paid=body['paid'], payment_date='$now')
+    add(name, actor, 'PATCH', SU(label), 200, UPDATED, body=body, effect=effect(actor, rows={
+        'invoicesuppliers': {key: {f: SUPPLIER_INVOICES[label][f] for f in INVOICE_FIELDS}},
+        'payment': {pkey: {f: PAYMENTS[label][f] for f in PAYMENT_FIELDS}}},
+        audits=([audit('invoicesuppliers', key, 1, pairs, association=association)] if pairs else [])
+        # The index does not find the row either: it resolves through the entry's changes.
+        + [audit('payment', pkey, 1, {'$created': []}, association=association, path='changes_json.sport_association')]), **extra)
+
+
+hidden_payment_update('supplier-update-deleted-payment-audited-whole', 'foreign_owner', 'g', {'paid': True}, FOREIGN)
+hidden_payment_update('supplier-update-group-hides-payment-audited-whole', 'owner', 'a', {'paid': False}, OWN,
+                      headers={'X-Group-Id': IDS['own_group']})
+# Payment.save() without a description: a course payment takes its course label, a payment without a category takes the
+# default category and its name, an account transfer raises after the invoice save.
+supplier_update('supplier-update-payment-course-label-description', 'foreign_owner', 'h', 200, UPDATED, {'paid': True},
+                invoice={'paid': True}, payment={'paid': True, 'paid_str': 'True'}, payment_derived={'description': 'Corso base, '},
+                association=FOREIGN)
+supplier_update('supplier-update-payment-without-category', 'foreign_owner', 'i', 200, UPDATED, {'paid': True},
+                invoice={'paid': True}, payment={'paid': True, 'paid_str': 'True'},
+                payment_derived={'payment_category': '$default_category', 'description': '$default_category_name'}, association=FOREIGN)
+key_j = SUPPLIER_INVOICES['j']['invoice_supplier_id']
+pairs_j = changed(SUPPLIER_INVOICES, 'j', paid=True)
+add('supplier-update-payment-transfer-description-server-error', 'foreign_owner', 'PATCH', SU('j'), 500, SERVER, body={'paid': True},
+    effect=effect('foreign_owner', rows={'invoicesuppliers': {key_j: {f: SUPPLIER_INVOICES['j'][f] for f in INVOICE_FIELDS}}},
+                  audits=[audit('invoicesuppliers', key_j, 1, pairs_j, association=FOREIGN)]))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Customer and supplier invoice list, add and update authored sequence',
                               'ids': IDS, 'documents': DOCUMENTS, 'suppliers': SUPPLIERS, 'accounts': ACCOUNTS, 'categories': CATEGORIES,
+                              'associates': ASSOCIATES, 'instructors': INSTRUCTORS, 'invoices': INVOICES,
                               'payments': SEED_PAYMENTS, 'attachments': ATTACHMENTS, 'supplier_invoices': SEED_SUPPLIER_INVOICES,
                               'customer_invoices': SEED_CUSTOMER_INVOICES, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')
