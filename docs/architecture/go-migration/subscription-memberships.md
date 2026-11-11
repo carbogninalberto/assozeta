@@ -30,12 +30,22 @@ timestamp)>/<document id>/<filename>', bytes)` through the documents-writes uplo
 `attached_membership_documents.add` (no entry). The response lists the attached documents. A later item without its keys is the
 400 and the earlier documents stay.
 
+## Pk change and multipart bodies (t2subsa)
+
+- `update` with a different `subscription_membership_id`: `Model.save()` updates nothing and inserts a copy under the new key. The old
+  row and its document links stay, the copy has no links of its own (new `documents_data` attach to it), and auditlog logs an update against None, then the creation
+  (not an update) for the copy.
+- A multipart `add` with at least one file part: DRF merges the files into a mutable copy of the data, so `sport_association` can be
+  assigned and the request goes through the form path. A file is read by each field as `str(name)` for the related fields (`“x.txt” is not
+  a valid UUID.`) and the price (a file named `12` is the price 12.00), and as an object the other fields reject (`Not a valid string.`,
+  the date and datetime format messages). Without a file part the data stays an immutable QueryDict (500).
+- A `documents_data` item whose filename the Document column rejects (null, NUL, over 255 characters): `Document.objects.create` raises
+  after the membership and the earlier uploads were saved, so the 500 leaves them.
+
 ## Not ported (refused before any write)
 
-- Form keys for `documents_data` (the UI sends JSON), a filename the Document column cannot store as sent (None, NUL), and a
-  storage key that already exists (`get_available_name`'s random alternative): 500.
-- A changed `subscription_membership_id` on update (Model.save() would insert a copy under the new key): 500.
-- A multipart `add` that carries files (DRF copies the data into a mutable dict): 500, like every other form body on `add`.
+- Form keys for `documents_data` (the UI sends JSON), and a storage key that already exists (`get_available_name` appends a random suffix,
+  not reproducible): 500.
 
 ## Evidence
 

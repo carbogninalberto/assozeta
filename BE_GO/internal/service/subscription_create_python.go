@@ -203,9 +203,6 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 		return nil, err
 	}
 	tax := write.Text["tax_code"]
-	if tax != nil && !dto.AssociateTaxCodeASCII(*tax) {
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
 	if instance == nil {
 		if id != text {
 			// The key would be stored and audited as sent.
@@ -246,9 +243,6 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 	applyAssociateTutorWrite(&row, write)
 	row.Deleted = false
 	if row.TaxCode != nil && row.AssociationID != nil {
-		if !dto.AssociateTaxCodeASCII(*row.TaxCode) {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
 		// A save that breaks the unique tax code index (IntegrityError) is not ported.
 		if taken, err := tx.LiveTaxCodeTaken(ctx, *row.TaxCode, *row.AssociationID, row.ID); err != nil || taken {
 			return nil, notPortedOr(err)

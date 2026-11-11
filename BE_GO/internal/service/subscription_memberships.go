@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
@@ -48,10 +49,6 @@ var (
 	// would reach Document creation and the storage upload (not ported)
 	// before any write.
 	ErrSubscriptionMembershipUploadUnsupported = refusal.New("subscription membership document upload is not ported")
-	// ErrSubscriptionMembershipPrimaryKeyChange refuses a new
-	// subscription_membership_id on update: Model.save() would insert a copy
-	// under the new key (not ported).
-	ErrSubscriptionMembershipPrimaryKeyChange = refusal.New("subscription membership primary key change is not ported")
 )
 
 // SubscriptionMembershipValidationError is DRF's 400 field map.
@@ -243,10 +240,6 @@ func (s *SubscriptionMemberships) subscriptionMembershipDocuments(write dto.Subs
 		if s.uploads == nil {
 			return nil, ErrSubscriptionMembershipUploadUnsupported
 		}
-		filename, _ := item.Lookup("filename")
-		if _, ok := storedText(filename); !ok {
-			return nil, ErrSubscriptionMembershipUploadUnsupported
-		}
 	}
 	return nil, nil
 }
@@ -271,7 +264,11 @@ func (s *SubscriptionMemberships) handleDocuments(ctx context.Context, tx domain
 			return added, ErrSubscriptionMembershipDocumentDecode
 		}
 		raw, _ := item.Lookup("filename")
-		filename, _ := storedText(raw)
+		filename, storable := storedText(raw)
+		if !storable || utf8.RuneCountInString(filename) > 255 {
+			// Document.objects.create(filename=...) fails (NULL, NUL, over 255 characters): the 500 page, after the saved rows.
+			return added, ErrSubscriptionMembershipDocumentDecode
+		}
 		document := s.uploads.newDocument(filename)
 		if err = tx.CreateMembershipDocument(ctx, document, audit, document.Created); err != nil {
 			return added, err
@@ -387,7 +384,8 @@ func (s *SubscriptionMemberships) finish(ctx context.Context, tx domain.Subscrip
 // Add follows SubscriptionMembershipViewSet.add (201); AddAssociation ran first.
 func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionMembershipRequest, body any,
 	form bool, audit domain.LoginAuditContext) (map[string]any, error) {
-	if _, ok := body.(domain.RequestObject); !ok || form {
+	// A form body is an immutable QueryDict; with files DRF merges them into a mutable copy.
+	if _, ok := body.(domain.RequestObject); !ok || (form && !dto.SubscriptionMembershipHasFile(body)) {
 		return nil, ErrSubscriptionMembershipBody
 	}
 	tx, err := s.store.BeginSubscriptionMembership(ctx)
@@ -399,7 +397,7 @@ func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	write, invalid := dto.ParseSubscriptionMembershipWrite(body, false)
+	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form)
 	// request.data['sport_association'] replaces any client value.
 	delete(invalid, "sport_association")
 	if len(invalid) == 0 {
@@ -443,9 +441,6 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 	if err = s.validate(ctx, tx, association, write, invalid, &current.ID, supplierGroup(request.GroupHeader)); err != nil {
 		return nil, err
 	}
-	if write.ID != nil && *write.ID != current.ID {
-		return nil, ErrSubscriptionMembershipPrimaryKeyChange
-	}
 	_, refused := s.subscriptionMembershipDocuments(write)
 	if refused != nil {
 		return nil, refused
@@ -454,7 +449,14 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 	row := old
 	applySubscriptionMembershipWrite(&row, write)
 	at := s.now().UTC().Truncate(time.Microsecond)
-	if err = tx.SaveMembership(ctx, row, subscriptionMembershipChanges(old, row), paymentCategoryAuditContext(identity, audit), at); err != nil {
+	if write.ID != nil && *write.ID != current.ID {
+		// Model.save() with a new primary key: the UPDATE matches nothing, so the row is inserted under the new key
+		// (the old row and its document links stay); auditlog logs an update against None, then the creation.
+		row.ID = *write.ID
+		if err = tx.CopyMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
+			return nil, err
+		}
+	} else if err = tx.SaveMembership(ctx, row, subscriptionMembershipChanges(old, row), paymentCategoryAuditContext(identity, audit), at); err != nil {
 		return nil, err
 	}
 	_, failure := s.handleDocuments(ctx, tx, row.ID, write, paymentCategoryAuditContext(identity, audit))

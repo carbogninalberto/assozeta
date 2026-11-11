@@ -1194,26 +1194,26 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/add | `medical_certificate.certificate_expring_date` not null | `service/subscription_create.go:164` | ported | Ported in v2subs3 (`internal/pilplaceholder`). |
-| POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | **A** | Public forms `routes/subscribe/Subscribe.svelte:124,167`, `subscribe-multiple/SubscribeMultiple.svelte:183`, `subscribefamily/SubscribeFamily.svelte:136,181`. Also `AddMember.svelte:124-125` in modal mode. Cost: expensive (anonymous path + user creation). |
+| POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | ported | Ported earlier (public forms, `namedUser`): the anonymous cases of `subscription-create` (`anonymous-*`, `athlete-form-*`) cover it; the row was stale. |
 | POST subscription/add?m=only_associate with `associate` | quick re-subscription | ported (v2-sub-create) | **ported** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
 | POST subscription/add | `is_family_wizard: true` | ported (v2-wizard) | **ported** | `SubscribeFamily.svelte:146`. `type: grouped_subscriptions` is ported too (famwiz). |
 | POST subscription/add | `preregistration: true` | ported (v2-public-forms; with a `subscription_id` in famwiz) | **ported** | `Subscribe.svelte:147-148` (route `/subscribe/:user/:preregistration`). |
 | POST subscription/add | `new_user_account.new_member` true | ported (v2-sub-create) | **ported** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
 | POST subscription/add | `signature` with data | ported (v2-sub-create) | **ported** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
-| POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | B | No UI writer found in `routes/association/Members/add`. legacy: low. |
-| POST subscription/add | non-empty X-Group-Id, form bodies, born dates that are floats or containers (the dateutil forms are ported: v2subs3), non-ASCII sex/tax code, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go:322-1014`, `subscription_create_python.go:110-245` | B | Mostly exotic or legacy duplicates. Tutor edge cases (an associate that already has tutors) are reachable once the A gates are lifted. Re-check then. |
+| POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | ported | Ported in t2subsa (`icontains` on the stored JSON text in both duplicate checks). |
+| POST subscription/add | non-empty X-Group-Id, form bodies, float or container born dates, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go`, `subscription_create_python.go` | B | Partly ported in t2subsa: non-ASCII sex, born date and tax code (`dto.PythonUpper`, strptime digits) and tax-code ties (the same `LIMIT 1` query). Still refused: the items listed under "Not ported" in `subscription-create.md` (group header, form bodies, the other tutor, plan and amount shapes). |
 
 ### subscription-signature-migration.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| CLI migrate-subscription-signatures-to-s3 | generated key already exists; CLI options; DB error text | `cmd/migrate-subscription-signatures-to-s3` | B / C | Not HTTP. A key collision is practically impossible (C). |
+| CLI migrate-subscription-signatures-to-s3 | generated key already exists; CLI options; DB error text | `cmd/migrate-subscription-signatures-to-s3` | C (kept: not an HTTP route; a key collision gets a random suffix from `get_available_name`, and the option and database error texts belong to Django's management command) | Not HTTP. A key collision is practically impossible (C). |
 
 ### subscription-memberships.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | ported (v2-sub-create) | **ported** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
-| update | changed `subscription_membership_id` | | B | The hidden input carries the same id (`AddEditMembershipsModal.svelte:158`). Only a change is refused. |
-| add | multipart with files | | B | The UI sends JSON. |
+| update | changed `subscription_membership_id` | | ported | Ported in t2subsa (the copy under the new key, `subscription-memberships.md`). |
+| add | multipart with files | | ported | Ported in t2subsa (files merged into the mutable data, read per field). Form keys for `documents_data` stay refused: the UI sends JSON, and a repeated plain key is read as its last value by this API's form parser. |
 
 ### stripe-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1225,19 +1225,19 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/edit | non-empty `associate_id` in tutor data | `service/subscription_writes.go:253`, `ErrSubscriptionEditNotPorted` | B | Only UI caller is `routes/update-tutors/TutorData.svelte:23`. `UpdateTutors.svelte:7-11` has `inconsistencies = []` hard-coded and redirects to `/` on mount. Every `sessionStorage.setItem('inconsistencies', …)` is commented out (`Login.svelte:660-663`, `EditData.svelte:136-139`), so the page never renders. Effectively the route is not called by the UI. legacy: no. cheap |
-| same | tutor `born_date` with non-ASCII digits / unparsable by Go | `:219`, `:223` | B | as above, plus exotic input. legacy: no |
-| same | non-ASCII tax code | `:262` | B | route not reachable from UI. legacy: no |
-| same | several tax-code matches with equal latest `creation_date` | `:272` | B | route not reachable; data needs identical timestamps. legacy: yes (bulk imports). cheap |
-| same | tax-code match / main tutor is the edited associate | `:277`, `:311` | B | route not reachable. legacy: yes. medium |
-| same | main tutor referenced by other tables | `:318` | B | route not reachable. legacy: yes. expensive (cascade) |
+| POST subscription/<uid>/edit | non-empty `associate_id` in tutor data | `service/subscription_writes.go` | ported | Ported in t2subsa (`planByID` / `saveByID`: update by key, restore, create under the key, unique tax-code fallback). |
+| same | tutor `born_date` with non-ASCII digits / unparsable by Go | `:219`, `:223` | ported | Ported in t2subsa (strptime reads the digits of other scripts). |
+| same | non-ASCII tax code | `:262` | ported | Ported in t2subsa (`dto.PythonUpper`, the full `str.upper()` mapping; the lookup stays `UPPER()` in the database). |
+| same | several tax-code matches with equal latest `creation_date` | `:272` | ported | Ported in t2subsa (the same `ORDER BY creation_date DESC LIMIT 1` query Django runs, so the database breaks the tie in both). |
+| same | tax-code match / main tutor is the edited associate | `:277`, `:311` | ported | Ported in t2subsa (the stale instance's `save()` writes the old values back; a deleted self tutor is inserted again). |
+| same | main tutor referenced by other tables | `:318` | ported | Ported in t2subsa (deleted through the Collector port: SET_NULL references and payments with their receivers). |
 | same | `X-Group-Id` not a UUID / not a group on the create path | (ErrSubscriptionEditServer, Django also fails) | C | Django fails too; not a parity gap |
 | (doc) subscription/add, renew, transfer "not routed in Go" | — | — | — | Stale text: renew and transfer are now ported (subscription-renew.md, subscription-transfer.md) and add is in subscription-create.md |
 
 ### subscription-sign.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/sign | generated key `subscriptions/<id>/signature_<ts>.png` already in bucket | `service/subscription_sign.go:163`, `ErrSubscriptionSignNotPorted` | C | The timestamp has microsecond precision (`:107-113`), and Django uses the same scheme (`subscriptions_models.py` `set_signature_from_base64`). A collision needs two uploads for one subscription in the same microsecond, or a hand-placed object. UI callers: `Members/modals/SignatureModal.svelte:13`, `components/signature/DocumentSignatureModal.svelte:19` |
+| POST subscription/sign | generated key `subscriptions/<id>/signature_<ts>.png` already in bucket | `service/subscription_sign.go:163`, `ErrSubscriptionSignNotPorted` | C (kept: `get_available_name` appends 7 random characters, so the stored name has no fixed value) | The timestamp has microsecond precision (`:107-113`), and Django uses the same scheme (`subscriptions_models.py` `set_signature_from_base64`). A collision needs two uploads for one subscription in the same microsecond, or a hand-placed object. UI callers: `Members/modals/SignatureModal.svelte:13`, `components/signature/DocumentSignatureModal.svelte:19` |
 
 ### subscription-lifecycle.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1264,7 +1264,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-approve.md
 | route | refusal condition | Go site | class | notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/approve | none | — | — | Doc: nothing refused |
+| POST subscription/<uid>/approve | none | — | ported | Nothing is refused (doc: nothing refused). |
 
 ### subscription-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1275,8 +1275,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) (both ported in v2-documents) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
 | same | course-subscription membership payments with an instructor or an invoice | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
 | GET list / list/all / info / calendar | association-scoped athlete session (athlete impersonation with association scope) | `service/subscription_reads.go` (`sessionVisible`) | **ported** (famvis) | Reached when staff impersonate an athlete and open the athlete pages (`SubscriptionList.svelte:40`, `EditSubscription.svelte:23`, `Calendar.svelte:92`). Not reached in normal athlete or owner use |
-| GET subscription/list | orderings compiled with rows / relation paths / transforms / `?` | `:166` (lazy), `repository/subscription_reads.go:252` | B | UI sort fields are `associate`, `age`, `creation_date`, `status_flag` (`MembersList.svelte:191-356`), all handled (`service/subscription_reads.go:525-539`), plus `sort_lastname_*` flags. legacy: no |
-| GET subscription/list | search terms with chars ≥ U+0250 or U+0130 | `:141` | B | Exotic Unicode (Greek, Cyrillic, CJK, Turkish dotted I). legacy: no. medium |
+| GET subscription/list | orderings compiled with rows / relation paths / transforms / `?` | `:166` (lazy), `repository/subscription_reads.go:252` | B (the `_has_future_renewal` annotation is ported in t2subsa; `?` kept: random order, no fixed answer; relation paths, reverse accessors and transforms kept: the join repeats rows per related row and orders ties as the Postgres plan returns them, as for personas) | UI sort fields are `associate`, `age`, `creation_date`, `status_flag` (`MembersList.svelte:191-356`), all handled (`service/subscription_reads.go:525-539`), plus `sort_lastname_*` flags. legacy: no |
+| GET subscription/list | search terms with chars ≥ U+0250 or U+0130 | `:141` | ported | Ported earlier through the shared search (`dto.PythonLower`, personas-reads); t2subsa adds a Greek and dotted-I case. |
 
 ### subscription-medical.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1287,7 +1287,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-tags.md
 | route | refusal condition | Go site | class | notes |
 |---|---|---|---|---|
-| tags routes | none | — | — | Doc: "nothing is refused" |
+| tags routes | none | — | ported | Nothing is refused (doc: "nothing is refused"). |
 
 ### subscription-renew.md
 | route | refusal condition | Go site | class | evidence / notes |
