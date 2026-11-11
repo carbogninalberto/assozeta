@@ -42,12 +42,24 @@ func (t *medicalAppointmentAddTransaction) InsertAppointment(ctx context.Context
 	audit domain.LoginAuditContext, at time.Time) error {
 	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_medicalappointments
 (medical_appointments_id,subscription_id,region,document_id,date,notes,sport,meta,address,creation_date)
-VALUES($1,$2,$3,NULL,$4::date,$5,$6,$7::jsonb,$8,$9)`, row.ID, row.Subscription, row.Region, row.Date, row.Notes, row.Sport, row.Meta,
-		row.Address, row.CreationDate); err != nil {
+VALUES($1,$2,$3,$10,$4::date,$5,$6,$7::jsonb,$8,$9)`, row.ID, row.Subscription, row.Region, row.Date, row.Notes, row.Sport, row.Meta,
+		row.Address, row.CreationDate, row.Document); err != nil {
 		return err
 	}
 	path := "subscription.sport_association"
 	return appendModelAudit(ctx, t.tx, modelAuditEntry{Model: "medicalappointments", Key: row.ID,
 		Representation: "MedicalAppointments object (" + row.ID + ")", Action: 0, Changes: row.Changes, Context: audit,
 		AssociationID: &association, ResolutionPath: &path, At: at})
+}
+
+func (t *medicalAppointmentAddTransaction) AppointmentIDTaken(ctx context.Context, id string) (bool, error) {
+	var found bool
+	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_medicalappointments WHERE medical_appointments_id=$1)`, id)
+	return found, err
+}
+
+func (t *medicalAppointmentAddTransaction) DocumentExists(ctx context.Context, id string) (bool, error) {
+	var found bool
+	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM docmanager_document WHERE document_id=$1)`, id)
+	return found, err
 }

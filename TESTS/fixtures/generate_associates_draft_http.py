@@ -252,7 +252,9 @@ for label, associate_born, tutor, valid in (
         ('year-only-adult-tutor-not-read', '1980', MINOR_TUTOR, True),
         ('minor-month-name-minor-tutor-invalid', '2015-06-01', {'born_date': 'June 1, 2012'}, False),
         ('minor-dashed-adult-tutor', '2015-06-01', {'born_date': '01-06-1980'}, True),
-        ('minor-unreadable-tutor-ignored', '1 June 2015', {'born_date': '1 giugno 1980'}, True)):
+        ('minor-unreadable-tutor-ignored', '1 June 2015', {'born_date': '1 giugno 1980'}, True),
+        # A tutor's year before 1000: strftime/strptime of the round trip fail and the exception is ignored.
+        ('minor-year-below-1000-tutor-ignored', '2015-06-01', {'born_date': '0500-01-01'}, True)):
     edit_data = {'associate': {**ADULT, 'born_date': associate_born}, 'associate_tutor': tutor, 'medical_certificate': {'medical_id': None}}
     edited(f'edit-{label}', 'owner', 'partial', {'edit_data': edit_data},
            {'data': {'edit_data': {**edit_data, 'medical_certificate': {'medical_id': '$new'}}}}, valid=valid,
@@ -283,7 +285,10 @@ for label, value in (('malformed-medical-id', {'associate': ADULT, 'medical_cert
                      ('day-first-overflow', {'associate': {**ADULT, 'born_date': '13/13/1980'}}),
                      ('italian-month-born-date', {'associate': {**ADULT, 'born_date': '3 marzo 1980'}}),
                      ('five-numbers-born-date', {'associate': {**ADULT, 'born_date': '1 2 3 4 5'}}),
-                     ('blank-born-date', {'associate': {**ADULT, 'born_date': ''}})):
+                     ('blank-born-date', {'associate': {**ADULT, 'born_date': ''}}),
+                     # strftime('%d/%m/%Y') does not pad a year before 1000, so strptime fails.
+                     ('year-below-1000-born-date', {'associate': {**ADULT, 'born_date': '0500-01-01'}}),
+                     ('year-999-born-date', {'associate': {**ADULT, 'born_date': '0999-12-31'}})):
     add(f'edit-{label}-server-error', 'owner', EDIT('complete'), 500, SERVER, body={'edit_data': value})
 add('edit-string-edit-data-server-error', 'owner', EDIT('complete'), 500, SERVER, body={'edit_data': 'x'})
 add('edit-list-body-server-error', 'owner', EDIT('complete'), 500, SERVER, body=[1])

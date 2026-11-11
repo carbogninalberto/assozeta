@@ -439,6 +439,21 @@ add('renew-membership-plan-required', 'renew', 'owner', 400, {'msg': 'Membership
 # Errors after create_subscription roll everything back (no task, no notification).
 add('renew-tags-none', 'renew', 'owner', 400, error("object of type 'NoneType' has no len()"), body=renewal(basic, tags=None))
 add('renew-tag-malformed', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"), body=renewal(basic, tags=['x']))
+add('renew-tags-text', 'renew', 'owner', 400, error("['“a” is not a valid UUID.']"), body=renewal(basic, tags='abc'))
+add('renew-tags-text-unicode', 'renew', 'owner', 400, error("['“è” is not a valid UUID.']"), body=renewal(basic, tags='èa'))
+add('renew-tags-float-item', 'renew', 'owner', 400, error("['“1.5” is not a valid UUID.']"),
+    body=renewal(basic, tags=[{'tag_id': 5}, {'tag_id': 1.5}]))
+add('renew-tags-bool-then-bad-item', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
+    body=renewal(basic, tags=[{'tag_id': True}, {'tag_id': 'x'}]))
+add('renew-tags-list-item', 'renew', 'owner', 400, error("['“[1, 2]” is not a valid UUID.']"), body=renewal(basic, tags=[{'tag_id': [1, 2]}]))
+add('renew-tags-negative-item', 'renew', 'owner', 400, error("['“-1” is not a valid UUID.']"), body=renewal(basic, tags=[{'tag_id': -1}]))
+add('renew-tags-first-text-then-number', 'renew', 'owner', 400, error("['“2.0” is not a valid UUID.']"),
+    body=renewal(basic, tags=[TAGS['tag_a']['id'], 7, 2.0]))
+# data['user']['email'] as a list or a dict is searched as its text: no account, the renewal goes on (to the tags error).
+add('renew-user-email-list', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
+    body=renewal(basic, user={'email': ['a@example.test']}, tags=['x']))
+add('renew-user-email-dict', 'renew', 'owner', 400, error("['“x” is not a valid UUID.']"),
+    body=renewal(basic, user={'email': {'a': 1}}, tags=['x']))
 add('renew-tag-without-id', 'renew', 'owner', 400, error("'tag_id'"), body=renewal(basic, tags=[{'id': TAGS['tag_a']['id']}]))
 add('renew-courses-none', 'renew', 'owner', 400, error("object of type 'NoneType' has no len()"), body=renewal(basic, courses=None))
 

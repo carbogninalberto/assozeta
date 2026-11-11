@@ -161,6 +161,21 @@ func personDateYearFirst(text string) bool {
 
 // DateutilText is dateutil.parser.parse(text, dayfirst=dayFirst).date() at now.
 func DateutilText(text string, dayFirst bool, now time.Time) (date time.Time, result DateutilResult, message string) {
+	return dateutilText(text, dayFirst, now, false)
+}
+
+// PersonDateAnyYear is PersonDate for callers that only compare the date (the
+// draft's age check): years before 1000 are ordinary dates there.
+func PersonDateAnyYear(value any, now time.Time) (time.Time, DateutilResult) {
+	text, ok := value.(string)
+	if !ok {
+		return time.Time{}, DateutilFailed
+	}
+	date, result, _ := dateutilText(text, !personDateYearFirst(text), now, true)
+	return date, result
+}
+
+func dateutilText(text string, dayFirst bool, now time.Time, anyYear bool) (date time.Time, result DateutilResult, message string) {
 	parse := pydateutil.Parse
 	if dayFirst {
 		parse = pydateutil.ParseDayFirst
@@ -173,7 +188,7 @@ func DateutilText(text string, dayFirst bool, now time.Time) (date time.Time, re
 		}
 		return time.Time{}, DateutilUnsupported, ""
 	}
-	if parsed.Year < 1000 {
+	if parsed.Year < 1000 && !anyYear {
 		return time.Time{}, DateutilUnsupported, ""
 	}
 	return time.Date(parsed.Year, time.Month(parsed.Month), parsed.Day, 0, 0, 0, 0, time.UTC), DateutilParsed, ""
