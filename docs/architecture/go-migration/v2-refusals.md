@@ -681,7 +681,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### chat-test.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| any unsafe method chat/test/ | CSRF failure (Django's localized `csrf_403.html`) | handler/chat_page.go:57 (`RefuseCSRF`, wired `cmd/server/main.go:798`) | B | Route not called by UI. Cost: medium (localized CSRF page). Ported in t3plat: 403 `csrf_failure` page (DEBUG off) in the request language, in its three forms (no Referer, no CSRF cookie, other); generated catalog `handler/csrf_failure_catalog.go` from `TESTS/adapters/django/csrf_failure_pages.py`; cases `csrf-*` (the no-Referer form is covered by the Go unit path only). |
+| any unsafe method chat/test/ | CSRF failure (Django's localized `csrf_403.html`) | handler/chat_page.go:57 (`RefuseCSRF`, wired `cmd/server/main.go:798`) | B | Route not called by UI. Cost: medium (localized CSRF page). Ported in t3plat: 403 `csrf_failure` page (DEBUG off) in the request language, in its three forms (no Referer, no CSRF cookie, other); generated catalog `handler/csrf_failure_catalog.go` from `TESTS/adapters/django/csrf_failure_pages.py`; cases `csrf-*` (the HTTPS no-Referer form is implemented but not authored: Caddy sets X-Forwarded-Proto). |
 | GET chat/test/ | session hash mismatch flush | shared resolver | C | Ported in the shared resolver; only unauthored, not refused. |
 
 ### communications-send-email.md
