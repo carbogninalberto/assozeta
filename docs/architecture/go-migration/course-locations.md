@@ -31,3 +31,5 @@ Evidence: `TESTS/fixtures/course_location_writes_http.json` (47 cases). RED: Dja
 Document uploads (API v2, 51 cases): the runner owns a private MinIO (`service_context`) and checks the new Documents, their
 links and the stored objects (django-storages' own key, exact bytes, type, encoding and cache header). RED `v2c-red`
 (Django 51/51, Go refused), GREEN `v2c-green` on four transports, mutation `v2c-mutation-upload` CAUGHT.
+
+tailcourses: `PATCH course/locations/<pk>/update` with a new `course_location_id` inserts a copy under the new key and leaves the path's row (auditlog: the pre-save update indexed from its changes, then the create). Cases `update-primary-key-*` (54 cases; the taken and malformed keys are 400). RED: documented refusal. GREEN CI `tailcourses-2`. Mutation `tc-mut4` (pre-save entry indexed directly) CAUGHT. Indexed form keys `documents_data[n]` stay refused.

@@ -115,3 +115,5 @@ Enrolment owner checks (113 cases; fixture regenerated from Django):
   `make-payment-other-association-course`; course-overview add without the athlete check (`secaw-mutation-add`) fails
   `overview-add-athlete-other-subscription`.
 - `router-course-subscriptions-create` and `course-subscriptions` stay green natively.
+
+tailcourses: the same raw `X-Group-Id` handling on `course-subscriptions/add` (events: created only), overview add (payment and installment saved twice) and make-payment (the response renders the in-memory payment, so its `group` is the header as sent). Cases `*-raw-group` (117 cases). RED: documented refusal. GREEN CI `tailcourses-2`. Mutation `tc-mut2` (response group left canonical) CAUGHT.

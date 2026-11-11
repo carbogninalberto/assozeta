@@ -211,3 +211,5 @@ Go: `planEvents` uses `dto.PythonIterate`; `courseSubscriptionExportLessons` wri
 Evidence: 150 cases. RED: documented refusals (v2-refusals.md, course-subscriptions rows); `sweep-restcourses-red-r1` is the previous Go tree against the new cases. GREEN `sweep-restcourses-green-r2` on
 native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `restcourses-mutation-r1` (an object or text read as an
 empty selection) CAUGHT.
+
+tailcourses: the events edit under a non-canonical `X-Group-Id` audits the created payment and installment with the header as sent (`GroupNoResave`: the serializer only creates them). Case `update-events-raw-group` (151 cases). GREEN CI `tailcourses-2`. Mutation `tc-mut3` (raw spelling dropped) CAUGHT.

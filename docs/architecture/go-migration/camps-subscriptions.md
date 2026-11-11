@@ -74,3 +74,5 @@ API v2 (v2-misc): list rows whose period payment has an invoice (a receipt gener
 render PaymentSerializer's nested invoice and instructor. The fixture seeds both on a listed paid payment; 111 cases. RED
 `v2misc-red-r3`: Django 111/111, Go 500. GREEN `v2misc-green-r1`: 111/111 on the four transports. Mutation `v2misc-mutation-r1`
 (the nested instructor dropped) fails `list-owner` on Go.
+
+tailcourses: the generated payment's INSERT refusals answer the driver's text: `numeric field overflow` (amount past numeric(9,2)) and `value too long for type character varying(5120)` (notes); the add is atomic so nothing stays. A malformed `X-Group-Id` raises the UUID field error. Cases `add-amount-overflow-rolls-back`, `add-notes-too-long-rolls-back`, `add-malformed-group-payment` (114 cases). Still refused: negative amounts (the check-constraint message dumps the new row) and a group that vanishes mid-request. GREEN CI `tailcourses-2`. Mutation `tc-mut5` (overflow text changed) CAUGHT.
