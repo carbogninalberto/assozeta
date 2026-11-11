@@ -462,11 +462,11 @@ def created(model, key, event, refs, effect, source, ids, folders, archive_dates
                 'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']}
     if model == 'SportAssociationDocumentsArchive':
         i = int([name for name, value in refs.items() if value == key and '.' not in name][0][8:])
-        spec = effect['archives'][i]
+        spec = effect['archives'][i] if i < len(effect['archives']) else None
         doc = event['changes']['document'][1]
         contract.require(doc in moments and archive_dates[key][1] >= moments[doc], 'audit.archive-document')
         folder = 'None'
-        if spec['folder']:
+        if spec is not None and spec['folder']:
             folder = str(folders[spec['folder']])
         return {'sport_association_documents_archive_id': ['None', key], 'sport_association': ['None', ids['own_association']],
                 'document': ['None', doc], 'date': ['None', archive_dates[key][0]], 'folder': ['None', folder]}
