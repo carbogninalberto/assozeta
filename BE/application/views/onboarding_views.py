@@ -18,6 +18,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+ONBOARDING_UPDATE_ERROR_MESSAGE = "Unable to update the onboarding data."
+
 
 def _get_matching_fresh_instance_config(user):
     sport_association = user.sportassociation
@@ -213,4 +215,4 @@ def onboarding_update(request):
             'user_id': str(request.user.user_id),
             'error': str(e)
         }, exc_info=True)
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": ONBOARDING_UPDATE_ERROR_MESSAGE}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

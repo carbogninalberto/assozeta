@@ -60,13 +60,20 @@ func iexact(column string, position int) string {
 }
 
 func (t *subscriptionCreateTransaction) Existing(ctx context.Context, association string, first, last, tax *string,
-	start, end domain.CalendarDate) (*domain.SubscriptionCreateExisting, error) {
+	start, end domain.CalendarDate, custom *string) (*domain.SubscriptionCreateExisting, error) {
+	var pattern *string
+	if custom != nil {
+		// custom_data__icontains: UPPER(custom_data::text) LIKE UPPER('%value%') with the LIKE metacharacters escaped.
+		escaped := paymentReadsContains(*custom)
+		pattern = &escaped
+	}
 	var row domain.SubscriptionCreateExisting
 	err := t.tx.GetContext(ctx, &row, `SELECT s.subscription_id, s.start_date, s.end_date, s.associate_id, a.tax_code
  FROM application_subscription s INNER JOIN application_associate a ON a.associate_id=s.associate_id
  WHERE s.sport_association_id=$1 AND `+iexact("a.first_name", 2)+` AND `+iexact("a.last_name", 3)+` AND `+iexact("a.tax_code", 4)+`
- AND s.end_date >= $5::date AND s.start_date <= $6::date AND NOT s.archived ORDER BY s.subscription_id LIMIT 1`,
-		association, first, last, tax, createDateText(start), createDateText(end))
+ AND s.end_date >= $5::date AND s.start_date <= $6::date AND NOT s.archived
+ AND ($7::text IS NULL OR UPPER(s.custom_data::text) LIKE UPPER($7::text)) ORDER BY s.subscription_id LIMIT 1`,
+		association, first, last, tax, createDateText(start), createDateText(end), pattern)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

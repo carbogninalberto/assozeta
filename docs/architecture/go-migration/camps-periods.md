@@ -88,3 +88,7 @@ subscription period carries a soft-deleted unpaid payment (two saves, two full e
 decimal) fails `services-update-deleted-payment` on Go (`audit.changes`).
 
 tailcourses: in the service update walk a recomputed amount past numeric(9,2) (or notes past 5120 characters) audits the failing payment save and then answers the driver's text as the 500; earlier saves stay. Case `services-update-amount-overflow` (117 cases). GREEN CI `tailcourses-2`. Mutation `tc-mut6` (overflow text changed) CAUGHT.
+
+## Round t3courses
+
+Multipart bodies with file parts and the repeated form key for the services list (`QueryDict.getlist`, kept by the form parsers as `RequestField.All`). 136 cases GREEN on four transports (run 43085954222). Mutation (last value instead of the list) CAUGHT.

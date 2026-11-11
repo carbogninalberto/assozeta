@@ -73,6 +73,10 @@ COURSES = {
     'abroad2': {'id': nid(), 'association': FOREIGN, 'title': 'Corso Estero 2', 'group': None, 'deleted': False, 'calendar': None},
     'broken': {'id': nid(), 'association': GONE_ASSOCIATION, 'title': 'Corso Rotto', 'group': None, 'deleted': False, 'calendar': None},
 }
+# Courses of the closing section: they have no registry until a case creates one.
+for _n, _label in enumerate(('omega', 'sigma', 'tau', 'upsilon', 'rho', 'rho2', 'phi', 'chi', 'psi', 'kappa', 'lambda'), 1):
+    COURSES[_label] = {'id': eid('f9', _n), 'association': OWN, 'title': f'Corso {_label.title()}', 'group': None, 'deleted': False,
+                       'calendar': None}
 C = {label: row['id'] for label, row in COURSES.items()}
 EA = {n: eid('a0', n) for n in range(1, 8)}
 EB = {1: eid('b0', 1), 2: 'B0000000-0000-4000-8000-000000000002'}
@@ -850,6 +854,176 @@ add('events-lesson-linked-to-other-spelling', 'owner', EVENTS + f'?event_id={EB[
     with_lesson(listed('beta', B2, OWN_COLORS['beta'], '$new:day-b2'), lesson('$new:day-b2', 'beta'))]))
 # Registry event starts are read with strptime('%Y-%m-%dT%H:%M:%S.%fZ'): an offset start raises.
 add('events-lesson-offset-start-server-error', 'owner', EVENTS + f'?event_id={EC[1]}&get_lesson=true', 500, SERVER)
+
+# ===========================================================================
+# 9. event ids, properties and starts of other JSON types; stored events of other
+#    types; instants outside years 1..9999
+# ===========================================================================
+
+def stored(label, status, events):
+    ref = f'$new:registry-{label}'
+    STATE['registries'][ref] = {'course': C[label], 'status': status, 'events': copy.deepcopy(events), 'creation_date': '$any'}
+    return ref
+
+
+def uuid_of(number):
+    return f'00000000-0000-0000-0000-{number:012d}'
+
+
+# An integer event id is read as uuid.UUID(int=...): the registry keeps the number, the day the UUID.
+I5 = event(5, 'Intero', '2027-01-05T10:00:00.000Z', '2027-01-05T11:00:00.000Z', props={})
+OMEGA = stored('omega', DRAFT, [I5])
+add('update-integer-event-id-creates-draft', 'owner', UPD('omega'), 200, UPDATED, method='POST', body={'events': [I5], 'status': DRAFT},
+    audit=[registry_create(OMEGA, 'owner', '1')])
+STATE['registries'][OMEGA].update(status=PUBLISHED)
+STATE['days']['$new:day-omega-5'] = day(OMEGA, 'Intero', '2027-01-05T10:00:00Z', uuid_of(5))
+add('update-integer-event-id-publishes-draft', 'owner', UPD('omega'), 200, UPDATED, method='POST', body={'events': [I5], 'status': PUBLISHED},
+    audit=[registry_update(OMEGA, 'owner', {'status': ['1', '2']}), day_create('$new:day-omega-5', 'owner', '5'),
+           day_update('$new:day-omega-5', 'owner', {'associated_event': [uuid_of(5), '5']})])
+# Equal ids match across types (True == 1): the second event rewrites the first, a new integer id is appended.
+I1 = event(1, 'Uno', '2027-01-06T10:00:00.000Z', '2027-01-06T11:00:00.000Z', props={})
+I6 = event(6, 'Sei', '2027-01-07T10:00:00.000Z', '2027-01-07T11:00:00.000Z', props={})
+I5B = event(5, 'Intero bis', '2027-01-05T10:00:00.000Z', '2027-01-05T11:00:00.000Z', props={})
+old_events = copy.deepcopy(STATE['registries'][OMEGA]['events'])
+STATE['registries'][OMEGA]['events'] = [{**I5, 'title': 'Intero bis'}, I1, I6]
+STATE['days']['$new:day-omega-5']['title'] = 'Intero bis'
+STATE['days']['$new:day-omega-1'] = day(OMEGA, 'Uno', '2027-01-06T10:00:00Z', uuid_of(1))
+STATE['days']['$new:day-omega-6'] = day(OMEGA, 'Sei', '2027-01-07T10:00:00Z', uuid_of(6))
+add('update-integer-event-ids-merge', 'owner', UPD('omega'), 200, UPDATED, method='POST', body={'events': [I6, I1, I5B], 'status': PUBLISHED},
+    audit=[day_create('$new:day-omega-6', 'owner', '6'), day_update('$new:day-omega-6', 'owner', {'associated_event': [uuid_of(6), '6']}),
+           day_create('$new:day-omega-1', 'owner', '1'), day_update('$new:day-omega-1', 'owner', {'associated_event': [uuid_of(1), '1']}),
+           day_update('$new:day-omega-5', 'owner', {'title': ['Intero', 'Intero bis']}),
+           registry_update(OMEGA, 'owner', {'events': [dumps(old_events), dumps(STATE['registries'][OMEGA]['events'])]})])
+TRUE_EVENT = event(True, 'Vero', '2027-01-06T10:00:00.000Z', '2027-01-06T11:00:00.000Z', props={})
+old_events = copy.deepcopy(STATE['registries'][OMEGA]['events'])
+STATE['registries'][OMEGA]['events'] = [STATE['registries'][OMEGA]['events'][0], {**I1, 'title': 'Vero'}, STATE['registries'][OMEGA]['events'][2]]
+STATE['days']['$new:day-omega-1']['title'] = 'Vero'
+add('update-boolean-event-id-matches-integer', 'owner', UPD('omega'), 200, UPDATED, method='POST',
+    body={'events': [TRUE_EVENT], 'status': PUBLISHED},
+    audit=[day_update('$new:day-omega-1', 'owner', {'title': ['Uno', 'Vero']}),
+           registry_update(OMEGA, 'owner', {'events': [dumps(old_events), dumps(STATE['registries'][OMEGA]['events'])]})])
+for label, value in (('past-128-bits', 2 ** 128), ('negative', -1), ('float', 1.5)):
+    add(f'update-event-id-{label}', 'owner', UPD('omega'), 500, SERVER, method='POST',
+        body={'events': [event(value, 'Errato', '2027-02-01T10:00:00.000Z', None, props={})], 'status': PUBLISHED})
+
+# Reminders with an integer event id: the reminder keeps the UUID, its second save sees the raw number.
+R7 = event(7, 'Promemoria', '2027-03-01T10:00:00.000Z', '2027-03-01T11:00:00.000Z',
+           props={'reminder_enabled': True, 'reminder_amount': 1, 'reminder_unit': 'hours'})
+SIGMA = stored('sigma', DRAFT, [R7])
+STATE['reminders']['$new:reminder-r7'] = reminder(uuid_of(7), 'Promemoria', '', None, '1 ore', '2027-03-01T09:00:00Z')
+add('update-integer-event-id-creates-reminder', 'owner', UPD('sigma'), 200, UPDATED, method='POST', body={'events': [R7], 'status': DRAFT},
+    audit=[{**reminder_create('$new:reminder-r7', 'owner'), 'changes': {**reminder_create('$new:reminder-r7', 'owner')['changes'],
+                                                                         'event_id': ['None', '7']}},
+           reminder_update('$new:reminder-r7', 'owner', {'event_id': [uuid_of(7), '7']}), registry_create(SIGMA, 'owner', '1')])
+R7B = event(7, 'Promemoria', '2027-03-01T10:00:00.000Z', '2027-03-01T11:00:00.000Z',
+            props={'reminder_enabled': True, 'reminder_amount': 3, 'reminder_unit': 'hours'})
+STATE['reminders']['$new:reminder-r7'].update(event_reminder_text='3 ore', send_at='2027-03-01T07:00:00Z')
+STATE['registries'][SIGMA]['events'] = [R7B]
+add('update-integer-event-id-updates-reminder', 'owner', UPD('sigma'), 200, UPDATED, method='POST', body={'events': [R7B], 'status': DRAFT},
+    audit=[reminder_update('$new:reminder-r7', 'owner', {'event_reminder_text': ['1 ore', '3 ore'],
+                                                         'send_at': ['2027-03-01 09:00:00', '2027-03-01 07:00:00']}),
+           registry_update(SIGMA, 'owner', {'events': [dumps([R7]), dumps([R7B])]})])
+R7C = {**R7B, 'extendedProps': {'reminder_enabled': False}}
+STATE['registries'][SIGMA]['events'] = [R7C]
+audit = [reminder_delete('$new:reminder-r7', 'owner'), registry_update(SIGMA, 'owner', {'events': [dumps([R7B]), dumps([R7C])]})]
+add('update-integer-event-id-disables-reminder', 'owner', UPD('sigma'), 200, UPDATED, method='POST',
+    body={'events': [R7C], 'status': DRAFT}, audit=audit)
+# Extended properties that are a list or a text: the membership test reads them as a container.
+NID = lambda n: eid('f8', n)
+TAU_A = event(NID(1), 'Proprieta lista', '2027-04-01T10:00:00.000Z', '2027-04-01T11:00:00.000Z', props=['x'])
+TAU = stored('tau', DRAFT, [TAU_A])
+add('update-stores-list-props', 'owner', UPD('tau'), 200, UPDATED, method='POST', body={'events': [TAU_A], 'status': DRAFT},
+    audit=[registry_create(TAU, 'owner', '1')])
+add('calendar-list-props-server-error', 'anonymous', CAL('tau'), 500, SERVER)
+add('update-list-props-naming-reminder', 'owner', UPD('tau'), 500, SERVER, method='POST',
+    body={'events': [{**TAU_A, 'extendedProps': ['reminder_enabled']}], 'status': DRAFT})
+add('update-text-props-naming-reminder', 'owner', UPD('tau'), 500, SERVER, method='POST',
+    body={'events': [{**TAU_A, 'extendedProps': 'reminder_enabled'}], 'status': DRAFT})
+TAU_B = {**TAU_A, 'extendedProps': 'testo'}
+STATE['registries'][TAU]['events'] = [TAU_B]
+add('update-stores-text-props', 'owner', UPD('tau'), 200, UPDATED, method='POST', body={'events': [TAU_B], 'status': DRAFT},
+    audit=[registry_update(TAU, 'owner', {'events': [dumps([TAU_A]), dumps([TAU_B])]})])
+add('calendar-text-props-server-error', 'anonymous', CAL('tau'), 500, SERVER)
+
+# A start that is not text: stored as sent; a day cannot be made from it.
+UPS_A = event(NID(2), 'Inizio numero', 5, None, props={})
+UPSILON = stored('upsilon', DRAFT, [UPS_A])
+add('update-stores-number-start', 'owner', UPD('upsilon'), 200, UPDATED, method='POST', body={'events': [UPS_A], 'status': DRAFT},
+    audit=[registry_create(UPSILON, 'owner', '1')])
+STATE['registries'][UPSILON]['status'] = PUBLISHED
+add('update-number-start-publishes-without-day', 'owner', UPD('upsilon'), 500, SERVER, method='POST', body={'events': [UPS_A], 'status': PUBLISHED},
+    audit=[registry_update(UPSILON, 'owner', {'status': ['1', '2']})])
+
+# Starts that are lists sort like lists; a list among texts cannot be compared.
+RHO_A = event(NID(3), 'Lista uno', [1], None, props={})
+RHO_B = event(NID(4), 'Lista due', [0, 2], None, props={})
+RHO = stored('rho', PUBLISHED, [RHO_A, RHO_B])
+add('update-list-starts-create-registry-only', 'owner', UPD('rho'), 500, SERVER, method='POST', body={'events': [RHO_A, RHO_B], 'status': PUBLISHED},
+    audit=[registry_create(RHO, 'owner', '2')])
+STATE['registries'][RHO]['events'] = [RHO_B, RHO_A]
+add('update-list-starts-sorted', 'owner', UPD('rho'), 200, UPDATED, method='POST', body={'events': [], 'status': PUBLISHED},
+    audit=[registry_update(RHO, 'owner', {'events': [dumps([RHO_A, RHO_B]), dumps([RHO_B, RHO_A])]})])
+add('update-list-starts-sorted-again', 'owner', UPD('rho'), 200, UPDATED, method='POST', body={'events': [], 'status': PUBLISHED})
+RHO2_A = event(NID(5), 'Testo e lista', '2027-04-02T10:00:00.000Z', None, props={})
+RHO2_B = event(NID(6), 'Lista', [1], None, props={})
+RHO2 = stored('rho2', PUBLISHED, [RHO2_A, RHO2_B])
+STATE['days']['$new:day-rho2'] = day(RHO2, 'Testo e lista', '2027-04-02T10:00:00Z', RHO2_A['event_id'])
+add('update-mixed-starts-create-first-day', 'owner', UPD('rho2'), 500, SERVER, method='POST', body={'events': [RHO2_A, RHO2_B], 'status': PUBLISHED},
+    audit=[registry_create(RHO2, 'owner', '2'), day_create('$new:day-rho2', 'owner', RHO2_A['event_id'])])
+add('update-mixed-starts-cannot-sort', 'owner', UPD('rho2'), 500, SERVER, method='POST', body={'events': [], 'status': PUBLISHED})
+
+# Stored events that are an empty object or text: they read as no events.
+KAPPA_A = event(NID(7), 'Dopo oggetto vuoto', '2027-04-03T10:00:00.000Z', '2027-04-03T11:00:00.000Z', props={})
+KAPPA = stored('kappa', DRAFT, {})
+add('update-creates-registry-with-empty-object', 'owner', UPD('kappa'), 200, UPDATED, method='POST', body={'events': {}, 'status': DRAFT},
+    audit=[registry_create(KAPPA, 'owner', '1')])
+STATE['registries'][KAPPA] = {**STATE['registries'][KAPPA], 'status': PUBLISHED}
+add('update-publishes-empty-object', 'owner', UPD('kappa'), 200, UPDATED, method='POST', body={'events': {}, 'status': PUBLISHED},
+    audit=[registry_update(KAPPA, 'owner', {'status': ['1', '2']})])
+add('update-event-cannot-join-empty-object', 'owner', UPD('kappa'), 500, SERVER, method='POST', body={'events': [KAPPA_A], 'status': PUBLISHED})
+STATE['registries'][KAPPA]['events'] = []
+add('update-empty-object-becomes-list', 'owner', UPD('kappa'), 200, UPDATED, method='POST', body={'events': [], 'status': PUBLISHED},
+    audit=[registry_update(KAPPA, 'owner', {'events': ['{}', '[]']})])
+LAMBDA = stored('lambda', DRAFT, '')
+add('update-creates-registry-with-empty-text', 'owner', UPD('lambda'), 200, UPDATED, method='POST', body={'events': '', 'status': DRAFT},
+    audit=[registry_create(LAMBDA, 'owner', '1')])
+STATE['registries'][LAMBDA] = {**STATE['registries'][LAMBDA], 'status': PUBLISHED}
+add('update-publishes-empty-text', 'owner', UPD('lambda'), 200, UPDATED, method='POST', body={'events': '', 'status': PUBLISHED},
+    audit=[registry_update(LAMBDA, 'owner', {'status': ['1', '2']})])
+audit = [registry_delete(LAMBDA, 'owner', STATE['registries'].pop(LAMBDA), [OWN, 'actor.sport_association'])]
+LAMBDA2 = '$new:registry-lambda-reset'
+STATE['registries'][LAMBDA2] = {'course': C['lambda'], 'status': DRAFT, 'events': [], 'creation_date': '$any'}
+audit.append(registry_create(LAMBDA2, 'owner', '1'))
+add('delete-registry-with-empty-text', 'owner', UPD('lambda'), 200, UPDATED, method='DELETE', body={}, audit=audit)
+
+# Instants outside years 1..9999. An aware start keeps its offset until it is converted: the reminder row is
+# stored, then auditlog cannot convert it and the request fails. The row cannot be read back by the driver.
+FAR = '0001-01-01T00:00:00+05:00'
+FAR_TEXT = '0001-12-31 19:00:00+00 BC'
+PHI_A = event(NID(8), 'Lontano', FAR, None, props={'reminder_enabled': True, 'reminder_amount': 0, 'reminder_unit': 'minutes'})
+add('update-reminder-before-year-one-overflows', 'owner', UPD('phi'), 500, SERVER, method='POST',
+    body={'events': [event(NID(9), 'Troppo presto', '0001-01-01T00:30:00+00:00', None,
+                           props={'reminder_enabled': True, 'reminder_amount': 1, 'reminder_unit': 'hours'})], 'status': DRAFT})
+STATE['reminders']['$new:reminder-phi'] = reminder(PHI_A['event_id'], 'Lontano', '', None, '0 minuti', FAR_TEXT)
+add('update-reminder-outside-year-range-is-stored', 'owner', UPD('phi'), 500, SERVER, method='POST', body={'events': [PHI_A], 'status': DRAFT},
+    audit=[])
+add('update-reminder-outside-year-range-unreadable', 'owner', UPD('phi'), 500, SERVER, method='POST', body={'events': [PHI_A], 'status': DRAFT})
+
+CHI_A = event(NID(10), 'Giorno lontano', FAR, None, props={})
+CHI = stored('chi', PUBLISHED, [CHI_A])
+STATE['days']['$new:day-chi'] = day(CHI, 'Giorno lontano', FAR_TEXT, CHI_A['event_id'])
+add('update-day-outside-year-range-is-stored', 'owner', UPD('chi'), 500, SERVER, method='POST', body={'events': [CHI_A], 'status': PUBLISHED},
+    audit=[registry_create(CHI, 'owner', '2')])
+add('calendar-day-outside-year-range', 'anonymous', CAL('chi'), 200, course_calendar('chi', PUBLISHED, [CHI_A], sync=False))
+add('update-delete-day-outside-year-range-unreadable', 'owner', UPD('chi'), 500, SERVER, method='DELETE', body={'event_id': CHI_A['event_id']})
+
+PSI_A = event(NID(11), 'Giorno vicino', '2027-05-03T10:00:00.000Z', '2027-05-03T11:00:00.000Z', props={})
+PSI = stored('psi', PUBLISHED, [PSI_A])
+STATE['days']['$new:day-psi'] = day(PSI, 'Giorno vicino', '2027-05-03T10:00:00Z', PSI_A['event_id'])
+add('update-creates-published-near-day', 'owner', UPD('psi'), 200, UPDATED, method='POST', body={'events': [PSI_A], 'status': PUBLISHED},
+    audit=[registry_create(PSI, 'owner', '2'), day_create('$new:day-psi', 'owner', PSI_A['event_id'])])
+add('update-moves-day-outside-year-range', 'owner', UPD('psi'), 500, SERVER, method='POST',
+    body={'events': [{**PSI_A, 'start': FAR}], 'status': PUBLISHED})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Course calendar and full events calendar authored sequence with exact effects',

@@ -2382,6 +2382,166 @@
     "error": "Camp or retreat not found"
    },
    "effect": null
+  },
+  {
+   "name": "camps-core-add-multipart-with-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": "Campo con allegato",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "Campo con allegato",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Campo con allegato"
+       ],
+       "description": [
+        "None",
+        "Dal modulo"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nCampo con allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"description\"\r\n\r\nDal modulo\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-add-multipart-file-as-title",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"; filename=\"titolo.txt\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-add-multipart-file-as-id",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'camps_and_retreats_id': [ErrorDetail(string='Must be a valid UUID.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats_id\"; filename=\"id.bin\"\r\n\r\nx\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nOk\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-add-multipart-text-without-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "This QueryDict instance is immutable"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nSenza file\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+     "title": "Con allegato",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987006": {
+       "title": "Con allegato",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987006",
+      "action": 1,
+      "changes": {
+       "title": [
+        "None",
+        "Con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nCon allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"b.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-update-multipart-file-as-title",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"; filename=\"titolo.txt\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
   }
  ]
 }

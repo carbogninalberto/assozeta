@@ -3,6 +3,8 @@ Tests for Onboarding views - onboarding update endpoint.
 
 Ported from SaaS test_onboarding_views.py, adapted for self-host.
 """
+from unittest import mock
+
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -166,3 +168,31 @@ class OnboardingUpdateTests(BaseOnboardingTestCase):
         }
         response = self.client.patch('/onboarding/update', onboarding_data, format='json')
         self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_400_BAD_REQUEST])
+
+    def test_update_lead_data_save_error_answers_fixed_message(self):
+        """A failed save answers a fixed message, not the database error text."""
+        onboarding_data = {
+            'lead_data': {
+                'lead_sport_association_role': 'R' * 200,
+                'lead_sport_association_size': '10-50',
+                'lead_sport_market_channel': 'Google',
+            }
+        }
+        response = self.client.patch('/onboarding/update', onboarding_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(response.json(), {'error': 'Unable to update the onboarding data.'})
+
+    def test_update_membership_data_save_error_hides_detail(self):
+        """The error detail is logged server-side, not sent to the caller."""
+        onboarding_data = {
+            'membership_data': {
+                'membership_fee': 50,
+                'subscription_fee': 100,
+                'season': {'day': 1, 'month': 9},
+                'fiscal': {'day': 1, 'month': 1},
+            }
+        }
+        with mock.patch.object(User, 'save', side_effect=RuntimeError('detail: relation "x" violates constraint')):
+            response = self.client.patch('/onboarding/update', onboarding_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(response.json(), {'error': 'Unable to update the onboarding data.'})

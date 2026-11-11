@@ -1038,6 +1038,26 @@ UNCHANGED = {'kind': 'update', 'actor': 'owner', 'cs_changed': {}, 'cs_deleted':
              'payments_changed': {}, 'audit': []}
 add('update-events-object-key-invalid', 'owner', one('cs_ev2', 'update'), 400, NOT_A_DICT, method='PATCH', body={'events': {'rata': 1}})
 add('update-events-text-invalid', 'owner', one('cs_ev2', 'update'), 400, NOT_A_DICT, method='PATCH', body={'events': 'ab'})
+# HTML form input for the JSON fields: the value is JSON text (a file part's text is its name).
+FORM = 'application/x-www-form-urlencoded'
+JSON_INVALID = {'events': ['Value must be valid JSON.']}
+add('update-form-events-invalid-json', 'owner', one('cs_ev2', 'update'), 400, JSON_INVALID, method='PATCH', raw_body='events=%5B', content_type=FORM)
+add('update-form-multiple-quote-invalid-json', 'owner', one('cs_ev2', 'update'), 400, {'multiple_quote': ['Value must be valid JSON.'], 'events': ['Value must be valid JSON.']},
+    method='PATCH', raw_body='multiple_quote=nope&events=', content_type=FORM)
+add('update-form-events-empty-text-invalid', 'owner', one('cs_ev2', 'update'), 400, JSON_INVALID, method='PATCH', raw_body='events=', content_type=FORM)
+add('update-form-events-empty-list', 'owner', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH', raw_body='events=%5B%5D',
+    content_type=FORM, effect=copy.deepcopy(UNCHANGED))
+add('update-form-events-object-key-invalid', 'owner', one('cs_ev2', 'update'), 400, NOT_A_DICT, method='PATCH',
+    raw_body='events=%7B%22rata%22%3A+1%7D', content_type=FORM)
+QUOTE = {'title': 'Da modulo', 'amount': '7,50', 'dettagli': [1, {'a': None}]}
+effect = updated('owner', 'cs_ev2', {'multiple_quote': QUOTE}, {'multiple_quote': ['null', json.dumps(QUOTE, sort_keys=True)]},
+                 sent=('multiple_quote',))
+add('update-form-multiple-quote', 'owner', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH',
+    raw_body='multiple_quote=' + __import__('urllib.parse', fromlist=['quote']).quote(json.dumps(QUOTE)), content_type=FORM, effect=effect)
+BOUNDARY = 'testboundary4f2a'
+FILE_PART = (f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="multiple_quote"; filename="q.json"\r\n\r\n{{"a": 1}}\r\n--{BOUNDARY}--\r\n')
+add('update-multipart-multiple-quote-file-invalid-json', 'owner', one('cs_ev2', 'update'), 400, {'multiple_quote': ['Value must be valid JSON.']},
+    method='PATCH', raw_body=FILE_PART, content_type=f'multipart/form-data; boundary={BOUNDARY}')
 add('update-events-object-installment-key-left-out', 'owner', one('cs_ev2', 'update'), 200, item('cs_ev2'), method='PATCH',
     body={'events': {'old_course_subscription_installment_id': 1}}, effect=copy.deepcopy(UNCHANGED))
 add('update-events-object-with-installments-server-error', 'owner', one('cs_ev', 'update'), 500, SERVER, method='PATCH',

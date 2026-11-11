@@ -56,7 +56,7 @@ Inputs Go refuses (`ErrNotPorted`; the callers answer the 500 page before any wr
   Go counterpart.
 
 Ported in t2docs: xlsxwriter formulas (`=...`, `{=...}`, a plain formula with value 0 or a one-cell array formula, SINGLE typo of
-`_prepare_formula` included), rich-string text (`<r>...</r>` is written raw into the shared strings), `internal:` and `external:`
+`_prepare_formula` included), rich-string text (`<r>...</r>`: Django's export hands it over as one escaped run, `xlsx_text.py`, so the cell shows the text), `internal:` and `external:`
 links, URLs with `#` anchors (a `location` attribute and the `internal` hyperlink element with `display`), links in header cells
 (the header format), and in `get_excel_base64` bool columns (only bools become `Int64` 1/0, bools next to numbers take their kind,
 next to text they stay boolean cells). Duplicate column names were already handled. 14 golden cases added.

@@ -26,7 +26,8 @@ SOURCES = ('TESTS/fixtures/subscription_writes_http.json', 'TESTS/contracts/test
            'BE/application/signals.py', 'BE/application/utils/api_utils.py', 'BE/application/permissions_registry.py',
            'BE/core/settings.py') + harness.SOURCES
 ASSOCIATE, RELATION, FAMILY = 'application.Associate', 'application.AssociateTutorRelation', 'application.Family'
-MANAGED = (ASSOCIATE, RELATION, harness.AUDIT, harness.INDEX)
+MEMBERSHIP = 'application.SubscriptionMembership'
+MANAGED = (ASSOCIATE, RELATION, MEMBERSHIP, harness.AUDIT, harness.INDEX)
 SEEDED_AT = '2025-03-01T08:00:00Z'
 
 
@@ -35,7 +36,7 @@ def moment(text):
 
 
 def seed_rows(source, created):
-    from application.models import Associate, AssociateTutorRelation, Family
+    from application.models import Associate, AssociateTutorRelation, Family, SubscriptionMembership
     ids = source['ids']
 
     def insert(model, row):
@@ -53,6 +54,10 @@ def seed_rows(source, created):
         insert(AssociateTutorRelation, AssociateTutorRelation(
             id=row['id'], associate_id=source['associates'][row['associate']]['id'], tutor_id=source['associates'][row['tutor']]['id'],
             is_primary=row['primary']))
+    for row in source.get('memberships', {}).values():
+        insert(SubscriptionMembership, SubscriptionMembership(
+            subscription_membership_id=row['id'], sport_association_id=ids['own_association'],
+            associate_id=source['associates'][row['associate']]['id'], creation_date=moment(SEEDED_AT)))
 
 
 def associate_model():
@@ -60,7 +65,12 @@ def associate_model():
     return Associate
 
 
-fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(associate_model,))
+def membership_model():
+    from application.models import SubscriptionMembership
+    return SubscriptionMembership
+
+
+fixture_context = harness.fixture_context_for(contract, seed_rows, purge=(membership_model, associate_model))
 
 
 def captured(source):
@@ -139,6 +149,12 @@ def assert_effect(case, before, after, source, context):
     relation_changes = {relation_ids[label]: columns for label, columns in effect['relations_changed'].items()}
     kept = [{**flat(r), **relation_changes.get(flat(r)['id'], {})} for r in before[RELATION] if flat(r)['id'] not in gone_relations]
     contract.require([flat(r) for r in after[RELATION]] == kept, 'state.relations')
+
+    # SET_NULL references of a deleted associate: the column is cleared without audit entries.
+    detached = {source['memberships'][label]['id'] for label in effect.get('detached', [])}
+    expected_memberships = [{**flat(r), **({'associate_id': None} if flat(r)['subscription_membership_id'] in detached else {})}
+                            for r in before[MEMBERSHIP]]
+    contract.require([flat(r) for r in after[MEMBERSHIP]] == expected_memberships, 'state.memberships')
 
     entries, indexes = harness.audit_delta(contract, before, after)
     entries.sort(key=lambda row: int(row['id']))

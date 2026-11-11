@@ -37,23 +37,11 @@ func SubscriptionCreateDecimal(value float64) (string, bool) {
 	return rational.FloatString(2), true
 }
 
-var subscriptionCreateDate = regexp.MustCompile(`^(3[01]|[12][0-9]|0[1-9]|[1-9]| [1-9])/(1[0-2]|0[1-9]|[1-9])/([0-9]{4})$`)
-
-// SubscriptionCreateBornDate is DRF's DateField with DATE_INPUT_FORMATS
-// ['%d/%m/%Y'] for an ASCII string (Python's strptime).
+// SubscriptionCreateBornDate is DRF's DateField with DATE_INPUT_FORMATS ['%d/%m/%Y'] (Python's strptime, which reads the decimal
+// digits of other scripts where its pattern has \d).
 func SubscriptionCreateBornDate(text string) (time.Time, bool) {
-	match := subscriptionCreateDate.FindStringSubmatch(text)
-	if match == nil {
-		return time.Time{}, false
-	}
-	day, _ := strconv.Atoi(strings.TrimSpace(match[1]))
-	month, _ := strconv.Atoi(match[2])
-	year, _ := strconv.Atoi(match[3])
-	date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-	if year < 1 || date.Day() != day || int(date.Month()) != month {
-		return time.Time{}, false
-	}
-	return date, true
+	date, ok, err := ParseDMYDate(text)
+	return date, ok && err == nil
 }
 
 // SignatureRequest is SignatureRequestSerializer's validated data.

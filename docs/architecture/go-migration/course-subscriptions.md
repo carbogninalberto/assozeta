@@ -213,3 +213,7 @@ native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `restcourses-m
 empty selection) CAUGHT.
 
 tailcourses: the events edit under a non-canonical `X-Group-Id` audits the created payment and installment with the header as sent (`GroupNoResave`: the serializer only creates them). Case `update-events-raw-group` (151 cases). GREEN CI `tailcourses-2`. Mutation `tc-mut3` (raw spelling dropped) CAUGHT.
+
+## Round t3courses
+
+HTML-form JSON for `multiple_quote` and `events`. 158 cases GREEN natively. Mutation CAUGHT by `update-form-events-invalid-json`.

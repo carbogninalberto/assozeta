@@ -317,35 +317,63 @@ func PythonFloatRepr(value any) (string, bool) {
 
 var pythonASCIIInt = regexp.MustCompile(`^[ \t\n\r\v\f]*[+-]?\d+(?:_\d+)*[ \t\n\r\v\f]*$`)
 
-// PythonPositiveSmallInt is IntegerField.get_prep_value (int(value)) for the
-// values this port stores: JSON integers and ASCII integer strings within the
-// PositiveSmallIntegerField range. invalid reports a string int() rejects
-// (Django's "expected a number" ValueError); supported is false for every
-// other value, which callers refuse.
-func PythonPositiveSmallInt(value any) (number int64, invalid, supported bool) {
-	var text string
+// PythonSmallIntColumn is what saving a value in a PositiveSmallIntegerField
+// does: IntegerField.get_prep_value (int(value)) followed by the column's
+// 0..32767 range. ok is false when the save raises (a value int() rejects, a
+// float that is not finite, null, a container, or a number outside the range).
+func PythonSmallIntColumn(value any) (number int64, ok bool) {
+	var parsed int64
 	switch v := value.(type) {
-	case json.Number:
-		if strings.ContainsAny(string(v), ".eE") {
-			return 0, false, false
+	case bool:
+		if v {
+			parsed = 1
 		}
-		text = string(v)
+	case json.Number:
+		text := string(v)
+		if strings.ContainsAny(text, ".eE") {
+			f, err := strconv.ParseFloat(text, 64)
+			if err != nil || math.IsNaN(f) || math.IsInf(f, 0) || math.Trunc(f) < 0 || math.Trunc(f) > 32767 {
+				return 0, false
+			}
+			parsed = int64(math.Trunc(f))
+		} else {
+			n, err := strconv.ParseInt(text, 10, 64)
+			if err != nil {
+				return 0, false
+			}
+			parsed = n
+		}
 	case string:
+		// int(str): Unicode decimal digits and white space are read as ASCII ones.
+		var ascii strings.Builder
 		for _, r := range v {
-			if r > unicode.MaxASCII {
-				return 0, false, false
+			switch {
+			case PythonIsSpace(r):
+				ascii.WriteByte(' ')
+			case r > unicode.MaxASCII && unicode.IsDigit(r):
+				base := r
+				for unicode.IsDigit(base - 1) {
+					base--
+				}
+				ascii.WriteByte(byte('0' + (r-base)%10))
+			default:
+				ascii.WriteRune(r)
 			}
 		}
-		if !pythonASCIIInt.MatchString(v) {
-			return 0, true, true
+		text := ascii.String()
+		if !pythonASCIIInt.MatchString(text) {
+			return 0, false
 		}
-		text = strings.ReplaceAll(strings.TrimSpace(v), "_", "")
+		n, err := strconv.ParseInt(strings.ReplaceAll(strings.Trim(text, " \t\n\r\v\f"), "_", ""), 10, 64)
+		if err != nil {
+			return 0, false
+		}
+		parsed = n
 	default:
-		return 0, false, false
+		return 0, false
 	}
-	parsed, err := strconv.ParseInt(text, 10, 64)
-	if err != nil || parsed < 0 || parsed > 32767 {
-		return 0, false, false
+	if parsed < 0 || parsed > 32767 {
+		return 0, false
 	}
-	return parsed, false, true
+	return parsed, true
 }

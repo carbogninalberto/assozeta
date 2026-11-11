@@ -13063,7 +13063,58 @@
    }
   },
   {
-   "name": "course-subscriptions-update-events-object-installment-key-left-out",
+   "name": "course-subscriptions-update-form-events-invalid-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "events": [
+     "Value must be valid JSON."
+    ]
+   },
+   "effect": null,
+   "raw_body": "events=%5B",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-form-multiple-quote-invalid-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "multiple_quote": [
+     "Value must be valid JSON."
+    ],
+    "events": [
+     "Value must be valid JSON."
+    ]
+   },
+   "effect": null,
+   "raw_body": "multiple_quote=nope&events=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-form-events-empty-text-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "events": [
+     "Value must be valid JSON."
+    ]
+   },
+   "effect": null,
+   "raw_body": "events=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-form-events-empty-list",
    "actor": "owner",
    "method": "PATCH",
    "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
@@ -13098,6 +13149,215 @@
     },
     "multi_payments": true,
     "multiple_quote": null,
+    "one_fee_payment": false,
+    "installments": [],
+    "course": "a1000000-0000-4000-8000-000000660027",
+    "type": 1,
+    "billed_frequency": 1,
+    "billed_from": null,
+    "billed_until": null,
+    "billed_from_day_of_month": 1,
+    "membership_active": true,
+    "membership_fee": "0.00",
+    "auto_renewal": false,
+    "membership_payments": [],
+    "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
+    "carnets": []
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "cs_changed": {},
+    "cs_deleted": [],
+    "installments_deleted": [],
+    "payments_deleted": [],
+    "payments_changed": {},
+    "audit": []
+   },
+   "raw_body": "events=%5B%5D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-form-events-object-key-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got str."
+    ]
+   },
+   "effect": null,
+   "raw_body": "events=%7B%22rata%22%3A+1%7D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-form-multiple-quote",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000660081",
+    "creation_date": "2026-09-10T08:00:00Z",
+    "paid": false,
+    "subscription": {
+     "subscription_id": "a1000000-0000-4000-8000-000000660017",
+     "associate": {
+      "associate_id": "a1000000-0000-4000-8000-000000660008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1970-03-03",
+      "email": null,
+      "sex": "M",
+      "first_name": "Gino",
+      "last_name": "Neri",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "current_year": "corrente"
+    },
+    "multi_payments": true,
+    "multiple_quote": {
+     "title": "Da modulo",
+     "amount": "7,50",
+     "dettagli": [
+      1,
+      {
+       "a": null
+      }
+     ]
+    },
+    "one_fee_payment": false,
+    "installments": [],
+    "course": "a1000000-0000-4000-8000-000000660027",
+    "type": 1,
+    "billed_frequency": 1,
+    "billed_from": null,
+    "billed_until": null,
+    "billed_from_day_of_month": 1,
+    "membership_active": true,
+    "membership_fee": "0.00",
+    "auto_renewal": false,
+    "membership_payments": [],
+    "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
+    "carnets": []
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "cs_changed": {
+     "cs_ev2": {
+      "multiple_quote": {
+       "title": "Da modulo",
+       "amount": "7,50",
+       "dettagli": [
+        1,
+        {
+         "a": null
+        }
+       ]
+      }
+     }
+    },
+    "cs_deleted": [],
+    "installments_deleted": [],
+    "payments_deleted": [],
+    "payments_changed": {},
+    "audit": [
+     {
+      "model": "coursesubscription",
+      "label": "cs_ev2",
+      "action": 1,
+      "changes": {
+       "multiple_quote": [
+        "null",
+        "{\"amount\": \"7,50\", \"dettagli\": [1, {\"a\": null}], \"title\": \"Da modulo\"}"
+       ]
+      },
+      "overrides": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "course.sport_association"
+      ],
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('a1000000-0000-4000-8000-000000660081'), 'course_id': UUID('a1000000-0000-4000-8000-000000660027'), 'paid': False, 'creation_date': datetime.datetime(2026, 9, 10, 8, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('a1000000-0000-4000-8000-000000660017'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': {'title': 'Da modulo', 'amount': '7,50', 'dettagli': [1, {'a': None}]}, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': False}"
+     }
+    ]
+   },
+   "raw_body": "multiple_quote=%7B%22title%22%3A%20%22Da%20modulo%22%2C%20%22amount%22%3A%20%227%2C50%22%2C%20%22dettagli%22%3A%20%5B1%2C%20%7B%22a%22%3A%20null%7D%5D%7D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "course-subscriptions-update-multipart-multiple-quote-file-invalid-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "multiple_quote": [
+     "Value must be valid JSON."
+    ]
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"multiple_quote\"; filename=\"q.json\"\r\n\r\n{\"a\": 1}\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "course-subscriptions-update-events-object-installment-key-left-out",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/course-subscriptions/a1000000-0000-4000-8000-000000660081/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_subscription_id": "a1000000-0000-4000-8000-000000660081",
+    "creation_date": "2026-09-10T08:00:00Z",
+    "paid": false,
+    "subscription": {
+     "subscription_id": "a1000000-0000-4000-8000-000000660017",
+     "associate": {
+      "associate_id": "a1000000-0000-4000-8000-000000660008",
+      "address": null,
+      "address_cap": null,
+      "address_city": null,
+      "born_city": null,
+      "born_date": "1970-03-03",
+      "email": null,
+      "sex": "M",
+      "first_name": "Gino",
+      "last_name": "Neri",
+      "is_minor": false,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "tax_code": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "phone": null,
+      "family": null,
+      "family_role": null
+     },
+     "current_year": "corrente"
+    },
+    "multi_payments": true,
+    "multiple_quote": {
+     "title": "Da modulo",
+     "amount": "7,50",
+     "dettagli": [
+      1,
+      {
+       "a": null
+      }
+     ]
+    },
     "one_fee_payment": false,
     "installments": [],
     "course": "a1000000-0000-4000-8000-000000660027",
@@ -13194,7 +13454,16 @@
      "current_year": "corrente"
     },
     "multi_payments": true,
-    "multiple_quote": null,
+    "multiple_quote": {
+     "title": "Da modulo",
+     "amount": "7,50",
+     "dettagli": [
+      1,
+      {
+       "a": null
+      }
+     ]
+    },
     "one_fee_payment": false,
     "installments": [
      {

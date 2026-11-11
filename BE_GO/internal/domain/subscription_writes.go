@@ -57,7 +57,8 @@ type SubscriptionEditRelation struct {
 // as a create diff (with the reverse accessors), otherwise Changes are used.
 type SubscriptionEditAudit struct {
 	Model       string // "associate" or "associatetutorrelation"
-	Key         string
+	Key         string // object_pk as the instance holds it (the spelling a client sent)
+	Row         string // the stored row's canonical key when Key is a spelling of it
 	Action      int
 	Created     bool
 	Changes     map[string][2]string
@@ -85,9 +86,23 @@ type SubscriptionEditTransaction interface {
 	TaxCodeMatches(ctx context.Context, taxCode string, association, group *string) ([]SubscriptionEditAssociate, error)
 	// Relations are the associate's tutor relations by key.
 	Relations(ctx context.Context, associate string) ([]SubscriptionEditRelation, error)
-	// OtherReferences reports a row outside the tutor relations that
-	// references the associate.
+	// NewestTaxCodeMatch is the query Django runs after MultipleObjectsReturned:
+	// the same filter ordered by -creation_date, first row (the database breaks ties).
+	NewestTaxCodeMatch(ctx context.Context, taxCode string, association, group *string) (*SubscriptionEditAssociate, error)
+	// AssociateAny, AssociateByTaxCode, LiveTaxCodeTaken and SetAssociateDeleted are AssociateSerializer.create's associate_id branch
+	// (all_objects() lookups, see SubscriptionRenewAssociateStore).
+	AssociateAny(ctx context.Context, id string) (*SubscriptionEditAssociate, error)
+	AssociateByTaxCode(ctx context.Context, taxCode, association string) (*SubscriptionEditAssociate, error)
+	LiveTaxCodeTaken(ctx context.Context, taxCode, association, except string) (bool, error)
+	SetAssociateDeleted(ctx context.Context, id string, deleted bool) error
+	// OtherReferences reports a row that references the associate outside the tutor relations.
 	OtherReferences(ctx context.Context, associate string) (bool, error)
+	// DeleteTutorCollected is Associate.delete() through the Collector port (references, cascades and audit included).
+	DeleteTutorCollected(ctx context.Context, tutor string, audit LoginAuditContext, group *string, now func() time.Time) error
+	// AssociateSnapshot is the stored row as JSON; RestoreAssociate inserts it back with is_minor true (the stale
+	// instance's save() after the row was deleted).
+	AssociateSnapshot(ctx context.Context, associate string) (string, error)
+	RestoreAssociate(ctx context.Context, snapshot string) error
 	InsertAssociate(ctx context.Context, row SubscriptionEditAssociate) error
 	// SaveAssociate writes the serializer's columns and is_minor (Model.save()).
 	SaveAssociate(ctx context.Context, row SubscriptionEditAssociate) error

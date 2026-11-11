@@ -2653,6 +2653,446 @@
    }
   },
   {
+   "name": "subscription-memberships-add-multipart-without-files-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_type\"\r\n\r\nX\r\n--tail-boundary-7f3a--\r\n",
+   "content_type": "multipart/form-data; boundary=tail-boundary-7f3a"
+  },
+  {
+   "name": "subscription-memberships-add-multipart-with-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650005",
+    "associate": "a1000000-0000-4000-8000-000000650005",
+    "creation_date": "$now",
+    "start_date": "2026-03-01",
+    "end_date": null,
+    "membership_type": "Con file",
+    "membership_number": "5",
+    "description": "",
+    "price": "9.00",
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": "a1000000-0000-4000-8000-000000650005",
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": "2026-03-01",
+     "end_date": null,
+     "membership_type": "Con file",
+     "membership_number": "5",
+     "description": "",
+     "price": "9.00"
+    }
+   },
+   "raw_body": "--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"associate\"\r\n\r\na1000000-0000-4000-8000-000000650005\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_type\"\r\n\r\nCon file\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_number\"\r\n\r\n5\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"price\"\r\n\r\n9\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n01/03/2026\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"description\"\r\n\r\n\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"sport_association\"\r\n\r\na1000000-0000-4000-8000-000000701002\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\ntesto\r\n--tail-boundary-7f3a--\r\n",
+   "content_type": "multipart/form-data; boundary=tail-boundary-7f3a"
+  },
+  {
+   "name": "subscription-memberships-add-multipart-file-in-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "creation_date": [
+     "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+    ],
+    "start_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "membership_type": [
+     "Not a valid string."
+    ],
+    "price": [
+     "A valid number is required."
+    ],
+    "associate": [
+     "“mario.txt” is not a valid UUID."
+    ],
+    "payment": [
+     "“pagato.txt” is not a valid UUID."
+    ]
+   },
+   "effect": null,
+   "raw_body": "--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"creation_date\"; filename=\"ieri.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"start_date\"; filename=\"inizio.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_type\"; filename=\"tipo.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"price\"; filename=\"prezzo.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"associate\"; filename=\"mario.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"payment\"; filename=\"pagato.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a--\r\n",
+   "content_type": "multipart/form-data; boundary=tail-boundary-7f3a"
+  },
+  {
+   "name": "subscription-memberships-add-multipart-numeric-file-name-price",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": "Nome numerico",
+    "membership_number": "0",
+    "description": null,
+    "price": "12.00",
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Nome numerico",
+     "membership_number": "0",
+     "description": null,
+     "price": "12.00"
+    }
+   },
+   "raw_body": "--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_type\"\r\n\r\nNome numerico\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"price\"; filename=\"12\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a--\r\n",
+   "content_type": "multipart/form-data; boundary=tail-boundary-7f3a"
+  },
+  {
+   "name": "subscription-memberships-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650018",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650006",
+    "associate": "a1000000-0000-4000-8000-000000650006",
+    "creation_date": "2026-09-03T08:00:00Z",
+    "start_date": null,
+    "end_date": "2027-01-31",
+    "membership_type": null,
+    "membership_number": "77",
+    "description": "Con allegato",
+    "price": null,
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650013",
+    "attached_membership_documents": [
+     {
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "certificato.pdf",
+      "file_size_bytes": null,
+      "token": "$new_document"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "m3",
+    "changes": {
+     "membership_number": [
+      "None",
+      "77"
+     ]
+    },
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": "a1000000-0000-4000-8000-000000650006",
+     "payment": "a1000000-0000-4000-8000-000000650013",
+     "creation_date": "2026-09-03T08:00:00Z",
+     "start_date": null,
+     "end_date": "2027-01-31",
+     "membership_type": null,
+     "membership_number": "77",
+     "description": "Con allegato",
+     "price": null
+    }
+   },
+   "raw_body": "--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_number\"\r\n\r\n77\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\ntesto\r\n--tail-boundary-7f3a--\r\n",
+   "content_type": "multipart/form-data; boundary=tail-boundary-7f3a"
+  },
+  {
+   "name": "subscription-memberships-add-document-null-filename-keeps-rows",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "null-filename",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "tessera.pdf",
+      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+     }
+    ]
+   },
+   "body": {
+    "membership_type": "null-filename",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "tessera.pdf"
+     },
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-memberships-add-document-nul-filename-keeps-rows",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "nul-filename",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "tessera.pdf",
+      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+     }
+    ]
+   },
+   "body": {
+    "membership_type": "nul-filename",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "tessera.pdf"
+     },
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "a\u0000b.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-memberships-add-document-long-filename-keeps-rows",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "long-filename",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "tessera.pdf",
+      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+     }
+    ]
+   },
+   "body": {
+    "membership_type": "long-filename",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "tessera.pdf"
+     },
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-memberships-update-new-id-inserts-copy",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000659101",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650006",
+    "associate": "a1000000-0000-4000-8000-000000650006",
+    "creation_date": "2026-09-03T08:00:00Z",
+    "start_date": null,
+    "end_date": "2027-01-31",
+    "membership_type": null,
+    "membership_number": "77",
+    "description": "Copia",
+    "price": null,
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650013",
+    "attached_membership_documents": []
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000659101",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": "a1000000-0000-4000-8000-000000650006",
+     "payment": "a1000000-0000-4000-8000-000000650013",
+     "creation_date": "2026-09-03T08:00:00Z",
+     "start_date": null,
+     "end_date": "2027-01-31",
+     "membership_type": null,
+     "membership_number": "77",
+     "description": "Copia",
+     "price": null
+    }
+   },
+   "body": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000659101",
+    "description": "Copia"
+   }
+  },
+  {
+   "name": "subscription-memberships-update-new-id-with-document",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000659102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650006",
+    "associate": "a1000000-0000-4000-8000-000000650006",
+    "creation_date": "2026-09-03T08:00:00Z",
+    "start_date": null,
+    "end_date": "2027-01-31",
+    "membership_type": null,
+    "membership_number": "77",
+    "description": "Con allegato",
+    "price": null,
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650013",
+    "attached_membership_documents": [
+     {
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "copia.pdf",
+      "file_size_bytes": null,
+      "token": "$new_document"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "copy",
+    "actor": "full_collaborator",
+    "id": "a1000000-0000-4000-8000-000000659102",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": "a1000000-0000-4000-8000-000000650006",
+     "payment": "a1000000-0000-4000-8000-000000650013",
+     "creation_date": "2026-09-03T08:00:00Z",
+     "start_date": null,
+     "end_date": "2027-01-31",
+     "membership_type": null,
+     "membership_number": "77",
+     "description": "Con allegato",
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "copia.pdf",
+      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+     }
+    ]
+   },
+   "body": {
+    "subscription_membership_id": "A1000000-0000-4000-8000-000000659102",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "copia.pdf"
+     }
+    ]
+   }
+  },
+  {
    "name": "subscription-memberships-update-document-missing-key-keeps-change",
    "actor": "owner",
    "method": "PATCH",

@@ -495,7 +495,7 @@ Left refused in these families, with the reason:
   FatturaPA inputs outside the subset.
 - invoice-generate: `send_receipt_email` of other JSON types; approve without a configured producer (class C).
 - instructor-hours: document deletes that cascade to other models' rows (each with its own audit entry).
-- instructor-writes: report workbook inputs the writer treats as formulas, rich strings or links with an anchor; subnormal products.
+- instructor-writes: report workbook inputs the writer treats as formulas or links with an anchor; subnormal products.
 
 ## Remaining A items, per family
 
@@ -627,7 +627,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### camps-subscriptions.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST .../subscriptions/add, PATCH .../subscriptions/update | form/multipart body with file parts; update form carrying `periods` | dto/camps_subscriptions.go:42; service/camps_subscriptions.go:758,763 (`ErrCampsFormNotPorted`) | B | All UI calls send JSON: `overview/modals/AddSubscriptionModal.svelte:31-32`, `EditSubscriptionModal.svelte:31-32`, `src/routes/forms/CampsAndRetreatsForm.svelte:38-39`. Cost: cheap-medium. |
+| POST .../subscriptions/add, PATCH .../subscriptions/update | form/multipart body with file parts; update form carrying `periods` | dto/camps_subscriptions.go; service/camps_subscriptions.go (`campsRequestPeriods`) | ported (t3courses) | All UI calls send JSON: `overview/modals/AddSubscriptionModal.svelte:31-32`, `EditSubscriptionModal.svelte:31-32`, `src/routes/forms/CampsAndRetreatsForm.svelte:38-39`. Cost: cheap-medium. |
 | POST add, PATCH update (payment creation) | `X-Group-Id` not an existing group | service/camps_subscriptions.go (`ErrCampsPaymentNotPorted`) | C | Registrations resolve inside the group, so a nonexistent group is only reachable by deleting it during the request; the answer is the foreign key error naming a constraint hash Go cannot know. A malformed header is ported (`add-malformed-group-payment`). |
 | POST add, PATCH update | generated amount over `numeric(9,2)`/negative, or notes > 5120 chars | service/camps_subscriptions.go (`generatePayment`) | ported (tailcourses): overflow and notes; negative stays C | Overflow and notes answer the driver's text and roll the atomic add back (`add-amount-overflow-rolls-back`, `add-notes-too-long-rolls-back`). A negative amount fails the check constraint, whose message dumps the new row with its generated ids. |
 | GET camps-and-retreats/<uid>/subscriptions/list | a subscription period's payment has an `instructor` or an `invoice` | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
@@ -635,7 +635,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### camps-core.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST camps-and-retreats/add, PATCH <uid>/update | multipart body with file parts | dto/camps_core_write.go:28 (`ErrCampsFormNotPorted`) | B | Add sends JSON (`campsAndRetreats/modals/AddModal.svelte:31-32`); camp update route not called by UI. Cost: cheap. |
+| POST camps-and-retreats/add, PATCH <uid>/update | multipart body with file parts | dto/camps_core_write.go (`CampAssignAssociation`) | ported (t3courses) | Add sends JSON (`campsAndRetreats/modals/AddModal.svelte:31-32`); camp update route not called by UI. Cost: cheap. |
 | PATCH camps-and-retreats/<uid>/update | changed primary key passing validation | service/camps_core.go (`Update`) | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does (`camps-core.md`). |
 
 ### associates-draft.md
@@ -648,7 +648,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | PATCH periods/<uid>/update, periods/services/<uid>/update | changed primary key passing validation | service/camps_periods.go (`UpdatePeriod`, `UpdateService`) | ported (v2-rest-b3) | The copy under the new key is inserted as `Model.save()` does (`camps-periods.md`). |
-| POST periods/add, PATCH periods/<uid>/update, services add/update | form body with the services key or file parts | dto/camps_period_write.go:245,320 (`ErrCampsFormNotPorted`) | B | UI sends JSON (`overview/modals/AddModal.svelte:33-34`, `AddServiceModal.svelte:31-32`, and the two above). Cost: cheap. |
+| POST periods/add, PATCH periods/<uid>/update, services add/update | form body with the services key or file parts | dto/camps_period_write.go (`campsInput`, `campsPeriodPreprocess`, `ParseCampsPeriodWrite`) | ported (t3courses) | UI sends JSON (`overview/modals/AddModal.svelte:33-34`, `AddServiceModal.svelte:31-32`, and the two above). Cost: cheap. |
 | PATCH camps-and-retreats/periods/services/<uid>/update | an unpaid walked payment is soft-deleted, or (with `X-Group-Id` set) belongs to another/no group | service/camps_periods.go (`campsWalk`) | ported | Ported in v2-misc-2 (`camps-periods.md`, `v2misc2-green-r2`). A hidden payment without an association stays refused (B). |
 | PATCH services/<uid>/update | walk failure with more than one subscription period; `Payment.save()` description failure | service/camps_periods.go:773,816 | B | Failures need malformed metas (e.g. null) on camp payments, which the camp writers never produce; legacy: yes (admin-edited metas). Cost: medium. |
 | PATCH services/<uid>/update | amount over `numeric(9,2)`/negative, notes > 5120 chars | service/camps_periods.go (`campsWalk`) | ported (tailcourses): overflow and notes; negative stays C | The failing save is audited first, then the driver's text is the 500 (`services-update-amount-overflow`; the notes branch shares `campsNotesTooLong` with the add and is covered there). Negative amounts fail the check constraint, whose message dumps the row (generated ids). |
@@ -698,9 +698,9 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 All sites use `domain.ErrCalendarNotPorted` (aliased `errCalendarNotPorted`).
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/<uid>/attendees/<day>/update, check-in, GET course/<uid>/attendees | integer/boolean ids (attendee, absence, event, instructor, check-in day) | service/course_calendar.go:114 (shared id reader) | B | UI sends UUID strings (events get `uuidv4()` ids, `association/course/overview/components/Calendar.svelte:198,623`; `src/routes/calendar/Calendar.svelte:197`). Cost: cheap. |
-| attendees update / check-in | carnet `lessons_left` stored as float or bool when consumed or given back | service/course_attendance.go:192 | B | Writers store `int()` (carnet-subscription update, topup). legacy: yes only for admin-edited meta. Cost: cheap. |
-| attendees update / check-in | lesson date text outside the fromisoformat subset, year < 1000, non-ASCII digits | service/course_attendance.go:208,1005 | B | UI dates come from `toApiTimestamp` (`src/utils/eventCalendar.js:31-48`). Cost: cheap. |
+| POST course/<uid>/attendees/<day>/update, check-in, GET course/<uid>/attendees | integer/boolean ids (attendee, absence, event, instructor, check-in day) | service/course_calendar.go (`calendarUUID`, shared id reader) | ported (t3courses) | UI sends UUID strings (events get `uuidv4()` ids, `association/course/overview/components/Calendar.svelte:198,623`; `src/routes/calendar/Calendar.svelte:197`). Cost: cheap. |
+| attendees update / check-in | carnet `lessons_left` stored as float or bool when consumed or given back | service/course_attendance.go (`attendanceCountOf`) | ported (t3courses): floats and booleans; an infinite float stays refused | A float stays a float (`2.5 - 1 = 1.5`, `3.0 - 1 = 2.0`), a boolean becomes an int (`True - 1 = 0`); the pick compares the doubles exactly (`update-float-carnet-*`, `update-whole-float-carnet-consumed`, `update-boolean-carnet-*`, `mark-float-carnet`). `1e999` (infinity) stays refused (C): jsonb cannot store it, so the save fails with a database error text. |
+| attendees update / check-in | lesson date text outside the fromisoformat subset, year < 1000, non-ASCII digits | service/course_attendance.go (`attendanceEventStart`), `dto.AuditFromISOFormatAnyYear` | ported (t3courses) | Years below 1000 compare by their own digits (strftime on both sides); full-width digits read as Python's `\d` does where the strptime pattern has `\d` and not where it spells `[0-9]` or a literal first digit (`attendees-event-start-full-width-*`, `update-lesson-date-full-width-digits`, `update-removes-lesson-year-999`, `update-adds-attendee-on-year-999-day`). |
 | attendees / history (`get_extended_prop_for_attendance_day`) | linked event's `event_id` not a valid UUID string; `extendedProps` truthy non-dict; `instructor` truthy non-dict/list; non-dict list items | ported (`attendanceEventLink`, `instructorLabels`) | ported (v2-rest-c; was B, legacy: yes) | Current UI creates UUID ids and dict/list props (`Calendar.svelte:204,231-291`). Events stored by older calendar versions may carry non-UUID ids. Cost: medium (swallowed failing save + logging). |
 
 ### celery-producer.md
@@ -710,15 +710,15 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
 | GET calendar/events?event_id=...&get_lesson=true | `get_lesson` true and the event matches an attendance day (`get_extended_prop_for_attendance_day`) | service/course_calendar.go:1618 (`ErrCalendarNotPorted`) | ported | Ported (`course-calendar.md`, `v2c-green`). |
-| POST course/<uid>/calendar/update, calendar/events/update | non-string `event_id`, list/string `extendedProps`, non-string `start`; stored events not a list or list/dict starts | service/course_calendar.go:114,128,762,775,782,1102 | B | UI sends `serializeCalendarEvents` output (string ids, dict props, string starts) (`association/course/overview/components/Calendar.svelte:59`, `src/routes/calendar/Calendar.svelte:77-85,664`). Cost: cheap-medium. |
-| POST course/<uid>/calendar/update, calendar/events/update | datetimes whose UTC instant falls outside years 1..9999 | service/course_calendar.go:127,435,753,1326 | B | Django persists such a day or reminder (no UTC conversion at INSERT) but neither psycopg2 nor the family harness can read the row back; left refused. Needs year 0001/9999 boundary dates. Cost: medium. |
+| POST course/<uid>/calendar/update, calendar/events/update | non-string `event_id`, list/string `extendedProps`, non-string `start`; stored events not a list or list/dict starts | service/course_calendar.go (`calendarUUID`, `calendarStoredList`, `pythonSortOrder`) | ported (t3courses) | UI sends `serializeCalendarEvents` output (string ids, dict props, string starts) (`association/course/overview/components/Calendar.svelte:59`, `src/routes/calendar/Calendar.svelte:77-85,664`). Cost: cheap-medium. |
+| POST course/<uid>/calendar/update, calendar/events/update | datetimes whose UTC instant falls outside years 1..9999 | service/course_calendar.go (`calendarRowOutside`, `reminderValues`), `dto.DjangoParseDateTimeWide` | ported (t3courses) | Django stores the row with its own offset, then auditlog cannot convert the value to UTC: the request answers 500 with the row kept and no audit entry; an update fails before the UPDATE; reads of such a row fail like the driver's. The shared snapshot reader (`message_reads.snapshot_models`) now reads an unreadable timestamp as Postgres text and the cleanup deletes such rows without loading them (`update-reminder-outside-year-range-*`, `update-day-outside-year-range-is-stored`, `update-moves-day-outside-year-range`). The global events route is atomic and keeps nothing. |
 | GET course/<uid>/calendar | collaborator scope user | service/course_calendar.go:341 | C | Scope user is never a collaborator (doc). |
 | GET calendar/events/export | "Go has no route" per this doc | — | n/a | Superseded: routed at `BE_GO/cmd/server/main.go:569` (`miscRoutesHandler.CalendarExport`, other family). UI calls it (`OverviewCourse.svelte:863`, `Calendar.svelte:830`). |
 
 ### course-locations.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | ported | Ported (`course-locations.md`, `v2c-green`); indexed form keys stay refused (B). |
+| POST course/locations/add, PATCH course/locations/<pk>/update | a `documents_data` item that would upload (has `document` + `filename` and decodes), or indexed form keys `documents_data[n]` | service/course_location_writes.go:111,120 (`ErrCourseLocationUploadUnsupported`) | ported | Ported (`course-locations.md`, `v2c-green`); indexed form keys ported in t3courses (`dto.courseLocationFormDocuments`: the repeated key, DRF's `parse_html_list` / `parse_html_dict` notation, ignored by a partial update). |
 | PATCH course/locations/<pk>/update | changed `course_location_id` | service/course_location_writes.go (`CopyLocation`) | ported (tailcourses) | The row the path names stays; the validated values are inserted under the new key, audited as the pre-save update then the create (`course-locations.md`, cases `update-primary-key-*`). |
 
 ### course-enrolment.md
@@ -747,7 +747,7 @@ Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples)
 | course/add, overview update | non-canonical `X-Group-Id` | service/course_writes.go (`createGroup`, `auditContext`) | ported (tailcourses) | The course, payments and installments carry the header as sent in their create entries; the course, payment and installment second saves record the stored group against it (`course-writes.md`, cases `add-*-raw-group`, `overview-update-to-installments-raw-group`). |
 | PATCH course/<uid>/update | `fee`/`one_fee` forms | dto/course_writes.go (`CourseUpdateDecimal`) | ported (v2-rest-c2) | Exponent text, floats (9-digit context, numeric(9,2) half-up), booleans and values the column rejects (auditlog entry, then the 500) match Django; only exponents beyond 10000 stay refused. Case `update-raw-value-forms`, `update-rejected-*`. |
 | PATCH course/<uid>/update | booleans, billing integers, dates in other spellings | dto/course_writes.go (`CourseUpdateBoolean`, `CourseUpdateInteger`, `CourseUpdateDateTime`) | ported (v2-rest-c2) | Letters/floats as booleans, float/text integers, unpadded and offset dates, and rejected values (audit then 500) match Django (`update-raw-value-forms`, `update-rejected-*`). Dates outside Python's parsers stay refused (`CourseSaveNotPorted`). |
-| course/add, course/update | events with `course_subscription_installment_id`; event dates with non-ASCII digits | dto/course_writes.go:69,151,241-266 | B | Course events are `{id, amount (toFixed(2) string), payment_date}` (`components/eventgenerator/EventGenerator.svelte:47-66`). Float amounts are ported by their binary value (v2-rest-c2: `add-event-float-*`, `add-installments-float-amounts`). Cost: cheap. |
+| course/add, course/update | events with `course_subscription_installment_id`; event dates with non-ASCII digits | dto/course_writes.go (`ValidateCourseEvent`, `ParseDMYDate`) | ported (earlier; stale row, covered by `update-*` cases with the key and `\u0660` dates in course-writes) | Course events are `{id, amount (toFixed(2) string), payment_date}` (`components/eventgenerator/EventGenerator.svelte:47-66`). Float amounts are ported by their binary value (v2-rest-c2: `add-event-float-*`, `add-installments-float-amounts`). Cost: cheap. |
 | overview routes | non-object body | service/course_writes_overview.go (`courseWritesBody`) | ported (earlier) | Lists, strings, numbers and booleans read as Django's `key in data` tests do (cases `overview-update-body-*`). |
 | overview update | athlete whose subscription has no association | service/course_writes_overview.go:268 | B | Subscriptions always carry an association in UI-created data; legacy: yes (orphan rows). Cost: medium. |
 | course/<uid>/overview/<sub>/add | "not routed in Go" per this doc | — | n/a | Superseded: ported by course-enrolment.md. |
@@ -781,7 +781,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | POST course-subscriptions/list (export pdf/excel) | any POST (export) | `BE_GO/internal/service/course_subscriptions_export.go`, `ErrCourseSubscriptionExportUnsupported` | ported: `excel` (famwiz), `pdf` (v2-pdf) | `routes/association/course/overview/partials/course-subscriptions-list.svelte:575-588` → `components/modals/CurrentViewPrintingModal.svelte:41` POST `{format:'pdf'|'excel'}`. |
 | PATCH course-subscriptions/<pk>/update | `events` key present and non-null | `service/course_subscription_update.go:408-411`, `ErrCourseSubscriptionNotPorted` | ported | Ported (`course-subscriptions.md`, `v2c-green`). |
 | PATCH …/update | changed primary key | same site | B | UI never sends `course_subscription_id` in the body. legacy: no; cheap. |
-| PATCH …/update | HTML-form input for `multiple_quote`/`events` | `service/course_subscription_update.go:371` | B | UI sends JSON. legacy: no; cheap. |
+| PATCH …/update | HTML-form input for `multiple_quote`/`events` | `dto/course_subscriptions.go` (`ParseCourseSubscriptionWrite`) | ported (t3courses) | The form text goes through json.loads (a file part's text is its name); invalid text answers "Value must be valid JSON.". A document the jsonb column rejects (lone surrogates, nesting past the parser limit) stays refused (C: database error text). Cases `update-form-*`, `update-multipart-multiple-quote-file-invalid-json`. |
 | GET/POST course-subscriptions/list | a rendered membership payment with `invoice_id` | `service/course_subscriptions.go:114-116` | ported | Ported for GET and update renders (`v2c-green`); the export does not render payments. |
 | same | a rendered membership payment with `instructor_id` | same site | ported | Ported with the invoice case (`v2c-green`). |
 | DELETE course-subscriptions/<pk>/delete | row payment is also an unpaid installment's payment | `service/course_subscriptions.go:262` | B | No current writer shares one payment (`BE/application/views/course_views.py:118-148,985-1038` create separate payments). legacy: possible but unproven; medium. |
@@ -940,7 +940,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 |---|---|---|---|---|
 | GET instructor/report | other date spellings | report DTO | B (**ported** in v2-rest-docs) | UI sends `DD/MM/YYYY` (`course/instructor/modals/ReportModal.svelte:10-11,22`). |
 | GET instructor/report | course subscription ids not str/None in attendance JSON | report service | B (**ported** in v2-rest-docs) | legacy: yes (imported attendance); cheap. |
-| GET instructor/report | workbook inputs xlsxwriter port refuses: cells starting `=`/`{=…}`, `<r>…</r>`, URLs with `#` | `BE_GO/internal/xlsxexport/xlsxwriter.go:95,97,109` | B | Event titles/descriptions are free text; a description starting with `=` or a link with an anchor would hit it. legacy: yes; medium. |
+| GET instructor/report | workbook inputs xlsxwriter port refuses: cells starting `=`/`{=…}`, `<r>…</r>`, URLs with `#` | `BE_GO/internal/xlsxexport/xlsxwriter.go` (`writeFormula`, `xwPrepareFormula`, `xwMetadata`) | ported (t3courses) | Formulas, array formulas, anchored links and rich-looking text (escaped by `xlsx_text.py`) were already written; the dynamic array functions (`=SEQUENCE(3)`, `FILTER`, `SORT`, ...) now write `cm="1"` cells, the expanded `_xlfn.` names and `xl/metadata.xml` (the golden `sub-dynamic` case is no longer excluded). Cases `report-workbook-*`. |
 | instructor writes | non-canonical `X-Group-Id` | instructor_writes service | B (**ported** in v2-rest-docs) | Not sent by UI. |
 | compensation | Decimal infinities/NaN, exponents beyond ±100000, >28-digit products | `service/instructor_writes.go:427,447-453`; `dto/instructor_writes.go:350-365` | B (**ported** in v2-rest-docs) | Values come from UI number inputs. legacy: no; cheap. |
 
@@ -1016,7 +1016,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### misc-exports.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text (**ported** in t2docs: formulas, `{=...}`, `<r>` rich strings, links with anchors and `internal:`/`external:`; only dynamic array functions such as `=SEQUENCE(` stay: their metadata parts are not written) | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B (ported; dynamic arrays stay) | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/rich-string/`#` URL text in member fields. legacy: yes. Cost: medium. |
+| GET subscription/list/export?filetype=xlsx | xlsxwriter-refused cell text (**ported** in t2docs: formulas, `{=...}`, `<r>` text (written as an escaped run), links with anchors and `internal:`/`external:`; only dynamic array functions such as `=SEQUENCE(` stay: their metadata parts are not written) | `service/misc_exports.go:327` (`ErrMiscExportsNotPorted`) | B (ported; dynamic arrays stay) | The UI calls it (`routes/association/Members/MembersList.svelte:1704`, `shared/ExportData.svelte:18`). The refusal needs formula-like/rich-string/`#` URL text in member fields. legacy: yes. Cost: medium. |
 | GET invoice/list/export?m=xlsx | openpyxl-refused input (bool columns **ported** in t2docs; the remaining refusals are pandas dtype cases that need a Python int beyond int64) | `service/misc_exports.go:493` | B (ported; big ints stay: pandas keeps them as objects/uint64 and the coercion depends on the dtype mix, no Go counterpart) | `routes/accounting/receipts/ReceiptList.svelte:344`. Columns are fixed strings and decimals, so only exotic values can trigger it. legacy: low. |
 
 ### modules-responses.md
@@ -1071,9 +1071,9 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | PATCH onboarding/update | `onboarding_data` with a `users_onboarding_id` or `user` other than the row's own | `dto/profile_misc.go` (`ParseOnboardingFlags`) | ported | Both keys are read-only serializer fields in Django; Go reads only the checklist flags (`profile-misc.md`, `seconb-green-r2`). |
 | PATCH onboarding/update | multipart file parts | `handler/profile_misc.go` (`Onboarding`) | ported (rest-prof) | The file is the QueryDict value: serializer branches answer `Expected a dictionary, but got InMemoryUploadedFile.`, `lead_data` the subscript 500. Bodies over 2621440 bytes with a file part stay refused (another file class, B). |
 | same | soft-deleted owner association | `service/profile_misc.go` (`association`) | ported (rest-prof) | The saves work; the audit entries have no index row (`profile-misc.md`). |
-| same | lead containers / values over the column length | `service/profile_misc.go` (`onboardingLead`) | ported (rest-prof) | Containers are stored as their `str()`; an over-long value leaves the audit entry and answers the varchar error text. A NUL character stays refused (the error text quotes the audit row, B). |
+| same | lead containers / values over the column length | `service/profile_misc.go` (`onboardingLead`) | ported (rest-prof) | Containers are stored as their `str()`; an over-long value leaves the audit entry and answers the varchar error text. A NUL character in a value answers the fixed 500 message with nothing written (ported in t2c: the view no longer sends database error text). |
 | same | fee repr with exponent | `dto/profile_misc.go` (`PythonFloatRepr`) | ported (rest-prof) | Python repr incl. exponent form; unit-tested, a serializer-valid fee never needs it. A blank nullable fee is `None` (serializer) and `float('')` raises in `membership_data` (ported). Non-ASCII-digit fee strings stay refused (B). |
-| same | season/fiscal not int 0..32767 (floats, bools, null, containers, out of range) | `service/profile_misc.go` (`onboardingMembership`) | B (**ported** in t2docs) | `int(value)` of the raw value (floats truncate, bools, Unicode digits); text int() rejects raises Django's `expected a number` message (containers show their repr), infinity is the raw OverflowError; an integer outside 0..32767 or None is sent to the database as a literal UPDATE inside a savepoint and the driver text of its refusal is the answer (`smallint out of range`; a negative number or NULL quotes the new row in the same way Django's error does). Cases cover the texts that do not quote the row. The UI sends ints from selects (`routes/onboarding/partials/step1.svelte:59-75`). |
+| same | season/fiscal not int 0..32767 (floats, bools, null, containers, out of range) | `dto/profile_misc.go` (`PythonSmallIntColumn`) | ported (t2c) | The view answers a fixed message for a save error, so the stored values (floats truncated, booleans, Unicode digits) and the rolled-back failures are reproduced. |
 
 ### payment-export.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1194,26 +1194,26 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/add | `medical_certificate.certificate_expring_date` not null | `service/subscription_create.go:164` | ported | Ported in v2subs3 (`internal/pilplaceholder`). |
-| POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | **A** | Public forms `routes/subscribe/Subscribe.svelte:124,167`, `subscribe-multiple/SubscribeMultiple.svelte:183`, `subscribefamily/SubscribeFamily.svelte:136,181`. Also `AddMember.svelte:124-125` in modal mode. Cost: expensive (anonymous path + user creation). |
+| POST subscription/add | anonymous request or body with `sport_association` | `service/subscription_create.go:91,102` | ported | Ported earlier (public forms, `namedUser`): the anonymous cases of `subscription-create` (`anonymous-*`, `athlete-form-*`) cover it; the row was stale. |
 | POST subscription/add?m=only_associate with `associate` | quick re-subscription | ported (v2-sub-create) | **ported** | `routes/association/Members/MembersList.svelte:1564`, `MembersBook.svelte:1318`. Cost: medium. |
 | POST subscription/add | `is_family_wizard: true` | ported (v2-wizard) | **ported** | `SubscribeFamily.svelte:146`. `type: grouped_subscriptions` is ported too (famwiz). |
 | POST subscription/add | `preregistration: true` | ported (v2-public-forms; with a `subscription_id` in famwiz) | **ported** | `Subscribe.svelte:147-148` (route `/subscribe/:user/:preregistration`). |
 | POST subscription/add | `new_user_account.new_member` true | ported (v2-sub-create) | **ported** | Toggle in the AddMember wizard (`AddMember.svelte:44,338`). Cost: medium (account + welcome e-mail). |
 | POST subscription/add | `signature` with data | ported (v2-sub-create) | **ported** | AddMember signature step (`sections/Section3.svelte:11-26`). Cost: medium (storage upload). |
-| POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | B | No UI writer found in `routes/association/Members/add`. legacy: low. |
-| POST subscription/add | non-empty X-Group-Id, form bodies, born dates that are floats or containers (the dateutil forms are ported: v2subs3), non-ASCII sex/tax code, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go:322-1014`, `subscription_create_python.go:110-245` | B | Mostly exotic or legacy duplicates. Tutor edge cases (an associate that already has tutors) are reachable once the A gates are lifted. Re-check then. |
+| POST subscription/add | truthy `custom_data.type_of_associate` | `service/subscription_create.go:172` | ported | Ported in t2subsa (`icontains` on the stored JSON text in both duplicate checks). |
+| POST subscription/add | non-empty X-Group-Id, form bodies, float or container born dates, duplicate tax-code ties, tutor edge cases, fee/amount formats | `service/subscription_create.go`, `subscription_create_python.go` | B | Partly ported in t2subsa: non-ASCII sex, born date and tax code (`dto.PythonUpper`, strptime digits) and tax-code ties (the same `LIMIT 1` query). Still refused: the items listed under "Not ported" in `subscription-create.md` (group header, form bodies, the other tutor, plan and amount shapes). |
 
 ### subscription-signature-migration.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| CLI migrate-subscription-signatures-to-s3 | generated key already exists; CLI options; DB error text | `cmd/migrate-subscription-signatures-to-s3` | B / C | Not HTTP. A key collision is practically impossible (C). |
+| CLI migrate-subscription-signatures-to-s3 | generated key already exists; CLI options; DB error text | `cmd/migrate-subscription-signatures-to-s3` | C (kept: not an HTTP route; a key collision gets a random suffix from `get_available_name`, and the option and database error texts belong to Django's management command) | Not HTTP. A key collision is practically impossible (C). |
 
 ### subscription-memberships.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | ported (v2-sub-create) | **ported** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
-| update | changed `subscription_membership_id` | | B | The hidden input carries the same id (`AddEditMembershipsModal.svelte:158`). Only a change is refused. |
-| add | multipart with files | | B | The UI sends JSON. |
+| update | changed `subscription_membership_id` | | ported | Ported in t2subsa (the copy under the new key, `subscription-memberships.md`). |
+| add | multipart with files | | ported | Ported in t2subsa (files merged into the mutable data, read per field). Form keys for `documents_data` stay refused: the UI sends JSON, and a repeated plain key is read as its last value by this API's form parser. |
 
 ### stripe-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1225,19 +1225,19 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/edit | non-empty `associate_id` in tutor data | `service/subscription_writes.go:253`, `ErrSubscriptionEditNotPorted` | B | Only UI caller is `routes/update-tutors/TutorData.svelte:23`. `UpdateTutors.svelte:7-11` has `inconsistencies = []` hard-coded and redirects to `/` on mount. Every `sessionStorage.setItem('inconsistencies', …)` is commented out (`Login.svelte:660-663`, `EditData.svelte:136-139`), so the page never renders. Effectively the route is not called by the UI. legacy: no. cheap |
-| same | tutor `born_date` with non-ASCII digits / unparsable by Go | `:219`, `:223` | B | as above, plus exotic input. legacy: no |
-| same | non-ASCII tax code | `:262` | B | route not reachable from UI. legacy: no |
-| same | several tax-code matches with equal latest `creation_date` | `:272` | B | route not reachable; data needs identical timestamps. legacy: yes (bulk imports). cheap |
-| same | tax-code match / main tutor is the edited associate | `:277`, `:311` | B | route not reachable. legacy: yes. medium |
-| same | main tutor referenced by other tables | `:318` | B | route not reachable. legacy: yes. expensive (cascade) |
+| POST subscription/<uid>/edit | non-empty `associate_id` in tutor data | `service/subscription_writes.go` | ported | Ported in t2subsa (`planByID` / `saveByID`: update by key, restore, create under the key, unique tax-code fallback). |
+| same | tutor `born_date` with non-ASCII digits / unparsable by Go | `:219`, `:223` | ported | Ported in t2subsa (strptime reads the digits of other scripts). |
+| same | non-ASCII tax code | `:262` | ported | Ported in t2subsa (`dto.PythonUpper`, the full `str.upper()` mapping; the lookup stays `UPPER()` in the database). |
+| same | several tax-code matches with equal latest `creation_date` | `:272` | ported | Ported in t2subsa (the same `ORDER BY creation_date DESC LIMIT 1` query Django runs, so the database breaks the tie in both). |
+| same | tax-code match / main tutor is the edited associate | `:277`, `:311` | ported | Ported in t2subsa (the stale instance's `save()` writes the old values back; a deleted self tutor is inserted again). |
+| same | main tutor referenced by other tables | `:318` | ported | Ported in t2subsa (deleted through the Collector port: SET_NULL references and payments with their receivers). |
 | same | `X-Group-Id` not a UUID / not a group on the create path | (ErrSubscriptionEditServer, Django also fails) | C | Django fails too; not a parity gap |
 | (doc) subscription/add, renew, transfer "not routed in Go" | — | — | — | Stale text: renew and transfer are now ported (subscription-renew.md, subscription-transfer.md) and add is in subscription-create.md |
 
 ### subscription-sign.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/sign | generated key `subscriptions/<id>/signature_<ts>.png` already in bucket | `service/subscription_sign.go:163`, `ErrSubscriptionSignNotPorted` | C | The timestamp has microsecond precision (`:107-113`), and Django uses the same scheme (`subscriptions_models.py` `set_signature_from_base64`). A collision needs two uploads for one subscription in the same microsecond, or a hand-placed object. UI callers: `Members/modals/SignatureModal.svelte:13`, `components/signature/DocumentSignatureModal.svelte:19` |
+| POST subscription/sign | generated key `subscriptions/<id>/signature_<ts>.png` already in bucket | `service/subscription_sign.go:163`, `ErrSubscriptionSignNotPorted` | C (kept: `get_available_name` appends 7 random characters, so the stored name has no fixed value) | The timestamp has microsecond precision (`:107-113`), and Django uses the same scheme (`subscriptions_models.py` `set_signature_from_base64`). A collision needs two uploads for one subscription in the same microsecond, or a hand-placed object. UI callers: `Members/modals/SignatureModal.svelte:13`, `components/signature/DocumentSignatureModal.svelte:19` |
 
 ### subscription-lifecycle.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1264,7 +1264,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-approve.md
 | route | refusal condition | Go site | class | notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/approve | none | — | — | Doc: nothing refused |
+| POST subscription/<uid>/approve | none | — | ported | Nothing is refused (doc: nothing refused). |
 
 ### subscription-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1275,8 +1275,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | same | course-subscription membership payments with an instructor or an invoice | `:994` | **A** (invoice) / B (instructor) (both ported in v2-documents) | Paying a membership installment with invoice generation (default `generate_invoice` True, `payment_views.py:1761`), or cancelling it, leaves an invoice on the payment. Instructor on a membership payment: legacy: yes, medium |
 | same | course-subscription membership payments with an instructor or an invoice | — | ported | Ported in v2-misc (nested invoice and instructor rendered). |
 | GET list / list/all / info / calendar | association-scoped athlete session (athlete impersonation with association scope) | `service/subscription_reads.go` (`sessionVisible`) | **ported** (famvis) | Reached when staff impersonate an athlete and open the athlete pages (`SubscriptionList.svelte:40`, `EditSubscription.svelte:23`, `Calendar.svelte:92`). Not reached in normal athlete or owner use |
-| GET subscription/list | orderings compiled with rows / relation paths / transforms / `?` | `:166` (lazy), `repository/subscription_reads.go:252` | B | UI sort fields are `associate`, `age`, `creation_date`, `status_flag` (`MembersList.svelte:191-356`), all handled (`service/subscription_reads.go:525-539`), plus `sort_lastname_*` flags. legacy: no |
-| GET subscription/list | search terms with chars ≥ U+0250 or U+0130 | `:141` | B | Exotic Unicode (Greek, Cyrillic, CJK, Turkish dotted I). legacy: no. medium |
+| GET subscription/list | orderings compiled with rows / relation paths / transforms / `?` | `:166` (lazy), `repository/subscription_reads.go:252` | B (the `_has_future_renewal` annotation is ported in t2subsa; `?` kept: random order, no fixed answer; relation paths, reverse accessors and transforms kept: the join repeats rows per related row and orders ties as the Postgres plan returns them, as for personas) | UI sort fields are `associate`, `age`, `creation_date`, `status_flag` (`MembersList.svelte:191-356`), all handled (`service/subscription_reads.go:525-539`), plus `sort_lastname_*` flags. legacy: no |
+| GET subscription/list | search terms with chars ≥ U+0250 or U+0130 | `:141` | ported | Ported earlier through the shared search (`dto.PythonLower`, personas-reads); t2subsa adds a Greek and dotted-I case. |
 
 ### subscription-medical.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1287,7 +1287,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-tags.md
 | route | refusal condition | Go site | class | notes |
 |---|---|---|---|---|
-| tags routes | none | — | — | Doc: "nothing is refused" |
+| tags routes | none | — | ported | Nothing is refused (doc: "nothing is refused"). |
 
 ### subscription-renew.md
 | route | refusal condition | Go site | class | evidence / notes |

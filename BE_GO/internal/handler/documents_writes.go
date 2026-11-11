@@ -241,6 +241,10 @@ func (h *DocumentUploadsHandler) Update(c echo.Context) error {
 // UploadDocument follows subscription_upload_document: is_valid_uuid, the
 // lookup (500 when missing), then request.data.
 func (h *DocumentUploadsHandler) UploadDocument(c echo.Context) error {
+	raw, err := bufferMultipart(c)
+	if err != nil {
+		return restError(c, err)
+	}
 	identity, err := messageMutationsIdentity(c, h.actors, h.identities, http.MethodPost, "subscription_upload_document")
 	if identity == nil {
 		return err
@@ -257,12 +261,17 @@ func (h *DocumentUploadsHandler) UploadDocument(c echo.Context) error {
 	if err = h.uploads.UploadTarget(request.Context(), *identity, id, group); err != nil {
 		return h.failure(c, err)
 	}
-	write, release, err := admitRESTWrite(c, h.operations, h.audit)
-	if write == nil {
+	// The multipart parse is Django's (transfer-encoded fields, header rules), shared with the certificate uploads.
+	ctx, body, audit, release, err := h.admit(c, uploadBody(c, raw))
+	if err != nil {
+		var input *restInputError
+		if errors.As(err, &input) {
+			return restError(c, err)
+		}
 		return err
 	}
 	defer release()
-	if err = h.uploads.UploadDocument(write.Context, *identity, id, group, write.Body, write.Audit); err != nil {
+	if err = h.uploads.UploadDocument(ctx, *identity, id, group, body, audit); err != nil {
 		return h.failure(c, err)
 	}
 	return c.JSON(http.StatusOK, map[string]string{"mgs": "file uploaded"})

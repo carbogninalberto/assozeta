@@ -76,6 +76,8 @@ class ModuleResponses(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, null=True)
     attachments = models.ManyToManyField(Document, blank=True)
+    # SHA-256 of the secret handed to the respondent when the response is created.
+    attachment_token_hash = models.CharField(max_length=64, blank=True, default='')
 
     class Meta:
         indexes = [
@@ -84,4 +86,4 @@ class ModuleResponses(models.Model):
 
 
 auditlog.register(Module)
-auditlog.register(ModuleResponses)
+auditlog.register(ModuleResponses, exclude_fields=['attachment_token_hash'])

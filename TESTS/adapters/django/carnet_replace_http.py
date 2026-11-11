@@ -66,8 +66,12 @@ def deleted_changes(model, row):
     """auditlog's delete diff: every stored field against None, None-valued
     fields kept only for foreign keys and DateTimeFields ('None') and JSON
     fields ('null')."""
+    from auditlog.registry import auditlog
+    excluded = set(auditlog.get_model_fields(model)['exclude_fields']) if auditlog.contains(model) else set()
     changes = {}
     for field in model._meta.concrete_fields:
+        if field.name in excluded:
+            continue
         value = getattr(row, field.attname)
         if value is None:
             if field.is_relation or field.get_internal_type() == 'DateTimeField':

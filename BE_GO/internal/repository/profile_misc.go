@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -240,32 +239,6 @@ func (t *onboardingTransaction) SaveUser(ctx context.Context, v domain.Onboardin
  lead_sport_market_channel=$9, phone=$10 WHERE user_id=$1`, v.ID, v.BalanceSheetYear, v.BalanceSheetStartDay, v.BalanceSheetStartMonth,
 		v.SubscriptionStartDay, v.SubscriptionStartMonth, v.Role, v.Size, v.Channel, v.Phone)
 	return err
-}
-
-// RefusedUserSave sends the UPDATE with literal values, as psycopg2 interpolates them, inside a savepoint and
-// answers str(error): the message, then DETAIL when the server sent one.
-func (t *onboardingTransaction) RefusedUserSave(ctx context.Context, user string, assignments []domain.OnboardingLiteral) (string, error) {
-	const savepoint = "onboarding_user_literals"
-	if _, err := t.tx.ExecContext(ctx, `SAVEPOINT `+savepoint); err != nil {
-		return "", err
-	}
-	parts := make([]string, len(assignments))
-	for i, item := range assignments {
-		parts[i] = item.Column + "=" + item.Literal
-	}
-	_, err := t.tx.ExecContext(ctx, `UPDATE bakney_user SET `+strings.Join(parts, ", ")+` WHERE user_id=$1`, user)
-	var refused *pgconn.PgError
-	if !errors.As(err, &refused) {
-		return "", err
-	}
-	if _, err = t.tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT `+savepoint); err != nil {
-		return "", err
-	}
-	text := refused.Message + "\n"
-	if refused.Detail != "" {
-		text = refused.Message + "\nDETAIL:  " + refused.Detail + "\n"
-	}
-	return text, nil
 }
 
 func (t *onboardingTransaction) Flags(ctx context.Context, user string) ([]domain.OnboardingFlags, error) {

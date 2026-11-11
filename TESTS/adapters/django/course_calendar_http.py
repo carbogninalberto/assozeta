@@ -116,6 +116,8 @@ def check_state(effect, after, seeded):
             claimed.add(bound(ref))
         contract.require(set(rows) == claimed, f'state.{kind}-rows')
         for row in expected:
+            if not same(row, rows[bound(row['ref'])]):
+                print('state mismatch', kind, json.dumps(row, sort_keys=True, default=str), json.dumps(rows[bound(row['ref'])], sort_keys=True, default=str))
             contract.require(same(row, rows[bound(row['ref'])]), f'state.{kind}-values')
     return actual
 

@@ -259,6 +259,17 @@ NOT_ASSOCIATION = {'error': 'You are not a sport association.'}
 NOT_FOUND = {'error': 'Not found'}
 NO_ASSOCIATION = {'error': 'SportAssociation matching query does not exist.'}
 FORM = 'application/x-www-form-urlencoded'
+
+
+def multipart(*parts):
+    """A multipart/form-data body: (name, filename or None, content) parts; returns (body, content type)."""
+    boundary = 'testboundary4f2a'
+    lines = []
+    for name, filename, content in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename else '')
+        lines.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n\r\n{content}\r\n')
+    return ''.join(lines) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
 OWNER_USER = {'first_name': 'Message', 'last_name': 'Fixture', 'email': 'message-reads-700001@example.test', 'phone': None,
               'username': 'message-reads-700001', 'role': 1}
 GROUP = {'X-Group-Id': IDS['own_group']}
@@ -605,7 +616,8 @@ add('add-service-without-category-server-error', 'owner', A('camp'), 500,
 # ---------------------------------------------------------------------------
 
 
-def created(name, actor, camp, registration, selected, body, *, status=2, explicit_id=None, created_at=None, group=None, form=None):
+def created(name, actor, camp, registration, selected, body, *, status=2, explicit_id=None, created_at=None, group=None, form=None,
+            form_type=FORM):
     """One add: the subscription, one subscription period per selected period, one payment when any."""
     sub_key = explicit_id or '$sub'
     payment_row = changes = None
@@ -639,7 +651,7 @@ def created(name, actor, camp, registration, selected, body, *, status=2, explic
             item['camps_and_retreats_subscription'] = explicit_id
     result = effect(actor, created_sub=sub_row, created_sps=sps, created_payment_row=payment_row, events=events)
     if form:
-        add(name, actor, A(camp), 201, response, method='POST', raw_body=form, content_type=FORM, headers=GROUP if group else None,
+        add(name, actor, A(camp), 201, response, method='POST', raw_body=form, content_type=form_type, headers=GROUP if group else None,
             effect=result)
     else:
         add(name, actor, A(camp), 201, response, method='POST', body=body, headers=GROUP if group else None, effect=result)
@@ -663,6 +675,15 @@ created('add-athlete-family-registration', 'athlete', 'camp', 'sibling', [], {'s
 created('add-owner-group-payment', 'owner', 'camp', 'grouped', [('july', ['kayak'])],
         {'subscription': rid('grouped'), 'periods': [period_body('july', 'kayak')]}, group='own_group')
 created('add-owner-form', 'owner', 'plain', 'mario', [], None, form=f'subscription={rid("mario")}&status_flag=2')
+created('add-owner-multipart-with-file', 'owner', 'plain', 'mario', [], None,
+        form=multipart(('subscription', None, rid('mario')), ('status_flag', None, '2'), ('allegato', 'a.txt', 'dati'))[0],
+        form_type=multipart()[1])
+add('add-multipart-file-as-registration', 'owner', A('camp'), 400, {'error': repr_detail([('subscription', [('“id.bin” is not a valid UUID.', 'invalid')])])},
+    method='POST', raw_body=multipart(('subscription', 'id.bin', 'x'))[0], content_type=multipart()[1])
+add('add-multipart-file-as-periods', 'owner', A('camp'), 400, {'error': repr_single('periods', 'A list of periods is required.')},
+    method='POST', raw_body=multipart(('subscription', None, rid('mario')), ('periods', 'p.json', '[]'))[0], content_type=multipart()[1])
+add('add-form-periods-repeated-not-list', 'owner', A('camp'), 400, {'error': repr_single('periods', 'A list of periods is required.')},
+    method='POST', raw_body=f'subscription={rid("mario")}&periods={pid("july")}&periods={pid("august")}', content_type=FORM)
 def failed_payment(name, registration, selected, body, message, *, headers=None):
     """An add whose payment INSERT fails: the view is atomic, so nothing stays; the error text is the driver's."""
     add(name, 'owner', A('camp'), 500, {'error': message}, method='POST', body=body, headers=headers)
@@ -778,6 +799,15 @@ add('update-null-service-skipped-untitled-camp', 'owner', U('extra'), 200, UPDAT
                           subperiod_paid('sept')]))
 add('update-form-without-periods', 'owner', U('bus'), 200, UPDATED, method='PATCH', raw_body='note=1', content_type=FORM,
     effect=effect('owner', deleted_sps=[OLD_SP('bus', 'july')], events=[audit(SUBPERIOD, OLD_SP('bus', 'july'), 2, '$deleted', OWN, ACTOR_PATH)]))
+
+add('update-multipart-with-file', 'owner', U('bus'), 200, UPDATED, method='PATCH',
+    raw_body=multipart(('note', None, '1'), ('allegato', 'a.txt', 'dati'))[0], content_type=multipart()[1])
+add('update-multipart-empty-periods-file', 'owner', U('bus'), 200, UPDATED, method='PATCH',
+    raw_body=multipart(('periods', 'p.json', ''))[0], content_type=multipart()[1])
+add('update-multipart-periods-file-server-error', 'owner', U('bus'), 500, {'error': 'byte indices must be integers or slices, not str'},
+    method='PATCH', raw_body=multipart(('periods', 'p.json', '[]'))[0], content_type=multipart()[1])
+add('update-form-periods-text-server-error', 'owner', U('bus'), 500, {'error': "string indices must be integers, not 'str'"},
+    method='PATCH', raw_body=f'periods={pid("july")}&periods={pid("august")}', content_type=FORM)
 
 # ---------------------------------------------------------------------------
 # delete

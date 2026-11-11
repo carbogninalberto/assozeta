@@ -138,7 +138,10 @@ func (h *ImpersonationManagementHandler) dispatch(c echo.Context, users bool) er
 // QueryDict decodes valid percent escapes while retaining malformed escapes,
 // replaces malformed UTF-8, and collapses repeated decoded keys to their last
 // value. Keep this compatibility boundary local to management views.
-func parseImpersonationQuery(raw string) domain.RequestObject {
+func parseImpersonationQuery(raw string) domain.RequestObject { return parseQueryPairs(raw, false) }
+
+// parseQueryPairs decodes a query string or urlencoded body; withAll also keeps every value of a repeated key (QueryDict.getlist).
+func parseQueryPairs(raw string, withAll bool) domain.RequestObject {
 	decode := func(value string) string {
 		hex := func(c byte) (byte, bool) {
 			switch {
@@ -181,6 +184,12 @@ func parseImpersonationQuery(raw string) domain.RequestObject {
 		key, value, _ := strings.Cut(pair, "=")
 		key, value = decode(key), decode(value)
 		if position, ok := positions[key]; ok {
+			if withAll {
+				if result[position].All == nil {
+					result[position].All = []any{result[position].Value}
+				}
+				result[position].All = append(result[position].All, value)
+			}
 			result[position].Value = value
 		} else {
 			positions[key] = len(result)

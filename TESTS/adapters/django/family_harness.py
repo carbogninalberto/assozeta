@@ -41,6 +41,25 @@ def seed_extra_users(source, fixture):
         fixture['tokens'][label] = str(token)
 
 
+def delete_unreadable(model, keep):
+    """Delete the rows outside keep that hold a timestamp the driver cannot read.
+
+    Django loads rows to delete them (signals, cascades), which fails for an aware
+    value stored with a UTC instant before year 1 or after year 9999; those rows go
+    by primary key, without loading them.
+    """
+    stamps = [field.attname for field in model._meta.concrete_fields if field.get_internal_type() == 'DateTimeField']
+    if not stamps:
+        return
+    for pk in list(model._base_manager.exclude(pk__in=keep).values_list('pk', flat=True)):
+        for name in stamps:
+            try:
+                model._base_manager.filter(pk=pk).values_list(name, flat=True).get()
+            except (ValueError, OverflowError):
+                model._base_manager.filter(pk=pk)._raw_delete(model._base_manager.db)
+                break
+
+
 def fixture_context_for(contract, seed, *, purge=()):
     """The driver's fixture_context.
 
@@ -85,10 +104,16 @@ def fixture_context_for(contract, seed, *, purge=()):
                 with disable_auditlog():
                     LogEntry.objects.exclude(pk__in=original_audit).delete()
                     if fixture is not None:
+                        kept = {}
                         for model, keep in original.items():
                             # Only this model's seeded keys: pk types differ between models.
                             seeded = [pk for created, pk in fixture['created'] if created is model]
-                            model._base_manager.exclude(pk__in=[*keep, *seeded]).delete()
+                            kept[model] = [*keep, *seeded]
+                        # Rows the driver cannot read go first: deleting a parent loads its children.
+                        for model, keys in kept.items():
+                            delete_unreadable(model, keys)
+                        for model, keys in kept.items():
+                            model._base_manager.exclude(pk__in=keys).delete()
                         shared.delete_created(fixture)
                 carnets.state_unchanged(before, scopes.snapshot_state(apps))
                 return True

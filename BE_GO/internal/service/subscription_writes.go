@@ -215,12 +215,10 @@ func (s *SubscriptionEdits) Edit(ctx context.Context, identity domain.ResolvedId
 		// str() of None, numbers, booleans, lists and dicts never parses as %d/%m/%Y.
 		return domain.ErrSubscriptionEditServer
 	}
-	if dto.StrptimeUnicodeDigits(text) {
-		return domain.ErrSubscriptionEditNotPorted
-	}
+	// strptime reads the decimal digits of other scripts (ParseDMYDate).
 	tutorBorn, ok, err := dto.ParseDMYDate(text)
 	if err != nil {
-		return domain.ErrSubscriptionEditNotPorted
+		return err
 	}
 	if !ok {
 		return domain.ErrSubscriptionEditServer
@@ -248,34 +246,39 @@ func (s *SubscriptionEdits) Edit(ctx context.Context, identity domain.ResolvedId
 	if invalid != nil {
 		return invalid
 	}
+	var byID *subscriptionEditByID
 	if write.AssociateID != nil {
-		// create() with associate_id updates or creates that row: not ported.
-		return domain.ErrSubscriptionEditNotPorted
+		// create() with associate_id updates or creates that row by key.
+		if byID, err = s.planByID(ctx, tx, write, group, header); err != nil {
+			return err
+		}
 	}
 
 	// Plan every refusal before the first write.
 	var target *domain.SubscriptionEditAssociate
 	created := domain.SubscriptionEditAssociate{ID: s.ids(), Sex: "A", CreationDate: now.Truncate(time.Microsecond)}
 	tax := write.Text["tax_code"]
-	if tax != nil && *tax != "" {
-		if !dto.AssociateTaxCodeASCII(*tax) {
-			return domain.ErrSubscriptionEditNotPorted
-		}
+	if byID != nil {
+		// The associate_id branch matches the tax code as sent (no upper-casing) and the header group is not stored on update.
+	} else if tax != nil && *tax != "" {
 		upper := dto.AssociateUpper(*tax)
 		write.Text["tax_code"] = &upper
 		matches, err := tx.TaxCodeMatches(ctx, upper, write.AssociationID, group)
 		if err != nil {
 			return err
 		}
-		if len(matches) > 1 && matches[0].CreationDate.Equal(matches[1].CreationDate) {
-			// order_by('-creation_date').first() between equal dates.
-			return domain.ErrSubscriptionEditNotPorted
-		}
-		if len(matches) > 0 {
-			target = &matches[0]
-			if target.ID == associate.ID {
-				return domain.ErrSubscriptionEditNotPorted
+		if len(matches) > 1 {
+			// MultipleObjectsReturned: order_by('-creation_date').first(), a tie is broken by the database as in Django.
+			newest, err := tx.NewestTaxCodeMatch(ctx, upper, write.AssociationID, group)
+			if err != nil {
+				return err
 			}
+			if newest == nil {
+				return domain.ErrSubscriptionEditServer
+			}
+			target = newest
+		} else if len(matches) == 1 {
+			target = &matches[0]
 		}
 	} else if header != "" {
 		// Associate.objects.create stores the raw X-Group-Id.
@@ -295,6 +298,8 @@ func (s *SubscriptionEdits) Edit(ctx context.Context, identity domain.ResolvedId
 	if err != nil {
 		return err
 	}
+	// The instance the view loaded first: its save() at the end writes these values back.
+	stale := *associate
 	var main *domain.SubscriptionEditRelation
 	promote := false
 	for index := range relations {
@@ -306,16 +311,19 @@ func (s *SubscriptionEdits) Edit(ctx context.Context, identity domain.ResolvedId
 	if main == nil && len(relations) > 0 {
 		main, promote = &relations[0], true
 	}
+	var snapshot string
+	collected := false
 	if main != nil {
-		if main.TutorID == associate.ID {
-			return domain.ErrSubscriptionEditNotPorted
-		}
 		other, err := tx.OtherReferences(ctx, main.TutorID)
 		if err != nil {
 			return err
 		}
-		if other {
-			return domain.ErrSubscriptionEditNotPorted
+		collected = other
+		if main.TutorID == associate.ID {
+			// The associate is its own main tutor: the delete removes its row, the final save() inserts it back.
+			if snapshot, err = tx.AssociateSnapshot(ctx, associate.ID); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -326,10 +334,18 @@ func (s *SubscriptionEdits) Edit(ctx context.Context, identity domain.ResolvedId
 	index := subscriptionEditIndex{tx: tx, actor: actor}
 	auditContext, at := paymentCategoryAuditContext(identity, audit), now.Truncate(time.Microsecond)
 	record := func(model, key string, action int, changes map[string][2]string, association *string, path string, createdRow bool) error {
-		return tx.Audit(ctx, domain.SubscriptionEditAudit{Model: model, Key: key, Action: action, Created: createdRow, Changes: changes,
+		row := ""
+		if byID != nil && key == byID.spelling && key != byID.id {
+			row = byID.id // object_pk is the spelling the client sent; the stored row is read by its canonical key
+		}
+		return tx.Audit(ctx, domain.SubscriptionEditAudit{Model: model, Key: key, Row: row, Action: action, Created: createdRow, Changes: changes,
 			Association: association, Path: path, Context: auditContext, At: at})
 	}
-	if target == nil {
+	if byID != nil {
+		if target, err = s.saveByID(ctx, tx, byID, write, index, record, now, group); err != nil {
+			return err
+		}
+	} else if target == nil {
 		applyAssociateTutorWrite(&created, write)
 		if err = tx.InsertAssociate(ctx, created); err != nil {
 			return err
@@ -373,38 +389,75 @@ func (s *SubscriptionEdits) Edit(ctx context.Context, identity domain.ResolvedId
 				return err
 			}
 		}
-		deletes, changes, err := tx.DeleteTutor(ctx, main.TutorID)
-		if err != nil {
-			return err
-		}
-		for _, relation := range deletes {
-			association, path, err := index.resolve(ctx, false, nil, "", relation.Changes)
+		if collected {
+			// Other tables reference the tutor: Associate.delete() through the Collector port (SET_NULL, payments, receivers).
+			if err = tx.DeleteTutorCollected(ctx, main.TutorID, auditContext, group, func() time.Time { return at }); err != nil {
+				return err
+			}
+		} else {
+			deletes, changes, err := tx.DeleteTutor(ctx, main.TutorID)
 			if err != nil {
 				return err
 			}
-			if err = record("associatetutorrelation", relationKey(relation.ID), 2, relation.Changes, association, path, false); err != nil {
+			for _, relation := range deletes {
+				association, path, err := index.resolve(ctx, false, nil, "", relation.Changes)
+				if err != nil {
+					return err
+				}
+				if err = record("associatetutorrelation", relationKey(relation.ID), 2, relation.Changes, association, path, false); err != nil {
+					return err
+				}
+			}
+			association, path, err := index.resolve(ctx, false, nil, "", map[string][2]string{"sport_association": {changes["sport_association"][0], "None"}})
+			if err != nil {
+				return err
+			}
+			if err = record("associate", main.TutorID, 2, changes, association, path, false); err != nil {
 				return err
 			}
 		}
-		association, path, err := index.resolve(ctx, false, nil, "", map[string][2]string{"sport_association": {changes["sport_association"][0], "None"}})
+	}
+	// associate.save() of the instance the view loaded first: every column is written back (undoing a tutor update of the
+	// same row) and is_minor is set; a row the main tutor delete removed is inserted again.
+	saved := stale
+	saved.IsMinor = true
+	if snapshot != "" {
+		if err = tx.RestoreAssociate(ctx, snapshot); err != nil {
+			return err
+		}
+		// auditlog's pre_save finds no old row (deleted above) and logs an update against None, resolved through the
+		// changes; post_save then logs the creation, resolved directly (the row is back).
+		found := group == nil || stale.GroupID != nil && *stale.GroupID == *group
+		changes := map[string][2]string{"sport_association": {"None", subscriptionEditValue(stale.AssociationID)}}
+		association, path, err := index.resolve(ctx, false, nil, "", changes)
 		if err != nil {
 			return err
 		}
-		if err = record("associate", main.TutorID, 2, changes, association, path, false); err != nil {
+		if err = record("associate", stale.ID, 1, nil, association, path, true); err != nil {
 			return err
 		}
+		association, path, err = index.resolve(ctx, found, stale.AssociationID, "direct", changes)
+		if err != nil {
+			return err
+		}
+		if err = record("associate", stale.ID, 0, nil, association, path, true); err != nil {
+			return err
+		}
+		return tx.Commit()
 	}
-	if !associate.IsMinor {
-		saved := *associate
-		saved.IsMinor = true
+	current := stale
+	if target != nil && target.ID == stale.ID {
+		current = *target
+	}
+	if changes := associateChanges(current, saved); len(changes) > 0 {
 		if err = tx.SaveAssociate(ctx, saved); err != nil {
 			return err
 		}
-		association, path, err := index.resolve(ctx, true, associate.AssociationID, "direct", map[string][2]string{"is_minor": {"False", "True"}})
+		association, path, err := index.resolve(ctx, true, current.AssociationID, "direct", changes)
 		if err != nil {
 			return err
 		}
-		if err = record("associate", associate.ID, 1, map[string][2]string{"is_minor": {"False", "True"}}, association, path, false); err != nil {
+		if err = record("associate", stale.ID, 1, changes, association, path, false); err != nil {
 			return err
 		}
 	}
@@ -421,4 +474,152 @@ func SubscriptionEditID(raw string) (string, error) {
 		return "", err
 	}
 	return id.String(), nil
+}
+
+// subscriptionEditByID is AssociateSerializer.create's associate_id branch, planned before the first write.
+type subscriptionEditByID struct {
+	spelling string                            // the key as sent: object_pk and object_repr of the entries
+	id       string                            // the canonical key
+	instance *domain.SubscriptionEditAssociate // all_objects() row with that key
+	inTarget *domain.SubscriptionEditAssociate // the named association's row with the same tax code (first by key)
+	conflict *domain.SubscriptionEditAssociate // create(): the row the unique tax code index points at
+	create   bool
+	row      *domain.SubscriptionEditAssociate // the row that is saved
+}
+
+// planByID looks the rows up and refuses, before any write, what Django's save() would break on (the unique tax code index: a
+// 500 after nothing was written).
+func (s *SubscriptionEdits) planByID(ctx context.Context, tx domain.SubscriptionEditTransaction, write dto.AssociateTutorWrite, group *string,
+	header string) (*subscriptionEditByID, error) {
+	parsed, err := paymentInfoParseUUID(*write.AssociateID)
+	if err != nil {
+		return nil, domain.ErrSubscriptionEditServer // UUIDField.to_python's ValidationError
+	}
+	plan := &subscriptionEditByID{spelling: *write.AssociateID, id: parsed.String()}
+	if plan.instance, err = tx.AssociateAny(ctx, plan.id); err != nil {
+		return nil, err
+	}
+	tax := write.Text["tax_code"]
+	named := write.AssociationPresent && write.AssociationID != nil
+	taxed := tax != nil && *tax != ""
+	// taken: the saved row would break the partial unique index (IntegrityError, unhandled: the 500 page).
+	taken := func(row domain.SubscriptionEditAssociate) (bool, error) {
+		applyAssociateTutorWrite(&row, write)
+		if row.TaxCode == nil || row.AssociationID == nil {
+			return false, nil
+		}
+		return tx.LiveTaxCodeTaken(ctx, *row.TaxCode, *row.AssociationID, row.ID)
+	}
+	switch {
+	case plan.instance != nil:
+		if named && taxed {
+			if plan.inTarget, err = tx.AssociateByTaxCode(ctx, *tax, *write.AssociationID); err != nil {
+				return nil, err
+			}
+		}
+		plan.row = plan.instance
+		if plan.inTarget != nil {
+			plan.row = plan.inTarget
+		}
+	default:
+		plan.create = true
+		if header != "" {
+			// Associate.objects.create stores the raw X-Group-Id.
+			if group == nil {
+				return nil, domain.ErrSubscriptionEditServer
+			}
+			if exists, err := tx.GroupExists(ctx, *group); err != nil || !exists {
+				if err != nil {
+					return nil, err
+				}
+				return nil, domain.ErrSubscriptionEditServer
+			}
+		}
+		if named && taxed {
+			conflict, err := tx.LiveTaxCodeTaken(ctx, *tax, *write.AssociationID, plan.id)
+			if err != nil {
+				return nil, err
+			}
+			if conflict {
+				// create() raises IntegrityError inside its atomic block; the handler then updates the row the tax code names.
+				if plan.conflict, err = tx.AssociateByTaxCode(ctx, *tax, *write.AssociationID); err != nil {
+					return nil, err
+				}
+				if plan.conflict == nil {
+					return nil, domain.ErrSubscriptionEditServer
+				}
+				plan.row = plan.conflict
+			}
+		}
+	}
+	if plan.row != nil {
+		if blocked, err := taken(*plan.row); err != nil || blocked {
+			if err != nil {
+				return nil, err
+			}
+			return nil, domain.ErrSubscriptionEditServer
+		}
+	}
+	return plan, nil
+}
+
+// saveByID writes the planned row and its audit entry; the saved row is returned (nil after a creation).
+func (s *SubscriptionEdits) saveByID(ctx context.Context, tx domain.SubscriptionEditTransaction, plan *subscriptionEditByID,
+	write dto.AssociateTutorWrite, index subscriptionEditIndex, record func(model, key string, action int, changes map[string][2]string,
+		association *string, path string, createdRow bool) error, now time.Time, group *string) (*domain.SubscriptionEditAssociate, error) {
+	if plan.row == nil {
+		created := domain.SubscriptionEditAssociate{ID: plan.id, Sex: "A", CreationDate: now.Truncate(time.Microsecond)}
+		created.GroupID = group
+		applyAssociateTutorWrite(&created, write)
+		if err := tx.InsertAssociate(ctx, created); err != nil {
+			return nil, err
+		}
+		found := group == nil || created.GroupID != nil && *created.GroupID == *group
+		changes := map[string][2]string{"sport_association": {"None", subscriptionEditValue(created.AssociationID)}}
+		association, path, err := index.resolve(ctx, found, created.AssociationID, "direct", changes)
+		if err != nil {
+			return nil, err
+		}
+		if err = record("associate", plan.spelling, 0, nil, association, path, true); err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+	row := *plan.row
+	old := row
+	applyAssociateTutorWrite(&row, write)
+	row.Deleted = false
+	if err := tx.SaveAssociate(ctx, row); err != nil {
+		return nil, err
+	}
+	key := row.ID
+	if row.ID == plan.id {
+		key = plan.spelling
+	}
+	found := !old.Deleted && (group == nil || old.GroupID != nil && *old.GroupID == *group)
+	if old.Deleted {
+		if err := tx.SetAssociateDeleted(ctx, row.ID, false); err != nil {
+			return nil, err
+		}
+		// The default manager hides the previous state: an update against None.
+		changes := map[string][2]string{"sport_association": {"None", subscriptionEditValue(row.AssociationID)}}
+		association, path, err := index.resolve(ctx, false, nil, "", changes)
+		if err != nil {
+			return nil, err
+		}
+		if err = record("associate", key, 1, nil, association, path, true); err != nil {
+			return nil, err
+		}
+		return &row, nil
+	}
+	if changes := associateChanges(old, row); len(changes) > 0 {
+		association, path, err := index.resolve(ctx, found, old.AssociationID, "direct", changes)
+		if err != nil {
+			return nil, err
+		}
+		if err = record("associate", key, 1, changes, association, path, false); err != nil {
+			return nil, err
+		}
+	}
+	return &row, nil
 }

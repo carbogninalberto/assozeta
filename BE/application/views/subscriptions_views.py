@@ -65,6 +65,7 @@ from application.serializers.subscriptions_serializers import SubscriptionSerial
 from application.serializers.auth_serializers import UserAccountSerializer
 from application.models.subscriptions_models import Subscription, future_renewal_exists
 from application.serializers.user_serializers import AssociateSerializer, MedicalAppointmentsSerializer
+from application.utils.xlsx_text import xlsx_safe_frame
 from application.utils.api_utils import is_valid_uuid, SubscriptionMaps, BalanceSheetData, KTDatatablePagination, \
     check_date, generate_image_with_text
 from application.utils.notification_utils import NotificationUtils
@@ -1676,7 +1677,7 @@ def _export_to_excel(dataframe, cols):
     """Export dataframe to Excel format."""
     f = BytesIO()
     writer = pandas.ExcelWriter(f, engine='xlsxwriter')
-    dataframe.to_excel(writer, sheet_name='Libro Soci')
+    xlsx_safe_frame(dataframe).to_excel(writer, sheet_name='Libro Soci')
     worksheet = writer.sheets['Libro Soci']
     for i, col in enumerate(cols):
         worksheet.set_column(i, i, len(col) + 10)

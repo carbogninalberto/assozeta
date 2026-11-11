@@ -110,3 +110,18 @@ func PythonLower(text string) string {
 	}
 	return out.String()
 }
+
+// PythonUpper is str.upper(): the full upper-case mapping of CPython's Unicode database (SpecialCasing included, so
+// 'ß' is "SS"); pythonUpperTable lists every code point it changes.
+func PythonUpper(text string) string {
+	var out strings.Builder
+	out.Grow(len(text))
+	for _, r := range text {
+		if mapped, ok := pythonUpperTable[r]; ok {
+			out.WriteString(mapped)
+		} else {
+			out.WriteRune(r)
+		}
+	}
+	return out.String()
+}

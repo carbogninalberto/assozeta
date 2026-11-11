@@ -1495,7 +1495,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "string indices must be integers, not 'str'"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -1667,7 +1667,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "User has no sportassociation."
+    "error": "Unable to update the onboarding data."
    },
    "effect": null,
    "body": {
@@ -2642,7 +2642,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "'day'"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -2735,7 +2735,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "Field 'subscription_start_day' expected a number but got 'abc'."
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -3513,7 +3513,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "cannot convert float infinity to integer"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -3600,7 +3600,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "Field 'subscription_start_day' expected a number but got [1, 'a']."
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -3696,7 +3696,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "Field 'subscription_start_month' expected a number but got {'a': 1}."
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -3791,7 +3791,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "smallint out of range\n"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -3884,7 +3884,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "smallint out of range\n"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -3971,7 +3971,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "Field 'subscription_start_month' expected a number but got 'x'."
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -5019,7 +5019,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "'lead_sport_association_size'"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -5109,7 +5109,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "string indices must be integers, not 'str'"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -5197,7 +5197,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "list indices must be integers or slices, not str"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -5285,7 +5285,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "'NoneType' object is not subscriptable"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -6825,7 +6825,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "UsersOnboarding matching query does not exist."
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -7176,7 +7176,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "'InMemoryUploadedFile' object is not subscriptable"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -7263,7 +7263,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "string indices must be integers, not 'str'"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -7867,7 +7867,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "UsersOnboarding matching query does not exist."
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -7957,7 +7957,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "value too long for type character varying(150)\n"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [
@@ -8069,7 +8069,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "value too long for type character varying(20)\n"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [
@@ -8186,7 +8186,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "value too long for type character varying(20)\n"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [
@@ -8303,7 +8303,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "value too long for type character varying(150)\n"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [
@@ -9838,7 +9838,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "could not convert string to float: ''"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -9928,7 +9928,7 @@
    "headers": {},
    "status": 500,
    "response": {
-    "error": "could not convert string to float: '  '"
+    "error": "Unable to update the onboarding data."
    },
    "effect": {
     "audits": [],
@@ -10008,6 +10008,2438 @@
     "membership_data": {
      "membership_fee": "  ",
      "subscription_fee": "9"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-too-large",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 40000,
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-negative",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": -1,
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": null,
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": [
+       1
+      ],
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-dict",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": {},
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-huge",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 1180591620717411303424,
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": "abc",
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-text-too-large",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": "99999",
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-text-negative",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": "-3",
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-empty-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": "",
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-float-negative",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": -1.5,
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-fiscal-month-too-large",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "fiscal": {
+      "day": 1,
+      "month": 70000
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-day-float-overflow",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "{\"membership_data\": {\"season\": {\"day\": 1e400, \"month\": 2}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-misc-membership-season-day-float-too-large",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "{\"membership_data\": {\"season\": {\"day\": 1e5, \"month\": 2}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-misc-membership-season-day-nul-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": "1\u0000",
+      "month": 2
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-float",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "12",
+        "2.5"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 2,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 2.5,
+      "month": 3
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-bool",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "2",
+        "True"
+       ],
+       "subscription_start_month": [
+        "3",
+        "False"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 0,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": true,
+      "month": false
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-padded-text",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "1",
+        " 7 "
+       ],
+       "subscription_start_month": [
+        "0",
+        "1_1"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 7,
+      "subscription_start_month": 11,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": " 7 ",
+      "month": "1_1"
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-unicode-digits",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "7",
+        "١٢"
+       ],
+       "subscription_start_month": [
+        "11",
+        "٣"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 12,
+      "subscription_start_month": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": "١٢",
+      "month": "٣"
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-float-negative-zero",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "12",
+        "-0.5"
+       ],
+       "subscription_start_month": [
+        "3",
+        "4"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 0,
+      "subscription_start_month": 4,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": -0.5,
+      "month": 4
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-float-upper",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "0",
+        "32767.9"
+       ],
+       "subscription_start_month": [
+        "4",
+        "5"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 32767,
+      "subscription_start_month": 5,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "season": {
+      "day": 32767.9,
+      "month": 5
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-membership-season-exponent-float",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "subscription_start_day": [
+        "32767",
+        "10.0"
+       ],
+       "subscription_start_month": [
+        "5",
+        "2"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 10,
+      "subscription_start_month": 2,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "raw_body": "{\"membership_data\": {\"season\": {\"day\": 1e1, \"month\": 2}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-misc-membership-fiscal-bool-and-unicode",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": {
+    "audits": [
+     {
+      "model": "user",
+      "key": "owner",
+      "actor": "owner",
+      "changes": {
+       "balance_sheet_start_day": [
+        "15",
+        "True"
+       ],
+       "balance_sheet_start_month": [
+        "3",
+        "٤"
+       ]
+      }
+     }
+    ],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 10,
+      "subscription_start_month": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 4,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "membership_data": {
+     "fiscal": {
+      "day": true,
+      "month": "٤"
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-nul-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 10,
+      "subscription_start_month": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 4,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_size": "s",
+     "lead_sport_market_channel": "c",
+     "lead_sport_association_role": "a\u0000b"
+    }
+   }
+  },
+  {
+   "name": "profile-misc-lead-nul-phone-after-long-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/onboarding/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Unable to update the onboarding data."
+   },
+   "effect": {
+    "audits": [],
+    "associations": {
+     "own": {
+      "denomination": "Nuova ASD",
+      "tax_code": "12345678901",
+      "logo": null,
+      "sport": "7",
+      "subscription_fee": "0.00",
+      "membership_fee": null
+     },
+     "foreign": {
+      "denomination": "Message reads foreign",
+      "tax_code": "70000000002",
+      "logo": null,
+      "sport": null,
+      "subscription_fee": "25.00",
+      "membership_fee": "10.00"
+     },
+     "deleted": {
+      "denomination": "Message reads deleted",
+      "tax_code": "70000000003",
+      "logo": null,
+      "sport": "Calcio",
+      "subscription_fee": "0.00",
+      "membership_fee": "5.00"
+     }
+    },
+    "users": {
+     "owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 10,
+      "subscription_start_month": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 4,
+      "lead_sport_association_role": "1.5e+20",
+      "lead_sport_association_size": "1e-05",
+      "lead_sport_market_channel": "100.0",
+      "phone": "['1', 2]"
+     },
+     "foreign_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 9,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "lead_sport_association_role": null,
+      "lead_sport_association_size": null,
+      "lead_sport_market_channel": null,
+      "phone": null
+     },
+     "deleted_association_owner": {
+      "balance_sheet_year": 4,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 1,
+      "lead_sport_association_role": "a",
+      "lead_sport_association_size": "b",
+      "lead_sport_market_channel": "c",
+      "phone": null
+     }
+    },
+    "onboarding": {
+     "show": true,
+     "create_membership": true,
+     "view_membership": true,
+     "approve_payment": true,
+     "download_invoice": false,
+     "view_collaborators": true,
+     "view_settings": true
+    },
+    "instance_completed": true
+   },
+   "body": {
+    "lead_data": {
+     "lead_sport_association_size": "s",
+     "lead_sport_market_channel": "c",
+     "lead_sport_association_role": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "phone": "1\u00002"
     }
    }
   }

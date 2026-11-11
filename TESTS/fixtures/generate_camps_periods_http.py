@@ -161,6 +161,18 @@ REQUIRED, NULL, BLANK = ('This field is required.', 'required'), ('This field ma
 DATETIME = ('Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', 'invalid')
 NUMBER, INTEGER = ('A valid number is required.', 'invalid'), ('A valid integer is required.', 'invalid')
 UUID_INVALID = ('Must be a valid UUID.', 'invalid')
+NOT_STRING = ('Not a valid string.', 'invalid')
+
+
+def multipart(*parts):
+    """A multipart/form-data body: (name, filename or None, content) parts; returns (body, content type)."""
+    boundary = 'testboundary4f2a'
+    lines = []
+    for name, filename, content in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename else '')
+        lines.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n\r\n{content}\r\n')
+    return ''.join(lines) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
 missing_pk = lambda pk: (f'Invalid pk "{pk}" - object does not exist.', 'does_not_exist')
 bad_uuid = lambda value: (f'“{value}” is not a valid UUID.', 'invalid')
 too_long = lambda n: (f'Ensure this field has no more than {n} characters.', 'max_length')
@@ -399,7 +411,7 @@ def period_audit_view(row, fee=None):
             'max_text': text(row['max'])}
 
 
-def updated_period(actor, name, label, body, values, *, links=None, form=None):
+def updated_period(actor, name, label, body, values, *, links=None, form=None, form_type='application/x-www-form-urlencoded'):
     """Apply a partial update; the in-memory fee is str(float(fee)) for the audit diff."""
     row = STATE['periods'][label]
     before = period_audit_view(row)
@@ -418,7 +430,7 @@ def updated_period(actor, name, label, body, values, *, links=None, form=None):
     response = {'message': 'Updated successfully', 'period': period_data(label)}
     if form:
         add(name, actor, period_path(label, 'update'), 200, response, method='PATCH', raw_body=form,
-            content_type='application/x-www-form-urlencoded', effect=effect)
+            content_type=form_type, effect=effect)
     else:
         add(name, actor, period_path(label, 'update'), 200, response, method='PATCH', body=body, effect=effect)
 
@@ -506,7 +518,8 @@ add('update-same-key-no-copy', 'owner', period_path('august', 'update'), 200,
 # ---------------------------------------------------------------------------
 
 
-def created_service(actor, name, values, body=None, *, form=None, explicit_id=None, explicit_created=None, default_fee=False):
+def created_service(actor, name, values, body=None, *, form=None, explicit_id=None, explicit_created=None, default_fee=False,
+                    form_type='application/x-www-form-urlencoded'):
     row = {'created': explicit_created, **values}
     key = explicit_id or '$new'
     fee_text = '0.0' if default_fee else row['fee']
@@ -532,7 +545,7 @@ def created_service(actor, name, values, body=None, *, form=None, explicit_id=No
         stored['created_at'] = drf(explicit_created)
     effect = {'actor': actor, 'rows': {SERVICE: {key: stored}}, 'audit': events}
     if form:
-        add(name, actor, S_ADD, 201, response, method='POST', raw_body=form, content_type='application/x-www-form-urlencoded', effect=effect)
+        add(name, actor, S_ADD, 201, response, method='POST', raw_body=form, content_type=form_type, effect=effect)
     else:
         add(name, actor, S_ADD, 201, response, method='POST', body=body, effect=effect)
 
@@ -645,7 +658,7 @@ def payment_effects(label, rows, events, other_group=False):
                                                        'meta_payment_categories': copy.deepcopy(payment['meta'])}
 
 
-def updated_service(actor, name, label, body, values, *, form=None, walk=True, headers=None):
+def updated_service(actor, name, label, body, values, *, form=None, walk=True, headers=None, form_type='application/x-www-form-urlencoded'):
     row = STATE['services'][label]
     before = service_audit_view(row)
     row.update(values)
@@ -661,7 +674,7 @@ def updated_service(actor, name, label, body, values, *, form=None, walk=True, h
     response = {'message': 'Updated successfully', 'period': service_data(label)}
     if form:
         add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', raw_body=form,
-            content_type='application/x-www-form-urlencoded', effect=effect)
+            content_type=form_type, effect=effect)
     else:
         add(name, actor, service_path(label, 'update'), 200, response, method='PATCH', body=body, headers=headers, effect=effect)
 
@@ -694,6 +707,10 @@ updated_service('owner', 'services-update-move-period-recomputes', 'snack', {'ca
                 {'period': 'july'})
 updated_service('owner', 'services-update-form', 'kayak', None, {'fee': '16.00', 'category': None},
                 form='fee=16&payment_category=')
+updated_service('owner', 'services-update-multipart-with-file', 'kayak', None, {'title': 'Kayak con allegato'},
+                form=multipart(('title', None, 'Kayak con allegato'), ('allegato', 'a.txt', 'dati'))[0], form_type=multipart()[1])
+add('services-update-multipart-file-as-fee', 'owner', service_path('kayak', 'update'), 400, {'error': repr_detail([('fee', [NUMBER])])},
+    method='PATCH', raw_body=multipart(('fee', 'f.txt', '3'))[0], content_type=multipart()[1])
 # The walk also saves a soft-deleted payment: one update entry per save, each with every field against None.
 updated_service('owner', 'services-update-deleted-payment', 'canoe', {'fee': '9.50', 'title': 'Canoa doppia'},
                 {'fee': '9.50', 'title': 'Canoa doppia'})
@@ -813,6 +830,53 @@ add('services-delete-owner', 'owner', service_path('umbrella', 'delete'), 200, D
 del STATE['services']['umbrella']
 STATE['links']['july'].remove('umbrella')
 add('services-delete-again-not-found', 'owner', service_path('umbrella', 'delete'), 404, NOT_FOUND, method='DELETE')
+
+# ---------------------------------------------------------------------------
+# form bodies: repeated services keys (getlist) and multipart bodies with file parts (a mutable copy)
+# ---------------------------------------------------------------------------
+SVC = lambda label: SERVICES[label]['id']
+FORM_DATES = f'start_date=2026-10-01&end_date=2026-10-05&camps_and_retreats={camp_id("camp")}'
+add('add-form-services-list-server-error', 'owner', P_ADD, 500, {'error': M2M_CREATE}, method='POST',
+    raw_body=f'{FORM_DATES}&camps_and_Retreats_period_services={SVC("kayak")}&camps_and_Retreats_period_services={SVC("bus")}',
+    content_type='application/x-www-form-urlencoded')
+add('add-form-services-foreign-server-error', 'owner', P_ADD, 500, {'error': TENANT}, method='POST',
+    raw_body=f'{FORM_DATES}&camps_and_Retreats_period_services={SVC("kayak")}&camps_and_Retreats_period_services={SVC("abroad")}',
+    content_type='application/x-www-form-urlencoded')
+add('add-form-services-invalid-item', 'owner', P_ADD, 400, {'error': repr_detail([('camps_and_Retreats_period_services', [bad_uuid('x')])])},
+    method='POST', raw_body=f'{FORM_DATES}&camps_and_Retreats_period_services={SVC("kayak")}&camps_and_Retreats_period_services=x',
+    content_type='application/x-www-form-urlencoded')
+MP_DATES = (('start_date', None, '2026-10-01'), ('end_date', None, '2026-10-05'), ('camps_and_retreats', None, camp_id('camp')))
+add('add-multipart-file-server-error', 'owner', P_ADD, 500, {'error': M2M_CREATE}, method='POST',
+    raw_body=multipart(*MP_DATES, ('allegato', 'a.txt', 'dati'))[0], content_type=multipart()[1])
+add('add-multipart-file-blank-fee-is-null', 'owner', P_ADD, 400, {'error': repr_detail([('fee', [NULL])])}, method='POST',
+    raw_body=multipart(*MP_DATES, ('fee', None, ''), ('allegato', 'a.txt', 'dati'))[0], content_type=multipart()[1])
+add('add-multipart-file-as-title', 'full_collaborator', P_ADD, 400, {'error': repr_detail([('title', [NOT_STRING])])}, method='POST',
+    raw_body=multipart(*MP_DATES, ('title', 'titolo.txt', 'x'))[0], content_type=multipart()[1])
+add('add-multipart-file-as-date', 'owner', P_ADD, 400, {'error': repr_detail([('start_date', [DATETIME])])}, method='POST',
+    raw_body=multipart(('start_date', 'inizio.txt', 'x'), ('end_date', None, '2026-10-05'), ('camps_and_retreats', None, camp_id('camp')))[0],
+    content_type=multipart()[1])
+add('add-multipart-without-file-blank-fee-server-error', 'owner', P_ADD, 500, {'error': 'This QueryDict instance is immutable'}, method='POST',
+    raw_body=multipart(*MP_DATES, ('fee', None, ''))[0], content_type=multipart()[1])
+add('update-multipart-file-blank-fee-is-null', 'owner', period_path('august', 'update'), 400, {'error': repr_detail([('fee', [NULL])])},
+    method='PATCH', raw_body=multipart(('fee', None, ''), ('allegato', 'a.txt', 'dati'))[0], content_type=multipart()[1])
+add('update-multipart-file-as-max-participants', 'owner', period_path('august', 'update'), 400,
+    {'error': repr_detail([('max_participants', [INTEGER])])}, method='PATCH',
+    raw_body=multipart(('max_participants', 'n.txt', '3'))[0], content_type=multipart()[1])
+updated_period('owner', 'update-multipart-with-file', 'august', None, {'title': 'Agosto con allegato'},
+               form=multipart(('title', None, 'Agosto con allegato'), ('allegato', 'a.txt', 'dati'))[0], form_type=multipart()[1])
+updated_period('owner', 'update-form-services-repeated', 'august', None, {},
+               form=f'camps_and_Retreats_period_services={SVC("kayak")}&camps_and_Retreats_period_services={SVC("bus")}',
+               links=['bus', 'kayak'])
+updated_period('owner', 'update-form-services-single', 'august', None, {},
+               form=f'camps_and_Retreats_period_services={SVC("kayak")}', links=['kayak'])
+updated_period('owner', 'update-form-services-none-partial', 'august', None, {'title': 'Agosto due'}, form='title=Agosto+due')
+updated_period('owner', 'update-services-cleared-again', 'august', {'camps_and_Retreats_period_services': []}, {}, links=[])
+add('services-add-multipart-file-as-fee', 'owner', S_ADD, 400, {'error': repr_detail([('fee', [NUMBER])])}, method='POST',
+    raw_body=multipart(('camps_and_retreats_period', None, period_id('sept')), ('fee', 'f.txt', '3'))[0], content_type=multipart()[1])
+created_service('owner', 'services-add-multipart-with-file', {'period': 'sept', 'title': 'Con allegato', 'description': None, 'fee': '4.00',
+                                                              'category': None},
+                form=multipart(('camps_and_retreats_period', None, period_id('sept')), ('title', None, 'Con allegato'), ('fee', None, '4'),
+                               ('payment_category', None, ''), ('allegato', 'a.txt', 'dati'))[0], form_type=multipart()[1])
 
 # ---------------------------------------------------------------------------
 # periods/<uid>/delete

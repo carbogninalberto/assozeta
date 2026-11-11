@@ -799,6 +799,17 @@ var errAuditISOValue = errors.New("fromisoformat ValueError")
 // Python rejects is errAuditISOValue (ValueError). Years below 1000 are the
 // one refusal: strftime('%Y') pads on BSD libc and not on glibc.
 func AuditFromISOFormat(value any) (AuditMoment, error) {
+	return auditFromISOFormat(value, false)
+}
+
+// AuditFromISOFormatAnyYear is AuditFromISOFormat for callers that only
+// compare the calendar date: a year below 1000 keeps its unpadded digits (the
+// way strftime('%Y') writes it on Linux) instead of being refused.
+func AuditFromISOFormatAnyYear(value any) (AuditMoment, error) {
+	return auditFromISOFormat(value, true)
+}
+
+func auditFromISOFormat(value any, anyYear bool) (AuditMoment, error) {
 	text, ok := value.(string)
 	if !ok {
 		return AuditMoment{}, ErrAuditUnhandled
@@ -807,7 +818,7 @@ func AuditFromISOFormat(value any) (AuditMoment, error) {
 	if !valid {
 		return AuditMoment{}, errAuditISOValue
 	}
-	if moment.year < 1000 {
+	if moment.year < 1000 && !anyYear {
 		return AuditMoment{}, ErrAuditNotPorted
 	}
 	date := fmt.Sprintf("%02d/%02d/%d", moment.day, moment.month, moment.year)
