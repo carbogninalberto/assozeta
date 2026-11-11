@@ -43,6 +43,7 @@ func TestCourseListOrdering(t *testing.T) {
 		name, column     string
 		descending, rand bool
 		unported         bool
+		invalid          bool
 		server           bool
 	}{
 		{name: "title", column: "title"},
@@ -51,8 +52,13 @@ func TestCourseListOrdering(t *testing.T) {
 		{name: "-sport_association", column: "sport_association_id", descending: true},
 		{name: "group_id", column: "group_id"},
 		{name: "?", rand: true},
-		{name: "title__lower", unported: true},
-		{name: "pk__gt", unported: true},
+		{name: "title__lower", column: "title", invalid: true},
+		{name: "pk__gt", column: "course_id", invalid: true},
+		{name: "creation_date__date__year", column: "creation_date"},
+		{name: "creation_date__year__date", column: "creation_date", invalid: true},
+		{name: "-events__0__amount", column: "events", descending: true},
+		{name: "events__99999999999", column: "events", invalid: true},
+		{name: "group__name", unported: true},
 		{name: "tags", unported: true},
 		{name: "-coursesubscription__paid", unported: true},
 		{name: "sport_association__denomination", unported: true},
@@ -65,7 +71,7 @@ func TestCourseListOrdering(t *testing.T) {
 		query := domain.CourseListQuery{}
 		unported, err := courseListOrdering(&query, test.name)
 		if errors.Is(err, ErrCourseListServer) != test.server || unported != test.unported || query.Random != test.rand ||
-			query.OrderColumn != test.column || query.Descending != test.descending {
+			query.OrderColumn != test.column || query.Descending != test.descending || query.OrderInvalid != test.invalid {
 			t.Errorf("%s: got %+v unported=%v err=%v", test.name, query, unported, err)
 		}
 	}
