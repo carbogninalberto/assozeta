@@ -184,6 +184,30 @@
    "is_minor": false,
    "deleted": false
   },
+  "strange": {
+   "first_name": "=SUM(1,2)",
+   "last_name": "http://example.test/p#a",
+   "sex": "F",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": "internal:Sheet1!A1",
+   "address_city": null,
+   "address": "{=A1}",
+   "address_cap": null,
+   "email": "<r>x</r>",
+   "phone_label": null,
+   "phone": null,
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": false,
+   "deleted": false
+  },
   "hans": {
    "first_name": "Hans",
    "last_name": "Muller",
@@ -203,7 +227,7 @@
    "phone_3": null,
    "phone_4_label": null,
    "phone_4": null,
-   "id": "a1000000-0000-4000-8000-000000455007",
+   "id": "a1000000-0000-4000-8000-000000455008",
    "association": "a1000000-0000-4000-8000-000000701002",
    "is_minor": false,
    "deleted": false
@@ -227,7 +251,7 @@
    "phone_3": null,
    "phone_4_label": null,
    "phone_4": null,
-   "id": "a1000000-0000-4000-8000-000000455008",
+   "id": "a1000000-0000-4000-8000-000000455009",
    "association": "a1000000-0000-4000-8000-000000701002",
    "is_minor": false,
    "deleted": false
@@ -262,37 +286,37 @@
  ],
  "certificates": {
   "valid": {
-   "id": "a1000000-0000-4000-8000-000000455009",
+   "id": "a1000000-0000-4000-8000-000000455010",
    "expiration": "2031-05-01"
   },
   "expired_minor": {
-   "id": "a1000000-0000-4000-8000-000000455010",
+   "id": "a1000000-0000-4000-8000-000000455011",
    "expiration": "2020-01-01"
   },
   "no_expiration": {
-   "id": "a1000000-0000-4000-8000-000000455011",
+   "id": "a1000000-0000-4000-8000-000000455012",
    "expiration": null
   },
   "expired_adult": {
-   "id": "a1000000-0000-4000-8000-000000455012",
+   "id": "a1000000-0000-4000-8000-000000455013",
    "expiration": "2021-02-02"
   }
  },
  "tags": {
   "agonisti": {
-   "id": "a1000000-0000-4000-8000-000000455013",
+   "id": "a1000000-0000-4000-8000-000000455014",
    "name": "Agonisti",
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "under": {
-   "id": "a1000000-0000-4000-8000-000000455014",
+   "id": "a1000000-0000-4000-8000-000000455015",
    "name": "Under 12, misti",
    "association": "a1000000-0000-4000-8000-000000701001"
   }
  },
  "subscriptions": {
   "mario": {
-   "id": "a1000000-0000-4000-8000-000000455015",
+   "id": "a1000000-0000-4000-8000-000000455016",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "mario",
    "status": 4,
@@ -313,7 +337,7 @@
    "deleted": false
   },
   "luisa": {
-   "id": "a1000000-0000-4000-8000-000000455016",
+   "id": "a1000000-0000-4000-8000-000000455017",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "luisa",
    "status": 2,
@@ -331,7 +355,7 @@
    "deleted": false
   },
   "gino": {
-   "id": "a1000000-0000-4000-8000-000000455017",
+   "id": "a1000000-0000-4000-8000-000000455018",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "gino",
    "status": 1,
@@ -351,7 +375,7 @@
    "deleted": false
   },
   "mario_old": {
-   "id": "a1000000-0000-4000-8000-000000455018",
+   "id": "a1000000-0000-4000-8000-000000455019",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "mario",
    "status": 3,
@@ -369,7 +393,7 @@
    "deleted": true
   },
   "elena": {
-   "id": "a1000000-0000-4000-8000-000000455019",
+   "id": "a1000000-0000-4000-8000-000000455020",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "elena",
    "status": 5,
@@ -386,8 +410,26 @@
    "archived": false,
    "deleted": false
   },
+  "strange": {
+   "id": "a1000000-0000-4000-8000-000000455021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "strange",
+   "status": 4,
+   "created": "2026-03-02T10:00:00Z",
+   "start": null,
+   "end": null,
+   "number": "external:C:/x#S!A1",
+   "kind": "mailto:a@b.it",
+   "medical": null,
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": null,
+   "archived": false,
+   "deleted": false
+  },
   "archived": {
-   "id": "a1000000-0000-4000-8000-000000455020",
+   "id": "a1000000-0000-4000-8000-000000455022",
    "association": "a1000000-0000-4000-8000-000000701001",
    "associate": "mario",
    "status": 4,
@@ -405,7 +447,7 @@
    "deleted": false
   },
   "hans": {
-   "id": "a1000000-0000-4000-8000-000000455021",
+   "id": "a1000000-0000-4000-8000-000000455023",
    "association": "a1000000-0000-4000-8000-000000701002",
    "associate": "hans",
    "status": 4,
@@ -423,7 +465,7 @@
    "deleted": false
   },
   "nobody": {
-   "id": "a1000000-0000-4000-8000-000000455022",
+   "id": "a1000000-0000-4000-8000-000000455024",
    "association": "a1000000-0000-4000-8000-000000701002",
    "associate": null,
    "status": 4,
@@ -443,33 +485,33 @@
  },
  "documents": {
   "one": {
-   "id": "a1000000-0000-4000-8000-000000455023",
+   "id": "a1000000-0000-4000-8000-000000455025",
    "filename": "ricevuta-one.pdf"
   },
   "three": {
-   "id": "a1000000-0000-4000-8000-000000455024",
+   "id": "a1000000-0000-4000-8000-000000455026",
    "filename": "ricevuta-three.pdf"
   },
   "four": {
-   "id": "a1000000-0000-4000-8000-000000455025",
+   "id": "a1000000-0000-4000-8000-000000455027",
    "filename": "ricevuta-four.pdf"
   },
   "six": {
-   "id": "a1000000-0000-4000-8000-000000455026",
+   "id": "a1000000-0000-4000-8000-000000455028",
    "filename": "ricevuta-six.pdf"
   },
   "archived": {
-   "id": "a1000000-0000-4000-8000-000000455027",
+   "id": "a1000000-0000-4000-8000-000000455029",
    "filename": "ricevuta-archived.pdf"
   },
   "foreign": {
-   "id": "a1000000-0000-4000-8000-000000455028",
+   "id": "a1000000-0000-4000-8000-000000455030",
    "filename": "ricevuta-foreign.pdf"
   }
  },
  "invoices": {
   "one": {
-   "id": "a1000000-0000-4000-8000-000000455029",
+   "id": "a1000000-0000-4000-8000-000000455031",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-01-10T09:00:00Z",
    "membership": "40.00",
@@ -481,7 +523,7 @@
    "group": null
   },
   "two": {
-   "id": "a1000000-0000-4000-8000-000000455030",
+   "id": "a1000000-0000-4000-8000-000000455032",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-02-10T09:00:00Z",
    "membership": "35.50",
@@ -493,7 +535,7 @@
    "group": null
   },
   "three": {
-   "id": "a1000000-0000-4000-8000-000000455031",
+   "id": "a1000000-0000-4000-8000-000000455033",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-03-10T09:00:00Z",
    "membership": "0.00",
@@ -505,7 +547,7 @@
    "group": null
   },
   "four": {
-   "id": "a1000000-0000-4000-8000-000000455032",
+   "id": "a1000000-0000-4000-8000-000000455034",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-01-20T09:00:00Z",
    "membership": "40.00",
@@ -517,7 +559,7 @@
    "group": null
   },
   "five": {
-   "id": "a1000000-0000-4000-8000-000000455033",
+   "id": "a1000000-0000-4000-8000-000000455035",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-02-20T09:00:00Z",
    "membership": "40.00",
@@ -529,7 +571,7 @@
    "group": "own_group"
   },
   "six": {
-   "id": "a1000000-0000-4000-8000-000000455034",
+   "id": "a1000000-0000-4000-8000-000000455036",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-02-25T09:00:00Z",
    "membership": "40.00",
@@ -541,7 +583,7 @@
    "group": "own_group"
   },
   "archived": {
-   "id": "a1000000-0000-4000-8000-000000455035",
+   "id": "a1000000-0000-4000-8000-000000455037",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-04-01T09:00:00Z",
    "membership": "40.00",
@@ -553,7 +595,7 @@
    "group": null
   },
   "deleted": {
-   "id": "a1000000-0000-4000-8000-000000455036",
+   "id": "a1000000-0000-4000-8000-000000455038",
    "association": "a1000000-0000-4000-8000-000000701001",
    "created": "2026-01-12T09:00:00Z",
    "membership": "40.00",
@@ -565,7 +607,7 @@
    "group": null
   },
   "foreign": {
-   "id": "a1000000-0000-4000-8000-000000455037",
+   "id": "a1000000-0000-4000-8000-000000455039",
    "association": "a1000000-0000-4000-8000-000000701002",
    "created": "2026-01-11T09:00:00Z",
    "membership": "40.00",
@@ -597,7 +639,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "two": {
-   "id": "a1000000-0000-4000-8000-000000455038",
+   "id": "a1000000-0000-4000-8000-000000455040",
    "invoice": "two",
    "associate": null,
    "type": "transfer",
@@ -606,7 +648,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "four_deleted": {
-   "id": "a1000000-0000-4000-8000-000000455039",
+   "id": "a1000000-0000-4000-8000-000000455041",
    "invoice": "four",
    "associate": "mario",
    "type": "cash",
@@ -615,7 +657,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "five": {
-   "id": "a1000000-0000-4000-8000-000000455040",
+   "id": "a1000000-0000-4000-8000-000000455042",
    "invoice": "five",
    "associate": "gino",
    "type": "pos",
@@ -624,7 +666,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "six": {
-   "id": "a1000000-0000-4000-8000-000000455041",
+   "id": "a1000000-0000-4000-8000-000000455043",
    "invoice": "six",
    "associate": "elena",
    "type": "online",
@@ -633,7 +675,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "archived": {
-   "id": "a1000000-0000-4000-8000-000000455042",
+   "id": "a1000000-0000-4000-8000-000000455044",
    "invoice": "archived",
    "associate": "mario",
    "type": "online",
@@ -642,7 +684,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "foreign": {
-   "id": "a1000000-0000-4000-8000-000000455043",
+   "id": "a1000000-0000-4000-8000-000000455045",
    "invoice": "foreign",
    "associate": "hans",
    "type": "cash",
@@ -790,7 +832,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -816,7 +858,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -834,7 +876,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -852,7 +894,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -870,7 +912,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -888,7 +930,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -906,7 +948,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -924,7 +966,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -942,7 +984,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -963,7 +1005,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -1035,7 +1077,7 @@
      "filename": "[$today] ISCRIZIONI a Message reads own.csv",
      "type": "csv",
      "file": {
-      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
      }
     }
    },
@@ -1144,6 +1186,54 @@
        ],
        "index": true,
        "rows": [
+        [
+         "accettata",
+         "no",
+         "",
+         "",
+         "no",
+         "=SUM(1,2)",
+         "http://example.test/p#a",
+         "F",
+         null,
+         "",
+         "internal:Sheet1!A1",
+         null,
+         "{=A1}",
+         null,
+         "<r>x</r>",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "external:C:/x#S!A1",
+         "mailto:a@b.it",
+         ""
+        ],
         [
          "accettata",
          "si",
@@ -1506,6 +1596,54 @@
        "rows": [
         [
          "accettata",
+         "no",
+         "",
+         "",
+         "no",
+         "=SUM(1,2)",
+         "http://example.test/p#a",
+         "F",
+         null,
+         "",
+         "internal:Sheet1!A1",
+         null,
+         "{=A1}",
+         null,
+         "<r>x</r>",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "external:C:/x#S!A1",
+         "mailto:a@b.it",
+         ""
+        ],
+        [
+         "accettata",
          "si",
          "2031-05-01",
          "valido",
@@ -1835,6 +1973,25 @@
        ],
        "index": true,
        "rows": [
+        [
+         "2026-03-02",
+         "=SUM(1,2)",
+         "http://example.test/p#a",
+         "",
+         null,
+         "maggiorenne",
+         "accettata",
+         "no",
+         "",
+         "",
+         "no",
+         "<r>x</r>",
+         "",
+         "",
+         "external:C:/x#S!A1",
+         "mailto:a@b.it",
+         ""
+        ],
         [
          "2026-03-01",
          "Mario",
@@ -2914,10 +3071,10 @@
       "task": "export_invoices_to_zip",
       "args": [
        [
-        "a1000000-0000-4000-8000-000000455023",
         "a1000000-0000-4000-8000-000000455025",
-        "a1000000-0000-4000-8000-000000455026",
-        "a1000000-0000-4000-8000-000000455024"
+        "a1000000-0000-4000-8000-000000455027",
+        "a1000000-0000-4000-8000-000000455028",
+        "a1000000-0000-4000-8000-000000455026"
        ],
        {
         "uuid": "a1000000-0000-4000-8000-000000701001"
@@ -2948,7 +3105,7 @@
       "task": "export_invoices_to_zip",
       "args": [
        [
-        "a1000000-0000-4000-8000-000000455027"
+        "a1000000-0000-4000-8000-000000455029"
        ],
        {
         "uuid": "a1000000-0000-4000-8000-000000701001"
@@ -2981,7 +3138,7 @@
       "task": "export_invoices_to_zip",
       "args": [
        [
-        "a1000000-0000-4000-8000-000000455026"
+        "a1000000-0000-4000-8000-000000455028"
        ],
        {
         "uuid": "a1000000-0000-4000-8000-000000701001"
@@ -3043,7 +3200,7 @@
       "task": "export_invoices_to_zip",
       "args": [
        [
-        "a1000000-0000-4000-8000-000000455028"
+        "a1000000-0000-4000-8000-000000455030"
        ],
        {
         "uuid": "a1000000-0000-4000-8000-000000701002"

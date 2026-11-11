@@ -1,6 +1,11 @@
 package pymime
 
-import "testing"
+import (
+	"encoding/json"
+	"errors"
+	"os"
+	"testing"
+)
 
 // Expected values: Python 3.13.16 mimetypes.MimeTypes().guess_type(name)[0]
 // (built-in table only, which Load(nil) reproduces).
@@ -64,9 +69,25 @@ func TestGuessMatchesPythonDefaults(t *testing.T) {
 			t.Errorf("GuessType(%q) = %q, %v, %q, %v; want %q, %q", item[0], kind, ok, encoding, err, item[1], item[2])
 		}
 	}
-	for _, name := range []string{"ab://[::1]/c.pdf", "ab://hôst/c.pdf", "data:text/hé,x"} {
-		if _, _, err := table.Guess(name); err != ErrURLName {
-			t.Errorf("Guess(%q) error = %v; want ErrURLName", name, err)
+	raw, err := os.ReadFile("testdata/url_vectors.json")
+	if err != nil || len(raw) == 0 {
+		t.Fatal("url vectors:", err)
+	}
+	var vectors map[string][]*string
+	if err = json.Unmarshal(raw, &vectors); err != nil || len(vectors) < 50 {
+		t.Fatal("url vectors:", err, len(vectors))
+	}
+	for name, want := range vectors {
+		kind, ok, _, err := table.GuessType(name)
+		if *want[0] == "err" {
+			var failure *ValueError
+			if !errors.As(err, &failure) || failure.Text != *want[1] {
+				t.Errorf("GuessType(%q) error = %v; want ValueError %q", name, err, *want[1])
+			}
+			continue
+		}
+		if err != nil || ok != (want[1] != nil) || (ok && kind != *want[1]) {
+			t.Errorf("GuessType(%q) = %q, %v, %v; want %v", name, kind, ok, err, want[1])
 		}
 	}
 	if got, ok, err := table.Guess("c:report.pdf"); err != nil || !ok || got != "application/pdf" {

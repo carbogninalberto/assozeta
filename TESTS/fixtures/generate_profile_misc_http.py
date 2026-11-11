@@ -398,6 +398,33 @@ add('onboarding-membership-null-fee', 'full_collaborator', ONBOARD, 200, UPDATED
 add('onboarding-membership-collaborator-fiscal', 'full_collaborator', ONBOARD, 200, UPDATED, method='PATCH',
     body={'membership_data': {'fiscal': {'day': 15, 'month': '3'}}},
     effect=effect(user_save('owner', {'balance_sheet_start_day': 15, 'balance_sheet_start_month': '3'}, 'full_collaborator')))
+# IntegerField.get_prep_value is int(value): floats are truncated, bools are 0/1, any Unicode digits count; the audit entry
+# keeps str() of the raw value. Values int() rejects raise before the UPDATE; an integer the column cannot hold is the
+# database's refusal (smallint out of range, text as psycopg2 prints it). Everything rolls back with the atomic block.
+add('onboarding-membership-float-day', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'membership_data': {'season': {'day': 2.9, 'month': 9}}},
+    effect=effect(user_save('owner', {'subscription_start_day': 2.9, 'subscription_start_month': 9}, 'owner')))
+add('onboarding-membership-bool-day', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'membership_data': {'season': {'day': True, 'month': False}}},
+    effect=effect(user_save('owner', {'subscription_start_day': True, 'subscription_start_month': False}, 'owner')))
+add('onboarding-membership-unicode-digits', 'owner', ONBOARD, 200, UPDATED, method='PATCH',
+    body={'membership_data': {'season': {'day': '\u0661\u0662', 'month': ' 3 '}}},
+    effect=effect(user_save('owner', {'subscription_start_day': '\u0661\u0662', 'subscription_start_month': ' 3 '}, 'owner')))
+add('onboarding-membership-infinite-day', 'owner', ONBOARD, 500, {'error': 'cannot convert float infinity to integer'}, method='PATCH',
+    raw_body='{"membership_data": {"season": {"day": 1e999, "month": 1}}}', content_type='application/json', effect=effect())
+add('onboarding-membership-list-day', 'owner', ONBOARD, 500,
+    {'error': "Field 'subscription_start_day' expected a number but got [1, 'a']."}, method='PATCH',
+    body={'membership_data': {'season': {'day': [1, 'a'], 'month': 1}}}, effect=effect())
+add('onboarding-membership-dict-month', 'owner', ONBOARD, 500,
+    {'error': "Field 'subscription_start_month' expected a number but got {'a': 1}."}, method='PATCH',
+    body={'membership_data': {'season': {'day': 1, 'month': {'a': 1}}}}, effect=effect())
+add('onboarding-membership-day-out-of-range', 'owner', ONBOARD, 500, {'error': 'smallint out of range\n'}, method='PATCH',
+    body={'membership_data': {'season': {'day': 40000, 'month': 1}}}, effect=effect())
+add('onboarding-membership-day-beyond-int64', 'owner', ONBOARD, 500, {'error': 'smallint out of range\n'}, method='PATCH',
+    raw_body='{"membership_data": {"fiscal": {"day": 99999999999999999999, "month": 1}}}', content_type='application/json', effect=effect())
+add('onboarding-membership-invalid-before-range', 'owner', ONBOARD, 500,
+    {'error': "Field 'subscription_start_month' expected a number but got 'x'."}, method='PATCH',
+    body={'membership_data': {'season': {'day': 40000, 'month': 'x'}}}, effect=effect())
 # Fresh self-host onboarding of the foreign association (primary association of the instance).
 FRESH = 'Fresh self-host onboarding requires a complete membership payload.'
 add('onboarding-fresh-invalid', 'foreign_owner', ONBOARD, 400, {'error': FRESH, 'details': {

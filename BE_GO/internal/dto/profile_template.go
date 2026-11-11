@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/bs4prettify"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -476,28 +476,27 @@ func ProfileTemplateDecimalLiteral(value any) (string, bool) {
 	panic("unsupported profile template decimal")
 }
 
-// ProfileTemplateUpper is str.upper() for code points whose uppercase is a single
-// code point that Go maps identically (checked against CPython 3.13.16 in
-// testdata/python_upper.json); ok is false for any other character.
+// ProfileTemplateUpper is str.upper() (CPython 3.13: SpecialCasing included, from pythonUpperTable); ok is false only for
+// bytes that are not UTF-8 (JSON text always is). Lone surrogates, which the request parser keeps as their three-byte
+// form, stay unchanged as Python leaves them.
 func ProfileTemplateUpper(text string) (string, bool) {
 	var out strings.Builder
-	for _, r := range text {
-		if !profileTemplateUpperSupported(r) {
+	for i := 0; i < len(text); {
+		r, width := utf8.DecodeRuneInString(text[i:])
+		if r == utf8.RuneError && width == 1 {
+			if i+3 <= len(text) && text[i] == 0xed && text[i+1] >= 0xa0 && text[i+1] <= 0xbf && text[i+2] >= 0x80 && text[i+2] <= 0xbf {
+				out.WriteString(text[i : i+3])
+				i += 3
+				continue
+			}
 			return "", false
 		}
-		out.WriteRune(unicode.ToUpper(r))
+		if upper, found := pythonUpperTable[r]; found {
+			out.WriteString(upper)
+		} else {
+			out.WriteRune(r)
+		}
+		i += width
 	}
 	return out.String(), true
-}
-
-func profileTemplateUpperSupported(r rune) bool {
-	switch {
-	case r == 0xdf || r == 0x149 || r == 0x1f0 || r == unicode.ReplacementChar:
-		// ß, ŉ and ǰ uppercase to two code points; U+FFFD also marks invalid UTF-8.
-		return false
-	case r >= 0x20 && r < 0x7f, r >= 0xa0 && r < 0x250, r >= 0x2000 && r < 0x2c00, r >= 0x3000 && r < 0xa000,
-		r >= 0x1f000 && r < 0x1fb00, r == '\t', r == '\n', r == '\r':
-		return true
-	}
-	return false
 }

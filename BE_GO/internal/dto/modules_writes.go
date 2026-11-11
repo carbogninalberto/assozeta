@@ -116,11 +116,23 @@ func ParseModuleWrite(body any, form, nested bool) (ModuleWrite, ModuleWriteErro
 	if nested {
 		if form {
 			// Serializer.get_value on HTML input: only 'sport_association.<key>' keys.
+			// parse_html_dict(prefix): the key needs a non-empty remainder; a repeated key keeps its last value.
+			var parsed domain.RequestObject
 			for _, field := range object {
-				if strings.HasPrefix(field.Name, "sport_association.") {
+				if name, ok := strings.CutPrefix(field.Name, "sport_association."); ok && name != "" {
 					write.Nested = ModuleNestedForm
+					replaced := false
+					for i := range parsed {
+						if parsed[i].Name == name {
+							parsed[i].Value, replaced = field.Value, true
+						}
+					}
+					if !replaced {
+						parsed = append(parsed, domain.RequestField{Name: name, Value: field.Value})
+					}
 				}
 			}
+			write.NestedObject = parsed
 		} else if value, present := object.Lookup("sport_association"); present {
 			switch v := value.(type) {
 			case nil:

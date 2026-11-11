@@ -182,45 +182,50 @@ func wtf8Surrogate(text string) bool {
 	return false
 }
 
-// permissionsRoundTrip reports whether the stored jsonb reads back as the
-// same json.dumps text, so the view's second save() logs no update entry:
-// floats whose repr uses an exponent, and -0.0, come back from PostgreSQL
-// as other numbers.
-func permissionsRoundTrip(value any) bool {
+// permissionsLoaded is the permission tree as PostgreSQL's jsonb hands it
+// back to Django: numbers are stored as numerics, so a float whose repr uses a
+// positive exponent reads back as an integer and -0.0 as 0.0. The view's
+// second save() compares this reading with the request's value.
+func permissionsLoaded(value any) any {
 	switch v := value.(type) {
 	case json.Number:
 		if !strings.ContainsAny(string(v), ".eE") {
-			return true
+			return v
 		}
 		number, err := strconv.ParseFloat(string(v), 64)
 		if err != nil || math.IsInf(number, 0) {
-			return true // PostgreSQL rejects Infinity: the insert fails as in Django
+			return v
 		}
-		if number == 0 {
-			return !math.Signbit(number)
+		if number == 0 && math.Signbit(number) {
+			return json.Number("0.0")
 		}
-		exponent := math.Floor(math.Log10(math.Abs(number)))
-		formatted := strconv.FormatFloat(math.Abs(number), 'e', -1, 64)
-		if _, e, ok := strings.Cut(formatted, "e"); ok {
-			if parsed, err := strconv.Atoi(e); err == nil {
-				exponent = float64(parsed)
-			}
+		if math.Abs(number) < 1e16 {
+			return v
 		}
-		return exponent >= -4 && exponent < 16
+		formatted := strconv.FormatFloat(number, 'e', -1, 64)
+		mantissa, exponent, _ := strings.Cut(formatted, "e")
+		power, _ := strconv.Atoi(exponent)
+		sign := ""
+		if strings.HasPrefix(mantissa, "-") {
+			sign, mantissa = "-", mantissa[1:]
+		}
+		digits := strings.Replace(mantissa, ".", "", 1)
+		return json.Number(sign + digits + strings.Repeat("0", power-(len(digits)-1)))
 	case []any:
-		for _, item := range v {
-			if !permissionsRoundTrip(item) {
-				return false
-			}
+		out := make([]any, len(v))
+		for i, item := range v {
+			out[i] = permissionsLoaded(item)
 		}
+		return out
 	case domain.RequestObject:
-		for _, field := range v {
-			if !permissionsRoundTrip(field.Value) {
-				return false
-			}
+		out := make(domain.RequestObject, len(v))
+		for i, field := range v {
+			out[i] = field
+			out[i].Value = permissionsLoaded(field.Value)
 		}
+		return out
 	}
-	return true
+	return value
 }
 
 // AddCollaborator follows collaborators_add after request.data was parsed.
@@ -257,16 +262,15 @@ func (s *EmailRenderRoutes) AddCollaborator(ctx context.Context, identity domain
 	if !ok {
 		return ErrEmailRenderServer
 	}
-	var stored *string
+	var stored, permissionsMemory, permissionsLoadedText *string
 	if permissions, _ := object.Lookup("collaborator_permissions"); permissions != nil {
-		if !permissionsRoundTrip(permissions) {
-			return ErrEmailRenderNotPorted
-		}
 		if !dto.AssociateDraftStorable(permissions) {
 			return ErrEmailRenderServer // PostgreSQL rejects the insert; nothing is written
 		}
 		text := string(dto.PythonJSONDumps(permissions))
 		stored = &text
+		memory, loaded := string(dto.PythonJSONDumpsSorted(permissions)), string(dto.PythonJSONDumpsSorted(permissionsLoaded(permissions)))
+		permissionsMemory, permissionsLoadedText = &memory, &loaded
 	}
 	if err = ctx.Err(); err != nil {
 		return err
@@ -288,7 +292,8 @@ func (s *EmailRenderRoutes) AddCollaborator(ctx context.Context, identity domain
 	}
 	// The create entry's index: the invitation has no association field and
 	// its changes none either, so the actor's live association, if any.
-	event := domain.CollaborationInviteAudit{Context: paymentCategoryAuditContext(identity, audit), At: now}
+	event := domain.CollaborationInviteAudit{Context: paymentCategoryAuditContext(identity, audit), At: now,
+		PermissionsMemory: permissionsMemory, PermissionsLoaded: permissionsLoadedText}
 	association, err := tx.ActiveAssociationOf(ctx, identity.Actor.ID)
 	if err != nil {
 		return err

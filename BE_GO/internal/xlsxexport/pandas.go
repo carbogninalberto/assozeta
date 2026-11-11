@@ -106,6 +106,9 @@ func toNumeric(column frameColumn) (numericResult, error) {
 			floats[i], ints[i] = float64(value.Int), value.Int
 		case Bool:
 			sawBool = true
+			if value.Bool {
+				floats[i], ints[i] = 1, 1
+			}
 		case Decimal:
 			number, err := strconv.ParseFloat(value.Text, 64)
 			if err != nil {
@@ -152,10 +155,13 @@ func toNumeric(column frameColumn) (numericResult, error) {
 			}
 		}
 	}
-	if sawBool {
-		return numericResult{}, ErrNotPorted
-	}
 	result := numericResult{values: make([]Value, len(column.values))}
+	if sawBool && !sawFloat && !sawInt {
+		// maybe_convert_numeric: only bools seen (no int, float or null) gives a bool array.
+		result.dtype = dtBool
+		copy(result.values, column.values)
+		return result, nil
+	}
 	if sawFloat || !sawInt {
 		result.dtype = dtFloat64
 		for i, number := range floats {
