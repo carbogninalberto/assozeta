@@ -527,6 +527,15 @@ run('export-pdf-footer-list', 'export_data', {**NUOTO_PDF, 'footer_text': [1, 'a
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'footer_text': "[1, 'a', None]"}))
 # Labels and texts are reportlab paragraphs: '&', entities, tags and soft hyphens go through its markup parser, and a text
 # longer than a page is cut where it stands, inside a long word too. Markup the parser raises on fails the export.
+def image_base64(width, height, colour):
+    import base64
+    import io
+    from PIL import Image
+    out = io.BytesIO()
+    Image.new('RGB', (width, height), colour).save(out, 'JPEG')
+    return base64.b64encode(out.getvalue()).decode()
+
+
 MARKUP_LABELS = {'tag_name': 'Nome & <b>tag</b>', 'creation_date': 'A < B &lt;data&gt;'}
 MARKUP_TABLE = {**NUOTO_TABLE, 'headers': list(MARKUP_LABELS.values())}
 run('export-pdf-markup', 'export_data', {**NUOTO_PDF, 'column_labels': MARKUP_LABELS, 'text_before': 'Sport &amp; Fun<br/>R&D <i>club</i>',
@@ -539,6 +548,24 @@ run('export-pdf-markup-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': 
     download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': MARKUP_TEXT, 'text_after': WORD_TEXT}))
 run('export-pdf-markup-unclosed-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <b>b'}, 500, FAILED)
 run('export-pdf-label-markup-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': 'A<B'}}, 500, FAILED)
+
+# Tags that need the fragment model: lines, fonts, sizes and colours, rises, links and inline images.
+RICH_LABELS = {'tag_name': 'Nome <u>tag</u> <font color="#aa0000">rosso</font>', 'creation_date': 'Data m<sup>2</sup> <a href="https://example.test/d">link</a>'}
+RICH_TABLE = {**NUOTO_TABLE, 'headers': list(RICH_LABELS.values())}
+RICH_BEFORE = 'Il <u>corso</u> di <strike>nuoto</strike> <font size="14" color="#0000ff">grande</font> <a href="https://example.test/c?a=1&amp;b=2">info</a>'
+RICH_AFTER = 'H<sub>2</sub>O <font bgcolor="yellow">evidenziato</font> <u kind="double" color="red">doppio</u><br/><link href="mailto:a@example.test">posta</link>'
+run('export-pdf-rich-markup', 'export_data', {**NUOTO_PDF, 'column_labels': RICH_LABELS, 'text_before': RICH_BEFORE, 'text_after': RICH_AFTER}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**RICH_TABLE, 'text_before': RICH_BEFORE, 'text_after': RICH_AFTER}))
+RICH_TEXT = ' '.join([RICH_BEFORE + ' ' + RICH_AFTER] * 90)
+run('export-pdf-rich-markup-over-pages', 'export_data', {**NUOTO_PDF, 'text_before': RICH_TEXT, 'text_after': '<u>' + 'sottolineato ' * 500 + '</u>'}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': RICH_TEXT, 'text_after': '<u>' + 'sottolineato ' * 500 + '</u>'}))
+PIXEL = 'data:image/jpeg;base64,' + image_base64(30, 20, (200, 30, 30))
+IMAGE_TEXT = 'prima <img src="%s" width="15" height="10"/> dopo <img src="%s" valign="middle"/> fine' % (PIXEL, PIXEL)
+run('export-pdf-inline-image', 'export_data', {**NUOTO_PDF, 'text_before': IMAGE_TEXT, 'text_after': ' '.join([IMAGE_TEXT] * 40)}, 200,
+    download('Tags.pdf', 'application/pdf', pdf={**NUOTO_TABLE, 'text_before': IMAGE_TEXT, 'text_after': ' '.join([IMAGE_TEXT] * 40)}))
+run('export-pdf-rich-color-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <font color="nope">b</font>'}, 500, FAILED)
+run('export-pdf-rich-underline-kind-error', 'export_data', {**NUOTO_PDF, 'text_before': 'a <u kind="quad">b</u>'}, 500, FAILED)
+run('export-pdf-rich-label-size-error', 'export_data', {**NUOTO_PDF, 'column_labels': {'tag_name': '<font size="x">A</font>'}}, 500, FAILED)
 
 run('sheets-missing-error', 'export_multi_sheet', {'filename': 'x'}, 500, FAILED)
 run('sheets-none', 'export_multi_sheet', {'sheets': []}, 400, {'error': 'No sheets specified'})
