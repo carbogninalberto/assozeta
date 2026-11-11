@@ -54,7 +54,7 @@ func TestPersonaSearchLatinLettersAndNumbers(t *testing.T) {
 func TestPersonaSearchBeyondLatin(t *testing.T) {
 	for raw, want := range map[string][]string{
 		"Ωmega": {"%ωmega%"}, "İstanbul": {"%i%", "%stanbul%"}, "a\xffb": {"a", "b"}, "名前": {"%名前%"}, "ΑΣ ΣΑ": {"%ας%", "%σα%"},
-		"Иван": {"%иван%"}, "a\xe2\x82b": {"a", "b"},
+		"Иван": {"%иван%"}, "\U0002EBF0x": {"%\U0002EBF0x%"}, "a\xe2\x82b": {"a", "b"},
 	} {
 		search, err := personaSearch(raw, 26)
 		if err != nil {

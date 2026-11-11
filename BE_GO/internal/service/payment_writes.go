@@ -242,10 +242,12 @@ type paymentAttachmentPlan struct {
 	failing bool
 }
 
-// attachmentsStored plans attachments_data before any write. Items outside
-// the ported subset are refused: a non-string document or filename (str()
-// stored, then os.path.join raises), a filename the column or the database
-// rejects, a storage name Storage.save rejects, or no storage configured.
+// attachmentsStored plans attachments_data before any write. A document that is
+// not base64 text, or a filename the INSERT rejects (null, NUL, over 255
+// characters), is a 500 after the items before it. Items outside the ported
+// subset are refused: a filename that is not text (str() stored, then
+// os.path.join raises), a storage name Storage.save rejects (the Document
+// stays), or no storage configured.
 func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentAttachmentPlan, error) {
 	plan := paymentAttachmentPlan{}
 	for _, item := range input.Attachments {
@@ -258,20 +260,33 @@ func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentA
 		if s.documents == nil {
 			return plan, domain.ErrPaymentWritesNotPorted
 		}
-		name, ok := filename.(string)
-		if !ok || strings.ContainsRune(name, 0) || utf8.RuneCountInString(name) > 255 || !utf8.ValidString(name) {
-			return plan, domain.ErrPaymentWritesNotPorted
+		// base64.b64decode comes first: a document that is not a string (TypeError) or not base64 fails before any Document exists.
+		text, isText := document.(string)
+		if !isText {
+			plan.stored = append(plan.stored, paymentAttachment{invalid: true})
+			return plan, nil
 		}
-		if _, ok := document.(string); !ok {
+		content, err := dto.PythonB64Decode(text)
+		if err != nil {
+			plan.stored = append(plan.stored, paymentAttachment{invalid: true})
+			return plan, nil
+		}
+		// Document.objects.create: a null name, a NUL or more than 255 characters fail the INSERT (no row).
+		if filename == nil {
+			plan.stored = append(plan.stored, paymentAttachment{invalid: true})
+			return plan, nil
+		}
+		name, ok := filename.(string)
+		if ok && (strings.ContainsRune(name, 0) || utf8.RuneCountInString(name) > 255) {
+			plan.stored = append(plan.stored, paymentAttachment{invalid: true})
+			return plan, nil
+		}
+		// A name that is not text, or one default_storage.save rejects, leaves the created Document behind (not ported).
+		if !ok || !utf8.ValidString(name) {
 			return plan, domain.ErrPaymentWritesNotPorted
 		}
 		if _, err := documentkey.UploadName(time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC), uuid.New(), name); err != nil {
 			return plan, domain.ErrPaymentWritesNotPorted
-		}
-		content, err := dto.PythonB64Decode(document)
-		if err != nil {
-			plan.stored = append(plan.stored, paymentAttachment{invalid: true})
-			return plan, nil
 		}
 		plan.stored = append(plan.stored, paymentAttachment{content: content, filename: name})
 	}

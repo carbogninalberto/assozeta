@@ -164,7 +164,7 @@ PAYMENTS = {
                    paid_on='2025-01-10T09:00:00Z'),
     'noaccount': payment('2025-01-06T09:00:00Z', subject=0, amount='4.00', paid=True, description='Senza conto',
                          paid_on='2025-01-20T09:00:00Z'),
-    'pending': payment('2025-02-01T09:00:00Z', subject=0, amount='10.00', description='Quota finanziaria', course=''),
+    'pending': payment('2025-02-01T09:00:00Z', subject=0, amount='10.00', description='Quota finanziaria infanzia', course=''),
     # archived: an unknown subject (no activity) first, then a paid row without an account between two cash rows
     'odd': payment('2024-01-10T09:00:00Z', subject=5, amount='2.00', archived=True, description='Soggetto sconosciuto',
                    paid_on='2024-01-14T09:00:00Z'),

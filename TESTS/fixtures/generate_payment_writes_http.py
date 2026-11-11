@@ -168,6 +168,10 @@ PAYMENTS = {
     'up_attach_one': payment(),
     'up_attach_partial': payment(),
     'up_attach_bad64': payment(),
+    'up_attach_number': payment(),
+    'up_attach_long': payment(),
+    'up_attach_nul': payment(),
+    'up_attach_null_name': payment(),
 }
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
@@ -931,6 +935,19 @@ updated('update-attachment-then-missing-keys', 'full_collaborator', 'up_attach_p
 # b64decode raises binascii.Error (incorrect padding) after the save: the 500 page, no document.
 updated('update-attachment-invalid-base64', 'owner', 'up_attach_bad64', {'amount': '23', 'attachments_data': [{'document': 'abc', 'filename': 'x.pdf'}]},
         {'amount': '23.00'}, status=500, response=SERVER)
+# A document that is not a string fails b64decode (TypeError) before any Document exists; a filename of 256 characters, one
+# with a NUL or a null one is rejected by the INSERT: the 500 page after the save and the documents stored before the item.
+updated('update-attachment-number-document', 'owner', 'up_attach_number',
+        {'amount': '24', 'attachments_data': [{'document': b64(PDF), 'filename': 'primo.pdf'}, {'document': 12, 'filename': 'x.pdf'}]},
+        {'amount': '24.00'}, status=500, response=SERVER, documents=[('primo.pdf', PDF)])
+updated('update-attachment-long-filename', 'owner', 'up_attach_long',
+        {'amount': '25', 'attachments_data': [{'document': b64(PDF), 'filename': 'a' * 252 + '.pdf'}]}, {'amount': '25.00'},
+        status=500, response=SERVER)
+updated('update-attachment-nul-filename', 'owner', 'up_attach_nul',
+        {'amount': '26', 'attachments_data': [{'document': b64(PDF), 'filename': 'x\u0000.pdf'}]}, {'amount': '26.00'},
+        status=500, response=SERVER)
+updated('update-attachment-null-filename', 'owner', 'up_attach_null_name',
+        {'amount': '27', 'attachments_data': [{'document': b64(PDF), 'filename': None}]}, {'amount': '27.00'}, status=500, response=SERVER)
 
 # --- payment/bulk-add ------------------------------------------------------------
 

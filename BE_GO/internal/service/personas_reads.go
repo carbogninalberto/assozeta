@@ -168,7 +168,8 @@ func personaSearch(raw string, centuryYear int) (*domain.PersonaSearch, error) {
 	var words []string
 	var current strings.Builder
 	for _, r := range term + " " {
-		if r == '_' || unicode.IsLetter(r) || unicode.IsNumber(r) {
+		// CJK Extension I (Unicode 15.1) is a letter to the production Python and not yet to Go's tables.
+		if r == '_' || unicode.IsLetter(r) || unicode.IsNumber(r) || r >= 0x2EBF0 && r <= 0x2EE5D {
 			current.WriteRune(r)
 			continue
 		}

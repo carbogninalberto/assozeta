@@ -61,10 +61,15 @@ non-editable flag does not block updates). Both answer the serialized account
 with the list's balance and deletable (group-aware payments). auditlog records
 the create (the transfer relations' related_name accessors render as their
 empty manager) and the changed fields, indexed directly. A new
-`custom_account_id` on update would make `Model.save()` insert a copy; Go
-refuses it with a 500 (not ported). Account delete (a cascading hard delete of
+`custom_account_id` on update makes `Model.save()` insert a copy under that
+key and leave the named row as it was: Go inserts the copy (the validated
+values, the serializer's response), and auditlog logs it twice, as an update
+against nothing (indexed through its changes) and then as the create (indexed
+directly). The same holds for a new `custom_account_transfer_id` on a transfer
+update. A body that names the row's own key is a plain update; a key of another
+row is the UniqueValidator's 400. Account delete (a cascading hard delete of
 its payments) is ported: see balance-sheet.md.
-`TESTS/fixtures/balance_account_writes_http.json` authors 29 cases.
+`TESTS/fixtures/balance_account_writes_http.json` authors 32 cases (three for the key: the copy, the row's own key and another row's key).
 
 ## Transfer add, update and delete
 
@@ -84,5 +89,5 @@ delete (indexed through `changes_json`). The serializer's `validate()` also
 rechecks the instance's stored accounts on a partial update that omits them;
 Go does not repeat that recheck yet, so it differs only for a transfer whose
 stored account belongs to another association (data these views never
-write). `TESTS/fixtures/balance_transfer_writes_http.json` authors 30
-cases; the Django reference passed them on the first run.
+write). `TESTS/fixtures/balance_transfer_writes_http.json` authors 33
+cases (three for the key, as for accounts); the Django reference passed them on the first run.
