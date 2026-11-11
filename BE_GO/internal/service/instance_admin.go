@@ -99,6 +99,10 @@ var ErrInstanceAdminProvider = errors.New("unknown integration provider")
 
 var errInstanceAdminCredential = errors.New("stored credential cannot be decrypted")
 
+// errInstanceAdminEnvironmentPort is int(settings.EMAIL_PORT) raising ValueError: nothing handles it, so the
+// view answers the 500 page.
+var errInstanceAdminEnvironmentPort = errors.New("invalid literal for int() with base 10: EMAIL_PORT")
+
 func refused(reason string) error {
 	return fmt.Errorf("%w: %s", domain.ErrInstanceAdminRefused, reason)
 }
@@ -469,7 +473,7 @@ func emailSettings(row *domain.InstanceAdminRow) (map[string]any, bool, error) {
 // environmentEmail is effective_email's environment branch.
 func (s *InstanceAdmin) environmentEmail(revision int64) (map[string]any, error) {
 	if s.env.EmailPortInvalid {
-		return nil, refused("environment email settings")
+		return nil, errInstanceAdminEnvironmentPort
 	}
 	security := "none"
 	switch {

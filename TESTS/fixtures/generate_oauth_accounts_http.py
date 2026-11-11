@@ -149,6 +149,8 @@ RESET_TOKENS = {
     'oauth-reset-bad-id': 'not-a-user-id',
     '12345': USERS['reset_inactive']['user_id'],
     'oauth-reset-form': ATHLETE,
+    'oauth-reset-nul': USERS['reset_active']['user_id'],
+    'oauth-reset-surrogate': USERS['reset_active']['user_id'],
 }
 CARD = {'sport_association_membership_card_configuration_id': uid(762001), 'sport_association': OWN, 'emit_only_on_approval': True,
         'customized_template': None}
@@ -315,6 +317,12 @@ add('reset-trailing-newline-password', 'anonymous', RESET, 200, {'msg': 'Passwor
 add('reset-form-token', 'anonymous', RESET, 200, {'msg': 'Password reset.'},
     raw_body='token=oauth-reset-form&password=Form*Password7', content_type='application/x-www-form-urlencoded',
     effect=reset('athlete', 'oauth-reset-form', 'Form*Password7'))
+# A NUL is an ordinary character for the hasher; a lone surrogate cannot be encoded (nothing is written, the token stays).
+add('reset-password-with-nul', 'anonymous', RESET, 200, {'msg': 'Password reset.'},
+    body={'token': 'oauth-reset-nul', 'password': 'Valid-Pass1!\u0000x'},
+    effect=reset('reset_active', 'oauth-reset-nul', 'Valid-Pass1!\u0000x'))
+add('reset-password-with-lone-surrogate', 'anonymous', RESET, 500, SERVER,
+    raw_body='{"token": "oauth-reset-surrogate", "password": "Valid-Pass1!\\ud800x"}', content_type='application/json')
 add('reset-owner-scoped-to-athlete', 'owner', RESET, 403, SCOPED_ATHLETE, body={'email': 'x@example.test'}, headers=OWNER_ATHLETE)
 
 # --- oauth2/delete-account ----------------------------------------------------------------------
@@ -465,6 +473,17 @@ add('signup-athlete', 'anonymous', SIGNUP, 200, '$signup',
               password='  Valid-Pass1!  ', phone=None, unknown='ignored'),
     effect=created(first='Mario', last="D'Arco <it>", username='NUOVO-ATLETA', email='Nuovo.Atleta@example.test',
                    password='  Valid-Pass1!  ', partial='athlete'))
+# Usernames are Unicode: UnicodeUsernameValidator accepts every letter and number, the stored name is str.upper()
+# (U+00DF becomes SS); a NUL fails the pattern and the null-character check (DRF's qs_exists swallows the driver's refusal).
+add('signup-unicode-username', 'anonymous', SIGNUP, 200, '$signup', body=body(31, username='Èlia_ß.é'),
+    effect=created(username='ÈLIA_SS.É', email='persona31@example.test'))
+add('signup-unicode-username-invalid-character', 'anonymous', SIGNUP, 400,
+    details(username=['Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.']),
+    body=body(32, username='Éli☃'))
+add('signup-username-with-nul', 'anonymous', SIGNUP, 400,
+    details(username=['Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.',
+                      'Null characters are not allowed.']),
+    body=body(33, username='abc\u0000def'))
 add('signup-athlete-username-taken-now', 'anonymous', SIGNUP, 400, details(username=['A user with that username already exists.']),
     body=body(8, username='NUOVO-ATLETA'))
 add('signup-athlete-owner-actor', 'owner', SIGNUP, 200, '$signup',

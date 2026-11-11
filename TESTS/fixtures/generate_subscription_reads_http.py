@@ -1070,6 +1070,15 @@ add('list-sort-invalid-page-first', 'owner', LIST + '?sort[field]=nope&paginatio
 # Relation orderings compile with the rows: the page check comes first.
 add('list-sort-relation-invalid-page', 'owner', LIST + '?sort[field]=user__username&pagination[page]=9', 404, INVALID_PAGE)
 add('list-sort-annotation-invalid-page', 'owner', LIST + '?sort[field]=_has_future_renewal&pagination[page]=9', 404, INVALID_PAGE)
+# The annotation orders by its expression (false before true); two tagged rows, one with a later subscription to renew into.
+tagged = where(lambda r: bool(r['tags']))
+by_renewal = lambda desc: sorted(tagged, key=lambda k: future_renewal(k, None), reverse=desc)
+add('list-sort-future-renewal', 'owner', LIST + f"?query[tags]={T['master']['id']},{T['agonisti']['id']}&sort[field]=_has_future_renewal", 200,
+    page(tagged, ordered=by_renewal(False)))
+add('list-sort-future-renewal-desc', 'owner', LIST + f"?query[tags]={T['master']['id']},{T['agonisti']['id']}&sort[field]=_has_future_renewal&sort[sort]=desc", 200,
+    page(tagged, ordered=by_renewal(True)))
+# Search terms with characters beyond U+0250 and the Turkish dotted capital I go through str.lower() (nothing matches).
+add('list-search-greek-and-dotted-i', 'owner', LIST + '?query[generalSearch]=%CE%A3%CE%AF%CF%83%CF%85%CF%86%CE%BF%CF%82%20%C4%B0', 200, page([]))
 
 # --- subscription/list: alternate mode ---
 def basic(label, group=None):

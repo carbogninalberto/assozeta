@@ -27,16 +27,19 @@ which is the stable 500 page. Go: `BE_GO/internal/handler/chat_page.go`, routes 
 - `chat/test` without the slash is `CommonMiddleware`'s APPEND_SLASH 301 to `/chat/test/`
   (query kept), shared with the schema routes (`APISchemaHandler.AppendSlash`).
 
-## Not ported (refused with the 500 page)
+## CSRF failures
 
-- Unsafe requests that fail CSRF (no `csrftoken` cookie, missing or wrong token, bad origin or
-  HTTPS referer). Django answers 403 with its localized `csrf_403.html` failure page, whose text
-  depends on the failure reason and the active language (99 catalogs); Go does not reproduce that
-  page, so `middleware.DjangoCSRFRejecting` hands those requests to `ChatTestHandler.RefuseCSRF`.
-  Not authored.
-- Sessions whose hash no longer matches: Django flushes the session (cache delete) and answers
-  302; the shared resolver covers it but the family fixture does not author it, because the
-  harness requires the cache to be unchanged after every case.
+Unsafe requests that fail CSRF answer `django.views.csrf.csrf_failure`: 403 and the failure page (DEBUG off) in the request
+language (title, main text, "more information"), plus two extra paragraphs when the reason is a missing Referer header over
+HTTPS or a missing CSRF cookie. The reason text itself is not shown. `middleware.DjangoCSRFReasoned` tells the three kinds
+apart and `ChatTestHandler.RefuseCSRF` assembles the page from `handler/csrf_failure_catalog.go`, generated for every language of
+the read-route list by `TESTS/adapters/django/csrf_failure_pages.py --write` (which checks each page against Django's own view;
+`--check` finds a stale file). The page is over 200 bytes, so `ManualResponseEncoding` adds `Vary: Accept-Encoding`.
+
+## Not ported
+
+- Sessions whose hash no longer matches: Django flushes the session (cache delete) and answers 302; the shared resolver covers
+  it but the family fixture does not author it, because the harness requires the cache to be unchanged after every case.
 
 ## Evidence
 

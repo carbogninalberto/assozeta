@@ -181,8 +181,12 @@ func subscriptionReadsOrder(field string, descending bool, annotations map[strin
 	if column, ok := subscriptionReadsFields[name]; ok {
 		return []domain.SubscriptionReadsOrder{{Column: column, Descending: desc}}, nil
 	}
+	if annotations[name] {
+		// An annotation of the queryset (_has_future_renewal) orders by its expression.
+		return []domain.SubscriptionReadsOrder{{Column: name, Descending: desc}}, nil
+	}
 	first, _, _ := strings.Cut(name, "__")
-	if _, ok := subscriptionReadsFields[first]; ok || subscriptionReadsRelations[first] || annotations[name] {
+	if _, ok := subscriptionReadsFields[first]; ok || subscriptionReadsRelations[first] {
 		return nil, errSubscriptionReadsLazyOrder
 	}
 	return nil, domain.ErrSubscriptionReadsServer

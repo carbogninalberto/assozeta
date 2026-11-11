@@ -235,7 +235,7 @@ var subscriptionReadsColumns = map[string]bool{"subscription_id": true, "sport_a
 	"signature_url": true, "signature_storage_key": true, "document_pdf_id": true, "payment_id": true, "archived": true, "draft": true, "trial": true,
 	"meta": true, "subscription_number": true, "subscription_type": true, "group_id": true, "deleted": true, "competitive": true, "notes": true}
 
-func subscriptionReadsOrder(order []domain.SubscriptionReadsOrder) (string, error) {
+func subscriptionReadsOrder(order []domain.SubscriptionReadsOrder, args *personaArgs, group *string) (string, error) {
 	if len(order) == 0 {
 		return "", nil
 	}
@@ -246,6 +246,9 @@ func subscriptionReadsOrder(order []domain.SubscriptionReadsOrder) (string, erro
 			terms[i] = "a." + strings.TrimPrefix(term.Column, "associate.")
 		case term.Column == "age":
 			terms[i] = "EXTRACT(YEAR FROM a.born_date)"
+		case term.Column == "_has_future_renewal":
+			// The annotation's expression (future_renewal_exists()), with the group parameter bound here.
+			terms[i] = strings.Replace(strings.TrimSuffix(subscriptionReadsRenewal, " AS future_renewal"), "$2::uuid", args.add(group)+"::uuid", -1)
 		case subscriptionReadsColumns[term.Column]:
 			terms[i] = "s." + term.Column
 		default:
@@ -270,7 +273,7 @@ func (r *SubscriptionReads) CountSubscriptions(ctx context.Context, filter domai
 func (r *SubscriptionReads) Subscriptions(ctx context.Context, filter domain.SubscriptionReadsFilter, limit, offset int64) ([]string, error) {
 	args := personaArgs{}
 	statement := "SELECT s.subscription_id" + subscriptionReadsQuery(filter, &args)
-	order, err := subscriptionReadsOrder(filter.Order)
+	order, err := subscriptionReadsOrder(filter.Order, &args, filter.Group)
 	if err != nil {
 		return nil, err
 	}

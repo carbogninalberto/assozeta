@@ -141,6 +141,18 @@ func subscriptionMembershipAudit(id string, action int, changes map[string][2]st
 
 func (t *subscriptionMembershipTransaction) CreateMembership(ctx context.Context, row domain.SubscriptionMembership, audit domain.LoginAuditContext,
 	at time.Time) error {
+	return t.insertMembership(ctx, row, audit, at, false)
+}
+
+// CopyMembership is Model.save() under a new primary key: auditlog's pre_save finds no old row and logs an update against
+// None, then post_save logs the creation.
+func (t *subscriptionMembershipTransaction) CopyMembership(ctx context.Context, row domain.SubscriptionMembership, audit domain.LoginAuditContext,
+	at time.Time) error {
+	return t.insertMembership(ctx, row, audit, at, true)
+}
+
+func (t *subscriptionMembershipTransaction) insertMembership(ctx context.Context, row domain.SubscriptionMembership, audit domain.LoginAuditContext,
+	at time.Time, copied bool) error {
 	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_subscriptionmembership (subscription_membership_id, subscription_id,
  sport_association_id, creation_date, start_date, end_date, membership_type, membership_number, description, price, payment_id, associate_id)
  VALUES ($1,$2,$3,$4,$5::date,$6::date,$7,$8,$9,$10::numeric,$11,$12)`, row.ID, row.SubscriptionID, row.AssociationID, row.CreationDate,
@@ -154,6 +166,11 @@ func (t *subscriptionMembershipTransaction) CreateMembership(ctx context.Context
 	if row.Price != nil {
 		// auditlog renders the instance's Decimal (a negative zero keeps its sign).
 		changes["price"] = [2]string{"None", *row.Price}
+	}
+	if copied {
+		if err = appendModelAudit(ctx, t.tx, subscriptionMembershipAudit(row.ID, 1, changes, &row.AssociationID, "changes_json.sport_association", audit, at)); err != nil {
+			return err
+		}
 	}
 	return appendModelAudit(ctx, t.tx, subscriptionMembershipAudit(row.ID, 0, changes, &row.AssociationID, "direct", audit, at))
 }

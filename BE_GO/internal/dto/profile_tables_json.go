@@ -15,7 +15,12 @@ import (
 // invalid UTF-8 code-unit encoding for this endpoint so the service rejects the
 // write, while literal U+FFFD, valid pairs and ignored fields remain distinct.
 func ParseProfileTablesJSON(data []byte) (any, error) {
-	constants := map[int64]any{}
+	return parseProfileTablesJSONConstants(data, map[int64]any{}, false)
+}
+
+// parseProfileTablesJSONConstants adds the lone surrogate strings to constants
+// (already holding other substituted tokens, keyed by end offset) and parses.
+func parseProfileTablesJSONConstants(data []byte, constants map[int64]any, rateLimit bool) (any, error) {
 	for i := 0; i < len(data); {
 		if data[i] != '"' {
 			i++
@@ -49,7 +54,7 @@ func ParseProfileTablesJSON(data []byte) (any, error) {
 			constants[int64(i)] = value
 		}
 	}
-	return parseReferenceJSON(data, constants, false)
+	return parseReferenceJSON(data, constants, rateLimit)
 }
 
 func tableJSONCodeUnits(raw []byte) (string, bool, error) {

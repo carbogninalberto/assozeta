@@ -87,34 +87,31 @@ func ParseAutomationWorkflowWrite(body any, form bool) (AutomationWorkflowWrite,
 	return input, nil
 }
 
-// ErrAutomationWorkflowFormTreeNotPorted answers the stable 500 page for a
-// form-encoded automation_tree whose parsed list the database column rejects
-// (lone surrogate escapes, nesting past the parser limit): the save fails before any row changes, as it does in Django.
-var ErrAutomationWorkflowFormTreeNotPorted = refusal.New("form-encoded automation_tree the jsonb column rejects")
+// ErrAutomationWorkflowFormTreeNotPorted refuses a form-encoded automation_tree nested past 500 levels: the
+// recursion limit of Python's JSON codec depends on the live call stack, so the outcome is not a fixed number.
+var ErrAutomationWorkflowFormTreeNotPorted = refusal.New("form-encoded automation_tree nested past the ported depth")
 
 // automationFormTree is DRF's JSONField.get_value/to_internal_value for an HTML
 // form value: json.loads of the text. ok=false is "Value must be valid JSON."
-// (a 400); rejected=true is a document Python parses but the jsonb column
-// refuses at save time.
-func automationFormTree(value any) (tree any, ok bool, rejected bool) {
+// (a 400); rejected=true is a document Python parses (lone surrogate escapes
+// are kept as code units) but the jsonb column refuses at save time; deep
+// marks nesting past the ported depth.
+func automationFormTree(value any) (tree any, ok, rejected, deep bool) {
 	text, isText := value.(string)
 	if !isText {
-		return nil, false, false
+		return nil, false, false, false
 	}
-	if auditLoneSurrogate(text) || auditJSONDepth(text) > 500 {
-		return []any{}, true, true
+	if auditJSONDepth(text) > 500 {
+		return []any{}, true, false, true
 	}
-	tree, err := parseReferenceJSON([]byte(text), nil, true)
-	if err == nil {
-		return tree, true, false
+	tree, err := parseProfileTablesJSONConstants([]byte(text), map[int64]any{}, true)
+	switch {
+	case err == nil:
+		return tree, true, auditLoneSurrogate(text), false
+	case errors.Is(err, ErrReferenceNesting):
+		return []any{}, true, false, true
 	}
-	if errors.Is(err, ErrReferenceNesting) {
-		return []any{}, true, true
-	}
-	if errors.Is(err, ErrLoginRateJSONValue) {
-		return nil, false, false
-	}
-	return nil, false, false
+	return nil, false, false, false
 }
 
 // AutomationWorkflowPatch holds the present fields of a partial
@@ -125,9 +122,11 @@ type AutomationWorkflowPatch struct {
 	Name        *string
 	Description **string
 	Tree        *any
-	// TreeRejected: the list passed validation but the jsonb column refuses it.
+	// TreeRejected: the list passed validation but the jsonb column refuses it (lone surrogate escapes).
 	TreeRejected bool
-	Enabled      *bool
+	// TreeTooDeep: nesting past the ported depth.
+	TreeTooDeep bool
+	Enabled     *bool
 }
 
 // ParseAutomationWorkflowPatch ports AutomationWorkflowSerializer(partial=True)
@@ -172,12 +171,12 @@ func ParseAutomationWorkflowPatch(body any, form bool) (AutomationWorkflowPatch,
 	if value, present := object.Lookup("automation_tree"); present {
 		rejected := false
 		if form {
-			parsed, valid, refused := automationFormTree(value)
+			parsed, valid, refused, deep := automationFormTree(value)
 			if !valid {
 				invalid = true
 				value = nil
 			} else {
-				value, rejected = parsed, refused
+				value, rejected, patch.TreeTooDeep = parsed, refused, deep
 			}
 		}
 		tree, isList := value.([]any)

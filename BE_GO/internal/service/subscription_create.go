@@ -219,13 +219,20 @@ func subscriptionCreateRefuseInputs(data domain.RequestObject, today string) err
 			}
 		}
 	}
-	if custom, ok := data.Lookup("custom_data"); ok {
-		if object, isObject := custom.(domain.RequestObject); isObject {
-			if kind, _ := object.Lookup("type_of_associate"); subscriptionTruthy(kind) {
-				// The custom_data icontains filter is not ported.
-				return domain.ErrSubscriptionCreateNotPorted
-			}
-		}
+	return nil
+}
+
+// subscriptionCustomKind is custom_data['type_of_associate'] as the icontains text of subscription_exists, nil when custom_data is not
+// a dict holding a truthy value.
+func subscriptionCustomKind(data domain.RequestObject) *string {
+	custom, _ := data.Lookup("custom_data")
+	object, ok := custom.(domain.RequestObject)
+	if !ok {
+		return nil
+	}
+	if kind, _ := object.Lookup("type_of_associate"); subscriptionTruthy(kind) {
+		text := dto.PythonStr(kind)
+		return &text
 	}
 	return nil
 }
@@ -554,7 +561,9 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			return nil, pythonAttributeError(custom, "get")
 		}
 	}
-	existing, err := tx.Existing(ctx, association, names[0], names[1], names[2], subscriptionCreateDay(season.Start), subscriptionCreateDay(season.End))
+	// Q(custom_data__icontains=custom_data['type_of_associate']) with str(value).
+	customKind := subscriptionCustomKind(data)
+	existing, err := tx.Existing(ctx, association, names[0], names[1], names[2], subscriptionCreateDay(season.Start), subscriptionCreateDay(season.End), customKind)
 	if err != nil {
 		return nil, err
 	}
@@ -885,7 +894,8 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		createdAt = season.Start
 		given = domain.SubscriptionDates{Start: &from, End: &to}
 	}
-	duplicate, err := tx.Existing(ctx, association, saved.FirstName, saved.LastName, saved.TaxCode, from, to)
+	// The manager's create() runs subscription_exists with the new subscription's custom_data too.
+	duplicate, err := tx.Existing(ctx, association, saved.FirstName, saved.LastName, saved.TaxCode, from, to, subscriptionCustomKind(data))
 	if err != nil {
 		return nil, err
 	}
@@ -1075,10 +1085,7 @@ func subscriptionCreateNormalize(tutor, associate domain.RequestObject, age int)
 		if !isText {
 			return nil, pythonAttributeError(value, "upper")
 		}
-		if !dto.AssociateTaxCodeASCII(text) {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
-		return objectSet(object, "sex", strings.ToUpper(text)), nil
+		return objectSet(object, "sex", dto.PythonUpper(text)), nil
 	}
 	if associate, err = upper(associate); err != nil {
 		return nil, nil, err
@@ -1105,9 +1112,6 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 		}
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	case string:
-		if !dto.AssociateTaxCodeASCII(v) {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
 		parsed, ok := dto.SubscriptionCreateBornDate(v)
 		if !ok {
 			bornError = []string{dto.SubscriptionCreateDateFormat}
@@ -1150,9 +1154,6 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 	ownAssociation := &association
 	tax := write.Text["tax_code"]
 	if tax != nil && *tax != "" {
-		if !dto.AssociateTaxCodeASCII(*tax) {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
 		upper := dto.AssociateUpper(*tax)
 		write.Text["tax_code"] = &upper
 		matches, err := tx.TaxCodeMatches(ctx, upper, ownAssociation, nil)
@@ -1160,10 +1161,18 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 			return nil, err
 		}
 		if len(matches) > 0 {
-			if len(matches) > 1 && matches[0].CreationDate.Equal(matches[1].CreationDate) {
-				return nil, domain.ErrSubscriptionCreateNotPorted
-			}
 			row := matches[0]
+			if len(matches) > 1 {
+				// MultipleObjectsReturned: order_by('-creation_date').first(); the database breaks a tie as in Django.
+				newest, err := tx.NewestTaxCodeMatch(ctx, upper, ownAssociation, nil)
+				if err != nil {
+					return nil, err
+				}
+				if newest == nil {
+					return nil, domain.ErrSubscriptionCreateServer
+				}
+				row = *newest
+			}
 			if minorOf != nil && row.ID == *minorOf {
 				return nil, domain.ErrSubscriptionCreateNotPorted
 			}

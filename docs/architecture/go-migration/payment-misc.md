@@ -176,3 +176,15 @@ scripts). GREEN `v2resta-green-r1` (after merging `codex/go-backend-parity` `b64
 native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2resta-mutation-r1` (the day's second digit limited to ASCII)
 fails `payment-misc-simulation-other-script-digits` (CAUGHT). The approve and payment-writes dates use the same parser since the second v2-rest-a block (payment-state.md,
 payment-writes.md); payment-misc re-run natively (`v2resta-rerun-r2`).
+
+## Plan values that are not plain strings (t3pay)
+
+Nineteen more cases (120 in all) with September plans. In the lookups `icontains` takes `str(value)`: numbers, booleans,
+lists and objects of the previous plan and of the plan id are matched by their Python repr (`dto.PythonStr`). A null plan
+id raises ("Cannot use None as a query value") and ends the run with what was collected; a list, object or non-decimal text
+fee raises in `DecimalField.to_python` and does the same; a null fee matches `amount IS NULL`, is listed by the simulation
+and makes the apply's insert fail (nothing is created); a boolean fee converts to 1 or 0 (the audit keeps `True`). A fee
+beyond numeric(9, 2) matches no row (simulation lists it) and fails the apply's insert. The worker-run apply
+(`association_quote_assign`) keeps refusing null and out-of-range fees. GREEN `t3pay-1`: 120/120 on the four transports.
+
+GREEN `t3pay-5` (run 43084300494) 120/120; mutation (booleans refused) CAUGHT, run 43082154506.

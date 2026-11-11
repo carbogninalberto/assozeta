@@ -979,7 +979,7 @@
    "course": null
   },
   "up_attach_number": {
-   "id": "a1000000-0000-4000-8000-000000988043",
+   "id": "a1000000-0000-4000-8000-000000988047",
    "type": "default",
    "subject": 0,
    "amount": "10.00",
@@ -1067,6 +1067,180 @@
   },
   "up_attach_null_name": {
    "id": "a1000000-0000-4000-8000-000000988046",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_boolean": {
+   "id": "a1000000-0000-4000-8000-000000988048",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_float": {
+   "id": "a1000000-0000-4000-8000-000000988049",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_list": {
+   "id": "a1000000-0000-4000-8000-000000988050",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_object": {
+   "id": "a1000000-0000-4000-8000-000000988051",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_traversal": {
+   "id": "a1000000-0000-4000-8000-000000988052",
+   "type": "default",
+   "subject": 0,
+   "amount": "10.00",
+   "creation_date": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "payment_category_id": "a1000000-0000-4000-8000-000000988001",
+   "meta_payment_categories": null,
+   "invoice_id": null,
+   "user_id": "a1000000-0000-4000-8000-000000700001",
+   "associate_id": null,
+   "supplier_id": null,
+   "instructor_id": null,
+   "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+   "payment_intent_id": null,
+   "archived": false,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "custom_accounts_id": null,
+   "signature_id": null,
+   "deleted": false,
+   "group_id": null,
+   "course": null
+  },
+  "up_attach_directory": {
+   "id": "a1000000-0000-4000-8000-000000988053",
    "type": "default",
    "subject": 0,
    "amount": "10.00",
@@ -1309,6 +1483,136 @@
     "subject": 9,
     "description": "   ",
     "paid": true,
+    "complex_item": null
+   }
+  },
+  {
+   "name": "payment-writes-add-user-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors: {'user': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-04",
+    "payment_date": null,
+    "user": null,
+    "complex_item": null
+   }
+  },
+  {
+   "name": "payment-writes-add-user-not-an-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors: {'user': {'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got str.', code='invalid')]}}"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-04",
+    "payment_date": null,
+    "user": "mario",
+    "complex_item": null
+   }
+  },
+  {
+   "name": "payment-writes-add-user-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors: {'amount': [ErrorDetail(string='A valid number is required.', code='invalid')], 'user': {'first_name': [ErrorDetail(string='Ensure this field has no more than 150 characters.', code='max_length')], 'last_name': [ErrorDetail(string='Not a valid string.', code='invalid')], 'email': [ErrorDetail(string='Enter a valid email address.', code='invalid')], 'username': [ErrorDetail(string='This field may not be blank.', code='blank')], 'role': [ErrorDetail(string='\"9\" is not a valid choice.', code='invalid_choice')]}}"
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-04",
+    "payment_date": null,
+    "amount": "abc",
+    "user": {
+     "first_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "last_name": [
+      "a"
+     ],
+     "email": "nope",
+     "phone": null,
+     "username": "",
+     "role": 9
+    },
+    "complex_item": null
+   }
+  },
+  {
+   "name": "payment-writes-add-user-object-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-04",
+    "payment_date": null,
+    "user": {
+     "first_name": "Mario",
+     "role": "2",
+     "phone": null
+    },
+    "complex_item": null
+   }
+  },
+  {
+   "name": "payment-writes-add-user-empty-object-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "creation_date": "2026-03-04",
+    "payment_date": null,
+    "user": {},
     "complex_item": null
    }
   },
@@ -12384,6 +12688,102 @@
    }
   },
   {
+   "name": "payment-writes-update-user-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988016/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "user": [
+     "This field may not be null."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "user": null
+   }
+  },
+  {
+   "name": "payment-writes-update-user-not-an-object",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988016/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "user": {
+     "non_field_errors": [
+      "Invalid data. Expected a dictionary, but got list."
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "user": [
+     1
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-user-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988016/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "user": {
+     "first_name": [
+      "Ensure this field has no more than 150 characters."
+     ],
+     "last_name": [
+      "Not a valid string."
+     ],
+     "email": [
+      "Enter a valid email address."
+     ],
+     "username": [
+      "This field may not be blank."
+     ],
+     "role": [
+      "\"9\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {},
+    "audit": []
+   },
+   "prints": [],
+   "body": {
+    "user": {
+     "first_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+     "last_name": [
+      "a"
+     ],
+     "email": "nope",
+     "phone": null,
+     "username": "",
+     "role": 9
+    }
+   }
+  },
+  {
    "name": "payment-writes-update-related-errors",
    "actor": "owner",
    "method": "PATCH",
@@ -14021,6 +14421,53 @@
    }
   },
   {
+   "name": "payment-writes-update-user-object-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988016/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_plain": {}
+    },
+    "audit": [],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "user": {
+     "first_name": "Mario"
+    },
+    "amount": "31"
+   }
+  },
+  {
+   "name": "payment-writes-update-user-empty-object-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988016/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_plain": {}
+    },
+    "audit": [],
+    "documents": []
+   },
+   "prints": [],
+   "body": {
+    "user": {}
+   }
+  },
+  {
    "name": "payment-writes-update-own-payment-id",
    "actor": "owner",
    "method": "PATCH",
@@ -15396,7 +15843,7 @@
    "name": "payment-writes-update-attachment-number-document",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/payment/a1000000-0000-4000-8000-000000988043/update",
+   "path": "/payment/a1000000-0000-4000-8000-000000988047/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
@@ -15564,6 +16011,421 @@
      {
       "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
       "filename": "x\u0000.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment-number-filename",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988047/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_attach_number": {
+      "amount": "28.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_number",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "24.00",
+        "28.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "5"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     }
+    ],
+    "documents": [
+     {
+      "filename": "5",
+      "payment": "up_attach_number",
+      "unlinked": true
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "amount": "28",
+    "attachments_data": [
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "filename": 5
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment-boolean-filename",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988048/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_attach_boolean": {
+      "amount": "28.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_boolean",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "28.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "True"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     }
+    ],
+    "documents": [
+     {
+      "filename": "True",
+      "payment": "up_attach_boolean",
+      "unlinked": true
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "amount": "28",
+    "attachments_data": [
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "filename": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment-float-filename",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988049/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_attach_float": {
+      "amount": "28.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_float",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "28.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "1.5"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     }
+    ],
+    "documents": [
+     {
+      "filename": "1.5",
+      "payment": "up_attach_float",
+      "unlinked": true
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "amount": "28",
+    "attachments_data": [
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "filename": 1.5
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment-list-filename",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988050/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_attach_list": {
+      "amount": "28.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_list",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "28.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "['a', 1]"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     }
+    ],
+    "documents": [
+     {
+      "filename": "['a', 1]",
+      "payment": "up_attach_list",
+      "unlinked": true
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "amount": "28",
+    "attachments_data": [
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "filename": [
+       "a",
+       1
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "payment-writes-update-attachment-object-filename",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/payment/a1000000-0000-4000-8000-000000988051/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "created": [],
+    "changed": {
+     "up_attach_object": {
+      "amount": "28.00"
+     }
+    },
+    "audit": [
+     {
+      "key": "up_attach_object",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "10.00",
+        "28.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "key": "$doc0",
+      "model": "document",
+      "action": 0,
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ],
+      "changes": {
+       "document_id": [
+        "None",
+        "$doc0"
+       ],
+       "creation_date": [
+        "None",
+        "$doc0_created"
+       ],
+       "filename": [
+        "None",
+        "{'k': None}"
+       ],
+       "token": [
+        "None",
+        "$doc0_token"
+       ],
+       "customer_invoice_pdf": [
+        "None",
+        "application.CustomerInvoice.None"
+       ]
+      }
+     }
+    ],
+    "documents": [
+     {
+      "filename": "{'k': None}",
+      "payment": "up_attach_object",
+      "unlinked": true
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "amount": "28",
+    "attachments_data": [
+     {
+      "document": "JVBERi0xLjQKJSByaWNldnV0YSBmaXh0dXJlIOgKJSVFT0YK",
+      "filename": {
+       "k": null
+      }
      }
     ]
    }

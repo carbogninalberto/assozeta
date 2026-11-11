@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"strings"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -164,7 +163,7 @@ func InstanceSetupData(body any) (*InstanceSetupInput, error) {
 				input.DomainASCII = false
 			}
 		}
-		input.Domain = pythonStrip(strings.ToLower(text))
+		input.Domain = pythonStrip(PythonLower(text))
 	}
 	// oem: OEMSetupInputSerializer, then validate_logo.
 	if nested, present, failure := setupNested(object, "oem", true); failure != nil {

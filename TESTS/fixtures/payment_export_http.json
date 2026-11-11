@@ -758,23 +758,202 @@
    "paid_on": "2024-01-25T10:00:00Z",
    "id": "ba1dface-ffff-4fff-8fff-fffffffffafe",
    "created": "2024-01-25T09:00:00Z"
+  },
+  "label_bool": {
+   "subject": 0,
+   "type": "default",
+   "amount": "1.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-bool",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": true
+   },
+   "paid_on": "2024-02-02T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffaff",
+   "created": "2024-02-02T09:00:00Z"
+  },
+  "label_big": {
+   "subject": 0,
+   "type": "default",
+   "amount": "1.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-big",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": 123456789012345678901234567890
+   },
+   "paid_on": "2024-02-03T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbaa",
+   "created": "2024-02-03T09:00:00Z"
+  },
+  "label_big_text": {
+   "subject": 0,
+   "type": "default",
+   "amount": "2.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-big text",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": "Etichetta"
+   },
+   "paid_on": "2024-02-03T12:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbab",
+   "created": "2024-02-03T11:00:00Z"
+  },
+  "label_huge": {
+   "subject": 0,
+   "type": "default",
+   "amount": "1.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-huge",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+   },
+   "paid_on": "2024-02-04T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbac",
+   "created": "2024-02-04T09:00:00Z"
+  },
+  "label_list": {
+   "subject": 0,
+   "type": "default",
+   "amount": "1.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-list",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": [
+     1,
+     "a"
+    ]
+   },
+   "paid_on": "2024-02-05T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbad",
+   "created": "2024-02-05T09:00:00Z"
+  },
+  "label_dict": {
+   "subject": 0,
+   "type": "default",
+   "amount": "1.00",
+   "paid": false,
+   "expense": false,
+   "description": "et-dict",
+   "category": null,
+   "meta_payment_categories": null,
+   "invoice": false,
+   "associate": null,
+   "supplier": false,
+   "instructor": false,
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "payment_intent_id": null,
+   "archived": true,
+   "invoice_fiscal_code": null,
+   "meta": null,
+   "notes": null,
+   "account": null,
+   "deleted": false,
+   "group": null,
+   "course": {
+    "label": {
+     "k": 1
+    }
+   },
+   "paid_on": "2024-02-06T10:00:00Z",
+   "id": "ba1dface-ffff-4fff-8fff-fffffffffbae",
+   "created": "2024-02-06T09:00:00Z"
   }
  },
  "course_subscriptions": {
   "swim": {
-   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffaff",
+   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbaf",
    "course": "swim",
    "payment": "course",
    "deleted": false
   },
   "rates": {
-   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbaa",
+   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbba",
    "course": "swim",
    "payment": null,
    "deleted": false
   },
   "old": {
-   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbab",
+   "id": "c5c5c5c5-ffff-4fff-8fff-fffffffffbbb",
    "course": "old",
    "payment": null,
    "deleted": true
@@ -782,14 +961,14 @@
  },
  "installments": {
   "old": {
-   "id": "11a5aaaa-ffff-4fff-8fff-fffffffffbac",
+   "id": "11a5aaaa-ffff-4fff-8fff-fffffffffbbc",
    "cs": "old",
    "payment": "installment",
    "deleted": true,
    "number": 1
   },
   "live": {
-   "id": "11a5bbbb-ffff-4fff-8fff-fffffffffbad",
+   "id": "11a5bbbb-ffff-4fff-8fff-fffffffffbbd",
    "cs": "rates",
    "payment": "installment",
    "deleted": false,
@@ -798,7 +977,7 @@
  },
  "transfers": {
   "before": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbae",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbbe",
    "from": "cash",
    "to": "bank",
    "amount": "5.00",
@@ -806,7 +985,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "foreign_in": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbaf",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbbf",
    "from": "abroad",
    "to": "cash",
    "amount": "7.00",
@@ -814,7 +993,7 @@
    "association": "a1000000-0000-4000-8000-000000701002"
   },
   "t1": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbba",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbca",
    "from": "cash",
    "to": "bank",
    "amount": "30.00",
@@ -822,7 +1001,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "t2": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbbb",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbcb",
    "from": "bank",
    "to": "cash",
    "amount": "12.34",
@@ -830,7 +1009,7 @@
    "association": "a1000000-0000-4000-8000-000000701001"
   },
   "dangling": {
-   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbbc",
+   "id": "7a0f7a0f-ffff-4fff-8fff-fffffffffbcc",
    "from": "abroad",
    "to": null,
    "amount": "1.00",
@@ -4374,6 +4553,460 @@
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "payment-export-label-bool-csv",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-bool",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\net-bool,In Attesa,-,2024-02-02,2024-02-02,,Altro,,-,-,Entrata,True,1.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-bool-xlsx",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-bool&m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-bool"
+        ],
+        [
+         "In Attesa"
+        ],
+        [
+         "-"
+        ],
+        [
+         "2024-02-02"
+        ],
+        [
+         "2024-02-02"
+        ],
+        [
+         ""
+        ],
+        [
+         "Altro"
+        ],
+        [
+         ""
+        ],
+        [
+         "-"
+        ],
+        [
+         "-"
+        ],
+        [
+         "Entrata"
+        ],
+        [
+         {
+          "bool": true
+         }
+        ],
+        [
+         {
+          "decimal": "1.00"
+         }
+        ],
+        [
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-big-csv",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-big",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\net-big,In Attesa,-,2024-02-03,2024-02-03,,Altro,,-,-,Entrata,123456789012345678901234567890,1.00,\r\net-big text,In Attesa,-,2024-02-03,2024-02-03,,Altro,,-,-,Entrata,Etichetta,2.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-big-xlsx",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-big&m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-big",
+         "et-big text"
+        ],
+        [
+         "In Attesa",
+         "In Attesa"
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "2024-02-03",
+         "2024-02-03"
+        ],
+        [
+         "2024-02-03",
+         "2024-02-03"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "Altro",
+         "Altro"
+        ],
+        [
+         "",
+         ""
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "-",
+         "-"
+        ],
+        [
+         "Entrata",
+         "Entrata"
+        ],
+        [
+         {
+          "int": "123456789012345678901234567890"
+         },
+         "Etichetta"
+        ],
+        [
+         {
+          "decimal": "1.00"
+         },
+         {
+          "decimal": "2.00"
+         }
+        ],
+        [
+         null,
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-huge-csv",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-huge",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\net-huge,In Attesa,-,2024-02-04,2024-02-04,,Altro,,-,-,Entrata,10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,1.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-huge-xlsx-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-huge&m=xlsx",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "payment-export-label-list-csv",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\net-list,In Attesa,-,2024-02-05,2024-02-05,,Altro,,-,-,Entrata,\"[1, 'a']\",1.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-list-xlsx",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-list&m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-list"
+        ],
+        [
+         "In Attesa"
+        ],
+        [
+         "-"
+        ],
+        [
+         "2024-02-05"
+        ],
+        [
+         "2024-02-05"
+        ],
+        [
+         ""
+        ],
+        [
+         "Altro"
+        ],
+        [
+         ""
+        ],
+        [
+         "-"
+        ],
+        [
+         "-"
+        ],
+        [
+         "Entrata"
+        ],
+        [
+         {
+          "list": [
+           {
+            "int": "1"
+           },
+           "a"
+          ]
+         }
+        ],
+        [
+         {
+          "decimal": "1.00"
+         }
+        ],
+        [
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-dict-csv",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-dict",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "Informazioni intestatario,Stato,Modalità di pagamento,Data creazione,Data pagamento,Numero ricevuta,Attività,Causali aggiuntive,Causale,Conto,Tipo,Corso,Importo,Note\r\net-dict,In Attesa,-,2024-02-06,2024-02-06,,Altro,,-,-,Entrata,{'k': 1},1.00,\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.csv"
+    }
+   }
+  },
+  {
+   "name": "payment-export-label-dict-xlsx",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/payment/list/export?archived=1&query[generalSearch]=et-dict&m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "Informazioni intestatario",
+        "Stato",
+        "Modalità di pagamento",
+        "Data creazione",
+        "Data pagamento",
+        "Numero ricevuta",
+        "Attività",
+        "Causali aggiuntive",
+        "Causale",
+        "Conto",
+        "Tipo",
+        "Corso",
+        "Importo",
+        "Note"
+       ],
+       "data": [
+        [
+         "et-dict"
+        ],
+        [
+         "In Attesa"
+        ],
+        [
+         "-"
+        ],
+        [
+         "2024-02-06"
+        ],
+        [
+         "2024-02-06"
+        ],
+        [
+         ""
+        ],
+        [
+         "Altro"
+        ],
+        [
+         ""
+        ],
+        [
+         "-"
+        ],
+        [
+         "-"
+        ],
+        [
+         "Entrata"
+        ],
+        [
+         {
+          "dict": [
+           [
+            "k",
+            {
+             "int": "1"
+            }
+           ]
+          ]
+         }
+        ],
+        [
+         {
+          "decimal": "1.00"
+         }
+        ],
+        [
+         null
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] PAGAMENTI a Message reads foreign.xlsx"
+    }
+   }
   }
  ]
 }

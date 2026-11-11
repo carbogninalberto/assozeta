@@ -2454,6 +2454,152 @@
    "description": "Registro Presenze - Nuoto è",
    "enriched": null,
    "display": null
+  },
+  "nan-meta-crash": {
+   "id": 996000054,
+   "app": "application",
+   "model": "module",
+   "pk": "b0d00001-0000-4000-8000-000000996021",
+   "repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+   "action": 1,
+   "changes": {
+    "meta": [
+     "None",
+     "{\"v\": NaN}"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-09-20T13:00:00Z",
+   "indexed": true,
+   "description": "Modulo - Modulo privacy",
+   "enriched": null,
+   "display": null
+  },
+  "infinity-meta-crash": {
+   "id": 996000055,
+   "app": "application",
+   "model": "module",
+   "pk": "b0d00001-0000-4000-8000-000000996021",
+   "repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+   "action": 1,
+   "changes": {
+    "meta": [
+     "None",
+     "[1, -Infinity]"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-09-20T14:00:00Z",
+   "indexed": true,
+   "description": "Modulo - Modulo privacy",
+   "enriched": null,
+   "display": null
+  },
+  "surrogate-meta-crash": {
+   "id": 996000056,
+   "app": "application",
+   "model": "module",
+   "pk": "b0d00001-0000-4000-8000-000000996021",
+   "repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+   "action": 1,
+   "changes": {
+    "meta": [
+     "None",
+     "{\"v\": \"\\ud800\"}"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-09-20T15:00:00Z",
+   "indexed": true,
+   "description": "Modulo - Modulo privacy",
+   "enriched": null,
+   "display": null
+  },
+  "nan-additional-fields": {
+   "id": 996000057,
+   "app": "application",
+   "model": "module",
+   "pk": "b0d00001-0000-4000-8000-000000996021",
+   "repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+   "action": 1,
+   "changes": {
+    "additional_fields": [
+     "None",
+     "[{\"props\": {\"label\": \"Peso\", \"value\": NaN}}]"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-09-20T16:00:00Z",
+   "indexed": true,
+   "description": "Modulo - Modulo privacy",
+   "enriched": {
+    "additional_fields": [
+     "None",
+     "Peso: nan"
+    ]
+   },
+   "display": [
+    {
+     "field": "Campi aggiuntivi",
+     "field_key": "additional_fields",
+     "old": "N/D",
+     "new": "Peso: nan",
+     "formatted": "Campi aggiuntivi: N/D → Peso: nan"
+    }
+   ]
+  },
+  "surrogate-unused-additional-fields": {
+   "id": 996000058,
+   "app": "application",
+   "model": "module",
+   "pk": "b0d00001-0000-4000-8000-000000996021",
+   "repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+   "action": 1,
+   "changes": {
+    "additional_fields": [
+     "None",
+     "[{\"props\": {\"label\": \"A\", \"value\": \"B\"}, \"note\": \"\\ud800\"}]"
+    ]
+   },
+   "actor": "user_named",
+   "actor_email": "stale@example.test",
+   "remote": "10.0.0.1",
+   "extra": null,
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "timestamp": "2026-09-20T17:00:00Z",
+   "indexed": true,
+   "description": "Modulo - Modulo privacy",
+   "enriched": {
+    "additional_fields": [
+     "None",
+     "A: B"
+    ]
+   },
+   "display": [
+    {
+     "field": "Campi aggiuntivi",
+     "field_key": "additional_fields",
+     "old": "N/D",
+     "new": "A: B",
+     "formatted": "Campi aggiuntivi: N/D → A: B"
+    }
+   ]
   }
  },
  "cases": [
@@ -3225,9 +3371,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -3343,9 +3489,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -3461,9 +3607,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -3582,9 +3728,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -3882,9 +4028,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 25,
+     "pages": 27,
      "perpage": 10
     }
    }
@@ -4000,9 +4146,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 2,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -4016,56 +4162,6 @@
    "status": 200,
    "response": {
     "data": [
-     {
-      "id": 996000006,
-      "action": 2,
-      "action_label": "Eliminazione",
-      "timestamp": "2026-09-29T00:00:00Z",
-      "object_pk": "a550c002-0000-4000-8000-000000996009",
-      "object_repr": "Associate object (a550c002-0000-4000-8000-000000996009)",
-      "model_verbose_name": "Associato",
-      "actor_name": null
-     },
-     {
-      "id": 996000005,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-28T21:00:00Z",
-      "object_pk": "a550c001-0000-4000-8000-000000996008",
-      "object_repr": "Associate object (a550c001-0000-4000-8000-000000996008)",
-      "model_verbose_name": "Associato",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000004,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-28T18:00:00Z",
-      "object_pk": "c0a5e003-0000-4000-8000-000000996006",
-      "object_repr": "Vecchio corso",
-      "model_verbose_name": "Corso",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000003,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-28T15:00:00Z",
-      "object_pk": "c0a5e002-0000-4000-8000-000000996005",
-      "object_repr": "Course object (c0a5e002-0000-4000-8000-000000996005)",
-      "model_verbose_name": "Corso",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000002,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-09-28T12:00:00Z",
-      "object_pk": "c0a5e001-0000-4000-8000-000000996004",
-      "object_repr": "Course object (c0a5e001-0000-4000-8000-000000996004)",
-      "model_verbose_name": "Corso",
-      "actor_name": "Mario Rossi"
-     },
      {
       "id": 996000053,
       "action": 1,
@@ -4108,9 +4204,9 @@
      }
     ],
     "meta": {
-     "total": 49,
-     "page": 5,
-     "pages": 5,
+     "total": 54,
+     "page": 6,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -4226,9 +4322,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -4274,9 +4370,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 2,
-     "pages": 17,
+     "pages": 18,
      "perpage": 10
     }
    }
@@ -4492,7 +4588,7 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
      "pages": 3,
      "perpage": 10
@@ -4610,9 +4706,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -4728,9 +4824,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -4846,9 +4942,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -5313,6 +5409,56 @@
       "actor_name": "Mario Rossi"
      },
      {
+      "id": 996000058,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T17:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000057,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T16:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000056,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T15:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000055,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T14:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000054,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T13:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000053,
       "action": 1,
       "action_label": "Modifica",
@@ -5354,7 +5500,7 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
      "pages": 1,
      "perpage": 10
@@ -5472,9 +5618,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 2,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -5634,9 +5780,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 2,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -6020,6 +6166,56 @@
       "actor_name": "Mario Rossi"
      },
      {
+      "id": 996000058,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T17:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000057,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T16:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000056,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T15:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000055,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T14:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000054,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T13:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000053,
       "action": 1,
       "action_label": "Modifica",
@@ -6061,7 +6257,7 @@
      }
     ],
     "meta": {
-     "total": 40,
+     "total": 45,
      "page": 1,
      "pages": 1,
      "perpage": 10
@@ -6255,9 +6451,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -6373,9 +6569,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -7070,6 +7266,56 @@
       "actor_name": "Mario Rossi"
      },
      {
+      "id": 996000058,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T17:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000057,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T16:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000056,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T15:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000055,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T14:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000054,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T13:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000053,
       "action": 1,
       "action_label": "Modifica",
@@ -7098,22 +7344,12 @@
       "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
       "model_verbose_name": "Modulo",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000001,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-20T09:00:00Z",
-      "object_pk": "e1000001-0000-4000-8000-000000996022",
-      "object_repr": "Attendanceregistry object (e1000001-0000-4000-8000-000000996022)",
-      "model_verbose_name": "Registro Presenze",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 46,
+     "total": 51,
      "page": 1,
-     "pages": 1,
+     "pages": 2,
      "perpage": 10
     }
    }
@@ -7539,6 +7775,56 @@
       "actor_name": "Mario Rossi"
      },
      {
+      "id": 996000058,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T17:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000057,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T16:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000056,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T15:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000055,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T14:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000054,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T13:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000053,
       "action": 1,
       "action_label": "Modifica",
@@ -7580,7 +7866,7 @@
      }
     ],
     "meta": {
-     "total": 17,
+     "total": 22,
      "page": 1,
      "pages": 1,
      "perpage": 10
@@ -7934,9 +8220,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -8052,9 +8338,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -8381,6 +8667,56 @@
       "actor_name": "Mario Rossi"
      },
      {
+      "id": 996000054,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T13:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000055,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T14:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000056,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T15:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000057,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T16:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
+      "id": 996000058,
+      "action": 1,
+      "action_label": "Modifica",
+      "timestamp": "2026-09-20T17:00:00Z",
+      "object_pk": "b0d00001-0000-4000-8000-000000996021",
+      "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+      "model_verbose_name": "Modulo",
+      "actor_name": "Mario Rossi"
+     },
+     {
       "id": 996000002,
       "action": 0,
       "action_label": "Creazione",
@@ -8389,62 +8725,12 @@
       "object_repr": "Course object (c0a5e001-0000-4000-8000-000000996004)",
       "model_verbose_name": "Corso",
       "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000003,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-28T15:00:00Z",
-      "object_pk": "c0a5e002-0000-4000-8000-000000996005",
-      "object_repr": "Course object (c0a5e002-0000-4000-8000-000000996005)",
-      "model_verbose_name": "Corso",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000004,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-28T18:00:00Z",
-      "object_pk": "c0a5e003-0000-4000-8000-000000996006",
-      "object_repr": "Vecchio corso",
-      "model_verbose_name": "Corso",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000005,
-      "action": 1,
-      "action_label": "Modifica",
-      "timestamp": "2026-09-28T21:00:00Z",
-      "object_pk": "a550c001-0000-4000-8000-000000996008",
-      "object_repr": "Associate object (a550c001-0000-4000-8000-000000996008)",
-      "model_verbose_name": "Associato",
-      "actor_name": "Mario Rossi"
-     },
-     {
-      "id": 996000006,
-      "action": 2,
-      "action_label": "Eliminazione",
-      "timestamp": "2026-09-29T00:00:00Z",
-      "object_pk": "a550c002-0000-4000-8000-000000996009",
-      "object_repr": "Associate object (a550c002-0000-4000-8000-000000996009)",
-      "model_verbose_name": "Associato",
-      "actor_name": null
-     },
-     {
-      "id": 996000007,
-      "action": 0,
-      "action_label": "Creazione",
-      "timestamp": "2026-09-29T03:00:00Z",
-      "object_pk": "5b000001-0000-4000-8000-000000996012",
-      "object_repr": "Subscription object (5b000001-0000-4000-8000-000000996012)",
-      "model_verbose_name": "Iscrizione",
-      "actor_name": "Mario Rossi"
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -8560,9 +8846,9 @@
      }
     ],
     "meta": {
-     "total": 49,
+     "total": 54,
      "page": 1,
-     "pages": 5,
+     "pages": 6,
      "perpage": 10
     }
    }
@@ -11294,6 +11580,100 @@
    }
   },
   {
+   "name": "audit-logs-detail-nan-additional-fields",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000057/detail",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "id": 996000057,
+     "action": 1,
+     "action_label": "Modifica",
+     "timestamp": "2026-09-20T16:00:00Z",
+     "object_pk": "b0d00001-0000-4000-8000-000000996021",
+     "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+     "object_description": "Modulo - Modulo privacy",
+     "model_name": "module",
+     "model_verbose_name": "Modulo",
+     "actor_name": "Mario Rossi",
+     "actor_email": "mario.audit@example.test",
+     "remote_addr": "10.0.0.1",
+     "changes": {
+      "additional_fields": [
+       "None",
+       "[{\"props\": {\"label\": \"Peso\", \"value\": NaN}}]"
+      ]
+     },
+     "enriched_changes": {
+      "additional_fields": [
+       "None",
+       "Peso: nan"
+      ]
+     },
+     "display_changes": [
+      {
+       "field": "Campi aggiuntivi",
+       "field_key": "additional_fields",
+       "old": "N/D",
+       "new": "Peso: nan",
+       "formatted": "Campi aggiuntivi: N/D → Peso: nan"
+      }
+     ],
+     "changes_summary": "Modificato: additional_fields",
+     "additional_data": null
+    }
+   }
+  },
+  {
+   "name": "audit-logs-detail-surrogate-unused-additional-fields",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000058/detail",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "id": 996000058,
+     "action": 1,
+     "action_label": "Modifica",
+     "timestamp": "2026-09-20T17:00:00Z",
+     "object_pk": "b0d00001-0000-4000-8000-000000996021",
+     "object_repr": "Module object (b0d00001-0000-4000-8000-000000996021)",
+     "object_description": "Modulo - Modulo privacy",
+     "model_name": "module",
+     "model_verbose_name": "Modulo",
+     "actor_name": "Mario Rossi",
+     "actor_email": "mario.audit@example.test",
+     "remote_addr": "10.0.0.1",
+     "changes": {
+      "additional_fields": [
+       "None",
+       "[{\"props\": {\"label\": \"A\", \"value\": \"B\"}, \"note\": \"\\ud800\"}]"
+      ]
+     },
+     "enriched_changes": {
+      "additional_fields": [
+       "None",
+       "A: B"
+      ]
+     },
+     "display_changes": [
+      {
+       "field": "Campi aggiuntivi",
+       "field_key": "additional_fields",
+       "old": "N/D",
+       "new": "A: B",
+       "formatted": "Campi aggiuntivi: N/D → A: B"
+      }
+     ],
+     "changes_summary": "Modificato: additional_fields",
+     "additional_data": null
+    }
+   }
+  },
+  {
    "name": "audit-logs-detail-events-crash",
    "actor": "owner",
    "method": "GET",
@@ -11325,6 +11705,33 @@
    "actor": "owner",
    "method": "GET",
    "path": "/audit-logs/996000053/detail",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "audit-logs-detail-nan-meta-crash",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000054/detail",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "audit-logs-detail-infinity-meta-crash",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000055/detail",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "audit-logs-detail-surrogate-meta-crash",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/audit-logs/996000056/detail",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>"

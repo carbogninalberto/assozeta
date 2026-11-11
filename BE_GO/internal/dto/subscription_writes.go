@@ -2,7 +2,6 @@ package dto
 
 import (
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -194,5 +193,5 @@ func AssociateTaxCodeASCII(text string) bool {
 	return true
 }
 
-// AssociateUpper is str.upper() for ASCII text.
-func AssociateUpper(text string) string { return strings.ToUpper(text) }
+// AssociateUpper is str.upper().
+func AssociateUpper(text string) string { return PythonUpper(text) }

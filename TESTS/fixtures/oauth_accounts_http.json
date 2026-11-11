@@ -255,7 +255,9 @@
   "oauth-reset-deleted-user": "a1000000-0000-4000-8000-000000760003",
   "oauth-reset-bad-id": "not-a-user-id",
   "12345": "a1000000-0000-4000-8000-000000760002",
-  "oauth-reset-form": "a1000000-0000-4000-8000-000000700004"
+  "oauth-reset-form": "a1000000-0000-4000-8000-000000700004",
+  "oauth-reset-nul": "a1000000-0000-4000-8000-000000760001",
+  "oauth-reset-surrogate": "a1000000-0000-4000-8000-000000760001"
  },
  "card": {
   "sport_association_membership_card_configuration_id": "a1000000-0000-4000-8000-000000762001",
@@ -1716,6 +1718,97 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "oauth-accounts-reset-password-with-nul",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/reset",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Password reset."
+   },
+   "effect": {
+    "kind": "reset",
+    "user": "a1000000-0000-4000-8000-000000760001",
+    "token": "oauth-reset-nul",
+    "password": "Valid-Pass1!\u0000x",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Conferma Nuova Password"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_confirm_reset_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Rita",
+          "last_name": "D'Amico <R>",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "Shared.Reset@Example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_confirm_reset_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Rita",
+          "last_name": "D'Amico <R>",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "token": "oauth-reset-nul",
+    "password": "Valid-Pass1!\u0000x"
+   }
+  },
+  {
+   "name": "oauth-accounts-reset-password-with-lone-surrogate",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/reset",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"token\": \"oauth-reset-surrogate\", \"password\": \"Valid-Pass1!\\ud800x\"}",
+   "content_type": "application/json"
+  },
+  {
    "name": "oauth-accounts-reset-owner-scoped-to-athlete",
    "actor": "owner",
    "method": "POST",
@@ -3008,6 +3101,153 @@
     "password": "  Valid-Pass1!  ",
     "phone": null,
     "unknown": "ignored"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-unicode-username",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": false,
+    "user": {
+     "first_name": "Nome",
+     "last_name": "Cognome",
+     "username": "ÈLIA_SS.É",
+     "email": "persona31@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": "Valid-Pass1!",
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "persona31@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": "Nome",
+          "last_name": "Cognome",
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona31@example.test",
+    "username": "Èlia_ß.é",
+    "password": "Valid-Pass1!"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-unicode-username-invalid-character",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid request.",
+    "details": {
+     "username": [
+      "Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona32@example.test",
+    "username": "Éli☃",
+    "password": "Valid-Pass1!"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-username-with-nul",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Invalid request.",
+    "details": {
+     "username": [
+      "Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.",
+      "Null characters are not allowed."
+     ]
+    }
+   },
+   "effect": null,
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona33@example.test",
+    "username": "abc\u0000def",
+    "password": "Valid-Pass1!"
    }
   },
   {

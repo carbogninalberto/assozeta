@@ -503,6 +503,31 @@
    "task_name": "export_association_data",
    "result": "{\"exc_type\": \"ValueError\", \"exc_message\": [\"altro task\"], \"exc_module\": \"builtins\"}"
   },
+  "export_info": {
+   "task_id": "a1000000-0000-4000-8000-000000976813",
+   "status": "PROGRESS",
+   "result": "{\"task_id\": \"a1000000-0000-4000-8000-000000976813\", \"estimate\": \"55%\", \"progress\": {\"percent\": 55}, \"updated_at\": \"2026-02-02T10:00:00+00:00\"}"
+  },
+  "export_info_partial": {
+   "task_id": "a1000000-0000-4000-8000-000000976814",
+   "status": "PROGRESS",
+   "result": "{\"task_id\": \"a1000000-0000-4000-8000-000000976814\"}"
+  },
+  "export_surrogate": {
+   "task_id": "a1000000-0000-4000-8000-000000976815",
+   "status": "SUCCESS",
+   "result": "{\"note\": \"\\ud800\"}"
+  },
+  "export_infinite": {
+   "task_id": "a1000000-0000-4000-8000-000000976816",
+   "status": "SUCCESS",
+   "result": "{\"ratio\": 1e999}"
+  },
+  "export_pair": {
+   "task_id": "a1000000-0000-4000-8000-000000976817",
+   "status": "SUCCESS",
+   "result": "{\"note\": \"\\ud83d\\ude00\"}"
+  },
   "failed_value": {
    "task_id": "a1000000-0000-4000-8000-000000976840",
    "status": "FAILURE",
@@ -8840,6 +8865,704 @@
    "cache_after": null,
    "objects_after": null,
    "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  {
+   "name": "association-transfer-status-registered-without-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976999",
+    "status": "PENDING",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976999": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-foreign-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976811",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976811": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-empty-entry",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976811",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Export non trovato"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976811": {}
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-success",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976811",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976811",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": {
+     "success": true
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976811": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-progress-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976810",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976810",
+    "status": "PROGRESS",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976810": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-revoked",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976812",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976812",
+    "status": "REVOKED",
+    "ready": true,
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976812": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-failed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976807",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976807",
+    "status": "FAILURE",
+    "ready": true,
+    "error": "Operazione non riuscita. Riprova più tardi o contatta il supporto."
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976807": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-info-fields",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976813",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976813",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "55%",
+    "progress": {
+     "percent": 55
+    },
+    "updated_at": "2026-02-02T10:00:00+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976813": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-info-defaults",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976814",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976814",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "0%",
+    "progress": null,
+    "updated_at": null
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976814": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-active-snapshot",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976810",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976810",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976810": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     },
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976810",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-active-snapshot-defaults",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976810",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976810",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "0%",
+    "progress": null,
+    "updated_at": null
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976810": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     },
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976810"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-active-snapshot-of-another-task",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976810",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976810",
+    "status": "PROGRESS",
+    "ready": false
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976810": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     },
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976920",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-last-snapshot",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976810",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976810",
+    "status": "SUCCESS",
+    "ready": true,
+    "estimate": "100%",
+    "progress": null,
+    "updated_at": null
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976810": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     },
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976810",
+      "status": "SUCCESS"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-last-snapshot-with-result",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976811",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976811",
+    "status": "SUCCESS",
+    "ready": true,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00",
+    "result": {
+     "success": true
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976811": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     },
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976811",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "SUCCESS",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00",
+      "result": {
+       "document_id": "a1000000-0000-4000-8000-000000976930",
+       "filename": "export_x.zip"
+      }
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-active-wins-over-last",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976810",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976810",
+    "status": "PROGRESS",
+    "ready": false,
+    "estimate": "40%",
+    "progress": {
+     "percent": 40,
+     "phase": "files",
+     "label": "Copia file",
+     "completed": 4,
+     "total": 10,
+     "files_failed": 0
+    },
+    "updated_at": "2026-02-01T10:00:00.123456+00:00"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976810": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     },
+     "association-export-active:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976810",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "PROGRESS",
+      "ready": false,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     },
+     "association-export-last:a1000000-0000-4000-8000-000000701001": {
+      "task_id": "a1000000-0000-4000-8000-000000976810",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "status": "SUCCESS",
+      "ready": true,
+      "estimate": "40%",
+      "progress": {
+       "percent": 40,
+       "phase": "files",
+       "label": "Copia file",
+       "completed": 4,
+       "total": 10,
+       "files_failed": 0
+      },
+      "updated_at": "2026-02-01T10:00:00.123456+00:00"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-result-with-surrogate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976815",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976815": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-result-with-infinity",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976816",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976816": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-result-with-emoji-pair",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976817",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976817",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": {
+     "note": "😀"
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976817": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-status-registered-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/association/export/status?task_id=a1000000-0000-4000-8000-000000976811",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo il proprietario può visualizzare gli export"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-export-task:a1000000-0000-4000-8000-000000976811": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-success-lone-surrogate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976815",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976815": {
+      "task": "import_association_data"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-success-float-beyond-double",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976816",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976816": {
+      "task": "import_association_data"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
+  },
+  {
+   "name": "association-transfer-import-status-owner-success-surrogate-pair",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/association/import/status?task_id=a1000000-0000-4000-8000-000000976817",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "task_id": "a1000000-0000-4000-8000-000000976817",
+    "status": "SUCCESS",
+    "ready": true,
+    "result": {
+     "note": "😀"
+    }
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {
+     "association-import-task:a1000000-0000-4000-8000-000000976817": {
+      "task": "import_association_data"
+     }
+    },
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null
   }
  ]
 }

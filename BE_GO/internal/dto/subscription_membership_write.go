@@ -107,6 +107,47 @@ func subscriptionMembershipRelated(value any, null bool) (SubscriptionMembership
 	return SubscriptionMembershipRelation{Present: true, ID: &id}, nil
 }
 
+// subscriptionMembershipFiles reads a multipart file the way each field does: the related fields and the price
+// see str(file) (the uploaded name, DRF quotes it or reads it as a number), every other field sees an object it
+// rejects (a list stands in: not a string, not a date, not a UUID).
+func subscriptionMembershipFiles(object domain.RequestObject) domain.RequestObject {
+	var copied domain.RequestObject
+	for index, field := range object {
+		file, ok := field.Value.(domain.RequestFile)
+		if !ok {
+			continue
+		}
+		if copied == nil {
+			copied = append(domain.RequestObject(nil), object...)
+		}
+		switch field.Name {
+		case "sport_association", "associate", "payment", "price":
+			copied[index].Value = file.Name
+		default:
+			copied[index].Value = []any{}
+		}
+	}
+	if copied == nil {
+		return object
+	}
+	return copied
+}
+
+// SubscriptionMembershipHasFile reports whether a parsed multipart body carries a file part (DRF then copies the
+// data into a mutable dict that add can assign to).
+func SubscriptionMembershipHasFile(body any) bool {
+	object, ok := body.(domain.RequestObject)
+	if !ok {
+		return false
+	}
+	for _, field := range object {
+		if _, isFile := field.Value.(domain.RequestFile); isFile {
+			return true
+		}
+	}
+	return false
+}
+
 // ParseSubscriptionMembershipWrite ports SubscriptionMembershipSerializer
 // field validation (partial or not; every field is optional except
 // sport_association, which the add view always supplies). Uniqueness, the
@@ -116,6 +157,7 @@ func ParseSubscriptionMembershipWrite(body any, form bool) (SubscriptionMembersh
 	if !ok {
 		return SubscriptionMembershipWrite{}, map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(body)}}
 	}
+	object = subscriptionMembershipFiles(object)
 	write := SubscriptionMembershipWrite{Dates: map[string]*string{}, Text: map[string]*string{}}
 	errs := map[string]any{}
 	if value, present := object.Lookup("subscription_membership_id"); present {
