@@ -22,13 +22,6 @@ func (r *PersonaSubscriptions) BeginPersonaSubsWrite(ctx context.Context) (domai
 	return &personaSubsWriteTransaction{ownedTransaction: tx}, nil
 }
 
-func (t *personaSubsWriteTransaction) SubscriptionIDTaken(ctx context.Context, id string, exclude, group *string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_subscription WHERE subscription_id=$1::uuid
- AND ($2::uuid IS NULL OR subscription_id<>$2::uuid) AND ($3::uuid IS NULL OR group_id=$3::uuid))`, id, exclude, group)
-	return taken, err
-}
-
 // personaSubsUserAssociation is user_resolver: the user's first live association by key.
 const personaSubsUserAssociation = `(SELECT sa.sport_association_id FROM application_sportassociation sa WHERE sa.user_id=%s AND NOT sa.deleted
  ORDER BY sa.sport_association_id LIMIT 1)`

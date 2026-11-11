@@ -113,14 +113,6 @@ func (s *AutomationWorkflowWrites) Add(ctx context.Context, identity domain.Reso
 	}
 	defer tx.Rollback()
 	id := uuid.NewString()
-	if err == nil && input.ID != nil {
-		id = *input.ID
-		if exists, existsErr := tx.AutomationWorkflowIDExists(ctx, id); existsErr != nil {
-			return "", existsErr
-		} else if exists {
-			err = dto.ErrAutomationWorkflowInvalid
-		}
-	}
 	if err != nil {
 		return "", err
 	}

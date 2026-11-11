@@ -10,9 +10,9 @@ custom `create()` or `update()`, so `POST personas-subscriptions/`, `PUT` and `P
 ## Behaviour (Django, reproduced in Go)
 
 - `AssociateSubscriptionSerializer` is a ModelSerializer of every `Subscription` field but `signature_storage_key`; `associate`
-  (nested) and `medical` (method field) are read-only. Writable fields, validated in this order:
-  `subscription_id` (UUIDField, `UniqueValidator` on `Subscription.objects`: group-aware through `X-Group-Id`, deleted rows included,
-  the instance excluded on update), `custom_data`, `additional_fields` (JSONField, null allowed), `type` (1-3), `role` (1-8),
+  (nested), `medical` (method field) and, since t5pk, `subscription_id` are read-only (a key in the body is ignored on create and
+  update: `create-subscription-id-ignored-server-error`, `update-subscription-id-ignored`). Writable fields, validated in this order:
+  `custom_data`, `additional_fields` (JSONField, null allowed), `type` (1-3), `role` (1-8),
   `status_flag` (1-5) (ChoiceField: `str(value)` must be a choice key, `"<value>" is not a valid choice.`), the four DateFields
   (`DATE_INPUT_FORMATS ['%d/%m/%Y']`, null allowed), `creation_date` (ISO 8601 DateTimeField, not null), `signature_url`
   (max 1024, blank and null), `archived`, `draft`, `trial`, `deleted`, `competitive` (BooleanField, not null), `meta`,
@@ -44,7 +44,6 @@ custom `create()` or `update()`, so `POST personas-subscriptions/`, `PUT` and `P
 ## Not ported (refused with the 500 page before any write)
 
 - Form and multipart bodies (create and update).
-- An update whose `subscription_id` differs from the row's key (`Model.save()` would insert a second row).
 - JSON values PostgreSQL rejects in a `jsonb` column (NUL characters, lone surrogates, infinite numbers): Django keeps the audit entry
   and fails the UPDATE.
 - Adding more than one new tag link in one request (`bulk_create` order follows a Python set of UUIDs).
@@ -59,6 +58,6 @@ state; update cases check the exact subscription columns, its tag links, and the
 
 - RED (`red-writes-r1`): Django 73/73; Go 500 on `router-persona-subscriptions-create-owner-required` (writes refused).
 - GREEN (`green-writes-r1`): 73/73 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
-- Mutation (`mutation-writes-r1`): dropping the `X-Group-Id` filter of the `subscription_id` unique check fails Go on
-  `router-persona-subscriptions-create-group-header-id-free-server-error` (400 instead of 500), CAUGHT.
+- Mutation (`mutation-writes-r1`): dropping the `X-Group-Id` filter of the `subscription_id` unique check (removed in t5pk, the key
+  is read-only) failed Go on `router-persona-subscriptions-create-group-header-id-free-server-error` (400 instead of 500), CAUGHT.
 - Re-runs (`rerun-persona-subs-writes-r1`, native): personas-writes 168/168, subscription-create 40/40, subscription-renew 54/54.

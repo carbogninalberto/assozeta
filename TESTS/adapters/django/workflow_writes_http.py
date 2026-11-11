@@ -110,7 +110,7 @@ def assert_effect(case, before, after, bindings, window, source, remote):
         added = set(new_w) - set(old_w)
         contract.require(len(added) == 1 and set(old_w) <= set(new_w), 'state.one-workflow')
         identifier = added.pop()
-        contract.require(identifier == effect.get('fixed_id', bindings.get(effect['label'])), 'state.created-id')
+        contract.require(identifier == bindings.get(effect['label']), 'state.created-id')
         row = new_w[identifier]
         for key, value in effect['values'].items():
             contract.require(row[key] == value, 'state.created-' + key)

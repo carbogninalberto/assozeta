@@ -23,26 +23,16 @@ type personaSubsValidated struct {
 }
 
 // personaSubsValidate is serializer.is_valid(raise_exception=True): the field
-// validation (dto), UniqueValidator on subscription_id, then the related
-// fields in field order with tenant_scope (its PermissionDenied escapes the
-// collected errors).
+// validation (dto), then the related fields in field order with tenant_scope
+// (its PermissionDenied escapes the collected errors).
 func (s *PersonaSubscriptions) personaSubsValidate(ctx context.Context, tx domain.PersonaSubsWriteTransaction, identity domain.ResolvedIdentity,
-	body any, partial bool, instance *string, group *string) (personaSubsValidated, error) {
+	body any, partial bool, group *string) (personaSubsValidated, error) {
 	write, invalid, err := dto.ParsePersonaSubsWrite(body, partial)
 	if err != nil {
 		return personaSubsValidated{}, ErrPersonaNotPorted
 	}
 	if _, nonDict := invalid["non_field_errors"]; nonDict {
 		return personaSubsValidated{}, &dto.PersonaInvalid{Fields: invalid}
-	}
-	if write.ID != nil {
-		taken, err := tx.SubscriptionIDTaken(ctx, *write.ID, instance, group)
-		if err != nil {
-			return personaSubsValidated{}, err
-		}
-		if taken {
-			invalid["subscription_id"] = []string{"unique:subscription:subscription id"}
-		}
 	}
 	var tenant *string
 	tenantRead := false
@@ -117,7 +107,7 @@ func (s *PersonaSubscriptions) RouterCreate(ctx context.Context, identity domain
 		return err
 	}
 	defer tx.Rollback()
-	if _, err = s.personaSubsValidate(ctx, tx, identity, body, false, nil, supplierGroup(header)); err != nil {
+	if _, err = s.personaSubsValidate(ctx, tx, identity, body, false, supplierGroup(header)); err != nil {
 		return err
 	}
 	return ErrPersonaUnhandled
@@ -212,8 +202,8 @@ func pythonBoolText(value bool) string {
 // (partial for PATCH), setattr of each validated field, Subscription.save()
 // (missing dates from the owner's settings, auditlog's update entry, every
 // column), tags.set(), then the serializer over the in-memory instance.
-// Refused before any write: form bodies and a different primary key (Model.save
-// would insert a copy). JSON values PostgreSQL rejects stay refused; several
+// subscription_id is read-only: a key in the body is ignored. Refused before
+// any write: form bodies. JSON values PostgreSQL rejects stay refused; several
 // new tag links are created in the iteration order of Django's set of ids.
 func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain.ResolvedIdentity, id, header string, body any, form, partial bool,
 	login domain.LoginAuditContext) (any, error) {
@@ -233,14 +223,11 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 	if stored == nil {
 		return nil, domain.ErrPersonaSubscriptionNotFound
 	}
-	validated, err := s.personaSubsValidate(ctx, tx, identity, body, partial, &stored.ID, group)
+	validated, err := s.personaSubsValidate(ctx, tx, identity, body, partial, group)
 	if err != nil {
 		return nil, err
 	}
 	write := validated.write
-	if write.ID != nil && *write.ID != stored.ID {
-		return nil, ErrPersonaNotPorted
-	}
 	for _, value := range write.JSON {
 		if !dto.TextStorable(value) || !jsonFinite(value) {
 			return nil, ErrPersonaNotPorted

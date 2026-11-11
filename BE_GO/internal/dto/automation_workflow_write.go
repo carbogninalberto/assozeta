@@ -15,7 +15,6 @@ var ErrAutomationWorkflowInvalid = errors.New("workflow not valid.")
 var ErrAutomationWorkflowBody = errors.New("workflow body cannot be updated")
 
 type AutomationWorkflowWrite struct {
-	ID          *string
 	Name        string
 	Description *string
 	Tree        any // validated list (RequestObject/[]any values)
@@ -23,19 +22,13 @@ type AutomationWorkflowWrite struct {
 }
 
 // ParseAutomationWorkflowWrite ports AutomationWorkflowSerializer(fields='__all__')
-// for creation. Every validation error collapses into one generic 400.
+// for creation. Every validation error collapses into one generic 400. The
+// primary key is read-only: an automation_workflow_id in the body is ignored.
 func ParseAutomationWorkflowWrite(body any, form bool) (AutomationWorkflowWrite, error) {
 	var input AutomationWorkflowWrite
 	object, ok := body.(domain.RequestObject)
 	if form || !ok {
 		return input, ErrAutomationWorkflowBody
-	}
-	if value, present := object.Lookup("automation_workflow_id"); present {
-		id, err := parsePaymentCategoryUUID(value)
-		if err != nil {
-			return input, ErrAutomationWorkflowInvalid
-		}
-		input.ID = &id
 	}
 	value, present := object.Lookup("name")
 	if !present {
@@ -115,9 +108,9 @@ func automationFormTree(value any) (tree any, ok, rejected, deep bool) {
 }
 
 // AutomationWorkflowPatch holds the present fields of a partial
-// AutomationWorkflowSerializer; nil pointers are absent.
+// AutomationWorkflowSerializer; nil pointers are absent (the read-only
+// automation_workflow_id is ignored).
 type AutomationWorkflowPatch struct {
-	ID          *string
 	Association *string // a well-formed pk; existence and tenant are checked by the service
 	Name        *string
 	Description **string
@@ -140,13 +133,6 @@ func ParseAutomationWorkflowPatch(body any, form bool) (AutomationWorkflowPatch,
 		return patch, true, nil
 	}
 	invalid := false
-	if value, present := object.Lookup("automation_workflow_id"); present {
-		if id, err := parsePaymentCategoryUUID(value); err != nil {
-			invalid = true
-		} else {
-			patch.ID = &id
-		}
-	}
 	if value, present := object.Lookup("sport_association"); present {
 		if id, code := supplierRelated(value); code != "" || value == nil {
 			invalid = true

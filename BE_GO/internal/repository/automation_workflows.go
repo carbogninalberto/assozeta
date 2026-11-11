@@ -56,12 +56,6 @@ type automationWorkflowTransaction struct{ *paymentCategoryTransaction }
 var _ domain.AutomationWorkflowTransaction = (*automationWorkflowTransaction)(nil)
 
 // UniqueValidator checks every association, like the primary-key queryset.
-func (t *automationWorkflowTransaction) AutomationWorkflowIDExists(ctx context.Context, id string) (bool, error) {
-	var exists bool
-	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM communications_automationworkflow WHERE automation_workflow_id=$1)`, id)
-	return exists, err
-}
-
 func (t *automationWorkflowTransaction) InsertAutomationWorkflow(ctx context.Context, row domain.AutomationWorkflowRecord) error {
 	_, err := t.tx.ExecContext(ctx, `INSERT INTO communications_automationworkflow
 (automation_workflow_id,sport_association_id,name,description,automation_tree,enabled,created_at,updated_at)
@@ -110,9 +104,6 @@ func (t *automationWorkflowTransaction) AppendAutomationWorkflowAudit(ctx contex
 	path := "direct"
 	if event.Action == 2 {
 		path = "changes_json.sport_association"
-	}
-	if event.Path != "" {
-		path = event.Path
 	}
 	return appendModelAuditForApp(ctx, t.tx, "communications", modelAuditEntry{Model: "automationworkflow", Key: event.ID,
 		Representation: "AutomationWorkflow object (" + event.ID + ")", Action: event.Action, Changes: event.Changes,

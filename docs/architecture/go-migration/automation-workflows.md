@@ -14,8 +14,10 @@ and it now passes 20/20 on native Django, native Go, Caddy `/api/v1` and
 **Write evidence (TDD):** two temporary Django probes on a throwaway database
 characterized the audit format (JSON fields as sorted ASCII `json.dumps`,
 naive UTC `str(datetime)` timestamps, `None` omitted, the acting
-collaborator as audit actor), that a client `automation_workflow_id` is
-writable, and that array, null and form bodies return 500. The authored 27-case
+collaborator as audit actor) and that array, null and form bodies return 500.
+Since t5pk a client `automation_workflow_id` is read-only: the add ignores it
+and generates the key (cases `add-client-id-ignored-truthy-enabled`,
+`add-client-id-again-ignored`, `add-malformed-id-ignored`). The authored 27-case
 `TESTS/fixtures/workflow_writes_http.json` then passed on Django on the first
 run, Go failed with 404 before any Go code, and it now passes 27/27 on all four
 transports with exact workflow, audit-entry and index effects. Rendering the
@@ -53,8 +55,8 @@ decision.
 - **add (POST):** mutates `request.data` to set `sport_association`, validates,
   and saves; any validation error returns 400 `{"msg": "workflow not valid."}`
   (details are only logged). Returns 200 `{"msg": "workflow added.",
-  "workflow_id": ...}`. Whether a client-supplied `automation_workflow_id` is
-  writable must be measured, not assumed.
+  "workflow_id": ...}`. A client-supplied `automation_workflow_id` is ignored
+  (read-only).
 - **delete (DELETE):** `is_valid_uuid`, scoped lookup, then `workflow.delete()`
   **without a None check**: a missing or foreign ID raises `AttributeError`
   (HTTP 500) instead of 404. This is a candidate bug recorded for a decision; a

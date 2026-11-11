@@ -361,11 +361,6 @@ func paymentCategoryValidationMessage(code string, english bool) string {
 			return "Enter a valid email address."
 		}
 		return "Inserisci un indirizzo email valido."
-	case code == dto.SupplierValidationUnique:
-		if english {
-			return "supplier and customers with this supplier id already exists."
-		}
-		return "supplier and customers con questo supplier id esiste già."
 	case strings.HasPrefix(code, "related-incorrect-type:"):
 		kind := strings.TrimPrefix(code, "related-incorrect-type:")
 		if english {

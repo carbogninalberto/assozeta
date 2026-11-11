@@ -83,7 +83,6 @@ type CampsTransaction interface {
 	ActorAssociation(ctx context.Context, actor string) (*string, error)
 	Period(ctx context.Context, id string, lock bool) (*CampsPeriod, error)
 	PeriodServiceIDs(ctx context.Context, period string) ([]string, error)
-	PeriodIDTaken(ctx context.Context, id string) (bool, error)
 	CampRelated(ctx context.Context, id string) (CampsRelated, error)
 	PeriodRelated(ctx context.Context, id string) (CampsRelated, error)
 	ServiceRelated(ctx context.Context, id string) (CampsRelated, error)
@@ -94,7 +93,6 @@ type CampsTransaction interface {
 	LinkPeriodServices(ctx context.Context, period string, remove, add []string) error
 	PeriodServices(ctx context.Context, period string) ([]CampsService, error)
 	Service(ctx context.Context, id string, lock bool) (*CampsService, error)
-	ServiceIDTaken(ctx context.Context, id string) (bool, error)
 	InsertService(ctx context.Context, row CampsService) error
 	UpdateService(ctx context.Context, row CampsService) error
 	WalkRows(ctx context.Context, period string) ([]CampsWalkRow, error)

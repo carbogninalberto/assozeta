@@ -9,9 +9,6 @@ type PersonaSubsWriteStore interface {
 }
 
 type PersonaSubsWriteTransaction interface {
-	// SubscriptionIDTaken is UniqueValidator over Subscription.objects
-	// (group-aware, deleted rows included), excluding the updated instance.
-	SubscriptionIDTaken(ctx context.Context, id string, exclude, group *string) (bool, error)
 	// Related is queryset.get(pk=id) on the related field's default manager
 	// and the owner tenant_scope resolves (nil: no association).
 	Related(ctx context.Context, field, id string, group *string) (found bool, owner *string, err error)

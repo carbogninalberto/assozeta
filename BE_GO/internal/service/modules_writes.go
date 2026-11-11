@@ -51,21 +51,12 @@ func (s *ModulesWrites) association(ctx context.Context, tx domain.ModulesWriteT
 
 func (s *ModulesWrites) at() time.Time { return s.now().UTC().Truncate(time.Microsecond) }
 
-// unique applies the module_id and custom_link UniqueValidators to fields
-// that passed their own validation.
+// unique applies the custom_link UniqueValidator to a link that passed its own
+// validation (module_id is read-only: a key in the body is ignored).
 func (s *ModulesWrites) unique(ctx context.Context, tx domain.ModulesWriteTransaction, write dto.ModuleWrite, invalid dto.ModuleWriteErrors,
 	exclude *string) (dto.ModuleWriteErrors, error) {
 	if invalid == nil {
 		invalid = dto.ModuleWriteErrors{}
-	}
-	if write.ID != nil {
-		taken, err := tx.Taken(ctx, "module_id", *write.ID, exclude)
-		if err != nil {
-			return nil, err
-		}
-		if taken {
-			invalid["module_id"] = []string{dto.ModuleUniqueID}
-		}
 	}
 	if link, present := write.Text["custom_link"]; present && link != nil {
 		taken, err := tx.Taken(ctx, "custom_link", *link, exclude)
@@ -84,9 +75,6 @@ func (s *ModulesWrites) unique(ctx context.Context, tx domain.ModulesWriteTransa
 
 // apply sets the validated fields on the instance (setattr in field order).
 func applyModuleWrite(row *domain.ModuleRow, write dto.ModuleWrite) {
-	if write.ID != nil {
-		row.ID = *write.ID
-	}
 	texts := map[string]**string{"custom_link": &row.CustomLink, "title": &row.Title, "response_message": &row.ResponseMessage}
 	for name, value := range write.Text {
 		*texts[name] = value
@@ -206,30 +194,6 @@ func (s *ModulesWrites) Update(ctx context.Context, identity domain.ResolvedIden
 	}
 	if write.Nested != dto.ModuleNestedAbsent {
 		return nil, errModuleNested
-	}
-	if write.ID != nil && *write.ID != row.ID {
-		// Model.save() under a key no row has inserts a copy with the validated
-		// values; the module the path names stays.
-		applyModuleWrite(row, write)
-		conflict, err := tx.CopyModule(ctx, *row, paymentCategoryAuditContext(identity, audit), s.at())
-		if err != nil {
-			return nil, err
-		}
-		if conflict != "" {
-			// The view answers str(e) of the database error; the first entry stays.
-			if err = tx.Commit(); err != nil {
-				return nil, err
-			}
-			return nil, &domain.ModuleUpdateFailure{Status: 500, Text: conflict}
-		}
-		data, err := s.serialized(ctx, identity, *row)
-		if err != nil {
-			return nil, err
-		}
-		if err = tx.Commit(); err != nil {
-			return nil, err
-		}
-		return map[string]any{"message": "Camp or retreat updated successfully", "camp_and_retreat": data}, nil
 	}
 	applyModuleWrite(row, write)
 	if err = tx.SaveModule(ctx, *row, paymentCategoryAuditContext(identity, audit), s.at()); err != nil {
