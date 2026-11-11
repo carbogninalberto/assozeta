@@ -428,7 +428,8 @@ func ParseCourseSubscriptionWrite(body any, form bool) (CourseSubscriptionWrite,
 			if upload, isUpload := value.(domain.RequestUpload); isUpload {
 				text = upload.Name
 			}
-			tree, valid, rejected := automationFormTree(text)
+			tree, valid, rejectedColumn, deep := automationFormTree(text)
+			rejected := rejectedColumn || deep
 			switch {
 			case rejected:
 				write.FormJSON = true
