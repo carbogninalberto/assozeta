@@ -100,3 +100,12 @@ compares the base64 of the exact CSV bytes and accepts the server's UTC date in 
 - XLSX (`m=xlsx`, 15 more cases, 87 in all; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 87/87,
   Go 500 on `payment-export-xlsx`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r2` ('' for a
   payment without an account fails `payment-export-xlsx`, CAUGHT).
+
+## Course labels that are not text, xlsx (t3pay)
+
+Archived rows of the second association carry labels `true`, a 30-digit integer, a 401-digit integer, a list and an object;
+each is picked by its description (`generalSearch`). CSV writes `str(label)`. XLSX: a boolean is a boolean cell (a column of
+booleans alone becomes `1`), an integer beyond 64 bits is a numeric cell (`"%.16g" % int`), an integer beyond the float range
+raises `OverflowError` and a list or object makes openpyxl raise: those are the 500 page. A column of big integers alone stays
+refused (pandas' uint64/float promotion). The label cannot be non-finite: jsonb has no NaN or Infinity and a huge exponent is
+stored as an exact integer.

@@ -216,3 +216,11 @@ that is not iterable or an item the UUID field rejects is a 500 after the
 carnet was saved, and text is iterated by character, as in Django's
 autocommit flow. `TESTS/fixtures/carnet_add_http.json` authors 21 cases;
 the Django reference corrected the update entry's index path.
+
+## Unassign with installments (t3pay)
+
+`DELETE carnet/<uid>/unassign/<id>` of a holding whose unpaid payment belongs to live installments now runs the payment's
+pre_delete cascade (the same code as carnet replace): the first installment deletes the payment (audited), every installment
+is audited, then the outer delete audits the payment again, then the holding. The request's `X-Group-Id` limits the
+installments as the group-aware manager does. The fixture is built on the carnet-replace seed and has two cascade cases (one
+installment; two installments sharing one payment); the adapter checks the ordered entries and the removed rows.

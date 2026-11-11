@@ -199,3 +199,14 @@ digits of any script for the year and the day's second digit). One more case (15
 validates the text). The old refusal is the RED (v2-refusals.md, payment-writes row "non-ASCII-digit dates").
 GREEN `v2resta-green-r3`: 156/156 on the four transports. Mutation `v2resta-mutation-r2` (the year limited to ASCII
 digits) fails `payment-writes-add-other-script-dates` (CAUGHT).
+
+## Nested user and upload names (t3pay)
+
+- `user` in an add or update body is validated by `UserSerializer` (`first_name`, `last_name`, `email`, `phone`,
+  `username`, `role`, all optional): `null` is "may not be null", a non-object `non_field_errors`, field errors are nested
+  under `user` (the repr form for add). A valid object reaches `serializer.save()`, which cannot write it: the 500 page
+  with nothing stored (update: after the parties and the subscription are resolved).
+- `attachments_data` with a filename that is not text: the Document is created with `str(value)` and audited, then
+  `os.path.join` raises; a name the storage refuses (`../x`, a trailing `/`) leaves the created, unattached Document. Both
+  answer the 500 page after the payment's own changes (the adapter's `unlinked` document specs).
+Cases: 182 (add and update variants). Form bodies of an update and a `payment_id` key on add stay refused.
