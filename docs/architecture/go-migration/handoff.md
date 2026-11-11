@@ -122,8 +122,8 @@ Go unit tests (`go test ./internal/handoff ./internal/refusal`):
 | `TestNewRejectsInvalidURLs`, `TestBasePathPrefixesTheRequestTarget` | configuration |
 | `TestRefusalSentinels`, `TestNotPortedSentinelsAreRefusals` | every sentinel matches `refusal.ErrNotPorted` |
 
-Harness family `django-handoff` (`TESTS/fixtures/django_handoff_http.json`, 10 cases): refused inputs of three
-families plus one ported control case each. The harness starts Go with `DJANGO_HANDOFF_URL` pointing at the run's
+Harness family `django-handoff` (`TESTS/fixtures/django_handoff_http.json`, 10 cases): refused inputs of two
+families (course-list, workflow-update) plus ported controls for those and for personas-reads. The harness starts Go with `DJANGO_HANDOFF_URL` pointing at the run's
 Django. Each case is checked by its source family's contract (exact status, headers, body; for the workflow writes the
 saved row and the audit entry with the client's correlation id), then for the marker: `X-Assozeta-Handoff: django`
 on the Go transports for a refused case and no marker otherwise. A handed-off case must be observed as one Django
@@ -131,7 +131,7 @@ request with the case's method, path, status and correlation id.
 
 | Family | Refused input | Django's answer through Go |
 |---|---|---|
-| personas-reads | `GET personas/list` with a Cyrillic search term (`ErrPersonaNotPorted`), also with `X-Group-Id` | 200, empty page |
+| personas-reads | none: Cyrillic search terms are ported and served by Go (controls, no marker), and the `sort[field]` relation paths stay refused with no fixed result | 200, empty page (control) |
 | course-list | `GET course/list` sorted by a relation path (`ErrCourseListUnported`), also with `X-Group-Id` | 200, the listed course |
 | workflow-update | `PATCH communications/workflows/<id>/update` with a form or multipart `automation_tree` (`ErrAutomationWorkflowFormTreeNotPorted`) | 200 saved and audited; 400 for invalid JSON |
 
