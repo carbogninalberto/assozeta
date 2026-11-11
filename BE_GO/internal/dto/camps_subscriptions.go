@@ -37,10 +37,6 @@ func CampSubscriptionPayload(body any, form bool, uid string) (domain.RequestObj
 	case domain.RequestObject:
 		copied := append(domain.RequestObject(nil), data...)
 		for index, field := range copied {
-			if _, upload := field.Value.(domain.RequestUpload); upload && form {
-				// DRF merges files into the copied QueryDict (not ported).
-				return nil, ErrCampsFormNotPorted
-			}
 			if field.Name == "camps_and_retreats" {
 				copied[index].Value = uid
 			}
@@ -120,6 +116,8 @@ func CampsPythonSubscript(value any, key string) (any, error) {
 		return nil, &CampsPythonError{Message: "string indices must be integers, not 'str'"}
 	case []any:
 		return nil, &CampsPythonError{Message: "list indices must be integers or slices, not str"}
+	case []byte:
+		return nil, &CampsPythonError{Message: "byte indices must be integers or slices, not str"}
 	}
 	return nil, &CampsPythonError{Message: "'" + pythonTypeName(value) + "' object is not subscriptable"}
 }
@@ -141,6 +139,13 @@ func CampsPythonIterate(value any) ([]any, error) {
 			items = append(items, string(r))
 		}
 		return items, nil
+	case domain.RequestUpload:
+		// File.__iter__ yields the lines as bytes; an empty file has none. Only the first line matters
+		// to the callers, which subscript every item.
+		if data.Size == 0 {
+			return []any{}, nil
+		}
+		return []any{[]byte(data.Content)}, nil
 	}
 	return nil, &CampsPythonError{Message: "'" + pythonTypeName(value) + "' object is not iterable"}
 }

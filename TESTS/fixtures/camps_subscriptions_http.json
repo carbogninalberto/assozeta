@@ -6347,6 +6347,123 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "camps-subscriptions-add-owner-multipart-with-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986020/subscriptions/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "subscription": {
+     "camps_and_retreats_subscription_id": "$bind:sub",
+     "status_flag": 2,
+     "created_at": "$now",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000986020",
+     "subscription": "a1000000-0000-4000-8000-000000986011",
+     "periods": {
+      "$bag": [],
+      "$by": "camps_and_retreats_period"
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "subscription": {
+     "created": {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000986020",
+      "status_flag": 2,
+      "subscription_id": "a1000000-0000-4000-8000-000000986011",
+      "created_at": "$now"
+     },
+     "deleted": []
+    },
+    "subperiods": {
+     "created": [],
+     "deleted": []
+    },
+    "payments": {
+     "created": null,
+     "deleted": []
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsSubscription",
+      "key": "$sub",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_subscription_id": [
+        "None",
+        "$sub"
+       ],
+       "camps_and_retreats": [
+        "None",
+        "a1000000-0000-4000-8000-000000986020"
+       ],
+       "status_flag": [
+        "None",
+        "2"
+       ],
+       "subscription": [
+        "None",
+        "a1000000-0000-4000-8000-000000986011"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"subscription\"\r\n\r\na1000000-0000-4000-8000-000000986011\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"status_flag\"\r\n\r\n2\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-subscriptions-add-multipart-file-as-registration",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986019/subscriptions/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'subscription': [ErrorDetail(string='“id.bin” is not a valid UUID.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"subscription\"; filename=\"id.bin\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-subscriptions-add-multipart-file-as-periods",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986019/subscriptions/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'periods': ErrorDetail(string='A list of periods is required.', code='invalid')}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"subscription\"\r\n\r\na1000000-0000-4000-8000-000000986011\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"periods\"; filename=\"p.json\"\r\n\r\n[]\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-subscriptions-add-form-periods-repeated-not-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986019/subscriptions/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'periods': ErrorDetail(string='A list of periods is required.', code='invalid')}"
+   },
+   "effect": null,
+   "raw_body": "subscription=a1000000-0000-4000-8000-000000986011&periods=a1000000-0000-4000-8000-000000986022&periods=a1000000-0000-4000-8000-000000986023",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "camps-subscriptions-add-amount-overflow-rolls-back",
    "actor": "owner",
    "method": "POST",
@@ -7887,6 +8004,62 @@
     ]
    },
    "raw_body": "note=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-subscriptions-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986061/subscriptions/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"note\"\r\n\r\n1\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-subscriptions-update-multipart-empty-periods-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986061/subscriptions/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"periods\"; filename=\"p.json\"\r\n\r\n\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-subscriptions-update-multipart-periods-file-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986061/subscriptions/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "byte indices must be integers or slices, not str"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"periods\"; filename=\"p.json\"\r\n\r\n[]\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-subscriptions-update-form-periods-text-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000986061/subscriptions/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "string indices must be integers, not 'str'"
+   },
+   "effect": null,
+   "raw_body": "periods=a1000000-0000-4000-8000-000000986022&periods=a1000000-0000-4000-8000-000000986023",
    "content_type": "application/x-www-form-urlencoded"
   },
   {

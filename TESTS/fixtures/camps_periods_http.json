@@ -3334,6 +3334,121 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "camps-periods-services-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+     "title": "Kayak con allegato",
+     "description": "Mezza giornata",
+     "fee": "16.00",
+     "created_at": "2026-06-05T09:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985014": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Kayak con allegato",
+       "description": "Mezza giornata",
+       "fee": "16.00",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "146.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak con allegato",
+         "amount": 16.0,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985014",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Kayak doppio",
+        "Kayak con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "146.00",
+        "146.0"
+       ],
+       "notes": [
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nKayak con allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-services-update-multipart-file-as-fee",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='A valid number is required.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"; filename=\"f.txt\"\r\n\r\n3\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
    "name": "camps-periods-services-update-deleted-payment",
    "actor": "owner",
    "method": "PATCH",
@@ -3658,11 +3773,11 @@
      "application.Payment": {
       "a1000000-0000-4000-8000-000000985023": {
        "amount": "146.00",
-       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€",
        "meta_payment_categories": [
         {
          "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
-         "title": "Kayak doppio",
+         "title": "Kayak con allegato",
          "amount": 16.0,
          "payment_category_id": "None"
         },
@@ -3789,11 +3904,11 @@
        ],
        "notes": [
         "None",
-        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€"
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€"
        ],
        "meta_payment_categories": [
         "None",
-        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
        ]
       },
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -3839,11 +3954,11 @@
      "application.Payment": {
       "a1000000-0000-4000-8000-000000985023": {
        "amount": "146.00",
-       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€",
        "meta_payment_categories": [
         {
          "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
-         "title": "Kayak doppio",
+         "title": "Kayak con allegato",
          "amount": 16.0,
          "payment_category_id": "None"
         },
@@ -3984,7 +4099,7 @@
      "application.CampsAndRetreatsPeriodsService": {
       "a1000000-0000-4000-8000-000000985014": {
        "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
-       "title": "Kayak doppio",
+       "title": "Kayak con allegato",
        "description": "Mezza giornata",
        "fee": "9999999.99",
        "payment_category_id": null
@@ -3995,7 +4110,7 @@
        "meta_payment_categories": [
         {
          "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
-         "title": "Kayak doppio",
+         "title": "Kayak con allegato",
          "amount": 9999999.99,
          "payment_category_id": "None"
         },
@@ -4029,8 +4144,8 @@
       "action": 1,
       "changes": {
        "meta_payment_categories": [
-        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
-        "[{\"amount\": 9999999.99, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 9999999.99, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
        ]
       },
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -4046,8 +4161,8 @@
         "10000129.99"
        ],
        "notes": [
-        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
-        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 9999999.99€\nBus - 30.0€"
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 9999999.99€\nBus - 30.0€"
        ]
       },
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -4256,6 +4371,524 @@
     "error": "Not found"
    },
    "effect": null
+  },
+  {
+   "name": "camps-periods-add-form-services-list-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Direct assignment to the forward side of a many-to-many set is prohibited. Use camps_and_Retreats_period_services.set() instead."
+   },
+   "effect": null,
+   "raw_body": "start_date=2026-10-01&end_date=2026-10-05&camps_and_retreats=a1000000-0000-4000-8000-000000985006&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985015",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-form-services-foreign-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "raw_body": "start_date=2026-10-01&end_date=2026-10-05&camps_and_retreats=a1000000-0000-4000-8000-000000985006&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985020",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-form-services-invalid-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'camps_and_Retreats_period_services': [ErrorDetail(string='“x” is not a valid UUID.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "start_date=2026-10-01&end_date=2026-10-05&camps_and_retreats=a1000000-0000-4000-8000-000000985006&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Direct assignment to the forward side of a many-to-many set is prohibited. Use camps_and_Retreats_period_services.set() instead."
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-blank-fee-is-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-as-title",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"; filename=\"titolo.txt\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-as-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'start_date': [ErrorDetail(string='Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"; filename=\"inizio.txt\"\r\n\r\nx\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-without-file-blank-fee-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "This QueryDict instance is immutable"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-multipart-file-blank-fee-is-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-multipart-file-as-max-participants",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'max_participants': [ErrorDetail(string='A valid integer is required.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"max_participants\"; filename=\"n.txt\"\r\n\r\n3\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto con allegato",
+     "description": "Form è",
+     "fee": "20.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto con allegato",
+       "description": "Form è",
+       "fee": "20.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "title": [
+        "None",
+        "Agosto con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nAgosto con allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-form-services-repeated",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto con allegato",
+     "description": "Form è",
+     "fee": "20.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015",
+       "a1000000-0000-4000-8000-000000985014"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto con allegato",
+       "description": "Form è",
+       "fee": "20.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985015"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985014"
+       ]
+      ],
+      "remove": []
+     }
+    }
+   },
+   "raw_body": "camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985015",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-form-services-single",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto con allegato",
+     "description": "Form è",
+     "fee": "20.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985014"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto con allegato",
+       "description": "Form è",
+       "fee": "20.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985015"
+       ]
+      ]
+     }
+    }
+   },
+   "raw_body": "camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-form-services-none-partial",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto due",
+     "description": "Form è",
+     "fee": "20.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985014"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto due",
+       "description": "Form è",
+       "fee": "20.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Agosto con allegato",
+        "Agosto due"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "title=Agosto+due",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-services-cleared-again",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto due",
+     "description": "Form è",
+     "fee": "20.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto due",
+       "description": "Form è",
+       "fee": "20.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985014"
+       ]
+      ]
+     }
+    }
+   },
+   "body": {
+    "camps_and_Retreats_period_services": []
+   }
+  },
+  {
+   "name": "camps-periods-services-add-multipart-file-as-fee",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='A valid number is required.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats_period\"\r\n\r\na1000000-0000-4000-8000-000000985012\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"; filename=\"f.txt\"\r\n\r\n3\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-services-add-multipart-with-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": "Con allegato",
+     "description": null,
+     "fee": "4.00",
+     "created_at": "$now",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": "Con allegato",
+       "description": null,
+       "fee": "4.00",
+       "payment_category_id": null
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985012"
+       ],
+       "fee": [
+        "None",
+        "4.00"
+       ],
+       "payment_category": [
+        "None",
+        "None"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ],
+       "title": [
+        "None",
+        "Con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats_period\"\r\n\r\na1000000-0000-4000-8000-000000985012\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nCon allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n4\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"payment_category\"\r\n\r\n\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
   },
   {
    "name": "camps-periods-delete-restricted-missing-permission",

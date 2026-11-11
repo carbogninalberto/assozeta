@@ -120,20 +120,20 @@ func StrptimeUnicodeDigits(text string) bool {
 	return false
 }
 
-const strptimeDate = `(\d\d\d\d)-(1[0-2]|0[1-9]|[1-9])-(3[0-1]|[1-2]\d|0[1-9]|[1-9]| [1-9])`
-const strptimeClock = `(2[0-3]|[0-1]\d|\d):([0-5]\d|\d):(6[0-1]|[0-5]\d|\d)`
+const strptimeDate = `(\p{Nd}\p{Nd}\p{Nd}\p{Nd})-(1[0-2]|0[1-9]|[1-9])-(3[0-1]|[1-2]\p{Nd}|0[1-9]|[1-9]| [1-9])`
+const strptimeClock = `(2[0-3]|[0-1]\p{Nd}|\p{Nd}):([0-5]\p{Nd}|\p{Nd}):(6[0-1]|[0-5]\p{Nd}|\p{Nd})`
 
 // Python's \s for str patterns: ASCII whitespace, \x1c-\x1f and Unicode spaces.
 const strptimeSpace = `[\t\n\v\f\r \x{1c}-\x{1f}\x{85}\x{a0}\x{1680}\x{2000}-\x{200a}\x{2028}\x{2029}\x{202f}\x{205f}\x{3000}]+`
 
 var (
 	eventStartPattern = regexp.MustCompile(`^` + strptimeDate + `[Tt]` + strptimeClock + `\.([0-9]{1,6})[Zz]`)
-	lessonDatePattern = regexp.MustCompile(`^` + strptimeDate + strptimeSpace + strptimeClock + `([+-]\d\d:?[0-5]\d(?::?[0-5]\d(?:\.\d{1,6})?)?|Z)`)
+	lessonDatePattern = regexp.MustCompile(`^` + strptimeDate + strptimeSpace + strptimeClock + `([+-]\p{Nd}\p{Nd}:?[0-5]\p{Nd}(?::?[0-5]\p{Nd}(?:\.\p{Nd}{1,6})?)?|Z)`)
 )
 
 func strptimeFields(match []string) (year, month, day, hour, minute, second int, ok bool) {
 	atoi := func(text string) int {
-		value, _ := strconv.Atoi(strings.TrimSpace(text))
+		value, _ := strconv.Atoi(PythonASCIIDigits(strings.TrimSpace(text)))
 		return value
 	}
 	year, month, day = atoi(match[1]), atoi(match[2]), atoi(match[3])
@@ -145,8 +145,8 @@ func strptimeFields(match []string) (year, month, day, hour, minute, second int,
 }
 
 // StrptimeEventStart is datetime.strptime(text, '%Y-%m-%dT%H:%M:%S.%fZ'), a
-// naive value returned in UTC; false is Python's ValueError. Callers refuse
-// input with non-ASCII digits first.
+// naive value returned in UTC; false is Python's ValueError. Decimal digits
+// of any script match, as in Python's \d.
 func StrptimeEventStart(text string) (time.Time, bool) {
 	match := eventStartPattern.FindStringSubmatch(text)
 	if match == nil || len(match[0]) != len(text) {
@@ -186,6 +186,7 @@ func strptimeOffset(z string) (time.Duration, bool) {
 	if z == "Z" {
 		return 0, true
 	}
+	z = PythonASCIIDigits(z)
 	if z[3] == ':' {
 		z = z[:3] + z[4:]
 		if len(z) > 5 {

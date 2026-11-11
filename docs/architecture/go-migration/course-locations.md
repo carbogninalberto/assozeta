@@ -33,3 +33,7 @@ links and the stored objects (django-storages' own key, exact bytes, type, encod
 (Django 51/51, Go refused), GREEN `v2c-green` on four transports, mutation `v2c-mutation-upload` CAUGHT.
 
 tailcourses: `PATCH course/locations/<pk>/update` with a new `course_location_id` inserts a copy under the new key and leaves the path's row (auditlog: the pre-save update indexed from its changes, then the create). Cases `update-primary-key-*` (54 cases; the taken and malformed keys are 400). RED: documented refusal. GREEN CI `tailcourses-2`. Mutation `tc-mut4` (pre-save entry indexed directly) CAUGHT. Indexed form keys `documents_data[n]` stay refused.
+
+## Round t3courses (course-location-writes)
+
+Indexed form keys `documents_data[n]` and the repeated `documents_data` key follow DRF's `parse_html_list` / `parse_html_dict`; a partial update ignores them. 68 cases GREEN natively (CI run recorded in the final sweep). Mutation (index leading zeros kept) CAUGHT.

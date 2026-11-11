@@ -759,18 +759,8 @@ func (r *campsSubscriptionRequest) addNewPeriods(ctx context.Context, cs domain.
 func campsRequestPeriods(body any, form bool) (any, error) {
 	switch data := body.(type) {
 	case domain.RequestObject:
+		// QueryDict.get returns the last value of a repeated key, which the form body already holds.
 		value, present := data.Lookup("periods")
-		if form {
-			for _, field := range data {
-				if _, upload := field.Value.(domain.RequestUpload); upload {
-					return nil, dto.ErrCampsFormNotPorted
-				}
-			}
-			if present {
-				// QueryDict.get of a repeated key (not ported).
-				return nil, dto.ErrCampsFormNotPorted
-			}
-		}
 		if !present {
 			return []any{}, nil
 		}
