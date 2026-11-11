@@ -10,9 +10,9 @@ custom `create()` or `update()`, so `POST personas-subscriptions/`, `PUT` and `P
 ## Behaviour (Django, reproduced in Go)
 
 - `AssociateSubscriptionSerializer` is a ModelSerializer of every `Subscription` field but `signature_storage_key`; `associate`
-  (nested) and `medical` (method field) are read-only. Writable fields, validated in this order:
-  `subscription_id` (UUIDField, `UniqueValidator` on `Subscription.objects`: group-aware through `X-Group-Id`, deleted rows included,
-  the instance excluded on update), `custom_data`, `additional_fields` (JSONField, null allowed), `type` (1-3), `role` (1-8),
+  (nested), `medical` (method field) and, since t5pk, `subscription_id` are read-only (a key in the body is ignored on create and
+  update: `create-subscription-id-ignored-server-error`, `update-subscription-id-ignored`). Writable fields, validated in this order:
+  `custom_data`, `additional_fields` (JSONField, null allowed), `type` (1-3), `role` (1-8),
   `status_flag` (1-5) (ChoiceField: `str(value)` must be a choice key, `"<value>" is not a valid choice.`), the four DateFields
   (`DATE_INPUT_FORMATS ['%d/%m/%Y']`, null allowed), `creation_date` (ISO 8601 DateTimeField, not null), `signature_url`
   (max 1024, blank and null), `archived`, `draft`, `trial`, `deleted`, `competitive` (BooleanField, not null), `meta`,
@@ -41,15 +41,14 @@ custom `create()` or `update()`, so `POST personas-subscriptions/`, `PUT` and `P
 - The response is the serializer over the in-memory instance: JSON fields keep the request's values, the rest is the saved row
   (`renewal_available` and the nested associate are read again). A subscription without an associate is a 500 after the save.
 
-## Form bodies, key changes and rejected JSON (t4l1)
+## Form bodies and rejected JSON (t4l1)
 
 - Form and multipart bodies are `Field.get_value` over the QueryDict: a key the form lacks is `False` for a boolean and `[]` for
   `tags` unless the update is partial; an empty input is `None` for a nullable field (`''` when the field may be blank) and skipped
   for a field with a default; a JSON field is `json.loads` of its text (a file's name), so empty text is `Value must be valid JSON.`;
   `tags` is `getlist`.
-- An update whose `subscription_id` differs from the row's key: `Model.save()` finds no row under it and inserts a copy with the
-  validated values. auditlog logs the copy twice with the same full diff (an update indexed from its changes, then the create
-  indexed directly); `tags.set()` runs on the copy and the row the request names stays as it was.
+- t5pk: `subscription_id` is read-only; a key in the body is ignored on create and update, the path's subscription is updated in
+  place (`partial-update-new-key-ignored`, `partial-update-other-row-key-ignored`, `update-subscription-id-ignored`).
 - A JSON value the `jsonb` column rejects (NUL characters, lone surrogates; an infinite number from a form's text): auditlog's
   pre_save entry is written, then the save fails: the 500 page with that entry kept. In a JSON body an infinite number is
   `Value must be valid JSON.` (JSONField's `json.dumps(allow_nan=False)`).
@@ -57,7 +56,6 @@ custom `create()` or `update()`, so `POST personas-subscriptions/`, `PUT` and `P
 ## Not ported (refused with the 500 page before any write)
 
 - Form JSON text nested past 500 levels (Python's recursion limit depends on the live call stack).
-- A new `subscription_id` that the group-aware unique check accepts while a row of another group holds it: left out on purpose.
 
 ## Evidence
 
@@ -69,10 +67,10 @@ state; update cases check the exact subscription columns, its tag links, and the
 
 - RED (`red-writes-r1`): Django 73/73; Go 500 on `router-persona-subscriptions-create-owner-required` (writes refused).
 - GREEN (`green-writes-r1`): 73/73 on native Django, native Go, Caddy `/api/v1` and `/api/v2`.
-- Mutation (`mutation-writes-r1`): dropping the `X-Group-Id` filter of the `subscription_id` unique check fails Go on
-  `router-persona-subscriptions-create-group-header-id-free-server-error` (400 instead of 500), CAUGHT.
+- Mutation (`mutation-writes-r1`): dropping the `X-Group-Id` filter of the `subscription_id` unique check (removed in t5pk, the key
+  is read-only) failed Go on `router-persona-subscriptions-create-group-header-id-free-server-error` (400 instead of 500), CAUGHT.
 - Re-runs (`rerun-persona-subs-writes-r1`, native): personas-writes 168/168, subscription-create 40/40, subscription-renew 54/54.
-- t4l1 (94 cases): form and multipart bodies, the key-change copy and rejected JSON values (cases `create-form-*`,
-  `partial-update-form*`, `update-multipart-put`, `partial-update-json-*`, `partial-update-new-key-copy`,
-  `partial-update-copy-key-taken`). Mutation `t4l1-mut-ps` (a missing form boolean read as true) fails Go on
+- t4l1 (94 cases): form and multipart bodies and rejected JSON values (cases `create-form-*`,
+  `partial-update-form*`, `update-multipart-put`, `partial-update-json-*`, `partial-update-new-key-ignored`,
+  `partial-update-other-row-key-ignored`). Mutation `t4l1-mut-ps` (a missing form boolean read as true) fails Go on
   `update-multipart-put`, CAUGHT.

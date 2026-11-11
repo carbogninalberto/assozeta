@@ -9,9 +9,9 @@ import (
 )
 
 // ModuleFieldOrder is the writable field order of ModulesSerializer and
-// ModulesAddSerializer (fields '__all__': the pk, the declared fields, then
-// the model fields); DRF collects field errors in this order.
-var ModuleFieldOrder = []string{"module_id", "sport_association", "custom_link", "creation_date", "title", "require_approval",
+// ModulesAddSerializer (fields '__all__': the declared fields, then the model
+// fields; the pk is read-only); DRF collects field errors in this order.
+var ModuleFieldOrder = []string{"sport_association", "custom_link", "creation_date", "title", "require_approval",
 	"start_date", "end_date", "always_active", "max_responses", "queue_mode", "only_users", "payment_required", "payment_data",
 	"response_message", "allow_attachments", "elements"}
 
@@ -25,8 +25,7 @@ var moduleTextFields = map[string]SupplierField{
 }
 
 const (
-	// ModuleUniqueID and ModuleUniqueLink are the UniqueValidator codes.
-	ModuleUniqueID   = "unique:module:module id"
+	// ModuleUniqueLink is the custom_link UniqueValidator code.
 	ModuleUniqueLink = "unique:module:custom link"
 	// ModuleDate is DateField's 'invalid' for DATE_INPUT_FORMATS ['%d/%m/%Y'].
 	ModuleDate = "module-date"
@@ -68,7 +67,6 @@ var moduleNestedFieldNames = func() map[string]bool {
 
 // ModuleWrite is the validated data of the present fields.
 type ModuleWrite struct {
-	ID         *string
 	Text       map[string]*string
 	Created    *time.Time
 	Booleans   map[string]bool
@@ -103,15 +101,6 @@ func ParseModuleWrite(body any, form, nested bool) (ModuleWrite, ModuleWriteErro
 			return nil, true
 		}
 		return value, present
-	}
-	if value, present := lookup("module_id"); present {
-		if value == nil {
-			errors["module_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, ok := drfUUID(value); ok {
-			write.ID = &id
-		} else {
-			errors["module_id"] = []string{PaymentCategoryValidationUUID}
-		}
 	}
 	if nested {
 		if form {

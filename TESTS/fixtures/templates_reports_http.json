@@ -3702,7 +3702,7 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "templates-reports-update-unchanged-no-audit",
+   "name": "templates-reports-update-own-id-ignored-no-audit",
    "actor": "owner",
    "method": "PATCH",
    "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
@@ -3743,14 +3743,14 @@
    }
   },
   {
-   "name": "templates-reports-update-new-id-inserts-copy",
+   "name": "templates-reports-update-new-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/templates/a1000000-0000-4000-8000-000000930003/update",
    "headers": {},
    "status": 200,
    "response": {
-    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930078",
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930003",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "name": "Origine",
     "template": "<p>o</p>",
@@ -3761,10 +3761,11 @@
     "custom_header": null
    },
    "effect": {
-    "kind": "template-copy",
-    "id": "a1000000-0000-4000-8000-000000930078",
+    "kind": "template-update",
+    "label": "source",
+    "id": "a1000000-0000-4000-8000-000000930003",
     "row": {
-     "id": "a1000000-0000-4000-8000-000000930078",
+     "id": "a1000000-0000-4000-8000-000000930003",
      "association": "a1000000-0000-4000-8000-000000701001",
      "name": "Origine",
      "template": "<p>o</p>",
@@ -3774,7 +3775,13 @@
      "custom_footer": null,
      "custom_header": null
     },
-    "actor": "owner"
+    "actor": "owner",
+    "changes": {
+     "header": [
+      "True",
+      "False"
+     ]
+    }
    },
    "body": {
     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930078",
@@ -3782,22 +3789,43 @@
    }
   },
   {
-   "name": "templates-reports-update-existing-id-unique",
+   "name": "templates-reports-update-other-row-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/templates/a1000000-0000-4000-8000-000000930001/update",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "sport_association_module_templates_id": [
-     "sport association module templates with this sport association module templates id already exists."
-    ]
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modulo aggiornato è",
+    "template": null,
+    "footer": false,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": "7",
+    "custom_header": "testa"
    },
    "effect": {
-    "kind": "none"
+    "kind": "template-update",
+    "label": "main",
+    "id": "a1000000-0000-4000-8000-000000930001",
+    "row": {
+     "id": "a1000000-0000-4000-8000-000000930001",
+     "association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Modulo aggiornato è",
+     "template": null,
+     "footer": false,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": "7",
+     "custom_header": "testa"
+    },
+    "actor": "owner",
+    "changes": null
    },
    "body": {
-    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930005"
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000930002"
    }
   },
   {
@@ -3860,9 +3888,6 @@
     "sport_association": [
      "“nope” is not a valid UUID."
     ],
-    "sport_association_module_templates_id": [
-     "Must be a valid UUID."
-    ],
     "header": [
      "Must be a valid boolean."
     ]
@@ -3892,9 +3917,6 @@
      "This field may not be null."
     ],
     "sport_association": [
-     "This field may not be null."
-    ],
-    "sport_association_module_templates_id": [
      "This field may not be null."
     ]
    },

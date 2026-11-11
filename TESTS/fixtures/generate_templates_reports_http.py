@@ -2,10 +2,11 @@
 
 templates/<pk>/update is SportAssociationModuleTemplatesViewSet.update: get_object
 on the association queryset (bare 404 for an unparseable pk, model 404 otherwise),
-then ModelSerializer(fields='__all__', partial=True) and save(). A new primary key
-makes Model.save() insert a copy (auditlog logs a create); the related
-sport_association goes through the tenant scope (another tenant is DRF's generic
-403). Audit: changed fields only, no entry when nothing changed.
+then ModelSerializer(fields='__all__', partial=True) and save(). The primary key
+is read-only: a key in the body is ignored, the row the path names is saved in
+place and the response shows that row; the related sport_association goes through
+the tenant scope (another tenant is DRF's generic 403). Audit: changed fields
+only, no entry when nothing changed.
 
 saved-reports/<pk>/run is SavedReportViewSet.run: the report is resolved by id,
 association and creator; the stored params are merged with request.data
@@ -178,16 +179,17 @@ effect = updated('form', 'full_collaborator', {'name': 'Form nuovo', 'custom_foo
 add('update-form-full-collaborator', 'full_collaborator', 'PATCH', UPDATE('form'), 200, serialized(effect['row']), effect=effect,
     raw_body='custom_footer=&header=false&custom_footer_header=true&name=Form+nuovo', content_type='application/x-www-form-urlencoded')
 effect = updated('main', 'owner', {})
-add('update-unchanged-no-audit', 'owner', 'PATCH', UPDATE('main'), 200, serialized(effect['row']), effect=effect,
+add('update-own-id-ignored-no-audit', 'owner', 'PATCH', UPDATE('main'), 200, serialized(effect['row']), effect=effect,
     body={'sport_association_module_templates_id': TEMPLATES['main']['id'], 'sport_association': OWN})
-COPY = next(ids)
-copy_row = {**state['source'], 'id': COPY, 'header': False}
-add('update-new-id-inserts-copy', 'owner', 'PATCH', UPDATE('source'), 200, serialized(copy_row),
-    body={'sport_association_module_templates_id': COPY, 'header': False},
-    effect={'kind': 'template-copy', 'id': COPY, 'row': copy_row, 'actor': 'owner'})
-add('update-existing-id-unique', 'owner', 'PATCH', UPDATE('main'), 400,
-    {'sport_association_module_templates_id': ['sport association module templates with this sport association module templates id already exists.']},
-    body={'sport_association_module_templates_id': TEMPLATES['foreign']['id']})
+# The primary key is read-only: a key in the body (an unused one, another row's) is ignored and the template the
+# path names is updated in place, with at most its own changed-field audit entry.
+UNUSED = next(ids)
+effect = updated('source', 'owner', {'header': False})
+add('update-new-id-ignored', 'owner', 'PATCH', UPDATE('source'), 200, serialized(effect['row']), effect=effect,
+    body={'sport_association_module_templates_id': UNUSED, 'header': False})
+effect = updated('main', 'owner', {})
+add('update-other-row-id-ignored', 'owner', 'PATCH', UPDATE('main'), 200, serialized(effect['row']), effect=effect,
+    body={'sport_association_module_templates_id': TEMPLATES['form']['id']})
 add('update-foreign-association-denied', 'owner', 'PATCH', UPDATE('main'), 403, {'detail': 'You do not have permission to perform this action.'},
     body={'sport_association': FOREIGN, 'name': ''})
 add('update-unknown-association', 'owner', 'PATCH', UPDATE('main'), 400,
@@ -195,12 +197,11 @@ add('update-unknown-association', 'owner', 'PATCH', UPDATE('main'), 400,
 add('update-invalid-fields', 'owner', 'PATCH', UPDATE('main'), 400,
     {'name': ['This field may not be blank.'], 'template': ['This field may not be blank.'], 'footer': ['This field may not be null.'],
      'custom_header': ['Not a valid string.'], 'sport_association': ['“nope” is not a valid UUID.'],
-     'sport_association_module_templates_id': ['Must be a valid UUID.'], 'header': ['Must be a valid boolean.']},
+     'header': ['Must be a valid boolean.']},
     body={'name': '', 'template': '  ', 'footer': None, 'custom_header': True, 'sport_association': 'nope',
           'sport_association_module_templates_id': 'bad', 'header': 'maybe'})
 add('update-null-values', 'owner', 'PATCH', UPDATE('main'), 400,
-    {'name': ['This field may not be null.'], 'sport_association': ['This field may not be null.'],
-     'sport_association_module_templates_id': ['This field may not be null.']},
+    {'name': ['This field may not be null.'], 'sport_association': ['This field may not be null.']},
     body={'name': None, 'sport_association': None, 'sport_association_module_templates_id': None, 'custom_footer': None})
 add('update-too-long-name', 'owner', 'PATCH', UPDATE('main'), 400, {'name': ['Ensure this field has no more than 150 characters.']},
     body={'name': 'x' * 151})

@@ -42,14 +42,6 @@ type moduleTemplateTransaction struct{ *paymentCategoryTransaction }
 
 var _ domain.ModuleTemplateTransaction = (*moduleTemplateTransaction)(nil)
 
-// ModuleTemplateIDExists is the primary-key UniqueValidator across associations.
-func (t *moduleTemplateTransaction) ModuleTemplateIDExists(ctx context.Context, id string) (bool, error) {
-	var exists bool
-	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociationmoduletemplates
- WHERE sport_association_module_templates_id=$1)`, id)
-	return exists, err
-}
-
 func (t *moduleTemplateTransaction) InsertModuleTemplate(ctx context.Context, row domain.ModuleTemplate) error {
 	_, err := t.tx.NamedExecContext(ctx, `INSERT INTO application_sportassociationmoduletemplates (`+moduleTemplateColumns+`)
  VALUES (:sport_association_module_templates_id,:sport_association_id,:name,:template,:footer,:header,
@@ -96,9 +88,6 @@ func (t *moduleTemplateTransaction) AppendModuleTemplateAudit(ctx context.Contex
 	path := "direct"
 	if event.Action == 2 {
 		path = "changes_json.sport_association"
-	}
-	if event.Path != "" {
-		path = event.Path
 	}
 	row := event.Template
 	if event.Changes != nil {

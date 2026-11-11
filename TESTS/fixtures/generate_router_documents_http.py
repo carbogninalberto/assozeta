@@ -85,7 +85,7 @@ method = lambda name: {'detail': f'Method "{name}" not allowed.'}
 info = lambda kind, label, required=False, read_only=False, **extra: {'type': kind, 'required': required, 'read_only': read_only,
                                                                     'label': label, **extra}
 SERIALIZER = {
-    'sport_association_documents_archive_id': info('string', 'Sport association documents archive id'),
+    'sport_association_documents_archive_id': info('string', 'Sport association documents archive id', read_only=True),
     'sport_association': info('field', 'Sport association', True),
     'document': info('field', 'Document', read_only=True, child={'type': 'nested object', 'required': False, 'read_only': True, 'children': {
         'document_id': info('string', 'Document id'), 'creation_date': info('datetime', 'Creation date'),
@@ -117,9 +117,12 @@ add('create-list-body', 'owner', LIST_PATH, 400, {'non_field_errors': ['Invalid 
     body=[])
 add('create-invalid-fields', 'owner', LIST_PATH, 400, {'date': [DATE], 'folder': ['Invalid pk "999999999" - object does not exist.']},
     method='POST', body={'sport_association': OWN, 'date': '2026-10-01', 'folder': 999999999})
-add('create-existing-id', 'owner', LIST_PATH, 400,
-    {'sport_association_documents_archive_id': ['sport association documents archive with this sport association documents archive id already exists.']},
-    method='POST', body={'sport_association': OWN, 'sport_association_documents_archive_id': ARCHIVE['root1']['id']})
+# The archive key is read-only: a key in the body (an existing row's, a malformed one) is ignored, the input validates and
+# the insert still fails on the NOT NULL document column.
+add('create-existing-id-ignored', 'owner', LIST_PATH, 500, SERVER, method='POST',
+    body={'sport_association': OWN, 'sport_association_documents_archive_id': ARCHIVE['root1']['id']})
+add('create-malformed-id-ignored', 'owner', LIST_PATH, 500, SERVER, method='POST',
+    body={'sport_association': OWN, 'sport_association_documents_archive_id': 'abc'})
 add('create-foreign-association-forbidden', 'owner', LIST_PATH, 403, FORBIDDEN, method='POST', body={'sport_association': FOREIGN})
 add('create-foreign-folder-forbidden', 'owner', LIST_PATH, 403, FORBIDDEN, method='POST',
     body={'sport_association': OWN, 'folder': '$folder:f'})
@@ -152,6 +155,12 @@ add('update-saves-then-server-error', 'owner', detail('root2'), 500, SERVER, met
     effect={'kind': 'update', 'archive': ARCHIVE['root2']['id'], 'stored': {'date': '2026-10-05'},
             'changes': {'date': [ARCHIVE['root2']['date'], '2026-10-05']}})
 ARCHIVE['root2'] = {**ARCHIVE['root2'], 'date': '2026-10-05'}
+# The archive key is read-only: another row's key in the body is ignored and the path's row is saved in place.
+add('update-primary-key-ignored', 'owner', detail('root2'), 500, SERVER, method='PUT',
+    body={'sport_association_documents_archive_id': ARCHIVE['root1']['id'], 'date': '06/10/2026'},
+    effect={'kind': 'update', 'archive': ARCHIVE['root2']['id'], 'stored': {'date': '2026-10-06'},
+            'changes': {'date': ['2026-10-05', '2026-10-06']}})
+ARCHIVE['root2'] = {**ARCHIVE['root2'], 'date': '2026-10-06'}
 add('destroy-foreign-not-found', 'owner', detail('foreign'), 404, NOT_FOUND, method='DELETE')
 add('destroy-malformed-not-found', 'owner', detail('nope'), 404, BARE, method='DELETE')
 add('destroy-athlete-server-error', 'athlete', detail('root1'), 500, SERVER, method='DELETE')

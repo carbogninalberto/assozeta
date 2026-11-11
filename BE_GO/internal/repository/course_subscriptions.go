@@ -301,15 +301,6 @@ func (t *courseSubscriptionTransaction) SubscriptionVisible(ctx context.Context,
 	return exists, err
 }
 
-// CourseSubscriptionIDTaken is the UniqueValidator on the default manager
-// (live rows), excluding the instance.
-func (t *courseSubscriptionTransaction) CourseSubscriptionIDTaken(ctx context.Context, id, exclude string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_coursesubscription
- WHERE course_subscription_id=$1 AND course_subscription_id<>$2 AND NOT deleted)`, id, exclude)
-	return taken, err
-}
-
 func (t *courseSubscriptionTransaction) MembershipPaymentsWhere(ctx context.Context, row string, group *string, unpaid bool, billedUntil *string,
 	limit int) ([]domain.CourseSubscriptionMembershipPayment, error) {
 	payments := []domain.CourseSubscriptionMembershipPayment{}
@@ -397,67 +388,18 @@ func (t *courseSubscriptionTransaction) updateCourseSubscription(ctx context.Con
 	return result.RowsAffected()
 }
 
-// copyCourseSubscription is Model.save() of an instance whose primary key was
-// changed: auditlog's pre-save entry diffs against a row the default manager
-// does not find (every field, indexed through the actor); the UPDATE then
-// writes over a soft-deleted row with that key, or finds none and the row is
-// inserted with its create entry (indexed through the course).
-func (t *courseSubscriptionTransaction) copyCourseSubscription(ctx context.Context, save domain.CourseSubscriptionSave, audit domain.CourseSubscriptionAudit) error {
-	row := save.Row
-	updated, err := t.updateCourseSubscription(ctx, row)
-	if err != nil {
-		return err
-	}
-	if updated == 0 {
-		if _, err = t.tx.ExecContext(ctx, `INSERT INTO application_coursesubscription (course_subscription_id, course_id, paid, creation_date,
- subscription_id, payment_id, multi_payments, one_fee_payment, archived, type, multiple_quote, billed_frequency, billed_from, billed_until,
- billed_from_day_of_month, membership_active, membership_fee, auto_renewal, deleted) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::jsonb,$12,$13,$14,$15,
- $16,$17::numeric,$18,$19)`, row.ID, row.CourseID, row.Paid, row.CreationDate, row.SubscriptionID, row.PaymentID, row.MultiPayments,
-			row.OneFeePayment, row.Archived, row.Type, row.MultipleQuote, row.BilledFrequency, row.BilledFrom, row.BilledUntil, row.BilledFromDayOfMonth,
-			row.MembershipActive, row.MembershipFee, row.AutoRenewal, row.Deleted); err != nil {
-			return err
-		}
-	}
-	changes, err := createdModelChanges(ctx, t.tx, "application_coursesubscription", "course_subscription_id", row.ID)
-	if err != nil {
-		return err
-	}
-	for name, pair := range save.Changes {
-		if _, listed := changes[name]; listed {
-			changes[name] = [2]string{"None", pair[1]}
-		}
-	}
-	if err = appendModelAudit(ctx, t.tx, courseSubscriptionEntry("coursesubscription", "CourseSubscription", row.ID, save.Representation, 1,
-		changes, nil, "", audit)); err != nil {
-		return err
-	}
-	if updated != 0 {
-		return nil
-	}
-	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("coursesubscription", "CourseSubscription", row.ID, save.Representation, 0,
-		changes, save.AssociationID, save.ResolutionPath, audit))
-}
-
 // SaveCourseSubscription is Model.save(): every column is written; the entry
 // (if any) carries the in-memory repr.
 func (t *courseSubscriptionTransaction) SaveCourseSubscription(ctx context.Context, save domain.CourseSubscriptionSave, audit domain.CourseSubscriptionAudit) error {
 	row := save.Row
-	if save.Copy {
-		return t.copyCourseSubscription(ctx, save, audit)
-	}
-	if !save.AuditOnly {
-		if _, err := t.updateCourseSubscription(ctx, row); err != nil {
-			return err
-		}
+	if _, err := t.updateCourseSubscription(ctx, row); err != nil {
+		return err
 	}
 	changes := save.Changes
 	if save.Unseen {
 		var err error
 		if changes, err = createdModelChanges(ctx, t.tx, "application_coursesubscription", "course_subscription_id", row.ID); err != nil {
 			return err
-		}
-		for name, pair := range save.Overrides {
-			changes[name] = pair
 		}
 	}
 	if len(changes) == 0 {

@@ -52,12 +52,6 @@ VALUES($1,$2,$3,$10,$4::date,$5,$6,$7::jsonb,$8,$9)`, row.ID, row.Subscription, 
 		AssociationID: &association, ResolutionPath: &path, At: at})
 }
 
-func (t *medicalAppointmentAddTransaction) AppointmentIDTaken(ctx context.Context, id string) (bool, error) {
-	var found bool
-	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_medicalappointments WHERE medical_appointments_id=$1)`, id)
-	return found, err
-}
-
 func (t *medicalAppointmentAddTransaction) DocumentExists(ctx context.Context, id string) (bool, error) {
 	var found bool
 	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM docmanager_document WHERE document_id=$1)`, id)

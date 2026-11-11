@@ -17,9 +17,10 @@ from application.serializers.personas_serializers import AssociateTutorRelationS
 from application.serializers.user_serializers import AssociateSerializer, AssociateSerializerInfo, InstructorSerializer
 from core.settings import STORAGE_DIR
 from docmanager.models import Document
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
-class SupplierSerializer(serializers.ModelSerializer):
+class SupplierSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = SupplierAndCustomers.objects.create(**validated_data)

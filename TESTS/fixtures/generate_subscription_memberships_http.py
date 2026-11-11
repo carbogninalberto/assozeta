@@ -166,7 +166,7 @@ field = lambda kind, label, required=False, read_only=False, **extra: {'type': k
                                                                     **({'label': label} if label else {}), **extra}
 # DRF SimpleMetadata describes the serializer for POST, the only PUT/POST method allowed on add.
 ADD_OPTIONS = {**OPTIONS, 'actions': {'POST': {
-    'subscription_membership_id': field('string', 'Subscription membership id'),
+    'subscription_membership_id': field('string', 'Subscription membership id', read_only=True),
     'sport_association': field('field', 'Sport association', required=True),
     'associate_id': field('string', 'Associate id', read_only=True),
     'associate': field('field', 'Associate'),
@@ -231,7 +231,7 @@ add('add-list-body-server-error', 'owner', ADD, 500, SERVER, body=[])
 add('add-string-body-server-error', 'owner', ADD, 500, SERVER, body='x')
 add('add-form-body-server-error', 'owner', ADD, 500, SERVER, raw_body='membership_type=X', content_type='application/x-www-form-urlencoded')
 add('add-invalid-fields', 'owner', ADD, 400, {
-    'subscription_membership_id': ['Must be a valid UUID.'], 'creation_date': [DATETIME_FORMAT], 'start_date': [DATE_FORMAT],
+    'creation_date': [DATETIME_FORMAT], 'start_date': [DATE_FORMAT],
     'end_date': [DATE_FORMAT], 'membership_type': ['This field may not be blank.'],
     'membership_number': ['Ensure this field has no more than 50 characters.'],
     'description': ['Ensure this field has no more than 255 characters.'], 'price': ['A valid number is required.']},
@@ -245,9 +245,10 @@ add('add-price-places', 'owner', ADD, 400, {'price': ['Ensure that there are no 
                                            'description': ['Not a valid string.']}, body={'price': 1.255, 'description': ['x']})
 add('add-price-whole-digits', 'owner', ADD, 400, {'price': ['Ensure that there are no more than 7 digits before the decimal point.']},
     body={'price': '12345678'})
-add('add-existing-id', 'owner', ADD, 400,
-    {'subscription_membership_id': ['subscription membership with this subscription membership id already exists.']},
-    body={'subscription_membership_id': MEMBERSHIPS['m1']['id']})
+# subscription_membership_id is read-only: a key in the body is ignored and the membership gets a new one.
+response, effect = created('owner', {'membership_type': 'Chiave ignorata'})
+add('add-existing-id-ignored', 'owner', ADD, 201, response,
+    body={'subscription_membership_id': MEMBERSHIPS['m1']['id'], 'membership_type': 'Chiave ignorata'}, effect=effect)
 add('add-related-errors', 'owner', ADD, 400, {'associate': [missing_pk(UNKNOWN)], 'payment': ['“abc” is not a valid UUID.']},
     body={'associate': UNKNOWN, 'payment': 'abc'})
 add('add-related-types', 'owner', ADD, 400, {'associate': ['Incorrect type. Expected pk value, received bool.'],
@@ -275,8 +276,8 @@ add('add-owner', 'owner', ADD, 201, response, body={
 response, effect = created('full_collaborator', {})
 add('add-full-collaborator-empty', 'full_collaborator', ADD, 201, response, body={}, effect=effect)
 response, effect = created('owner', {'start_date': '2026-01-05', 'membership_number': '', 'price': '12.00',
-                                     'creation_date': '2026-09-11T08:30:00.123456Z'}, NEW_ID)
-add('add-explicit-id-short-date', 'owner', ADD, 201, response, body={
+                                     'creation_date': '2026-09-11T08:30:00.123456Z'})
+add('add-explicit-id-ignored-short-date', 'owner', ADD, 201, response, body={
     'subscription_membership_id': NEW_ID.upper(), 'start_date': ' 5/1/2026', 'membership_number': '', 'price': 12,
     'creation_date': '2026-09-11 08:30:00.123456', 'associate': '', 'payment': None, 'membership_type': None}, effect=effect)
 response, effect = created('full_collaborator', {'associate': A('grouped'), 'payment': P('grouped_pay')})
@@ -328,9 +329,6 @@ add('update-invalid-fields', 'owner', one('m1', 'update'), 400, {
     method='PATCH', body={'sport_association': None, 'membership_type': '', 'creation_date': 5, 'end_date': '29/02/2026', 'price': ''})
 add('update-unknown-association', 'owner', one('m1', 'update'), 400, {'sport_association': [missing_pk(UNKNOWN)]}, method='PATCH',
     body={'sport_association': UNKNOWN})
-add('update-existing-id', 'owner', one('m1', 'update'), 400,
-    {'subscription_membership_id': ['subscription membership with this subscription membership id already exists.']},
-    method='PATCH', body={'subscription_membership_id': MEMBERSHIPS['m2']['id']})
 add('update-foreign-association-forbidden', 'owner', one('m1', 'update'), 403, FORBIDDEN, method='PATCH',
     body={'sport_association': FOREIGN, 'price': 'x'})
 add('update-foreign-associate-forbidden', 'full_collaborator', one('m1', 'update'), 403, FORBIDDEN, method='PATCH',
@@ -405,22 +403,17 @@ for suffix, filename in (('null-filename', None), ('nul-filename', 'a\u0000b.pdf
     add(f'add-document-{suffix}-keeps-rows', 'owner', ADD, 500, SERVER, effect=effect, body={
         'membership_type': suffix, 'documents_data': [{'document': UPLOADS[0]['content'], 'filename': UPLOADS[0]['filename']},
                                                        {'document': UPLOADS[0]['content'], 'filename': filename}]})
-# A new subscription_membership_id: Model.save() updates nothing and inserts a copy under the new key (a creation entry); the
-# old row and its links stay, the copy has no links of its own.
-COPY_ID, COPY_DOCS_ID = 'a1000000-0000-4000-8000-000000659101', 'a1000000-0000-4000-8000-000000659102'
-copy_row = {**STATE['m3'], 'description': 'Copia', 'documents': []}
-response, effect = created('owner', {key: copy_row[key] for key in STORED if key != 'subscription'} | {'subscription': None}, COPY_ID)
-effect['kind'] = 'copy'
-add('update-new-id-inserts-copy', 'owner', one('m3', 'update'), 200, response, method='PATCH',
-    body={'subscription_membership_id': COPY_ID, 'description': 'Copia'}, effect=effect)
-copy_row = {**STATE['m3'], 'documents': [{'filename': 'copia.pdf'}]}
-response, effect = created('full_collaborator', {key: copy_row[key] for key in STORED if key != 'subscription'} | {'subscription': None,
-                                                                                                                    'documents': copy_row['documents']}, COPY_DOCS_ID)
-effect['documents'] = [{'filename': 'copia.pdf', 'content': UPLOADS[0]['content']}]
-effect['kind'] = 'copy'
-add('update-new-id-with-document', 'full_collaborator', one('m3', 'update'), 200, response, method='PATCH',
-    body={'subscription_membership_id': COPY_DOCS_ID.upper(),
-          'documents_data': [{'document': UPLOADS[0]['content'], 'filename': 'copia.pdf'}]}, effect=effect)
+# subscription_membership_id is read-only: a key in the body is ignored and the membership the path names is updated in place.
+NEW_KEY = 'a1000000-0000-4000-8000-000000659101'
+response, effect = changed('owner', 'm3', description='Copia')
+add('update-new-id-ignored', 'owner', one('m3', 'update'), 200, response, method='PATCH',
+    body={'subscription_membership_id': NEW_KEY, 'description': 'Copia'}, effect=effect)
+response, effect = changed('full_collaborator', 'm3', membership_number='12')
+add('update-other-row-id-ignored', 'full_collaborator', one('m3', 'update'), 200, response, method='PATCH',
+    body={'subscription_membership_id': MEMBERSHIPS['m1']['id'].upper(), 'membership_number': '12'}, effect=effect)
+response, effect = changed('owner', 'm3')
+add('update-malformed-id-ignored', 'owner', one('m3', 'update'), 200, response, method='PATCH',
+    body={'subscription_membership_id': 'abc'}, effect=effect)
 # DecimalField.validate_empty_values: a blank allow_null decimal is None.
 response, effect = changed('owner', 'm4', description='Nota', price=None)
 add('update-document-missing-key-keeps-change', 'owner', one('m4', 'update'), 400, MISSING_KEY, method='PATCH',

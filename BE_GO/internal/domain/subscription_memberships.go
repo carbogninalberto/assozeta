@@ -61,7 +61,6 @@ type SubscriptionMembershipTransaction interface {
 	// Memberships lists the association's memberships through the filter;
 	// with id it is the locked pk lookup.
 	Memberships(ctx context.Context, association string, filter SubscriptionMembershipFilter, id *string) ([]SubscriptionMembershipRow, error)
-	MembershipIDTaken(ctx context.Context, id string, exclude *string) (bool, error)
 	// Association, Associate and Payment return nil when the field's
 	// queryset has no such row (group is the X-Group-Id filter).
 	Association(ctx context.Context, id string) (*SubscriptionMembershipReference, error)
@@ -71,8 +70,6 @@ type SubscriptionMembershipTransaction interface {
 	MembershipDocuments(ctx context.Context, id string) (string, error)
 	// CreateMembership inserts the row with its create entry.
 	CreateMembership(ctx context.Context, row SubscriptionMembership, audit LoginAuditContext, at time.Time) error
-	// CopyMembership inserts the row under a new key on update (auditlog: an update against None, then the creation).
-	CopyMembership(ctx context.Context, row SubscriptionMembership, audit LoginAuditContext, at time.Time) error
 	SaveMembership(ctx context.Context, row SubscriptionMembership, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
 	DeleteMembership(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
 	// CreateMembershipDocument is Document.objects.create(filename=...) with its create entry (indexed through the actor).

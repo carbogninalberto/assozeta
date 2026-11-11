@@ -9,9 +9,6 @@ type PersonaSubsWriteStore interface {
 }
 
 type PersonaSubsWriteTransaction interface {
-	// SubscriptionIDTaken is UniqueValidator over Subscription.objects
-	// (group-aware, deleted rows included), excluding the updated instance.
-	SubscriptionIDTaken(ctx context.Context, id string, exclude, group *string) (bool, error)
 	// Related is queryset.get(pk=id) on the related field's default manager
 	// and the owner tenant_scope resolves (nil: no association).
 	Related(ctx context.Context, field, id string, group *string) (found bool, owner *string, err error)
@@ -29,12 +26,6 @@ type PersonaSubsWriteTransaction interface {
 	// AuditSubscription is the pre_save update entry alone: the save that
 	// follows fails.
 	AuditSubscription(ctx context.Context, id string, changes map[string][2]string, audit CourseSubscriptionAudit) error
-	// InsertSubscription is Model.save() under a key no row has: the pre_save
-	// update entry, the INSERT, then the post_save create entry.
-	InsertSubscription(ctx context.Context, row PersonaSubscriptionRow, changes map[string][2]string, audit CourseSubscriptionAudit) error
-	// AuditSubscriptionCopy is one entry of a copy: the pre_save update
-	// (created false) or the post_save create.
-	AuditSubscriptionCopy(ctx context.Context, row PersonaSubscriptionRow, changes map[string][2]string, audit CourseSubscriptionAudit, created bool) error
 	RemoveTags(ctx context.Context, subscription string, tags []string) error
 	AddTag(ctx context.Context, subscription, tag string) error
 	Commit() error

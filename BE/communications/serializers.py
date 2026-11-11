@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.utils.html import escape
 from application.utils.api_utils import check_email
 from .models import Message, CommunicationConfiguration, MessageTransaction, AutomationWorkflow, StaffBoardMessage
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
 class CommunicationConfigurationSerializer(serializers.ModelSerializer):
@@ -102,7 +103,7 @@ class MessageTransactionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AutomationWorkflowSerializer(serializers.ModelSerializer):
+class AutomationWorkflowSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     def validate_automation_tree(self, value):
         if not isinstance(value, list):

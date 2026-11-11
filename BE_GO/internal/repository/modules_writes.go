@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -44,8 +43,8 @@ func (t *modulesWriteTransaction) Module(ctx context.Context, id string, associa
 	return &row, nil
 }
 
-// Taken is a UniqueValidator query on module_id or custom_link (exact),
-// excluding the instance being updated.
+// Taken is a UniqueValidator query on custom_link (exact), excluding the
+// instance being updated, or the nested association's key.
 func (t *modulesWriteTransaction) Taken(ctx context.Context, column, value string, exclude *string) (bool, error) {
 	if column == "sport_association_id" {
 		// The nested association's UniqueValidator reads every row, soft-deleted ones included.
@@ -53,7 +52,7 @@ func (t *modulesWriteTransaction) Taken(ctx context.Context, column, value strin
 		err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1::uuid)`, value)
 		return found, err
 	}
-	if column != "module_id" && column != "custom_link" {
+	if column != "custom_link" {
 		return false, errors.New("unsupported module unique column")
 	}
 	var taken bool
@@ -95,53 +94,6 @@ func (t *modulesWriteTransaction) CreateModule(ctx context.Context, row domain.M
 		return err
 	}
 	return appendModelAudit(ctx, t.tx, moduleAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))
-}
-
-// CopyModule is Model.save() of a loaded module under a key no row has: the
-// UPDATE matches nothing and the row is inserted. auditlog's pre_save finds no
-// row under the key and logs the whole row as an update (indexed from its
-// changes); post_save logs the create (indexed directly). When the database
-// refuses the insert (the copy repeats a custom link) the first entry stays
-// and conflict is the driver's text of the error.
-func (t *modulesWriteTransaction) CopyModule(ctx context.Context, row domain.ModuleRow, audit domain.LoginAuditContext, at time.Time) (string, error) {
-	const savepoint = "modules_copy"
-	if _, err := t.tx.ExecContext(ctx, `SAVEPOINT `+savepoint); err != nil {
-		return "", err
-	}
-	conflict := ""
-	if err := t.insertModule(ctx, row); err != nil {
-		var refused *pgconn.PgError
-		if !errors.As(err, &refused) || refused.Code != "23505" || row.CustomLink == nil {
-			return "", err
-		}
-		conflict = refused.Message + "\nDETAIL:  " + refused.Detail + "\n"
-		if _, err = t.tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT `+savepoint); err != nil {
-			return "", err
-		}
-		// The entry renders the values of the row that was not stored.
-		unlinked := row
-		unlinked.CustomLink = nil
-		if err = t.insertModule(ctx, unlinked); err != nil {
-			return "", err
-		}
-	}
-	changes, err := createdModelChanges(ctx, t.tx, "application_module", "module_id", row.ID)
-	if err != nil {
-		return "", err
-	}
-	if conflict != "" {
-		if _, err = t.tx.ExecContext(ctx, `ROLLBACK TO SAVEPOINT `+savepoint); err != nil {
-			return "", err
-		}
-		changes["custom_link"] = [2]string{"None", *row.CustomLink}
-	}
-	if err = appendModelAudit(ctx, t.tx, moduleAudit(row.ID, 1, changes, row.AssociationID, "changes_json.sport_association", audit, at)); err != nil {
-		return "", err
-	}
-	if conflict != "" {
-		return conflict, nil
-	}
-	return "", appendModelAudit(ctx, t.tx, moduleAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))
 }
 
 // moduleAuditValues renders every stored field as auditlog's str() ('None' for null).

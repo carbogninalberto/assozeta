@@ -1226,7 +1226,7 @@
    "headers": {},
    "status": 400,
    "response": {
-    "error": "{'camps_and_retreats_id': [ErrorDetail(string='Must be a valid UUID.', code='invalid')], 'title': [ErrorDetail(string='This field may not be blank.', code='blank')], 'description': [ErrorDetail(string='Ensure this field has no more than 2048 characters.', code='max_length')]}"
+    "error": "{'title': [ErrorDetail(string='This field may not be blank.', code='blank')], 'description': [ErrorDetail(string='Ensure this field has no more than 2048 characters.', code='max_length')]}"
    },
    "effect": null,
    "body": {
@@ -1243,29 +1243,13 @@
    "headers": {},
    "status": 400,
    "response": {
-    "error": "{'camps_and_retreats_id': [ErrorDetail(string='Must be a valid UUID.', code='invalid')], 'title': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')], 'description': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+    "error": "{'title': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')], 'description': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
    },
    "effect": null,
    "body": {
     "camps_and_retreats_id": 1.5,
     "title": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
     "description": true
-   }
-  },
-  {
-   "name": "camps-core-add-existing-id",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/camps-and-retreats/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "error": "{'camps_and_retreats_id': [ErrorDetail(string='camps and retreats with this camps and retreats id already exists.', code='unique')]}"
-   },
-   "effect": null,
-   "body": {
-    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
-    "title": "Copia"
    }
   },
   {
@@ -1381,7 +1365,7 @@
    }
   },
   {
-   "name": "camps-core-add-explicit-id",
+   "name": "camps-core-add-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/camps-and-retreats/add",
@@ -1390,7 +1374,63 @@
    "response": {
     "message": "Camp or retreat added successfully",
     "camp_and_retreat": {
-     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987002",
+     "camps_and_retreats_id": "$new",
+     "title": "Copia",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "Copia",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Copia"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+    "title": "Copia"
+   }
+  },
+  {
+   "name": "camps-core-add-explicit-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
      "title": "5",
      "description": null,
      "sport_association": "a1000000-0000-4000-8000-000000701001"
@@ -1400,7 +1440,7 @@
     "actor": "owner",
     "rows": {
      "application.CampsAndRetreats": {
-      "a1000000-0000-4000-8000-000000987002": {
+      "$new": {
        "title": "5",
        "description": null,
        "sport_association_id": "a1000000-0000-4000-8000-000000701001"
@@ -1410,12 +1450,12 @@
     "audit": [
      {
       "model": "CampsAndRetreats",
-      "key": "a1000000-0000-4000-8000-000000987002",
+      "key": "$new",
       "action": 0,
       "changes": {
        "camps_and_retreats_id": [
         "None",
-        "a1000000-0000-4000-8000-000000987002"
+        "$key"
        ],
        "sport_association": [
         "None",
@@ -1435,21 +1475,6 @@
     "camps_and_retreats_id": "A1000000000040008000000000987002",
     "title": 5,
     "description": null
-   }
-  },
-  {
-   "name": "camps-core-add-explicit-id-again",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/camps-and-retreats/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "error": "{'camps_and_retreats_id': [ErrorDetail(string='camps and retreats with this camps and retreats id already exists.', code='unique')]}"
-   },
-   "effect": null,
-   "body": {
-    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987002"
    }
   },
   {
@@ -1631,7 +1656,7 @@
    "headers": {},
    "status": 400,
    "response": {
-    "error": "{'camps_and_retreats_id': [ErrorDetail(string='camps and retreats with this camps and retreats id already exists.', code='unique')], 'title': [ErrorDetail(string='Not a valid string.', code='invalid')], 'sport_association': [ErrorDetail(string='“abc” is not a valid UUID.', code='invalid')]}"
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')], 'sport_association': [ErrorDetail(string='“abc” is not a valid UUID.', code='invalid')]}"
    },
    "effect": null,
    "body": {
@@ -1941,7 +1966,7 @@
    }
   },
   {
-   "name": "camps-core-update-new-id-inserts-copy",
+   "name": "camps-core-update-new-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
@@ -1950,7 +1975,7 @@
    "response": {
     "message": "Camp or retreat updated successfully",
     "camp_and_retreat": {
-     "camps_and_retreats_id": "a1000000-0000-4000-8000-0000007a9901",
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
      "title": "Copia",
      "description": "Dal modulo",
      "sport_association": "a1000000-0000-4000-8000-000000701001"
@@ -1960,7 +1985,7 @@
     "actor": "owner",
     "rows": {
      "application.CampsAndRetreats": {
-      "a1000000-0000-4000-8000-0000007a9901": {
+      "a1000000-0000-4000-8000-000000987006": {
        "title": "Copia",
        "description": "Dal modulo",
        "sport_association_id": "a1000000-0000-4000-8000-000000701001"
@@ -1970,49 +1995,12 @@
     "audit": [
      {
       "model": "CampsAndRetreats",
-      "key": "a1000000-0000-4000-8000-0000007a9901",
+      "key": "a1000000-0000-4000-8000-000000987006",
       "action": 1,
       "changes": {
-       "camps_and_retreats_id": [
-        "None",
-        "a1000000-0000-4000-8000-0000007a9901"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
        "title": [
         "None",
         "Copia"
-       ],
-       "description": [
-        "None",
-        "Dal modulo"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "changes_json.sport_association"
-     },
-     {
-      "model": "CampsAndRetreats",
-      "key": "a1000000-0000-4000-8000-0000007a9901",
-      "action": 0,
-      "changes": {
-       "camps_and_retreats_id": [
-        "None",
-        "a1000000-0000-4000-8000-0000007a9901"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "title": [
-        "None",
-        "Copia"
-       ],
-       "description": [
-        "None",
-        "Dal modulo"
        ]
       },
       "association": "a1000000-0000-4000-8000-000000701001",
@@ -2026,18 +2014,50 @@
    }
   },
   {
-   "name": "camps-core-update-new-id-taken",
+   "name": "camps-core-update-other-row-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "error": "{'camps_and_retreats_id': [ErrorDetail(string='camps and retreats with this camps and retreats id already exists.', code='unique')]}"
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+     "title": "Altra",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
    },
-   "effect": null,
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987006": {
+       "title": "Altra",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987006",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Copia",
+        "Altra"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
    "body": {
-    "camps_and_retreats_id": "a1000000-0000-4000-8000-0000007a9901",
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
     "title": "Altra"
    }
   },
@@ -2456,16 +2476,56 @@
    "content_type": "multipart/form-data; boundary=testboundary4f2a"
   },
   {
-   "name": "camps-core-add-multipart-file-as-id",
+   "name": "camps-core-add-multipart-file-as-id-ignored",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/camps-and-retreats/add",
    "headers": {},
-   "status": 400,
+   "status": 201,
    "response": {
-    "error": "{'camps_and_retreats_id': [ErrorDetail(string='Must be a valid UUID.', code='invalid')]}"
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": "Ok",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
    },
-   "effect": null,
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "Ok",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Ok"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
    "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats_id\"; filename=\"id.bin\"\r\n\r\nx\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nOk\r\n--testboundary4f2a--\r\n",
    "content_type": "multipart/form-data; boundary=testboundary4f2a"
   },
@@ -2517,7 +2577,7 @@
       "action": 1,
       "changes": {
        "title": [
-        "None",
+        "Altra",
         "Con allegato"
        ]
       },

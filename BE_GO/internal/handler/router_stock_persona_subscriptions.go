@@ -127,7 +127,7 @@ func associateSubscriptionFields() map[string]any {
 	}
 	associate["label"] = "Associate"
 	fields := map[string]any{
-		"subscription_id": field("string", "Subscription id", false, false, nil),
+		"subscription_id": field("string", "Subscription id", true, false, nil),
 		"active":          field("boolean", "Active", true, false, nil), "is_current": field("boolean", "Is current", true, false, nil),
 		"is_next_year": field("boolean", "Is next year", true, false, nil), "current_year": field("string", "Current year", true, false, nil),
 		"medical": field("field", "Medical", true, false, nil), "medical_expiration_date": field("field", "Medical expiration date", true, false, nil),

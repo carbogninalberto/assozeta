@@ -22,13 +22,6 @@ func (r *PersonaSubscriptions) BeginPersonaSubsWrite(ctx context.Context) (domai
 	return &personaSubsWriteTransaction{ownedTransaction: tx}, nil
 }
 
-func (t *personaSubsWriteTransaction) SubscriptionIDTaken(ctx context.Context, id string, exclude, group *string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_subscription WHERE subscription_id=$1::uuid
- AND ($2::uuid IS NULL OR subscription_id<>$2::uuid) AND ($3::uuid IS NULL OR group_id=$3::uuid))`, id, exclude, group)
-	return taken, err
-}
-
 // personaSubsUserAssociation is user_resolver: the user's first live association by key.
 const personaSubsUserAssociation = `(SELECT sa.sport_association_id FROM application_sportassociation sa WHERE sa.user_id=%s AND NOT sa.deleted
  ORDER BY sa.sport_association_id LIMIT 1)`
@@ -178,41 +171,6 @@ func (t *personaSubsWriteTransaction) AuditSubscription(ctx context.Context, id 
 		return err
 	}
 	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("subscription", "Subscription", id, "", 1, changes, &association, "direct", audit))
-}
-
-// AuditSubscriptionCopy logs one entry of a copy: the update is indexed from
-// its changes (no row is stored yet), the create directly.
-func (t *personaSubsWriteTransaction) AuditSubscriptionCopy(ctx context.Context, row domain.PersonaSubscriptionRow, changes map[string][2]string,
-	audit domain.CourseSubscriptionAudit, created bool) error {
-	action, path := 1, "changes_json.sport_association"
-	if created {
-		action, path = 0, "direct"
-	}
-	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("subscription", "Subscription", row.ID, "", action, changes, &row.AssociationID,
-		path, audit))
-}
-
-// InsertSubscription is Model.save() under a key no row has.
-func (t *personaSubsWriteTransaction) InsertSubscription(ctx context.Context, row domain.PersonaSubscriptionRow, changes map[string][2]string,
-	audit domain.CourseSubscriptionAudit) error {
-	if err := t.AuditSubscriptionCopy(ctx, row, changes, audit, false); err != nil {
-		return err
-	}
-	custom, additional, meta := personaSubsJSONColumns(row)
-	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_subscription (subscription_id, sport_association_id, associate_id,
- supplier_id, instructor_id, custom_data, additional_fields, user_id, type, role, acceptance_date, resignation_date, medical_id,
- status_flag, creation_date, start_date, end_date, signature_url, signature_storage_key, document_pdf_id, payment_id, deleted, archived,
- draft, trial, meta, subscription_number, subscription_type, group_id, competitive, notes) VALUES ($1::uuid, $2::uuid, $3::uuid,
- $4::uuid, $5::uuid, $6::jsonb, $7::jsonb, $8::uuid, $9, $10, $11::date, $12::date, $13::uuid, $14, $15, $16::date, $17::date, $18, $19,
- $20::uuid, $21::uuid, $22, $23, $24, $25, $26::jsonb, $27, $28, $29::uuid, $30, $31)`, row.ID, row.AssociationID, row.AssociateID,
-		row.SupplierID, row.InstructorID, personaSubsJSON(custom), personaSubsJSON(additional), row.UserID, row.Type, row.Role,
-		personaSubsDate(row.AcceptanceDate), personaSubsDate(row.ResignationDate), row.MedicalID, row.StatusFlag, row.CreationDate,
-		personaSubsDate(row.StartDate), personaSubsDate(row.EndDate), row.SignatureURL, row.SignatureStorageKey, row.DocumentID, row.PaymentID,
-		row.Deleted, row.Archived, row.Draft, row.Trial, personaSubsJSON(meta), row.SubscriptionNumber, row.SubscriptionType, row.GroupID,
-		row.Competitive, row.Notes); err != nil {
-		return err
-	}
-	return t.AuditSubscriptionCopy(ctx, row, changes, audit, true)
 }
 
 // RemoveTags is the M2M remove() of tags.set().

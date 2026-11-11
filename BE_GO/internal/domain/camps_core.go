@@ -23,7 +23,6 @@ type CampsCoreTransaction interface {
 	// Camps is CampsAndRetreats.objects.filter(sport_association=association).
 	Camps(ctx context.Context, association string) ([]Camp, error)
 	Camp(ctx context.Context, id string, lock bool) (*Camp, error)
-	CampIDTaken(ctx context.Context, id string) (bool, error)
 	// AssociationRelated is the sport_association PrimaryKeyRelatedField
 	// lookup (SportAssociation's default manager keeps deleted rows).
 	AssociationRelated(ctx context.Context, id string) (CampsRelated, error)

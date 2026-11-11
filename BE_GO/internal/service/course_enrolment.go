@@ -261,8 +261,8 @@ func (s *CourseEnrolment) associationOf(ctx context.Context, tx domain.CourseEnr
 	return association, err
 }
 
-// validateItem is one serializer child: the fields, the course lookup, the
-// primary key's UniqueValidator, then validate() for memberships.
+// validateItem is one serializer child: the fields, the course lookup, then
+// validate() for memberships.
 func (s *CourseEnrolment) validateItem(ctx context.Context, tx domain.CourseEnrolmentTransaction, identity domain.ResolvedIdentity, item any,
 	group *string, form bool) (*enrolmentItem, map[string]any, error) {
 	write, invalid := dto.ParseCourseSubscriptionWrite(item, form)
@@ -300,15 +300,6 @@ func (s *CourseEnrolment) validateItem(ctx context.Context, tx domain.CourseEnro
 			invalid["course"] = []string{"related-does-not-exist:" + write.CourseRaw}
 		}
 		course = found
-	}
-	if write.ID != nil {
-		taken, err := tx.RowIDLive(ctx, *write.ID)
-		if err != nil {
-			return nil, nil, err
-		}
-		if taken {
-			invalid["course_subscription_id"] = []string{dto.CourseSubscriptionUnique}
-		}
 	}
 	if len(invalid) > 0 {
 		return nil, invalid, nil
@@ -427,9 +418,6 @@ func (s *CourseEnrolment) serializerCreate(ctx context.Context, tx domain.Course
 		BilledUntil: write.Times["billed_until"], BilledFromDayOfMonth: integer("billed_from_day_of_month"),
 		MembershipActive: flag("membership_active", true), AutoRenewal: flag("auto_renewal", false), CourseAssociationID: course.AssociationID,
 		CourseTitle: course.Title, CourseType: course.CourseType}
-	if write.ID != nil {
-		row.ID = *write.ID
-	}
 	if write.CreationDate != nil {
 		row.CreationDate = *write.CreationDate
 	}

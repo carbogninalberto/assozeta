@@ -353,16 +353,55 @@
    }
   },
   {
-   "name": "supplier-writes-add-existing-id",
+   "name": "supplier-writes-add-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/supplier/add",
    "headers": {},
-   "status": 400,
+   "status": 201,
    "response": {
-    "msg": "validation errors: {'supplier_id': [ErrorDetail(string='supplier and customers with this supplier id already exists.', code='unique')]}"
+    "supplier_id": "$new",
+    "name": "Copia",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "supplier",
+    "email": null,
+    "phone_number": null,
+    "city": null,
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": null,
+    "group": null,
+    "deleted": false
    },
-   "effect": null,
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "values": {
+     "supplier_id": "$new",
+     "name": "Copia",
+     "address": null,
+     "tax_code": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "vat_number": null,
+     "type": "supplier",
+     "email": null,
+     "phone_number": null,
+     "city": null,
+     "cap": null,
+     "state": null,
+     "country": "Italia",
+     "nationality": "Italiana",
+     "note": null,
+     "group": null,
+     "deleted": false
+    },
+    "group": null
+   },
    "body": {
     "name": "Copia",
     "supplier_id": "a1000000-0000-4000-8000-000000900001"
@@ -1024,14 +1063,14 @@
    }
   },
   {
-   "name": "supplier-writes-update-new-id-inserts-copy",
+   "name": "supplier-writes-update-new-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
    "headers": {},
    "status": 200,
    "response": {
-    "supplier_id": "a1000000-0000-4000-8000-00000064a901",
+    "supplier_id": "a1000000-0000-4000-8000-000000900002",
     "name": "Beta è Figli",
     "address": null,
     "tax_code": null,
@@ -1050,10 +1089,15 @@
     "deleted": false
    },
    "effect": {
-    "kind": "copy",
+    "kind": "update",
     "actor": "owner",
     "supplier": "beta",
-    "id": "a1000000-0000-4000-8000-00000064a901"
+    "changes": {
+     "city": [
+      "Milano",
+      "Bari"
+     ]
+    }
    },
    "body": {
     "supplier_id": "a1000000-0000-4000-8000-00000064a901",
@@ -1061,19 +1105,45 @@
    }
   },
   {
-   "name": "supplier-writes-update-new-id-taken",
+   "name": "supplier-writes-update-other-row-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "msg": "validation errors."
+    "supplier_id": "a1000000-0000-4000-8000-000000900002",
+    "name": "Beta è Figli",
+    "address": null,
+    "tax_code": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "vat_number": null,
+    "type": "customer",
+    "email": null,
+    "phone_number": null,
+    "city": "Pisa",
+    "cap": null,
+    "state": null,
+    "country": "Italia",
+    "nationality": "Italiana",
+    "note": "Nuova",
+    "group": null,
+    "deleted": false
    },
-   "effect": null,
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "supplier": "beta",
+    "changes": {
+     "city": [
+      "Bari",
+      "Pisa"
+     ]
+    }
+   },
    "body": {
-    "supplier_id": "a1000000-0000-4000-8000-00000064a901",
-    "city": "Lecce"
+    "supplier_id": "a1000000-0000-4000-8000-000000900001",
+    "city": "Pisa"
    }
   },
   {
@@ -1108,7 +1178,7 @@
     "supplier": "beta",
     "changes": {
      "city": [
-      "Milano",
+      "Pisa",
       "Lecce"
      ]
     }
@@ -1119,56 +1189,18 @@
    }
   },
   {
-   "name": "supplier-writes-update-new-id-clears-association-owner",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "supplier_id": "a1000000-0000-4000-8000-00000064a902",
-    "name": "Beta è Figli",
-    "address": null,
-    "tax_code": null,
-    "sport_association": null,
-    "vat_number": null,
-    "type": "customer",
-    "email": null,
-    "phone_number": null,
-    "city": "Lecce",
-    "cap": null,
-    "state": null,
-    "country": "Italia",
-    "nationality": "Italiana",
-    "note": "Nuova",
-    "group": null,
-    "deleted": false
-   },
-   "effect": {
-    "kind": "copy",
-    "actor": "owner",
-    "supplier": "beta",
-    "id": "a1000000-0000-4000-8000-00000064a902",
-    "cleared": true
-   },
-   "body": {
-    "supplier_id": "a1000000-0000-4000-8000-00000064a902",
-    "sport_association": null
-   }
-  },
-  {
-   "name": "supplier-writes-update-new-id-clears-association-full_collaborator",
+   "name": "supplier-writes-update-soft-deleted-row-id-ignored",
    "actor": "full_collaborator",
    "method": "PATCH",
    "path": "/supplier/a1000000-0000-4000-8000-000000900002/update",
    "headers": {},
    "status": 200,
    "response": {
-    "supplier_id": "a1000000-0000-4000-8000-00000064a903",
+    "supplier_id": "a1000000-0000-4000-8000-000000900002",
     "name": "Beta è Figli",
     "address": null,
     "tax_code": null,
-    "sport_association": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
     "vat_number": null,
     "type": "customer",
     "email": null,
@@ -1178,20 +1210,24 @@
     "state": null,
     "country": "Italia",
     "nationality": "Italiana",
-    "note": "Nuova",
+    "note": "Ancora",
     "group": null,
     "deleted": false
    },
    "effect": {
-    "kind": "copy",
+    "kind": "update",
     "actor": "full_collaborator",
     "supplier": "beta",
-    "id": "a1000000-0000-4000-8000-00000064a903",
-    "cleared": true
+    "changes": {
+     "note": [
+      "Nuova",
+      "Ancora"
+     ]
+    }
    },
    "body": {
-    "supplier_id": "a1000000-0000-4000-8000-00000064a903",
-    "sport_association": null
+    "supplier_id": "a1000000-0000-4000-8000-000000900013",
+    "note": "Ancora"
    }
   }
  ]

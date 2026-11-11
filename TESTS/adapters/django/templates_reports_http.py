@@ -175,16 +175,6 @@ def assert_effect(case, before, after, source, remote):
         contract.require(all(row[k] == v for k, v in stored(effect['row']).items()), 'state.updated-values')
         if effect['changes']:
             audits = [{'id': target, 'action': 1, 'path': 'direct', 'changes': effect['changes']}]
-    elif effect['kind'] == 'template-copy':
-        target = effect['id']
-        contract.require(set(new_t) == set(old_t) | {target} and target not in old_t and all(new_t[k] == old_t[k] for k in old_t), 'state.copy-only')
-        contract.require(all(new_t[target][k] == v for k, v in stored(effect['row']).items()), 'state.copy-values')
-        # Model.save() with a new pk: auditlog's pre_save finds no stored row and
-        # logs an update against None (indexed before the row exists: changes_json),
-        # then post_save(created=True) logs the create.
-        changes = {k: ['None', v] for k, v in audit_values(effect['row']).items()}
-        audits = [{'id': target, 'action': 1, 'path': 'changes_json.sport_association', 'changes': changes},
-                  {'id': target, 'action': 0, 'path': 'direct', 'changes': changes}]
     else:
         row = source['seed']['templates'][effect['label']]
         target = row['id']

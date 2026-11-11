@@ -22,8 +22,8 @@ Django remains the production execution owner.
   model's default manager: a row of another tenant (a soft-deleted one too)
   raises DRF's generic 403 while fields validate, ahead of any other error; an
   unknown pk is a 400.
-  `automation_workflow_id` is writable with a UniqueValidator that excludes the
-  instance. `created_at`/`updated_at` are read-only; unknown keys are ignored.
+  `automation_workflow_id` is read-only (a key in the body is ignored).
+  `created_at`/`updated_at` are read-only; unknown keys are ignored.
   Form bodies are accepted (`description=` stays `''`).
 - **Save:** `save()` writes every column and `updated_at`. auditlog diffs in
   `pre_save`, before `auto_now` sets `updated_at`, so an entry lists only the
@@ -54,9 +54,8 @@ localized like pytz's `localize(is_dst=False)` for Europe/Rome: the standard
 offset (+01:00) for ambiguous and skipped wall times, and +01:00 after pytz's
 last table transition (2037-10-25), where the system zone would apply summer
 time. A past time publishes nothing.
-- Ported (restb2): a new `automation_workflow_id` that no row uses: `save()` inserts a copy of the workflow under the new
-  key (the audit holds an update entry from the loaded row, then the create); the named row keeps its values
-  (cases `new-id-inserts-copy`, `new-id-enable-copy`).
+- t5pk: any `automation_workflow_id` in the body (new, another row's, malformed) is ignored and the named workflow is
+  saved in place (cases `new-id-ignored`, `new-id-ignored-enable`, `id-of-other-row-ignored`, `id-malformed-ignored`).
 - A form-encoded `automation_tree` (DRF parses the HTML value with Python's
   `json.loads`).
 

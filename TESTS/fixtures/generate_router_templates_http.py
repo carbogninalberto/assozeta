@@ -76,7 +76,8 @@ unmapped = lambda path: {'detail': f"Access denied: No permission mapping for en
 method = lambda name: {'detail': f'Method "{name}" not allowed.'}
 text = lambda label: {'type': 'string', 'required': False, 'read_only': False, 'label': label}
 flag = lambda label: {'type': 'boolean', 'required': False, 'read_only': False, 'label': label}
-SERIALIZER = {'sport_association_module_templates_id': text('Sport association module templates id'),
+SERIALIZER = {'sport_association_module_templates_id': {'type': 'string', 'required': False, 'read_only': True,
+                                                        'label': 'Sport association module templates id'},
               'name': {'type': 'string', 'required': True, 'read_only': False, 'label': 'Name', 'max_length': 150},
               'template': text('Template'), 'footer': flag('Footer'), 'header': flag('Header'),
               'custom_footer_header': flag('Custom footer header'), 'custom_footer': text('Custom footer'),
@@ -105,8 +106,7 @@ add('list-format-unknown-not-found', 'anonymous', '/templates.csv/', 404, BARE)
 add('create-format-json-server-error', 'owner', '/templates.json', 500, SERVER, method='POST', body={'name': 'Mai'})
 add('create-missing-name', 'owner', LIST, 400, {'name': ['This field is required.']}, method='POST', body={'template': 'x'})
 add('create-invalid-fields', 'owner', LIST, 400,
-    {'name': ['Ensure this field has no more than 150 characters.'], 'footer': ['Must be a valid boolean.'],
-     'sport_association_module_templates_id': ['Must be a valid UUID.']}, method='POST',
+    {'name': ['Ensure this field has no more than 150 characters.'], 'footer': ['Must be a valid boolean.']}, method='POST',
     body={'name': 'x' * 151, 'footer': 'maybe', 'sport_association_module_templates_id': 'nope'})
 add('create-list-body-server-error', 'owner', LIST, 500, SERVER, method='POST', body=[])
 add('create-form-body-server-error', 'owner', LIST, 500, SERVER, method='POST', raw_body='name=x',
@@ -116,9 +116,12 @@ response, effect = created('owner', {'name': 'Nuovo router', 'template': '<p>x</
 add('create-owner', 'owner', LIST, 201, response, method='POST',
     body={'name': ' Nuovo router ', 'template': '<p>x</p>', 'footer': 'no', 'sport_association': FOREIGN}, effect=effect)
 FIXED = 'a1000000-0000-4000-8000-000000990199'
-response, effect = created('full_collaborator', {'name': '7', 'custom_header': 'h'}, FIXED)
-add('create-client-id', 'full_collaborator', LIST, 201, response, method='POST',
+response, effect = created('full_collaborator', {'name': '7', 'custom_header': 'h'})
+add('create-client-id-ignored', 'full_collaborator', LIST, 201, response, method='POST',
     body={'sport_association_module_templates_id': FIXED, 'name': 7, 'custom_header': 'h'}, effect=effect)
+response, effect = created('owner', {'name': 'Chiave esistente'})
+add('create-existing-id-ignored', 'owner', LIST, 201, response, method='POST',
+    body={'sport_association_module_templates_id': SEED['keep']['id'], 'name': 'Chiave esistente'}, effect=effect)
 
 add('detail-anonymous', 'anonymous', detail('keep'), 401, {'detail': 'Authentication credentials were not provided.'})
 add('detail-restricted-unmapped', 'restricted_collaborator', detail('keep'), 403, unmapped('templates/' + SEED['keep']['id']))
@@ -140,6 +143,17 @@ add('update-foreign-association-denied', 'owner', detail('edit'), 403, {'detail'
 response, effect = changed('owner', 'edit', name='Modificato router', footer=True, custom_footer=None)
 add('update-owner-put-is-partial', 'owner', detail('edit'), 200, response, method='PUT',
     body={'name': 'Modificato router', 'footer': True, 'custom_footer': None}, effect=effect)
+# The primary key is read-only: a key in the body is ignored and the row the path names is updated in place.
+UNUSED = 'a1000000-0000-4000-8000-000000990299'
+response, effect = changed('owner', 'edit')
+add('update-key-only-ignored', 'owner', detail('edit'), 200, response, method='PUT',
+    body={'sport_association_module_templates_id': UNUSED}, effect=effect)
+response, effect = changed('owner', 'edit', template='<p>chiave</p>')
+add('update-unused-id-ignored', 'owner', detail('edit'), 200, response, method='PUT',
+    body={'sport_association_module_templates_id': UNUSED, 'template': '<p>chiave</p>'}, effect=effect)
+response, effect = changed('full_collaborator', 'edit', header=False)
+add('update-other-row-id-ignored', 'full_collaborator', detail('edit'), 200, response, method='PUT',
+    body={'sport_association_module_templates_id': SEED['keep']['id'], 'header': False}, effect=effect)
 response, effect = changed('full_collaborator', 'edit')
 add('update-unchanged-no-audit', 'full_collaborator', detail('edit'), 200, response, method='PUT', body={'name': 'Modificato router'},
     effect=effect)

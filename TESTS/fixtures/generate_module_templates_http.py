@@ -81,10 +81,10 @@ add('list-wrong-method', 'owner', 'POST', LIST, 405, {'detail': 'Method "POST" n
 add('list-delete-method-server-error', 'owner', 'DELETE', LIST, 500, SERVER)
 
 
-def created(label, actor, values, *, fixed_id=None):
+def created(label, actor, values):
     row = {'association': OWN, **{field: None for field in FIELDS}, 'footer': True, 'header': True, 'custom_footer_header': False, **values}
     audit = {k: v for k, v in audit_values({'id': '$new', **row}).items()}
-    return {'kind': 'create', 'label': label, 'fixed_id': fixed_id, 'row': row,
+    return {'kind': 'create', 'label': label, 'row': row,
             'audit': {'action': 0, 'actor': actor, 'changes': {k: ['None', v] for k, v in audit.items()}}, 'index_path': 'direct'}
 
 
@@ -97,17 +97,23 @@ body = {'name': '  Nuovo modulo è  ', 'template': ' <p>x</p> ', 'footer': 'no',
         'sport_association': FOREIGN}
 values = {'name': 'Nuovo modulo è', 'template': '<p>x</p>', 'footer': False, 'custom_footer_header': True}
 add('add-owner', 'owner', 'POST', ADD, 201, response_for('owner', values), body=body, effect=created('owner', 'owner', values))
+# The primary key is read-only: a key in the body is ignored and the add stores a generated one.
 CLIENT = 'a1000000-0000-4000-8000-000000770099'
-add('add-client-id-number-name', 'full_collaborator', 'POST', ADD, 201, response_for('client', {'name': '12.5', 'custom_header': 'h'}, CLIENT),
+add('add-client-id-ignored', 'full_collaborator', 'POST', ADD, 201, response_for('client', {'name': '12.5', 'custom_header': 'h'}),
     body={'sport_association_module_templates_id': CLIENT, 'name': 12.5, 'custom_header': 'h'},
-    effect=created('client', 'full_collaborator', {'name': '12.5', 'custom_header': 'h'}, fixed_id=CLIENT))
-add('add-duplicate-id', 'owner', 'POST', ADD, 400,
-    {'sport_association_module_templates_id': ['sport association module templates with this sport association module templates id already exists.']},
-    body={'sport_association_module_templates_id': CLIENT, 'name': 'Doppio'})
+    effect=created('client', 'full_collaborator', {'name': '12.5', 'custom_header': 'h'}))
+add('add-existing-id-ignored', 'owner', 'POST', ADD, 201, response_for('existing', {'name': 'Doppio'}),
+    body={'sport_association_module_templates_id': SEED['own_keep']['id'], 'name': 'Doppio'},
+    effect=created('existing', 'owner', {'name': 'Doppio'}))
+add('add-malformed-id-ignored', 'owner', 'POST', ADD, 201, response_for('malformed', {'name': 'Chiave ignorata'}),
+    body={'sport_association_module_templates_id': 'nope', 'name': 'Chiave ignorata'},
+    effect=created('malformed', 'owner', {'name': 'Chiave ignorata'}))
+add('add-null-id-ignored', 'owner', 'POST', ADD, 201, response_for('null', {'name': 'Chiave nulla'}),
+    body={'sport_association_module_templates_id': None, 'name': 'Chiave nulla'},
+    effect=created('null', 'owner', {'name': 'Chiave nulla'}))
 add('add-invalid-fields', 'owner', 'POST', ADD, 400,
     {'name': ['Ensure this field has no more than 150 characters.'], 'template': ['This field may not be blank.'],
-     'footer': ['Must be a valid boolean.'], 'header': ['This field may not be null.'], 'custom_footer': ['Not a valid string.'],
-     'sport_association_module_templates_id': ['Must be a valid UUID.']},
+     'footer': ['Must be a valid boolean.'], 'header': ['This field may not be null.'], 'custom_footer': ['Not a valid string.']},
     body={'name': 'x' * 151, 'template': '   ', 'footer': 'maybe', 'header': None, 'custom_footer': True,
           'sport_association_module_templates_id': 'nope'})
 add('add-missing-name', 'owner', 'POST', ADD, 400, {'name': ['This field is required.']}, body={'template': 'x'})
@@ -123,7 +129,8 @@ label = lambda text: {'type': 'string', 'required': False, 'read_only': False, '
 flag = lambda text: {'type': 'boolean', 'required': False, 'read_only': False, 'label': text}
 add('add-options', 'owner', 'OPTIONS', ADD, 200, {'name': 'Sport Association Module Templates', 'description': '',
     'renders': ['application/json'], 'parses': ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'],
-    'actions': {'POST': {'sport_association_module_templates_id': label('Sport association module templates id'),
+    'actions': {'POST': {'sport_association_module_templates_id': {'type': 'string', 'required': False, 'read_only': True,
+                                                                   'label': 'Sport association module templates id'},
                          'name': {'type': 'string', 'required': True, 'read_only': False, 'label': 'Name', 'max_length': 150},
                          'template': label('Template'), 'footer': flag('Footer'), 'header': flag('Header'),
                          'custom_footer_header': flag('Custom footer header'), 'custom_footer': label('Custom footer'),
@@ -154,8 +161,9 @@ add('bulk-restricted-missing-permission', 'restricted_collaborator', 'DELETE', B
 add('bulk-owner', 'owner', 'DELETE', BULK, 204, '<empty>',
     body={'sport_association_module_templates_ids': [SEED['own_bulk']['id'], SEED['foreign']['id'], SEED['own_bulk_nulls']['id'], SEED['own_bulk']['id']]},
     effect={'kind': 'delete', 'audits': [deleted('own_bulk'), deleted('own_bulk_nulls')], 'actor': 'owner'})
-add('list-after-writes', 'owner', 'GET', LIST, 200, [serialized(SEED['own_keep']), response_for('owner', values, '$new:owner'),
-    response_for('client', {'name': '12.5', 'custom_header': 'h'}, CLIENT)], unordered=True)
+add('list-after-writes', 'owner', 'GET', LIST, 200, [serialized(SEED['own_keep']), response_for('owner', values),
+    response_for('client', {'name': '12.5', 'custom_header': 'h'}), response_for('existing', {'name': 'Doppio'}),
+    response_for('malformed', {'name': 'Chiave ignorata'}), response_for('null', {'name': 'Chiave nulla'})], unordered=True)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Module template list/add/delete/bulk-delete authored sequence with audit effects',

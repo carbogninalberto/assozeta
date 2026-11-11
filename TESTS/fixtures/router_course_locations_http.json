@@ -394,7 +394,7 @@
       "course_location_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Course location id"
       },
       "documents": {
@@ -521,7 +521,7 @@
       "course_location_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Course location id"
       },
       "documents": {
@@ -690,9 +690,6 @@
    "headers": {},
    "status": 400,
    "response": {
-    "course_location_id": [
-     "Must be a valid UUID."
-    ],
     "title": [
      "This field may not be blank."
     ],
@@ -708,20 +705,33 @@
    }
   },
   {
-   "name": "router-course-locations-create-existing-id",
+   "name": "router-course-locations-create-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/course-locations/",
    "headers": {},
-   "status": 400,
+   "status": 201,
    "response": {
-    "course_location_id": [
-     "course location with this course location id already exists."
-    ]
+    "course_location_id": "$new",
+    "documents": [],
+    "title": "Chiave ignorata",
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
    },
-   "effect": null,
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": "Chiave ignorata",
+     "description": null,
+     "address": null
+    }
+   },
    "body": {
-    "course_location_id": "a1000000-0000-4000-8000-000000980006"
+    "course_location_id": "a1000000-0000-4000-8000-000000980006",
+    "title": "Chiave ignorata"
    }
   },
   {
@@ -1205,7 +1215,7 @@
       "course_location_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Course location id"
       },
       "documents": {
@@ -1503,6 +1513,42 @@
    }
   },
   {
+   "name": "router-course-locations-update-primary-key-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/course-locations/a1000000-0000-4000-8000-000000980006/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980006",
+    "documents": [],
+    "title": "Palestra router",
+    "description": "Chiave ignorata",
+    "address": "Via 4",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "gym",
+    "changes": {
+     "description": [
+      "None",
+      "Chiave ignorata"
+     ]
+    },
+    "stored": {
+     "title": "Palestra router",
+     "description": "Chiave ignorata",
+     "address": "Via 4"
+    }
+   },
+   "body": {
+    "course_location_id": "a1000000-0000-4000-8000-000000980005",
+    "description": "Chiave ignorata"
+   }
+  },
+  {
    "name": "router-course-locations-update-same-values-no-audit",
    "actor": "full_collaborator",
    "method": "PUT",
@@ -1513,7 +1559,7 @@
     "course_location_id": "a1000000-0000-4000-8000-000000980006",
     "documents": [],
     "title": "Palestra router",
-    "description": null,
+    "description": "Chiave ignorata",
     "address": "Via 4",
     "sport_association": "a1000000-0000-4000-8000-000000701001"
    },
@@ -1524,7 +1570,7 @@
     "changes": {},
     "stored": {
      "title": "Palestra router",
-     "description": null,
+     "description": "Chiave ignorata",
      "address": "Via 4"
     }
    },

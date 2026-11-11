@@ -70,12 +70,6 @@ func (t *courseEnrolmentTransaction) LiveRow(ctx context.Context, course, subscr
 	return exists, err
 }
 
-func (t *courseEnrolmentTransaction) RowIDLive(ctx context.Context, id string) (bool, error) {
-	var exists bool
-	err := t.tx.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_coursesubscription WHERE course_subscription_id=$1 AND NOT deleted)`, id)
-	return exists, err
-}
-
 // CreateRow is CourseSubscription.objects.create(...): every column of the
 // instance, then the create entry (the stored diff with the in-memory
 // overrides), indexed through the course.

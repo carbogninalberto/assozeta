@@ -175,21 +175,12 @@ func (s *SubscriptionMemberships) AddAssociation(ctx context.Context, identity d
 	return err
 }
 
-// validate applies the UniqueValidator and the related querysets and tenant
-// scope (its PermissionDenied escapes the serializer before the field errors).
+// validate applies the related querysets and tenant scope (its
+// PermissionDenied escapes the serializer before the field errors).
 func (s *SubscriptionMemberships) validate(ctx context.Context, tx domain.SubscriptionMembershipTransaction, association string,
-	write dto.SubscriptionMembershipWrite, invalid map[string]any, exclude *string, group *string) error {
+	write dto.SubscriptionMembershipWrite, invalid map[string]any, group *string) error {
 	if invalid == nil {
 		invalid = map[string]any{}
-	}
-	if write.ID != nil {
-		taken, err := tx.MembershipIDTaken(ctx, *write.ID, exclude)
-		if err != nil {
-			return err
-		}
-		if taken {
-			invalid["subscription_membership_id"] = []string{dto.SubscriptionMembershipUnique}
-		}
 	}
 	foreign := false
 	lookups := []struct {
@@ -404,7 +395,7 @@ func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.Resol
 		invalid = nil
 	}
 	write.Association = dto.SubscriptionMembershipRelation{Present: true, ID: &association}
-	if err = s.validate(ctx, tx, association, write, invalid, nil, supplierGroup(request.GroupHeader)); err != nil {
+	if err = s.validate(ctx, tx, association, write, invalid, supplierGroup(request.GroupHeader)); err != nil {
 		return nil, err
 	}
 	_, refused := s.subscriptionMembershipDocuments(write)
@@ -414,9 +405,6 @@ func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.Resol
 	at := s.now().UTC().Truncate(time.Microsecond)
 	zero := "0"
 	row := domain.SubscriptionMembership{ID: s.ids(), AssociationID: association, CreationDate: at, MembershipNumber: &zero}
-	if write.ID != nil {
-		row.ID = *write.ID
-	}
 	applySubscriptionMembershipWrite(&row, write)
 	if err = tx.CreateMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
 		return nil, err
@@ -438,7 +426,7 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 		return nil, err
 	}
 	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form)
-	if err = s.validate(ctx, tx, association, write, invalid, &current.ID, supplierGroup(request.GroupHeader)); err != nil {
+	if err = s.validate(ctx, tx, association, write, invalid, supplierGroup(request.GroupHeader)); err != nil {
 		return nil, err
 	}
 	_, refused := s.subscriptionMembershipDocuments(write)
@@ -449,14 +437,7 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 	row := old
 	applySubscriptionMembershipWrite(&row, write)
 	at := s.now().UTC().Truncate(time.Microsecond)
-	if write.ID != nil && *write.ID != current.ID {
-		// Model.save() with a new primary key: the UPDATE matches nothing, so the row is inserted under the new key
-		// (the old row and its document links stay); auditlog logs an update against None, then the creation.
-		row.ID = *write.ID
-		if err = tx.CopyMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
-			return nil, err
-		}
-	} else if err = tx.SaveMembership(ctx, row, subscriptionMembershipChanges(old, row), paymentCategoryAuditContext(identity, audit), at); err != nil {
+	if err = tx.SaveMembership(ctx, row, subscriptionMembershipChanges(old, row), paymentCategoryAuditContext(identity, audit), at); err != nil {
 		return nil, err
 	}
 	_, failure := s.handleDocuments(ctx, tx, row.ID, write, paymentCategoryAuditContext(identity, audit))
@@ -521,7 +502,7 @@ func (s *SubscriptionMemberships) Create(ctx context.Context, identity domain.Re
 	if len(invalid) > 0 && invalid["non_field_errors"] != nil {
 		return nil, &SubscriptionMembershipValidationError{Fields: invalid}
 	}
-	if err = s.validate(ctx, tx, association, write, invalid, nil, supplierGroup(request.GroupHeader)); err != nil {
+	if err = s.validate(ctx, tx, association, write, invalid, supplierGroup(request.GroupHeader)); err != nil {
 		return nil, err
 	}
 	if associationErr != nil {
@@ -534,9 +515,6 @@ func (s *SubscriptionMemberships) Create(ctx context.Context, identity domain.Re
 	at := s.now().UTC().Truncate(time.Microsecond)
 	zero := "0"
 	row := domain.SubscriptionMembership{ID: s.ids(), CreationDate: at, MembershipNumber: &zero}
-	if write.ID != nil {
-		row.ID = *write.ID
-	}
 	applySubscriptionMembershipWrite(&row, write)
 	row.AssociationID = association
 	if err = tx.CreateMembership(ctx, row, paymentCategoryAuditContext(identity, audit), at); err != nil {
