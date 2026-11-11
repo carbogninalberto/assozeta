@@ -457,6 +457,46 @@ CASES += [
 ]
 
 
+# Random mixtures of the tags above (a fixed seed): lines, fonts, sizes, colours, rises, links, images and breaks in one text.
+import random  # noqa: E402
+
+FUZZ_WORDS = ['il', 'corso', 'di', 'nuoto', 'Supercalifragilistichespiralidoso', 'a', 'b', '&amp;', 'poli\xadsportiva', 'x' * 30, '1,00', 'è']
+FUZZ_OPEN = ['<b>', '<i>', '<u>', '<strike>', '<font size="12">', '<font size="6" color="#ff0000">', '<font bgcolor="yellow">', '<sup>', '<sub>',
+             '<a href="https://example.test/f">', '<u color="blue" kind="double">', '<span color="green">', '<nobr>', '<font name="Symbol">']
+FUZZ_CLOSE = {'<b>': '</b>', '<i>': '</i>', '<u>': '</u>', '<strike>': '</strike>', '<font size="12">': '</font>',
+              '<font size="6" color="#ff0000">': '</font>', '<font bgcolor="yellow">': '</font>', '<sup>': '</sup>', '<sub>': '</sub>',
+              '<a href="https://example.test/f">': '</a>', '<u color="blue" kind="double">': '</u>', '<span color="green">': '</span>',
+              '<nobr>': '</nobr>', '<font name="Symbol">': '</font>'}
+
+
+def fuzz_text(rng, words):
+    out, stack = [], []
+    for _ in range(words):
+        roll = rng.random()
+        if roll < 0.18:
+            tag = rng.choice(FUZZ_OPEN)
+            stack.append(tag)
+            out.append(tag)
+        elif roll < 0.34 and stack:
+            out.append(FUZZ_CLOSE[stack.pop()])
+        elif roll < 0.38:
+            out.append('<br/>')
+        elif roll < 0.42:
+            out.append('<img src="%s" width="%d" height="%d"/>' % (rng.choice([PIX, GREY, TALL]), rng.choice([6, 12, 20]), rng.choice([5, 9, 14])))
+        else:
+            out.append(rng.choice(FUZZ_WORDS))
+    while stack:
+        out.append(FUZZ_CLOSE[stack.pop()])
+    return ' '.join(out)
+
+
+for seed in range(6):
+    fuzz = random.Random(20261111 + seed)
+    CASES.append(report('rt-fuzz-%d' % seed, ['N', 'Testo', 'Altro'],
+                        [[str(i), fuzz_text(fuzz, fuzz.randint(3, 40)), fuzz_text(fuzz, fuzz.randint(1, 12))] for i in range(60)], 'Miscela %d' % seed,
+                        text_before=fuzz_text(fuzz, 900), text_after=fuzz_text(fuzz, 300)))
+
+
 def main():
     cases = []
     for case in CASES:
