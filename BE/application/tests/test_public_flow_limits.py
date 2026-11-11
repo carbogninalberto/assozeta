@@ -1,5 +1,6 @@
 """Flows open without an account (form answers, form attachments, the subscription link): size and rate limits."""
 import base64
+import hashlib
 import tempfile
 import uuid
 from unittest.mock import patch
@@ -33,7 +34,10 @@ class PublicFlowLimitTests(BaseAPITestCase):
 
     def attach(self, client, content, response=None):
         response = response or create_test_module_response(self.module)
-        body = {'filename': 'visita.pdf', 'base64': base64.b64encode(content).decode()}
+        response.attachment_token_hash = hashlib.sha256(b'respondent-token').hexdigest()
+        response.save()
+        body = {'filename': 'visita.pdf', 'base64': base64.b64encode(content).decode(),
+                'attachment_token': 'respondent-token'}
         return client.post(f'/modules/response/{response.module_response_id}/add-attachment', body, format='json')
 
     @override_settings(PUBLIC_REQUESTS_PER_WINDOW=2)

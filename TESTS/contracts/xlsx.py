@@ -88,10 +88,21 @@ def _excel_utils(columns, data):
     return out.getvalue()
 
 
+def _rich_run(value):
+    """xlsxwriter writes text shaped like <r>...</r> as markup; the exports hand it over as one escaped run."""
+    if isinstance(value, str) and value.startswith('<r>') and value.endswith('</r>'):
+        return '<r><t xml:space="preserve">' + value.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') + '</t></r>'
+    return value
+
+
 def _xlsxwriter(sheet, columns, rows, index, widths):
     import pandas as pd
     df = pd.DataFrame([[decode(value) for value in row] for row in rows])
     df.columns = columns
+    df.columns = [_rich_run(label) for label in df.columns]
+    for position in range(df.shape[1]):
+        if df.iloc[:, position].dtype == object:
+            df.isetitem(position, df.iloc[:, position].map(_rich_run))
     out = io.BytesIO()
     writer = pd.ExcelWriter(out, engine='xlsxwriter')
     df.to_excel(writer, sheet_name=sheet, index=index)

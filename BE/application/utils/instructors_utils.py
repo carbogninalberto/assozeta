@@ -7,6 +7,7 @@ from django.db.models import Value
 from django.db.models.functions import Concat
 
 from application.models import AttendanceDay, AttendanceRegistry, Instructor, CourseSubscription
+from application.utils.xlsx_text import xlsx_safe_frame
 import logging
 import pandas as pd
 from typing import Optional, Union
@@ -152,7 +153,7 @@ def generate_xlsx_report_from_data(data: list, schema: dict) -> Optional[bytes]:
     writer = pd.ExcelWriter(excel_file, engine='xlsxwriter')
 
     # Write the dataframe to Excel
-    df.to_excel(writer, sheet_name='Sheet1', index=False)
+    xlsx_safe_frame(df).to_excel(writer, sheet_name='Sheet1', index=False)
 
     # Auto-adjust columns width
     worksheet = writer.sheets['Sheet1']
