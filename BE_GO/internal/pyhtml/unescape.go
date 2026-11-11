@@ -128,3 +128,9 @@ func numeric(number *big.Int) string {
 	}
 	return string(rune(n))
 }
+
+// Entity is html.entities.html5[name] (name with or without its ';').
+func Entity(name string) (string, bool) {
+	value, ok := html5[name]
+	return value, ok
+}
