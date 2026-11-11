@@ -559,7 +559,9 @@ _raw, _kind = multipart_bytes(_field('document', B64(B64('campo base64')).encode
 add('upload-field-base64', 'owner', UPLOAD('files'), 200, FILE_UPLOADED, raw_b64=_raw, content_type=_kind,
     effect=effect('owner', documents=[stored('cte.txt', 'campo base64', 'text/plain')],
                   files=[{'document': 0, 'subscription': 'files'}], audit=[doc_create(0), file_create(0, 'files')]))
-_raw, _kind = multipart_bytes(_field('document', B64('campo grezzo').encode(), _cte), _field('filename', b'raw.txt'))
+# The name 'raw.txt' is not valid base64 (bad padding): the parser keeps it as sent. A document that is kept undecoded
+# would fail the view's own decode, so the document is encoded twice.
+_raw, _kind = multipart_bytes(_field('document', B64(B64('campo grezzo')).encode(), _cte), _field('filename', b'raw.txt', _cte))
 add('upload-field-base64-undecodable-kept', 'owner', UPLOAD('files'), 200, FILE_UPLOADED, raw_b64=_raw, content_type=_kind,
     effect=effect('owner', documents=[stored('raw.txt', 'campo grezzo', 'text/plain')],
                   files=[{'document': 0, 'subscription': 'files'}], audit=[doc_create(0), file_create(0, 'files')]))

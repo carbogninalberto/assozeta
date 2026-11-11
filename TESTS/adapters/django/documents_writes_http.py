@@ -89,6 +89,11 @@ def service_context(report, log):
         # The certificate upload limit of the run, on both servers (families sharing this storage have none).
         limit = source.get('certificate_limit', CERTIFICATE_LIMIT)
         saved = os.environ.get('GO_FIXTURE_ENVIRONMENT')
+        # botocore 1.37 keeps the status line of an early final answer to an empty "Expect: 100-continue" PUT on the pooled
+        # connection, so the next PUT on it fails with HeaderParsingError and Django answers only after the retries
+        # (the case after the empty certificate upload timed out). Empty bodies are sent without the Expect header.
+        saved_empty = os.environ.get('BOTO_EXPERIMENTAL__NO_EMPTY_CONTINUE')
+        os.environ['BOTO_EXPERIMENTAL__NO_EMPTY_CONTINUE'] = 'true'
         os.environ['GO_FIXTURE_ENVIRONMENT'] = json.dumps({**json.loads(saved or '{}'), 'MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES': str(limit)})
         try:
             with override_settings(STORAGES=storages, AWS_ACCESS_KEY_ID=access, AWS_SECRET_ACCESS_KEY=secret,
@@ -101,6 +106,10 @@ def service_context(report, log):
                 contract.require(listing() == {SENTINEL[0]}, 'storage.objects-restored')
                 contract.require(client.get_object(Bucket=BUCKET, Key=SENTINEL[0])['Body'].read() == SENTINEL[1], 'storage.sentinel')
         finally:
+            if saved_empty is None:
+                os.environ.pop('BOTO_EXPERIMENTAL__NO_EMPTY_CONTINUE', None)
+            else:
+                os.environ['BOTO_EXPERIMENTAL__NO_EMPTY_CONTINUE'] = saved_empty
             if saved is None:
                 os.environ.pop('GO_FIXTURE_ENVIRONMENT', None)
             else:
