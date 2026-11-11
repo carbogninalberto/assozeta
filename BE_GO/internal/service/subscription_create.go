@@ -199,21 +199,9 @@ func subscriptionCreateToday(now time.Time) string {
 // refuse rejects the inputs whose create_subscription paths are not ported,
 // before anything is read or written. today is the naive current date.
 func subscriptionCreateRefuse(data domain.RequestObject, today string) error {
-	// Renewals and draft approvals do not port preregistration.
-	if value, _ := data.Lookup("preregistration"); value == true {
+	// A preregistration that names the subscription it renews is not ported inside a renewal or a draft approval.
+	if value, _ := data.Lookup("preregistration"); value == true && subscriptionRenewalRequested(data) {
 		return domain.ErrSubscriptionCreateNotPorted
-	}
-	// Nor the placeholder certificate image of a typed date without a medical_id
-	// (subscription/add draws it: createPlaceholder).
-	if medical, ok := data.Lookup("medical_certificate"); ok {
-		if object, isObject := medical.(domain.RequestObject); isObject {
-			id, _ := object.Lookup("medical_id")
-			if expiration, present := object.Lookup("certificate_expring_date"); present && id == nil {
-				if date, parsed, _ := subscriptionMedicalDate(expiration); parsed && date.Format("2006-01-02") != today {
-					return domain.ErrSubscriptionCreateNotPorted
-				}
-			}
-		}
 	}
 	return subscriptionCreateRefuseInputs(data, today)
 }

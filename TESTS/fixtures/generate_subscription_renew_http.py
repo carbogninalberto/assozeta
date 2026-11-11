@@ -193,7 +193,8 @@ DRAFTS = {
                                        medical={'medical_id': CERTIFICATES['draft_cert']['id'], 'filename': 'certificato.pdf',
                                                 'certificate_expring_date': None})},
     'ok_second': {'id': next(ids), 'association': OWN, 'valid': False,
-                  'data': draft_data(draft_person('Gaia', 'Seconda', 'SCNGAI90A41H501K'))},
+                  'data': draft_data(draft_person('Gaia', 'Seconda', 'SCNGAI90A41H501K'),
+                                      medical={'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'})},
     # Valid only from the crash case on: its data has no 'associate'.
     'crash': {'id': next(ids), 'association': OWN, 'valid': False,
               'data': {'associate_tutor': None, 'new_user_account': {'new_member': False}}},
@@ -252,7 +253,7 @@ def notification_entries(actor):
             for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
 
 
-def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medical=None, number=None, renewal_form=True):
+def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medical=None, number=None, renewal_form=True, season=None):
     """The new subscription (and membership for types 2 and 3) of one create_subscription call."""
     if number is None:
         NUMBER[0] += 1
@@ -260,7 +261,7 @@ def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medi
     rows = [{'label': 'subscription', 'bind': bind, 'match': {'associate_id': associate_ref},
              'columns': {'sport_association_id': OWN, 'user_id': user, 'payment_id': payment, 'type': kind, 'role': 1, 'status_flag': 1,
                          'meta': NO_PLANS, 'subscription_type': '', 'subscription_number': number, 'medical_id': medical,
-                         'custom_data': {} if renewal_form else None, 'additional_fields': {} if renewal_form else None, **SEASON}}]
+                         'custom_data': {} if renewal_form else None, 'additional_fields': {} if renewal_form else None, **(season or SEASON)}}]
     if kind in (2, 3):
         rows.append({'label': 'membership', 'bind': bind + '_membership', 'match': {'subscription_id': bind},
                      'columns': {'sport_association_id': OWN, 'associate_id': associate_ref, 'payment_id': payment,
@@ -324,14 +325,43 @@ def draft_associate(label, bind):
             'columns': columns}
 
 
-def approved_draft(label, actor, details, *, kind, medical=None):
+def placeholder_text(first, last, moment):
+    return f'''
+            {first} {last}\n
+            \n
+            Questa certificazione è valida fino al {moment}\n
+            \n
+            \n
+            Attenzione: questo è un placeholder, il certificato medico deve essere caricato in seguito.
+                        '''
+
+
+def placeholder_parts(first, last, iso):
+    """A typed certificate expiration date without an upload: the Document, the stored PNG and the association account's
+    certificate (rows, audit entries after the associate's, and the storage expectation)."""
+    filename = f'medical_certificate_{first}_{last}.png'
+    rows = [{'label': 'document', 'bind': '$placeholder_document', 'match': {'filename': filename},
+             'columns': {'filename': filename, 'token': '$any_uuid'}},
+            {'label': 'medical', 'bind': '$placeholder_medical', 'match': {'document_id': '$placeholder_document'},
+             'columns': {'expiration_date': iso, 'user_id': '$owner', 'document_id': '$placeholder_document'}}]
+    audit = [entry('document', 0, '$placeholder_document', {'customer_invoice_pdf': ['None', 'application.CustomerInvoice.None']},
+                   index=(OWN, 'actor.sport_association'), app='docmanager'),
+             entry('medicalcertificate', 0, '$placeholder_medical', {'expiration_date': ['None', iso + ' 00:00:00']},
+                   index=(OWN, 'actor.sport_association'))]
+    return rows, audit, {'filename': filename, 'expiration': iso, 'text': placeholder_text(first, last, iso + ' 00:00:00+00:00')}
+
+
+def approved_draft(label, actor, details, *, kind, medical=None, placeholder=None):
     """Rows and entries of one approved draft (associate created, payment, subscription, the draft deleted)."""
     associate, payment, subscription = f'${label}_associate', f'${label}_payment', f'${label}_subscription'
     person = DRAFTS[label]['data']['associate']
-    rows = [draft_associate(label, associate), new_payment(payment, associate),
+    extra_rows, extra_audit = (placeholder_parts(person['first_name'], person['last_name'], placeholder)[:2]) if placeholder else ([], [])
+    rows = [draft_associate(label, associate), *extra_rows, new_payment(payment, associate),
             *subscription_rows(subscription, associate, kind=kind, payment=payment,
-                               medical=CERTIFICATES[medical['label']]['id'] if medical else None, renewal_form=False)]
-    audit = [entry('associate', 0, associate, {'user': ['None', 'None']}), entry('associate', 1, associate, {'user': ['None', OWNER]})]
+                               medical='$placeholder_medical' if placeholder else CERTIFICATES[medical['label']]['id'] if medical else None,
+                               renewal_form=False)]
+    audit = [entry('associate', 0, associate, {'user': ['None', 'None']}), entry('associate', 1, associate, {'user': ['None', OWNER]}),
+             *extra_audit]
     if medical is not None:
         audit.append(entry('medicalcertificate', 1, medical['label'], {'user': ['None', OWNER]}, index=medical['index'] or None))
     audit.append(entry('payment', 0, payment, {'amount': ['None', '25.0']}))
@@ -575,7 +605,7 @@ add('approve-all', 'approve', 'full_collaborator', 200, {'msg': '2 su 7 atleti a
 
 # A valid draft without 'associate' raises before the try: the earlier draft stays approved and the new status row stays.
 details = {'type': 1, 'plan_id': None, 'membership_plan_id': None, 'role': 1}
-rows, audit, celery, notifications = approved_draft('ok_second', 'owner', details, kind=1)
+rows, audit, celery, notifications = approved_draft('ok_second', 'owner', details, kind=1, placeholder='2027-03-31')
 add('approve-draft-without-associate', 'approve', 'owner', 500, SERVER,
     setup={'drafts': {'ok_second': True, 'crash': True}},
     body={'associate_import_draft_ids': [DRAFTS['crash']['id'], DRAFTS['ok_second']['id']], 'subscription_details': {'type': 1}},
@@ -584,6 +614,8 @@ add('approve-draft-without-associate', 'approve', 'owner', 500, SERVER,
                   deleted={'draft': ['ok_second']},
                   audit=[*status_entries(delete_new=False), *audit],
                   celery=celery, notifications=notifications))
+# The draft's typed certificate expiration date: its placeholder image is stored although the request ends in the 500 page.
+cases[-1]['effect']['placeholder'] = placeholder_parts('Gaia', 'Seconda', '2027-03-31')[2]
 
 invoiced = {'associate_id': ASSOCIATES['invoiced']['id'], 'first_name': 'Ivo', 'last_name': 'Fatturato', 'tax_code': 'FTTVIO80A01H501E',
             'born_date': '01/01/1980', 'sex': 'M', 'type': 1}
@@ -862,6 +894,75 @@ add('renew-new-member-username', 'renew', 'owner', 400,
     error("django.contrib.auth.models.UserManager.create_user() got multiple values for keyword argument 'username'"),
     body=renewal(basic, new_user_account={'new_member': True, 'new_member_info': {
         'first_name': 'Ugo', 'last_name': 'Utente', 'email': 'ugo.utente@example.test', 'username': 'ugo'}}))
+
+# --- A typed certificate expiration date without an upload (renewal and draft approval) ---------------------
+# create_subscription draws the placeholder image and creates its Document, the stored PNG and the association account's
+# certificate, linked to the new subscription; the audit entries follow the associate's.
+def typed_renewal(name, associate_id, first, last, sex, born, certificate, iso, *, tax_code=None):
+    form = {'associate_id': associate_id, 'first_name': first, 'last_name': last, 'born_date': born, 'sex': sex, 'type': 1}
+    if tax_code:
+        form['tax_code'] = tax_code
+    bind = '$' + name.replace('-', '_')
+    pieces = placeholder_parts(first, last, iso)
+    rows = [{'label': 'associate', 'bind': bind + '_associate', 'match': {'associate_id': associate_id},
+             'columns': {'first_name': first, 'last_name': last, 'born_date': '-'.join(reversed(born.split('/'))), 'sex': sex,
+                         'tax_code': tax_code, 'sport_association_id': OWN, 'user_id': '$owner'}},
+            *pieces[0], new_payment(bind + '_payment', associate_id),
+            *subscription_rows(bind + '_subscription', associate_id, kind=1, payment=bind + '_payment', medical='$placeholder_medical')]
+    entries = [entry('associate', 0, bind + '_associate', {'user': ['None', 'None']}),
+               entry('associate', 1, bind + '_associate', {'user': ['None', OWNER]}), *pieces[1],
+               entry('payment', 0, bind + '_payment', {'amount': ['None', '25.0']}), entry('subscription', 0, bind + '_subscription'),
+               *notification_entries('owner')]
+    result = effect('owner', new=rows, audit=entries, celery=tasks(bind + '_subscription'),
+                    notifications=[{'msg': f'Nuova Iscrizione aggiunta per {first} {last}.', 'association': OWN}])
+    result['placeholder'] = pieces[2]
+    add(name, 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+        body=renewal(form, medical_certificate=certificate), effect=result)
+
+
+typed_renewal('renew-certificate-placeholder', 'a1000000-0000-4000-8000-000000948001', 'Pia', 'Segnaposto', 'F', '05/05/1991',
+              {'medical_id': None, 'filename': '', 'certificate_expring_date': '2027-03-31'}, '2027-03-31')
+typed_renewal('renew-certificate-placeholder-italian-date', 'a1000000-0000-4000-8000-000000948002', 'Niccolò', 'Però', 'M', '06/06/1992',
+              {'certificate_expring_date': '5/4/2027'}, '2027-04-05')
+# A value that is not text fails inside the view's try block: no certificate.
+form = {'associate_id': 'a1000000-0000-4000-8000-000000948003', 'first_name': 'Nino', 'last_name': 'Numero', 'born_date': '07/07/1993',
+        'sex': 'M', 'type': 1}
+rows = [{'label': 'associate', 'bind': '$number_associate', 'match': {'associate_id': form['associate_id']},
+         'columns': {'first_name': 'Nino', 'last_name': 'Numero', 'born_date': '1993-07-07', 'sex': 'M', 'tax_code': None,
+                     'sport_association_id': OWN, 'user_id': '$owner'}},
+        new_payment('$number_payment', form['associate_id']),
+        *subscription_rows('$number_subscription', form['associate_id'], kind=1, payment='$number_payment')]
+add('renew-certificate-number-date-skipped', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(form, medical_certificate={'medical_id': None, 'certificate_expring_date': 20270331}),
+    effect=effect('owner', new=rows,
+                  audit=[entry('associate', 0, '$number_associate', {'user': ['None', 'None']}),
+                         entry('associate', 1, '$number_associate', {'user': ['None', OWNER]}),
+                         entry('payment', 0, '$number_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$number_subscription')],
+                  celery=tasks('$number_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Nino Numero.', 'association': OWN}]))
+
+
+
+# data['preregistration'] is True: the subscription is created on the next season's first day with that season's dates.
+form = {'associate_id': 'a1000000-0000-4000-8000-000000948004', 'first_name': 'Pietro', 'last_name': 'Prenotato', 'born_date': '08/08/1994',
+        'sex': 'M', 'type': 1}
+NEXT = {'creation_date': '$next_season_created', 'start_date': '$next_season_start', 'end_date': '$next_season_end'}
+rows = [{'label': 'associate', 'bind': '$early_associate', 'match': {'associate_id': form['associate_id']},
+         'columns': {'first_name': 'Pietro', 'last_name': 'Prenotato', 'born_date': '1994-08-08', 'sex': 'M', 'tax_code': None,
+                     'sport_association_id': OWN, 'user_id': '$owner'}},
+        new_payment('$early_payment', form['associate_id']),
+        *subscription_rows('$early_subscription', form['associate_id'], kind=1, payment='$early_payment', season=NEXT)]
+add('renew-preregistration', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(form, preregistration=True),
+    effect=effect('owner', new=rows,
+                  audit=[entry('associate', 0, '$early_associate', {'user': ['None', 'None']}),
+                         entry('associate', 1, '$early_associate', {'user': ['None', OWNER]}),
+                         entry('payment', 0, '$early_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$early_subscription',
+                               {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']})],
+                  celery=tasks('$early_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pietro Prenotato.', 'association': OWN}]))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
