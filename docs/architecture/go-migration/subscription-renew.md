@@ -136,7 +136,7 @@ Refused with the 500 page before anything is committed:
 - a `user.email` that is a list or dict;
 - `str(e)` bodies of the Python exceptions not listed above (non-dict tutors and similar; dateutil's own messages are ported with `internal/pydateutil`);
 - the inputs `subscription-create.md` refuses: preregistration, new member accounts, signature uploads, `type_of_associate`, and the
-  rest. A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
+  rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` it stays refused). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
   association account's certificate are created like in `subscription/add`.
   In approve, a draft hitting one of them refuses the whole request.
 
@@ -194,4 +194,4 @@ the other association and one of this association):
   (`renew-athlete-scoped-session-username-is-another-association-id`, two cases). GREEN (`v2subs3-versioned-r2`, after
   merging the base): 95/95 on four transports. Mutation (`v2subs3-mutation-r2`): the requester lookup without the session's
   association fails Go on that case (`response.status`, CAUGHT). The placeholder certificate of a typed expiration date is ported in renewals and
-  draft approvals (tailsubs, cases `renew-certificate-placeholder*`, `approve-certificate-placeholder`).
+  draft approvals (tailsubs, cases `renew-certificate-placeholder*` and the draft case `approve-draft-without-associate`).
