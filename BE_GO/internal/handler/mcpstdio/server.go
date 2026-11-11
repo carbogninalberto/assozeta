@@ -588,8 +588,11 @@ func (s *serveSession) handleCancellation(rawParams json.RawMessage) {
 	current.responded = true
 	delete(s.flight, key)
 	s.mu.Unlock()
-	current.cancel()
+	// Emit the cancellation response before releasing the executor: once the
+	// context is cancelled the worker slot frees and a queued call may answer,
+	// and the cancelled request's error must be written first.
 	s.write(errorResponse(current.id, 0, "Request cancelled", nil, false))
+	current.cancel()
 }
 
 func (s *serveSession) finishResult(current *inflight, result any) {
