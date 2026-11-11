@@ -14,9 +14,10 @@ This script runs the real bs4 (production Python 3.13.16) on
 
 ``--write-editor`` refreshes the committed editor golden file used by the plain
 Go unit test (and BE_GO/internal/dto/testdata/python_upper.json, CPython's
-str.upper() for the section-name characters the port accepts); without it the full corpus is written to a temporary file and
-checked with ``go test -tags=bs4integration`` (``--seed N`` and ``--scale K`` widen
-the random part). Run with the production Python.
+str.upper() for the section-name characters the port accepts); without it the
+editor/random corpus plus the full corpus are written to a temporary file and
+checked with ``go test -tags=bs4integration`` (``--seed N`` and ``--scale K``
+widen the random part). Run with the production Python.
 
 ``--write-full`` (``--full-out PATH`` for another seed and scale) writes the
 full golden corpus: for every input document the html.parser callback stream,
@@ -340,6 +341,68 @@ def full_case(kind, markup):
             'tree': enc(tr), 'output': enc(out), 'error': error}
 
 
+META_DOCS = [
+    '<meta charset="iso-8859-1">',
+    '<META CHARSET=latin1>',
+    '<meta charset>',
+    '<meta charset="">',
+    '<meta charset="utf-8">',
+    '<meta charset=utf-8>',
+    "<meta charset='utf-8'>",
+    '<meta charset="a" charset="b">',
+    '<meta CHARSET="a" Charset="b">',
+    '<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">',
+    '<meta http-equiv="content-type" content="text/html; charset=utf-8">',
+    '<meta http-equiv=content-type content="text/html;charset=iso-8859-1">',
+    '<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">',
+    '<meta http-equiv="Content-Type">',
+    '<meta http-equiv="Content-Type" content>',
+    '<meta http-equiv="Content-Type" content="">',
+    '<meta content="charset=x">',
+    '<meta content="text/html;charset=X; q=1" http-equiv=refresh>',
+    '<meta content="text/html;charset=X; q=1" http-equiv=content-type>',
+    '<meta content="x" charset="y">',
+    '<meta content="x" charset="">',
+    '<meta content="charset=x" http-equiv="content-type">',
+    '<meta content="CHARSET = z">',
+    '<meta content="CHARSET=z" http-equiv="content-type">',
+    '<meta content="charset = z" http-equiv="content-type">',
+    '<meta content=" my ; charset = z ; q">',
+    '<meta content="\ncharset=z">',
+    '<meta content="a\ncharset=b">',
+    '<meta content=";charset=z">',
+    '<meta content="x;charset=z;charset=y">',
+    '<meta content="charset=">',
+    '<meta content="charset=; charset=y">',
+    '<meta content="x" http-equiv="Content-Type" charset="y">',
+    '<meta http-equiv="content-type" content="text/html; charset=x" charset="y">',
+    '<p charset="x">y</p>',
+    '<div charset="x" content="charset=y">z</div>',
+    '<meta name="charset" content="charset=x">',
+    '<meta http-equiv="refresh" content="0; url=http://x">',
+    '<meta http-equiv="CONTENT-TYPE" content="charset=x">',
+    '<meta http-equiv="Content-Type " content="charset=x">',
+    '<meta content="charset=x" http-equiv="Content-Type" http-equiv="refresh">',
+    '<meta content="charset=x" http-equiv="refresh" http-equiv="Content-Type">',
+    '<meta charset="x"><meta charset="y">',
+    '<meta><meta charset=a>',
+    '<meta charset=x/>',
+    '<meta charset=x />',
+]
+
+# Short strings without "<" that exercise the constructor's pre-check.
+BOUNDARY_DOCS = [
+    'http://x/\ud800',
+    'https:\ud800',
+    'http: \ud800',
+    'x' * 255 + '\ud800',
+    'x' * 256 + '\ud800',
+    'x' * 256,
+    'x' * 257,
+    'x\ud800\n',
+    '\ud800\n',
+]
+
 HAND_SEEDS = [
     '<!-- c -->', '<!---->', '<!-->', '<!--->', '<!--x--!>y', '<!--x', '<!--x--', '<!--x--!', '<!--x-', '<!-- a -- b -->',
     '<!DOCTYPE html>', '<!doctype html>', '<!DOCTYPE>', '<!DOCTYPE html', '<!DOCTYPEhtml>',
@@ -513,9 +576,20 @@ HAND_LONG = [
     '<?' + 'x' * 400 + '?>',
     '<!DOCTYPE ' + 'x' * 400 + '>',
     '<p ' + 'a=1 ' * 100 + 'b="' + 'c' * 100 + '">x</p>',
+    '&#' + '1' * 4299 + ';',
+    '&#' + '1' * 4300 + ';',
+    '&#' + '1' * 4301 + ';',
+    '&#' + '0' * 4298 + '65;',
+    '&#' + '0' * 4299 + '65;',
+    '&#' + '0' * 4300 + '65;',
+    '&#' + '0' * 4301 + '65;',
+    '&#' + '0' * 4300 + ';',
+    '&#' + '0' * 4301 + ';',
+    '&#x' + '0' * 5000 + '41;',
+    '&#x' + '0' * 5000 + '110000;',
 ]
 
-HAND_PICKED = list(dict.fromkeys(HAND_SEEDS + HAND_EXTRA + HAND_LONG))
+HAND_PICKED = list(dict.fromkeys(HAND_SEEDS + HAND_EXTRA + HAND_LONG + META_DOCS + BOUNDARY_DOCS))
 
 # Fragments for the malformed token soup: every construct category, weighted by
 # repetition.
@@ -585,6 +659,24 @@ def random_hostile_text(rng):
     return ''.join(rng.choice(TEXT_BITS) for _ in range(rng.randint(0, 4)))
 
 
+META_ATTRS = [
+    'charset="iso-8859-1"', 'charset=latin1', 'charset', 'charset=""', 'charset="a" charset="b"',
+    'http-equiv="Content-Type" content="text/html; charset=iso-8859-1"',
+    'http-equiv="content-type" content="text/html;charset=X; q=1"',
+    'content="charset=x"', 'content="x" charset="y"', 'content="CHARSET = z"',
+    'content="text/html;charset=X; q=1" http-equiv=refresh',
+    'content="a\ncharset=b" http-equiv="Content-Type"',
+    'charset="x" content="charset=y" http-equiv="content-type"',
+]
+
+
+def random_meta(rng):
+    return '<%s%s%s%s>' % (rng.choice(['meta', 'META', 'Meta']),
+                           rng.choice(['', ' ', '\n']),
+                           rng.choice(META_ATTRS),
+                           rng.choice(['', '/', ' /']))
+
+
 def random_full_attributes(rng):
     attrs = []
     for _ in range(rng.randint(0, 3)):
@@ -627,6 +719,8 @@ def random_structured(rng, depth=0):
         elif choice < 0.93:
             part = rng.choice(['<p>', '<div>', '<b>', '<span>', '<li>'])
             part += random_hostile_text(rng) + rng.choice(CLOSERS)
+        elif choice < 0.97:
+            part = random_meta(rng)
         else:
             part = rng.choice(['<p a="', '<p a=', '<', '</', '&', '&#', '&a', '<!-', '<!--', '<?', '<![CDATA[',
                                '<p/', '<!'])
@@ -749,14 +843,14 @@ def main():
         return
     seed = int(sys.argv[sys.argv.index('--seed') + 1]) if '--seed' in sys.argv else 20261109
     scale = int(sys.argv[sys.argv.index('--scale') + 1]) if '--scale' in sys.argv else 1
-    cases = corpus(seed, 6000 * scale, 4000 * scale)
+    cases = corpus(seed, 6000 * scale, 4000 * scale) + full_corpus(seed, scale)
     with tempfile.TemporaryDirectory(prefix='az-bs4-corpus-') as directory:
         path = Path(directory) / 'corpus.json'
-        path.write_text(json.dumps(cases))
+        path.write_text(json.dumps(enc(cases)))
         env = {k: v for k, v in os.environ.items() if k in ('PATH', 'HOME', 'TMPDIR', 'GOCACHE', 'GOMODCACHE', 'GOTOOLCHAIN')}
         subprocess.run(['go', 'test', '-count=1', '-tags=bs4integration', PACKAGE, '-run', '^TestPrettifyAgainstBS4$', '-v'],
                        cwd=ROOT / 'BE_GO', env={**env, 'ASSOZETA_BS4_CORPUS': str(path)}, check=True, timeout=300)
-    print(json.dumps(dict(cases=len(cases), subset=sum(c['subset'] for c in cases))))
+    print(json.dumps(dict(cases=len(cases), subset=sum(bool(c.get('subset')) for c in cases))))
 
 
 if __name__ == '__main__':

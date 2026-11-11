@@ -189,7 +189,7 @@ func TestPlanProfileTemplate(t *testing.T) {
 		{domain.RequestField{Name: "additional_sections", Value: []any{domain.RequestObject{{Name: "name", Value: json.Number("5")},
 			{Name: "text", Value: "<p>x</p>"}}}}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "regulation", Value: json.Number("5")}, ErrProfileTemplatePython},
-		{domain.RequestField{Name: "regulation", Value: "<!-- c -->"}, ErrProfileTemplateNotPorted},
+		{domain.RequestField{Name: "regulation", Value: "<!-- c -->"}, nil},
 		{domain.RequestField{Name: "subscription_fee_plans", Value: []any{"x"}}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "membership_fee_plans", Value: []any{domain.RequestObject{{Name: "membership_fee", Value: json.Number("1")}}}},
 			ErrProfileTemplatePython},
@@ -202,6 +202,16 @@ func TestPlanProfileTemplate(t *testing.T) {
 	} {
 		if _, err := PlanProfileTemplate(profileTemplateTestPayload(tc.field)); !errors.Is(err, tc.err) {
 			t.Errorf("%s=%#v: %v", tc.field.Name, tc.field.Value, err)
+		}
+	}
+	commentPlan, err := PlanProfileTemplate(profileTemplateTestPayload(
+		domain.RequestField{Name: "regulation", Value: "<!-- c -->"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range commentPlan.Fields {
+		if field.Name == "regulation" && field.Value != "<!-- c -->\n" {
+			t.Errorf("regulation comment: %#v", field.Value)
 		}
 	}
 	if _, err := PlanProfileTemplate(domain.RequestObject{}); !errors.Is(err, ErrProfileTemplatePython) {

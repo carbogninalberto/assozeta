@@ -258,6 +258,9 @@ func profileTemplatePrettify(value any) (string, error) {
 	}
 	pretty, err := bs4prettify.Prettify(markup)
 	if err != nil {
+		if errors.Is(err, bs4prettify.ErrPythonRaises) {
+			return "", ErrProfileTemplatePython
+		}
 		return "", ErrProfileTemplateNotPorted
 	}
 	return pretty, nil
