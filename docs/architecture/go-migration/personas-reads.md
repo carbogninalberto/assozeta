@@ -86,9 +86,9 @@ Django remains the production execution owner.
 
 - (DELETE on `personas/<pk>/info` once the row is found is the soft delete
   ported with the personas-writes family, `personas-writes.md`.)
-- `query[generalSearch]` terms containing a character at or above U+0250 or
-  U+0130 (Python's `str.lower`/`\w` are not ported for them; every rune below
-  is checked against CPython's mapping) or malformed UTF-8.
+- (Ported in tailpay.) `query[generalSearch]` terms beyond Latin: the term is decoded with `replace` for malformed bytes (one U+FFFD per
+  maximal ill-formed subpart), stripped, lower-cased (U+0130 becomes `i` plus U+0307, the final sigma rule) and split on `\w+`; every
+  code point's `lower()` and `\w` class was compared with CPython 3.13 (Go's tables lack only CJK Extension I, added as word characters).
 - `sort[field]` names that join other tables: relation paths (`a__b`), the
   `tutors` M2M and reverse accessors (Django would order by them).
 

@@ -656,7 +656,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### carnet-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| DELETE carnet/<uid>/unassign/<uid_subscription> | the carnet subscription's unpaid payment is referenced by a `CourseSubscriptionInstallment` (pre_delete cascade) | repository/carnet_writes.go:157 (`domain.ErrPaymentCascadeUnsupported`) | B | UI calls unassign (`association/course/carnet/detail/sections/Usage.svelte:274`, `association/Members/detail/sections/Carnet.svelte:368`), but carnet payments are created standalone by carnet assign/topup; installments create their own payments, so no UI writer links an installment to a carnet payment. legacy: no. Cost: medium (installment cascade exists in other families). |
+| DELETE carnet/<uid>/unassign/<uid_subscription> | the carnet subscription's unpaid payment is referenced by a `CourseSubscriptionInstallment` (pre_delete cascade) | repository/carnet_writes.go:157 (`domain.ErrPaymentCascadeUnsupported`) | B (open in tailpay: `deleteReplacePayment` in the same file already runs this cascade for carnet replace; the unassign fixtures still need a course with installments seeded) | UI calls unassign (`association/course/carnet/detail/sections/Usage.svelte:274`, `association/Members/detail/sections/Carnet.svelte:368`), but carnet payments are created standalone by carnet assign/topup; installments create their own payments, so no UI writer links an installment to a carnet payment. legacy: no. Cost: medium (installment cascade exists in other families). |
 
 ### celery-routes-a.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -964,7 +964,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET invoice-customers/list | an invoice of the caller's association without a PDF | `BE_GO/internal/service/invoice_parties.go:97-104`, `ErrInvoicePartyNotPorted` | **A** (ported in v2-documents) | `accounting/customersInvoice/CustomersInvoiceList.svelte:513`. A customer invoice added from the UI (`:309`) whose eager print made no PDF (renderer error swallowed, or any completed data restore making the eager task raise `StaleDataTask`, per invoice-views.md) leaves `pdf_id` NULL; Django prints it on its association's list (`invoice_views.py:836`). |
-| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id`, new `invoice_supplier_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). |
+| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id`, new `invoice_supplier_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B (open in tailpay; the nested objects are validated by the full `PaymentSerializer` and `SupplierSerializer`, whose field errors embed further nested serializers) | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). |
 | PATCH invoice-suppliers/<uid>/update | linked payment not loadable or description None/"quota corso" | `service/invoice_parties.go:640-649` | B | Supplier add sets a description (`invoice_views.py:695`); needs a later edit blanking it. legacy: yes; medium. |
 | GET invoice-suppliers/list | payment linking an associate/instructor/invoice or with a subscription/course subject | `service/invoice_parties.go:370-371` | B | Auto-created supplier payment is `Payment.OTHER` with a supplier; needs a manual edit in the payment editor. legacy: yes; medium. |
 | lists | ordering by relation path or `?` | invoice_parties service | B | Not sent by the UI tables. |
@@ -1043,7 +1043,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A (ported in v2-payments-3) | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
 | partial-quotes(-apply) | non-ASCII-digit dates and plan days/months, non-canonical X-Group-Id | `service/payment_misc.go` | ported (v2-rest-a) | See `payment-misc.md`. |
-| partial-quotes(-apply) | odd fee/plan types (fees that are not a number or decimal string, plan ids that are not strings or numbers, ints beyond int64) | `service/payment_misc.go` (`paymentMiscAmount`, `paymentMiscPattern`); `service/quote_assign.go` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
+| partial-quotes(-apply) | odd fee/plan types (fees that are not a number or decimal string, plan ids that are not strings or numbers, ints beyond int64) | `service/payment_misc.go` (`paymentMiscAmount`, `paymentMiscPattern`); `service/quote_assign.go` | B (open in tailpay) | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
 | POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | ported (rest-b1) | See `invoice-generate.md`. |
 
 ### oauth2-accounts.md
@@ -1218,7 +1218,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | stripe/pay, multiple-pay, webhook | paid-flow conversions (X-Group-Id, fee ties, odd meta name) | `service/payment_paid_flow.go` | ported (v2-rest-a) | See `stripe-routes.md` ("Paid flow rare inputs"). |
-| same | `stripe_available_methods` floats/nested lists, mixed `payments` lists, non-string ids, odd `payment_intent`, intent without id, amounts beyond int64 | same | B | The UI sends string lists and ids. Webhook input comes from Stripe. |
+| same | `stripe_available_methods` floats/nested lists, mixed `payments` lists, non-string ids, odd `payment_intent`, intent without id, amounts beyond int64 | same | B (open in tailpay; most of these inputs end in Django's own 500 page, which the refusal answers identically unless an earlier step wrote; an amount beyond int64 is Stripe's reply to an out-of-range amount, not reproducible) | The UI sends string lists and ids. Webhook input comes from Stripe. |
 | webhook | body over `DATA_UPLOAD_MAX_MEMORY_SIZE` | | B (kept: the limit and the error body come from Django's request handling and the server in front of it, not from the view) | Stripe client only. |
 
 ### subscription-writes.md
