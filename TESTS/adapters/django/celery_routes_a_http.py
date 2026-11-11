@@ -52,7 +52,8 @@ def seed_rows(source, created):
         insert(Document, Document(document_id=row['id'], token=row['token'], filename=row['filename'], creation_date=moment('2026-01-05T08:00:00Z')))
     for row in source['associates'].values():
         insert(Associate, Associate(associate_id=row['id'], sport_association_id=row['association'], first_name=row['first'],
-                                    last_name=row['last'], email=row['email'], sex='M', is_minor=False))
+                                    last_name=row['last'], email=row['email'], sex='M', is_minor=False,
+                                    deleted=row.get('deleted', False), group_id=ids[row['group']] if row.get('group') else None))
     for associate, tutor, primary in source['relations']:
         insert(AssociateTutorRelation, AssociateTutorRelation(associate_id=source['associates'][associate]['id'],
                                                               tutor_id=source['associates'][tutor]['id'], is_primary=primary))

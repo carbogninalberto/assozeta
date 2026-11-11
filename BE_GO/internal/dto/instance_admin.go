@@ -8,8 +8,11 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/idna2003"
+	"golang.org/x/text/unicode/norm"
 )
 
 // Serializer ports for BE/instance (administration.py, operations.py,
@@ -699,7 +702,7 @@ const (
 	urlIPv4  = `(?:0|25[0-5]|2[0-4][0-9]|1[0-9]?[0-9]?|[1-9][0-9]?)(?:\.(?:0|25[0-5]|2[0-4][0-9]|1[0-9]?[0-9]?|[1-9][0-9]?)){3}`
 	urlLabel = `[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?`
 	urlHost  = `(?:` + urlLabel + `(?:\.` + urlLabel + `)*\.(?:[a-z][a-z-]{0,61}[a-z]|xn--[a-z0-9]{1,59})\.?|localhost)`
-	urlSpace = `\t\n\v\f\r \x1c-\x1f`
+	urlSpace = `\t\n\v\f\r \x1c-\x1f\x{85}\x{a0}\x{1680}\x{2000}-\x{200a}\x{2028}\x{2029}\x{202f}\x{205f}\x{3000}`
 )
 
 var (
@@ -708,15 +711,11 @@ var (
 	djangoURLBracket = regexp.MustCompile(`^\[(.+)\](?::[0-9]{1,5})?$`)
 )
 
-// DjangoURL reports URLValidator()(value) for ASCII text; ascii=false means
-// the value needs the IDNA fallback, which is not ported.
-func DjangoURL(value string) (valid, ascii bool) {
-	for _, r := range value {
-		if r > 127 {
-			return false, false
-		}
-	}
-	if len(value) > 2048 || strings.ContainsAny(value, "\t\r\n") {
+// DjangoURL reports URLValidator()(value). The second result is always true (it was false while hosts needing the
+// IDNA fallback were not ported). A value the pattern rejects is retried with its network location encoded by
+// Python's 'idna' codec, as Django does for internationalized domain names.
+func DjangoURL(value string) (valid, ported bool) {
+	if utf8.RuneCountInString(value) > 2048 || strings.ContainsAny(value, "\t\r\n") {
 		return false, true
 	}
 	scheme, _, _ := strings.Cut(value, "://")
@@ -725,17 +724,30 @@ func DjangoURL(value string) (valid, ascii bool) {
 	default:
 		return false, true
 	}
-	if !djangoURLPattern.MatchString(value) {
-		return false, true
-	}
 	// urlsplit: the network location follows the scheme's "//".
-	rest := value[strings.Index(value, "//")+2:]
-	if end := strings.IndexAny(rest, "/?#"); end >= 0 {
-		rest = rest[:end]
+	start := strings.Index(value, "//") + 2
+	rest := value[start:]
+	end := len(rest)
+	if cut := strings.IndexAny(rest, "/?#"); cut >= 0 {
+		end = cut
 	}
-	netloc := rest
+	netloc := rest[:end]
 	if strings.Count(netloc, "[") != strings.Count(netloc, "]") {
 		return false, true
+	}
+	if !isASCIIText(netloc) {
+		// urlsplit's _checknetloc: NFKC must not introduce a delimiter.
+		plain := strings.NewReplacer("@", "", ":", "", "#", "", "?", "").Replace(netloc)
+		if normalized := norm.NFKC.String(plain); normalized != plain && strings.ContainsAny(normalized, "/?#@:") {
+			return false, true
+		}
+	}
+	if !djangoURLPattern.MatchString(value) {
+		encoded, err := idna2003.ToASCII(netloc)
+		if err != nil {
+			return false, true
+		}
+		return djangoURLPattern.MatchString(strings.ToLower(scheme) + "://" + encoded + rest[end:]), true
 	}
 	if match := djangoURLBracket.FindStringSubmatch(netloc); match != nil {
 		address, err := netip.ParseAddr(match[1])
@@ -748,12 +760,21 @@ func DjangoURL(value string) (valid, ascii bool) {
 		host = host[at+1:]
 	}
 	if strings.HasPrefix(host, "[") {
-		end := strings.Index(host, "]")
-		host = host[1:end]
+		close := strings.Index(host, "]")
+		host = host[1:close]
 	} else if at := strings.Index(host, ":"); at >= 0 {
 		host = host[:at]
 	}
-	return host != "" && len(host) <= 253, true
+	return host != "" && utf8.RuneCountInString(host) <= 253, true
+}
+
+func isASCIIText(text string) bool {
+	for i := 0; i < len(text); i++ {
+		if text[i] >= utf8.RuneSelf {
+			return false
+		}
+	}
+	return true
 }
 
 // InstanceAdminUpdateRequest is UpdateRequestSerializer(data=body).is_valid().

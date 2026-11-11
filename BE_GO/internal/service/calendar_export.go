@@ -137,7 +137,7 @@ func (s *CalendarExport) writeEvent(out *strings.Builder, raw any) error {
 	if !present {
 		return domain.ErrMiscRoutesServer
 	}
-	summary, err := calendarExportText(title)
+	summary, err := calendarExportTexts(title)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (s *CalendarExport) writeEvent(out *strings.Builder, raw any) error {
 	if !present {
 		return domain.ErrMiscRoutesServer
 	}
-	uid, err := calendarExportText(eventID)
+	uid, err := calendarExportTexts(eventID)
 	if err != nil {
 		return err
 	}
@@ -195,18 +195,20 @@ func (s *CalendarExport) writeEvent(out *strings.Builder, raw any) error {
 			instructor, _ := object.Lookup("instructor")
 			if fields, isObject := instructor.(domain.RequestObject); isObject {
 				if label, present := fields.Lookup("label"); present {
-					text, err := calendarExportText(label)
-					if err != nil {
-						return err
-					}
-					value := "Instructor: " + text
+					value := "Instructor: " + dto.PythonStr(label)
 					description = &value
 				}
 			}
 		}
 	}
-	lines := []string{"BEGIN:VEVENT", "SUMMARY:" + calendarExportEscape(summary), "DTSTART" + start.render(), "DTEND" + end.render(),
-		"DTSTAMP:" + stamp.Format("20060102T150405") + "Z", "UID:" + calendarExportEscape(uid)}
+	lines := []string{"BEGIN:VEVENT"}
+	for _, text := range summary {
+		lines = append(lines, "SUMMARY:"+calendarExportEscape(text))
+	}
+	lines = append(lines, "DTSTART"+start.render(), "DTEND"+end.render(), "DTSTAMP:"+stamp.Format("20060102T150405")+"Z")
+	for _, text := range uid {
+		lines = append(lines, "UID:"+calendarExportEscape(text))
+	}
 	if description != nil {
 		lines = append(lines, "DESCRIPTION:"+calendarExportEscape(*description))
 	}
@@ -237,28 +239,20 @@ func calendarExportContains(value any, name string) (bool, error) {
 	return false, domain.ErrMiscRoutesServer // `in` on None, a number or a bool
 }
 
-// calendarExportText is str() of a JSON scalar as icalendar's vText receives
-// it (a float as Python's repr). Lists (one property per item) and dicts
-// (repr) are refused.
-func calendarExportText(value any) (string, error) {
-	switch v := value.(type) {
-	case nil:
-		return "None", nil
-	case bool:
-		if v {
-			return "True", nil
-		}
-		return "False", nil
-	case string:
-		return v, nil
-	case json.Number:
-		text := string(v)
-		if strings.ContainsAny(text, ".eE") {
-			return dto.PythonStr(v), nil
-		}
-		return text, nil
+// calendarExportTexts is the content lines' values for a JSON value icalendar
+// receives: a list becomes one property line per item (an empty list none),
+// each item vText(str(item)); a scalar, dict or nested value is str() of it
+// (a float as Python's repr, containers as their repr).
+func calendarExportTexts(value any) ([]string, error) {
+	items, isList := value.([]any)
+	if !isList {
+		return []string{dto.PythonStr(value)}, nil
 	}
-	return "", domain.ErrMiscRoutesNotPorted
+	texts := make([]string, len(items))
+	for i, item := range items {
+		texts[i] = dto.PythonStr(item)
+	}
+	return texts, nil
 }
 
 // calendarExportEscape is icalendar's escape_char (order matters).

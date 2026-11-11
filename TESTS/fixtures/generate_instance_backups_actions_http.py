@@ -402,6 +402,11 @@ add('restore-field-rules', 'owner', restore_path(), 400,
     method='POST', body={'password': 'p' * 257, 'confirm': 'R' * 33})
 add('restore-field-types', 'owner', restore_path(), 400, {'password': [BLANK], 'confirm': [STRING]},
     method='POST', body={'password': '', 'confirm': True})
+FORM = 'application/x-www-form-urlencoded'
+add('restore-form-empty', 'owner', restore_path(), 400, {'password': [REQUIRED], 'confirm': [REQUIRED]}, method='POST',
+    raw_body='', content_type=FORM)
+add('restore-form-wrong-word', 'owner', restore_path(), 400, error(CONFIRM_WORD), method='POST',
+    raw_body='password=x&confirm=ripristina', content_type=FORM)
 add('restore-blank-word', 'owner', restore_path(), 400, {'confirm': [BLANK]}, method='POST', body={'password': 'x', 'confirm': '  '})
 add('restore-wrong-word', 'owner', restore_path(), 400, error(CONFIRM_WORD), method='POST',
     body={'password': PASSWORD, 'confirm': 'ripristina'}, cache=attempts(OWNER, 5), cache_after=attempts(OWNER, 5, 'kept'))

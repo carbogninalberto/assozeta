@@ -18,10 +18,8 @@ type MedicalReminderRecipient struct {
 	TutorUnpromoted    bool
 	// TutorRelation is the key of the relation get_main_tutor saves as primary.
 	TutorRelation int64
-	// AssociateAssociation, AssociateDeleted, AssociateGroup describe the associate row the audit index resolves through.
+	// AssociateAssociation is the association the audit index resolves through (nil: the actor's).
 	AssociateAssociation    *string
-	AssociateDeleted        bool
-	AssociateGroup          *string
 	UserEmail, Denomination *string
 }
 
@@ -29,7 +27,7 @@ type SubscriptionReminderTransaction interface {
 	SubscriptionMedicalTransaction
 	ReminderRecipient(ctx context.Context, subscription string) (MedicalReminderRecipient, error)
 	// PromoteTutorRelation is relation.is_primary = True; relation.save() with its update entry.
-	PromoteTutorRelation(ctx context.Context, relation int64, association string, audit LoginAuditContext, at time.Time) error
+	PromoteTutorRelation(ctx context.Context, relation int64, association *string, audit LoginAuditContext, at time.Time) error
 }
 
 type SubscriptionReminderStore interface {

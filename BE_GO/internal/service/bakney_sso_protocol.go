@@ -30,7 +30,9 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/idna2003"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
+	"golang.org/x/text/unicode/norm"
 )
 
 // The v1 wire contract of BE/instance/sso/protocol.py.
@@ -149,6 +151,15 @@ func pythonURLSplit(url string) (pythonSplit, error) {
 	return result, nil
 }
 
+func bakneyASCII(text string) bool {
+	for i := 0; i < len(text); i++ {
+		if text[i] >= utf8.RuneSelf {
+			return false
+		}
+	}
+	return true
+}
+
 func (p pythonSplit) hostinfo() (string, string, bool) {
 	hostinfo := p.netloc[strings.LastIndex(p.netloc, "@")+1:]
 	var host, port string
@@ -169,17 +180,19 @@ func normalizeBakneyOrigin(value string, settings BakneySSOSettings) (string, er
 	if strings.ContainsAny(value, "\\%") || strings.IndexFunc(value, pythonIsSpace) >= 0 {
 		return "", invalid
 	}
-	for _, r := range value {
-		if r >= utf8.RuneSelf {
-			return "", ErrBakneySSOUnsupported
-		}
-	}
 	parts, err := pythonURLSplit(value)
 	if err != nil {
 		return "", invalid
 	}
+	if !bakneyASCII(parts.netloc) {
+		// urlsplit's _checknetloc: NFKC must not introduce a delimiter (a ValueError).
+		plain := strings.NewReplacer("@", "", ":", "", "#", "", "?", "").Replace(parts.netloc)
+		if normalized := norm.NFKC.String(plain); normalized != plain && strings.ContainsAny(normalized, "/?#@:") {
+			return "", invalid
+		}
+	}
 	host, portText, hasPort := parts.hostinfo()
-	host = strings.ToLower(host)
+	host = dto.PythonLower(host)
 	schemeAllowed := parts.scheme == "https" || parts.scheme == "http" && settings.developmentHTTP()
 	if !schemeAllowed || host == "" || strings.Contains(parts.netloc, "@") || parts.path != "" && parts.path != "/" ||
 		parts.query != "" || parts.fragment != "" {
@@ -201,14 +214,12 @@ func normalizeBakneyOrigin(value string, settings BakneySSOSettings) (string, er
 	if port == 0 {
 		return "", invalid
 	}
-	// str.encode('idna') ASCII fast path: every label but the last 1..63
-	// characters, the last under 64.
-	labels := strings.Split(host, ".")
-	for index, label := range labels {
-		if index < len(labels)-1 && (len(label) == 0 || len(label) > 63) || len(label) > 63 {
-			return "", invalid
-		}
+	// parts.hostname.encode('idna').decode('ascii').lower()
+	encoded, err := idna2003.ToASCII(host)
+	if err != nil {
+		return "", invalid
 	}
+	host = strings.ToLower(encoded)
 	if strings.Contains(host, ":") {
 		host = "[" + host + "]"
 	}

@@ -8,14 +8,8 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/google/uuid"
 )
-
-// ErrMedicalReminderNotPorted refuses an associate without an email whose
-// tutor relations are all non-primary: get_main_tutor would save the first
-// relation as primary (an audited write) before the e-mail is queued.
-var ErrMedicalReminderNotPorted = refusal.New("medical reminder tutor promotion not ported")
 
 // MedicalReminderSettings are the core.settings values the reminder renders.
 type MedicalReminderSettings struct {
@@ -75,16 +69,10 @@ func (s *SubscriptionMedicalReminders) Send(ctx context.Context, identity domain
 	case recipient.Email != nil:
 		email = recipient.Email
 	case recipient.Tutor && recipient.TutorUnpromoted:
-		// The audit index resolves through the associate row as the group-aware manager finds it; the
-		// other resolutions (a deleted or group-hidden associate) stay refused.
-		scope := supplierGroup(group)
-		visible := recipient.AssociateAssociation != nil && !recipient.AssociateDeleted &&
-			(scope == nil || recipient.AssociateGroup != nil && *recipient.AssociateGroup == *scope)
-		if !visible {
-			return ErrMedicalReminderNotPorted
-		}
+		// get_main_tutor reaches the relation through base managers: a deleted or group-hidden associate resolves
+		// the audit index like any other, and one without an association falls back to the actor's.
 		at := s.now().UTC().Truncate(time.Microsecond)
-		if err = tx.PromoteTutorRelation(ctx, recipient.TutorRelation, *recipient.AssociateAssociation,
+		if err = tx.PromoteTutorRelation(ctx, recipient.TutorRelation, recipient.AssociateAssociation,
 			paymentCategoryAuditContext(identity, login), at); err != nil {
 			return err
 		}

@@ -47,8 +47,8 @@ AUTH = '$authorization'
 DOCUMENTS = {label: {'id': next(ids), 'token': next(ids), 'filename': f'{label}.pdf'} for label in ('full', 'json', 'kept')}
 
 
-def associate(first, last, email=None, association=OWN):
-    return {'id': next(ids), 'association': association, 'first': first, 'last': last, 'email': email}
+def associate(first, last, email=None, association=OWN, deleted=False, group=None):
+    return {'id': next(ids), 'association': association, 'first': first, 'last': last, 'email': email, 'deleted': deleted, 'group': group}
 
 
 ASSOCIATES = {
@@ -63,16 +63,22 @@ ASSOCIATES = {
     'hans': associate('Hans', 'Muller', 'hans@example.test', FOREIGN),
     'late': associate('Lia', 'Neri'),
     'late_two': associate('Lea', 'Neri'),
+    # get_main_tutor reaches these through base managers: a deleted, group-hidden or association-less associate still resolves.
+    'late_deleted': associate('Dino', 'Neri', deleted=True),
+    'late_hidden': associate('Gia', 'Neri', group='foreign_group'),
+    'late_orphan': associate('Oro', 'Neri', association=None),
 }
 # Primary tutor relations: luca -> tutor (with email), notutor_email -> silent_tutor (without email).
 RELATIONS = [('luca', 'tutor', True), ('notutor_email', 'silent_tutor', True), ('late', 'tutor', False),
-             ('late_two', 'silent_tutor', False), ('late_two', 'tutor', False)]
+             ('late_two', 'silent_tutor', False), ('late_two', 'tutor', False),
+             ('late_deleted', 'tutor', False), ('late_hidden', 'tutor', False), ('late_orphan', 'tutor', False)]
 
 CERTIFICATES = {label: {'id': next(ids), 'user': 'owner', 'expiration': expiration}
                 for label, expiration in (('main', '2026-06-30'), ('tutor', '2027-01-05'), ('user', '2026-12-31'),
                                           ('empty', '2026-03-01'), ('quoted', '2026-04-15'), ('silent', '2026-05-20'),
                                           ('none', None), ('orphan', '2026-07-01'), ('athlete', '2026-08-08'), ('abroad', '2026-09-09'),
-                                          ('grouped', '2026-10-10'), ('deleted', '2026-11-11'), ('late', '2027-02-02'), ('late_two', '2027-03-03'))}
+                                          ('grouped', '2026-10-10'), ('deleted', '2026-11-11'), ('late', '2027-02-02'), ('late_two', '2027-03-03'),
+                                          ('late_deleted', '2027-04-04'), ('late_hidden', '2027-05-05'), ('late_orphan', '2027-06-06'))}
 
 
 def subscription(associate='mario', association=OWN, **fields):
@@ -131,6 +137,9 @@ SUBSCRIPTIONS = {
     'r_deleted': subscription(deleted=True, medical='deleted'),
     'r_promote': subscription('late', medical='late'),
     'r_promote_first': subscription('late_two', medical='late_two'),
+    'r_promote_deleted': subscription('late_deleted', medical='late_deleted'),
+    'r_promote_hidden': subscription('late_hidden', group='own_group', medical='late_hidden'),
+    'r_promote_orphan': subscription('late_orphan', medical='late_orphan'),
 }
 cases = []
 
@@ -332,6 +341,16 @@ for label, spec, email in (('r_promote', {'associate': 'late', 'relations': 1, '
     promoted = reminded(label, email)
     promoted['promotion'] = spec
     add('reminder-promotes-' + label[2:], 'owner', reminder(label), 200, SENT, method='POST', effect=promoted)
+# The tutor relation is read through base managers, so the audit index resolves for a deleted, group-hidden or association-less associate.
+for label, spec, email, kwargs in (
+        ('r_promote_deleted', {'associate': 'late_deleted', 'relations': 1, 'path': 'associate.sport_association'}, 'anna.tutor@example.test', {}),
+        ('r_promote_hidden', {'associate': 'late_hidden', 'relations': 1, 'path': 'associate.sport_association'}, 'anna.tutor@example.test',
+         {'headers': {'X-Group-Id': IDS['own_group']}, 'actor': 'full_collaborator'}),
+        ('r_promote_orphan', {'associate': 'late_orphan', 'relations': 1, 'path': 'actor.sport_association'}, 'anna.tutor@example.test', {})):
+    promoted = reminded(label, email)
+    promoted['promotion'] = spec
+    add('reminder-promotes-' + label[2:], kwargs.get('actor', 'owner'), reminder(label), 200, SENT, method='POST',
+        headers=kwargs.get('headers'), effect=promoted)
 add('reminder-body-ignored', 'owner', reminder('r_main'), 200, SENT, method='POST', raw_body='{', content_type='application/json',
     effect=reminded('r_main', 'mario.rossi@example.test'))
 add('reminder-no-certificate', 'owner', reminder('r_no_certificate'), 500, SERVER, method='POST')

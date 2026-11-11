@@ -101,10 +101,11 @@ Go answers the server error page before any write:
   exception and Django answers its text), whose row Celery would decode differently (non-`utf-8`
   encoding, metadata with `status` or children, `__type__` values) or not at all, whose association id
   is not a string UUID, or whose error value is not a string, integer, boolean or null.
-- Values the model columns reject inside Django's transaction: an owner email or support email over
-  254 characters.
-- A `domain` or owner email domain with non-ASCII characters (Python's Unicode lowercasing), and
-  `clientPortal` values that need URLValidator's IDNA fallback.
+- (Ported in t3plat) Values the model columns reject inside Django's transaction answer the database text
+  `value too long for type character varying(N)` with the 500 body: an owner or support email over 254
+  characters, a domain over 255 characters once Python has lower-cased it. Domains and e-mail domains are
+  lower-cased with `str.lower()`; a `clientPortal` that needs URLValidator's IDNA retry runs through
+  `internal/idna2003` (Python's 'idna' codec).
 - A logo name that exists again after the deletes when `AWS_S3_FILE_OVERWRITE` is false (Django
   would save under a generated alternative name).
 - Other exceptions inside the setup transaction (Django answers 500 with the exception text).

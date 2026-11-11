@@ -139,6 +139,14 @@ def saved(actor, label, fields, *, reset=False, session=None):
                     'enabled': row['enabled']}, 'audit': audit}
 
 
+def kept(actor, label, changes):
+    """The save fails after auditlog's pre_save entry: the row keeps its values and the entry stays."""
+    row = STATE[label]
+    return {'actor': actor, 'session': None, 'label': label, 'kept': True,
+            'row': {'name': row['name'], 'description': row['description'], 'automation_tree': copy.deepcopy(row['tree']),
+                    'enabled': row['enabled']}, 'audit': [{'changes': changes}]}
+
+
 ANONYMOUS = {'detail': 'Authentication credentials were not provided.'}
 ADMIN = {'detail': 'Seleziona un utente da impersonificare per accedere a questa sezione.'}
 SCOPED = {'X-Impersonation-Id': '$session:owner_athlete', 'User-Id': IDS['athlete']}
@@ -206,6 +214,21 @@ for label, raw in (('invalid-json', '['), ('empty', ''), ('object', '{}'), ('nul
                    ('trailing-comma', '[1,]'), ('single-quotes', "['a']"), ('nan-object', '{"a": NaN}'), ('nan-list', '[NaN]'), ('infinity', '[{"a": -Infinity}]'), ('nested-infinity', '[{"id": "x", "value": "NaN", "data": {"v": Infinity}}]')):
     add(f'form-tree-{label}', 'owner', path('plain'), 400, INVALID,
         raw_body='automation_tree=' + urllib.parse.quote(raw), content_type=FORM)
+# A lone surrogate escape parses in Python but the jsonb column refuses it at save time: the pre_save entry (every changed field,
+# the tree as json.dumps writes it) is kept and the answer is the 500 page.
+SURROGATE_TREE = '[{"id": "trigger", "value": "new_payment", "data": {"k": "\\ud800", "n": [1, 2.5]}}]'
+SURROGATE_DUMPS = '[{"data": {"k": "\\ud800", "n": [1, 2.5]}, "id": "trigger", "value": "new_payment"}]'
+add('form-tree-lone-surrogate-kept-entry', 'owner', path('plain'), 500, SERVER,
+    raw_body='automation_tree=' + urllib.parse.quote(SURROGATE_TREE), content_type=FORM,
+    effect=kept('owner', 'plain', {'automation_tree': [dumps(STATE['plain']['tree']), SURROGATE_DUMPS]}))
+add('form-tree-lone-surrogate-with-name-kept-entry', 'owner', path('plain'), 500, SERVER,
+    raw_body='name=Mai+salvato&automation_tree=' + urllib.parse.quote(SURROGATE_TREE), content_type=FORM,
+    effect=kept('owner', 'plain', {'name': [STATE['plain']['name'], 'Mai salvato'],
+                                   'automation_tree': [dumps(STATE['plain']['tree']), SURROGATE_DUMPS]}))
+add('form-tree-surrogate-pair-saved', 'owner', path('plain'), 200, UPDATED,
+    raw_body='automation_tree=' + urllib.parse.quote('[{"id": "trigger", "value": "new_payment", "data": {"k": "\\ud83d\\ude00"}}]'),
+    content_type=FORM,
+    effect=saved('owner', 'plain', {'automation_tree': [{'id': 'trigger', 'value': 'new_payment', 'data': {'k': '\U0001F600'}}]}))
 add('form-tree-and-fields', 'owner', path('plain'), 200, UPDATED,
     raw_body='name=Misto&enabled=false&automation_tree=' + urllib.parse.quote(json.dumps(TREE_NEW)), content_type=FORM,
     effect=saved('owner', 'plain', {'name': 'Misto', 'automation_tree': TREE_NEW, 'enabled': False}))

@@ -173,6 +173,14 @@ REGISTRIES['foreign_zoned'] = {'id': next(ids), 'course': 'foreign_zoned', 'even
 COURSES['foreign_floats'] = course(FOREIGN)
 REGISTRIES['foreign_floats'] = {'id': next(ids), 'course': 'foreign_floats', 'events': [
     event(2.5, '2026-03-07T10:00:00Z', '2026-03-07T11:00:00Z', event_id=0.1, **instructor(1e-07))]}
+# A list becomes one property line per item (an empty list none), each str(item); a dict is its repr (jsonb keeps shorter keys first).
+COURSES['foreign_containers'] = course(FOREIGN)
+REGISTRIES['foreign_containers'] = {'id': next(ids), 'course': 'foreign_containers', 'events': [
+    event(['Primo', 'Secondo, due', 3, None, [1, 'x']], '2026-03-07T10:00:00Z', '2026-03-07T11:00:00Z', event_id=['id-a', 'id-b'],
+          **instructor(['Ana', {'k': 1.5}])),
+    event({'n': [True, None], 'it': "L'uno"}, '2026-03-08T10:00:00Z', '2026-03-08T11:00:00Z', event_id={'x': 'y'},
+          **instructor({'nome': 'Bea'})),
+    event([], '2026-03-09T10:00:00Z', '2026-03-09T11:00:00Z', event_id=[], **instructor([]))]}
 # An offset of a whole day or more is no timezone (ValueError); the last hour of year 9999 plus the default hour overflows.
 REGISTRIES['foreign_offset_day_start'] = {'id': next(ids), 'course': 'foreign_offset_day_start',
                                           'events': [event('x', '2019-06-10T18:00:00+24:00', None)]}
@@ -206,6 +214,11 @@ def text(value):
     if value is True or value is False:
         return str(value)
     return str(value)
+
+
+def texts(value):
+    """The property lines icalendar writes: one per list item (str of each), else str(value)."""
+    return [text(item) for item in value] if isinstance(value, list) else [text(value)]
 
 
 def moment(value):
@@ -250,14 +263,14 @@ ZONED = {
 
 
 def vevent(row):
-    if row['title'] in ZONED:
+    if isinstance(row['title'], str) and row['title'] in ZONED:
         zoned = ZONED[row['title']]
         return [fold(line) for line in ('BEGIN:VEVENT', 'SUMMARY:' + row['title'], 'DTSTART' + zoned[2], 'DTEND' + zoned[3],
                                         'DTSTAMP:$dtstamp', 'UID:' + row['event_id'], 'END:VEVENT')]
     start = moment(row['start'])
     end = moment(row['end']) if row['end'] is not None and row['end'] != 'None' else (start[0] + timedelta(hours=1), start[1])
-    lines = ['BEGIN:VEVENT', 'SUMMARY:' + escape(text(row['title'])), 'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
-             'DTSTAMP:$dtstamp', 'UID:' + escape(text(row['event_id']))]
+    lines = (['BEGIN:VEVENT'] + ['SUMMARY:' + escape(item) for item in texts(row['title'])] + ['DTSTART:' + stamp(start),
+             'DTEND:' + stamp(end), 'DTSTAMP:$dtstamp'] + ['UID:' + escape(item) for item in texts(row['event_id'])])
     props = row.get('extendedProps')
     if isinstance(props, dict) and isinstance(props.get('instructor'), dict) and 'label' in props['instructor']:
         lines.append('DESCRIPTION:' + escape('Instructor: ' + text(props['instructor']['label'])))
@@ -284,6 +297,8 @@ def export(query=''):
 ALL_OWN = calendar('main', 'grouped')
 REGISTRIES['foreign_zoned']['events'] = [event(title, start, end) for title, (start, end, _, _) in ZONED.items()]
 add('export-offset-times', 'foreign_owner', 'GET', export(f'?course_id={COURSES["foreign_zoned"]["id"]}'), 200, calendar('foreign_zoned'))
+add('export-container-texts', 'foreign_owner', 'GET', export(f'?course_id={COURSES["foreign_containers"]["id"]}'), 200,
+    calendar('foreign_containers'))
 add('export-float-texts', 'foreign_owner', 'GET', export(f'?course_id={COURSES["foreign_floats"]["id"]}'), 200, calendar('foreign_floats'))
 for label in ZONED_COURSES[1:]:
     add('export-' + label.replace('_', '-') + '-server-error', 'foreign_owner', 'GET', export(f'?course_id={COURSES[label]["id"]}'),

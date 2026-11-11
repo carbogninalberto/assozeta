@@ -328,8 +328,25 @@ entry('permissions-crash', 'user', R['user_named'], changes={'collaborator_permi
       description='Utente - Mario Rossi')
 entry('events-title-crash', 'attendanceregistry', R['registry'], changes={'events': [N, '[{"title": 5}]']}, at='2026-09-20T12:00:00Z',
       description='Registro Presenze - Nuoto è')
+# json.loads reads NaN, Infinity and lone surrogate escapes: a value that reaches enriched_changes fails the strict renderer.
+entry('nan-meta-crash', 'module', R['module'], changes={'meta': [N, '{"v": NaN}']}, at='2026-09-20T13:00:00Z',
+      description='Modulo - Modulo privacy')
+entry('infinity-meta-crash', 'module', R['module'], changes={'meta': [N, '[1, -Infinity]']}, at='2026-09-20T14:00:00Z',
+      description='Modulo - Modulo privacy')
+entry('surrogate-meta-crash', 'module', R['module'], changes={'meta': [N, '{"v": "\\ud800"}']}, at='2026-09-20T15:00:00Z',
+      description='Modulo - Modulo privacy')
+# Read by the additional_fields formatter, which only prints label and value: the answer is a plain string.
+entry('nan-additional-fields', 'module', R['module'],
+      changes={'additional_fields': [N, '[{"props": {"label": "Peso", "value": NaN}}]']}, at='2026-09-20T16:00:00Z',
+      description='Modulo - Modulo privacy', enriched={'additional_fields': [N, 'Peso: nan']},
+      display=[show('Campi aggiuntivi', 'additional_fields', 'N/D', 'Peso: nan')])
+entry('surrogate-unused-additional-fields', 'module', R['module'],
+      changes={'additional_fields': [N, '[{"props": {"label": "A", "value": "B"}, "note": "\\ud800"}]']}, at='2026-09-20T17:00:00Z',
+      description='Modulo - Modulo privacy', enriched={'additional_fields': [N, 'A: B']},
+      display=[show('Campi aggiuntivi', 'additional_fields', 'N/D', 'A: B')])
 ENTRIES['events-crash']['timestamp'] = '2026-09-20T09:00:00Z'
-CRASHES = ('events-crash', 'props-crash', 'permissions-crash', 'events-title-crash')
+CRASHES = ('events-crash', 'props-crash', 'permissions-crash', 'events-title-crash', 'nan-meta-crash', 'infinity-meta-crash',
+           'surrogate-meta-crash')
 
 for e in ENTRIES.values():
     if e['changes'] is not None and isinstance(e['changes'], dict):
