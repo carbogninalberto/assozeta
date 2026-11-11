@@ -711,50 +711,303 @@ type AuditMoment struct{ Date, DateTime string }
 
 var errAuditISOValue = errors.New("fromisoformat ValueError")
 
-var auditISOPattern = regexp.MustCompile(`^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}|\d{6}))?)?([+-]\d{2}:\d{2})?)?$`)
-
 // AuditFromISOFormat is datetime.fromisoformat(start.replace('Z', '+00:00'))
-// for a str start (another type has no .replace: AttributeError). Python 3.13
-// accepts more forms than YYYY-MM-DD[(T| )HH:MM[:SS[.f]][±HH:MM]]; text that
-// starts with a 4-digit year outside that subset is refused, any other text
-// is Python's ValueError. Years below 1000 are refused (strftime padding).
+// for a str start (another type has no .replace: AttributeError), following
+// CPython 3.13's parser (basic and extended date forms, ISO week dates, any
+// one-character separator, fractions, UTC offsets with seconds). Anything
+// Python rejects is errAuditISOValue (ValueError). Years below 1000 are the
+// one refusal: strftime('%Y') pads on BSD libc and not on glibc.
 func AuditFromISOFormat(value any) (AuditMoment, error) {
 	text, ok := value.(string)
 	if !ok {
 		return AuditMoment{}, ErrAuditUnhandled
 	}
-	text = strings.ReplaceAll(text, "Z", "+00:00")
-	match := auditISOPattern.FindStringSubmatch(text)
-	if match == nil {
-		if len(text) >= 4 && strings.IndexFunc(text[:4], func(r rune) bool { return r < '0' || r > '9' }) < 0 {
-			return AuditMoment{}, ErrAuditNotPorted
-		}
+	moment, valid := auditParseISO(strings.ReplaceAll(text, "Z", "+00:00"))
+	if !valid {
 		return AuditMoment{}, errAuditISOValue
 	}
-	number := func(i int) int {
-		value, _ := strconv.Atoi(match[i])
-		return value
-	}
-	year, month, day := number(1), number(2), number(3)
-	hour, minute, second := number(4), number(5), number(6)
-	if hour == 24 {
+	if moment.year < 1000 {
 		return AuditMoment{}, ErrAuditNotPorted
 	}
-	if offset := match[8]; offset != "" {
-		hours, _ := strconv.Atoi(offset[1:3])
-		minutes, _ := strconv.Atoi(offset[4:6])
-		if hours > 23 || minutes > 59 {
-			return AuditMoment{}, errAuditISOValue
+	date := fmt.Sprintf("%02d/%02d/%d", moment.day, moment.month, moment.year)
+	return AuditMoment{Date: date, DateTime: fmt.Sprintf("%s %02d:%02d", date, moment.hour, moment.minute)}, nil
+}
+
+type auditISOMoment struct{ year, month, day, hour, minute int }
+
+func auditAllDigits(text string) bool {
+	if text == "" {
+		return false
+	}
+	for i := 0; i < len(text); i++ {
+		if text[i] < '0' || text[i] > '9' {
+			return false
 		}
 	}
-	if year < 1 || month < 1 || month > 12 || day < 1 || day > auditDaysIn(year, month) || hour > 23 || minute > 59 || second > 59 {
-		return AuditMoment{}, errAuditISOValue
+	return true
+}
+
+// auditISOComponent is _read_isoformat_component: exactly n ASCII digits.
+func auditISOComponent(text string, n int) (int, bool) {
+	if len(text) != n || !auditAllDigits(text) {
+		return 0, false
 	}
-	if year < 1000 {
-		return AuditMoment{}, ErrAuditNotPorted
+	value, _ := strconv.Atoi(text)
+	return value, true
+}
+
+func auditISOSlice(text string, from, to int) string {
+	if from > len(text) {
+		from = len(text)
 	}
-	date := fmt.Sprintf("%02d/%02d/%d", day, month, year)
-	return AuditMoment{Date: date, DateTime: fmt.Sprintf("%s %02d:%02d", date, hour, minute)}, nil
+	if to > len(text) {
+		to = len(text)
+	}
+	return text[from:to]
+}
+
+// auditISOSeparator is _find_isoformat_datetime_separator for len(text) >= 7.
+func auditISOSeparator(text string) (int, bool) {
+	size := len(text)
+	if size == 7 {
+		return 7, true
+	}
+	switch {
+	case text[4] == '-' && text[5] == 'W':
+		if size > 8 && text[8] == '-' {
+			if size == 9 {
+				return 0, false
+			}
+			if size > 10 && text[10] >= '0' && text[10] <= '9' {
+				return 8, true
+			}
+			return 10, true
+		}
+		return 8, true
+	case text[4] == '-':
+		return 10, true
+	case text[4] == 'W':
+		index := 7
+		for index < size && text[index] >= '0' && text[index] <= '9' {
+			index++
+		}
+		if index < 9 {
+			return index, true
+		}
+		if index%2 == 0 {
+			return 7, true
+		}
+		return 8, true
+	}
+	return 8, true
+}
+
+func auditISOLeap(year int) bool { return year%4 == 0 && (year%100 != 0 || year%400 == 0) }
+
+func auditParseISO(text string) (auditISOMoment, bool) {
+	var out auditISOMoment
+	if len(text) < 7 {
+		return out, false
+	}
+	split, ok := auditISOSeparator(text)
+	if !ok {
+		return out, false
+	}
+	if split > len(text) {
+		return out, false
+	}
+	date, clock := text[:split], auditISOSlice(text, split+1, len(text))
+	dateOnly := split >= len(text)
+	if len(date) != 7 && len(date) != 8 && len(date) != 10 {
+		return out, false
+	}
+	for i := 0; i < len(text); i++ {
+		if text[i] >= 0x80 {
+			return out, false
+		}
+	}
+	year, ok := auditISOComponent(date[:4], 4)
+	if !ok {
+		return out, false
+	}
+	hasSep := date[4] == '-'
+	pos := 4
+	if hasSep {
+		pos = 5
+	}
+	if auditISOSlice(date, pos, pos+1) == "W" {
+		pos++
+		week, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
+		if !ok {
+			return out, false
+		}
+		pos += 2
+		weekday := 1
+		if len(date) > pos {
+			if (date[pos] == '-') != hasSep {
+				return out, false
+			}
+			if hasSep {
+				pos++
+			}
+			if weekday, ok = auditISOComponent(auditISOSlice(date, pos, pos+1), 1); !ok {
+				return out, false
+			}
+		}
+		if year < 1 || year > 9999 || weekday < 1 || weekday > 7 {
+			return out, false
+		}
+		if week < 1 || week > 53 {
+			return out, false
+		}
+		if week == 53 {
+			first := (int(time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC).Weekday()) + 6) % 7
+			if !(first == 3 || (first == 2 && auditISOLeap(year))) {
+				return out, false
+			}
+		}
+		fourth := time.Date(year, 1, 4, 0, 0, 0, 0, time.UTC)
+		monday := fourth.AddDate(0, 0, -((int(fourth.Weekday()) + 6) % 7))
+		day := monday.AddDate(0, 0, (week-1)*7+weekday-1)
+		if day.Year() < 1 || day.Year() > 9999 {
+			return out, false
+		}
+		out.year, out.month, out.day = day.Year(), int(day.Month()), day.Day()
+	} else {
+		month, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
+		if !ok {
+			return out, false
+		}
+		pos += 2
+		if (auditISOSlice(date, pos, pos+1) == "-") != hasSep {
+			return out, false
+		}
+		if hasSep {
+			pos++
+		}
+		day, ok := auditISOComponent(auditISOSlice(date, pos, pos+2), 2)
+		if !ok {
+			return out, false
+		}
+		if year < 1 || month < 1 || month > 12 || day < 1 || day > auditDaysIn(year, month) {
+			return out, false
+		}
+		out.year, out.month, out.day = year, month, day
+	}
+	if dateOnly {
+		return out, true
+	}
+	return auditParseISOTime(clock, out)
+}
+
+// auditISOByte reads text[i], with the buffer's terminating NUL past the end.
+func auditISOByte(text string, i int) byte {
+	if i < len(text) {
+		return text[i]
+	}
+	return 0
+}
+
+// auditISODigits is parse_digits: exactly n ASCII digits at pos.
+func auditISODigits(text string, pos, n int) (int, int, bool) {
+	value := 0
+	for i := 0; i < n; i++ {
+		c := auditISOByte(text, pos+i)
+		if c < '0' || c > '9' {
+			return 0, pos, false
+		}
+		value = value*10 + int(c-'0')
+	}
+	return value, pos + n, true
+}
+
+// auditISOClock is the C parse_hh_mm_ss_ff over text[from:end] (the buffer
+// continues past end, which the C reader relies on). more is its return code 1:
+// something other than the NUL follows the parsed part.
+func auditISOClock(text string, from, end int) (parts [4]int, more, ok bool) {
+	pos, hasSep := from, true
+	for i := 0; i < 3; i++ {
+		value, next, valid := auditISODigits(text, pos, 2)
+		if !valid {
+			return parts, false, false
+		}
+		parts[i], pos = value, next
+		c := auditISOByte(text, pos)
+		pos++
+		if i == 0 {
+			hasSep = c == ':'
+		}
+		switch {
+		case c == '.' || c == ',':
+			i = 3
+		case pos >= end:
+			return parts, c != 0, true
+		case hasSep && c == ':':
+			continue
+		case !hasSep:
+			pos--
+		default:
+			return parts, false, false
+		}
+	}
+	remains := end - pos
+	take := remains
+	if take >= 6 {
+		take = 6
+	}
+	if take < 1 {
+		return parts, false, false
+	}
+	value, next, valid := auditISODigits(text, pos, take)
+	if !valid {
+		return parts, false, false
+	}
+	for i := take; i < 6; i++ {
+		value *= 10
+	}
+	parts[3], pos = value, next
+	for auditISOByte(text, pos) >= '0' && auditISOByte(text, pos) <= '9' {
+		pos++
+	}
+	return parts, auditISOByte(text, pos) != 0, true
+}
+
+// auditParseISOTime is the C parse_isoformat_time plus the datetime range checks.
+func auditParseISOTime(text string, date auditISOMoment) (auditISOMoment, bool) {
+	if len(text) < 2 {
+		return date, false
+	}
+	zone := 0
+	for zone < len(text) && text[zone] != 'Z' && text[zone] != '+' && text[zone] != '-' {
+		zone++
+	}
+	parts, more, ok := auditISOClock(text, 0, zone)
+	if !ok {
+		return date, false
+	}
+	if zone == len(text) {
+		if more {
+			return date, false
+		}
+	} else if text[zone] == 'Z' {
+		if zone+1 != len(text) {
+			return date, false
+		}
+	} else {
+		tz, tzMore, tzOK := auditISOClock(text, zone+1, len(text))
+		if !tzOK || tzMore {
+			return date, false
+		}
+		micro := ((tz[0]*60+tz[1])*60+tz[2])*1000000 + tz[3]
+		if micro >= 24*3600*1000000 {
+			return date, false
+		}
+	}
+	if parts[0] > 23 || parts[1] > 59 || parts[2] > 59 {
+		return date, false
+	}
+	date.hour, date.minute = parts[0], parts[1]
+	return date, true
 }
 
 func auditDaysIn(year, month int) int {
@@ -899,4 +1152,48 @@ func PythonStrptimeDate(text string) (time.Time, bool) {
 		return time.Time{}, false
 	}
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC), true
+}
+
+// PythonUTF8Replace is bytes.decode('utf-8', 'replace'): one U+FFFD for each
+// maximal ill-formed subpart (unlike a per-byte replacement, a truncated
+// multi-byte sequence yields a single replacement character).
+func PythonUTF8Replace(text string) string {
+	if utf8.ValidString(text) {
+		return text
+	}
+	var out strings.Builder
+	for i := 0; i < len(text); {
+		if r, size := utf8.DecodeRuneInString(text[i:]); r != utf8.RuneError || size > 1 {
+			out.WriteString(text[i : i+size])
+			i += size
+			continue
+		}
+		// An ill-formed start: consume the longest prefix of a valid sequence.
+		first, need := text[i], 0
+		lo, hi := byte(0x80), byte(0xBF)
+		switch {
+		case first >= 0xC2 && first <= 0xDF:
+			need = 1
+		case first == 0xE0:
+			need, lo = 2, 0xA0
+		case first >= 0xE1 && first <= 0xEC, first == 0xEE, first == 0xEF:
+			need = 2
+		case first == 0xED:
+			need, hi = 2, 0x9F
+		case first == 0xF0:
+			need, lo = 3, 0x90
+		case first >= 0xF1 && first <= 0xF3:
+			need = 3
+		case first == 0xF4:
+			need, hi = 3, 0x8F
+		}
+		j := i + 1
+		for k := 0; k < need && j < len(text) && text[j] >= lo && text[j] <= hi; k++ {
+			j++
+			lo, hi = 0x80, 0xBF
+		}
+		out.WriteString("�")
+		i = j
+	}
+	return out.String()
 }

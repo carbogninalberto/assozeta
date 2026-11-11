@@ -87,9 +87,35 @@ func ParseAutomationWorkflowWrite(body any, form bool) (AutomationWorkflowWrite,
 	return input, nil
 }
 
-// ErrAutomationWorkflowFormTreeNotPorted refuses a form-encoded automation_tree
-// (DRF JSONField parses the HTML value with Python's json.loads; not ported).
-var ErrAutomationWorkflowFormTreeNotPorted = refusal.New("form-encoded automation_tree is not ported")
+// ErrAutomationWorkflowFormTreeNotPorted answers the stable 500 page for a
+// form-encoded automation_tree whose parsed list the database column rejects
+// (lone surrogate escapes, nesting past the parser limit): the save fails before any row changes, as it does in Django.
+var ErrAutomationWorkflowFormTreeNotPorted = refusal.New("form-encoded automation_tree the jsonb column rejects")
+
+// automationFormTree is DRF's JSONField.get_value/to_internal_value for an HTML
+// form value: json.loads of the text. ok=false is "Value must be valid JSON."
+// (a 400); rejected=true is a document Python parses but the jsonb column
+// refuses at save time.
+func automationFormTree(value any) (tree any, ok bool, rejected bool) {
+	text, isText := value.(string)
+	if !isText {
+		return nil, false, false
+	}
+	if auditLoneSurrogate(text) || auditJSONDepth(text) > 500 {
+		return []any{}, true, true
+	}
+	tree, err := parseReferenceJSON([]byte(text), nil, true)
+	if err == nil {
+		return tree, true, false
+	}
+	if errors.Is(err, ErrReferenceNesting) {
+		return []any{}, true, true
+	}
+	if errors.Is(err, ErrLoginRateJSONValue) {
+		return nil, false, false
+	}
+	return nil, false, false
+}
 
 // AutomationWorkflowPatch holds the present fields of a partial
 // AutomationWorkflowSerializer; nil pointers are absent.
@@ -99,7 +125,9 @@ type AutomationWorkflowPatch struct {
 	Name        *string
 	Description **string
 	Tree        *any
-	Enabled     *bool
+	// TreeRejected: the list passed validation but the jsonb column refuses it.
+	TreeRejected bool
+	Enabled      *bool
 }
 
 // ParseAutomationWorkflowPatch ports AutomationWorkflowSerializer(partial=True)
@@ -142,8 +170,15 @@ func ParseAutomationWorkflowPatch(body any, form bool) (AutomationWorkflowPatch,
 		}
 	}
 	if value, present := object.Lookup("automation_tree"); present {
+		rejected := false
 		if form {
-			return patch, invalid, ErrAutomationWorkflowFormTreeNotPorted
+			parsed, valid, refused := automationFormTree(value)
+			if !valid {
+				invalid = true
+				value = nil
+			} else {
+				value, rejected = parsed, refused
+			}
 		}
 		tree, isList := value.([]any)
 		if !isList {
@@ -160,6 +195,7 @@ func ParseAutomationWorkflowPatch(body any, form bool) (AutomationWorkflowPatch,
 			}
 			var stored any = tree
 			patch.Tree = &stored
+			patch.TreeRejected = rejected
 		}
 	}
 	if value, present := object.Lookup("enabled"); present {

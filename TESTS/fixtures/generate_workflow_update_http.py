@@ -29,6 +29,7 @@ Run with ``python3 -I`` after the message-mutations fixture.
 """
 import copy
 import json
+import urllib.parse
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('workflow_update_http.json')
@@ -193,6 +194,21 @@ add('same-tree-other-key-order-no-audit', 'owner', path('plain'), 200, UPDATED,
     effect=saved('owner', 'plain', {'automation_tree': TREE_NEW}))
 add('form-fields', 'owner', path('plain'), 200, UPDATED, raw_body='name=Modulo&description=&enabled=false',
     content_type='application/x-www-form-urlencoded', effect=saved('owner', 'plain', {'name': 'Modulo', 'description': '', 'enabled': False}))
+# DRF's JSONField reads an HTML form value with json.loads (no JSON -> invalid); the parsed document then goes through
+# validate_automation_tree. NaN and Infinity are refused by DRF's strict dumps (400).
+FORM = 'application/x-www-form-urlencoded'
+TREE_FORM = [{'id': 'trigger', 'value': 'new_payment', 'data': {'k': 'v', 'n': [1, 2.5, None, True]}}]
+add('form-tree-list', 'owner', path('plain'), 200, UPDATED,
+    raw_body='automation_tree=' + urllib.parse.quote(' ' + json.dumps(TREE_FORM) + ' '), content_type=FORM,
+    effect=saved('owner', 'plain', {'automation_tree': TREE_FORM}))
+for label, raw in (('invalid-json', '['), ('empty', ''), ('object', '{}'), ('null', 'null'), ('string', '"[]"'), ('number', '12'),
+                   ('sms-message', json.dumps([{'id': 'message', 'value': 'sms'}])), ('huge-integer', '[' + '9' * 4400 + ']'),
+                   ('trailing-comma', '[1,]'), ('single-quotes', "['a']"), ('nan-object', '{"a": NaN}'), ('nan-list', '[NaN]'), ('infinity', '[{"a": -Infinity}]'), ('nested-infinity', '[{"id": "x", "value": "NaN", "data": {"v": Infinity}}]')):
+    add(f'form-tree-{label}', 'owner', path('plain'), 400, INVALID,
+        raw_body='automation_tree=' + urllib.parse.quote(raw), content_type=FORM)
+add('form-tree-and-fields', 'owner', path('plain'), 200, UPDATED,
+    raw_body='name=Misto&enabled=false&automation_tree=' + urllib.parse.quote(json.dumps(TREE_NEW)), content_type=FORM,
+    effect=saved('owner', 'plain', {'name': 'Misto', 'automation_tree': TREE_NEW, 'enabled': False}))
 add('admin-impersonating-owner', 'admin', path('plain'), 200, UPDATED, body={'description': '  Spazi  '}, headers=ADMIN_OWNER,
     effect=saved('admin', 'plain', {'description': 'Spazi'}, session='admin_owner'))
 add('enable-plain-trigger-schedules-nothing', 'owner', path('plain'), 200, UPDATED, body={'enabled': True},

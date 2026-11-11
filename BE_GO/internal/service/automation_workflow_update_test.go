@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -88,9 +89,18 @@ func TestAutomationWorkflowRomeLocalize(t *testing.T) {
 	}
 }
 
-func TestAutomationWorkflowPatchFormTreeRefused(t *testing.T) {
-	_, _, err := dto.ParseAutomationWorkflowPatch(domain.RequestObject{{Name: "automation_tree", Value: "[]"}}, true)
-	if err != dto.ErrAutomationWorkflowFormTreeNotPorted {
-		t.Fatalf("got %v", err)
+func TestAutomationWorkflowPatchFormTree(t *testing.T) {
+	patch, invalid, err := dto.ParseAutomationWorkflowPatch(domain.RequestObject{{Name: "automation_tree", Value: " [] "}}, true)
+	if err != nil || invalid || patch.Tree == nil || patch.TreeRejected {
+		t.Fatalf("list: %+v %v %v", patch, invalid, err)
+	}
+	for _, text := range []string{"[", "{}", "null", "[NaN]", "[" + strings.Repeat("9", 4400) + "]"} {
+		if _, invalid, err := dto.ParseAutomationWorkflowPatch(domain.RequestObject{{Name: "automation_tree", Value: text}}, true); err != nil || !invalid {
+			t.Fatalf("%.20q: invalid=%v err=%v", text, invalid, err)
+		}
+	}
+	patch, invalid, _ = dto.ParseAutomationWorkflowPatch(domain.RequestObject{{Name: "automation_tree", Value: `["\ud800"]`}}, true)
+	if invalid || !patch.TreeRejected {
+		t.Fatalf("lone surrogate: %+v %v", patch, invalid)
 	}
 }
