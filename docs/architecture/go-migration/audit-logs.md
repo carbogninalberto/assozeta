@@ -25,3 +25,11 @@ Known unchecked divergences: >4300-digit integers in JSON columns of *resolved* 
 ## Evidence (TDD)
 
 `TESTS/fixtures/audit_logs_http.json` (generator alongside; contract `TESTS/contracts/test_audit_logs_http.py`, adapter `TESTS/adapters/django/audit_logs_http.py`) authors 132 cases over 49 seeded log entries and the rows every resolver reads. RED: Django 132/132 and Go 404 (`red-final`, run with the two Go routes unregistered; the first 122 cases were RED before any Go code). GREEN: 132/132 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with the model state unchanged. Dropping the `changes IS NOT NULL` guard of the noise filter fails `audit-logs-list-owner-full`. `go test ./internal/dto` covers the Python-semantics helpers and every refusal.
+
+## Date forms and query decoding
+
+Event `start` values are read with the CPython 3.13 `datetime.fromisoformat` grammar (basic and extended dates, ISO week
+dates, any one-character separator, fractions, offsets with seconds); `dto/testdata/audit_isoformat.json` holds strings
+checked against the interpreter. Years below 1000 stay refused: `strftime("%Y")` pads on BSD libc and not on glibc.
+A malformed UTF-8 query parameter decodes with one replacement character per ill-formed subpart, as Python does.
+Cases: `audit-logs-detail-registry-forms-*`, `audit-logs-list-search-malformed-utf8`.
