@@ -47,7 +47,7 @@
 
 ## Not ported (refused before any write)
 
-- A document delete (`list` or `delete`) that Django's collector would cascade beyond the SET_NULL references: 500. Cascaded rows are deleted with their own audit entries.
+- A document delete (`list` or `delete`) that Django's collector would cascade beyond the SET_NULL references is ported in t4l2: the shared deletion collector deletes the dependants (instructor document links, cascaded rows) with their audit entries (cases `delete-document-with-link`, `list-orphan-document-with-link`).
 - A `list` page where two document-only rows share a document is ported: the first row deletes the document (SET_NULL on both rows), the second loads it again and fails with `DoesNotExist` (500), the earlier rows' writes and prints are kept. Case `list-rows-sharing-a-document-server-error`: 136 cases, receipt `instructor-hours-http-sweep-restdocs-3` (GitHub run 42910943209), 4 transports. Mutation (the second row deleting again) CAUGHT.
 - HTML JSON input with NaN or Infinity (the JSONField write fails in Django too): 500.
 - `instructor/<uid>/hours/add/compensation` (payment creation plus synchronous PDF printing) and `instructor/lessons-hours`, `instructor/<uid>/lessons-hours` (calendar lesson computation) stay on Django.

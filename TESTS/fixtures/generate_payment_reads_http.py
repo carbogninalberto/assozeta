@@ -809,7 +809,14 @@ add('list-sort-unknown', 'owner', S_ + 'nope&sort[sort]=asc', 500, SERVER)
 add('list-sort-unknown-before-page', 'owner', S_ + 'nope&pagination[page]=9', 500, SERVER)
 add('list-sort-relevance-unknown', 'owner', S_ + 'relevance&query[generalSearch]=rossi', 500, SERVER)
 add('list-sort-lazy-path-error', 'owner', S_ + 'associate__nope&sort[sort]=asc', 500, SERVER)
-add('list-sort-lazy-path-after-page', 'owner', S_ + 'associate__nope&pagination[page]=9', 404, INVALID_PAGE)
+add('list-sort-path-before-page', 'owner', S_ + 'associate__nope&pagination[page]=9', 500, SERVER)
+# Only the payment's own columns order the list: paths through a relation or the owner account, transforms and the
+# stored signature or payment intent answer as an unknown ordering.
+for _name, _field in (('user-path', 'user__email'), ('user-password', 'user__password'), ('owner-account-path', 'sport_association__user__password'),
+                      ('association-path', 'sport_association__denomination'), ('associate-path', 'associate__last_name'),
+                      ('supplier-path', 'supplier__name'), ('payment-intent', 'payment_intent_id'), ('signature', 'signature'),
+                      ('signature-key', 'signature_id'), ('transform', 'creation_date__year'), ('reverse-relation', 'attachments')):
+    add('list-sort-' + _name + '-server-error', 'owner', S_ + _field + '&sort[sort]=desc', 500, SERVER)
 # The "Informazioni" column sends sort[field]=user: a relation whose model (User) has no Meta.ordering orders by
 # user_id (NULLs last ascending, first descending); ties among NULLs are the database's order.
 USERED = [k for k in VISIBLE if PAYMENTS[k].get('user')]
@@ -1081,6 +1088,8 @@ add('subscription-sort-amount-desc', 'owner', SUB + '?sort[field]=amount&sort[so
     sub_page(MEMBERS, ordered=column_order(MEMBERS, amount_key, True)))
 add('subscription-sort-unknown', 'owner', SUB + '?sort[field]=nope', 500, SERVER)
 add('subscription-sort-full-name-unknown-without-search', 'owner', SUB + '?sort[field]=full_name', 500, SERVER)
+add('subscription-sort-account-path-server-error', 'owner', SUB + '?sort[field]=user__password', 500, SERVER)
+add('subscription-sort-owner-account-path-server-error', 'owner', SUB + '?sort[field]=sport_association__user__email&sort[sort]=desc', 500, SERVER)
 add('subscription-page-two', 'owner', SUB + '?pagination[perpage]=3&pagination[page]=2', 200, sub_page(MEMBERS, number=2, size=3))
 add('subscription-page-beyond', 'owner', SUB + '?pagination[perpage]=3&pagination[page]=4', 404, INVALID_PAGE)
 add('subscription-search-duplicates-paginated', 'owner', SS + 'corso&pagination[perpage]=1&pagination[page]=2', 200,

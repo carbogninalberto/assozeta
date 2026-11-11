@@ -86,9 +86,9 @@ Refused before any request or write unless noted:
   URIs carrying their own query, parameters or fragment.
 - config GET whose `sessionid` names a cache session holding more than a state (for example a Django admin login), several
   `Cookie` headers carrying a `sessionid`, or a value with characters other than `a-z0-9` (Python's strip and unquoting).
-- Export inputs: a colour that is not 7 characters ending in six hex digits, event dates outside the calendar-export
-  subset of `parse_datetime` (non-ASCII, ISO week dates, offsets other than `±HH[:]MM`), Rome years outside 1000–9998,
-  instructor labels that are floats, lists or mappings.
+- Export inputs: an event whose Rome date is before the year 1000 (handed to Django: `strftime('%Y')` is platform
+  dependent). Ported in t4l2: any colour (Python `int(x, 16)` after the calendar and the course save), event dates through
+  `internal/pydatetime` (fromisoformat and Django's regex), pytz's Rome table (OverflowError past 9999), any instructor label.
 - Google answers (refused when they arrive, after the earlier requests and saves): a token answer that is not a JSON
   mapping, carries `expires_at`, or a non-string access/refresh token; an `expires_in` that is not a number or numeric
   string; a calendar `id` that is not a string; `calendarList` pages whose `items` is not a list or whose `nextPageToken`

@@ -10,11 +10,10 @@ response Django gives (and, for writes, Django's effect):
   by Go (no marker); Django's search matches nothing, so the response is the empty
   page of personas-reads-list-search-underscore-escaped. Go keeps no refusal on a
   personas read that this sequence can rely on, so the family carries no hand-off
-  case (the `sort[field]` relation paths are kept refused with no fixed result,
-  v2-refusals.md, personas-reads).
-- course-list: `GET course/list` ordered by a relation path
-  (ErrCourseListUnported). With `query[status_flag]=1` one course is listed, so
-  the response is the page of course-list-sort-relation-attname.
+  case.
+- course-list: ported control only (an ordering by a foreign-key column). Go keeps no
+  refusal on a course list that this sequence can rely on, so the family carries no
+  hand-off case.
 - workflow-update: `PATCH communications/workflows/<id>/update` with a form
   `automation_tree` nested past 500 levels (ErrAutomationWorkflowFormTreeNotPorted;
   Python's json.loads raises RecursionError, an unhandled 500, before anything is
@@ -72,16 +71,14 @@ add('personas-reads', 'personas-search-cyrillic-group-ported', handoff=False, he
     path='/personas/list?query[generalSearch]=%D0%96%D0%B0%D0%BD%D0%BD%D0%B0&pagination[perpage]=5',
     status=200, response={'data': [], 'meta': {'total': 0, 'page': 1, 'pages': 1, 'perpage': 5, 'rowIds': []}}, extra={'ordered': False})
 
-# course-list: the attname ordering is ported (control); the relation path is refused.
+# course-list: the attname ordering is ported (control).
 ATTNAME = source_case('course-list', 'course-list-sort-relation-attname')
 add('course-list', 'course-sort-attname-ported', handoff=False, path=ATTNAME['path'], response_of='course-list-sort-relation-attname')
-add('course-list', 'course-sort-relation-path', handoff=True,
-    path='/course/list?sort%5Bfield%5D=sport_association__denomination&sort%5Bsort%5D=asc&query%5Bstatus_flag%5D=1',
-    response_of='course-list-sort-relation-attname')
+
 # The group header reaches Django: only the own group's course is listed (as in course-list-subscription-group-own).
 GROUP_OWN = source_case('course-list', 'course-list-subscription-group-own')
-add('course-list', 'course-sort-relation-path-group', handoff=True, headers=GROUP_OWN['headers'],
-    path='/course/list?sort%5Bfield%5D=sport_association__user&sort%5Bsort%5D=desc', response_of='course-list-subscription-group-own')
+add('course-list', 'course-sort-foreign-key-group-ported', handoff=False, headers=GROUP_OWN['headers'],
+    path='/course/list?sort%5Bfield%5D=sport_association&sort%5Bsort%5D=desc', response_of='course-list-subscription-group-own')
 
 # workflow-update on the seeded 'plain' workflow; STATE follows the saves.
 WORKFLOW = SOURCES['workflow-update']['workflows']['plain']
@@ -142,7 +139,7 @@ add('workflow-update', 'workflow-form-tree-too-deep', handoff=True, method='PATC
     raw_body=urlencode({'automation_tree': DEEP}), content_type='application/x-www-form-urlencoded', effect=None)
 
 assert len({c['name'] for c in cases}) == len(cases)
-assert {c['family'] for c in cases if c['handoff']} == set(SOURCES) - {'personas-reads'}
+assert {c['family'] for c in cases if c['handoff']} == {'workflow-update'}
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'API v2 handoff of refused inputs to Django', 'ids': IDS,
                               'sources': sorted(SOURCES), 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

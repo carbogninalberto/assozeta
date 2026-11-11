@@ -3835,6 +3835,94 @@
    "prints": []
   },
   {
+   "name": "invoice-parties-supplier-list-sort-supplier-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=supplier__name",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "invoice-parties-supplier-list-sort-association-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=sport_association__denomination",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "invoice-parties-supplier-list-sort-owner-account-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=sport_association__user__password",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "invoice-parties-supplier-list-sort-owner-account-email-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=sport_association__user__email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "invoice-parties-supplier-list-sort-payment-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=payment__amount",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "invoice-parties-supplier-list-sort-document-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=document_pdf",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "invoice-parties-supplier-list-sort-document-key-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=document_pdf_id",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "invoice-parties-supplier-list-sort-transform-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/list?sort%5Bfield%5D=amount__nope",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
    "name": "invoice-parties-customer-add-anonymous",
    "actor": "anonymous",
    "method": "POST",

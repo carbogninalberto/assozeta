@@ -519,18 +519,35 @@ add('info-empty-response-id', 'anonymous', 'GET', info('risposte-aperto', '?resp
 add('info-owner', 'owner', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-athlete', 'athlete', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
 add('info-owner-without-association', 'owner_without_association', 'GET', info('risposte-aperto'), 200, INFO_OPEN)
-add('info-response', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('open_r1')), 200,
+# The attachment list is shown with the response's secret, to the response's own user, or to the module's association;
+# otherwise the answer is the one for an unknown response.
+tok = lambda label: '&attachment_token=' + TOKENS[label]
+add('info-response', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('open_r1') + tok('open_r1')), 200,
     {'data': serialized('open'), 'response_data': response_data('open_r1')})
+add('info-response-without-secret', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('open_r1')), 200,
+    {'data': serialized('open'), 'response_data': None})
+add('info-response-empty-secret', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('open_r1') + '&attachment_token='), 200,
+    {'data': serialized('open'), 'response_data': None})
+add('info-response-other-secret', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('open_r1') + tok('att_r')), 200,
+    {'data': serialized('open'), 'response_data': None})
+add('info-response-association-needs-no-secret', 'owner', 'GET', info('risposte-aperto', '?response_id=' + rid('del_r')), 200,
+    {'data': serialized('open'), 'response_data': response_data('del_r')})
+add('info-response-own-user-needs-no-secret', 'athlete', 'GET', info('risposte-aperto', '?response_id=' + rid('open_r1')), 200,
+    {'data': serialized('open'), 'response_data': response_data('open_r1')})
+add('info-response-of-another-user', 'athlete', 'GET', info('risposte-aperto', '?response_id=' + rid('del_r')), 200,
+    {'data': serialized('open'), 'response_data': None})
 # The public module page only reads responses of its own module.
 add('info-response-of-another-module', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + rid('foreign_r')), 200,
     {'data': serialized('open'), 'response_data': None})
-add('info-response-of-its-module', 'anonymous', 'GET', info('risposte-estero', '?response_id=' + rid('foreign_r')), 200,
-    {'data': serialized('foreign'), 'response_data': response_data('foreign_r')})
-add('info-response-hex-upper', 'athlete', 'GET', info('risposte-aperto', '?response_id=' + rid('att_r').replace('-', '').upper()), 200,
+add('info-response-of-its-module-without-secret', 'anonymous', 'GET', info('risposte-estero', '?response_id=' + rid('foreign_r')), 200,
+    {'data': serialized('foreign'), 'response_data': None})
+add('info-response-of-another-association', 'owner', 'GET', info('risposte-estero', '?response_id=' + rid('foreign_r')), 200,
+    {'data': serialized('foreign'), 'response_data': None})
+add('info-response-hex-upper', 'athlete', 'GET', info('risposte-aperto', '?response_id=' + rid('att_r').replace('-', '').upper() + tok('att_r')), 200,
     {'data': serialized('open'), 'response_data': response_data('att_r')})
 add('info-response-unknown', 'anonymous', 'GET', info('risposte-aperto', '?response_id=' + UNKNOWN), 200,
     {'data': serialized('open'), 'response_data': None})
-add('info-response-last-value', 'anonymous', 'GET', info('risposte-aperto', '?response_id=abc&response_id=' + rid('del_r')), 200,
+add('info-response-last-value', 'owner', 'GET', info('risposte-aperto', '?response_id=abc&response_id=' + rid('del_r')), 200,
     {'data': serialized('open'), 'response_data': response_data('del_r')})
 add('info-dated', 'anonymous', 'GET', info('risposte-approvazione'), 200,
     {'data': serialized('approval'), 'response_data': None})

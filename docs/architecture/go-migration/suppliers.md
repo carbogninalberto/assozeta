@@ -118,7 +118,9 @@ rest-b1: two more cases (36 in all) for the copy that clears `sport_association`
 `restb1-mutation-r1` (the copy indexed as if it kept its association) CAUGHT. Deletes still refuse a database reference
 other than the four Django declares: a migrated schema has no other, so there is nothing to reproduce.
 
-## Forward relation ordering (t3pay)
+## Forward relation ordering (t3pay, replaced in t4l1)
+
+Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (none of the supplier's own columns are held back) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`. The paths below were accepted by t3pay; they now answer the 500 page.
 
 `supplier/list?sort[field]=group__name` and `sport_association__<column>` order by the related row's column (NULL
 without a group; one scalar subquery per request, so the order is the database's). `group__sport_association`,

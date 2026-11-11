@@ -29,19 +29,8 @@ type CourseListQuery struct {
 	// lookup outside the column's range): no rows, no query.
 	Empty       bool
 	OrderColumn string // empty: -creation_date
-	// OrderTransform is the datetime extract applied to OrderColumn (creation_date__year ...).
-	OrderTransform string
-	// OrderSecond is the extract applied to a date or time transform
-	// (creation_date__date__year, creation_date__time__hour).
-	OrderSecond string
-	// OrderKeys are the JSON key transforms applied to OrderColumn
-	// (events__0__amount).
-	OrderKeys []string
-	// OrderInvalid is an ordering the compiler rejects when the rows are
-	// read (a transform the field does not have).
-	OrderInvalid bool
-	Descending   bool
-	Random       bool
+	Descending  bool
+	Random      bool
 }
 
 // CourseListValue is one values('course_id', 'title') row.

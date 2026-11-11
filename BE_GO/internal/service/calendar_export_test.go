@@ -33,11 +33,17 @@ func TestCalendarExportParse(t *testing.T) {
 		{input: "2026-03-10T10:00+01:00", want: ";TZID=Africa/Bangui:20260310T100000"},
 		{input: "2026-03-10 9:05 -0330", want: ";TZID=America/Paramaribo:20260310T090500"},
 		{input: "2026-03-10T10:00:00+05:45", want: `;TZID="UTC+05:45":20260310T100000`},
-		{input: "2026-03-10T1:00:00+0545", fails: domain.ErrMiscRoutesNotPorted},      // named "+0545"
-		{input: "2026-03-10T10:00:00+02:00:30", fails: domain.ErrMiscRoutesNotPorted}, // seconds
-		{input: "2026-03-10T10:00:00+24:00", fails: domain.ErrMiscRoutesServer},       // ValueError
-		{input: "2026-03-10x10:00", fails: domain.ErrMiscRoutesNotPorted},             // any separator
-		{input: "2026-03-10T10:00 à", fails: domain.ErrMiscRoutesNotPorted},           // non-ASCII
+		{input: "2026-03-10T1:00:00+0545", want: ";TZID=+0545:20260310T010000"},
+		{input: "2026-03-10T10:00:00+02:00:30", want: `;TZID="UTC+02:00:30":20260310T100000`},
+		{input: "2026-03-10T10:00:00-05:30:15", want: `;TZID="UTC-05:30:15":20260310T100000`},
+		{input: "2026-W11-2T10:00", want: ":20260310T100000"},
+		{input: "2026W112 10:00", want: ":20260310T100000"},
+		{input: "2026-W11T10:00+05:30:15.5", want: `;TZID="UTC+05:30:15.500000":20260309T100000`},
+		{input: "2026-03-10x10:00", want: ":20260310T100000"},
+		{input: "2026-03-10\u00e910:00", want: ":20260310T100000"},
+		{input: "\uff12\uff10\uff12\uff16-03-10T10:00", want: ":20260310T100000"},
+		{input: "2026-03-10T10:00:00+24:00", fails: domain.ErrMiscRoutesServer}, // ValueError
+		{input: "2026-03-10T10:00 \u00e0"},                                      // None
 	} {
 		moment, err := calendarExportParse(tc.input)
 		if tc.fails != nil {

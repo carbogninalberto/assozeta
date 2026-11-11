@@ -32,7 +32,7 @@ from application.serializers.invoice_serializers import InvoiceSerializer, Invoi
     CustomerInvoiceSerializer, generate_invoice_xml, generate_invoice_json
 from application.serializers.payment_serializers import PaymentSerializer, PaymentEntrySerializer, \
     PaymentInvoiceSerializer
-from application.utils.api_utils import is_valid_uuid, KTDatatablePagination, BalanceSheetData
+from application.utils.api_utils import is_valid_uuid, KTDatatablePagination, BalanceSheetData, checked_ordering
 from application.utils.excel_utils import get_excel_base64
 from application.printing_tasks import print_document_invoice, print_document_customer_invoice
 from application.tasks import export_invoices_to_zip
@@ -150,7 +150,7 @@ def invoice_list(request):
             invoices = smart_search(invoices, general_search)
     # sort by field
     if sort_field:
-        invoices = invoices.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+        invoices = invoices.order_by(checked_ordering(invoices, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
     # pagination
     invoices = paginator.paginate_queryset(queryset=invoices, request=request)
@@ -627,7 +627,7 @@ def invoice_suppliers_list(request):
                 )
     # sort by field
     if sort_field:
-        invoices = invoices.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+        invoices = invoices.order_by(checked_ordering(invoices, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
     # pagination
     invoices = paginator.paginate_queryset(queryset=invoices, request=request)

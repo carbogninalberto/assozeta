@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +15,8 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/apischema"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyheader"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
@@ -47,11 +48,10 @@ var (
 	apiSchemaDocumentView = apiSchemaView{"SpectacularAPIView", apischema.SchemaRenderers}
 	apiSchemaSwaggerView  = apiSchemaView{"SpectacularSwaggerView", apischema.PageRenderers}
 	apiSchemaRedocView    = apiSchemaView{"SpectacularRedocView", apischema.PageRenderers}
-	// Query values this port forwards into documents and pages verbatim. Other
-	// `lang`/`version` values are refused rather than approximated.
-	apiSchemaLanguagePattern = regexp.MustCompile(`^[A-Za-z0-9_.@:-]+$`)
-	apiSchemaVersionPattern  = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
-	errAPISchemaUnsupported  = refusal.New("api schema: request outside the ported input range")
+	// A `lang` with a path separator makes gettext look outside the locale
+	// directories (the answer depends on the Django host's file layout) and
+	// an Accept charset without a ported decoder is refused as well.
+	errAPISchemaUnsupported = refusal.New("api schema: request outside the ported input range")
 )
 
 const apiSchemaPath = "/schema/"
@@ -68,13 +68,10 @@ func (h *APISchemaHandler) Schema(c echo.Context) error {
 		}
 		key, ok := apischema.CatalogKey(request.language)
 		if lang := request.query("lang"); lang != "" {
-			if !apiSchemaLanguagePattern.MatchString(lang) {
-				return apiSchemaRefuse(c)
-			}
 			key, ok = apischema.CatalogKey(lang)
 		}
 		version := request.query("version")
-		if !ok || (version != "" && !apiSchemaVersionPattern.MatchString(version)) {
+		if !ok {
 			return apiSchemaRefuse(c)
 		}
 		document, ok := apischema.Document(request.format(), key, version)
@@ -85,8 +82,12 @@ func (h *APISchemaHandler) Schema(c echo.Context) error {
 		if version != "" {
 			suffix = " (" + version + ")"
 		}
-		c.Response().Header().Set("Content-Disposition",
-			fmt.Sprintf(`inline; filename="%s%s.%s"`, apischema.Title(), suffix, request.renderer.Format))
+		disposition := fmt.Sprintf(`inline; filename="%s%s.%s"`, apischema.Title(), suffix, request.renderer.Format)
+		if !pdfrender.HeaderSafe(disposition) {
+			// BadHeaderError (or a value the ASGI server refuses) in finalize_response.
+			return apiSchemaFailure(c)
+		}
+		c.Response().Header().Set("Content-Disposition", pdfrender.HeaderBytes(disposition))
 		return request.respond(http.StatusOK, request.reindent(document), "")
 	})
 }
@@ -162,7 +163,7 @@ func (r apiSchemaRequest) reindent(body string) string {
 	if r.renderer.Format != "json" {
 		return body
 	}
-	indent := apischema.JSONIndent(r.media)
+	indent, _ := apischema.JSONIndent(r.media)
 	if indent == 4 {
 		return body
 	}
@@ -204,11 +205,19 @@ func (h *APISchemaHandler) serve(c echo.Context, view apiSchemaView, handle func
 	values, ok := djangoQueryLast(httpRequest.URL.RawQuery)
 	accept := strings.Join(httpRequest.Header.Values("Accept"), ",")
 	_, acceptPresent := httpRequest.Header["Accept"]
-	if !ok || !apischema.SupportedAccept(accept) {
+	if !ok {
 		return apiSchemaRefuse(c)
 	}
+	accept = readRouteDjangoHeaderString(accept)
 	request := apiSchemaRequest{c: c, values: values, language: handlerReadRouteLocale.Language(httpRequest)}
 	negotiation := apischema.Negotiate(view.renderers, accept, acceptPresent, values["format"])
+	if negotiation.NotPorted {
+		return apiSchemaRefuse(c)
+	}
+	if negotiation.Status == http.StatusInternalServerError {
+		// A ValueError from the Accept parameters is not handled by DRF.
+		return apiSchemaFailure(c)
+	}
 	if negotiation.Status != 0 {
 		// finalize_response falls back to the first renderer.
 		request.renderer, request.media = view.renderers[0], view.renderers[0].MediaType
@@ -220,6 +229,13 @@ func (h *APISchemaHandler) serve(c echo.Context, view apiSchemaView, handle func
 			String: handlerReadRouteLocale.Text(httpRequest, kind), Code: code}}})
 	}
 	request.renderer, request.media = view.renderers[negotiation.Renderer], negotiation.MediaType
+	if request.renderer.Format == "json" {
+		if _, outcome := apischema.JSONIndent(request.media); outcome == pyheader.Invalid {
+			return apiSchemaFailure(c)
+		} else if outcome == pyheader.NotPorted {
+			return apiSchemaRefuse(c)
+		}
+	}
 
 	// ScopedJWTAuthentication: anonymous requests skip identity resolution.
 	actor, err := h.actors.Authenticate(httpRequest.Context(), httpRequest.Header.Get("Authorization"))
@@ -283,10 +299,21 @@ func (r apiSchemaRequest) error(status int, data apischema.Map) error {
 	case "yaml":
 		return r.respond(status, apischema.RenderYAML(data), "")
 	case "json":
-		return r.respond(status, apischema.RenderJSON(data, apischema.JSONIndent(r.media)), "")
+		indent, _ := apischema.JSONIndent(r.media)
+		return r.respond(status, apischema.RenderJSON(data, indent), "")
 	}
 	// TemplateHTMLRenderer without an exception template.
 	return r.respond(status, fmt.Sprintf("%d %s", status, http.StatusText(status)), "")
+}
+
+// apiSchemaFailure is the unhandled-exception page Django answers.
+func apiSchemaFailure(c echo.Context) error {
+	header := c.Response().Header()
+	header.Del("Allow")
+	header.Del("Vary")
+	header.Del("Content-Disposition")
+	header.Del("Cross-Origin-Opener-Policy")
+	return restError(c, errors.New("api schema: unhandled error"))
 }
 
 func apiSchemaServerError(c echo.Context) error {
@@ -319,13 +346,6 @@ func apiSchemaURL(request apiSchemaRequest) (string, bool) {
 		value, present := request.values[name]
 		if !present {
 			continue
-		}
-		pattern := apiSchemaVersionPattern
-		if name == "lang" {
-			pattern = apiSchemaLanguagePattern
-		}
-		if value != "" && !pattern.MatchString(value) {
-			return "", false
 		}
 		query = append(query, name+"="+pythonQuotePlus(value))
 	}

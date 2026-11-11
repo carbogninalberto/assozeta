@@ -181,79 +181,12 @@
    "effect": null
   },
   {
-   "name": "django-handoff-course-sort-relation-path",
+   "name": "django-handoff-course-sort-foreign-key-group-ported",
    "family": "course-list",
-   "handoff": true,
+   "handoff": false,
    "actor": "owner",
    "method": "GET",
-   "path": "/course/list?sort%5Bfield%5D=sport_association__denomination&sort%5Bsort%5D=asc&query%5Bstatus_flag%5D=1",
-   "headers": {},
-   "status": 200,
-   "response": {
-    "data": {
-     "0": {
-      "course_id": "a1000000-0000-4000-8000-000000630010",
-      "athletes": {
-       "0": {
-        "paid": false,
-        "creation_date": "2026-01-05T09:00:00Z"
-       }
-      },
-      "tags": [
-       {
-        "tag_id": "a1000000-0000-4000-8000-000000630001",
-        "tag_name": "Agonistico è"
-       }
-      ],
-      "locations": [],
-      "status_flag": 1,
-      "course_type": 1,
-      "creation_date": "2025-12-31T23:59:59Z",
-      "title": "Yoga 50%",
-      "description": null,
-      "multi_payments": false,
-      "fee": "10.00",
-      "events": null,
-      "one_fee_payment": false,
-      "one_fee": "0.00",
-      "google_calendar_id": null,
-      "google_background_color": "#123456",
-      "multiple_quotes": null,
-      "start_date": null,
-      "end_date": null,
-      "pinned": false,
-      "billed_duration_is_sport_season": false,
-      "billed_frequency": 1,
-      "billed_from_subscription_date": false,
-      "billed_from_day_of_month": 1,
-      "auto_renewal": false,
-      "deleted": false,
-      "sport_association": "a1000000-0000-4000-8000-000000701001",
-      "group": null,
-      "current_year": {
-       "$current_year": "2025-12-31"
-      }
-     }
-    },
-    "meta": {
-     "total": 1,
-     "page": 1,
-     "pages": 1,
-     "perpage": 10,
-     "rowIds": [
-      "a1000000-0000-4000-8000-000000630010"
-     ]
-    }
-   },
-   "effect": null
-  },
-  {
-   "name": "django-handoff-course-sort-relation-path-group",
-   "family": "course-list",
-   "handoff": true,
-   "actor": "owner",
-   "method": "GET",
-   "path": "/course/list?sort%5Bfield%5D=sport_association__user&sort%5Bsort%5D=desc",
+   "path": "/course/list?sort%5Bfield%5D=sport_association&sort%5Bsort%5D=desc",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
    },

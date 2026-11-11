@@ -267,6 +267,21 @@ taxed('deleted-municipality-decoded-later', {**PERSON, 'born_city': 'Busana', 'b
 taxed('last-name-not-string', {**PERSON, 'last_name': 5}, INVALID_DATA, status=400)
 taxed('born-date-not-string', {**PERSON, 'born_date': 1990}, INVALID_DATA, status=400)
 taxed('born-city-not-string', {**PERSON, 'born_city': ['Roma']}, INVALID_DATA, status=400)
+# t4l1: every script of the transliteration table, character references, lone surrogates, long runs of combining marks
+# and dates with letters (dateutil's month names; a slug whose first part has four characters is read year first).
+taxed('cjk-last-name', {**PERSON, 'last_name': '毛泽东'}, {'tax_code': 'MZDMRA90E10H501S'})
+taxed('cyrillic-first-name', {**PERSON, 'first_name': 'Юрий'}, {'tax_code': 'RSSRIU90E10H501Q'})
+taxed('entity-last-name', {**PERSON, 'last_name': 'R&amp;ssi &eacute;'}, ROSSI)
+taxed('numeric-reference-first-name', {**PERSON, 'first_name': '&#x41;&#66;&#1114112;'}, {'tax_code': 'RSSAXX90E10H501I'})
+taxed('surrogate-city', None, ROSSI,
+      raw_body='{"last_name": "Rossi", "first_name": "Mario", "sex": "M", "born_date": "10/05/1990", "born_city": "Roma\\ud800"}',
+      content_type='application/json')
+taxed('combining-run', {**PERSON, 'first_name': 'Mari' + '\u0301' * 35 + 'o'}, ROSSI)
+taxed('kana-city', {**PERSON, 'born_city': 'ローマ'}, ROSSI)
+taxed('month-name-date', {**PERSON, 'born_date': 'May 10, 1990'}, ROSSI)
+taxed('month-first-year-first-date', {**PERSON, 'born_date': 'june-5-1990'}, {'tax_code': 'RSSMRA90H05H501Z'})
+taxed('iso-time-date', {**PERSON, 'born_date': '1990-05-10T10:00:00Z'}, INVALID_DATA, status=400)
+taxed('italian-month-date', {**PERSON, 'born_date': '10 maggio 1990'}, INVALID_DATA, status=400)
 taxed('list-body', ['Rossi'], SERVER, status=500)
 taxed('form-body', None, ROSSI, raw_body='last_name=Rossi&first_name=Mario&sex=M&born_date=10%2F05%2F1990&born_city=Roma',
       content_type=FORM)

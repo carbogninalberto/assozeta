@@ -559,6 +559,34 @@ def parse_date(date_str: str) -> date:
         raise ValueError(f"Date must be in DD/MM/YYYY or YYYY-MM-DD format: {date_str}")
 
 
+# Columns a client-chosen ordering never reaches, even on the list's own model.
+UNORDERABLE_COLUMNS = frozenset({
+    'payment_intent_id', 'signature', 'signature_id', 'signature_url', 'signature_storage_key', 'document_pdf', 'document_pdf_id',
+    'id_number',
+})
+UNKNOWN_ORDERING = 'unknown_ordering'
+
+
+def checked_ordering(queryset, ordering):
+    """The ``order_by`` argument for a client-chosen ordering (``name`` or ``-name``).
+
+    Only the model's own columns (and the columns the view annotated) are
+    accepted; relation paths, transforms and the columns in UNORDERABLE_COLUMNS
+    answer as an ordering Django does not know. ``?`` keeps its meaning.
+    """
+    name = ordering[1:] if ordering.startswith('-') else ordering
+    if name == '?':
+        return ordering
+    model = queryset.model
+    columns = {'pk'}
+    for field in model._meta.concrete_fields:
+        columns.update((field.name, field.attname))
+    columns.update(queryset.query.annotations)
+    if name in columns and name not in UNORDERABLE_COLUMNS:
+        return ordering
+    return UNKNOWN_ORDERING
+
+
 def filter_by_all_fields(queryset, search_term):
     """Filter queryset by all fields using the provided search term."""
     # Get all field objects from the model

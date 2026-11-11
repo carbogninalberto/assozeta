@@ -758,6 +758,84 @@ add('fetch-unknown-endpoint', 'owner', FETCH, 409, error(NEWER), method='POST',
 add('fetch-no-socket', 'owner', FETCH, 503, error(UNREACHABLE), method='POST',
     body={'name': ARCHIVE, 'recovery_key': 'AGE-SECRET-KEY-1PLACEHOLDER'}, run=runner(state='no-socket'))
 
+# === t4l2: form and multipart bodies read as HTML input ===========================================
+# A missing BooleanField is False, an empty value of a field that is not required is skipped (or '' when it allows blank),
+# and an uploaded file reads as its name where the field calls str() on it.
+MULTIPART = 'multipart/form-data; boundary=fixture'
+
+
+def parts(*fields):
+    """fields: (name, value) for a plain field, (name, file name, content) for a file."""
+    body = ''
+    for field in fields:
+        head = f'--fixture\r\nContent-Disposition: form-data; name="{field[0]}"'
+        if len(field) == 3:
+            head += f'; filename="{field[1]}"\r\nContent-Type: text/plain'
+        body += head + '\r\n\r\n' + field[-1] + '\r\n'
+    return body + '--fixture--\r\n'
+
+
+def form_ok(name, path, method, raw_body, reply, relayed, action, entry, content_type=FORM, no_store=False):
+    add(name, 'owner', path, 200, reply, method=method, raw_body=raw_body, content_type=content_type,
+        run=runner(200, reply, expect=[call(method, relayed[0], relayed[1])]), audit=logged(action, entry), no_store=no_store)
+
+
+value = {'enabled': True, 'frequency': 'weekly', 'time': '02:30', 'weekday': 6, 'keep': 7}
+form_ok('schedule-form-saved', SCHEDULE, 'PUT', 'enabled=on&frequency=weekly&time=02%3A30&weekday=&keep=7&keep=x&keep=7', SCHEDULED,
+        ('/backups/schedule', value), 'backup_schedule', json.dumps(value, sort_keys=True))
+value = {'enabled': False, 'frequency': 'daily', 'time': '02:30', 'weekday': 2, 'keep': 7}
+form_ok('schedule-form-without-enabled', SCHEDULE, 'PUT', 'frequency=daily&time=02%3A30&weekday=2&keep=7', SCHEDULED,
+        ('/backups/schedule', value), 'backup_schedule', json.dumps(value, sort_keys=True))
+add('schedule-form-empty', 'owner', SCHEDULE, 400, {'frequency': [REQUIRED], 'time': [REQUIRED], 'keep': [REQUIRED]}, method='PUT',
+    raw_body='', content_type=FORM)
+add('schedule-form-blank-values', 'owner', SCHEDULE, 400,
+    {'enabled': [BOOLEAN], 'frequency': ['"" is not a valid choice.'], 'time': [BLANK], 'keep': [INTEGER]}, method='PUT',
+    raw_body='enabled=&frequency=&time=&weekday=&keep=', content_type=FORM)
+add('schedule-multipart-files', 'owner', SCHEDULE, 400, {'enabled': [BOOLEAN], 'time': [PATTERN], 'weekday': [INTEGER]}, method='PUT',
+    raw_body=parts(('enabled', 'true', 'x'), ('frequency', 'daily', 'x'), ('time', '02:30', 'x'), ('weekday', 'x.txt', 'x'),
+                   ('keep', '7', 'x')), content_type=MULTIPART)
+add('schedule-multipart-file-choice', 'owner', SCHEDULE, 400, {'frequency': ['"monthly.txt" is not a valid choice.']}, method='PUT',
+    raw_body=parts(('enabled', 'true'), ('frequency', 'monthly.txt', 'x'), ('time', '02:30'), ('keep', '7', 'x')), content_type=MULTIPART)
+value = {'enabled': True, 'frequency': 'daily', 'time': '02:30', 'weekday': 6, 'keep': 7}
+form_ok('schedule-multipart-saved', SCHEDULE, 'PUT',
+        parts(('enabled', 'true'), ('frequency', 'daily', 'x'), ('time', '02:30'), ('keep', '7', 'x')), SCHEDULED,
+        ('/backups/schedule', value), 'backup_schedule', json.dumps(value, sort_keys=True), content_type=MULTIPART)
+value = {'endpoint': '', 'path_style': False, 'enabled': False}
+form_ok('remote-put-form', REMOTE, 'PUT', f'password={PASSWORD}&retention=&endpoint=', SETTINGS_REPLY,
+        ('/backups/remote', value), 'backup_remote_settings', settings_change(value), no_store=True)
+value = {'bucket': 'b', 'path_style': True, 'retention': 3, 'enabled': True}
+form_ok('remote-put-multipart', REMOTE, 'PUT',
+        parts(('password', PASSWORD), ('bucket', 'b'), ('path_style', 'on'), ('retention', '3', 'x'), ('enabled', '1')), SETTINGS_REPLY,
+        ('/backups/remote', value), 'backup_remote_settings', settings_change(value), content_type=MULTIPART, no_store=True)
+add('remote-put-form-rules', 'owner', REMOTE, 400, {'region': [STRING], 'path_style': [BOOLEAN], 'retention': [INTEGER],
+                                                    'password': [REQUIRED]}, method='PUT',
+    raw_body=parts(('region', 'r.txt', 'x'), ('path_style', 'maybe'), ('retention', 'x.txt', 'x'), ('enabled', '')),
+    content_type=MULTIPART)
+value = {'bucket': 'b', 'path_style': False}
+form_ok('remote-test-form', REMOTE_TEST, 'POST', f'password={PASSWORD}&bucket=b', TESTED,
+        ('/backups/remote/test', value), 'backup_remote_test', tested(value), no_store=True)
+# An empty form is falsy: the view validates a plain dict instead.
+add('remote-test-form-empty', 'owner', REMOTE_TEST, 400, {'password': [REQUIRED]}, method='POST', raw_body='', content_type=FORM)
+add('remote-test-form-rules', 'owner', REMOTE_TEST, 400, {'enabled': [BOOLEAN], 'password': [REQUIRED]}, method='POST',
+    raw_body='enabled=maybe', content_type=FORM)
+add('keep-multipart-body', 'owner', item(), 400, error(INVALID), method='PATCH', raw_body=parts(('keep', 'true')),
+    content_type=MULTIPART)
+add('delete-multipart-confirm', 'owner', item(), 400, error(INVALID), method='DELETE', raw_body=parts(('confirm', 'c.txt', 'true')),
+    content_type=MULTIPART)
+add('delete-multipart-password-file', 'owner', item(), 400, {'password': [STRING]}, method='DELETE',
+    raw_body=parts(('password', 'p.txt', PASSWORD)), content_type=MULTIPART)
+
+# A lone surrogate in a CharField is refused by DRF's validator, after the length and NUL checks and before the pattern.
+SURROGATE = 'Surrogate characters are not allowed: U+%s.'
+add('restore-lone-surrogates', 'owner', restore_path(), 400, {'password': [SURROGATE % 'D800'], 'confirm': [SURROGATE % 'DFFF']},
+    method='POST', raw_body='{"password": "a\\ud800b\\udc00", "confirm": " \\udfff\\ud800 "}', content_type='application/json')
+add('schedule-time-lone-surrogate', 'owner', SCHEDULE, 400, {'time': [SURROGATE % 'DBFF', PATTERN]}, method='PUT',
+    raw_body='{"enabled": true, "frequency": "daily", "time": "02:3\\udbff", "keep": 7}', content_type='application/json')
+add('remote-put-lone-surrogate', 'owner', REMOTE, 400,
+    {'bucket': ['Ensure this field has no more than 63 characters.', 'Null characters are not allowed.', SURROGATE % 'D83D'],
+     'password': [REQUIRED]}, method='PUT',
+    raw_body='{"bucket": "' + 'b' * 62 + '\\u0000\\ud83d"}', content_type='application/json')
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'instance/admin/backups actions', 'ids': IDS, 'instance': INSTANCE,
                               'runner_token': RUNNER_TOKEN, 'hashes': HASHES, 'password': PASSWORD,

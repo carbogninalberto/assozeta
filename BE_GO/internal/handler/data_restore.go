@@ -292,19 +292,16 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, 
 		if err != nil {
 			return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Invalid multipart data"}
 		}
-		if part.Header.Get("Content-Transfer-Encoding") != "" {
+		header, outcome := djangoPartHeaders(part.Header)
+		if outcome == headerNotPorted {
+			// An RFC 2231 charset whose decoder is not ported.
 			return nil, domain.ErrDataRestoreNotPorted
 		}
-		disposition := part.Header.Get("Content-Disposition")
-		if disposition == "" {
+		if !header.hasDisposition {
 			continue
 		}
-		parameters, ok := djangoHeaderParameters(disposition)
-		if !ok {
-			return nil, domain.ErrDataRestoreNotPorted
-		}
-		name, named := parameters["name"]
-		filename := parameters["filename"]
+		name, named := header.disposition["name"]
+		filename := header.disposition["filename"]
 		if !named || filename == "" {
 			continue
 		}
@@ -314,6 +311,14 @@ func (h *DataRestoreHandler) uploadedFile(c echo.Context, limit int64) ([]byte, 
 		}
 		if sanitized == "" {
 			continue
+		}
+		if header.base64 && len(content) > 0 {
+			// The chunk is decoded after its white space is stripped; any failure ends the request.
+			decoded, err := pyBase64Decode(stripASCIISpace(content))
+			if err != nil {
+				return nil, &restInputError{Status: 400, Detail: "Multipart form parse error - Could not decode base64 data."}
+			}
+			content = decoded
 		}
 		received += int64(len(content))
 		if received > limit {

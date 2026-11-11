@@ -47,6 +47,9 @@ def assert_effect(case, before, after, source, context):
     if effect['kind'] == 'update':
         assert_update(case, effect, before, after, source, context)
         return
+    if effect['kind'] == 'audit':
+        assert_audit_only(case, effect, before, after, source, context)
+        return
     key = effect['subscription']
     old, new = keyed(before[SUBSCRIPTION], 'subscription_id'), keyed(after[SUBSCRIPTION], 'subscription_id')
     old, new = {str(k): v for k, v in old.items()}, {str(k): v for k, v in new.items()}
@@ -95,6 +98,16 @@ def assert_update(case, effect, before, after, source, context):
     harness.check_audit_event(contract, case, entries[0], indexes, before=before, ids=source['ids'], model='Subscription', key=key,
                               action=1, changes=effect['changes'], actor=effect['actor'], association=source['ids']['own_association'],
                               path='direct', context=context)
+
+
+def assert_audit_only(case, effect, before, after, source, context):
+    """A save that fails after auditlog's pre_save entry: that entry and its index row, nothing else."""
+    contract.require(before[SUBSCRIPTION] == after[SUBSCRIPTION] and before[TAGS] == after[TAGS], 'state.unchanged')
+    entries, indexes = harness.audit_delta(contract, before, after)
+    contract.require(len(entries) == 1 and len(indexes) == 1, 'audit.count')
+    harness.check_audit_event(contract, case, entries[0], indexes, before=before, ids=source['ids'], model='Subscription',
+                              key=effect['subscription'], action=1, changes=effect['changes'], actor=effect['actor'],
+                              association=source['ids']['own_association'], path='direct', context=context)
 
 
 run_workload = harness.run_workload_for(contract, assert_effect, prepare=captured)

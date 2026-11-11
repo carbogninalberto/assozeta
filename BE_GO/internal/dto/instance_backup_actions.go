@@ -40,6 +40,7 @@ const (
 	BackupActionsMinValue   = "min-value:"
 	BackupActionsChoice     = "choice:"
 	BackupActionsDictionary = "dictionary:"
+	BackupActionsSurrogate  = "surrogate:" // the first lone surrogate, upper-case hex
 )
 
 type BackupActionsKind int
@@ -128,6 +129,15 @@ func BackupRemoteSettingsFields(allowHTTP, withPassword bool) []BackupActionsFie
 // in declared field order (omitted optional fields without a default are
 // absent), or the errors keyed in field order (codes, see above).
 func ValidateBackupActions(body any, fields []BackupActionsField) (domain.RequestObject, domain.RequestObject, error) {
+	return ValidateBackupActionsInput(body, fields, false)
+}
+
+// ValidateBackupActionsInput is ValidateBackupActions for a body that may be
+// a form (a QueryDict): Field.get_value then reads HTML input. A missing
+// BooleanField is False, an empty value of a field that is not required is
+// skipped (or stays ” when the field allows blank), and an uploaded file
+// reads as its name where the field calls str() on it.
+func ValidateBackupActionsInput(body any, fields []BackupActionsField, form bool) (domain.RequestObject, domain.RequestObject, error) {
 	if body == nil {
 		return nil, domain.RequestObject{{Name: "non_field_errors", Value: []any{BackupActionsNoData}}}, nil
 	}
@@ -138,6 +148,9 @@ func ValidateBackupActions(body any, fields []BackupActionsField) (domain.Reques
 	var validated, errs domain.RequestObject
 	for _, field := range fields {
 		value, present := object.Lookup(field.Name)
+		if form {
+			value, present = backupActionsHTMLValue(field, value, present)
+		}
 		internal, set, fieldErrors, err := backupActionsRun(field, value, present)
 		if err != nil {
 			return nil, nil, err
@@ -160,6 +173,24 @@ func ValidateBackupActions(body any, fields []BackupActionsField) (domain.Reques
 		validated = domain.RequestObject{}
 	}
 	return validated, nil, nil
+}
+
+// backupActionsHTMLValue is Field.get_value for HTML input.
+func backupActionsHTMLValue(field BackupActionsField, value any, present bool) (any, bool) {
+	if !present {
+		// default_empty_html: False for a BooleanField, empty otherwise.
+		return false, field.Kind == BackupActionsBool
+	}
+	if value == "" && field.Optional {
+		if field.AllowBlank {
+			return "", true
+		}
+		return nil, false
+	}
+	if upload, ok := value.(domain.RequestUpload); ok && (field.Kind == BackupActionsInt || field.Kind == BackupActionsChoices) {
+		return upload.Name, true // str(file)
+	}
+	return value, true
 }
 
 // backupActionsRun is Field.run_validation for one field: set=false for an
@@ -222,7 +253,7 @@ func backupActionsRun(field BackupActionsField, value any, present bool) (any, b
 
 // backupActionsChar is CharField.to_internal_value (str() of str, int and
 // float; strip when trim_whitespace) and its validators, whose errors are
-// collected: max and min length, null characters, then the RegexField pattern
+// collected: max and min length, null characters, surrogate characters, then the RegexField pattern
 // (whose message also replaces 'invalid').
 func backupActionsChar(field BackupActionsField, value any) (any, bool, []any, error) {
 	invalid := BackupActionsString
@@ -241,10 +272,10 @@ func backupActionsChar(field BackupActionsField, value any) (any, bool, []any, e
 	if field.Trim {
 		text = pythonStrip(text)
 	}
-	length := 0
+	length, surrogate := 0, rune(0)
 	for _, r := range pythonCodePoints(text) {
-		if r >= 0xd800 && r <= 0xdfff {
-			return nil, false, nil, ErrInstanceBackupActionsNotPorted
+		if r >= 0xd800 && r <= 0xdfff && surrogate == 0 {
+			surrogate = r
 		}
 		length++
 	}
@@ -257,6 +288,9 @@ func backupActionsChar(field BackupActionsField, value any) (any, bool, []any, e
 	}
 	if strings.ContainsRune(text, 0) {
 		errs = append(errs, BackupActionsNullCharacter)
+	}
+	if surrogate != 0 {
+		errs = append(errs, BackupActionsSurrogate+strings.ToUpper(strconv.FormatInt(int64(surrogate), 16)))
 	}
 	if field.Pattern != nil && !field.Pattern.MatchString(text) {
 		errs = append(errs, BackupActionsPattern)

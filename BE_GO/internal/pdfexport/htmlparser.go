@@ -6,11 +6,20 @@ import "strings"
 // convert_charrefs off) hands a subclass. A false return is an exception of
 // the handler: the feed stops.
 type htmlEvents interface {
-	startTag(tag string, attrs []string) bool
+	startTag(tag string, attrs []htmlAttr) bool
 	endTag(tag string) bool
 	data(text string) bool
 	entityRef(name string) bool
 	charRef(name string) bool
+}
+
+// htmlAttr is an attribute of a start tag: the lower-cased name and its value
+// as parse_starttag hands it over (quotes removed, character references
+// replaced); has is false when the attribute has no value (None).
+type htmlAttr struct {
+	name  string
+	value string
+	has   bool
 }
 
 func htmlSpace(r rune) bool { return r == '\t' || r == '\n' || r == '\r' || r == '\f' || r == ' ' }
@@ -74,23 +83,23 @@ func (p *htmlParser) tagName(i int) int {
 // attribute is one attribute of attrfind_tolerant and locatetagend at i: its
 // name and the optional value, without the trailing run. ok is false when no
 // attribute starts here.
-func (p *htmlParser) attribute(i int) (end int, name string, ok bool) {
+func (p *htmlParser) attribute(i int) (end int, attr htmlAttr, ok bool) {
 	raw, n := p.raw, len(p.raw)
 	if i == 0 || i >= n || !htmlQuoteSpaceSlash(raw[i-1]) || htmlSpace(raw[i]) || raw[i] == '/' || raw[i] == '>' {
-		return i, "", false
+		return i, htmlAttr{}, false
 	}
 	start := i
 	i++
 	for i < n && !htmlSpace(raw[i]) && raw[i] != '/' && raw[i] != '=' && raw[i] != '>' {
 		i++
 	}
-	name = strings.ToLower(string(raw[start:i]))
+	attr.name = strings.ToLower(string(raw[start:i]))
 	q := i
 	for q < n && htmlSpace(raw[q]) {
 		q++
 	}
 	if q >= n || raw[q] != '=' {
-		return i, name, true
+		return i, attr, true
 	}
 	q++
 	r := q
@@ -99,17 +108,21 @@ func (p *htmlParser) attribute(i int) (end int, name string, ok bool) {
 	}
 	if r < n && (raw[r] == '\'' || raw[r] == '"') {
 		if closing := p.find(raw[r], r+1); closing >= 0 {
-			return closing + 1, name, true
+			attr.has, attr.value = true, unescapeAttribute(string(raw[r+1:closing]))
+			return closing + 1, attr, true
 		}
 		if r > q {
-			return r - 1, name, true // an empty bare value before the last space
+			attr.has = true
+			return r - 1, attr, true // an empty bare value before the last space
 		}
-		return i, name, true
+		return i, attr, true
 	}
+	value := r
 	for r < n && raw[r] != '>' && !htmlSpace(raw[r]) {
 		r++
 	}
-	return r, name, true
+	attr.has, attr.value = true, unescapeAttribute(string(raw[value:r]))
+	return r, attr, true
 }
 
 // locateTagEnd is locatetagend.match at i.
@@ -199,13 +212,13 @@ func (p *htmlParser) parseStartTag(i int) (int, bool) {
 	nameEnd := p.tagName(i + 1)
 	tag := htmlLower(raw[i+1 : nameEnd])
 	k := p.skipTolerant(nameEnd)
-	var attrs []string
+	var attrs []htmlAttr
 	for k < endpos {
-		end, name, ok := p.attribute(k)
+		end, attr, ok := p.attribute(k)
 		if !ok {
 			break
 		}
-		attrs = append(attrs, name)
+		attrs = append(attrs, attr)
 		k = p.skipTolerant(end)
 	}
 	if k > endpos {

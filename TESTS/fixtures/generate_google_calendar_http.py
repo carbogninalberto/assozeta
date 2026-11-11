@@ -118,6 +118,25 @@ COURSES = {
     'zeta': {'id': next(ids), 'association': OWN, 'title': 'Corso Zeta', 'calendar': None, 'color': '#7f7f7f', 'group': None,
              'deleted': False, 'registry': [ev(7, 'Prima', '2026-10-01T08:00:00Z', '2026-10-01T09:00:00Z'),
                                             {'event_id': 'e0000008-x', 'start': '2026-10-02T08:00:00Z', 'end': None}]},
+    # Colours that are not #rrggbb: int(..., 16) reads the slices (spaces, signs and any length).
+    'eta': {'id': next(ids), 'association': OWN, 'title': 'Corso Eta', 'calendar': None, 'color': 'x1a73e8', 'group': None,
+            'deleted': False, 'registry': [ev(10, 'Eta', '2026-10-01T08:00:00Z', '2026-10-01T09:00:00Z')]},
+    'theta': {'id': next(ids), 'association': OWN, 'title': 'Corso Theta', 'calendar': None, 'color': '# 1 2 3', 'group': None,
+              'deleted': False, 'registry': [ev(11, 'Theta', '2026-10-01T08:00:00Z', '2026-10-01T09:00:00Z',
+                                                extendedProps={'instructor': {'label': 1.5}})]},
+    'iota': {'id': next(ids), 'association': OWN, 'title': 'Corso Iota', 'calendar': None, 'color': '#-1-2-3', 'group': None,
+             'deleted': False, 'registry': [
+                 ev(12, 'Settimana', '2026-W41-1T16:00', '2026-W41-1T17:00', extendedProps={'instructor': {'label': ['a', 'b']}}),
+                 ev(13, 'Separatore', '2026-10-06x16:00:00', '2026-10-06x17:00:00+05:30:15', extendedProps={'instructor': {'label': None}}),
+                 ev(14, 'Compatta', '20261007 1600', '20261007T1700+0200', extendedProps={'instructor': {'label': {'k': True}}}),
+                 ev(15, 'Frazione', '2026-10-08T16:00:00,5', '2026-10-08T17:00:00.123456789Z'),
+                 ev(16, 'Tutto il giorno', '2026-10-09T10:20:30.5+03:00', None)]},
+    'kappa': {'id': next(ids), 'association': OWN, 'title': 'Corso Kappa', 'calendar': None, 'color': '#12', 'group': None,
+              'deleted': False, 'registry': [ev(17, 'Kappa', '2026-10-01T08:00:00Z', '2026-10-01T09:00:00Z')]},
+    'lambda': {'id': next(ids), 'association': OWN, 'title': 'Corso Lambda', 'calendar': None, 'color': '#336699', 'group': None,
+               'deleted': False, 'registry': [ev(18, 'Prima', '2026-10-01T08:00:00Z', '2026-10-01T09:00:00Z'),
+                                              ev(19, 'Oltre il limite', '9999-12-31T23:30:00', '9999-12-31T23:45:00'),
+                                              ev(20, 'Mai', '2026-10-02T08:00:00Z', '2026-10-02T09:00:00Z')]},
     'grouped': {'id': next(ids), 'association': OWN, 'title': 'Corso Gruppo', 'calendar': None, 'color': '#123456', 'group': 'own_group',
                 'deleted': False, 'registry': []},
     'gone': {'id': next(ids), 'association': OWN, 'title': 'Corso Eliminato', 'calendar': None, 'color': '#123456', 'group': None,
@@ -561,6 +580,23 @@ add('export-event-without-title-server-error', 'owner', EXPORT('zeta'), 500, SER
     + export_events('zeta', OWNER_TOKEN, 'zeta-1@group.calendar.google.com', events=COURSES['zeta']['registry'][:1]),
     courses={'zeta': 'zeta-1@group.calendar.google.com'}, audit=[course_audit('zeta', None, 'zeta-1@group.calendar.google.com', 'owner')])
 CALENDAR_IDS['zeta'] = 'zeta-1@group.calendar.google.com'
+# Colours and event dates outside the common shapes (all read by Python's int() and fromisoformat).
+for label, name in (('eta', 'colour-without-hash'), ('theta', 'colour-with-spaces-and-float-label'),
+                    ('iota', 'colour-with-signs-and-iso-variants')):
+    export(f'export-{name}', 'owner', label, OWNER_TOKEN, f'{label}-1@group.calendar.google.com')
+    CALENDAR_IDS[label] = f'{label}-1@group.calendar.google.com'
+# int(background_color[1:3], 16) raises after the calendar was created and the course saved.
+add('export-colour-too-short-server-error', 'owner', EXPORT('kappa'), 500, SERVER, method='POST',
+    google=export_head('kappa', OWNER_TOKEN, insert_answer=created('kappa', 'kappa-1@group.calendar.google.com')),
+    courses={'kappa': 'kappa-1@group.calendar.google.com'}, audit=[course_audit('kappa', None, 'kappa-1@group.calendar.google.com', 'owner')])
+CALENDAR_IDS['kappa'] = 'kappa-1@group.calendar.google.com'
+# Converting the second event leaves datetime's range (OverflowError) after the first one was inserted.
+add('export-event-beyond-year-9999-server-error', 'owner', EXPORT('lambda'), 500, SERVER, method='POST',
+    google=export_head('lambda', OWNER_TOKEN, insert_answer=created('lambda', 'lambda-1@group.calendar.google.com'))
+    + export_list('lambda', OWNER_TOKEN, 'lambda-1@group.calendar.google.com')
+    + export_events('lambda', OWNER_TOKEN, 'lambda-1@group.calendar.google.com', events=COURSES['lambda']['registry'][:1]),
+    courses={'lambda': 'lambda-1@group.calendar.google.com'}, audit=[course_audit('lambda', None, 'lambda-1@group.calendar.google.com', 'owner')])
+CALENDAR_IDS['lambda'] = 'lambda-1@group.calendar.google.com'
 add('export-list-insert-error-server-error', 'owner', EXPORT('gamma'), 500, SERVER, method='POST',
     google=export_head('gamma', OWNER_TOKEN, insert_answer=created('gamma', 'gamma-1@group.calendar.google.com'))
     + [api('DELETE', '/calendar/v3/users/me/calendarList/gamma-1%40group.calendar.google.com', OWNER_TOKEN, reply(204)),

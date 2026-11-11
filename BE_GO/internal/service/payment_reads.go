@@ -165,25 +165,25 @@ func (s *PaymentReads) paymentReadsSearch(filter *domain.PaymentReadsFilter, raw
 // paymentReadsFields are Payment's concrete field names and attnames by column.
 var paymentReadsFields = map[string]string{"payment_id": "payment_id", "pk": "payment_id", "type": "type", "subject": "subject",
 	"amount": "amount", "creation_date": "creation_date", "payment_date": "payment_date", "paid": "paid", "expense": "expense",
-	"description": "description", "meta_payment_categories": "meta_payment_categories", "payment_intent_id": "payment_intent_id",
+	"description": "description", "meta_payment_categories": "meta_payment_categories",
 	"archived": "archived", "invoice_fiscal_code": "invoice_fiscal_code", "meta": "meta", "notes": "notes", "deleted": "deleted",
 	"course": "course", "payment_category_id": "payment_category_id", "invoice_id": "invoice_id", "user_id": "user_id",
 	"associate_id": "associate_id", "supplier_id": "supplier_id", "instructor_id": "instructor_id",
-	"sport_association_id": "sport_association_id", "custom_accounts_id": "custom_accounts_id", "signature_id": "signature_id",
-	"group_id": "group_id"}
-
-// paymentReadsRelations are Payment's relations: order_by() accepts them and
-// paths through them, and Django resolves them only when compiling the rows.
-var paymentReadsRelations = map[string]bool{"payment_category": true, "invoice": true, "user": true, "associate": true, "supplier": true,
-	"instructor": true, "sport_association": true, "custom_accounts": true, "signature": true, "group": true, "attachments": true}
+	"sport_association_id": "sport_association_id", "custom_accounts_id": "custom_accounts_id", "group_id": "group_id",
+	// A relation whose model has no Meta.ordering orders by its column.
+	"payment_category": "payment_category_id", "invoice": "invoice_id", "user": "user_id", "associate": "associate_id",
+	"supplier": "supplier_id", "instructor": "instructor_id", "sport_association": "sport_association_id",
+	"custom_accounts": "custom_accounts_id", "group": "group_id"}
 
 // errPaymentReadsLazyOrder marks an ordering Django resolves when compiling
-// the rows (after the count and the page checks); Go refuses it there.
+// the rows (after the count and the page checks): an annotation of the view.
 var errPaymentReadsLazyOrder = refusal.New("payment ordering not ported")
 
 // paymentReadsOrder is order_by(f"{'-' if desc else ”}{field}"): '?' is
-// random; one leading '-' is stripped, then the name must resolve (FieldError,
-// 500); relations and transforms are refused where Django compiles them.
+// random; one leading '-' is stripped, then the name must be one of the
+// model's own columns (or a column the view annotated); anything else, such
+// as a path through a relation or the stored signature and payment intent, is
+// an unknown ordering (FieldError, 500).
 func paymentReadsOrder(filter *domain.PaymentReadsFilter, field, direction string, annotations map[string]bool) error {
 	if direction == "desc" {
 		field = "-" + field
@@ -193,17 +193,11 @@ func paymentReadsOrder(filter *domain.PaymentReadsFilter, field, direction strin
 		return nil
 	}
 	name, descending := strings.CutPrefix(field, "-")
-	// A relation whose model has no Meta.ordering orders by its column:
-	// User (the list's "Informazioni" column sends sort[field]=user).
-	if name == "user" {
-		name = "user_id"
-	}
 	if column, ok := paymentReadsFields[name]; ok {
 		filter.Order = []domain.PaymentReadsOrder{{Column: column, Descending: descending}}
 		return nil
 	}
-	first, _, _ := strings.Cut(name, "__")
-	if _, ok := paymentReadsFields[first]; ok || paymentReadsRelations[first] || annotations[name] {
+	if annotations[name] {
 		return errPaymentReadsLazyOrder
 	}
 	return domain.ErrPaymentReadsServer

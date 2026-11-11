@@ -44,7 +44,8 @@ ids = iter(f'a1000000-0000-4000-8000-{966001 + n:012d}' for n in range(200))
 SERVER = '<stable-server-error-page>'
 
 DOCUMENTS = {label: {'id': next(ids), 'token': next(ids), 'filename': f'{label}.pdf', 'created': '2026-09-01T08:00:00Z'}
-             for label in ('doc_synced', 'doc_detailed', 'doc_orphan', 'doc_removable', 'doc_free', 'doc_twin')}
+             for label in ('doc_synced', 'doc_detailed', 'doc_orphan', 'doc_removable', 'doc_free', 'doc_twin', 'doc_linked',
+                           'doc_linked_list')}
 
 
 def payment(association, amount, *, paid=True, date=None, deleted=False, group=None):
@@ -87,6 +88,12 @@ HOURS.update({
     'twin_a': hour('abroad', '2026-09-16', '1.00', '1.00', '2026-09-16T18:00:00Z', notes='comune', document='doc_twin'),
     'twin_b': hour('abroad', '2026-09-17', '1.00', '1.00', '2026-09-17T18:00:00Z', notes='comune', document='doc_twin'),
 })
+# Documents another row links to (an instructor's document list): Document.delete() cascades to the link rows.
+HOURS.update({
+    'linked_del': hour('abroad', '2026-09-18', '1.00', '1.00', '2026-09-18T18:00:00Z', notes='linkdel', document='doc_linked'),
+    'linked_list': hour('abroad', '2026-09-19', '1.00', '1.00', '2026-09-19T18:00:00Z', notes='linklist', document='doc_linked_list'),
+})
+DOCUMENT_LINKS = [{'instructor': 'abroad', 'document': 'doc_linked'}, {'instructor': 'abroad', 'document': 'doc_linked_list'}]
 # Compensations without their document yet: the list prints them (print_document_compensation.apply).
 PAYMENTS.update({'comp_paid': payment(OWN, '15.00'), 'comp_unpaid': payment(OWN, '8.00', paid=False)})
 HOURS.update({
@@ -210,8 +217,8 @@ def page(items, *, total=None, number=1, pages=1, perpage=10):
 
 query = lambda **values: '?' + '&'.join(f'{quote(k)}={quote(v)}' for k, v in values.items())
 RANGE, SEARCH, PAGE, PERPAGE = 'query[date_range]', 'query[generalSearch]', 'pagination[page]', 'pagination[perpage]'
-hours_effect = lambda actor, rows=None, documents=None, audit=(): {'actor': actor, 'rows': rows or {}, 'documents': documents or {},
-                                                                    'audit': list(audit)}
+hours_effect = lambda actor, rows=None, documents=None, audit=(), links=(): {'actor': actor, 'rows': rows or {}, 'documents': documents or {},
+                                                                              'audit': list(audit), 'links': list(links)}
 updated = lambda label, changes: {'model': 'InstructorHours', 'key': HOURS[label]['id'], 'action': 1, 'changes': changes}
 deleted_hour = lambda label: {'model': 'InstructorHours', 'key': HOURS[label]['id'], 'action': 2, 'changes': '$deleted'}
 deleted_document = lambda label: {'model': 'Document', 'key': DOCUMENTS[label]['id'], 'action': 2, 'changes': '$deleted'}
@@ -249,6 +256,10 @@ add('list-foreign-owner', 'foreign_owner', LIST('abroad', query(**{SEARCH: '40.0
 add('list-rows-sharing-a-document-server-error', 'foreign_owner', LIST('abroad', query(**{SEARCH: 'comune'})), 500, SERVER,
     effect=hours_effect('foreign_owner', rows={'twin_a': {'document_id': None}, 'twin_b': {'document_id': None}},
                         documents={'doc_twin': None}, audit=[deleted_document('doc_twin')]))
+add('list-orphan-document-with-link', 'foreign_owner', LIST('abroad', query(**{SEARCH: 'linklist'})), 200,
+    page([serialized('linked_list')]),
+    effect=hours_effect('foreign_owner', rows={'linked_list': {'document_id': None}}, documents={'doc_linked_list': None},
+                        audit=[deleted_document('doc_linked_list')], links=['doc_linked_list']))
 # Each row with a payment and no document prints it after its own paid sync; the response keeps the in-memory document (None).
 DRAFT = ['print_paid', 'print_unpaid', 'copyable', 'movable', 'draft_row']
 add('list-owner-prints-compensations', 'owner', LIST('draft'), 200,
@@ -443,6 +454,9 @@ add('delete', 'full_collaborator', DEL('removable'), 200, DELETED, method='DELET
 add('delete-with-document', 'owner', DEL('with_doc'), 200, DELETED, method='DELETE',
     effect=hours_effect('owner', rows={'with_doc': None}, documents={'doc_removable': None},
                         audit=[deleted_document('doc_removable'), deleted_hour('with_doc')]))
+add('delete-document-with-link', 'foreign_owner', DEL('linked_del'), 200, DELETED, method='DELETE',
+    effect=hours_effect('foreign_owner', rows={'linked_del': None}, documents={'doc_linked': None},
+                        audit=[deleted_document('doc_linked'), deleted_hour('linked_del')], links=['doc_linked']))
 add('delete-again-not-found', 'owner', DEL('with_doc'), 404, NOT_HOURS, method='DELETE')
 
 
@@ -538,7 +552,7 @@ add('calculate-options', 'owner', CALC(), 200, options('Instructor Hours Calcula
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'}, 'matrix_version': 1,
                               'scope': 'Instructor hours authored sequence with hour, document and audit effects',
-                              'hour_documents': DOCUMENTS, 'payments': PAYMENTS, 'hours': HOURS, 'associates': ASSOCIATES,
+                              'hour_documents': DOCUMENTS, 'document_links': DOCUMENT_LINKS, 'payments': PAYMENTS, 'hours': HOURS, 'associates': ASSOCIATES,
                               'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBSCRIPTIONS,
                               'installments': INSTALLMENTS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

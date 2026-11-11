@@ -2,9 +2,9 @@
 // 0.10.3, with the parts of python-slugify 8.0.4, text-unidecode 1.3 and
 // python-dateutil 2.9.0.post0 it relies on, keeping its output byte for byte.
 //
-// Inputs the port does not cover (characters outside the embedded
-// transliteration table, HTML references, dates written with words, ...) are
-// reported with ErrUnsupported instead of a guess.
+// Only text that is no Python str (malformed UTF-8 other than a lone
+// surrogate) is reported with ErrUnsupported; dates written with words go
+// through internal/pydateutil.
 package codicefiscale
 
 import (

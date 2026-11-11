@@ -157,7 +157,7 @@
      }
     }
    ],
-   "registry_id": "a1000000-0000-4000-8000-000001640010"
+   "registry_id": "a1000000-0000-4000-8000-000001640015"
   },
   "beta": {
    "id": "a1000000-0000-4000-8000-000001640002",
@@ -168,7 +168,7 @@
    "group": null,
    "deleted": false,
    "registry": [],
-   "registry_id": "a1000000-0000-4000-8000-000001640011"
+   "registry_id": "a1000000-0000-4000-8000-000001640016"
   },
   "gamma": {
    "id": "a1000000-0000-4000-8000-000001640003",
@@ -186,7 +186,7 @@
      "end": "2026-10-01T09:00:00Z"
     }
    ],
-   "registry_id": "a1000000-0000-4000-8000-000001640012"
+   "registry_id": "a1000000-0000-4000-8000-000001640017"
   },
   "delta": {
    "id": "a1000000-0000-4000-8000-000001640004",
@@ -208,7 +208,7 @@
    "group": null,
    "deleted": false,
    "registry": [],
-   "registry_id": "a1000000-0000-4000-8000-000001640013"
+   "registry_id": "a1000000-0000-4000-8000-000001640018"
   },
   "zeta": {
    "id": "a1000000-0000-4000-8000-000001640006",
@@ -231,10 +231,161 @@
      "end": null
     }
    ],
-   "registry_id": "a1000000-0000-4000-8000-000001640014"
+   "registry_id": "a1000000-0000-4000-8000-000001640019"
+  },
+  "eta": {
+   "id": "a1000000-0000-4000-8000-000001640007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Eta",
+   "calendar": null,
+   "color": "x1a73e8",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000010-0000-4000-8000-000000000010",
+     "title": "Eta",
+     "start": "2026-10-01T08:00:00Z",
+     "end": "2026-10-01T09:00:00Z"
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640020"
+  },
+  "theta": {
+   "id": "a1000000-0000-4000-8000-000001640008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Theta",
+   "calendar": null,
+   "color": "# 1 2 3",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000011-0000-4000-8000-000000000011",
+     "title": "Theta",
+     "start": "2026-10-01T08:00:00Z",
+     "end": "2026-10-01T09:00:00Z",
+     "extendedProps": {
+      "instructor": {
+       "label": 1.5
+      }
+     }
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640021"
+  },
+  "iota": {
+   "id": "a1000000-0000-4000-8000-000001640009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Iota",
+   "calendar": null,
+   "color": "#-1-2-3",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000012-0000-4000-8000-000000000012",
+     "title": "Settimana",
+     "start": "2026-W41-1T16:00",
+     "end": "2026-W41-1T17:00",
+     "extendedProps": {
+      "instructor": {
+       "label": [
+        "a",
+        "b"
+       ]
+      }
+     }
+    },
+    {
+     "event_id": "e0000013-0000-4000-8000-000000000013",
+     "title": "Separatore",
+     "start": "2026-10-06x16:00:00",
+     "end": "2026-10-06x17:00:00+05:30:15",
+     "extendedProps": {
+      "instructor": {
+       "label": null
+      }
+     }
+    },
+    {
+     "event_id": "e0000014-0000-4000-8000-000000000014",
+     "title": "Compatta",
+     "start": "20261007 1600",
+     "end": "20261007T1700+0200",
+     "extendedProps": {
+      "instructor": {
+       "label": {
+        "k": true
+       }
+      }
+     }
+    },
+    {
+     "event_id": "e0000015-0000-4000-8000-000000000015",
+     "title": "Frazione",
+     "start": "2026-10-08T16:00:00,5",
+     "end": "2026-10-08T17:00:00.123456789Z"
+    },
+    {
+     "event_id": "e0000016-0000-4000-8000-000000000016",
+     "title": "Tutto il giorno",
+     "start": "2026-10-09T10:20:30.5+03:00",
+     "end": null
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640022"
+  },
+  "kappa": {
+   "id": "a1000000-0000-4000-8000-000001640010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Kappa",
+   "calendar": null,
+   "color": "#12",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000017-0000-4000-8000-000000000017",
+     "title": "Kappa",
+     "start": "2026-10-01T08:00:00Z",
+     "end": "2026-10-01T09:00:00Z"
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640023"
+  },
+  "lambda": {
+   "id": "a1000000-0000-4000-8000-000001640011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corso Lambda",
+   "calendar": null,
+   "color": "#336699",
+   "group": null,
+   "deleted": false,
+   "registry": [
+    {
+     "event_id": "e0000018-0000-4000-8000-000000000018",
+     "title": "Prima",
+     "start": "2026-10-01T08:00:00Z",
+     "end": "2026-10-01T09:00:00Z"
+    },
+    {
+     "event_id": "e0000019-0000-4000-8000-000000000019",
+     "title": "Oltre il limite",
+     "start": "9999-12-31T23:30:00",
+     "end": "9999-12-31T23:45:00"
+    },
+    {
+     "event_id": "e0000020-0000-4000-8000-000000000020",
+     "title": "Mai",
+     "start": "2026-10-02T08:00:00Z",
+     "end": "2026-10-02T09:00:00Z"
+    }
+   ],
+   "registry_id": "a1000000-0000-4000-8000-000001640024"
   },
   "grouped": {
-   "id": "a1000000-0000-4000-8000-000001640007",
+   "id": "a1000000-0000-4000-8000-000001640012",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Corso Gruppo",
    "calendar": null,
@@ -242,10 +393,10 @@
    "group": "own_group",
    "deleted": false,
    "registry": [],
-   "registry_id": "a1000000-0000-4000-8000-000001640015"
+   "registry_id": "a1000000-0000-4000-8000-000001640025"
   },
   "gone": {
-   "id": "a1000000-0000-4000-8000-000001640008",
+   "id": "a1000000-0000-4000-8000-000001640013",
    "association": "a1000000-0000-4000-8000-000000701001",
    "title": "Corso Eliminato",
    "calendar": null,
@@ -253,10 +404,10 @@
    "group": null,
    "deleted": true,
    "registry": [],
-   "registry_id": "a1000000-0000-4000-8000-000001640016"
+   "registry_id": "a1000000-0000-4000-8000-000001640026"
   },
   "abroad": {
-   "id": "a1000000-0000-4000-8000-000001640009",
+   "id": "a1000000-0000-4000-8000-000001640014",
    "association": "a1000000-0000-4000-8000-000000701002",
    "title": "Corso Estero",
    "calendar": null,
@@ -271,7 +422,7 @@
      "end": "2026-07-01T11:00:00Z"
     }
    ],
-   "registry_id": "a1000000-0000-4000-8000-000001640017"
+   "registry_id": "a1000000-0000-4000-8000-000001640027"
   }
  },
  "alpha_later_registry": "ffffffff-0000-4000-8000-000000000001",
@@ -2294,7 +2445,7 @@
    "name": "google-calendar-export-deleted-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/google/calendar/a1000000-0000-4000-8000-000001640008/export",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640013/export",
    "headers": {},
    "status": 404,
    "response": {
@@ -2309,7 +2460,7 @@
    "name": "google-calendar-export-other-group-course",
    "actor": "owner",
    "method": "POST",
-   "path": "/google/calendar/a1000000-0000-4000-8000-000001640007/export",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640012/export",
    "headers": {
     "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
    },
@@ -4051,7 +4202,7 @@
    "name": "google-calendar-export-course-of-another-association",
    "actor": "owner",
    "method": "POST",
-   "path": "/google/calendar/a1000000-0000-4000-8000-000001640009/export",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640014/export",
    "headers": {},
    "status": 200,
    "response": {
@@ -4238,7 +4389,7 @@
         "Bearer owner-token-1"
        ]
       ],
-      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640009\", \"event_id\": \"e0000009000040008000000000000009\"}}, \"calendar_id\": \"abroad-1@group.calendar.google.com\", \"summary\": \"Estero\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-07-01T12:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-07-01T13:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640014\", \"event_id\": \"e0000009000040008000000000000009\"}}, \"calendar_id\": \"abroad-1@group.calendar.google.com\", \"summary\": \"Estero\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-07-01T12:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-07-01T13:00:00\", \"timeZone\": \"Europe/Rome\"}}"
      },
      "reply": {
       "status": 200,
@@ -5121,6 +5272,1167 @@
       "google_calendar_id": [
        "None",
        "zeta-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-colour-without-hash",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640007/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "eta-1@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "135"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Eta\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "eta-1@group.calendar.google.com",
+       "summary": "Corso Eta",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/eta-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "101"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"eta-1@group.calendar.google.com\", \"backgroundColor\": \"x1a73e8\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "eta-1@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/eta-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "494"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640007\", \"event_id\": \"e0000010000040008000000000000010\"}}, \"calendar_id\": \"eta-1@group.calendar.google.com\", \"summary\": \"Eta\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-01T10:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-01T11:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000010000040008000000000000010",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "eta": "eta-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "eta",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "eta-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-colour-with-spaces-and-float-label",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640008/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "theta-1@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Theta\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "theta-1@group.calendar.google.com",
+       "summary": "Corso Theta",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/theta-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "103"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"theta-1@group.calendar.google.com\", \"backgroundColor\": \"# 1 2 3\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "theta-1@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/theta-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "513"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640008\", \"event_id\": \"e0000011000040008000000000000011\"}}, \"calendar_id\": \"theta-1@group.calendar.google.com\", \"summary\": \"Theta\", \"description\": \"Istruttore: 1.5\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-01T10:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-01T11:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000011000040008000000000000011",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "theta": "theta-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "theta",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "theta-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-colour-with-signs-and-iso-variants",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640009/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "exported.",
+    "google_calendar_id": "iota-1@group.calendar.google.com"
+   },
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "136"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Iota\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "iota-1@group.calendar.google.com",
+       "summary": "Corso Iota",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/iota-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "102"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"iota-1@group.calendar.google.com\", \"backgroundColor\": \"#-1-2-3\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "iota-1@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/iota-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "523"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640009\", \"event_id\": \"e0000012000040008000000000000012\"}}, \"calendar_id\": \"iota-1@group.calendar.google.com\", \"summary\": \"Settimana\", \"description\": \"Istruttore: ['a', 'b']\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-05T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-05T19:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000012000040008000000000000012",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/iota-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "518"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640009\", \"event_id\": \"e0000013000040008000000000000013\"}}, \"calendar_id\": \"iota-1@group.calendar.google.com\", \"summary\": \"Separatore\", \"description\": \"Istruttore: None\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-06T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-06T13:29:45\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000013000040008000000000000013",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/iota-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "523"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640009\", \"event_id\": \"e0000014000040008000000000000014\"}}, \"calendar_id\": \"iota-1@group.calendar.google.com\", \"summary\": \"Compatta\", \"description\": \"Istruttore: {'k': True}\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-07T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-07T17:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000014000040008000000000000014",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/iota-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "500"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640009\", \"event_id\": \"e0000015000040008000000000000015\"}}, \"calendar_id\": \"iota-1@group.calendar.google.com\", \"summary\": \"Frazione\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-08T18:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-08T19:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000015000040008000000000000015",
+       "status": "confirmed"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/iota-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "481"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640009\", \"event_id\": \"e0000016000040008000000000000016\"}}, \"calendar_id\": \"iota-1@group.calendar.google.com\", \"summary\": \"Tutto il giorno\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"date\": \"2026-10-09\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"date\": \"2026-10-09\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000016000040008000000000000016",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "iota": "iota-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "iota",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "iota-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-colour-too-short-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640010/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "137"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Kappa\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "kappa-1@group.calendar.google.com",
+       "summary": "Corso Kappa",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "kappa": "kappa-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "kappa",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "kappa-1@group.calendar.google.com"
+      ]
+     },
+     "actor": "owner",
+     "index": [
+      "a1000000-0000-4000-8000-000000701001",
+      "direct"
+     ]
+    }
+   ]
+  },
+  {
+   "name": "google-calendar-export-event-beyond-year-9999-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/google/calendar/a1000000-0000-4000-8000-000001640011/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "google": [
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "138"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"description\": \"Il calendario viene sincronizzato in automatico, non modificarlo.\", \"summary\": \"Corso Lambda\", \"timeZone\": \"Europe/Rome\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendar",
+       "etag": "\"e\"",
+       "id": "lambda-1@group.calendar.google.com",
+       "summary": "Corso Lambda",
+       "timeZone": "Europe/Rome",
+       "conferenceProperties": {
+        "allowedConferenceSolutionTypes": [
+         "hangoutsMeet"
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "DELETE",
+      "path": "/calendar/v3/users/me/calendarList/lambda-1%40group.calendar.google.com",
+      "headers": [
+       [
+        "accept",
+        "*/*"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-length",
+        "0"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": ""
+     },
+     "reply": {
+      "status": 404,
+      "json": {
+       "error": {
+        "code": 404,
+        "message": "Not Found",
+        "errors": [
+         {
+          "domain": "global",
+          "reason": "notFound",
+          "message": "Not Found"
+         }
+        ]
+       }
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/users/me/calendarList?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "104"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"id\": \"lambda-1@group.calendar.google.com\", \"backgroundColor\": \"#336699\", \"foregroundColor\": \"#ffffff\"}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#calendarListEntry",
+       "id": "lambda-1@group.calendar.google.com"
+      }
+     }
+    },
+    {
+     "request": {
+      "method": "POST",
+      "path": "/calendar/v3/calendars/lambda-1%40group.calendar.google.com/events?alt=json",
+      "headers": [
+       [
+        "accept",
+        "application/json"
+       ],
+       [
+        "accept-encoding",
+        "gzip, deflate"
+       ],
+       [
+        "user-agent",
+        "(gzip)"
+       ],
+       [
+        "x-goog-api-client",
+        "gdcl/2.164.0 gl-python/3.13.16 cred-type/u"
+       ],
+       [
+        "content-type",
+        "application/json"
+       ],
+       [
+        "content-length",
+        "499"
+       ],
+       [
+        "authorization",
+        "Bearer owner-token-1"
+       ]
+      ],
+      "body": "{\"extendedProperties\": {\"private\": {\"course_id\": \"a1000000-0000-4000-8000-000001640011\", \"event_id\": \"e0000018000040008000000000000018\"}}, \"calendar_id\": \"lambda-1@group.calendar.google.com\", \"summary\": \"Prima\", \"description\": \"\", \"reminders\": {\"useDefault\": false, \"overrides\": [{\"method\": \"email\", \"minutes\": 1440}, {\"method\": \"popup\", \"minutes\": 10}]}, \"start\": {\"dateTime\": \"2026-10-01T10:00:00\", \"timeZone\": \"Europe/Rome\"}, \"end\": {\"dateTime\": \"2026-10-01T11:00:00\", \"timeZone\": \"Europe/Rome\"}}"
+     },
+     "reply": {
+      "status": 200,
+      "json": {
+       "kind": "calendar#event",
+       "id": "e0000018000040008000000000000018",
+       "status": "confirmed"
+      }
+     }
+    }
+   ],
+   "users": {},
+   "courses": {
+    "lambda": "lambda-1@group.calendar.google.com"
+   },
+   "audit": [
+    {
+     "model": "course",
+     "label": "lambda",
+     "changes": {
+      "google_calendar_id": [
+       "None",
+       "lambda-1@group.calendar.google.com"
       ]
      },
      "actor": "owner",

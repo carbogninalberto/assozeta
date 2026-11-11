@@ -259,6 +259,15 @@ ZONED = {
     'Forma breve': ('2019-6-10 9:05+02:00', '2019-06-10T10:00:00 +0100', ';TZID=Africa/Blantyre:20190610T090500', ';TZID=Africa/Bangui:20190610T100000'),
     'Ovest': ('2019-06-10T18:00:00-05:00', 'None', ';TZID=America/Atikokan:20190610T180000', ';TZID=America/Atikokan:20190610T190000'),
     'Mezzanotte': ('2019-12-31T23:30:00+09:00', None, ';TZID=Asia/Jayapura:20191231T233000', ';TZID=Asia/Jayapura:20200101T003000'),
+    # CPython's fromisoformat reads week dates, any one-character separator and offsets with seconds; icalendar names an
+    # offset its table lacks by the timezone's own name (datetime.timezone's, or Django's "+HHMM").
+    'Settimana': ('2026-W11-2T10:00', '2026W112 11:00', ':20260310T100000', ':20260310T110000'),
+    'Separatore': ('2026-03-10x10:00', '2026-03-10\u00e911:00', ':20260310T100000', ':20260310T110000'),
+    'Secondi nel fuso': ('2026-03-10T10:00:00+02:00:30', '2026-03-10T11:00:00-05:30:15', ';TZID="UTC+02:00:30":20260310T100000',
+                         ';TZID="UTC-05:30:15":20260310T110000'),
+    'Fuso con frazione': ('2026-W11T10:00+05:30:15.5', '2026-03-10T11:00:00Z', ';TZID="UTC+05:30:15.500000":20260309T100000', ':20260310T110000Z'),
+    'Nome di Django': ('2026-3-10T1:00+0545', '2026-3-10T2:00:00+12:34', ';TZID=+0545:20260310T010000', ';TZID=+1234:20260310T020000'),
+    'Cifre larghe': ('\uff12\uff10\uff12\uff16-03-10T10:00', '2026-03-10T11:00', ':20260310T100000', ':20260310T110000'),
 }
 
 

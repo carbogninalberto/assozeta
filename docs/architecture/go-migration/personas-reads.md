@@ -89,8 +89,7 @@ Django remains the production execution owner.
 - (Ported in tailpay.) `query[generalSearch]` terms beyond Latin: the term is decoded with `replace` for malformed bytes (one U+FFFD per
   maximal ill-formed subpart), stripped, lower-cased (U+0130 becomes `i` plus U+0307, the final sigma rule) and split on `\w+`; every
   code point's `lower()` and `\w` class was compared with CPython 3.13 (Go's tables lack only CJK Extension I, added as word characters).
-- `sort[field]` names that join other tables: relation paths (`a__b`), the
-  `tutors` M2M and reverse accessors (Django would order by them).
+- Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (`id_number`) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`. Relation paths (`a__b`), the `tutors` M2M and reverse accessors are the 500 page.
 
 Not authored: HEAD bodies, two current subscriptions for one associate (the
 surviving value follows PostgreSQL's row order in both), age boundaries on the

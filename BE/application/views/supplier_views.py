@@ -12,7 +12,7 @@ from application.models.payment_models import SupplierAndCustomers
 from application.models.user_models import SportAssociation, User
 from application.serializers.payment_serializers import SupplierSerializer
 from application.utils.api_utils import is_valid_uuid, KTDatatablePagination, \
-    filter_by_all_fields
+    filter_by_all_fields, checked_ordering
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,8 @@ def supplier_list(request):
             }, exc_info=True)
         # sort by field
     if sort_field:
-        suppliers = suppliers.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+        suppliers = suppliers.order_by(
+            checked_ordering(suppliers, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
     # add pagination
     suppliers = paginator.paginate_queryset(queryset=suppliers, request=request)

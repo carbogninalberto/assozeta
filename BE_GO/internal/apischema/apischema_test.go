@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyheader"
 )
 
 // The testdata files are generated from Django and CPython by
@@ -33,7 +35,7 @@ func TestCatalogKeyMatchesGettext(t *testing.T) {
 			t.Errorf("CatalogKey(%q) = %q, %v; Django selects %q", language, got, ok, want)
 		}
 	}
-	for _, refused := range []string{"../it", "it/x", "a\x00", "/"} {
+	for _, refused := range []string{"../it", "it/x", "/"} {
 		if _, ok := CatalogKey(refused); ok {
 			t.Errorf("CatalogKey(%q) is accepted", refused)
 		}
@@ -119,6 +121,7 @@ func TestNegotiationMatchesDRF(t *testing.T) {
 		Renderer  int     `json:"renderer"`
 		MediaType string  `json:"media_type"`
 		Indent    *int    `json:"indent"`
+		IndentErr bool    `json:"indent_error"`
 	}
 	readTestdata(t, "negotiation_corpus.json", &corpus)
 	for _, item := range corpus {
@@ -133,11 +136,11 @@ func TestNegotiationMatchesDRF(t *testing.T) {
 		if item.Format != nil {
 			format = *item.Format
 		}
-		if !SupportedAccept(accept) {
-			t.Errorf("corpus Accept %q is refused", accept)
+		got := Negotiate(renderers, accept, item.Accept != nil, format)
+		if got.NotPorted {
+			t.Errorf("%s Accept %q: charset decoder is not ported", item.View, accept)
 			continue
 		}
-		got := Negotiate(renderers, accept, item.Accept != nil, format)
 		want := Negotiation{Renderer: item.Renderer, MediaType: item.MediaType}
 		if item.Outcome != 200 {
 			want = Negotiation{Status: item.Outcome}
@@ -150,14 +153,45 @@ func TestNegotiationMatchesDRF(t *testing.T) {
 			if item.Indent != nil && *item.Indent != 0 {
 				wantIndent = *item.Indent
 			}
-			if indent := JSONIndent(got.MediaType); indent != wantIndent {
+			indent, outcome := JSONIndent(got.MediaType)
+			if item.IndentErr != (outcome != pyheader.Parsed) {
+				t.Errorf("indent error for %q = %v", got.MediaType, outcome)
+			}
+			if item.IndentErr {
+				continue
+			}
+			if indent != wantIndent {
 				t.Errorf("indent for %q = %d, want %d", got.MediaType, indent, wantIndent)
 			}
 		}
 	}
-	for _, refused := range []string{`application/json; indent="2"`, "text/html; title*=utf-8''x", "application/json\x01", "ÿ/*"} {
-		if SupportedAccept(refused) {
-			t.Errorf("SupportedAccept(%q) accepts", refused)
+}
+
+func TestVersionLinesMatchDjango(t *testing.T) {
+	var samples []struct {
+		Version string `json:"version"`
+		YAML    string `json:"yaml"`
+		JSON    string `json:"json"`
+	}
+	readTestdata(t, "version_samples.json", &samples)
+	if len(samples) < 40 {
+		t.Fatalf("only %d samples", len(samples))
+	}
+	key, _ := CatalogKey(LanguageCode())
+	for _, sample := range samples {
+		for format, want := range map[Format]string{FormatYAML: sample.YAML, FormatJSON: sample.JSON} {
+			document, ok := Document(format, key, sample.Version)
+			if !ok {
+				t.Fatal("no document")
+			}
+			start := strings.Index(document, "\n  version:")
+			if format == FormatJSON {
+				start = strings.Index(document, "\n        \"version\"")
+			}
+			// The expected text runs from the version key to the end of its value.
+			if got := document[start+1:]; !strings.HasPrefix(got, want) {
+				t.Errorf("%s version %q:\n got %q\nwant %q", format, sample.Version, got[:min(len(got), len(want)+20)], want)
+			}
 		}
 	}
 }

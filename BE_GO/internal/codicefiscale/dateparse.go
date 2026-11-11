@@ -4,12 +4,14 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydateutil"
 )
 
 // This file ports codicefiscale._get_date(str) and the part of
 // dateutil.parser.parse (python-dateutil 2.9.0.post0) it reaches for slugs
-// made of ASCII digit groups joined by '-'. Any slug containing a letter is
-// outside the ported subset.
+// made of ASCII digit groups joined by '-'. A slug containing a letter goes
+// through the full grammar in internal/pydateutil.
 
 // errDateParse marks every failure of _get_date: the ValueError it turns into
 // None and the OverflowError it lets through end the same way for encode.
@@ -37,17 +39,38 @@ func getDate(date string, now time.Time) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	for i := 0; i < len(slug); i++ {
-		if c := slug[i]; c != '-' && !isASCIIDigit(c) {
-			return time.Time{}, ErrUnsupported
-		}
-	}
 	var groups []string
 	if slug != "" {
 		groups = strings.Split(slug, "-")
 	}
 	yearFirst := len(groups) > 0 && len(groups[0]) == 4
+	for i := 0; i < len(slug); i++ {
+		if c := slug[i]; c != '-' && !isASCIIDigit(c) {
+			return parseLetterSlug(slug, yearFirst, now)
+		}
+	}
 	return parseDigitSlug(groups, !yearFirst, yearFirst, now)
+}
+
+// parseLetterSlug is date_parser.parse(slug, parserinfo=parserinfo(yearfirst
+// or dayfirst)) for a slug with letters (month names, an ISO "t" time): the
+// whole dateutil grammar. The process zone is UTC, as Django sets TZ from
+// TIME_ZONE; every exception Python raises is an invalid date for the caller.
+func parseLetterSlug(slug string, yearFirst bool, now time.Time) (time.Time, error) {
+	parse := pydateutil.ParseDayFirst
+	if yearFirst {
+		parse = pydateutil.ParseYearFirst
+	}
+	result, err := parse(slug, now, time.UTC)
+	var raised *pydateutil.Error
+	switch {
+	case errors.As(err, &raised):
+		return time.Time{}, errDateParse
+	case err != nil:
+		return time.Time{}, ErrUnsupported
+	}
+	return time.Date(result.Year, time.Month(result.Month), result.Day, result.Hour, result.Minute, result.Second,
+		result.Microsecond*1000, time.UTC), nil
 }
 
 // pyInt is int(s) for an ASCII digit string, failing like Python above the

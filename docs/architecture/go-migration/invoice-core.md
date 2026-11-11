@@ -85,7 +85,7 @@ rendering the page; a broker failure is the 500 page, as in Django.
 - `invoice-customers/add` stays with invoice-parties (its validation is ported there; a valid add generates the XML and the
   PDF).
 - invoice/list refuses (500) random
-  ordering and orderings through relations (resolved by Django when compiling the rows) and smart-search terms outside the
+  ordering (nothing to compare). Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`. Smart-search terms outside the
   Latin script personas-reads supports (ported in tailpay: terms are lower-cased and split as Python does, see payment-export.md).
 - An infinite float search term (`inf`, `-Infinity`) is the 500 page, as `nan` is: the fee lookup cannot adapt an infinite decimal
   when the SQL is compiled (cases `list-search-infinite-server-error`, `list-search-negative-infinity-server-error`; 108 cases, receipt

@@ -12973,6 +12973,691 @@
    }
   },
   {
+   "name": "instance-outbound-integration-test-ai-upper-case-host",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "connectivity",
+    "message": "Il provider non ha restituito un elenco modelli compatibile.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 9,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "HTTPS://LLM.Example.TEST/v1/",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 13,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "revision": 13,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Il provider non ha restituito un elenco modelli compatibile.",
+       "checked_at": "$isonow",
+       "revision": 9
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 9,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "HTTPS://LLM.Example.TEST/v1/",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "llm.example.test:443",
+     "method": "GET",
+     "path": "/v1/models",
+     "headers": {
+      "host": "llm.example.test",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive",
+      "authorization": "Bearer placeholder-ai-key"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJkYXRhIjogeyJpZCI6ICJmaXh0dXJlLW1vZGVsIn19"
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 9
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-user-info-10",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "configuration",
+    "message": "URL del provider non valido.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 10,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://user:pw@llm.example.test/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 13,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "revision": 13,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "configuration",
+       "message": "URL del provider non valido.",
+       "checked_at": "$isonow",
+       "revision": 10
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 10,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://user:pw@llm.example.test/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 10
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-user-info-11",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "configuration",
+    "message": "URL del provider non valido.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 11,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://user@LLM.example.test/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 13,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "revision": 13,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "configuration",
+       "message": "URL del provider non valido.",
+       "checked_at": "$isonow",
+       "revision": 11
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 11,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://user@LLM.example.test/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 11
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-user-info-12",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "configuration",
+    "message": "URL del provider non valido.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 12,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://:pw@llm.example.test",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 13,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "revision": 13,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "configuration",
+       "message": "URL del provider non valido.",
+       "checked_at": "$isonow",
+       "revision": 12
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 12,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://:pw@llm.example.test",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 12
+   }
+  },
+  {
    "name": "instance-outbound-integration-test-ai-revision-string",
    "actor": "owner",
    "method": "POST",

@@ -134,11 +134,12 @@ type PersonasStore interface {
 // PersonaOrderFields are the single names order_by() resolves on this queryset
 // to a column or annotation: concrete fields, attnames, forward relations (no
 // related model ordering), pk and the annotations. Reverse accessors, the
-// tutors M2M and relation paths join other tables and are not ported.
+// tutors M2M, relation paths and the identity document number are unknown
+// orderings (FieldError, 500).
 var PersonaOrderFields = []string{"pk", "is_tutor_annotated", "tutors_count", "associate_id", "picture_path", "first_name",
 	"last_name", "sex", "tax_code", "born_date", "born_city", "address_city", "address", "address_cap", "nationality",
 	"nationality_residence", "email", "phone", "phone_2", "phone_3", "phone_4", "phone_label", "phone_2_label", "phone_3_label",
-	"phone_4_label", "is_minor", "disabled", "draft", "deleted", "family_role", "id_number", "creation_date", "migrated", "notes",
+	"phone_4_label", "is_minor", "disabled", "draft", "deleted", "family_role", "creation_date", "migrated", "notes",
 	"user", "user_id", "sport_association", "sport_association_id", "group", "group_id", "family", "family_id"}
 
 // PersonaOrderable reports whether order_by(name) resolves in this port

@@ -621,6 +621,17 @@ sadd('collaborator-invite-expired', 400, {'msg': 'Collaboration invite expired.'
      effect=removed(invite='social_expired'))
 sadd('username-number', 500, SERVER, social(21, identity('google', 'persona21@example.test'), username=21), GOOGLE)
 sadd('username-conflict', 500, SERVER, social(21, identity('google', 'persona21@example.test'), username='conflict-user'), GOOGLE)
+# A name that is not a string is stored, mailed and answered as its str(); None fails the insert.
+sadd('name-null', 500, SERVER, social(21, identity('google', 'persona21@example.test'), first_name=None), GOOGLE)
+sadd('name-too-long-list', 500, SERVER, social(21, identity('google', 'persona21@example.test'), last_name=['x' * 150]), GOOGLE)
+sadd('names-not-strings', 200, '$signup',
+     social(40, identity('google', 'persona40@example.test'), first_name=['a', 1, None, {'k': "it's <b>"}], last_name=12), GOOGLE,
+     effect=created(first="['a', 1, None, {'k': \"it's <b>\"}]", last='12', username='PERSONA-40', email='persona40@example.test',
+                    password=None, social=True))
+sadd('names-boolean-and-object', 200, '$signup',
+     social(41, identity('google', 'persona41@example.test', claims={'given_name': True, 'family_name': 0}), last_name={'a': False}),
+     GOOGLE, effect=created(first='True', last="{'a': False}", username='PERSONA-41', email='persona41@example.test', password=None,
+                            social=True))
 sadd('google-athlete', 200, '$signup',
      social(22, identity('google', 'Social.New@Example.TEST', claims={'given_name': 'Zoë', 'family_name': "D'Arco <it>"}),
             email='Social.Partial@example.test', username='social-nuovo', first_name='ignored', last_name='ignored', unknown=1),

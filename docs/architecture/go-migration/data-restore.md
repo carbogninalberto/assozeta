@@ -157,8 +157,11 @@ self-hosted instance) and the receipt's association the primary one, else 403
   Bakney invoices, tutors that would be reassigned, cleared or ignored, members the ZIP reader port
   does not open, values outside its decoded subset. Their summary counts in Go are therefore always
   zero for legacy invoices and tutor reassignments.
-- Request bodies other than JSON, multipart or empty on these POSTs (DRF answers 415 or reads form
-  data), multipart parts with `Content-Transfer-Encoding` or a non-UTF-8 RFC 2231 name.
+- Multipart parts whose RFC 2231 name uses a charset other than utf-8, ascii, latin-1 or
+  windows-1252 (decoder not ported). Other media types answer DRF's 415; a base64
+  `Content-Transfer-Encoding` is decoded like Django does (white space stripped, a failure is the
+  400 parse error, decoded bytes count towards the limit) and RFC 2231 file names are read by the
+  shared `djangoPartHeaders` (cases `upload-base64-*`, `upload-rfc2231-file-name`).
 - Cached progress values outside the decoded pickle subset (Django may read them or treat a
   failure as None); dict keys other than str.
 - Backup paths that resolve outside `AWS_LOCATION` on a stream (Django raises `SuspiciousOperation`).

@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"math"
 	"math/big"
 	"strconv"
 	"strings"
@@ -96,28 +95,6 @@ var courseListColumns = map[string]string{
 	"group": "group_id", "group_id": "group_id",
 }
 
-// courseListRelations are the other names Options.get_field resolves on
-// Course (M2M and reverse relations): order_by accepts them and paths
-// through any known name, and only the compiled query uses or rejects them.
-var courseListRelations = map[string]bool{"tags": true, "locations": true, "coursesubscription": true, "attendanceregistry": true}
-
-// courseListDateColumns are the DateTimeFields; courseListExtracts the transforms
-// registered on them. `date` gives a DateField (courseListDateExtracts) and
-// `time` a TimeField (courseListTimeExtracts); an extract is an integer, which
-// has no transform of its own.
-var courseListDateColumns = map[string]bool{"creation_date": true, "start_date": true, "end_date": true}
-var courseListDateExtracts = map[string]bool{"year": true, "iso_year": true, "month": true, "day": true, "week": true, "week_day": true,
-	"iso_week_day": true, "quarter": true}
-var courseListTimeExtracts = map[string]bool{"hour": true, "minute": true, "second": true}
-var courseListExtracts = map[string]bool{"year": true, "iso_year": true, "month": true, "day": true, "week": true, "week_day": true,
-	"iso_week_day": true, "quarter": true, "hour": true, "minute": true, "second": true, "date": true, "time": true}
-
-// courseListJSONColumns are the JSONFields: every name after them is a key
-// transform. courseListRelationColumns are the foreign keys: names after them
-// are paths into the related model.
-var courseListJSONColumns = map[string]bool{"events": true, "multiple_quotes": true}
-var courseListRelationColumns = map[string]bool{"sport_association_id": true, "group_id": true}
-
 func courseListText(query domain.RequestObject, name string) string {
 	value, _ := query.Lookup(name)
 	text, _ := value.(string)
@@ -133,62 +110,24 @@ func courseListScope(identity domain.ResolvedIdentity) *string {
 }
 
 // courseListOrdering is order_by(name): '?' is random; one leading '-' is
-// descending; an unknown first name is a FieldError at order_by() (a 500
-// now). Names after a known field are resolved when the rows are read: the
-// transforms registered on a datetime field and the key transforms of a JSON
-// field order the rows, any other name after a column is a FieldError then
-// (query.OrderInvalid), and a path through a relation is not ported
-// (unported=true): the joined rows repeat or tie, so their order is the
-// database's choice.
+// descending; only the course's own columns order the list, so any other
+// name (a relation, a path through one, a transform) is a FieldError at
+// order_by() (a 500).
 func courseListOrdering(query *domain.CourseListQuery, name string) (unported bool, err error) {
 	if name == "?" {
 		query.Random = true
 		return false, nil
 	}
 	field, descending := strings.CutPrefix(name, "-")
-	parts := strings.Split(field, "__")
-	first := parts[0]
-	if first == "pk" {
-		first = "course_id"
+	if field == "pk" {
+		field = "course_id"
 	}
-	column, local := courseListColumns[first]
-	switch {
-	case local && len(parts) == 1:
-		query.OrderColumn, query.Descending = column, descending
-		return false, nil
-	case local && courseListRelationColumns[column], !local && courseListRelations[first]:
-		return true, nil
-	case local && courseListJSONColumns[column]:
-		query.OrderColumn, query.OrderKeys, query.Descending = column, parts[1:], descending
-		if len(parts) == 2 {
-			// One key that int() reads is an array index: the operator takes an int4.
-			if number, ok := dto.PythonIntText(parts[1]); ok && (!number.IsInt64() || number.Int64() > math.MaxInt32 ||
-				number.Int64() < math.MinInt32) {
-				query.OrderInvalid = true
-			}
-		}
-		for _, key := range parts[1:] {
-			if strings.ContainsRune(key, 0) {
-				query.OrderInvalid = true
-			}
-		}
-		return false, nil
-	case local && courseListDateColumns[column] && courseListExtracts[parts[1]]:
-		query.OrderColumn, query.OrderTransform, query.Descending = column, parts[1], descending
-		switch {
-		case len(parts) == 2:
-		case len(parts) == 3 && parts[1] == "date" && courseListDateExtracts[parts[2]],
-			len(parts) == 3 && parts[1] == "time" && courseListTimeExtracts[parts[2]]:
-			query.OrderSecond = parts[2]
-		default:
-			query.OrderInvalid = true
-		}
-		return false, nil
-	case local:
-		query.OrderColumn, query.OrderInvalid = column, true
-		return false, nil
+	column, ok := courseListColumns[field]
+	if !ok {
+		return false, ErrCourseListServer
 	}
-	return false, ErrCourseListServer
+	query.OrderColumn, query.Descending = column, descending
+	return false, nil
 }
 
 // List follows course_list.
@@ -268,9 +207,6 @@ func (s *CourseLists) List(ctx context.Context, identity domain.ResolvedIdentity
 		if unported {
 			return nil, ErrCourseListUnported
 		}
-		if query.OrderInvalid {
-			return nil, ErrCourseListServer
-		}
 		if courseListText(request.Query, "optimized") == "1" {
 			values, err := s.store.CourseValues(ctx, query)
 			if err != nil {
@@ -309,9 +245,6 @@ func (s *CourseLists) page(ctx context.Context, identity domain.ResolvedIdentity
 	}
 	if unported {
 		return nil, ErrCourseListUnported
-	}
-	if query.OrderInvalid {
-		return nil, ErrCourseListServer
 	}
 	rows, err := s.store.Courses(ctx, query, page.Size, page.Offset())
 	if err != nil {
@@ -423,9 +356,6 @@ func (s *CourseLists) Export(ctx context.Context, export *CourseListExport, data
 	if export.unported {
 		// The ordering is compiled when the rows are iterated (here).
 		return nil, ErrCourseListExportUnported
-	}
-	if export.query.OrderInvalid {
-		return nil, ErrCourseListServer
 	}
 	courses, err := s.store.ExportCourses(ctx, export.query)
 	if err != nil {

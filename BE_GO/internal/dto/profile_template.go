@@ -48,6 +48,9 @@ type ProfileTemplateField struct {
 type ProfileTemplatePlan struct {
 	Fields []ProfileTemplateField
 	Logo   *string
+	// RawLogo is a logo that is not a string: compress_base64 returns it
+	// unchanged and the TextField stores its str().
+	RawLogo any
 }
 
 var profileTemplateKeys = []string{"additional_sections", "regulation", "demand", "show_demand_to_athletes", "show_demand_to_members",
@@ -132,8 +135,7 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 	case string:
 		plan.Logo = &logo
 	default:
-		// compress_base64 returns a non-string unchanged; TextField stores str().
-		return nil, ErrProfileTemplateNotPorted
+		plan.RawLogo = logo
 	}
 	for _, kind := range []string{"subscription", "membership"} {
 		fee := values[kind+"_fee"]
@@ -207,18 +209,20 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 		assign(name, ProfileTemplateText, values[name])
 	}
 	for _, field := range plan.Fields {
-		if !profileTemplateSupported(field.Value) {
-			return nil, ErrProfileTemplateNotPorted
-		}
-		switch field.Value.(type) {
-		case []any, domain.RequestObject:
-			if field.Kind != ProfileTemplateJSON {
-				// str() of a container (its Python repr) is not reproduced.
-				return nil, ErrProfileTemplateNotPorted
-			}
+		// The audit entry is the first statement of the save and cannot hold a
+		// NUL or a lone surrogate. JSON fields enter it as escaped JSON text and
+		// containers as their repr, so only plain strings fail there.
+		if text, ok := field.Value.(string); ok && field.Kind != ProfileTemplateJSON && !profileTemplateValidText(text) {
+			return nil, ErrProfileTemplatePython
 		}
 	}
 	if plan.Logo != nil && !profileTemplateValidText(*plan.Logo) {
+		// compress_base64 returns a value without a comma, or with a lone
+		// surrogate in its data, unchanged. Other spellings are not ported.
+		_, data, found := strings.Cut(*plan.Logo, ",")
+		if !found || profileTemplateHasSurrogate(data) {
+			return nil, ErrProfileTemplatePython
+		}
 		return nil, ErrProfileTemplateNotPorted
 	}
 	return plan, nil
@@ -259,36 +263,11 @@ func profileTemplatePrettify(value any) (string, error) {
 	return pretty, nil
 }
 
-// profileTemplateSupported admits the values whose str()/json.dumps() and
-// column conversion this port reproduces: no lone surrogates or NUL, JSON
-// numbers within float range, and containers only inside JSON.
-func profileTemplateSupported(value any) bool {
-	switch v := value.(type) {
-	case nil, bool:
-		return true
-	case float64:
-		// A plan fee float(fee): json.dumps writes inf as Infinity, which the
-		// jsonb UPDATE then rejects inside save(), after the audit entry.
-		return !math.IsNaN(v)
-	case string:
-		return profileTemplateValidText(v)
-	case json.Number:
-		_, ok := profileTemplateNumber(v)
-		return ok
-	case []any:
-		for _, item := range v {
-			if !profileTemplateSupported(item) {
-				return false
-			}
+func profileTemplateHasSurrogate(text string) bool {
+	for _, r := range pythonCodePoints(text) {
+		if r >= 0xd800 && r <= 0xdfff {
+			return true
 		}
-		return true
-	case domain.RequestObject:
-		for _, field := range v {
-			if !profileTemplateSupported(field.Name) || !profileTemplateSupported(field.Value) {
-				return false
-			}
-		}
-		return true
 	}
 	return false
 }
@@ -317,82 +296,21 @@ func profileTemplateNumber(token json.Number) (any, bool) {
 	return number, true
 }
 
-var profileTemplateFloatText = regexp.MustCompile(`^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]{1,3})?$`)
 var profileTemplateFloatSpecial = regexp.MustCompile(`(?i)^[+-]?(?:nan|inf|infinity)$`)
 
-// ProfileTemplateFloat is float(value) for the supported subset. Containers raise
-// TypeError; strings outside ASCII decimal, exponent and inf/nan spellings,
-// and integers beyond 15 digits are refused.
+// ProfileTemplateFloat is float(value); ErrProfileTemplatePython is its
+// TypeError, ValueError or OverflowError.
 func ProfileTemplateFloat(value any) (float64, error) {
-	switch v := value.(type) {
-	case bool:
-		if v {
-			return 1, nil
-		}
-		return 0, nil
-	case float64:
-		return v, nil
-	case json.Number:
-		number, ok := profileTemplateNumber(v)
-		if !ok {
-			return 0, ErrProfileTemplateNotPorted
-		}
-		if integer, isInt := number.(*big.Int); isInt {
-			if len(strings.TrimPrefix(integer.String(), "-")) > 15 {
-				return 0, ErrProfileTemplateNotPorted
-			}
-			return float64(integer.Int64()), nil
-		}
-		return number.(float64), nil
-	case string:
-		switch {
-		case profileTemplateFloatSpecial.MatchString(v):
-			lower := strings.ToLower(strings.TrimLeft(v, "+-"))
-			if lower == "nan" {
-				return math.NaN(), nil
-			}
-			if strings.HasPrefix(v, "-") {
-				return math.Inf(-1), nil
-			}
-			return math.Inf(1), nil
-		case profileTemplateFloatText.MatchString(v):
-			number, err := strconv.ParseFloat(v, 64)
-			if err != nil {
-				return 0, ErrProfileTemplateNotPorted
-			}
-			return number, nil
-		}
-		return 0, ErrProfileTemplateNotPorted
-	case nil, []any, domain.RequestObject:
-		return 0, ErrProfileTemplatePython // TypeError
+	number, ok := PythonFloatOf(value)
+	if !ok {
+		return 0, ErrProfileTemplatePython
 	}
-	return 0, ErrProfileTemplateNotPorted
+	return number, nil
 }
 
-// ProfileTemplateStr is str() of a supported scalar (auditlog's smart_str and
-// TextField's stored value).
-func ProfileTemplateStr(value any) string {
-	switch v := value.(type) {
-	case nil:
-		return "None"
-	case bool:
-		if v {
-			return "True"
-		}
-		return "False"
-	case string:
-		return v
-	case float64:
-		return pythonFloatRepr(v)
-	case json.Number:
-		number, _ := profileTemplateNumber(v)
-		if integer, ok := number.(*big.Int); ok {
-			return integer.String()
-		}
-		return pythonFloatRepr(number.(float64))
-	}
-	panic("unsupported profile template scalar")
-}
+// ProfileTemplateStr is str() of a request value (auditlog's smart_str and
+// TextField's stored value); a container is its Python repr.
+func ProfileTemplateStr(value any) string { return PythonStr(value) }
 
 // ProfileTemplateAudit is auditlog's value for the in-memory attribute.
 func ProfileTemplateAudit(field ProfileTemplateField) string {
@@ -446,12 +364,26 @@ func ProfileTemplateDecimalLiteral(value any) (string, bool) {
 	case float64:
 		return strconv.FormatFloat(v, 'e', 8, 64), !math.IsInf(v, 0) && !math.IsNaN(v)
 	case json.Number:
-		number, _ := profileTemplateNumber(v)
+		number, finite := profileTemplateNumber(v)
+		if !finite {
+			return "", false // a JSON number past the float range is inf
+		}
 		if integer, ok := number.(*big.Int); ok {
 			return integer.String(), true
 		}
 		return ProfileTemplateDecimalLiteral(number.(float64))
 	case string:
+		// Decimal(v) reads what float(v) accepted: white space stripped,
+		// underscores dropped, any Unicode decimal digit.
+		v = strings.Map(func(r rune) rune {
+			if r == '_' {
+				return -1
+			}
+			if digit, ok := pythonDigit(r); ok {
+				return '0' + rune(digit)
+			}
+			return r
+		}, strings.TrimFunc(v, PythonIsSpace))
 		if profileTemplateFloatSpecial.MatchString(v) {
 			return "", false
 		}

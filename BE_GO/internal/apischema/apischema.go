@@ -120,9 +120,9 @@ func Document(format Format, key, version string) (string, bool) {
 	write := func(from, to int) {
 		for i := from; i < to; i++ {
 			if i == versionLine && version != "" {
-				// build_root_object: f'{settings.VERSION} ({version})'. The caller
-				// restricts version to characters both renderers emit verbatim.
-				out.WriteString(strings.Replace(base[i], d.Version, d.Version+" ("+version+")", 1))
+				// build_root_object: f'{settings.VERSION} ({version})', emitted by
+				// the format's own renderer (PyYAML scalar styles, JSON escapes).
+				out.WriteString(versionLines(format, base[i], d.Version+" ("+version+")"))
 				continue
 			}
 			out.WriteString(base[i])
@@ -153,3 +153,19 @@ func Options(format Format, language string) (string, bool) {
 // {{schema_url}} placeholders), "redoc" (with {{schema_url}}) or
 // "redoc_options".
 func Page(name string) string { return loaded().Pages[name] }
+
+// versionLines renders the info.version line (or lines) for value. line is the
+// line of the default document, whose indentation the replacement keeps.
+func versionLines(format Format, line, value string) string {
+	if format == FormatJSON {
+		var out strings.Builder
+		out.WriteString(line[:strings.Index(line, `"`)])
+		writeJSONString(&out, "version")
+		out.WriteString(": ")
+		writeJSONString(&out, value)
+		out.WriteString(",\n")
+		return out.String()
+	}
+	rendered := RenderYAML(Map{{Key: "info", Value: Map{{Key: "version", Value: value}}}})
+	return rendered[strings.Index(rendered, "\n")+1:]
+}

@@ -1067,8 +1067,17 @@ add('list-sort-status-desc-pk', 'owner', LIST + '?query[status_flag]=4&sort[fiel
 add('list-sort-unknown', 'owner', LIST + '?sort[field]=nope', 500, SERVER)
 add('list-sort-double-dash', 'owner', LIST + '?sort[field]=-creation_date&sort[sort]=desc', 500, SERVER)
 add('list-sort-invalid-page-first', 'owner', LIST + '?sort[field]=nope&pagination[page]=9', 500, SERVER)
-# Relation orderings compile with the rows: the page check comes first.
-add('list-sort-relation-invalid-page', 'owner', LIST + '?sort[field]=user__username&pagination[page]=9', 404, INVALID_PAGE)
+# Only the member's own columns order the list; paths through a relation or the owner account, transforms and the stored
+# signature or document answer as an unknown ordering, before the page is checked.
+add('list-sort-relation-invalid-page', 'owner', LIST + '?sort[field]=user__username&pagination[page]=9', 500, SERVER)
+for _name, _field in (('user-password', 'user__password'), ('owner-account-path', 'sport_association__user__password'),
+                      ('owner-account-email', 'sport_association__user__email'), ('associate-path', 'associate__tax_code'),
+                      ('payment-path', 'payment__payment_intent_id'), ('signature-key', 'signature_storage_key'),
+                      ('signature-url', 'signature_url'), ('document', 'document_pdf'), ('transform', 'creation_date__year'),
+                      ('reverse-relation', 'tags')):
+    add('list-sort-' + _name + '-server-error', 'owner', LIST + '?sort[field]=' + _field + '&sort[sort]=desc', 500, SERVER)
+# A relation's own column orders by its key (the related models have no Meta.ordering).
+add('list-sort-own-relation-invalid-page', 'owner', LIST + '?sort[field]=user&pagination[page]=9', 404, INVALID_PAGE)
 add('list-sort-annotation-invalid-page', 'owner', LIST + '?sort[field]=_has_future_renewal&pagination[page]=9', 404, INVALID_PAGE)
 # The annotation orders by its expression (false before true); two tagged rows, one with a later subscription to renew into.
 tagged = where(lambda r: bool(r['tags']))
@@ -1326,7 +1335,7 @@ add('archived-sort-lastname-flag-zero', 'owner', ARCHIVED + '?query[generalSearc
 add('archived-sort-lastname-desc', 'owner', ARCHIVED + '?query[sort_lastname_desc_flag]=1&sort[field]=start_date', 200,
     archived_page(OWN_ARCHIVED, ordered=ordered_by(OWN_ARCHIVED, lambda k: last(k) if SUBSCRIPTIONS[k]['associate'] else '\uffff', True)))
 add('archived-sort-unknown', 'owner', ARCHIVED + '?sort[field]=nope', 500, SERVER)
-add('archived-sort-relation-invalid-page', 'owner', ARCHIVED + '?sort[field]=payment&pagination[page]=4', 404, INVALID_PAGE)
+add('archived-sort-own-relation-invalid-page', 'owner', ARCHIVED + '?sort[field]=payment&pagination[page]=4', 404, INVALID_PAGE)
 add('archived-sort-age-unknown', 'owner', ARCHIVED + '?sort[field]=age', 500, SERVER)
 add('archived-sort-relation-replaced-by-lastname', 'owner', ARCHIVED + '?sort[field]=medical&query[sort_lastname_desc_flag]=1', 200,
     archived_page(OWN_ARCHIVED, ordered=ordered_by(OWN_ARCHIVED, lambda k: last(k) if SUBSCRIPTIONS[k]['associate'] else '\uffff', True)))

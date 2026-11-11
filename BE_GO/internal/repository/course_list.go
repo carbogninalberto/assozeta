@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -89,59 +88,6 @@ func courseListFrom(query domain.CourseListQuery) (string, []any) {
 	return " FROM application_course c" + joins.String() + where.String(), args
 }
 
-// courseListOrderExpression is the column, or its datetime extract in UTC
-// (Django's EXTRACT(... FROM col AT TIME ZONE 'UTC'); week_day counts from Sunday = 1).
-func courseListOrderExpression(query domain.CourseListQuery) string {
-	column := "c." + query.OrderColumn
-	if len(query.OrderKeys) > 0 {
-		return courseListKeyTransform(column, query.OrderKeys)
-	}
-	zoned := column + " AT TIME ZONE 'UTC'"
-	switch query.OrderTransform {
-	case "":
-		return column
-	case "date", "time":
-		value := "(" + zoned + ")::" + query.OrderTransform
-		if query.OrderSecond == "" {
-			return value
-		}
-		return courseListExtract(query.OrderSecond, value)
-	}
-	return courseListExtract(query.OrderTransform, zoned)
-}
-
-// courseListExtract is Django's Extract of one of the service's transform
-// names (week_day counts from Sunday = 1).
-func courseListExtract(name, source string) string {
-	switch name {
-	case "week_day":
-		return "EXTRACT(DOW FROM " + source + ") + 1"
-	case "iso_week_day":
-		return "EXTRACT(ISODOW FROM " + source + ")"
-	case "iso_year":
-		return "EXTRACT(ISOYEAR FROM " + source + ")"
-	}
-	return "EXTRACT(" + strings.ToUpper(name) + " FROM " + source + ")"
-}
-
-// courseListKeyTransform is KeyTransform on PostgreSQL: one key is `->` with
-// an integer when int() reads the name (an array index) and the text
-// otherwise; several keys are the `#>` path of the names as text.
-func courseListKeyTransform(column string, keys []string) string {
-	literal := func(text string) string { return "'" + strings.ReplaceAll(text, "'", "''") + "'" }
-	if len(keys) == 1 {
-		if number, ok := dto.PythonIntText(keys[0]); ok {
-			return "(" + column + " -> " + number.String() + ")"
-		}
-		return "(" + column + " -> " + literal(keys[0]) + "::text)"
-	}
-	path := make([]string, len(keys))
-	for index, key := range keys {
-		path[index] = literal(key)
-	}
-	return "(" + column + " #> ARRAY[" + strings.Join(path, ",") + "]::text[])"
-}
-
 func courseListOrder(query domain.CourseListQuery) string {
 	switch {
 	case query.Random:
@@ -149,9 +95,9 @@ func courseListOrder(query domain.CourseListQuery) string {
 	case query.OrderColumn == "":
 		return " ORDER BY c.creation_date DESC"
 	case query.Descending:
-		return " ORDER BY " + courseListOrderExpression(query) + " DESC"
+		return " ORDER BY " + "c." + query.OrderColumn + " DESC"
 	}
-	return " ORDER BY " + courseListOrderExpression(query) + " ASC"
+	return " ORDER BY " + "c." + query.OrderColumn + " ASC"
 }
 
 func (r *CourseLists) CountCourses(ctx context.Context, query domain.CourseListQuery) (int64, error) {
