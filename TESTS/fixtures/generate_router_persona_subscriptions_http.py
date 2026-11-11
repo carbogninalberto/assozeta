@@ -34,14 +34,15 @@ LIST_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST']
 DETAIL_ALLOW = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'PUT']
 
 
-def add(name, actor, method, path, status, response, *, body=None, raw_body=None, headers=None, effect=None, allow=None):
+def add(name, actor, method, path, status, response, *, body=None, raw_body=None, headers=None, effect=None, allow=None,
+        content_type='application/json'):
     detail = path.split('?')[0].rstrip('/').count('/') > 1
     case = {'name': f'router-persona-subscriptions-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
             'status': status, 'response': response, 'allow': allow or (DETAIL_ALLOW if detail else LIST_ALLOW), 'effect': effect}
     if body is not None:
         case['body'] = body
     if raw_body is not None:
-        case['raw_body'], case['content_type'] = raw_body, 'application/json'
+        case['raw_body'], case['content_type'] = raw_body, content_type
     cases.append(case)
 
 
@@ -259,6 +260,80 @@ add('partial-update-own-group-deleted', 'owner', 'PATCH', detail('grouped'), 200
     body={'archived': 'no', 'deleted': 'on', 'group': OWN_GROUP}, headers={'X-Group-Id': OWN_GROUP},
     effect=updated('owner', 'grouped', {'archived': False, 'deleted': True}, changes={'archived': ['True', 'False'], 'deleted': ['False', 'True']}))
 add('update-deleted-by-patch-not-found', 'owner', 'PATCH', detail('grouped'), 404, SUB_NOT_FOUND, body={})
+
+# Form bodies (t4l1): Field.get_value over the QueryDict. A key the form lacks is False for a boolean and [] for tags unless
+# the update is partial; an empty input is None for a nullable field ('' when it may be blank) and skipped for a field with a
+# default; a JSON field is json.loads of its text; tags are getlist.
+FORM = 'application/x-www-form-urlencoded'
+JSON_INVALID = 'Value must be valid JSON.'
+add('create-form-required', 'owner', 'POST', LIST, 400, REQUIRED_BODY, raw_body='notes=x', content_type=FORM)
+add('create-form-field-errors', 'owner', 'POST', LIST, 400, {
+    'custom_data': [JSON_INVALID], 'type': ['"9" is not a valid choice.'], 'start_date': [DATE_FORMAT],
+    'archived': ['Must be a valid boolean.'], 'meta': [JSON_INVALID], 'sport_association': [NULL], 'user': [NULL],
+    'tags': ['“” is not a valid UUID.']},
+    raw_body='type=9&role=&status_flag=&acceptance_date=&start_date=x&archived=maybe&draft=&notes=&subscription_number=&custom_data=%7B'
+             '&meta=&sport_association=&user=&tags=&supplier=&creation_date=&signature_url=&subscription_id=', content_type=FORM)
+add('create-form-server-error', 'owner', 'POST', LIST, 500, SERVER,
+    raw_body=f'sport_association={VALID["sport_association"]}&user={VALID["user"]}&custom_data=%5B1%5D&tags={TAG["id"]}', content_type=FORM)
+form_tags = [TAG['id'], TAGS_EXTRA[0]['id']]
+form_ids = set()
+for tag_id in form_tags:
+    form_ids.add(uuid.UUID(tag_id))
+form_ordered = [str(tag_id) for tag_id in form_ids.difference([])]
+STATE['lone_past'].update({'notes': 'ciao', 'competitive': True, 'custom_data': {'a': 1}, 'type': 1, 'resignation_date': '2025-06-05',
+                           'acceptance_date': None, 'subscription_number': None, 'tags': form_ordered})
+add('partial-update-form', 'owner', 'PATCH', detail('lone_past'), 200, current('lone_past'),
+    raw_body=f'notes=ciao&competitive=on&custom_data=%7B%22a%22%3A1%7D&tags={form_tags[0]}&tags={form_tags[1]}&type=1'
+             '&resignation_date=05/06/2025&meta=null&subscription_number=&acceptance_date=&draft=&role=', content_type=FORM,
+    effect=updated('owner', 'lone_past', {'notes': 'ciao', 'competitive': True, 'custom_data': {'a': 1}, 'type': 1,
+                                          'resignation_date': '2025-06-05', 'acceptance_date': None, 'subscription_number': None},
+                   changes={'notes': ['None', 'ciao'], 'competitive': ['False', 'True'], 'custom_data': ['null', '{"a": 1}'],
+                            'type': ['3', '1'], 'resignation_date': ['None', '2025-06-05'], 'acceptance_date': ['2018-03-15', 'None'],
+                            'subscription_number': ['0', 'None']},
+                   tags=form_ordered))
+add('partial-update-form-json-invalid', 'owner', 'PATCH', detail('lone_past'), 400, {'additional_fields': [JSON_INVALID]},
+    raw_body='additional_fields=&notes=x', content_type=FORM)
+# A non-partial form: the booleans it lacks are False and the tags it lacks are cleared; a blank notes input stays ''.
+BOUNDARY = 't4l1'
+multipart = lambda fields: ''.join(f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'
+                                   for name, value in fields) + f'--{BOUNDARY}--\r\n'
+STATE['lone_past'].update({'notes': '', 'competitive': False, 'draft': False, 'tags': [], 'subscription_type': None})
+add('update-multipart-put', 'full_collaborator', 'PUT', detail('lone_past'), 200, current('lone_past'),
+    raw_body=multipart([('sport_association', VALID['sport_association']), ('user', VALID['user']), ('notes', ''),
+                        ('subscription_type', '')]),
+    content_type=f'multipart/form-data; boundary={BOUNDARY}',
+    effect=updated('full_collaborator', 'lone_past', {'notes': '', 'competitive': False, 'draft': False, 'subscription_type': None},
+                   changes={'notes': ['ciao', ''], 'competitive': ['True', 'False'], 'draft': ['True', 'False'],
+                            'subscription_type': ['Agonistica', 'None']}, tags=[]))
+# A JSON value the jsonb column rejects: auditlog's pre_save entry is written, then the UPDATE fails (the 500 page).
+add('partial-update-json-nul-audited-server-error', 'owner', 'PATCH', detail('lone_past'), 500, SERVER,
+    body={'custom_data': {'a': 'x\x00y'}, 'notes': 'mai'},
+    effect={'kind': 'audit', 'actor': 'owner', 'subscription': SUB_IDS['lone_past'],
+            'changes': {'custom_data': ['{"a": 1}', '{"a": "x\\u0000y"}'], 'notes': ['', 'mai']}})
+# An infinite number: the JSON body fails JSONField's json.dumps(allow_nan=False); a form's text is only parsed, so it reaches the save.
+add('partial-update-json-infinite', 'owner', 'PATCH', detail('lone_past'), 400, {'meta': [JSON_INVALID], 'custom_data': [JSON_INVALID]},
+    raw_body='{"meta": [1e999], "custom_data": {"a": {"b": -1e999}}, "additional_fields": 1e308}')
+add('partial-update-form-infinite-audited-server-error', 'owner', 'PATCH', detail('lone_past'), 500, SERVER, raw_body='meta=%5B1e999%2C-1e999%5D',
+    content_type=FORM,
+    effect={'kind': 'audit', 'actor': 'owner', 'subscription': SUB_IDS['lone_past'], 'changes': {'meta': ['null', '[Infinity, -Infinity]']}})
+add('partial-update-form-surrogate-audited-server-error', 'owner', 'PATCH', detail('lone_past'), 500, SERVER,
+    raw_body='additional_fields=%7B%22k%22%3A%22a%5Cud800%22%7D', content_type=FORM,
+    effect={'kind': 'audit', 'actor': 'owner', 'subscription': SUB_IDS['lone_past'],
+            'changes': {'additional_fields': ['[1, "a"]', '{"k": "a\\ud800"}']}})
+add('partial-update-form-constant-invalid', 'owner', 'PATCH', detail('lone_past'), 400, {'meta': [JSON_INVALID]}, raw_body='meta=NaN',
+    content_type=FORM)
+add('partial-update-json-surrogate-audited-server-error', 'owner', 'PATCH', detail('lone_past'), 500, SERVER,
+    raw_body='{"meta": "\\ud800"}',
+    effect={'kind': 'audit', 'actor': 'owner', 'subscription': SUB_IDS['lone_past'], 'changes': {'meta': ['null', '"\\ud800"']}})
+# A different subscription_id: Model.save() finds no row under it and inserts a copy (auditlog logs it as an update, then as
+# a create); the tags are set on the copy and the row the request names stays as it was.
+COPY = 'a1000000-0000-4000-8000-000000990201'
+add('partial-update-new-key-copy', 'owner', 'PATCH', detail('lone_past'), 200,
+    {**current('lone_past'), 'subscription_id': COPY, 'notes': 'copia', 'tags': [TAG['id']]},
+    body={'subscription_id': COPY, 'notes': 'copia', 'tags': [TAG['id']]},
+    effect={'kind': 'copy', 'actor': 'owner', 'subscription': SUB_IDS['lone_past'], 'copy': COPY, 'columns': {'notes': 'copia'},
+            'tags': [TAG['id']]})
+add('partial-update-copy-key-taken', 'owner', 'PATCH', detail('lone_past'), 400, TAKEN, body={'subscription_id': COPY})
 
 # The class's own delete() on the <pk>/list route: get_object() on the live, group-aware subscriptions of the association,
 # then deleted=True and Subscription.save() (auditlog's update entry, indexed directly), 204.

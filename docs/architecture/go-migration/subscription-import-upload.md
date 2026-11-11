@@ -41,6 +41,8 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   engine="openpyxl")` reads the bytes whatever the suffix says. A failure falls back to the `xlrd` engine, which is not
   installed: the 500 page after the writes (a legacy `.xls`, an `.ods` archive, text named `.xlsx`). The frame is the first
   worksheet, read as openpyxl's read-only, data-only workbook gives it (see "Workbook reading").
+- A file given as `document_id` (t4l1) is `uuid.UUID(file)`: the 400 `'InMemoryUploadedFile' object has no attribute 'replace'`
+  (`TemporaryUploadedFile` when the request is longer than `FILE_UPLOAD_MAX_MEMORY_SIZE`; case `file-document-id`).
 - **`document_id` and `map`**: `is_valid_uuid(document_id)` is 400 `[str(exception)]` (`badly formed hexadecimal UUID
   string`, `'<type>' object has no attribute 'replace'`, or the no-argument TypeError for None). The document is resolved by
   id (`Document.objects.filter(document_id=...).first()`); none is a 500. Its file is the one in the import folder of the
@@ -133,8 +135,6 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   text and numbers are otherwise read by the whole dateutil parser, `internal/pydateutil`, day first unless the text starts
   with the year); a tax code beyond ASCII in a complete row or outside the transliteration subset; a
   `default` that is not an object when a value is missing.
-- Columns containing `İ` or `Σ` (Python's full lower-casing and final sigma).
-- A file given as `document_id`.
 
 ## Evidence (TDD)
 
@@ -191,3 +191,9 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
   (v2-refusals.md, "a non-zero number in a date column, or date text outside ..."). GREEN (`v2subs3-versioned-r1`, after
   merging the base): 69/69 on four transports. Mutation (`v2subs3-mutation-r1`): reading every date text day first, also
   after a leading year, fails Go on `subscription-import-upload-wizard-map` (`state.drafts`, CAUGHT).
+
+## t4l1
+
+Column names with `İ` or `Σ` are lower-cased as `str.lower()` does (`dto.PythonLower`: `i` with a combining dot, the final sigma)
+before the distance to each key is measured (case `csv-dotted-i-and-sigma-columns`), and a file sent as `document_id` is answered
+(`file-document-id`). 71 cases.

@@ -148,7 +148,7 @@ func Parse(text string, now time.Time, local *time.Location) (Result, error) {
 // uses the year of now, which differs only in a process that has been running
 // since the previous calendar year.
 func ParseWithPivot(text string, now time.Time, pivotYear int, local *time.Location) (Result, error) {
-	return parseWith(text, now, pivotYear, local, false)
+	return parseWith(text, now, pivotYear, local, false, false)
 }
 
 // ParseDayFirst is dateutil.parser.parse(text, dayfirst=True) evaluated like
@@ -164,15 +164,25 @@ func ParseDayFirst(text string, now time.Time, local *time.Location) (Result, er
 
 // ParseDayFirstWithPivot is ParseDayFirst with ParseWithPivot's explicit pivot.
 func ParseDayFirstWithPivot(text string, now time.Time, pivotYear int, local *time.Location) (Result, error) {
-	return parseWith(text, now, pivotYear, local, true)
+	return parseWith(text, now, pivotYear, local, true, false)
 }
 
-func parseWith(text string, now time.Time, pivotYear int, local *time.Location, dayFirst bool) (Result, error) {
+// ParseYearFirst is dateutil.parser.parse(text, yearfirst=True) evaluated like
+// Parse: three ambiguous numbers are year, month, day when the second can be
+// a month and the third a day ('10-11-12' is 12 November 2010).
+func ParseYearFirst(text string, now time.Time, local *time.Location) (Result, error) {
+	if local == nil {
+		return Result{}, ErrUnsupported
+	}
+	return parseWith(text, now, now.In(local).Year(), local, false, true)
+}
+
+func parseWith(text string, now time.Time, pivotYear int, local *time.Location, dayFirst, yearFirst bool) (Result, error) {
 	if local == nil || len(text) > MaxTextBytes || !utf8.ValidString(text) {
 		return Result{}, ErrUnsupported
 	}
 	today := now.In(local)
-	p := &parser{pivot: int64(pivotYear), dayFirst: dayFirst}
+	p := &parser{pivot: int64(pivotYear), dayFirst: dayFirst, yearFirst: yearFirst}
 	if !p.parse(text) {
 		if p.raised != nil {
 			return Result{}, p.raised

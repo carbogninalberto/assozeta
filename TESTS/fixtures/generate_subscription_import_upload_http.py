@@ -191,6 +191,9 @@ add('form-field-associates-file-server-error', 'owner', 500, SERVER, raw=multipa
 add('malformed-document-id', 'owner', 400, ['badly formed hexadecimal UUID string'], body={'document_id': 'non-un-uuid', 'map': {}})
 add('integer-document-id', 'owner', 400, ["'int' object has no attribute 'replace'"], body={'document_id': 5, 'map': {}})
 add('null-document-id', 'owner', 400, ['one of the hex, bytes, bytes_le, fields, or int arguments must be given'], body={'document_id': None, 'map': None})
+# t4l1: a file sent as document_id is uuid.UUID(file), the in-memory upload class's AttributeError.
+add('file-document-id', 'owner', 400, ["'InMemoryUploadedFile' object has no attribute 'replace'"],
+    raw=multipart(fields=[('map', '{}')], files=[('document_id', 'soci.csv', b'Nome\nAda\n', 'text/csv')]))
 add('unknown-document-server-error', 'owner', 500, SERVER, body={'document_id': IDS['missing'], 'map': {'nome': 'Nome'}})
 add('unknown-document-form-server-error', 'full_collaborator', 500, SERVER,
     raw=multipart(fields=[('document_id', IDS['missing']), ('map', '{}')]))
@@ -213,6 +216,10 @@ upload('csv-maps-its-own-columns', 'owner', 'altri.csv', SIMPLE, columns=['Nome'
 upload('csv-bom-crlf-quoted-unnamed-duplicates', 'full_collaborator', 'Esportazione.CSV',
        b'\xef\xbb\xbf"Nome";;"Note;varie";Note;\r\nMario;;x;y;\r\n"Anna\r\nMaria";;;;\r\n', content_type='text/csv',
        columns=['Nome', 'Unnamed: 1', 'Note;varie', 'Note', 'Unnamed: 4'])
+# t4l1: columns with a dotted capital I or a capital sigma are lower-cased as str.lower() does ('i' with a combining dot, the
+# final sigma) before the distance to each key is measured.
+upload('csv-dotted-i-and-sigma-columns', 'owner', 'greco.csv', 'NOMİ;COGNOMİ;ΟΔΟΣ;ΣΕΣΣΟ;İndirizzo\nA;B;C;D;E\n'.encode(),
+       columns=['NOMİ', 'COGNOMİ', 'ΟΔΟΣ', 'ΣΕΣΣΟ', 'İndirizzo'])
 upload('csv-header-only', 'admin', 'vuoto.csv', b'Telefono;Altro\n', headers=ADMIN_OWNER, session='admin_owner',
        columns=['Telefono', 'Altro'])
 upload('csv-implicit-index', 'owner', 'indice.csv', b'a;b\n1;2;3\n4;5;6\n', columns=['a', 'b'])

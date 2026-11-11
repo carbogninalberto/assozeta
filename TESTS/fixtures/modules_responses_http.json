@@ -3149,6 +3149,205 @@
    "name": "modules-responses-info-response",
    "actor": "anonymous",
    "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643022&attachment_token=respondent-token-b",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "title": "Aperto è",
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
+    },
+    "response_data": {
+     "attachments_docs": [
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643012",
+       "filename": "certificato è.pdf"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-without-secret",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643022",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "title": "Aperto è",
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-empty-secret",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643022&attachment_token=",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "title": "Aperto è",
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-other-secret",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643022&attachment_token=respondent-token-a",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "title": "Aperto è",
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-association-needs-no-secret",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643023",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "title": "Aperto è",
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
+    },
+    "response_data": {
+     "attachments_docs": [
+      {
+       "document_id": "a1000000-0000-4000-8000-000000643014",
+       "filename": "foto.png"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-own-user-needs-no-secret",
+   "actor": "athlete",
+   "method": "GET",
    "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643022",
    "headers": {},
    "status": 200,
@@ -3190,6 +3389,43 @@
    "effect": null
   },
   {
+   "name": "modules-responses-info-response-of-another-user",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/modules/risposte-aperto/info?response_id=a1000000-0000-4000-8000-000000643023",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643001",
+     "title": "Aperto è",
+     "response_message": "Grazie",
+     "allow_attachments": true,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads own"
+     }
+    },
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
    "name": "modules-responses-info-response-of-another-module",
    "actor": "anonymous",
    "method": "GET",
@@ -3227,7 +3463,7 @@
    "effect": null
   },
   {
-   "name": "modules-responses-info-response-of-its-module",
+   "name": "modules-responses-info-response-of-its-module-without-secret",
    "actor": "anonymous",
    "method": "GET",
    "path": "/modules/risposte-estero/info?response_id=a1000000-0000-4000-8000-000000643030",
@@ -3259,9 +3495,44 @@
       "denomination": "Message reads foreign"
      }
     },
-    "response_data": {
-     "attachments_docs": []
-    }
+    "response_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "modules-responses-info-response-of-another-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/modules/risposte-estero/info?response_id=a1000000-0000-4000-8000-000000643030",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "module_id": "a1000000-0000-4000-8000-000000643007",
+     "title": "Modulo",
+     "response_message": null,
+     "allow_attachments": false,
+     "only_users": false,
+     "elements": [
+      {
+       "type": "heading",
+       "props": {
+        "label": "Titolo"
+       }
+      },
+      {
+       "type": "text",
+       "props": {
+        "label": "Nome",
+        "name": "nome"
+       }
+      }
+     ],
+     "sport_association": {
+      "denomination": "Message reads foreign"
+     }
+    },
+    "response_data": null
    },
    "effect": null
   },
@@ -3269,7 +3540,7 @@
    "name": "modules-responses-info-response-hex-upper",
    "actor": "athlete",
    "method": "GET",
-   "path": "/modules/risposte-aperto/info?response_id=A1000000000040008000000000643024",
+   "path": "/modules/risposte-aperto/info?response_id=A1000000000040008000000000643024&attachment_token=respondent-token-a",
    "headers": {},
    "status": 200,
    "response": {
@@ -3360,7 +3631,7 @@
   },
   {
    "name": "modules-responses-info-response-last-value",
-   "actor": "anonymous",
+   "actor": "owner",
    "method": "GET",
    "path": "/modules/risposte-aperto/info?response_id=abc&response_id=a1000000-0000-4000-8000-000000643023",
    "headers": {},

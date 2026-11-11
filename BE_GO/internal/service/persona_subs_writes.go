@@ -27,8 +27,8 @@ type personaSubsValidated struct {
 // fields in field order with tenant_scope (its PermissionDenied escapes the
 // collected errors).
 func (s *PersonaSubscriptions) personaSubsValidate(ctx context.Context, tx domain.PersonaSubsWriteTransaction, identity domain.ResolvedIdentity,
-	body any, partial bool, instance *string, group *string) (personaSubsValidated, error) {
-	write, invalid, err := dto.ParsePersonaSubsWrite(body, partial)
+	body any, partial, form bool, instance *string, group *string) (personaSubsValidated, error) {
+	write, invalid, err := dto.ParsePersonaSubsWrite(body, partial, form)
 	if err != nil {
 		return personaSubsValidated{}, ErrPersonaNotPorted
 	}
@@ -109,15 +109,12 @@ func (s *PersonaSubscriptions) personaSubsValidate(ctx context.Context, tx domai
 // without associate or associate_data (read-only, never validated): a 500
 // with nothing written.
 func (s *PersonaSubscriptions) RouterCreate(ctx context.Context, identity domain.ResolvedIdentity, header string, body any, form bool) error {
-	if form {
-		return ErrPersonaNotPorted
-	}
 	tx, err := s.store.(domain.PersonaSubsWriteStore).BeginPersonaSubsWrite(ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	if _, err = s.personaSubsValidate(ctx, tx, identity, body, false, nil, supplierGroup(header)); err != nil {
+	if _, err = s.personaSubsValidate(ctx, tx, identity, body, false, form, nil, supplierGroup(header)); err != nil {
 		return err
 	}
 	return ErrPersonaUnhandled
@@ -201,6 +198,57 @@ func personaSubsChanges(old, new domain.PersonaSubscriptionRow, inMemory map[str
 	return changes, nil
 }
 
+// personaSubsFullDiff is auditlog's model_instance_diff(None, instance) for a
+// subscription saved under a new key: every field whose text differs from
+// None's (a foreign key always, a null plain column never). JSON fields the
+// request did not send keep the stored row's values.
+func personaSubsFullDiff(row domain.PersonaSubscriptionRow, inMemory map[string]any, stored *domain.PersonaSubscriptionRow) (map[string][2]string, error) {
+	changes := map[string][2]string{}
+	set := func(name, value string) { changes[name] = [2]string{"None", value} }
+	optional := func(name string, value *string) {
+		if value != nil {
+			set(name, *value)
+		}
+	}
+	set("subscription_id", row.ID)
+	set("sport_association", row.AssociationID)
+	set("user", row.UserID)
+	for name, value := range map[string]*string{"associate": row.AssociateID, "supplier": row.SupplierID, "instructor": row.InstructorID,
+		"medical": row.MedicalID, "document_pdf": row.DocumentID, "payment": row.PaymentID, "group": row.GroupID} {
+		set(name, personaSubsAuditText(value))
+	}
+	for name, value := range map[string]*string{"signature_url": row.SignatureURL, "signature_storage_key": row.SignatureStorageKey,
+		"subscription_number": row.SubscriptionNumber, "subscription_type": row.SubscriptionType, "notes": row.Notes} {
+		optional(name, value)
+	}
+	set("type", strconv.FormatInt(row.Type, 10))
+	set("role", strconv.FormatInt(row.Role, 10))
+	set("status_flag", strconv.FormatInt(row.StatusFlag, 10))
+	for name, value := range map[string]*time.Time{"acceptance_date": row.AcceptanceDate, "resignation_date": row.ResignationDate,
+		"start_date": row.StartDate, "end_date": row.EndDate} {
+		if value != nil {
+			set(name, personaSubsAuditDate(value))
+		}
+	}
+	set("creation_date", dto.PersonaAuditMoment(row.CreationDate))
+	for name, value := range map[string]bool{"deleted": row.Deleted, "archived": row.Archived, "draft": row.Draft, "trial": row.Trial,
+		"competitive": row.Competitive} {
+		set(name, pythonBoolText(value))
+	}
+	for name, column := range map[string]*json.RawMessage{"custom_data": stored.CustomData, "additional_fields": stored.AdditionalFields,
+		"meta": stored.Meta} {
+		value, present := inMemory[name]
+		if !present {
+			var err error
+			if value, err = personaSubsStoredJSON(column); err != nil {
+				return nil, err
+			}
+		}
+		set(name, dto.CourseWritesAuditJSON(value))
+	}
+	return changes, nil
+}
+
 func pythonBoolText(value bool) string {
 	if value {
 		return "True"
@@ -212,14 +260,13 @@ func pythonBoolText(value bool) string {
 // (partial for PATCH), setattr of each validated field, Subscription.save()
 // (missing dates from the owner's settings, auditlog's update entry, every
 // column), tags.set(), then the serializer over the in-memory instance.
-// Refused before any write: form bodies and a different primary key (Model.save
-// would insert a copy). JSON values PostgreSQL rejects stay refused; several
-// new tag links are created in the iteration order of Django's set of ids.
+// A different primary key inserts a copy (Model.save finds no row under it),
+// logged as an update and a create, and the tags are set on the copy. A JSON
+// value PostgreSQL rejects fails the save after the pre_save entry: the 500
+// page with that entry kept. Several new tag links are created in the
+// iteration order of Django's set of ids.
 func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain.ResolvedIdentity, id, header string, body any, form, partial bool,
 	login domain.LoginAuditContext) (any, error) {
-	if form {
-		return nil, ErrPersonaNotPorted
-	}
 	group := supplierGroup(header)
 	tx, err := s.store.(domain.PersonaSubsWriteStore).BeginPersonaSubsWrite(ctx)
 	if err != nil {
@@ -233,17 +280,19 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 	if stored == nil {
 		return nil, domain.ErrPersonaSubscriptionNotFound
 	}
-	validated, err := s.personaSubsValidate(ctx, tx, identity, body, partial, &stored.ID, group)
+	validated, err := s.personaSubsValidate(ctx, tx, identity, body, partial, form, &stored.ID, group)
 	if err != nil {
 		return nil, err
 	}
 	write := validated.write
-	if write.ID != nil && *write.ID != stored.ID {
-		return nil, ErrPersonaNotPorted
-	}
+	// A different key: Model.save() finds no row under it and inserts a copy.
+	copied := write.ID != nil && *write.ID != stored.ID
+	// A JSON value the jsonb column rejects (NUL characters, lone surrogates,
+	// infinite numbers): the save fails after auditlog's pre_save entry.
+	storable := true
 	for _, value := range write.JSON {
 		if !dto.TextStorable(value) || !jsonFinite(value) {
-			return nil, ErrPersonaNotPorted
+			storable = false
 		}
 	}
 	row := *stored
@@ -334,12 +383,44 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 	if err = personaSubsSeason(ctx, tx, &row); err != nil {
 		return nil, err
 	}
+	audit := domain.CourseSubscriptionAudit{Context: paymentCategoryAuditContext(identity, login), At: s.personas.now().UTC().Truncate(time.Microsecond),
+		Group: group}
+	if copied {
+		// The unique check is group-aware: a key it calls free can still name a
+		// row of another group, which Model.save() would then overwrite.
+		if other, err := tx.Subscription(ctx, *write.ID); err != nil {
+			return nil, err
+		} else if other != nil {
+			return nil, ErrPersonaNotPorted
+		}
+		row.ID = *write.ID
+		// auditlog's pre_save finds no row under the new key and logs every
+		// field as an update; post_save logs the create with the same diff.
+		changes, err := personaSubsFullDiff(row, write.JSON, stored)
+		if err != nil {
+			return nil, err
+		}
+		if !storable {
+			if err = tx.AuditSubscriptionCopy(ctx, row, changes, audit, false); err != nil {
+				return nil, err
+			}
+			if err = tx.Commit(); err != nil {
+				return nil, err
+			}
+			return nil, ErrPersonaUnhandled
+		}
+		if err = tx.InsertSubscription(ctx, row, changes, audit); err != nil {
+			return nil, err
+		}
+	}
 	// tags.set(): links not listed are removed, listed ones not linked added.
 	var removed, added []string
 	if validated.tags != nil {
-		current, err := tx.TagIDs(ctx, row.ID)
-		if err != nil {
-			return nil, err
+		current := []string{}
+		if !copied {
+			if current, err = tx.TagIDs(ctx, row.ID); err != nil {
+				return nil, err
+			}
 		}
 		wanted, linked := map[string]bool{}, map[string]bool{}
 		for _, tag := range validated.tags {
@@ -363,14 +444,23 @@ func (s *PersonaSubscriptions) RouterUpdate(ctx context.Context, identity domain
 			added = importeffects.PySetOrder(added)
 		}
 	}
-	changes, err := personaSubsChanges(*stored, row, write.JSON)
-	if err != nil {
-		return nil, err
-	}
-	audit := domain.CourseSubscriptionAudit{Context: paymentCategoryAuditContext(identity, login), At: s.personas.now().UTC().Truncate(time.Microsecond),
-		Group: group}
-	if err = tx.SaveSubscription(ctx, row, changes, audit); err != nil {
-		return nil, err
+	if !copied {
+		changes, err := personaSubsChanges(*stored, row, write.JSON)
+		if err != nil {
+			return nil, err
+		}
+		if !storable {
+			if err = tx.AuditSubscription(ctx, row.ID, changes, audit); err != nil {
+				return nil, err
+			}
+			if err = tx.Commit(); err != nil {
+				return nil, err
+			}
+			return nil, ErrPersonaUnhandled
+		}
+		if err = tx.SaveSubscription(ctx, row, changes, audit); err != nil {
+			return nil, err
+		}
 	}
 	if len(removed) > 0 {
 		if err = tx.RemoveTags(ctx, row.ID, removed); err != nil {

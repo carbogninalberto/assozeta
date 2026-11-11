@@ -29,8 +29,8 @@ personas-reads and payment-reads.
   reversed and original sequence on the name/address/city/notes fields. The conditions hold per joined tutor row, the rows
   are distinct and no relevance ordering applies (the first ten fields are Subscription's own).
 - `sort[field]`: `associate` orders by first and last name, otherwise one leading `-` is stripped and the name must be a
-  Subscription field or attname (`pk` included) — an unknown name is a FieldError (500) before pagination. Relations,
-  relation paths, transforms, `?` and the `_has_future_renewal` annotation compile with the rows; Go refuses them after the
+  Subscription field or attname (`pk` included) — an unknown name is a FieldError (500) before pagination. Relation
+  paths, reverse accessors and transforms are an unknown ordering too (Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (`signature_url`, `signature_storage_key`, the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`.) before pagination; `?` and the `_has_future_renewal` annotation compile with the rows; Go refuses `?` after the
   count and the page check (an invalid page still answers 404).
 
 ## subscription/list
@@ -157,7 +157,7 @@ resources reader (`repository.ScopedResources.Available`, kind `subscription`; `
 
 - In the POST export of subscription/list: workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`) and exports
   (both formats) sorted by an ordering compiled with the rows.
-- Orderings compiled with the rows: relations, paths, transforms and `?`, and field-mode relation paths and transforms (search
+- Orderings compiled with the rows: `?`, and field-mode relation paths and transforms (search
   terms beyond Latin are ported in tailpay, personas-reads). `sort[field]=_has_future_renewal`, the queryset's own annotation,
   is ported (t2subsa): it orders by the `future_renewal_exists()` expression, false before true.
 

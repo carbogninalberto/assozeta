@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
@@ -102,14 +103,9 @@ func subscriptionImportDistance(left, right []rune) int {
 	return previous[len(right)]
 }
 
-// subscriptionImportLower is str.lower() for text without İ (full case
-// mapping) and Σ (final sigma), which callers refuse.
-func subscriptionImportLower(text string) ([]rune, bool) {
-	if strings.ContainsAny(text, "İΣ") {
-		return nil, false
-	}
-	return []rune(strings.ToLower(text)), true
-}
+// subscriptionImportLower is str.lower(): U+0130 lowers to 'i' with a
+// combining dot and a final sigma to its own form (dto.PythonLower).
+func subscriptionImportLower(text string) []rune { return []rune(dto.PythonLower(text)) }
 
 // subscriptionImportAutoMap is auto_map_columns(columns, map) on the
 // request's own copy of SubscriptionMaps.MAP, rendered.
@@ -117,7 +113,7 @@ func subscriptionImportAutoMap(columns []string) domain.RequestObject {
 	mapped := make(map[string]string, len(columns))
 	keys := append([]string(nil), subscriptionImportKeys...)
 	for _, column := range columns {
-		lowered, _ := subscriptionImportLower(column)
+		lowered := subscriptionImportLower(column)
 		lowest, chosen := float64(utf8.RuneCountInString(column))*0.25, -1
 		for index, key := range keys {
 			distance := float64(subscriptionImportDistance(lowered, []rune(key)))
@@ -251,7 +247,7 @@ func (s *DocumentUploads) storeImportFile(ctx context.Context, identity domain.R
 // Upload follows the view: the association (401 without one), data.keys(),
 // then the upload branch, the mapping branch's lookups, or TypeError.
 func (s *SubscriptionImportUpload) Upload(ctx context.Context, identity domain.ResolvedIdentity, body any,
-	audit domain.LoginAuditContext) (domain.RequestObject, error) {
+	audit domain.LoginAuditContext, spooled bool) (domain.RequestObject, error) {
 	tx, err := s.store.BeginSubscriptionImport(ctx)
 	if err != nil {
 		return nil, err
@@ -301,7 +297,13 @@ func (s *SubscriptionImportUpload) Upload(ctx context.Context, identity domain.R
 	case nil:
 		return nil, &PaymentInfoUUIDError{Detail: "one of the hex, bytes, bytes_le, fields, or int arguments must be given"}
 	case domain.RequestFile:
-		return nil, ErrSubscriptionImportNotPorted
+		// uuid.UUID(file): the upload class depends on the request's length
+		// (FILE_UPLOAD_MAX_MEMORY_SIZE), which spooled reports.
+		class := "InMemoryUploadedFile"
+		if spooled {
+			class = "TemporaryUploadedFile"
+		}
+		return nil, &PaymentInfoUUIDError{Detail: "'" + class + "' object has no attribute 'replace'"}
 	default:
 		return nil, &PaymentInfoUUIDError{Detail: "'" + pythonTypeNameOf(value) + "' object has no attribute 'replace'"}
 	}
@@ -447,11 +449,6 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 		}
 		if parseErr == nil {
 			columns = frame.Columns
-		}
-	}
-	for _, column := range columns {
-		if _, ok := subscriptionImportLower(column); !ok {
-			return nil, ErrSubscriptionImportNotPorted
 		}
 	}
 	document, err := s.uploads.storeImportFile(ctx, identity, association, file, audit)

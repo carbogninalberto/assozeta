@@ -394,6 +394,13 @@ add('supplier-list-sort-identifier-desc', 'owner', 'GET', query(**{'sort[field]'
 add('supplier-list-sort-attname', 'owner', 'GET', query(**{'sort[field]': 'expire_date', 'sort[sort]': 'other'}), 200,
     supplier_page(['b', 'a', 'c']))
 add('supplier-list-sort-unknown-server-error', 'owner', 'GET', query(**{'sort[field]': 'bogus'}), 500, SERVER)
+# Only the invoice's own columns order the list: relation paths, the owner account, transforms and the stored document
+# answer as an unknown ordering.
+for _name, _field in (('supplier-path', 'supplier__name'), ('association-path', 'sport_association__denomination'),
+                      ('owner-account-path', 'sport_association__user__password'), ('owner-account-email', 'sport_association__user__email'),
+                      ('payment-path', 'payment__amount'), ('document', 'document_pdf'), ('document-key', 'document_pdf_id'),
+                      ('transform', 'amount__nope')):
+    add('supplier-list-sort-' + _name + '-server-error', 'owner', 'GET', query(**{'sort[field]': _field}), 500, SERVER)
 
 # ------------------------------------------------------- customer add ---
 

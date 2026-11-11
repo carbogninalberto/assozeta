@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -43,7 +44,7 @@ func (h *SubscriptionImportUploadHandler) Upload(c echo.Context) error {
 		return err
 	}
 	defer release()
-	result, err := h.imports.Upload(ctx, *identity, body, audit)
+	result, err := h.imports.Upload(ctx, *identity, body, audit, c.Request().ContentLength > domain.RequestUploadMemory)
 	var large *service.SubscriptionImportTooLarge
 	switch {
 	case err == nil:

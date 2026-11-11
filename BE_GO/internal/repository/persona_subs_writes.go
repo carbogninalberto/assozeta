@@ -132,18 +132,24 @@ func personaSubsJSON(value *[]byte) *string {
 // then the UPDATE of every column.
 func (t *personaSubsWriteTransaction) SaveSubscription(ctx context.Context, row domain.PersonaSubscriptionRow, changes map[string][2]string,
 	audit domain.CourseSubscriptionAudit) error {
-	if len(changes) > 0 {
-		var association string
-		if err := t.tx.GetContext(ctx, &association, `SELECT sport_association_id FROM application_subscription WHERE subscription_id=$1::uuid`,
-			row.ID); err != nil {
-			return err
-		}
-		if err := appendModelAudit(ctx, t.tx, courseSubscriptionEntry("subscription", "Subscription", row.ID, "", 1, changes, &association,
-			"direct", audit)); err != nil {
-			return err
-		}
+	if err := t.AuditSubscription(ctx, row.ID, changes, audit); err != nil {
+		return err
 	}
-	var custom, additional, meta *[]byte
+	custom, additional, meta := personaSubsJSONColumns(row)
+	_, err := t.tx.ExecContext(ctx, `UPDATE application_subscription SET sport_association_id=$2::uuid, associate_id=$3::uuid,
+ supplier_id=$4::uuid, instructor_id=$5::uuid, custom_data=$6::jsonb, additional_fields=$7::jsonb, user_id=$8::uuid, type=$9, role=$10,
+ acceptance_date=$11::date, resignation_date=$12::date, medical_id=$13::uuid, status_flag=$14, creation_date=$15, start_date=$16::date,
+ end_date=$17::date, signature_url=$18, signature_storage_key=$19, document_pdf_id=$20::uuid, payment_id=$21::uuid, deleted=$22,
+ archived=$23, draft=$24, trial=$25, meta=$26::jsonb, subscription_number=$27, subscription_type=$28, group_id=$29::uuid,
+ competitive=$30, notes=$31 WHERE subscription_id=$1::uuid`, row.ID, row.AssociationID, row.AssociateID, row.SupplierID,
+		row.InstructorID, personaSubsJSON(custom), personaSubsJSON(additional), row.UserID, row.Type, row.Role, personaSubsDate(row.AcceptanceDate),
+		personaSubsDate(row.ResignationDate), row.MedicalID, row.StatusFlag, row.CreationDate, personaSubsDate(row.StartDate),
+		personaSubsDate(row.EndDate), row.SignatureURL, row.SignatureStorageKey, row.DocumentID, row.PaymentID, row.Deleted, row.Archived,
+		row.Draft, row.Trial, personaSubsJSON(meta), row.SubscriptionNumber, row.SubscriptionType, row.GroupID, row.Competitive, row.Notes)
+	return err
+}
+
+func personaSubsJSONColumns(row domain.PersonaSubscriptionRow) (custom, additional, meta *[]byte) {
 	if row.CustomData != nil {
 		value := []byte(*row.CustomData)
 		custom = &value
@@ -156,17 +162,57 @@ func (t *personaSubsWriteTransaction) SaveSubscription(ctx context.Context, row 
 		value := []byte(*row.Meta)
 		meta = &value
 	}
-	_, err := t.tx.ExecContext(ctx, `UPDATE application_subscription SET sport_association_id=$2::uuid, associate_id=$3::uuid,
- supplier_id=$4::uuid, instructor_id=$5::uuid, custom_data=$6::jsonb, additional_fields=$7::jsonb, user_id=$8::uuid, type=$9, role=$10,
- acceptance_date=$11::date, resignation_date=$12::date, medical_id=$13::uuid, status_flag=$14, creation_date=$15, start_date=$16::date,
- end_date=$17::date, signature_url=$18, signature_storage_key=$19, document_pdf_id=$20::uuid, payment_id=$21::uuid, deleted=$22,
- archived=$23, draft=$24, trial=$25, meta=$26::jsonb, subscription_number=$27, subscription_type=$28, group_id=$29::uuid,
- competitive=$30, notes=$31 WHERE subscription_id=$1::uuid`, row.ID, row.AssociationID, row.AssociateID, row.SupplierID,
-		row.InstructorID, personaSubsJSON(custom), personaSubsJSON(additional), row.UserID, row.Type, row.Role, personaSubsDate(row.AcceptanceDate),
-		personaSubsDate(row.ResignationDate), row.MedicalID, row.StatusFlag, row.CreationDate, personaSubsDate(row.StartDate),
-		personaSubsDate(row.EndDate), row.SignatureURL, row.SignatureStorageKey, row.DocumentID, row.PaymentID, row.Deleted, row.Archived,
-		row.Draft, row.Trial, personaSubsJSON(meta), row.SubscriptionNumber, row.SubscriptionType, row.GroupID, row.Competitive, row.Notes)
-	return err
+	return custom, additional, meta
+}
+
+// AuditSubscription is auditlog's pre_save update entry, indexed directly to
+// the stored association (none without changes).
+func (t *personaSubsWriteTransaction) AuditSubscription(ctx context.Context, id string, changes map[string][2]string,
+	audit domain.CourseSubscriptionAudit) error {
+	if len(changes) == 0 {
+		return nil
+	}
+	var association string
+	if err := t.tx.GetContext(ctx, &association, `SELECT sport_association_id FROM application_subscription WHERE subscription_id=$1::uuid`,
+		id); err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("subscription", "Subscription", id, "", 1, changes, &association, "direct", audit))
+}
+
+// AuditSubscriptionCopy logs one entry of a copy: the update is indexed from
+// its changes (no row is stored yet), the create directly.
+func (t *personaSubsWriteTransaction) AuditSubscriptionCopy(ctx context.Context, row domain.PersonaSubscriptionRow, changes map[string][2]string,
+	audit domain.CourseSubscriptionAudit, created bool) error {
+	action, path := 1, "changes_json.sport_association"
+	if created {
+		action, path = 0, "direct"
+	}
+	return appendModelAudit(ctx, t.tx, courseSubscriptionEntry("subscription", "Subscription", row.ID, "", action, changes, &row.AssociationID,
+		path, audit))
+}
+
+// InsertSubscription is Model.save() under a key no row has.
+func (t *personaSubsWriteTransaction) InsertSubscription(ctx context.Context, row domain.PersonaSubscriptionRow, changes map[string][2]string,
+	audit domain.CourseSubscriptionAudit) error {
+	if err := t.AuditSubscriptionCopy(ctx, row, changes, audit, false); err != nil {
+		return err
+	}
+	custom, additional, meta := personaSubsJSONColumns(row)
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_subscription (subscription_id, sport_association_id, associate_id,
+ supplier_id, instructor_id, custom_data, additional_fields, user_id, type, role, acceptance_date, resignation_date, medical_id,
+ status_flag, creation_date, start_date, end_date, signature_url, signature_storage_key, document_pdf_id, payment_id, deleted, archived,
+ draft, trial, meta, subscription_number, subscription_type, group_id, competitive, notes) VALUES ($1::uuid, $2::uuid, $3::uuid,
+ $4::uuid, $5::uuid, $6::jsonb, $7::jsonb, $8::uuid, $9, $10, $11::date, $12::date, $13::uuid, $14, $15, $16::date, $17::date, $18, $19,
+ $20::uuid, $21::uuid, $22, $23, $24, $25, $26::jsonb, $27, $28, $29::uuid, $30, $31)`, row.ID, row.AssociationID, row.AssociateID,
+		row.SupplierID, row.InstructorID, personaSubsJSON(custom), personaSubsJSON(additional), row.UserID, row.Type, row.Role,
+		personaSubsDate(row.AcceptanceDate), personaSubsDate(row.ResignationDate), row.MedicalID, row.StatusFlag, row.CreationDate,
+		personaSubsDate(row.StartDate), personaSubsDate(row.EndDate), row.SignatureURL, row.SignatureStorageKey, row.DocumentID, row.PaymentID,
+		row.Deleted, row.Archived, row.Draft, row.Trial, personaSubsJSON(meta), row.SubscriptionNumber, row.SubscriptionType, row.GroupID,
+		row.Competitive, row.Notes); err != nil {
+		return err
+	}
+	return t.AuditSubscriptionCopy(ctx, row, changes, audit, true)
 }
 
 // RemoveTags is the M2M remove() of tags.set().

@@ -121,7 +121,7 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
   derived and written (see [model-hooks](model-hooks.md)).
 - Rendering a supplier invoice whose payment links an associate, instructor
   or invoice, or has a subscription/course subject.
-- Ordering by a relation path (`supplier__name`) or `?`.
+- `?` ordering (a random order has no answer to reproduce). Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`.
 - Multipart bodies with file parts on the adds (Django merges files into a
   mutable copy; every other form body is a 500 in both).
 

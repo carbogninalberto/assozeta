@@ -329,6 +329,14 @@ add('list-sort-creation-desc', 'owner', 'GET', listing(**{'sort[field]': 'creati
     page(['bulk', 'single', 'single', 'grouped', 'mario', 'mario', 'supplier', 'meta']))
 add('list-sort-unknown-server-error', 'owner', 'GET', listing(**{'sort[field]': 'bogus'}), 500, SERVER)
 add('list-sort-double-minus-server-error', 'owner', 'GET', listing(**{'sort[field]': '-number', 'sort[sort]': 'desc'}), 500, SERVER)
+# Only the invoice's own columns order the list; paths through a relation or the owner account, transforms and
+# the stored document answer as an unknown ordering.
+for _name, _field in (('association-path', 'sport_association__denomination'), ('owner-account-path', 'sport_association__user__password'),
+                      ('owner-account-email-desc', 'sport_association__user__email'), ('group-path', 'group__name'),
+                      ('tutor-path', 'selected_tutor__last_name'), ('document', 'document_pdf'), ('document-key', 'document_pdf_id'),
+                      ('payment-reverse', 'payment__amount'), ('rows-reverse', 'invoicerows__amount'), ('transform', 'number__lower'),
+                      ('own-column-path', 'number__nope')):
+    add('list-sort-' + _name + '-server-error', 'owner', 'GET', listing(**{'sort[field]': _field}), 500, SERVER)
 # float('3'): number icontains '3' or a fee equal to 3 (no distinct).
 add('list-search-number', 'owner', 'GET', listing(**{'query[generalSearch]': '3'}), 200, page(['mario', 'mario', 'supplier']))
 add('list-search-comma-fee', 'owner', 'GET', listing(**{'query[generalSearch]': '30,0'}), 200, page(['mario', 'mario']))

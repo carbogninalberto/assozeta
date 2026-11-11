@@ -127,8 +127,7 @@ The certificate named by `medical_certificate.medical_id` follows
 
 Refused with the 500 page before anything is committed:
 - an association whose
-  user is not an owner account, an integer `sport_association_id`; form bodies and a non-empty `X-Group-Id` on both routes;
-- `data['sport_association']` naming another association;
+  user is not an owner account; form bodies and a non-empty `X-Group-Id` on both routes;
 - `str(e)` bodies of the Python exceptions not listed above (non-dict tutors and similar; dateutil's own messages are ported with `internal/pydateutil`);
 - the inputs `subscription-create.md` refuses: preregistration, new member accounts, signature uploads, `type_of_associate`, and the
   rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` it stays refused): the renewed subscription's person, certificate, custom data, role and number, the request's type; an unknown or foreign one is the 400 `Iscrizione da rinnovare non trovata.`). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
@@ -193,3 +192,11 @@ the other association and one of this association):
   merging the base): 95/95 on four transports. Mutation (`v2subs3-mutation-r2`): the requester lookup without the session's
   association fails Go on that case (`response.status`, CAUGHT). The placeholder certificate of a typed expiration date is ported in renewals and
   draft approvals (tailsubs, cases `renew-certificate-placeholder*` and the draft case `approve-draft-without-associate`).
+
+## t4l1: integer association ids
+
+A member account's renewal names its association in `data['sport_association']['sport_association_id']`. Another association is
+answered (`User not allowed.` unless the member has a subscription there; cases `renew-athlete-in-another-association`), and an
+integer id is `uuid.UUID(int=...)`: the association it names is found (`renew-athlete-association-integer-id`,
+`-integer-id-duplicate`), while a float, a negative or a value past 128 bits fails the lookup, the 500 page
+(`-integer-unknown`, `-negative-id`, `-float-id`, `-oversized-id`). 112 cases.

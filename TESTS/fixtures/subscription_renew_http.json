@@ -5356,6 +5356,258 @@
    "setup": null
   },
   {
+   "name": "subscription-renew-renew-athlete-association-integer-id",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": 214005707321371757778191212399291273218
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-integer-id-duplicate",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "msg": "Questa iscrizione esiste già.",
+    "code": "409",
+    "ref": "subscription_duplicate"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": 214005707321371757778191212399291273217
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-integer-unknown",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": 7
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-negative-id",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": -1
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-float-id",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": 1.5
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-renew-renew-athlete-association-oversized-id",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/renew",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "associate_data": {
+     "associate_id": "a1000000-0000-4000-8000-000000945015",
+     "first_name": "Aurora",
+     "last_name": "Atleta",
+     "tax_code": "TLTRRA95A41H501W",
+     "born_date": "01/01/1995",
+     "sex": "F",
+     "type": 1,
+     "role": 1
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "medical_certificate": {
+     "medical_id": null
+    },
+    "custom_data": {},
+    "additional_fields": {},
+    "courses": [],
+    "sport_association": {
+     "sport_association_id": 340282366920938463463374607431768211456
+    }
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-renew-renew-athlete-another-member",
    "actor": "athlete",
    "method": "POST",

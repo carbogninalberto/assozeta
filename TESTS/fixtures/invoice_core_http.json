@@ -4176,6 +4176,127 @@
    "celery": []
   },
   {
+   "name": "invoice-core-list-sort-association-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=sport_association__denomination",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-owner-account-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=sport_association__user__password",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-owner-account-email-desc-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=sport_association__user__email",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-group-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=group__name",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-tutor-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=selected_tutor__last_name",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-document-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=document_pdf",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-document-key-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=document_pdf_id",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-payment-reverse-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=payment__amount",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-rows-reverse-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=invoicerows__amount",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-transform-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=number__lower",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
+   "name": "invoice-core-list-sort-own-column-path-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list?sort%5Bfield%5D=number__nope",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": []
+  },
+  {
    "name": "invoice-core-list-search-number",
    "actor": "owner",
    "method": "GET",

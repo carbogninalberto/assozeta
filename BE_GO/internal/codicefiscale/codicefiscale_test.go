@@ -1,7 +1,10 @@
 package codicefiscale
 
 import (
+	"compress/gzip"
+	"encoding/json"
 	"errors"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -140,19 +143,16 @@ var goldenCases = []encodeCase{
 	{"Rossi", "Mario", "M", "05-12-" + strings.Repeat("0", 4297) + "1990", "Roma", "", ErrInvalid, ""},
 	{"Rossi", "Mario", "M", strings.Repeat("0", 5000) + "1990", "Roma", "RSSMRA90S09H501C", nil, ""},
 	{"Rossi", "Mario", "M", "1-1-" + strings.Repeat("9", 400), "Roma", "", ErrInvalid, ""},
-	// html references, letters in dates and characters outside the embedded
-	// table are refused (Python's answer in the comment).
-	{"R&amp;ssi", "Mario", "M", "12/05/1990", "Roma", "", ErrUnsupported, ""},         // RSSMRA90E12H501K
-	{"Rossi", "Mario&#39;", "M", "12/05/1990", "Roma", "", ErrUnsupported, ""},        // RSSMRA90E12H501K
-	{"Rossi", "&#x41;", "M", "12/05/1990", "Roma", "", ErrUnsupported, ""},            // RSSAXX90E12H501M
-	{"毛", "Mario", "M", "12/05/1990", "Roma", "", ErrUnsupported, ""},                 // MAOMRA90E12H501B
-	{"Rossi", "Mario", "M", "12 maggio 1990", "Roma", "", ErrUnsupported, ""},         // ValueError
-	{"Rossi", "Mario", "M", "1990-05-12T10:00", "Roma", "", ErrUnsupported, ""},       // RSSMRA90E12H501K
-	{"Rossi", "Mario", "M", "12/05/1990", "Roma ☃", "", ErrUnsupported, ""},           // RSSMRA90E12H501K
-	{"Rossi", "Mario", "M", "12/05/1990", "ローマ", "", ErrUnsupported, ""},              // RSSMRA90E12H501K
-	{"Rossi", "Mario", "M", "12/05/1990", "Roma\xed\xa0\x80", "", ErrUnsupported, ""}, // lone surrogate
-	{"Rossi", "Mario", "M", "12/05/1990", "Roma\xff", "", ErrUnsupported, ""},
-	{"Rossi", "Mari" + strings.Repeat("́", 31) + "o", "M", "12/05/1990", "Roma", "", ErrUnsupported, ""},
+	// html references, letters in dates, lone surrogates, long runs of
+	// combining marks and every script of the transliteration table.
+	{"R&amp;ssi", "Mario", "M", "12/05/1990", "Roma", "RSSMRA90E12H501K", nil, ""},
+	{"Rossi", "Mario&#39;", "M", "12/05/1990", "Roma", "RSSMRA90E12H501K", nil, ""},
+	{"Rossi", "&#x41;", "M", "12/05/1990", "Roma", "RSSAXX90E12H501M", nil, ""},
+	{"毛", "Mario", "M", "12/05/1990", "Roma", "MAOMRA90E12H501B", nil, ""},
+	{"Rossi", "Mario", "M", "12 maggio 1990", "Roma", "", ErrInvalid, ""},
+	{"Rossi", "Mario", "M", "1990-05-12T10:00", "Roma", "RSSMRA90E12H501K", nil, ""},
+	{"Rossi", "Mario", "M", "12/05/1990", "Roma ☃", "RSSMRA90E12H501K", nil, ""},
+	{"Rossi", "Mario", "M", "12/05/1990", "Roma\xff", "", ErrUnsupported, ""}, // no Python str has this form
 	{"R&ssi;", "Ma&#;rio", "M", "12/05/1990", "Roma &foo;", "", ErrNotMapped, ""},
 	{"Rossi", "Mario", "M", "12/05/1990", "Roma &amp", "", ErrNotMapped, ""},
 	{"Rossi", "Mario", "M", "02/2024", "Roma", "RSSMRA24B29H501G", nil, "2026-01-31"},
@@ -209,17 +209,69 @@ func TestDataIndex(t *testing.T) {
 }
 
 func TestUnidecodeTable(t *testing.T) {
-	for _, rg := range unidecodeRanges {
-		if n := strings.Count(rg.packed, "\x00") + 1; n != int(rg.hi-rg.lo) {
-			t.Errorf("range %#x-%#x has %d entries", rg.lo, rg.hi, n)
+	for r, want := range map[rune]string{0: "\x00", 'é': "e", 'ß': "ss", 'Æ': "AE", '€': "EUR", 0x1F600: "", '毛': "Mao ", 0xFFFF: ""} {
+		if got := unidecode(r); got != want {
+			t.Errorf("unidecode(%U) = %q; want %q", r, got, want)
 		}
 	}
-	for r, want := range map[rune]string{0: "\x00", 'é': "e", 'ß': "ss", 'Æ': "AE", '€': "EUR", 0x1F600: ""} {
-		if got, ok := unidecode(r); !ok || got != want {
-			t.Errorf("unidecode(%U) = %q, %v; want %q", r, got, ok, want)
+}
+
+// pyString is a Python str given as code points; a lone surrogate takes its
+// three-byte generalized UTF-8 form, as the request decoder hands it over.
+func pyString(points []rune) string {
+	var b strings.Builder
+	for _, r := range points {
+		if isSurrogate(r) {
+			b.Write([]byte{0xe0 | byte(r>>12), 0x80 | byte(r>>6)&0x3f, 0x80 | byte(r)&0x3f})
+			continue
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
+// TestEncodeOracle replays testdata/golden.json.gz, produced by
+// testdata/gen_golden.py from the real library.
+func TestEncodeOracle(t *testing.T) {
+	file, err := os.Open("testdata/golden.json.gz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	reader, err := gzip.NewReader(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cases []struct {
+		Last, First, Date, Place []rune
+		Sex, Result              string
+	}
+	if err = json.NewDecoder(reader).Decode(&cases); err != nil {
+		t.Fatal(err)
+	}
+	if len(cases) < 3000 {
+		t.Fatalf("%d cases", len(cases))
+	}
+	now := time.Date(2026, 11, 9, 13, 45, 12, 0, time.UTC)
+	failures := 0
+	for _, tc := range cases {
+		got, err := Encode(pyString(tc.Last), pyString(tc.First), tc.Sex, pyString(tc.Date), pyString(tc.Place), now)
+		switch {
+		case errors.Is(err, ErrNotMapped):
+			got = "notmapped"
+		case errors.Is(err, ErrInvalid):
+			got = "invalid"
+		case err != nil:
+			got = "error: " + err.Error()
+		}
+		if got != tc.Result {
+			if failures++; failures <= 25 {
+				t.Errorf("Encode(%q, %q, %q, %q, %q) = %q; want %q", pyString(tc.Last), pyString(tc.First), tc.Sex, pyString(tc.Date),
+					pyString(tc.Place), got, tc.Result)
+			}
 		}
 	}
-	if _, ok := unidecode('毛'); ok {
-		t.Error("unidecode(毛) should be outside the embedded subset")
+	if failures > 0 {
+		t.Errorf("%d of %d cases differ", failures, len(cases))
 	}
 }

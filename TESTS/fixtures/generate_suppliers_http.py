@@ -103,20 +103,21 @@ add('owner-search-underscore-literal', 'owner', q(search='a_s', perpage=50), 200
 # database ctype (C in the harness), so only ASCII letters change case here.
 add('owner-search-accent-ascii-case', 'owner', q(search='ÈNTE', perpage=50), 200, page(['ii'], 1, 50))
 add('owner-search-no-match', 'owner', q(search='zzz'), 200, page([], 1, 10))
-# Forward relation paths order by the related row's column (a join in Django, NULL without a group).
+# Only the list's own columns order the rows; a path through a relation answers as an unknown ordering.
 GROUP_HEADER = {'X-Group-Id': IDS['own_group']}
-add('owner-sort-group-name-with-group', 'owner', q(field='group__name', perpage=50), 200, page(['grouped'], 1, 50), headers=GROUP_HEADER)
-add('owner-sort-group-name-desc-with-group', 'owner', q(field='group__name', sort='desc', perpage=50), 200, page(['grouped'], 1, 50),
-    headers=GROUP_HEADER)
-add('owner-sort-group-association-set', 'owner', q(field='group__sport_association', perpage=50), 200, page(LIVE, 1, 50), ordered=False)
-add('owner-sort-association-denomination-set', 'owner', q(field='sport_association__denomination', perpage=50), 200, page(LIVE, 1, 50),
-    ordered=False)
-add('owner-sort-association-owner-key-set', 'owner', q(field='sport_association__user', sort='desc', perpage=50), 200, page(LIVE, 1, 50),
-    ordered=False)
-add('owner-sort-association-json-set', 'owner', q(field='sport_association__configuration', perpage=50), 200, page(LIVE, 1, 50), ordered=False)
+add('owner-sort-group-name-server-error', 'owner', q(field='group__name', perpage=50), 500, SERVER, headers=GROUP_HEADER)
+add('owner-sort-group-name-desc-server-error', 'owner', q(field='group__name', sort='desc', perpage=50), 500, SERVER, headers=GROUP_HEADER)
+add('owner-sort-group-association-server-error', 'owner', q(field='group__sport_association', perpage=50), 500, SERVER)
+add('owner-sort-association-denomination-server-error', 'owner', q(field='sport_association__denomination', perpage=50), 500, SERVER)
+add('owner-sort-association-owner-key-server-error', 'owner', q(field='sport_association__user', sort='desc', perpage=50), 500, SERVER)
+add('owner-sort-association-owner-column-server-error', 'owner', q(field='sport_association__user__password', perpage=50), 500, SERVER)
+add('owner-sort-association-owner-email-desc-server-error', 'owner', q(field='sport_association__user__email', sort='desc'), 500, SERVER)
+add('owner-sort-association-json-server-error', 'owner', q(field='sport_association__configuration', perpage=50), 500, SERVER)
 add('owner-sort-group-unknown-field-server-error', 'owner', q(field='group__nope'), 500, SERVER)
 add('owner-sort-association-unknown-field-server-error', 'owner', q(field='sport_association__nope'), 500, SERVER)
 add('owner-sort-group-transform-server-error', 'owner', q(field='group__name__nope'), 500, SERVER)
+add('owner-sort-own-column-transform-server-error', 'owner', q(field='name__lower'), 500, SERVER)
+add('owner-sort-own-group-column-set', 'owner', q(field='group', perpage=50), 200, page(LIVE, 1, 50), ordered=False)
 add('owner-all-unpaginated', 'owner', q(all=1, field='nope', search='zzz'), 200, {'data': [serialized(l) for l in LIVE]}, ordered=False)
 add('owner-unknown-sort-server-error', 'owner', q(field='nope'), 500, SERVER)
 add('owner-double-minus-server-error', 'owner', q(field='-name', sort='desc'), 500, SERVER)

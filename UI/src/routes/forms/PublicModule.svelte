@@ -33,6 +33,7 @@
         if (params.response_id) {
             alreadyResponed = true;
             query = `?response_id=${params.response_id}`;
+            if (params.attachment_token) query += `&attachment_token=${encodeURIComponent(params.attachment_token)}`;
         }
         res = await apiFetch(replaceUID(__bakney.env.API.MODULES.CUSTOM_LINK_INFO, params.custom_link) + query);
     }

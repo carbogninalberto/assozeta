@@ -147,22 +147,17 @@ func (s *SubscriptionReads) subscriptionReadsYearsAgo(raw string) (time.Time, er
 	return time.Date(y, today.Month(), min(today.Day(), last), 0, 0, 0, 0, time.UTC), nil
 }
 
-// subscriptionReadsRelations are Subscription's relations and reverse
-// relations: order_by() accepts them and their paths, and Django resolves
-// them only when compiling the rows.
-var subscriptionReadsRelations = map[string]bool{"sport_association": true, "associate": true, "supplier": true, "instructor": true,
-	"user": true, "medical": true, "document_pdf": true, "payment": true, "group": true, "tags": true, "medicalappointments": true,
-	"subscriptionmembership": true, "soldproducts": true, "subscriptiontoken": true, "subscriptionfile": true, "subscriptiontransfer": true,
-	"coursesubscription": true, "campsandretreatssubscription": true, "carnetsubscription": true}
-
 var subscriptionReadsFields = map[string]string{"pk": "subscription_id", "subscription_id": "subscription_id", "custom_data": "custom_data",
 	"additional_fields": "additional_fields", "type": "type", "role": "role", "acceptance_date": "acceptance_date",
 	"resignation_date": "resignation_date", "status_flag": "status_flag", "creation_date": "creation_date", "start_date": "start_date",
-	"end_date": "end_date", "signature_url": "signature_url", "signature_storage_key": "signature_storage_key", "archived": "archived",
+	"end_date": "end_date", "archived": "archived",
 	"draft": "draft", "trial": "trial", "meta": "meta", "subscription_number": "subscription_number", "subscription_type": "subscription_type",
 	"deleted": "deleted", "competitive": "competitive", "notes": "notes", "sport_association_id": "sport_association_id",
 	"associate_id": "associate_id", "supplier_id": "supplier_id", "instructor_id": "instructor_id", "user_id": "user_id",
-	"medical_id": "medical_id", "document_pdf_id": "document_pdf_id", "payment_id": "payment_id", "group_id": "group_id"}
+	"medical_id": "medical_id", "payment_id": "payment_id", "group_id": "group_id",
+	// A relation whose model has no Meta.ordering orders by its column.
+	"sport_association": "sport_association_id", "associate": "associate_id", "supplier": "supplier_id", "instructor": "instructor_id",
+	"user": "user_id", "medical": "medical_id", "payment": "payment_id", "group": "group_id"}
 
 // errSubscriptionReadsLazyOrder marks an ordering Django resolves when
 // compiling the rows (after the count and the page checks).
@@ -184,10 +179,6 @@ func subscriptionReadsOrder(field string, descending bool, annotations map[strin
 	if annotations[name] {
 		// An annotation of the queryset (_has_future_renewal) orders by its expression.
 		return []domain.SubscriptionReadsOrder{{Column: name, Descending: desc}}, nil
-	}
-	first, _, _ := strings.Cut(name, "__")
-	if _, ok := subscriptionReadsFields[first]; ok || subscriptionReadsRelations[first] {
-		return nil, errSubscriptionReadsLazyOrder
 	}
 	return nil, domain.ErrSubscriptionReadsServer
 }

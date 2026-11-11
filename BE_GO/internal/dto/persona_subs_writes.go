@@ -1,7 +1,11 @@
 package dto
 
 import (
+	"encoding/json"
+	"errors"
+	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -56,15 +60,123 @@ func personaSubsChoice(value any, maximum int64) (int64, string) {
 	return 0, "choice:" + key
 }
 
-// ParsePersonaSubsWrite ports the serializer's field validation (JSON
-// bodies). invalid holds the field codes; err is a value the port does not
-// reproduce (strptime with Unicode digits).
-func ParsePersonaSubsWrite(body any, partial bool) (PersonaSubsWrite, map[string][]string, error) {
+// personaSubsFormObject is Field.get_value over an HTML form for every writable
+// field, as the JSON object the field validation reads: a key the form lacks is
+// False for a boolean and [] for tags unless the update is partial; an empty
+// input is None for a nullable field (kept empty when the field may be blank)
+// and absent for a field with a default; a JSON field is json.loads of its text
+// (a file's name); tags are getlist. rejected is JSON text nested past the
+// ported depth (Python's recursion limit depends on the live call stack).
+func personaSubsFormObject(form domain.RequestObject, partial bool, invalid map[string][]string) (object domain.RequestObject, rejected bool) {
+	set := func(name string, value any) { object = append(object, domain.RequestField{Name: name, Value: value}) }
+	plain := func(name string, nullable bool) {
+		value, present := form.Lookup(name)
+		switch {
+		case !present:
+		case value == "" && nullable:
+			set(name, nil)
+		case value == "":
+		default:
+			set(name, value)
+		}
+	}
+	plain("subscription_id", false)
+	for _, name := range PersonaSubsJSONFields {
+		value, present := form.Lookup(name)
+		if !present {
+			continue
+		}
+		if upload, isUpload := value.(domain.RequestUpload); isUpload {
+			value = upload.Name
+		}
+		// A lone surrogate escape stays in the value: the jsonb column rejects it at the save.
+		tree, valid, _, deep := automationFormTree(value)
+		switch {
+		case deep:
+			rejected = true
+		case !valid:
+			invalid[name] = []string{CourseSubscriptionJSONInvalid}
+		default:
+			set(name, personaSubsFormJSON{tree})
+		}
+	}
+	for _, name := range []string{"type", "role", "status_flag"} {
+		plain(name, false)
+	}
+	for _, name := range PersonaSubsDateFields {
+		plain(name, true)
+	}
+	plain("creation_date", false)
+	for _, field := range personaSubsTextFields {
+		if value, present := form.Lookup(field.Name); present {
+			set(field.Name, value) // modelTextValue applies the empty-input rule
+		}
+	}
+	for _, name := range PersonaSubsBooleanFields {
+		if _, present := form.Lookup(name); !present && !partial {
+			set(name, false)
+			continue
+		}
+		plain(name, false)
+	}
+	for _, name := range PersonaSubsRelationFields {
+		plain(name, true) // RelatedField.run_validation: '' is None
+	}
+	if values, present := form.List("tags"); present {
+		set("tags", append([]any{}, values...))
+	} else if !partial {
+		set("tags", []any{})
+	}
+	return object, rejected
+}
+
+// personaSubsFormJSON wraps a JSON field's parsed form value so that a JSON
+// null is the value None, not an absent field.
+type personaSubsFormJSON struct{ value any }
+
+// personaSubsJSONFinite reports a parsed value without a float beyond the
+// double range (Python's inf).
+func personaSubsJSONFinite(value any) bool {
+	switch typed := value.(type) {
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			number, _ := strconv.ParseFloat(string(typed), 64)
+			return !math.IsInf(number, 0)
+		}
+	case domain.RequestObject:
+		for _, field := range typed {
+			if !personaSubsJSONFinite(field.Value) {
+				return false
+			}
+		}
+	case []any:
+		for _, item := range typed {
+			if !personaSubsJSONFinite(item) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// ErrPersonaSubsFormJSON is form JSON text nested past the ported depth.
+var ErrPersonaSubsFormJSON = errors.New("personas-subscriptions form JSON text nested past the ported depth")
+
+// ParsePersonaSubsWrite ports the serializer's field validation (JSON and
+// form bodies). invalid holds the field codes; err is a value the port does
+// not reproduce (strptime with Unicode digits, form JSON text nested past the ported depth).
+func ParsePersonaSubsWrite(body any, partial, form bool) (PersonaSubsWrite, map[string][]string, error) {
 	invalid := map[string][]string{}
 	object, ok := body.(domain.RequestObject)
 	if !ok {
 		invalid["non_field_errors"] = []string{"dictionary:" + pythonTypeName(body)}
 		return PersonaSubsWrite{}, invalid, nil
+	}
+	if form {
+		rejected := false
+		if object, rejected = personaSubsFormObject(object, partial, invalid); rejected {
+			return PersonaSubsWrite{}, nil, ErrPersonaSubsFormJSON
+		}
 	}
 	write := PersonaSubsWrite{JSON: map[string]any{}, Choices: map[string]int64{}, Dates: map[string]*time.Time{}, Text: map[string]*string{},
 		Booleans: map[string]bool{}, Relations: map[string]*string{}, RelationInput: map[string]any{}}
@@ -79,6 +191,13 @@ func ParsePersonaSubsWrite(body any, partial bool) (PersonaSubsWrite, map[string
 	}
 	for _, name := range PersonaSubsJSONFields {
 		if value, present := object.Lookup(name); present {
+			if parsed, isForm := value.(personaSubsFormJSON); isForm {
+				value = parsed.value
+			} else if !personaSubsJSONFinite(value) {
+				// JSONField.to_internal_value: json.dumps(allow_nan=False) of a parsed body.
+				invalid[name] = []string{CourseSubscriptionJSONInvalid}
+				continue
+			}
 			write.JSON[name] = value
 		}
 	}
@@ -121,7 +240,7 @@ func ParsePersonaSubsWrite(body any, partial bool) (PersonaSubsWrite, map[string
 	}
 	for _, field := range personaSubsTextFields {
 		if value, present := object.Lookup(field.Name); present {
-			if text, codes := modelTextValue(field, value, false); len(codes) > 0 {
+			if text, codes := modelTextValue(field, value, form); len(codes) > 0 {
 				invalid[field.Name] = codes
 			} else {
 				write.Text[field.Name] = text
