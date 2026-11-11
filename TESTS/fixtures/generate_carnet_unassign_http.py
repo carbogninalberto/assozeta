@@ -1,6 +1,6 @@
 """Author the carnet/<uid>/unassign/<uid_subscription> HTTP sequence from carnet-writes.md.
 
-Builds on the carnet-list seed plus a paid payment. The fixed view (PR #28)
+Builds on the carnet-replace seed (courses, installments, payments) plus a paid payment. The fixed view (PR #28)
 refuses non-association roles (including anonymous requests: the view has no
 permission class), finds the carnet subscription by id within the scope user's
 subscriptions (the carnet uid is unused), deletes its payment when unpaid and
@@ -14,12 +14,22 @@ import json
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('carnet_unassign_http.json')
-SOURCE = json.loads(Path(__file__).with_name('carnet_list_http.json').read_text())
+SOURCE = json.loads(Path(__file__).with_name('carnet_replace_http.json').read_text())
 IDS, CARNETS = SOURCE['ids'], SOURCE['carnets']
 HOLDINGS = {k: dict(v) for k, v in SOURCE['carnet_subscriptions'].items()}
 PAYMENTS = {**SOURCE['payments'], 'p2': {'id': 'a1000000-0000-4000-8000-000000990001', 'association': IDS['own_association'], 'user': 'owner',
                                          'amount': '30.00', 'paid': True}}
 HOLDINGS['someone_else']['payment'] = 'p2'
+# A payment shared by two live installments of a course subscription.
+PAYMENTS['p_dual'] = {'id': 'a1000000-0000-4000-8000-000000990002', 'association': IDS['own_association'], 'user': 'athlete', 'amount': '10.00',
+                      'paid': False}
+INSTALLMENTS = {**SOURCE['installments'],
+                'i_d1': {'id': 'a1000000-0000-4000-8000-000000990003', 'course_subscription': 'second', 'number': 7, 'paid': False, 'payment': 'p_dual'},
+                'i_d2': {'id': 'a1000000-0000-4000-8000-000000990004', 'course_subscription': 'second', 'number': 8, 'paid': False, 'payment': 'p_dual'}}
+# Holdings whose unpaid payment is the payment of live installments (the payment's pre_delete signal deletes them).
+for label, number, payment in (('cascade_one', 5, 'p_i1'), ('cascade_two', 6, 'p_dual')):
+    HOLDINGS[label] = {**HOLDINGS['family'], 'id': f'a1000000-0000-4000-8000-00000099010{number}', 'payment': payment,
+                       'created': f'2026-10-0{number}T09:30:00Z'}
 SUBS = SOURCE['subscriptions']
 dumps = lambda value: json.dumps(value, sort_keys=True)
 naive = lambda text: text.rstrip('Z').replace('T', ' ')
@@ -40,13 +50,24 @@ def removed(label, actor_association):
     row = HOLDINGS[label]
     entries = []
     payment = PAYMENTS.get(row['payment']) if row['payment'] else None
-    if payment and not payment.get('paid'):
-        entries.append({'model': 'payment', 'id': payment['id'], 'values': {'payment_id': [payment['id'], 'None'],
-                        'amount': [payment['amount'], 'None'], 'sport_association': [payment['association'], 'None']},
-                        'index': [payment['association'], 'changes_json.sport_association']})
+    gone = payment and not payment.get('paid')
+
+    def payment_entry():
+        return {'model': 'payment', 'id': payment['id'], 'values': {'payment_id': [payment['id'], 'None'],
+                'amount': [payment['amount'], 'None'], 'sport_association': [payment['association'], 'None']},
+                'index': [payment['association'], 'changes_json.sport_association']}
+    installments = sorted((i for i in INSTALLMENTS.values() if gone and i['payment'] == row['payment']), key=lambda i: i['id'])
+    if gone:
+        # payment.delete(): the signal deletes the payment's installments first; the first one deletes the payment (audited),
+        # each installment is audited, then the outer delete audits the payment again.
+        if installments:
+            entries.append(payment_entry())
+            entries.extend({'model': 'coursesubscriptioninstallment', 'id': i['id'], 'rendered': True,
+                            'index': [actor_association, 'actor.sport_association'] if actor_association else None} for i in installments)
+        entries.append(payment_entry())
     entries.append({'model': 'carnetsubscription', 'id': row['id'], 'changes': holding_changes(label),
                     'index': [actor_association, 'actor.sport_association'] if actor_association else None})
-    return {'holding': label, 'payment': payment['id'] if payment and not payment.get('paid') else None, 'entries': entries}
+    return {'holding': label, 'payment': payment['id'] if gone else None, 'installments': [i['id'] for i in installments], 'entries': entries}
 
 
 path = lambda carnet, holding: f"/carnet/{CARNETS[carnet]['id']}/unassign/{HOLDINGS[holding]['id'] if holding in HOLDINGS else holding}"
@@ -76,9 +97,13 @@ add('owner-removes-with-unpaid-payment', 'owner', 'c1', 'held', 200, OK, effect=
 add('repeat-not-found', 'owner', 'c1', 'held', 404, NOT_FOUND)
 add('full-collaborator-keeps-paid-payment', 'full_collaborator', 'c2', 'someone_else', 200, OK,
     effect={**removed('someone_else', None), 'actor': 'full_collaborator'})
+# Installments of the unpaid payment are deleted by its pre_delete signal (each audited, the payment twice).
+add('owner-removes-payment-with-installment', 'owner', 'c1', 'cascade_one', 200, OK, effect={**removed('cascade_one', IDS['own_association']), 'actor': 'owner'})
+add('owner-removes-payment-with-two-installments', 'owner', 'c1', 'cascade_two', 200, OK,
+    effect={**removed('cascade_two', IDS['own_association']), 'actor': 'owner'})
 add('carnet-uid-is-ignored', 'owner', 'c2', 'family', 200, OK, effect={**removed('family', IDS['own_association']), 'actor': 'owner'})
 
 assert len({c['name'] for c in cases}) == len(cases)
-OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'}, 'carnet_subscriptions': HOLDINGS, 'payments': PAYMENTS,
+OUTPUT.write_text(json.dumps({**{k: v for k, v in SOURCE.items() if k != 'cases'}, 'carnet_subscriptions': HOLDINGS, 'payments': PAYMENTS, 'installments': INSTALLMENTS,
                               'scope': 'Carnet unassign authored sequence with audit effects', 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

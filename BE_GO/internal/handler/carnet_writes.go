@@ -23,7 +23,7 @@ type CarnetUpdateService interface {
 }
 
 type CarnetUnassignService interface {
-	Unassign(context.Context, domain.ResolvedIdentity, string, domain.LoginAuditContext) error
+	Unassign(context.Context, domain.ResolvedIdentity, string, string, domain.LoginAuditContext) error
 }
 
 type CarnetToggleService interface {
@@ -192,7 +192,7 @@ func (h *CarnetWritesHandler) Unassign(c echo.Context) error {
 	if err != nil {
 		return paymentCategoryError(c, err)
 	}
-	err = h.unassigns.Unassign(ctx, *identity, c.Param("uid_subscription"), audit)
+	err = h.unassigns.Unassign(ctx, *identity, c.Param("uid_subscription"), request.Header.Get("X-Group-Id"), audit)
 	switch {
 	case errors.Is(err, service.ErrCarnetNotAllowed):
 		return c.JSON(403, map[string]string{"msg": "Not allowed."})
