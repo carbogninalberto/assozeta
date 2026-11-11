@@ -1224,7 +1224,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### subscription-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| POST subscription/<uid>/edit | non-empty `associate_id` in tutor data | `service/subscription_writes.go:253`, `ErrSubscriptionEditNotPorted` | B | Only UI caller is `routes/update-tutors/TutorData.svelte:23`. `UpdateTutors.svelte:7-11` has `inconsistencies = []` hard-coded and redirects to `/` on mount. Every `sessionStorage.setItem('inconsistencies', …)` is commented out (`Login.svelte:660-663`, `EditData.svelte:136-139`), so the page never renders. Effectively the route is not called by the UI. legacy: no. cheap |
+| POST subscription/<uid>/edit | non-empty `associate_id` in tutor data | `service/subscription_writes.go` | ported | Ported in t2subsa (`planByID` / `saveByID`: update by key, restore, create under the key, unique tax-code fallback). |
 | same | tutor `born_date` with non-ASCII digits / unparsable by Go | `:219`, `:223` | ported | Ported in t2subsa (strptime reads the digits of other scripts). |
 | same | non-ASCII tax code | `:262` | ported | Ported in t2subsa (`dto.PythonUpper`, the full `str.upper()` mapping; the lookup stays `UPPER()` in the database). |
 | same | several tax-code matches with equal latest `creation_date` | `:272` | ported | Ported in t2subsa (the same `ORDER BY creation_date DESC LIMIT 1` query Django runs, so the database breaks the tie in both). |

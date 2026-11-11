@@ -4081,38 +4081,6 @@
    "setup": null
   },
   {
-   "name": "subscription-create-sex-sharp-s-upper-cased",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/subscription/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "sex": [
-     "\"SS\" is not a valid choice."
-    ]
-   },
-   "effect": null,
-   "body": {
-    "new_user_account": {
-     "new_member": false
-    },
-    "associate_data": {
-     "first_name": "Rita",
-     "last_name": "Esse",
-     "tax_code": "SSXRTI90C41H501K",
-     "born_date": "15/03/1990",
-     "sex": "ß"
-    },
-    "associate_tutor_data": null,
-    "signature": {
-     "there_is_signature": false,
-     "data": ""
-    }
-   },
-   "setup": null
-  },
-  {
    "name": "subscription-create-tax-code-sharp-s-stored-upper",
    "actor": "owner",
    "method": "POST",

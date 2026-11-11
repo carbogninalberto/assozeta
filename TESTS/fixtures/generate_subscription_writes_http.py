@@ -95,6 +95,9 @@ ASSOCIATES = {
     'tie_b': associate('Pari', born='1964-04-04', association=None, tax='tietax01'),
     'self_match': associate('Selfie', tax='SELFTAX1'),
     'self_tutor': associate('Autotutore'),
+    'byid_child': associate('Figlio'),
+    'byid_child2': associate('Figlia'),
+    'byid_target': associate('Esistente', born='1960-05-05'),
     'ref_child': associate('Referente'),
     'ref_tutor': associate('Referenziato', born='1970-02-02'),
 }
@@ -442,6 +445,21 @@ add('deletes-referenced-tutor', 'owner', 'ref_child', 200, EDITED, body=tutor(),
     removed('associate', 'ref_tutor', [OWN, 'changes_json.sport_association']),
     updated('associate', 'ref_child', MINOR, DIRECT),
 ], created=row, deleted=['ref_tutor'], relations_deleted=['ref_link'], changed={'ref_child': {'is_minor': True}}, detached=['ref_membership']))
+
+# associate_id in the tutor data: AssociateSerializer.create saves the row with that key, or creates it under that key.
+BYID_NEW = 'a1000000-0000-4000-8000-000000676900'
+row = new_row()
+add('associate-id-creates-row', 'owner', 'byid_child', 200, EDITED, body=tutor(associate_id=BYID_NEW), effect=effect('owner', [
+    created(row, ACTOR_OWN),
+    updated('associate', 'byid_child', MINOR, DIRECT),
+], created=row, changed={'byid_child': {'is_minor': True}}))
+add('associate-id-updates-row', 'owner', 'byid_child2', 200, EDITED, body=tutor(associate_id=ASSOCIATES['byid_target']['id']),
+    effect=effect('owner', [
+        updated('associate', 'byid_target', {'first_name': ['Esistente', 'Giulia'], 'last_name': ['Fixture', 'Tutrice'], 'sex': ['M', 'F'],
+                                             'born_date': ['1960-05-05', '1975-04-12']}, DIRECT),
+        updated('associate', 'byid_child2', MINOR, DIRECT),
+    ], changed={'byid_target': {'first_name': 'Giulia', 'last_name': 'Tutrice', 'sex': 'F', 'born_date': '1975-04-12'},
+                'byid_child2': {'is_minor': True}}))
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'subscription/<uid>/edit authored sequence with associate, tutor relation and audit effects',

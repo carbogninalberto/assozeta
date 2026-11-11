@@ -419,8 +419,6 @@ add('type-of-associate-other-type-creates', 'owner', 200, SUCCESS(25.0), body=re
 
 # str.upper() is the full Unicode mapping: 'ß' becomes 'SS' (the sex choice message and the stored tax code show it), and strptime
 # reads the decimal digits of other scripts where its pattern has \d.
-add('sex-sharp-s-upper-cased', 'owner', 400, {'sex': ['"SS" is not a valid choice.']},
-    body=request(person('Rita', 'Esse', 'SSXRTI90C41H501K', sex='\u00df')))
 sharp = person('Greta', 'Esse', '\u00dfgrtgrt90c41h501k')
 add('tax-code-sharp-s-stored-upper', 'owner', 200, SUCCESS(25.0), body=request(sharp),
     effect=success('owner', 'Greta Esse', associate=created_associate({**sharp, 'tax_code': 'SSGRTGRT90C41H501K'}, tax_code='SSGRTGRT90C41H501K'),

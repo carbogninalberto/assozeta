@@ -54,11 +54,14 @@ Routes (not routed in Go):
 
 Inputs of `subscription/<uid>/edit` refused with a 500 before any write:
 
-- a non-empty `associate_id` in the tutor data (the serializer then updates or creates that row by id);
 - an `X-Group-Id` that is not a UUID or not a group on the create path (Django fails on the insert too).
 
 ## Edge inputs (t2subsa)
 
+- A non-empty `associate_id` in the tutor data: the serializer saves the row with that key (any state, restored if deleted; with a
+  `sport_association` and a tax code, the named association's row with that code instead), or creates it under that key; a create that
+  would break the unique tax-code index updates the row the code names. A save the index rejects is the 500 page with nothing written.
+  The entries carry the key as sent. The tax code is matched as sent (no upper-casing).
 - A tutor `born_date` written with the decimal digits of another script is read by `strptime` like the ASCII date.
 - The tax code is upper-cased with Python's `str.upper()` (`dto.PythonUpper`: the full mapping, `ß` becomes `SS`); the lookup stays
   `UPPER(tax_code) = UPPER(code)` in the database, as Django's `iexact`.

@@ -493,8 +493,44 @@
    "deleted": false,
    "tax_code": null
   },
-  "ref_child": {
+  "byid_child": {
    "id": "a1000000-0000-4000-8000-000000676039",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "first": "Figlio",
+   "last": "Fixture",
+   "born": "2015-03-10",
+   "is_minor": false,
+   "group": null,
+   "deleted": false,
+   "tax_code": null
+  },
+  "byid_child2": {
+   "id": "a1000000-0000-4000-8000-000000676040",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "first": "Figlia",
+   "last": "Fixture",
+   "born": "2015-03-10",
+   "is_minor": false,
+   "group": null,
+   "deleted": false,
+   "tax_code": null
+  },
+  "byid_target": {
+   "id": "a1000000-0000-4000-8000-000000676041",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "first": "Esistente",
+   "last": "Fixture",
+   "born": "1960-05-05",
+   "is_minor": false,
+   "group": null,
+   "deleted": false,
+   "tax_code": null
+  },
+  "ref_child": {
+   "id": "a1000000-0000-4000-8000-000000676042",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "first": "Referente",
@@ -506,7 +542,7 @@
    "tax_code": null
   },
   "ref_tutor": {
-   "id": "a1000000-0000-4000-8000-000000676040",
+   "id": "a1000000-0000-4000-8000-000000676043",
    "association": "a1000000-0000-4000-8000-000000701001",
    "user": "owner",
    "first": "Referenziato",
@@ -576,7 +612,7 @@
  },
  "memberships": {
   "ref_membership": {
-   "id": "a1000000-0000-4000-8000-000000676041",
+   "id": "a1000000-0000-4000-8000-000000676044",
    "associate": "ref_tutor"
   }
  },
@@ -4417,7 +4453,7 @@
    "name": "subscription-writes-deletes-referenced-tutor",
    "actor": "owner",
    "method": "POST",
-   "path": "/subscription/a1000000-0000-4000-8000-000000676039/edit",
+   "path": "/subscription/a1000000-0000-4000-8000-000000676042/edit",
    "headers": {},
    "status": 200,
    "response": {
@@ -4612,6 +4648,266 @@
      "last_name": "Tutrice",
      "born_date": "12/04/1975",
      "sex": "F"
+    }
+   }
+  },
+  {
+   "name": "subscription-writes-associate-id-creates-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000676039/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription associate edited."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "label": "$new",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$new"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Giulia"
+       ],
+       "last_name": [
+        "None",
+        "Tutrice"
+       ],
+       "sex": [
+        "None",
+        "F"
+       ],
+       "born_date": [
+        "None",
+        "1975-04-12"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "label": "byid_child",
+      "action": 1,
+      "changes": {
+       "is_minor": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": {
+     "associate_id": "$new",
+     "user_id": null,
+     "sport_association_id": null,
+     "picture_path": null,
+     "first_name": "Giulia",
+     "last_name": "Tutrice",
+     "sex": "F",
+     "tax_code": null,
+     "born_date": "1975-04-12",
+     "born_city": null,
+     "address_city": null,
+     "address": null,
+     "address_cap": null,
+     "nationality": "Italiana",
+     "nationality_residence": "Italia",
+     "email": null,
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "phone_label": null,
+     "phone_2_label": null,
+     "phone_3_label": null,
+     "phone_4_label": null,
+     "is_minor": false,
+     "disabled": false,
+     "draft": false,
+     "group_id": null,
+     "deleted": false,
+     "family_id": null,
+     "family_role": null,
+     "id_number": null,
+     "creation_date": "$now",
+     "migrated": false,
+     "notes": null
+    },
+    "changed": {
+     "byid_child": {
+      "is_minor": true
+     }
+    },
+    "deleted": [],
+    "relations_changed": {},
+    "relations_deleted": [],
+    "detached": []
+   },
+   "body": {
+    "associate_tutor_data": {
+     "first_name": "Giulia",
+     "last_name": "Tutrice",
+     "born_date": "12/04/1975",
+     "sex": "F",
+     "associate_id": "a1000000-0000-4000-8000-000000676900"
+    }
+   }
+  },
+  {
+   "name": "subscription-writes-associate-id-updates-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000676040/edit",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "subscription associate edited."
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "label": "byid_target",
+      "action": 1,
+      "changes": {
+       "first_name": [
+        "Esistente",
+        "Giulia"
+       ],
+       "last_name": [
+        "Fixture",
+        "Tutrice"
+       ],
+       "sex": [
+        "M",
+        "F"
+       ],
+       "born_date": [
+        "1960-05-05",
+        "1975-04-12"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "label": "byid_child2",
+      "action": 1,
+      "changes": {
+       "is_minor": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "created": null,
+    "changed": {
+     "byid_target": {
+      "first_name": "Giulia",
+      "last_name": "Tutrice",
+      "sex": "F",
+      "born_date": "1975-04-12"
+     },
+     "byid_child2": {
+      "is_minor": true
+     }
+    },
+    "deleted": [],
+    "relations_changed": {},
+    "relations_deleted": [],
+    "detached": []
+   },
+   "body": {
+    "associate_tutor_data": {
+     "first_name": "Giulia",
+     "last_name": "Tutrice",
+     "born_date": "12/04/1975",
+     "sex": "F",
+     "associate_id": "a1000000-0000-4000-8000-000000676041"
     }
    }
   }

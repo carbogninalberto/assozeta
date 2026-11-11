@@ -208,7 +208,11 @@ func (t *subscriptionEditTransaction) Audit(ctx context.Context, entry domain.Su
 	changes := entry.Changes
 	if entry.Created {
 		var err error
-		if changes, err = createdModelChanges(ctx, t.tx, "application_associate", "associate_id", entry.Key); err != nil {
+		row := entry.Key
+		if entry.Row != "" {
+			row = entry.Row
+		}
+		if changes, err = createdModelChanges(ctx, t.tx, "application_associate", "associate_id", row); err != nil {
 			return err
 		}
 		for name, manager := range associateReverse {
