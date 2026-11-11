@@ -344,6 +344,44 @@ CASES += [
 ]
 
 
+# Links (a, link): annotations on the page, one per run of a link on a line.
+LINKED = ('il <a href="https://example.test/corso?a=1&amp;b=2">corso</a> di <link href="mailto:info@example.test" color="blue">nuoto</link> e '
+          '<a href="https://example.test/p" color="red" underline="1">pallanuoto</a> <a href="pdf:altro.pdf">agonistico</a> si tiene '
+          '<a href="https://example.test/o"><b>ogni</b> <i>settimana</i></a> <font size="12"><a href="www.example.test">qui</a></font>')
+LINKED_CELLS = [
+    '<a href="https://example.test/a">link</a>', 'a <a href="b">b</a> c', '<link href="mailto:x@example.test">posta</link>',
+    '<a href="https://example.test/lungo">' + 'testo del collegamento che va a capo ' * 4 + '</a>', LINKED, '<a href="">vuoto</a>', '<a>senza</a>',
+    '<a href="https://example.test/u" underline="yes" ucolor="green" uwidth="1.5" ukind="double">sotto</a>', '<a href="a(b)c">parentesi</a>',
+    '<a href="https://example.test/br">uno<br/>due</a>', '<a href="x:y">schema</a> <a href="PDF:f.pdf">pdf</a> <a href=" https://example.test/s ">spazi</a>',
+    '<sup><a href="https://example.test/n">1</a></sup> nota', '<a href="https://example.test/f" size="14" bgcolor="yellow">grande</a>',
+    '<a href="https://example.test/s">poli\xadsportiva</a> ' + SHY,
+]
+CASES += [
+    balance('bs-link', header(None, 'ASD <a href="https://example.test/">Aurora</a> club', city='<a href="mailto:a@example.test">Roma</a>',
+                              address='<link href="https://example.test/via">Via</link> Roma 1')),
+    balance('bs-link-long', header(None, ' '.join([LINKED] * 3), city=LINKED, address='<a href="https://example.test/l">' + LONG + '</a>')),
+    balance('bs-link-error', header(None, 'ASD <a href="y" underline="maybe">Aurora</a>')),
+    balance('bs-link-font-error', header(None, 'ASD <link href="y" name="Arial">Aurora</link>')),
+    balance('bs-link-unclosed', header(None, 'ASD <a href="y">Aurora')),
+    with_additional(balance('bs-link-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <a href="https://example.test/s">sono</a> riportati.'], ['altro', ' '.join([LINKED] * 4)],
+                     ['solo', '<a href="https://example.test/t">tutto un link</a>']]),
+    report('rt-link-cells', ['<a href="https://example.test/h">Nome</a>', 'Testo', 'Note'],
+           [[LINKED_CELLS[i], LINKED_CELLS[(i + 5) % len(LINKED_CELLS)], LINKED_CELLS[(i + 9) % len(LINKED_CELLS)]] for i in range(len(LINKED_CELLS))],
+           'Collegamenti'),
+    report('rt-link-squeezed', ['<a href="https://example.test/c%d">Colonna</a> %d' % (i, i) for i in range(12)],
+           [[LINKED_CELLS[(i * 5 + j) % len(LINKED_CELLS)] for j in range(12)] for i in range(len(LINKED_CELLS))], 'Collegamenti stretti'),
+    report('rt-link-pages', ['N', 'Testo'], [[str(i), ' '.join([LINKED_CELLS[i % len(LINKED_CELLS)]] * (1 + i % 4))] for i in range(120)],
+           'Collegamenti su pagine'),
+    report('rt-link-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([LINKED] * 130), text_after=' '.join([LINKED + '<br/>'] * 70)),
+    report('rt-link-text-whole', ['Nome'], [['x']], 'Tutto', text_before='<a href="https://example.test/w">' + 'collegamento lungo ' * 300 + '</a>',
+           text_after='<link href="mailto:z@example.test">' + 'posta ' * 600 + '</link>'),
+    report('rt-link-cell-error', ['A'], [['<a href="y" underline="maybe">x</a>']], 'Errore'),
+    attendance('at-link', ('Yoga <a href="https://example.test/y">adulti</a>', ['01/01/2026', '<a href="x">x</a>'],
+                           [('<a href="https://example.test/r">Rossi</a> Anna', ['P', '<a href="a">A</a>'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
 def main():
     cases = []
     for case in CASES:

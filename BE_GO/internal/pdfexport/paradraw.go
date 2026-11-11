@@ -160,12 +160,39 @@ type usState struct {
 	x2    float64
 }
 
+// linkState is an entry of xs.links while a line is drawn.
+type linkState struct {
+	ref    linkRef
+	x1     float64
+	lo, hi float64
+	x2     float64
+}
+
+func containsLink(list []linkRef, l linkRef) bool {
+	for _, item := range list {
+		if item == l {
+			return true
+		}
+	}
+	return false
+}
+
+// doLink is _doLink for a link whose target linkTarget accepts.
+func doLink(c *canvas, target string, rect [4]float64) {
+	kind, to, _ := linkTarget(target)
+	if kind == "" {
+		return
+	}
+	c.linkURL(to, rect, kind)
+}
+
 // fragState is tx.XtraState of the several-fragment layout.
 type fragState struct {
 	curY       float64
 	textColor  *color
 	rise       float64
 	us         map[usLine]*usState
+	links      map[linkRef]*linkState
 	backColor  *color
 	backX      float64
 	backColors []backRect
@@ -200,6 +227,7 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 	ws := tx.wordSpace
 	nSpaces := 0
 	var live []usLine
+	var liveLinks []linkRef
 	words := line.words
 	for i, f := range words {
 		curXS := curX + float64(nSpaces)*ws
@@ -229,6 +257,14 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 				}
 			}
 		}
+		linksChanged := !sameLinks(liveLinks, f.links)
+		if linksChanged {
+			for _, l := range liveLinks {
+				if !containsLink(f.links, l) {
+					xs.links[l].x2 = endX
+				}
+			}
+		}
 		tx.textOut(f.text, i == len(words)-1)
 		if changed {
 			for _, l := range f.us {
@@ -241,6 +277,20 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 		for _, l := range live {
 			if state := xs.us[l]; size > state.max {
 				state.max = size
+			}
+		}
+		lo, hi := f.rise-0.2*size, f.rise+size
+		if linksChanged {
+			for _, l := range f.links {
+				if !containsLink(liveLinks, l) {
+					xs.links[l] = &linkState{ref: l, x1: curX, lo: lo, hi: hi}
+				}
+			}
+			liveLinks = f.links
+		}
+		for _, l := range liveLinks {
+			if state := xs.links[l]; lo < state.lo || hi > state.hi {
+				state.lo, state.hi = min(lo, state.lo), max(hi, state.hi)
 			}
 		}
 		bg := f.back
@@ -263,6 +313,9 @@ func (p *paragraph) putFragLine(tx *textObject, xs *fragState, curX float64, lin
 	for _, l := range live {
 		xs.us[l].x2 = curXS
 	}
+	for _, l := range liveLinks {
+		xs.links[l].x2 = curXS
+	}
 	if xs.backColor != nil {
 		xs.backColors = append(xs.backColors, backRect{xs.backX, curXS, *xs.backColor})
 	}
@@ -283,6 +336,17 @@ func (p *paragraph) postText(tx *textObject, xs *fragState) {
 		}
 		xs.backColors = nil
 		xs.backColor = nil
+	}
+	if len(xs.links) > 0 {
+		states := make([]*linkState, 0, len(xs.links))
+		for _, state := range xs.links {
+			states = append(states, state)
+		}
+		sort.Slice(states, func(i, j int) bool { return states[i].ref.n < states[j].ref.n })
+		for _, state := range states {
+			doLink(c, state.ref.target, [4]float64{state.x1, y0 + state.lo, state.x2, y0 + state.hi})
+		}
+		xs.links = map[linkRef]*linkState{}
 	}
 	if len(xs.us) > 0 {
 		states := make([]*usState, 0, len(xs.us))
@@ -347,9 +411,16 @@ func (p *paragraph) draw(c *canvas) {
 					drawUS(c, l, x1, x2, curY-float64(i)*leading, defaultWidth, values, f.color)
 				}
 			}
+			if len(f.links) > 0 {
+				y := curY - float64(i)*leading - f.size/8.0
+				width := stringWidth(text, f.font, f.size)
+				for _, l := range f.links {
+					doLink(c, l.target, [4]float64{offset, y, offset + width, y + leading})
+				}
+			}
 		}
 	} else {
-		xs := &fragState{us: map[usLine]*usState{}, first: p.fragLines[0], defaultWidth: defaultWidth}
+		xs := &fragState{us: map[usLine]*usState{}, links: map[linkRef]*linkState{}, first: p.fragLines[0], defaultWidth: defaultWidth}
 		xs.curY = p.height - xs.first.fontSize
 		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, xs.curY) + " Tm"}
 		for _, line := range p.fragLines {

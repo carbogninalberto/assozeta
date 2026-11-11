@@ -122,10 +122,10 @@ type imgDefn struct {
 // other tag ParaParser has a handler for is refused; tags it does not know
 // are ignored, as it does.
 var paraPorted = map[string]bool{"para": true, "b": true, "strong": true, "i": true, "em": true, "br": true, "u": true, "strike": true,
-	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true}
+	"font": true, "span": true, "nobr": true, "sup": true, "super": true, "sub": true, "link": true, "a": true}
 
 // paraNotPortedTags are the tags of ParaParser that are still refused.
-var paraNotPortedTags = map[string]bool{"a": true, "bullet": true, "greek": true, "img": true, "index": true,
+var paraNotPortedTags = map[string]bool{"bullet": true, "greek": true, "img": true, "index": true,
 	"link": true, "ondraw": true, "seq": true, "seqchain": true, "seqdefault": true, "seqformat": true,
 	"seqreset": true, "unichar": true}
 
@@ -439,6 +439,15 @@ func (p *paraParser) startTag(tag string, attrs []htmlAttr) bool {
 		return p.push(tag, func(t *paraTag) { t.nobr = true })
 	case "sup", "super", "sub":
 		return p.startSup(tag, attrs)
+	case "link":
+		return p.startLink(tag, attrs)
+	case "a":
+		for _, attr := range attrs {
+			if attr.name == "name" {
+				return p.startAnchor(attrs)
+			}
+		}
+		return p.startLink(tag, attrs)
 	}
 	if paraNotPortedTags[tag] && !paraPorted[tag] {
 		return p.unsupported()
@@ -584,6 +593,15 @@ func (p *paraParser) endTag(tag string) bool {
 	case "u", "strike", "font", "span", "nobr":
 		_, ok := p.pop(tag)
 		return ok
+	case "link":
+		_, ok := p.pop("link")
+		return ok
+	case "a":
+		if len(p.stack) > 0 && p.stack[len(p.stack)-1].selfClosing != "" {
+			return p.fail("Parser failure in <a/>")
+		}
+		_, ok := p.pop("a")
+		return ok
 	case "sup", "super":
 		_, ok := p.pop("super")
 		return ok
@@ -607,24 +625,39 @@ func (p *paraParser) endTag(tag string) bool {
 	return true
 }
 
-// fontName is tt2ps(family, bold, italic).
-func (t *paraTag) fontName() string {
-	switch t.family {
-	case "symbol":
-		return "Symbol"
-	case "zapfdingbats":
-		return "ZapfDingbats"
+// fontName is tt2ps(family, bold, italic) of a family ps2tt or a link's
+// name attribute gave; st says when the family is not known (an exception)
+// or not ported (Courier and Times).
+func (t *paraTag) fontName() (name string, st attrStatus) {
+	family, bold, italic := strings.ToLower(t.family), t.bold, t.italic
+	switch family {
+	case "symbol", "zapfdingbats", "helvetica", "courier", "times":
+	default:
+		// tt2ps falls back to ps2tt for a concrete font name.
+		fam, b, i, st := ps2tt(t.family)
+		if st != attrOK {
+			return "", st
+		}
+		family, bold, italic = fam, bold || b, italic || i
 	}
-	name := "Helvetica"
+	switch family {
+	case "symbol":
+		return "Symbol", attrOK
+	case "zapfdingbats":
+		return "ZapfDingbats", attrOK
+	case "courier", "times":
+		return "", attrUnsupported
+	}
+	name = "Helvetica"
 	switch {
-	case t.bold && t.italic:
+	case bold && italic:
 		name += "-BoldOblique"
-	case t.bold:
+	case bold:
 		name += "-Bold"
-	case t.italic:
+	case italic:
 		name += "-Oblique"
 	}
-	return name
+	return name, attrOK
 }
 
 // ps2tt is the mapping of reportlab.lib.fonts for the font names the markup
@@ -693,8 +726,12 @@ func (p *paraParser) data(text string) bool {
 		}
 		return true
 	}
+	fontName, st := top.fontName()
+	if st != attrOK {
+		return p.attrFailure(st, "Can't find font family "+top.family)
+	}
 	back := top.back
-	p.frags = append(p.frags, &frag{font: fontsByName[top.fontName()], size: top.size, color: top.color, rise: top.rise, text: text,
+	p.frags = append(p.frags, &frag{font: fontsByName[fontName], size: top.size, color: top.color, rise: top.rise, text: text,
 		lineBreak: top.lineBreak, us: top.us, links: top.links, back: back, nobr: top.nobr, img: top.img})
 	return true
 }
@@ -776,4 +813,210 @@ func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
 		return nil, style, fmt.Errorf("%w: paragraph markup", ErrLayout)
 	}
 	return parser.frags, parser.style, nil
+}
+
+// startAnchor is the <a name="..."/> variant of start_a: the attribute errors
+// of reportlab, then a refusal (the bookmark it makes is not ported).
+func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	order, values := dedupeAttrs(attrs)
+	for _, name := range order {
+		if name != "name" {
+			return p.fail("invalid attribute name %s", name)
+		}
+	}
+	name := values["name"]
+	if !name.has || pyTrimUnicode(name.value) == "" {
+		return p.fail("<a name=\"...\"/> anchor variant requires non-blank name")
+	}
+	return p.unsupported()
+}
+
+// pyTrimUnicode is str.strip().
+func pyTrimUnicode(s string) string { return strings.Trim(s, pySpaces) }
+
+// linkTarget is what _doLink does with a link: no annotation for an empty
+// one, a URI or GoToR annotation, or ok false for the destinations (#name,
+// document:name) and the targets this package does not write.
+func linkTarget(link string) (kind, target string, ok bool) {
+	if link == "" {
+		return "", "", true
+	}
+	for i := 0; i < len(link); i++ {
+		if link[i] < 0x20 || link[i] >= 0x7f {
+			return "", "", false
+		}
+	}
+	if strings.HasPrefix(link, "#") {
+		return "", "", false
+	}
+	scheme := ""
+	if idx := strings.Index(link, ":"); idx >= 0 {
+		scheme = strings.ToLower(link[:idx])
+	}
+	switch {
+	case scheme == "document":
+		return "", "", false
+	case len(scheme) >= 2 && schemeLetters(scheme):
+		if scheme == "pdf" {
+			return "GoToR", link[strings.Index(link, ":")+1:], true
+		}
+	}
+	return "URI", link, true
+}
+
+// schemeLetters is _scheme_re: a letter, then letters, digits, '-' and '+'.
+func schemeLetters(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		letter := c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+		if i == 0 && !letter || !letter && !(c >= '0' && c <= '9') && c != '-' && c != '+' {
+			return false
+		}
+	}
+	return true
+}
+
+// startLink is _handle_link (<link> and <a href>).
+func (p *paraParser) startLink(tag string, attrs []htmlAttr) bool {
+	if len(p.stack) == 0 {
+		return p.fail("tag outside the paragraph")
+	}
+	order, values := dedupeAttrs(attrs)
+	var size *numVal
+	var family string
+	var hasFamily bool
+	var textColor, backColor *color
+	var href string
+	var hasHref bool
+	underline := false // platypus_link_underline
+	var line lineAttr
+	need := func(attr htmlAttr, what string) bool {
+		if !attr.has {
+			p.fail("invalid %s", what)
+		}
+		return attr.has
+	}
+	for _, name := range order {
+		attr := values[name]
+		switch name {
+		case "size", "fontsize":
+			if !need(attr, "size") {
+				return false
+			}
+			n, st := paraNum(attr.value, true)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid size")
+			}
+			size = &n
+		case "face", "name", "fontname":
+			if !need(attr, "font name") {
+				return false
+			}
+			family, hasFamily = attr.value, true
+		case "fg", "color", "textcolor", "backcolor", "bgcolor", "ucolor", "underlinecolor":
+			if !need(attr, "color") {
+				return false
+			}
+			c, st := paraColor(attr.value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid color")
+			}
+			switch name {
+			case "backcolor", "bgcolor":
+				backColor = &c
+			case "ucolor", "underlinecolor":
+				line.hasColor, line.color = true, c
+			default:
+				textColor = &c
+			}
+		case "dest", "destination", "target", "href", "link":
+			if !need(attr, "link") {
+				return false
+			}
+			href, hasHref = attr.value, true
+		case "uoffset", "uwidth", "ugap", "underlineoffset", "underlinewidth", "underlinegap":
+			v, ok := p.usValue(attr.value, attr.has)
+			if !ok {
+				return false
+			}
+			switch name {
+			case "uoffset", "underlineoffset":
+				line.offset = v
+			case "uwidth", "underlinewidth":
+				line.width = v
+			default:
+				line.gap = v
+			}
+		case "underline":
+			if !need(attr, "underline") {
+				return false
+			}
+			b, st := paraBool(attr.value)
+			if st != attrOK {
+				return p.attrFailure(st, "invalid underline")
+			}
+			underline = b
+		case "ukind", "underlinekind":
+			if !need(attr, "kind") {
+				return false
+			}
+			line.kind = attr.value
+		default:
+			return p.fail("invalid attribute name %s", name)
+		}
+	}
+	target := pyTrimUnicode(href)
+	if hasHref {
+		if _, _, ok := linkTarget(target); !ok {
+			return p.unsupported()
+		}
+	}
+	n := p.nlinks
+	p.nlinks++
+	top := p.stack[len(p.stack)-1]
+	merged := top.line[lineUnderline]
+	if line.hasColor {
+		merged.hasColor, merged.color = true, line.color
+	}
+	if line.width != nil {
+		merged.width = line.width
+	}
+	if line.offset != nil {
+		merged.offset = line.offset
+	}
+	if line.gap != nil {
+		merged.gap = line.gap
+	}
+	if line.kind != "" {
+		merged.kind = line.kind
+	}
+	if !p.push(tag, func(t *paraTag) {
+		t.links = append(append([]linkRef{}, t.links...), linkRef{n: n, target: target})
+		t.line[lineUnderline] = merged
+		if size != nil {
+			if size.rel {
+				t.size += size.v
+			} else {
+				t.size = size.v
+			}
+		}
+		if hasFamily {
+			t.family = family
+		}
+		if textColor != nil {
+			t.color = *textColor
+		}
+		if backColor != nil {
+			t.back = backColor
+		}
+	}) {
+		return false
+	}
+	if underline {
+		return p.newLine(lineUnderline)
+	}
+	return true
 }

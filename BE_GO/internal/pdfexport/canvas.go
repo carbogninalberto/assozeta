@@ -224,13 +224,24 @@ type canvasState struct {
 	leading     float64
 	lineWidth   float64
 	strokeColor color // color{named: true} is the initial (0,0,0) tuple, which no Color equals
+	matrix      [6]float64
 }
 
 type pageRecord struct {
 	width, height float64
 	content       []byte
 	images        []string
+	annotations   []int
 }
+
+// annotation is a link annotation: its rectangle in page space and its action.
+type annotation struct {
+	rect   [4]float64
+	action map[string]string
+}
+
+// annotationBase marks an annotation in canvas.sequence.
+const annotationBase = 1 << 24
 
 type canvas struct {
 	pageW, pageH float64
@@ -245,6 +256,8 @@ type canvas struct {
 	stack       []canvasState
 	pages       []pageRecord
 	pageImages  []string
+	annotations []annotation
+	pageAnnots  []int
 	// err is set by a flowable that meets an input this package does not
 	// reproduce while it is laid out.
 	err error
@@ -258,7 +271,7 @@ func newCanvas(width, height float64) *canvas {
 }
 
 func (c *canvas) initState() {
-	c.state = canvasState{fontName: "Helvetica", fontSize: 12, leading: 14.4, lineWidth: 1, strokeColor: color{named: true}}
+	c.state = canvasState{fontName: "Helvetica", fontSize: 12, leading: 14.4, lineWidth: 1, strokeColor: color{named: true}, matrix: [6]float64{1, 0, 0, 1, 0, 0}}
 }
 
 // fontRef is doc.getInternalFontName: /F<n>, registering the font on first use.
@@ -293,6 +306,8 @@ func (c *canvas) scale(x, y float64) { c.transform(x, 0, 0, y, 0, 0) }
 // transform is canvas.transform: a matrix that follows another one is
 // multiplied into the line already written, from its printed numbers.
 func (c *canvas) transform(a, b, cc, d, e, f float64) {
+	m := c.state.matrix
+	c.state.matrix = [6]float64{m[0]*a + m[2]*b, m[1]*a + m[3]*b, m[0]*cc + m[2]*d, m[1]*cc + m[3]*d, m[0]*e + m[2]*f + m[4], m[1]*e + m[3]*f + m[5]}
 	if n := len(c.code); n > 0 && strings.HasSuffix(c.code[n-1], " cm") {
 		fields := strings.Fields(c.code[n-1])
 		if len(fields) == 7 {
@@ -392,9 +407,10 @@ func (c *canvas) showPage() {
 		body = "1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET\n \n"
 	}
 	c.sequence = append(c.sequence, len(c.pages))
-	c.pages = append(c.pages, pageRecord{width: c.pageW, height: c.pageH, content: []byte(body), images: c.pageImages})
+	c.pages = append(c.pages, pageRecord{width: c.pageW, height: c.pageH, content: []byte(body), images: c.pageImages, annotations: c.pageAnnots})
 	c.code = nil
 	c.pageImages = nil
+	c.pageAnnots = nil
 	c.stack = nil
 	c.initState()
 }
@@ -460,11 +476,15 @@ func (c *canvas) save(now time.Time) []byte {
 	number := fontDict
 	resourceNumber := make([]int, len(c.resources))
 	pageNumber := make([]int, len(c.pages))
+	annotationNumber := make([]int, len(c.annotations))
 	for _, item := range c.sequence {
 		number++
-		if item < 0 {
+		switch {
+		case item < 0:
 			resourceNumber[-item-1] = number
-		} else {
+		case item >= annotationBase:
+			annotationNumber[item-annotationBase] = number
+		default:
 			pageNumber[item] = number
 		}
 	}
@@ -529,15 +549,29 @@ func (c *canvas) save(now time.Time) []byte {
 			}
 			resources["XObject"] = pdfDict(used)
 		}
-		object(pageNumber[i], pdfDict(map[string]string{
+		entries := map[string]string{
 			"Contents": ref(streamNumber[i]), "MediaBox": pdfArray([]string{"0", "0", fpStr(page.width), fpStr(page.height)}),
-			"Parent": ref(tree), "Resources": pdfDict(resources), "Rotate": "0", "Trans": pdfDict(nil), "Type": "/Page"}))
+			"Parent": ref(tree), "Resources": pdfDict(resources), "Rotate": "0", "Trans": pdfDict(nil), "Type": "/Page"}
+		if len(page.annotations) > 0 {
+			refs := make([]string, len(page.annotations))
+			for j, index := range page.annotations {
+				refs[j] = ref(annotationNumber[index])
+			}
+			entries["Annots"] = pdfArray(refs)
+		}
+		object(pageNumber[i], pdfDict(entries))
 		kids[i] = ref(pageNumber[i])
 	}
 	for _, item := range c.sequence {
-		if item < 0 {
+		switch {
+		case item < 0:
 			writeResource(-item-1, c.resources[-item-1])
-		} else {
+		case item >= annotationBase:
+			a := c.annotations[item-annotationBase]
+			object(annotationNumber[item-annotationBase], pdfDict(map[string]string{"A": pdfDict(a.action), "Border": "[ 0 0 0 ]",
+				"Rect": pdfArray([]string{fpStr(a.rect[0]), fpStr(a.rect[1]), fpStr(a.rect[2]), fpStr(a.rect[3])}), "Subtype": "/Link",
+				"Type": "/Annot"}))
+		default:
 			writePage(item, c.pages[item])
 		}
 	}
@@ -563,4 +597,35 @@ func (c *canvas) save(now time.Time) []byte {
 	fmt.Fprintf(&out, "trailer\n<<\n/ID \n[<%s><%s>]\n%% ReportLab generated PDF document -- digest (http://www.reportlab.com)\n\n/Info %d 0 R\n/Root %d 0 R\n/Size %d\n>>\nstartxref\n%d\n%%%%EOF\n",
 		id, id, info, catalog, number+1, start)
 	return out.Bytes()
+}
+
+// absolutePosition is canvas.absolutePosition.
+func (c *canvas) absolutePosition(x, y float64) (float64, float64) {
+	m := c.state.matrix
+	return m[0]*x + m[2]*y + m[4], m[1]*x + m[3]*y + m[5]
+}
+
+// linkURL is canvas.linkURL(url, rect, relative=1, kind=kind) for a link
+// target of printable ASCII.
+func (c *canvas) linkURL(target string, rect [4]float64, kind string) {
+	xll, yll := c.absolutePosition(rect[0], rect[1])
+	xur, yur := c.absolutePosition(rect[2], rect[3])
+	xul, yul := c.absolutePosition(rect[0], rect[3])
+	xlr, ylr := c.absolutePosition(rect[2], rect[1])
+	xs := []float64{xll, xur, xul, xlr}
+	ys := []float64{yll, yur, yul, ylr}
+	a := annotation{rect: [4]float64{min(xs[0], xs[1], xs[2], xs[3]), min(ys[0], ys[1], ys[2], ys[3]), max(xs[0], xs[1], xs[2], xs[3]),
+		max(ys[0], ys[1], ys[2], ys[3])}}
+	text := "(" + escapePDF([]byte(target)) + ")"
+	a.action = map[string]string{"S": "/" + kind, "Type": "/Action"}
+	if kind == "URI" {
+		a.action["URI"] = text
+	} else {
+		a.action["F"] = text
+		a.action["D"] = "[ 0 /XYZ null null null ]"
+	}
+	index := len(c.annotations)
+	c.annotations = append(c.annotations, a)
+	c.sequence = append(c.sequence, annotationBase+index)
+	c.pageAnnots = append(c.pageAnnots, index)
 }

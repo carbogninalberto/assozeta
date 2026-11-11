@@ -17,7 +17,8 @@ func TestInputsNotPorted(t *testing.T) {
 	}
 	base := DataTable{Columns: []string{"A"}, Rows: [][]Cell{{{Text: "a"}}}, Title: "T", Portrait: true, IsA3: true}
 	for name, input := range map[string]DataTable{
-		"link":           {Header: header("None", `A <a href="https://example.test">B</a>`)},
+		"anchor":         {Header: header("None", `A <a name="top"/> B`)},
+		"internal link":  {Header: header("None", `A <a href="#top">B</a> C`)},
 		"greek":          {Header: header("None", "A <greek>B</greek>")},
 		"para attribute": {Header: header("None", `<para align="center">A</para>`)},
 		"additional":     {Additional: []string{"saldi <index item=\"e\"/> note"}},

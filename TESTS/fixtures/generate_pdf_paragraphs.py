@@ -25,7 +25,7 @@ from reportlab.platypus.paraparser import known_entities
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / 'BE_GO/internal/pdfexport'
-REFUSED = ('a', 'bullet', 'greek', 'img', 'index', 'link', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat', 'seqreset', 'unichar')
+REFUSED = ('bullet', 'greek', 'img', 'index', 'ondraw', 'seq', 'seqchain', 'seqdefault', 'seqformat', 'seqreset', 'unichar')
 FONTS = ('Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique')
 
 TEXTS = [
@@ -57,6 +57,16 @@ TEXTS = [
     '<font size="0">a</font>', '<font size="1&#50;">a</font>', '<font size="inf">a</font>', '<font color="red" color="blue">a</font>',
     '<font size="12">a</font><font size="12">b</font>', '<font size="12">a <b>b</b></font>', '<u><font size="14">a</font></u>',
     '<sup><u>a</u></sup>', '<u><sup>a</sup></u>', 'a<sup>b</sup>c<sub>d</sub>e', '<font size="9">a</font>',
+    '<a href="https://example.test/">a</a>', '<a href="x">a</a>', '<link href="mailto:a@b.it">m</link>', '<a href="">a</a>', '<a>x</a>',
+    '<a href=" https://example.test/x ">a</a>', '<a href="https://example.test/?a=1&amp;b=2&c=3">a</a>', '<a href="#top">a</a>',
+    '<a href="document:x">a</a>', '<a href="pdf:file.pdf">a</a>', '<a href="PDF:file.pdf">a</a>', '<a href="www.x.it">a</a>', '<a href="a:b">a</a>',
+    '<a href="x:y:z">a</a>', '<a href="http://a/(b)\\c">a</a>', '<a name="x"/>', '<a name="">a</a>', '<a name="x" href="y">a</a>',
+    '<a href="y" color="red" underline="1">a</a>', '<a href="y" underline="yes" ucolor="blue" uwidth="2" ukind="double">a</a>',
+    '<a href="y" underline="maybe">a</a>', '<link href="y" name="Helvetica">a</link>', '<link name="Helvetica-Bold" href="y">a</link>',
+    '<link href="y" face="Symbol">a</link>', '<link href>a</link>', '<link foo="1">a</link>', '<a href="y">a<br/>b</a>',
+    '<a href="y"><b>a</b> b <i>c</i></a>', '<a href="y">a</a> <a href="z">b</a>', '<a href="y"><a href="z">a</a></a>', '<a href="y">',
+    '<a href="\u00e9">a</a>', '<a href="\t">a</a>', '<link>a</link>', '<link href="y" dest="z">a</link>', '<a href="y" size="12" bgcolor="yellow">a</a>',
+    '<a href="y" fg="#ff0000" fontsize="10">a b</a>', '<a href="y" backcolor="red" textcolor="blue" underlinekind="triple" underline="true">a</a>',
     '<u>a</u>', '<u>a b</u> c', '<u color="red">a</u>', '<u width="2">a</u>', '<u offset="-1">x</u>', '<u kind="double">a</u>',
     '<u kind="triple" gap="2">a</u>', '<u width="0.5*f">a</u>', '<u width="2*P">a</u>', '<u width=" 1.5 ">a</u>', '<u width="2mm">a</u>',
     '<u offset="0.1*F">a</u>', '<u offset="">a</u>', '<u gap="3">a</u>', '<strike>a</strike>', '<strike color="#ff0000" width="1">a</strike>',
@@ -79,7 +89,7 @@ TOKENS = [
     '<x y="1">', "<x y='>'>", '<x y="', '<!-- c -->', '<!--', '<?pi?>', '<!DOCTYPE x>', '<![CDATA[x]]>', '<para>', '</para>',
     '<title>', '</title>', '<script>', '</script>', '<b/>', '</>', '< b>', '<b >', '<B>', '</B >', '<a href="x">', '</a>', '<u>',
     '</u>', '<strike>', '</strike>', '<u color="red">', '<strike kind="double">', '<font size="12">', '</font>', '<font color="red">',
-    '<sup>', '</sup>', '<sub>', '</sub>', '<span>', '</span>', '<nobr>', '</nobr>', '<font name="Symbol">', '<font size="+2">',
+    '<a href="x">', '</a>', '<link href="y">', '</link>', '<a href="https://example.test/p?q=1&amp;r=2">', '<sup>', '</sup>', '<sub>', '</sub>', '<span>', '</span>', '<nobr>', '</nobr>', '<font name="Symbol">', '<font size="+2">',
     '<font bgcolor="yellow">', '\xad', 'é', '"', "'", '=', '/', '<x/>', '<x a=b c>', '<3', '&&', '&;', '&#', '&#x;', '-', '.', ';',
     '<plaintext>', '<textarea>', '</textarea>', '<b', '</b', '<x "a">', "<x 'a>", '\n', '\t', '\xa0', '<br />', '<BR/>', '&AMP;',
     '&Alpha;', '&#0;', '&#55296;', '&#1114112;', '&#955;', 'x= "y', '<x y= "z', '<x/y>', '<x//>', '<!>', '<!->', '-->', ']]>',
@@ -89,7 +99,8 @@ TOKENS = [
 def refusable(text):
     lowered = text.lower()
     return (any('<' + tag in lowered or '</' + tag in lowered for tag in REFUSED) or '<para' in lowered or 'blacker(' in lowered
-            or 'whiter(' in lowered or ('<' in text and (not text.isascii() or 'inf' in lowered or 'nan' in lowered
+            or 'whiter(' in lowered or (('<a' in lowered or '<link' in lowered) and ('#' in text or 'document:' in lowered or 'name' in lowered))
+            or ('<' in text and (not text.isascii() or 'inf' in lowered or 'nan' in lowered
                                                          or 'courier' in lowered or 'times' in lowered)))
 
 
