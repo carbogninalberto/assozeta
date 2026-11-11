@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"math/big"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -125,8 +124,9 @@ func calendarDate(value any) (*time.Time, error) {
 	case nil:
 		return nil, nil
 	case string:
-		if _, _, result := dto.DjangoParseDateTime(v); result == dto.DjangoDateTimeNotPorted {
-			return nil, errCalendarNotPorted
+		// An aware value whose UTC instant is outside years 1..9999 is kept as parsed.
+		if moment, _, result := dto.DjangoParseDateTimeWide(v); result == dto.DjangoDateTimeParsed {
+			return &moment, nil
 		}
 		moment, ok := dto.DjangoDateTimePrep(v)
 		if !ok {
@@ -261,12 +261,27 @@ func (w *calendarWrite) deleteRow(ctx context.Context, table, key, model, id str
 	return w.log(ctx, model, id, 2, changes, nil, "")
 }
 
+// calendarRowOutside reports a datetime column whose UTC instant is outside years 1..9999.
+func calendarRowOutside(row domain.CalendarRow) bool {
+	for _, value := range row {
+		if moment, ok := value.(time.Time); ok && dto.DjangoDateTimeOutside(moment) {
+			return true
+		}
+	}
+	return false
+}
+
 // createRow inserts a row, logs auditlog's create entry, then the entry of
 // the views' second save() (the in-memory values against the stored row).
 func (w *calendarWrite) createRow(ctx context.Context, table, key, model, id string, row domain.CalendarRow, fields []calendarField,
 	association *string, path string, saveAgain bool) error {
 	if err := w.tx.Insert(ctx, table, row); err != nil {
 		return err
+	}
+	if calendarRowOutside(row) {
+		// The row is stored with its own offset; auditlog's create entry cannot convert the value
+		// to UTC (OverflowError), so the save raises after the INSERT and no entry is written.
+		return errCalendarRaised
 	}
 	if err := w.log(ctx, model, id, 0, calendarCreateChanges(fields), association, path); err != nil {
 		return err
@@ -281,6 +296,10 @@ func (w *calendarWrite) createRow(ctx context.Context, table, key, model, id str
 // the UPDATE, so a database error (failure) still leaves the entry.
 func (w *calendarWrite) saveRow(ctx context.Context, table, key, model, id string, row domain.CalendarRow, fields []calendarField,
 	association *string, path string, failure error) error {
+	if calendarRowOutside(row) {
+		// auditlog's pre_save diff cannot convert the new value to UTC: nothing is logged or updated.
+		return errCalendarRaised
+	}
 	stored, err := w.tx.Stored(ctx, table, key, id)
 	if err != nil {
 		return err
@@ -430,12 +449,13 @@ func reminderValues(event, ext domain.RequestObject) (time.Time, string, error) 
 	if !ok {
 		return time.Time{}, "", errCalendarRaised
 	}
-	moment, _, result := dto.DjangoParseDateTime(text)
-	switch result {
-	case dto.DjangoDateTimeNotPorted:
-		return time.Time{}, "", errCalendarNotPorted
-	case dto.DjangoDateTimeNone, dto.DjangoDateTimeValueError:
+	moment, aware, result := dto.DjangoParseDateTimeWide(text)
+	if result != dto.DjangoDateTimeParsed {
 		return time.Time{}, "", errCalendarRaised
+	}
+	wall := moment
+	if aware {
+		wall = dto.DjangoDateTimeWall(text, moment)
 	}
 	amount, err := dto.PythonIndex(ext, "reminder_amount")
 	if err != nil {
@@ -457,10 +477,14 @@ func reminderValues(event, ext domain.RequestObject) (time.Time, string, error) 
 		return time.Time{}, "", errCalendarRaised
 	}
 	seconds = total.Int64()
-	sendAt := moment.AddDate(0, 0, -int(seconds/86400)).Add(-time.Duration(seconds%86400) * time.Second)
-	if sendAt.Year() < 1 || sendAt.Year() > 9999 {
+	shift := func(at time.Time) time.Time {
+		return at.AddDate(0, 0, -int(seconds/86400)).Add(-time.Duration(seconds%86400) * time.Second)
+	}
+	// The subtraction works on the value's own wall clock; the instant may leave years 1..9999 afterwards.
+	if shifted := shift(wall); dto.DjangoDateTimeOutside(shifted) {
 		return time.Time{}, "", errCalendarRaised
 	}
+	sendAt := shift(moment)
 	return sendAt, dto.PythonStr(amount) + " " + calendarReminderText[name], nil
 }
 
@@ -696,9 +720,6 @@ func (s *CourseCalendars) UpdatePost(ctx context.Context, identity domain.Resolv
 		if stored, err = calendarParse(registry.Events); err != nil {
 			return nil, err
 		}
-		if err = calendarMergeSupported(stored, events); err != nil {
-			return nil, err
-		}
 	}
 	result, err := w.updatePost(ctx, course, registry, stored, rawEvents, events, status, association)
 	var answer *domain.CalendarAnswer
@@ -719,14 +740,12 @@ func (s *CourseCalendars) UpdatePost(ctx context.Context, identity domain.Resolv
 }
 
 // calendarUpdateEvents is `[event['event_id'] for event in data['events']]`
-// plus the event_id__in lookup's UUID validation, both before any write, and
-// the refusal of payload shapes whose handling is not ported.
+// plus the event_id__in lookup's UUID validation, both before any write.
 func calendarUpdateEvents(raw any) ([]any, error) {
 	items, ok := calendarItems(raw)
 	if !ok {
 		return nil, errCalendarRaised
 	}
-	notPorted := false
 	for _, item := range items {
 		event, ok := item.(domain.RequestObject)
 		if !ok {
@@ -736,56 +755,30 @@ func calendarUpdateEvents(raw any) ([]any, error) {
 		if !ok {
 			return nil, errCalendarRaised
 		}
-		if _, err := calendarUUID(id); errors.Is(err, errCalendarRaised) {
+		if _, err := calendarUUID(id); err != nil {
 			return nil, err
-		} else if err != nil {
-			notPorted = true
 		}
-		if props, ok := event.Lookup("extendedProps"); ok {
-			switch props.(type) {
-			case []any, string:
-				notPorted = true
-			}
-		}
-		if start, ok := event.Lookup("start"); ok {
-			switch v := start.(type) {
-			case nil:
-			case string:
-				if _, _, result := dto.DjangoParseDateTime(v); result == dto.DjangoDateTimeNotPorted {
-					notPorted = true
-				}
-			default:
-				notPorted = true
-			}
-		}
-	}
-	if notPorted {
-		return nil, errCalendarNotPorted
 	}
 	return items, nil
 }
 
-// calendarMergeSupported refuses a published registry whose stored events
-// the merge cannot iterate as Python does, or whose sort is not ported.
-func calendarMergeSupported(stored any, events []any) error {
-	list, ok := stored.([]any)
-	if stored == nil {
-		return nil
-	}
-	if !ok {
-		return errCalendarNotPorted
-	}
-	for _, item := range append(append([]any{}, list...), events...) {
-		if event, ok := item.(domain.RequestObject); ok {
-			if start, ok := event.Lookup("start"); ok {
-				switch start.(type) {
-				case []any, domain.RequestObject:
-					return errCalendarNotPorted
-				}
-			}
+// calendarStoredList is the registry's stored events for the merge: a list, or
+// an empty dict or string, which `sorted` turns into [] when no event is sent
+// (anything else raises as soon as the loop or the sort touches it).
+func calendarStoredList(stored any, events []any) ([]any, error) {
+	switch v := stored.(type) {
+	case []any:
+		return v, nil
+	case domain.RequestObject:
+		if len(v) == 0 && len(events) == 0 {
+			return []any{}, nil
+		}
+	case string:
+		if v == "" && len(events) == 0 {
+			return []any{}, nil
 		}
 	}
-	return nil
+	return nil, errCalendarRaised
 }
 
 func calendarStatusValue(status any) int {
@@ -882,9 +875,9 @@ func (w *calendarWrite) createDay(ctx context.Context, registry string, course *
 
 func (w *calendarWrite) mergePublished(ctx context.Context, course *domain.CalendarCourse, registry *domain.CalendarRegistry, stored any,
 	events []any) (any, error) {
-	list, _ := stored.([]any)
-	if stored == nil {
-		return nil, errCalendarRaised // enumerate(None) or sorted(None)
+	list, err := calendarStoredList(stored, events)
+	if err != nil {
+		return nil, err // enumerate(None) or sorted(None), or iterating a dict or str
 	}
 	scope := paymentCategoryAssociationScope(w.identity)
 	for _, item := range events {
@@ -1004,40 +997,98 @@ func calendarSortByStart(list []any) ([]any, error) {
 		}
 		keys[i] = start
 	}
-	sorted := append([]any{}, list...)
-	if len(list) < 2 {
-		return sorted, nil
+	order, err := pythonSortOrder(keys)
+	if err != nil {
+		return nil, err
 	}
-	allText, allNumbers := true, true
-	for _, key := range keys {
-		switch key.(type) {
-		case string:
-			allNumbers = false
-		case json.Number, bool:
-			allText = false
-		default:
-			return nil, errCalendarRaised
-		}
-	}
-	if !allText && !allNumbers {
-		return nil, errCalendarRaised
-	}
-	order := make([]int, len(list))
-	for i := range order {
-		order[i] = i
-	}
-	sort.SliceStable(order, func(a, b int) bool {
-		if allText {
-			return keys[order[a]].(string) < keys[order[b]].(string)
-		}
-		left, _ := calendarNumber(keys[order[a]])
-		right, _ := calendarNumber(keys[order[b]])
-		return left.Cmp(right) < 0
-	})
+	sorted := make([]any, len(list))
 	for i, index := range order {
 		sorted[i] = list[index]
 	}
 	return sorted, nil
+}
+
+// pythonLess is `a < b` for parsed JSON values: numbers (booleans too), text
+// and lists compare with their own kind (lists item by item), anything else
+// raises TypeError.
+func pythonLess(a, b any) (bool, error) {
+	if left, ok := attendanceNumber(a); ok {
+		right, ok := attendanceNumber(b)
+		if !ok {
+			return false, errCalendarRaised
+		}
+		return left.Cmp(right) < 0, nil
+	}
+	switch left := a.(type) {
+	case string:
+		if right, ok := b.(string); ok {
+			return left < right, nil
+		}
+	case []any:
+		if right, ok := b.([]any); ok {
+			for i := 0; i < len(left) && i < len(right); i++ {
+				if !dto.PythonEqual(left[i], right[i]) {
+					return pythonLess(left[i], right[i])
+				}
+			}
+			return len(left) < len(right), nil
+		}
+	}
+	return false, errCalendarRaised
+}
+
+// pythonSortOrder is the stable order list.sort() gives the keys. It follows
+// CPython's run detection and binary insertion, so the same comparisons are
+// made (and the same ones raise) for short lists.
+func pythonSortOrder(keys []any) ([]int, error) {
+	order := make([]int, len(keys))
+	for i := range order {
+		order[i] = i
+	}
+	n := len(keys)
+	if n < 2 {
+		return order, nil
+	}
+	less := func(a, b int) (bool, error) { return pythonLess(keys[a], keys[b]) }
+	run := 2
+	descending, err := less(order[1], order[0])
+	if err != nil {
+		return nil, err
+	}
+	for run < n {
+		smaller, err := less(order[run], order[run-1])
+		if err != nil {
+			return nil, err
+		}
+		if smaller != descending {
+			break
+		}
+		run++
+	}
+	if descending {
+		for i, j := 0, run-1; i < j; i, j = i+1, j-1 {
+			order[i], order[j] = order[j], order[i]
+		}
+	}
+	for start := run; start < n; start++ {
+		pivot := order[start]
+		low, high := 0, start
+		for low < high {
+			mid := low + (high-low)/2
+			smaller, err := less(pivot, order[mid])
+			if err != nil {
+				return nil, err
+			}
+			if smaller {
+				high = mid
+			} else {
+				low = mid + 1
+			}
+		}
+		copy(order[low+1:start+1], order[low:start])
+		order[low] = pivot
+	}
+	return order, nil
 }
 
 func calendarNumber(value any) (*big.Rat, bool) {

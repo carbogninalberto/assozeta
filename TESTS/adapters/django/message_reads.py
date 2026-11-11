@@ -363,6 +363,39 @@ def runtime_manifest(authored, tokens):
     return fixture
 
 
+def _snapshot_rows(model):
+    """The rows of a model, in primary key order.
+
+    Postgres stores timestamps the driver cannot hand to Python (an aware value
+    whose UTC instant is before year 1 or after year 9999, which Django writes
+    unchanged). Only for such rows the instant is read as Postgres text
+    ('0001-12-31 19:00:00+00 BC'); every other value keeps its usual form.
+    """
+    try:
+        return [{key: _stable(value) for key, value in row.items()} for row in model._base_manager.order_by("pk").values()]
+    except (ValueError, OverflowError):
+        pass
+    from django.db.models import CharField, F
+    from django.db.models.functions import Cast
+    stamps = [field.attname for field in model._meta.concrete_fields if field.get_internal_type() == "DateTimeField"]
+    rows = []
+    for pk in list(model._base_manager.order_by("pk").values_list("pk", flat=True)):
+        queryset = model._base_manager.filter(pk=pk)
+        unreadable = []
+        for name in stamps:
+            try:
+                queryset.values_list(name, flat=True).get()
+            except (ValueError, OverflowError):
+                unreadable.append(name)
+        texts = {f"text_{name}": Cast(F(name), CharField()) for name in unreadable}
+        names = [field.attname for field in model._meta.concrete_fields if field.attname not in unreadable]
+        row = queryset.values(*names, **texts).get()
+        for name in unreadable:
+            row[name] = _stable(row.pop(f"text_{name}"))
+        rows.append({key: _stable(value) for key, value in row.items()})
+    return rows
+
+
 def snapshot_models(apps):
     """Snapshot every managed concrete model, including join/through tables."""
     result = {}
@@ -371,10 +404,7 @@ def snapshot_models(apps):
     ):
         if not model._meta.managed or model._meta.proxy:
             continue
-        result[model._meta.label] = [
-            {key: _stable(value) for key, value in row.items()}
-            for row in model._base_manager.order_by("pk").values()
-        ]
+        result[model._meta.label] = _snapshot_rows(model)
     assert result, "managed model snapshot is empty"
     return result
 
