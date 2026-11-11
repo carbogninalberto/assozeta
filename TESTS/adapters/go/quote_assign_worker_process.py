@@ -102,7 +102,7 @@ class QuoteFixture:
         day, month = today.day, today.month
         fee_two = 12.5
         if variant == 'unported':
-            fee_two = True  # Decimal(True) in Django; not a ported fee conversion
+            fee_two = '1e2'  # Decimal('1e2') in Django; exponent text is not a ported fee conversion
         plans = {
             1: [plan('plan-new', 'plan-old', 30, 'Quota "Seconda" & <rata>', day=day, month=month),
                 plan('plan-float', 'plan-old', fee_two, 'Quota float', day=str(day), month=month),
