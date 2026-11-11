@@ -81,10 +81,12 @@ payment dates are a 500 with nothing written. Response `201`.
 
 - Add for a user with `auto_paid_payment` and a party when the print is deferred by a pending restore. (Fees on an
   exact half cent and `X-Group-Id` in another spelling are ported, v2-rest-a below.)
-- `attachments_data` items outside the ported subset: a non-string `document` or `filename` (Django stores `str()` of the
-  filename, then `os.path.join` raises), a filename over 255 characters, with NUL or not valid UTF-8, a storage name
-  `Storage.save` rejects (path traversal, empty base name), and an existing key without `AWS_S3_FILE_OVERWRITE`
-  (`get_available_name` picks a random name).
+- `attachments_data` items outside the ported subset: a non-string `filename` (Django stores `str()` of the filename, then
+  `os.path.join` raises, the Document stays), a filename not valid UTF-8, a storage name `Storage.save` rejects (path traversal,
+  empty base name; the Document stays), and an existing key without `AWS_S3_FILE_OVERWRITE` (`get_available_name` picks a random
+  name). Ported in tailpay: a `document` that is not base64 text (`b64decode` raises before any Document exists) and a filename
+  that is null, holds NUL or has more than 255 characters (the INSERT fails) answer the 500 page after the save and the documents
+  stored before the item (four update cases, 160 in all).
 - `user` in the add or update body (nested user write), `payment_id` on add, and on update a `payment_id` other than the
   row's own key (a primary key change). The edit form's own key (any spelling `uuid.UUID` accepts) is accepted: the
   UniqueValidator excludes the instance and the save keeps the row.

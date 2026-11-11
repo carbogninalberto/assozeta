@@ -297,7 +297,7 @@ func (s *InvoiceCore) Archived(ctx context.Context, request InvoiceCoreRequest) 
 
 // invoiceCoreIDs reads data['invoice_ids']: request.data must have the key
 // (a list, scalar or null body has no .keys(): 500). A form body is a
-// QueryDict whose item is the last value; file parts are not ported.
+// QueryDict whose item is the last value; a file part is iterated by lines.
 func invoiceCoreIDs(request InvoiceCoreRequest) (any, error) {
 	object, ok := request.Body.(domain.RequestObject)
 	if !ok {
@@ -313,8 +313,12 @@ func invoiceCoreIDs(request InvoiceCoreRequest) (any, error) {
 	if !found {
 		return nil, domain.ErrInvoiceCoreServer
 	}
-	if _, upload := value.(domain.RequestUpload); upload {
-		return nil, domain.ErrInvoiceCoreNotPorted
+	if upload, isUpload := value.(domain.RequestUpload); isUpload {
+		// invoice_id__in iterates the uploaded file by lines (bytes): none matches nothing, any line fails the uuid lookup (500).
+		if upload.Size == 0 {
+			return []any{}, nil
+		}
+		return nil, domain.ErrInvoiceCoreServer
 	}
 	return value, nil
 }

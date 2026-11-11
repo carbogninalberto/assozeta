@@ -72,7 +72,12 @@ rows; the subscription export goes through pandas) and are not part of this fami
 
 - `m=xlsx` inputs the writer refuses ([xlsx-exports](xlsx-exports.md)), and course labels that are bools, lists, objects or
   integers beyond int64.
-- Infinite float search terms and smart-search terms with characters Python lower-cases differently (as payment-reads).
+
+Ported in tailpay: an infinite float search term (`inf`, `-Infinity`) follows `nan` into the text search (the amount lookup refuses it
+while the filter is built, inside the view's `try`), and smart-search terms are decoded (`replace` for malformed bytes), lower-cased
+(`U+0130`, final sigma) and split on `\w+` as Python does, so Cyrillic, Greek and CJK terms are answered; 94 cases (7 more:
+`search-inf-is-text`, `search-infinity-is-text`, `search-cyrillic`, `search-greek-final-sigma`, `search-dotted-capital-i`,
+`search-malformed-byte`, `search-truncated-sequence`; the pending payment's description now also holds `infanzia`, so `inf` matches it).
 - A course JSON `label` that is a list or an object (its Python repr) or a non-finite number.
 
 Not authored: association-scoped sessions of non-athlete users (the scoped course subscription and installment

@@ -622,7 +622,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### balance-accounts.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH balance-sheet/accounts/<uid>/update | body carries a new `custom_account_id` | service/balance_account_writes.go:97,281 (`ErrBalanceAccountPrimaryKeyChange`) | B | `src/routes/accounting/accounts/modals/EditModal.svelte:62-76` sends the form fields `name`, `account_type`, `enabled`, `initial_balance`, `account_code` only. Cost: medium (insert-copy semantics). |
+| PATCH balance-sheet/accounts/<uid>/update | body carries a new `custom_account_id` | service/balance_account_writes.go (was `ErrBalanceAccountPrimaryKeyChange`) | ported (tailpay) | `src/routes/accounting/accounts/modals/EditModal.svelte:62-76` sends the form fields `name`, `account_type`, `enabled`, `initial_balance`, `account_code` only. Go inserts the copy under the new key as `Model.save()` does (two audit entries, the named row stays); the transfer update with a new `custom_account_transfer_id` is ported the same way (balance-accounts.md). |
 
 ### camps-subscriptions.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -656,7 +656,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 ### carnet-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
 |---|---|---|---|---|
-| DELETE carnet/<uid>/unassign/<uid_subscription> | the carnet subscription's unpaid payment is referenced by a `CourseSubscriptionInstallment` (pre_delete cascade) | repository/carnet_writes.go:157 (`domain.ErrPaymentCascadeUnsupported`) | B | UI calls unassign (`association/course/carnet/detail/sections/Usage.svelte:274`, `association/Members/detail/sections/Carnet.svelte:368`), but carnet payments are created standalone by carnet assign/topup; installments create their own payments, so no UI writer links an installment to a carnet payment. legacy: no. Cost: medium (installment cascade exists in other families). |
+| DELETE carnet/<uid>/unassign/<uid_subscription> | the carnet subscription's unpaid payment is referenced by a `CourseSubscriptionInstallment` (pre_delete cascade) | repository/carnet_writes.go:157 (`domain.ErrPaymentCascadeUnsupported`) | B (open in tailpay: `deleteReplacePayment` in the same file already runs this cascade for carnet replace; the unassign fixtures still need a course with installments seeded) | UI calls unassign (`association/course/carnet/detail/sections/Usage.svelte:274`, `association/Members/detail/sections/Carnet.svelte:368`), but carnet payments are created standalone by carnet assign/topup; installments create their own payments, so no UI writer links an installment to a carnet payment. legacy: no. Cost: medium (installment cascade exists in other families). |
 
 ### celery-routes-a.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -930,7 +930,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | same | `meta.subscription_data.name` not str/bool/int | `service/invoice_generate.go:455` | B | legacy: yes (imported/admin-edited meta); cheap. |
 | POST payment/<uid>/approve | `send_receipt_email` not None/bool/str/int64 | payment_state service | ported (rest-b1) | Every JSON value is passed to the task; an uploaded file stays refused. |
 | POST payment/<uid>/generate-invoice | non-canonical `X-Group-Id` | `BE_GO/internal/service/invoice_generate.go:148-149`, `ErrPaymentStateNotPorted` | B (**ported** in v2-rest-docs) | UI never sends `X-Group-Id`. cheap. |
-| same | float fee exact 2-place ties; non-finite sums | `service/invoice_generate.go:272-281` | B (ties **ported** in v2-rest-docs; non-finite sums stay) | Amounts are 2-decimal; exact binary ties need ≥3 decimals. legacy: no; cheap. |
+| same | float fee exact 2-place ties; non-finite sums | `service/invoice_generate.go:272-281` | B (ties **ported** in v2-rest-docs; non-finite sums **ported** in tailpay: the invoice insert fails inside the transaction, the 500 page) | Amounts are 2-decimal; exact binary ties need ≥3 decimals. legacy: no; cheap. |
 | same | `meta.subscription_data.name` not str/bool/int | `service/invoice_generate.go:455` | B (**ported** in v2-rest-docs) | legacy: yes (imported/admin-edited meta); cheap. |
 | POST payment/<uid>/approve | `send_receipt_email` not None/bool/str/int64 | payment_state service | B | UI sends a bool (`accounting/payment/PaymentList.svelte:876,1195`). |
 | approve | no configured Celery producer | payment_state | C | Deployment always configures the broker. |
@@ -955,16 +955,16 @@ No refusals of its own (re-verification record). Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET invoice/list | an invoice on the page without a PDF | `BE_GO/internal/service/invoice_core.go:196-198`, `ErrInvoiceCoreNotPorted` | **A** (ported in v2-documents) | `accounting/receipts/ReceiptList.svelte:651`, `payment/partials/payment-overview.svelte:78`. Generated receipts get their PDF from the async `print_document_invoice` task; until it finishes, or permanently if rendering failed, Django re-dispatches (`BE/application/views/invoice_views.py:199`) and Go refuses. |
-| GET invoice/list | `?` ordering or ordering through relations | `service/invoice_core.go:69,78`; `repository/invoice_core.go:214` | B | UI sorts only `number`, `activity_fee`, `creation_date` (`ReceiptList.svelte:142-182`). |
-| GET invoice/list | infinite float search terms; smart-search terms in non-Latin scripts | `service/invoice_core.go:151,158` | B (infinite terms **ported** in v2-rest-docs) | Typed search; non-Latin names are unusual. cheap/medium. |
-| invoice-bulk/* | multipart file parts | `service/invoice_core.go:300` | B | UI JSON (`ReceiptList.svelte:450,498`). |
+| GET invoice/list | `?` ordering or ordering through relations | `service/invoice_core.go:69,78`; `repository/invoice_core.go:214` | B (`?` kept: a random order has no answer to reproduce; relation paths open in tailpay) | UI sorts only `number`, `activity_fee`, `creation_date` (`ReceiptList.svelte:142-182`). |
+| GET invoice/list | infinite float search terms; smart-search terms in non-Latin scripts | `service/invoice_core.go:151,158` | B (infinite terms **ported** in v2-rest-docs; non-Latin terms **ported** in tailpay) | Typed search; non-Latin names are unusual. cheap/medium. |
+| invoice-bulk/* | multipart file parts | `service/invoice_core.go:300` | B (**ported** in tailpay: an uploaded `invoice_ids` is iterated by lines, none matches nothing, any line is the 500 page) | UI JSON (`ReceiptList.svelte:450,498`). |
 | invoice/<uid>/update, invoice-customers/add, invoice/list/export | "not in family" | — | n/a | Routed in Go now (`cmd/server/main.go:728,732,509`). |
 
 ### invoice-parties.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET invoice-customers/list | an invoice of the caller's association without a PDF | `BE_GO/internal/service/invoice_parties.go:97-104`, `ErrInvoicePartyNotPorted` | **A** (ported in v2-documents) | `accounting/customersInvoice/CustomersInvoiceList.svelte:513`. A customer invoice added from the UI (`:309`) whose eager print made no PDF (renderer error swallowed, or any completed data restore making the eager task raise `StaleDataTask`, per invoice-views.md) leaves `pdf_id` NULL; Django prints it on its association's list (`invoice_views.py:836`). |
-| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id`, new `invoice_supplier_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). |
+| POST invoice-suppliers/add, PATCH …/update | nested `payment`/`supplier` objects, non-null `payment_id`, new `invoice_supplier_id` | `service/invoice_parties.go:510-511,589-592`; `dto/invoice_parties.go:425,439,463` | B (open in tailpay; the nested objects are validated by the full `PaymentSerializer` and `SupplierSerializer`, whose field errors embed further nested serializers) | UI sends `supplier_id`, deletes `payment`/`supplier` (`suppliersInvoice/SuppliersInvoiceList.svelte:312-313`, `suppliersInvoice/modals/EditModal.svelte:74-76`). |
 | PATCH invoice-suppliers/<uid>/update | linked payment not loadable or description None/"quota corso" | `service/invoice_parties.go:640-649` | B | Supplier add sets a description (`invoice_views.py:695`); needs a later edit blanking it. legacy: yes; medium. |
 | GET invoice-suppliers/list | payment linking an associate/instructor/invoice or with a subscription/course subject | `service/invoice_parties.go:370-371` | B | Auto-created supplier payment is `Payment.OTHER` with a supplier; needs a manual edit in the payment editor. legacy: yes; medium. |
 | lists | ordering by relation path or `?` | invoice_parties service | B | Not sent by the UI tables. |
@@ -974,14 +974,14 @@ No refusals of its own (re-verification record). Nothing to classify.
 ### invoice-views.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:55-57,337`; `service/invoice_views_einvoice.go:26-27` | BB (the `get_main_tutor()` write **ported** in v2-documents-4 for signed-in requests; HEAD and slash-less are served) | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
+| GET document/invoice/<uid>/view/, document/einvoice/<uid>/view/ | `get_main_tutor()` write; stored JSON outside handled shapes; mentions/template subset; FatturaPA outside subset; HEAD/slash-less | `BE_GO/internal/service/invoice_views.go:55-57,337`; `service/invoice_views_einvoice.go:26-27` | BB (the `get_main_tutor()` write **ported** in v2-documents-4 for signed-in requests; HEAD and slash-less are served; FatturaPA outside the subset kept: the a38 library's validation has no Go equivalent; the JSON shapes and template subset are open in tailpay) | Renderer-only routes (no `einvoice`/`document/invoice` in `UI/src`). legacy: yes for tutor relations and old meta JSON; medium–expensive (FatturaPA). |
 
 ### invoice-sync-print.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH invoice/<uid>/update, POST invoice-customers/add | restore becomes pending between admission and task | `service/invoice_sync_print.go:258` (`ErrInvoiceSyncPrintDeferred`) | B | Race window only. cheap. |
+| PATCH invoice/<uid>/update, POST invoice-customers/add | restore becomes pending between admission and task | `service/invoice_sync_print.go:258` (`ErrInvoiceSyncPrintDeferred`) | B (kept: a timing race between two requests, with no input that reproduces it) | Race window only. |
 | PATCH invoice/<uid>/update | multipart file parts | `service/invoice_sync_print.go:173` | B (**ported** in v2-rest-docs) | UI JSON (`accounting/receipts/modals/EditModal.svelte:47`). |
-| POST invoice-customers/add | dates before year 1000; FatturaPA inputs outside subset | `service/invoice_sync_print_customer.go:60,93-97` | B | UI sends numeric line values (`components/invoice/InvoiceForm.svelte:13,594`). legacy: no; medium. |
+| POST invoice-customers/add | dates before year 1000; FatturaPA inputs outside subset | `service/invoice_sync_print_customer.go:60,93-97` | B (kept: `strftime` of such a year is the C library's, and the a38 FatturaPA generator's validation outside the ported subset has no Go equivalent) | UI sends numeric line values (`components/invoice/InvoiceForm.svelte:13,594`). legacy: no; medium. |
 
 ### maintainer-report.md
 Status report; it lists no per-route refusals beyond those in the family docs. Nothing to classify.
@@ -1043,7 +1043,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 |---|---|---|---|---|
 | GET payment/simulation/partial-quotes-apply | a member's own account to e-mail while the association has a `CommunicationConfiguration` | `service/payment_misc.go` (`Apply`, `ErrPaymentMiscNotPorted`) | A (ported in v2-payments-3) | Same UI call (`SubscriptionFeesPlanModal.svelte:46`). Without an SMTP configuration the e-mail is ported (published `send_mail_async`); with one Django sends on a `Timer` thread after a random delay. |
 | partial-quotes(-apply) | non-ASCII-digit dates and plan days/months, non-canonical X-Group-Id | `service/payment_misc.go` | ported (v2-rest-a) | See `payment-misc.md`. |
-| partial-quotes(-apply) | odd fee/plan types (fees that are not a number or decimal string, plan ids that are not strings or numbers, ints beyond int64) | `service/payment_misc.go` (`paymentMiscAmount`, `paymentMiscPattern`); `service/quote_assign.go` | B | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
+| partial-quotes(-apply) | odd fee/plan types (fees that are not a number or decimal string, plan ids that are not strings or numbers, ints beyond int64) | `service/payment_misc.go` (`paymentMiscAmount`, `paymentMiscPattern`); `service/quote_assign.go` | B (open in tailpay) | The UI sends `?date=YYYY-MM-DD`. Plans come from template data. legacy: yes (old plan JSON). Cost: cheap. |
 | POST payment/<id>/approve (via payment-state) | `send_receipt_email` not None/bool/str/int64 | payment-state | ported (rest-b1) | See `invoice-generate.md`. |
 
 ### oauth2-accounts.md
@@ -1077,28 +1077,28 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### payment-export.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| GET payment/list/export?m=xlsx | openpyxl-refused input; course label bool/list/dict/huge int/non-finite | `service/payment_export.go:557` and the label conversion | B | Called at `routes/accounting/payment/PaymentList.svelte:739,783`. Course JSON is written by the UI as `{label,value}` strings (`modals/AddEditModal.svelte:63`). legacy: yes. Cost: cheap. |
-| same (+csv) | infinite float search / special lower-casing | shared smart search | B | Exotic text. |
+| GET payment/list/export?m=xlsx | openpyxl-refused input; course label bool/list/dict/huge int/non-finite | `service/payment_export.go:557` and the label conversion | B (open in tailpay: needs pandas' object-column typing of bool and repr cells in `xlsxexport`) | Called at `routes/accounting/payment/PaymentList.svelte:739,783`. Course JSON is written by the UI as `{label,value}` strings (`modals/AddEditModal.svelte:63`). legacy: yes. Cost: cheap. |
+| same (+csv) | infinite float search / special lower-casing | shared smart search | ported (tailpay) | An infinite term (`inf`, `-Infinity`) follows `nan` into the text search; terms beyond Latin are decoded, lower-cased and split on `\w+` as Python does (`personaSearch`, shared with personas, payment-reads, invoice-core and subscription search). |
 
 ### payment-reads.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | GET payment/list (athlete, no `mode=compressed`) | athlete branch | `service/payment_reads_athlete.go` | **ported** (v2-athlete-payments) | Athletes on `/payment/list` (`routes.js:389-393`) load `routes/activities/payment/PaymentList.svelte:36-38`, which calls `payment/list` without `mode`. |
-| GET payment/list (athlete) | a receipt to generate whose filename is not a valid header value (denomination with control characters) | `service/document_render.go` (`ErrDocumentRenderNotPorted`) | B | Unusual data; Django stores the Document and ignores the failed response. legacy: possible; cheap. |
-| GET payment/list (association) | instructor payment with no InstructorHours document, or several hours rows | `service/payment_reads.go:494,497` | **A** | Compensations link several hours to one payment (`BE/application/views/instructor_views.py:397`, loop at ~`:445-448`). The document is not generated at creation because `payment = payment.save()` returns None (`:467-475`). The UI creates them from `routes/association/course/instructor/info/Instructor.svelte:358`, and Django fills the document lazily (`payment_views.py:1031-1045`). Cost: medium (compensation PDF, or render without it). |
-| GET payment/list | `sort[field]` = relation (`user`, …) | `service/payment_reads.go:424,725` | **A** | The "Informazioni" column has `field: 'user'` and no `sortable: false` (`routes/accounting/payment/PaymentList.svelte:227-236`). BKNDatatable treats columns as sortable unless `sortable === false` (`components/tables/BKNDatatable.svelte:736,787`). Clicking the header sends `sort[field]=user`. Cost: medium. |
-| GET payment/list | random ordering + text search | `service/payment_reads.go:430` | B | The UI never sends a random order. |
-| GET payment/stats | Stripe configured (env or instance integration) | `service/payment_reads.go:579` | A (conditional on config) | Called on every list load (`PaymentList.svelte:997`). Stripe is configurable in the UI (`routes/profile/sections/InstanceIntegrations.svelte:9`). Cost: medium (balance transactions + cache). |
+| GET payment/list (athlete) | a receipt to generate whose filename is not a valid header value (denomination with control characters) | `service/document_render.go` (`ErrDocumentRenderNotPorted`) | B (kept: the renderer call fails inside Django's HTTP client, whose error text and the Document it leaves behind depend on the platform's header validation) | Unusual data; Django stores the Document and ignores the failed response. legacy: possible. |
+| GET payment/list (association) | instructor payment with no InstructorHours document, or several hours rows | `service/payment_reads.go:494,497` | **A** (ported: the document is printed eagerly, payment-reads.md "Instructor payments"; a second hours row of one compensation stays refused) | Compensations link several hours to one payment (`BE/application/views/instructor_views.py:397`, loop at ~`:445-448`). The document is not generated at creation because `payment = payment.save()` returns None (`:467-475`). The UI creates them from `routes/association/course/instructor/info/Instructor.svelte:358`, and Django fills the document lazily (`payment_views.py:1031-1045`). Cost: medium (compensation PDF, or render without it). |
+| GET payment/list | `sort[field]` = relation (`user`, …) | `service/payment_reads.go:424,725` | **A** (ported: `user` orders by `user_id`, payment-reads.md; other relation paths stay refused) | The "Informazioni" column has `field: 'user'` and no `sortable: false` (`routes/accounting/payment/PaymentList.svelte:227-236`). BKNDatatable treats columns as sortable unless `sortable === false` (`components/tables/BKNDatatable.svelte:736,787`). Clicking the header sends `sort[field]=user`. Cost: medium. |
+| GET payment/list | random ordering + text search | `service/payment_reads.go:430` | B (kept: the joined rows repeat in a random order, so no two answers are equal and there is nothing to reproduce) | The UI never sends a random order. |
+| GET payment/stats | Stripe configured (env or instance integration) | `service/payment_reads.go:579` | A (ported in v2-payments-2; the refusal stays only without the Stripe client) | Called on every list load (`PaymentList.svelte:997`). Stripe is configurable in the UI (`routes/profile/sections/InstanceIntegrations.svelte:9`). Cost: medium (balance transactions + cache). |
 | payment/list compressed, athlete scoped session | scoped athlete | `service/payment_reads.go:329` | n/a | Not a gap: an athlete has no association, so Django and Go both answer the 500 page before that line (payment-reads `athlete-scoped-compressed`). The UI does not send `mode=compressed`. |
-| search | special lower-casing | `service/payment_reads.go` (`paymentReadsSearch`) | B | Exotic search text. An infinite term (`inf`) is ported in v2-rest-b (it follows NaN). |
+| search | special lower-casing | `service/payment_reads.go` (`paymentReadsSearch`) | ported (tailpay) | Python's `lower()` (including U+0130 and the final sigma), `\w+` words and the `replace` decoding of malformed bytes are applied to every term. An infinite term (`inf`) is ported in v2-rest-b (it follows NaN). |
 
 ### payment-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| PATCH payment/<id>/update | body contains `payment_id` (or `user`) | `service/payment_writes.go:508` | **A** | The edit form has `<input type="hidden" name="payment_id">` (`routes/accounting/payment/modals/AddEditModal.svelte:482`). `getDataFromForm` includes it, and `update()` sends it (`:142-150`). Every UI payment edit is refused. Cost: cheap (accept an unchanged pk). |
+| PATCH payment/<id>/update | body contains `payment_id` (or `user`) | `service/payment_writes.go:508` | **A** (the row's own `payment_id`, as the edit form sends it, is ported in v2gaps; another key, a key on add and the nested `user` stay refused) | The edit form has `<input type="hidden" name="payment_id">` (`routes/accounting/payment/modals/AddEditModal.svelte:482`). `getDataFromForm` includes it, and `update()` sends it (`:142-150`). Every UI payment edit is refused. Cost: cheap (accept an unchanged pk). |
 | POST payment/add, PATCH update | `attachments_data` filename over 255 characters, non-string values, a rejected storage name or an existing key without overwrite | `service/payment_writes.go` (`attachmentsStored`) | B | `AddEditModal.svelte:66-89` sends the browser's file name and a base64 string. legacy: no. Cost: cheap. |
 | POST payment/add | owner has `auto_paid_payment` | `service/payment_writes.go:570` | **A** (ported in v2-payments-3) | The toggle is in `routes/profile/sections/Settings.svelte:1013`. Django: `payment_views.py:78-79`. Cost: medium–expensive (invoice numbering + `print_document_invoice`). |
-| PATCH payment/<id>/update | payment has an invoice | `service/payment_writes.go:766` | **A** | Any edit of an invoiced (receipted) payment from `AddEditModal.svelte:142`. Cost: medium (invoice re-print dispatch). |
+| PATCH payment/<id>/update | payment has an invoice | `service/payment_writes.go:766` | **A** (ported in v2-payments-3: the invoice is re-printed eagerly) | Any edit of an invoiced (receipted) payment from `AddEditModal.svelte:142`. Cost: medium (invoice re-print dispatch). |
 | add/update | form/multipart bodies | `service/payment_writes.go:722` | B | The UI sends JSON. |
 | add | non-canonical X-Group-Id; auto-paid fees on an exact half cent | `service/payment_writes.go` (`createGroupSent`) | ported (v2-rest-a) | See `payment-writes.md`. |
 | add, update | non-ASCII-digit dates | `service/payment_writes.go` (`paymentWritesStrptime`) | ported (v2-rest-a) | See `payment-writes.md`. |
@@ -1115,7 +1115,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | POST payment/<id>/cancel | paid payment with an invoice | `service/payment_state.go:322` | **A** (ported in v2-payments-3) | `routes/accounting/payment/PaymentList.svelte:575`, `partials/payment-overview.svelte:187`. Receipted payments are normal. Cost: medium (invoice cancellation + PDF task). |
 | DELETE payment/<id>/delete | payment with an invoice | `service/payment_state.go:363` | **A** (ported in v2-payments-3) | `PaymentList.svelte:689`. Cost: medium–expensive (synchronous PDF). |
 | approve paid flow | non-canonical X-Group-Id; float fee tie; odd `meta.subscription_data.name` | `service/payment_paid_flow.go` | ported (v2-rest-a) | See `payment-state.md` ("Paid flow rare inputs"). |
-| approve paid flow | user without association id | `service/payment_paid_flow.go` | B | Exotic or legacy data. Fee ties are rare. legacy: yes (old meta). Cost: cheap. |
+| approve paid flow | user without association id | `service/payment_paid_flow.go` | B (unreachable: `payment_approve` looks up the caller's `SportAssociation` first, so every role other than association and collaborator answers the 500 page before this check) | Kept as a guard. |
 | approve/date | non-ASCII-digit `payment_date` | `service/payment_state.go` (`paymentStateDateAny`) | ported (v2-rest-a) | See `payment-state.md`. |
 | approve | task dispatcher missing / tx type | `service/payment_state.go:227,254` | C | Wiring only. |
 
@@ -1218,8 +1218,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | stripe/pay, multiple-pay, webhook | paid-flow conversions (X-Group-Id, fee ties, odd meta name) | `service/payment_paid_flow.go` | ported (v2-rest-a) | See `stripe-routes.md` ("Paid flow rare inputs"). |
-| same | `stripe_available_methods` floats/nested lists, mixed `payments` lists, non-string ids, odd `payment_intent`, intent without id, amounts beyond int64 | same | B | The UI sends string lists and ids. Webhook input comes from Stripe. |
-| webhook | body over `DATA_UPLOAD_MAX_MEMORY_SIZE` | | B | Stripe client only. |
+| same | `stripe_available_methods` floats/nested lists, mixed `payments` lists, non-string ids, odd `payment_intent`, intent without id, amounts beyond int64 | same | B (open in tailpay; most of these inputs end in Django's own 500 page, which the refusal answers identically unless an earlier step wrote; an amount beyond int64 is Stripe's reply to an out-of-range amount, not reproducible) | The UI sends string lists and ids. Webhook input comes from Stripe. |
+| webhook | body over `DATA_UPLOAD_MAX_MEMORY_SIZE` | | B (kept: the limit and the error body come from Django's request handling and the server in front of it, not from the view) | Stripe client only. |
 
 ### subscription-writes.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -1328,8 +1328,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### suppliers.md
 | route | refusal condition | Go site | class | notes |
 |---|---|---|---|---|
-| GET supplier/list | ordering by a relation path `field__other` | `service/suppliers.go:17`, `ErrSupplierOrdering` | B | UI sortable columns are `name`, `email`, `address`, `tax_code` (`suppliers-and-customers/SuppliersAndCustomers.svelte:355-402`). legacy: no. Stays: paths through relations are open-ended and reverse ones repeat rows. |
-| DELETE supplier/<uid>/delete, bulk-delete | supplier referenced by a table other than payments, supplier invoices, subscriptions, sold products | service/supplier_writes.go | B | The four Django-referenced tables are handled. Other references need models outside the UI's supplier flows. legacy: yes (if any). medium |
+| GET supplier/list | ordering by a relation path `field__other` | `service/suppliers.go:17`, `ErrSupplierOrdering` | B (open in tailpay; reverse relations repeat rows in an order only the planner fixes, so those cannot be reproduced; forward paths to `sport_association` and `group` could be) | UI sortable columns are `name`, `email`, `address`, `tax_code` (`suppliers-and-customers/SuppliersAndCustomers.svelte:355-402`). legacy: no. |
+| DELETE supplier/<uid>/delete, bulk-delete | supplier referenced by a table other than payments, supplier invoices, subscriptions, sold products | service/supplier_writes.go | B (kept as a schema guard: the models declare exactly these four references, so no request reaches it) | The four Django-referenced tables are handled. Other references need models outside the UI's supplier flows. legacy: yes (if any). medium |
 | PATCH supplier/<uid>/update | body changes `supplier_id` | `service/supplier_writes.go` | ported (v2-rest-b) | The copy under the new key is inserted as `Model.save()` does. A body that also clears `sport_association` is ported in rest-b1 (the copy has no association). |
 
 ### ui-api-version.md

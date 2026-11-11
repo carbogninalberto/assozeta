@@ -104,6 +104,17 @@ add('update-clear-and-move', 'full_collaborator', one('t3', 'update'), 200, exis
                                                'custom_account_to': [ACCOUNTS['other']['id'], 'None'],
                                                'date': ['2026-09-03 10:00:00', '2026-09-30 12:00:00']},
                    existing('t3', to=None, date='2026-09-30T12:00:00Z', **{'from': 'ghost'})))
+# An update naming a transfer id no row has: Model.save() inserts a copy with the validated values, the named row stays.
+COPY_ID = 'a1000000-0000-4000-8000-000000940001'
+COPY_TAKEN = {'custom_account_transfer_id': ['custom accounts transfer with this custom account transfer id already exists.']}
+add('update-new-id-copies-row', 'owner', one('t1', 'update'), 200, {**existing('t1', amount='32'), 'custom_account_transfer_id': COPY_ID},
+    method='PATCH', body={'custom_account_transfer_id': COPY_ID, 'amount': '32'},
+    effect={'kind': 'copy', 'actor': 'owner', 'id': COPY_ID, 'transfer': {**existing('t1', amount='32'), 'custom_account_transfer_id': COPY_ID}})
+add('update-own-id-is-plain-update', 'owner', one('t1', 'update'), 200, existing('t1', amount='33'), method='PATCH',
+    body={'custom_account_transfer_id': TRANSFERS['t1']['id'], 'amount': '33'},
+    effect=changed('owner', 't1', {'amount': ['31.00', '33.00']}, existing('t1', amount='33')))
+add('update-id-of-another-row-rejected', 'owner', one('t1', 'update'), 400, COPY_TAKEN, method='PATCH',
+    body={'custom_account_transfer_id': TRANSFERS['t3']['id']})
 add('delete-malformed-not-found', 'owner', one('abc', 'delete'), 404, MISSING, method='DELETE')
 add('delete-foreign-not-found', 'owner', one('tf', 'delete'), 404, MISSING, method='DELETE')
 add('delete-athlete-forbidden', 'athlete', one('t2', 'delete'), 403, FORBIDDEN, method='DELETE')

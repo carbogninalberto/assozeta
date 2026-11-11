@@ -75,7 +75,8 @@ CAUGHT.
 
 ## Not ported (refused with the 500 page before any write)
 
-- Non-finite sums (`float('inf')` amounts).
+- (Ported in tailpay.) Non-finite sums (`inf`, `nan` or an overflowing amount in `meta_payment_categories`) make the invoice insert fail
+  inside the view's transaction: Go answers the 500 page and keeps nothing (three cases, 67 in all).
 - Approve with a `send_receipt_email` that is not None, a bool, a string or an int64 (floats, lists, dicts), or without a configured
   Celery producer.
 - Not authored (ordering only): a malformed JSON body from an athlete is DRF's 400 in Go and the association 500 in Django (Go reads the

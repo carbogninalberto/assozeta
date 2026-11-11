@@ -158,7 +158,7 @@ course subscription by key (`all_objects()`), else the first installment's (`all
 - Orderings Django resolves only when compiling the rows (relations other than `user`, relation paths and transforms, the
   `full_name` annotation of the subscription search), refused after the count and page checks; random ordering together with
   the payment/list text search (DISTINCT with `RANDOM()` in the select list); reverse relation names are refused as unknown.
-- Smart-search terms with characters Python lower-cases differently (personas-reads).
+- (Ported in tailpay.) Smart-search terms with characters Python lower-cases differently: see personas-reads.
 
 Instructor payments in payment/list: the hours rows of the page's instructor payments are mapped by payment in database
 order (a later row replaces an earlier one); a row with a document sets `instructor_document` and its token; for each

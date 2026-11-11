@@ -77,6 +77,8 @@ type BalanceAccountWriteTransaction interface {
 	AccountForUpdate(ctx context.Context, id, association string) (*BalanceAccountRow, error)
 	InsertAccount(ctx context.Context, row BalanceAccountRow, audit LoginAuditContext, at time.Time) error
 	SaveAccount(ctx context.Context, row BalanceAccountRow, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
+	// InsertAccountCopy is Model.save() under a primary key no row has: the row is inserted with its values and logged twice.
+	InsertAccountCopy(ctx context.Context, row BalanceAccountRow, audit LoginAuditContext, at time.Time) error
 	// SerializedAccount is the account with its balance and deletable.
 	SerializedAccount(ctx context.Context, association, id string, group *string) (BalanceAccount, error)
 	Commit() error
@@ -104,6 +106,8 @@ type BalanceTransferWriteTransaction interface {
 	TransferForUpdate(ctx context.Context, id, association string) (*BalanceTransferRow, error)
 	InsertTransfer(ctx context.Context, row BalanceTransferRow, audit LoginAuditContext, at time.Time) error
 	SaveTransfer(ctx context.Context, row BalanceTransferRow, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
+	// InsertTransferCopy is Model.save() under a primary key no row has: the row is inserted and logged twice.
+	InsertTransferCopy(ctx context.Context, row BalanceTransferRow, audit LoginAuditContext, at time.Time) error
 	DeleteTransfer(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
 	Commit() error
 	Rollback() error

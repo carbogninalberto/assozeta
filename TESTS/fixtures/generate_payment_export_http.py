@@ -164,7 +164,7 @@ PAYMENTS = {
                    paid_on='2025-01-10T09:00:00Z'),
     'noaccount': payment('2025-01-06T09:00:00Z', subject=0, amount='4.00', paid=True, description='Senza conto',
                          paid_on='2025-01-20T09:00:00Z'),
-    'pending': payment('2025-02-01T09:00:00Z', subject=0, amount='10.00', description='Quota finanziaria', course=''),
+    'pending': payment('2025-02-01T09:00:00Z', subject=0, amount='10.00', description='Quota finanziaria infanzia', course=''),
     # archived: an unknown subject (no activity) first, then a paid row without an account between two cash rows
     'odd': payment('2024-01-10T09:00:00Z', subject=5, amount='2.00', archived=True, description='Soggetto sconosciuto',
                    paid_on='2024-01-14T09:00:00Z'),
@@ -309,7 +309,7 @@ def searched(labels, raw):
         number = float(term.replace(',', '.'))
     except ValueError:
         number = None
-    if number is not None and number == number:
+    if number is not None and number == number and abs(number) != float('inf'):
         exact = Context(prec=9).create_decimal_from_float(number)
         return [k for k in labels if repr(number).upper() in PAYMENTS[k]['amount'].upper() or Decimal(PAYMENTS[k]['amount']) == exact]
     return [k for k in labels if smart_match(join_row(PAYMENTS[k]), term)]
@@ -614,8 +614,12 @@ add('range-and-filter', 'owner', R + '2024/01/01%20al%202024/12/31&query[expense
 # --- general search ---
 S = EXPORT + '?query[generalSearch]='
 for name, raw, query in (('last-name', 'rossi', 'rossi'), ('supplier', 'riunite', 'riunite'), ('words', 'mario rossi', 'mario%20rossi'),
-                         ('date-dmy', '10/02/2024', '10/02/2024'), ('nan-is-text', 'nan', 'nan'), ('amount', '50', '50'),
-                         ('amount-comma', '15,5', '15,5'), ('amount-cents', '0.1', '0.1'), ('nothing', 'zzzz', 'zzzz')):
+                         ('date-dmy', '10/02/2024', '10/02/2024'), ('nan-is-text', 'nan', 'nan'), ('inf-is-text', 'inf', 'inf'), ('infinity-is-text', '-Infinity', '-Infinity'), ('amount', '50', '50'),
+                         ('amount-comma', '15,5', '15,5'), ('amount-cents', '0.1', '0.1'), ('nothing', 'zzzz', 'zzzz'),
+                         # Terms beyond Latin: Python's lower() and \\w+ words, a malformed byte decoded to U+FFFD.
+                         ('cyrillic', 'Иван', '%D0%98%D0%B2%D0%B0%D0%BD'), ('greek-final-sigma', 'ΑΣ ΣΑ', '%CE%91%CE%A3%20%CE%A3%CE%91'),
+                         ('dotted-capital-i', 'İsta', '%C4%B0sta'), ('malformed-byte', 'a\ufffdb', 'a%FFb'),
+                         ('truncated-sequence', 'a\ufffdb', 'a%E2%82b')):
     add(f'search-{name}', 'owner', S + query, 200, body(export_csv(listed(search=raw))))
 add('search-empty-ignored', 'owner', S, 200, DEFAULT)
 add('search-and-range', 'owner', S + 'rossi&query[payment_range]=2024/03/01%20al%202024/06/30', 200,

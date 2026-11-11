@@ -283,10 +283,7 @@ func (s *PaymentExport) search(filter *domain.PaymentReadsFilter, raw string) er
 	if date, ok := dto.PythonStrptimeDMY(raw); ok {
 		raw = date
 	}
-	if value, ok := dto.PythonFloatParse(strings.ReplaceAll(raw, ",", ".")); ok && !math.IsNaN(value) {
-		if math.IsInf(value, 0) {
-			return domain.ErrPaymentReadsNotPorted
-		}
+	if value, ok := dto.PythonFloatParse(strings.ReplaceAll(raw, ",", ".")); ok && !math.IsNaN(value) && !math.IsInf(value, 0) {
 		text, exact := dto.PythonFloatStr(value), dto.DecimalFromFloat9(value)
 		filter.AmountText, filter.AmountExact = &text, &exact
 		return nil

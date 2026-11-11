@@ -137,6 +137,31 @@ func (t *balanceAccountWriteTransaction) InsertAccount(ctx context.Context, row 
 	return appendModelAudit(ctx, t.tx, balanceAccountAudit(row.ID, 0, changes, row.AssociationID, audit, at))
 }
 
+// InsertAccountCopy is Model.save() under a primary key no row has: auditlog's pre_save finds nothing under the new key and logs the
+// whole row as an update (indexed from its changes), then post_save logs the create.
+func (t *balanceAccountWriteTransaction) InsertAccountCopy(ctx context.Context, row domain.BalanceAccountRow, audit domain.LoginAuditContext,
+	at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_customaccounts
+ (custom_account_id,enabled,name,initial_balance,account_type,account_code,sport_association_id,editable)
+ VALUES ($1,$2,$3,$4::numeric,$5,$6,$7,$8)`, row.ID, row.Enabled, row.Name, row.InitialBalance, row.AccountType, row.AccountCode,
+		row.AssociationID, row.Editable); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_customaccounts", "custom_account_id", row.ID)
+	if err != nil {
+		return err
+	}
+	manager := [2]string{"None", "application.CustomAccountsTransfer.None"}
+	changes["custom_account_from"], changes["custom_account_to"] = manager, manager
+	first := balanceAccountAudit(row.ID, 1, changes, row.AssociationID, audit, at)
+	path := "changes_json.sport_association"
+	first.ResolutionPath = &path
+	if err = appendModelAudit(ctx, t.tx, first); err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, balanceAccountAudit(row.ID, 0, changes, row.AssociationID, audit, at))
+}
+
 func (t *balanceAccountWriteTransaction) SaveAccount(ctx context.Context, row domain.BalanceAccountRow, changes map[string][2]string,
 	audit domain.LoginAuditContext, at time.Time) error {
 	if _, err := t.tx.ExecContext(ctx, `UPDATE application_customaccounts SET enabled=$2, name=$3, initial_balance=$4::numeric,
@@ -216,6 +241,24 @@ func (t *balanceAccountWriteTransaction) InsertTransfer(ctx context.Context, row
 	}
 	changes, err := createdModelChanges(ctx, t.tx, "application_customaccountstransfer", "custom_account_transfer_id", row.ID)
 	if err != nil {
+		return err
+	}
+	return appendModelAudit(ctx, t.tx, balanceTransferAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))
+}
+
+// InsertTransferCopy is the transfer's Model.save() under a new primary key (see InsertAccountCopy).
+func (t *balanceAccountWriteTransaction) InsertTransferCopy(ctx context.Context, row domain.BalanceTransferRow, audit domain.LoginAuditContext,
+	at time.Time) error {
+	if _, err := t.tx.ExecContext(ctx, `INSERT INTO application_customaccountstransfer
+ (custom_account_transfer_id,custom_account_from_id,custom_account_to_id,amount,date,sport_association_id) VALUES ($1,$2,$3,$4::numeric,$5,$6)`,
+		row.ID, row.From, row.To, row.Amount, row.Date, row.AssociationID); err != nil {
+		return err
+	}
+	changes, err := createdModelChanges(ctx, t.tx, "application_customaccountstransfer", "custom_account_transfer_id", row.ID)
+	if err != nil {
+		return err
+	}
+	if err = appendModelAudit(ctx, t.tx, balanceTransferAudit(row.ID, 1, changes, row.AssociationID, "changes_json.sport_association", audit, at)); err != nil {
 		return err
 	}
 	return appendModelAudit(ctx, t.tx, balanceTransferAudit(row.ID, 0, changes, row.AssociationID, "direct", audit, at))

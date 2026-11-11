@@ -6703,6 +6703,39 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "invoice-core-bulk-archive-file-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-bulk/archive",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All Invoices archived"
+   },
+   "effect": {
+    "actor": "owner",
+    "changed": {},
+    "deleted": {},
+    "audit": []
+   },
+   "celery": [],
+   "raw_body": "--invoicecoreboundary\r\nContent-Disposition: form-data; name=\"invoice_ids\"; filename=\"ids.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--invoicecoreboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicecoreboundary"
+  },
+  {
+   "name": "invoice-core-bulk-archive-file-line-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-bulk/archive",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": [],
+   "raw_body": "--invoicecoreboundary\r\nContent-Disposition: form-data; name=\"invoice_ids\"; filename=\"ids.txt\"\r\nContent-Type: text/plain\r\n\r\na1000000-0000-4000-8000-000000433019\n\r\n--invoicecoreboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicecoreboundary"
+  },
+  {
    "name": "invoice-core-bulk-archive-empty-list",
    "actor": "owner",
    "method": "POST",
@@ -6957,6 +6990,39 @@
      "x"
     ]
    }
+  },
+  {
+   "name": "invoice-core-bulk-delete-file-empty",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-bulk/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "All Invoices deleted"
+   },
+   "effect": {
+    "actor": "owner",
+    "changed": {},
+    "deleted": {},
+    "audit": []
+   },
+   "celery": [],
+   "raw_body": "--invoicecoreboundary\r\nContent-Disposition: form-data; name=\"invoice_ids\"; filename=\"ids.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--invoicecoreboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicecoreboundary"
+  },
+  {
+   "name": "invoice-core-bulk-delete-file-line-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/invoice-bulk/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "celery": [],
+   "raw_body": "--invoicecoreboundary\r\nContent-Disposition: form-data; name=\"invoice_ids\"; filename=\"ids.txt\"\r\nContent-Type: text/plain\r\n\r\na1000000-0000-4000-8000-000000433019\r\n--invoicecoreboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicecoreboundary"
   },
   {
    "name": "invoice-core-bulk-delete-nothing-matches",
