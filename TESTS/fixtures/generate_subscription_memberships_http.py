@@ -360,6 +360,65 @@ effect['documents'] = [{'filename': 'certificato.pdf', 'content': base64.b64enco
 add('update-with-document', 'owner', one('m3', 'update'), 200, response, method='PATCH',
     body={'description': 'Con allegato', 'documents_data': [{'document': effect['documents'][0]['content'], 'filename': 'certificato.pdf'}]},
     effect=effect)
+# A multipart body with files: DRF merges the files into a mutable copy of the data, so add can assign sport_association;
+# a file is str(name) for the related fields and the price, and an object the other fields reject. Without files the
+# QueryDict stays immutable (the 500 above).
+BOUNDARY = 'tail-boundary-7f3a'
+
+
+def multipart(*parts):
+    """parts: (name, value) fields or (name, filename, content) files."""
+    out = ''
+    for part in parts:
+        if len(part) == 2:
+            out += f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="{part[0]}"\r\n\r\n{part[1]}\r\n'
+        else:
+            out += (f'--{BOUNDARY}\r\nContent-Disposition: form-data; name="{part[0]}"; filename="{part[1]}"\r\n'
+                    f'Content-Type: text/plain\r\n\r\n{part[2]}\r\n')
+    return out + f'--{BOUNDARY}--\r\n'
+
+
+FORM_TYPE = f'multipart/form-data; boundary={BOUNDARY}'
+add('add-multipart-without-files-server-error', 'owner', ADD, 500, SERVER, raw_body=multipart(('membership_type', 'X')), content_type=FORM_TYPE)
+response, effect = created('owner', {'associate': A('mario'), 'membership_type': 'Con file', 'membership_number': '5', 'price': '9.00',
+                                     'start_date': '2026-03-01', 'description': ''})
+add('add-multipart-with-file', 'owner', ADD, 201, response, content_type=FORM_TYPE, effect=effect, raw_body=multipart(
+    ('associate', A('mario')), ('membership_type', 'Con file'), ('membership_number', '5'), ('price', '9'), ('start_date', '01/03/2026'),
+    ('description', ''), ('sport_association', FOREIGN), ('allegato', 'nota.txt', 'testo')))
+add('add-multipart-file-in-fields', 'owner', ADD, 400, {
+    'creation_date': [DATETIME_FORMAT], 'start_date': [DATE_FORMAT], 'membership_type': ['Not a valid string.'],
+    'price': ['A valid number is required.'], 'associate': ['“mario.txt” is not a valid UUID.'],
+    'payment': ['“pagato.txt” is not a valid UUID.']}, content_type=FORM_TYPE, raw_body=multipart(
+    ('creation_date', 'ieri.txt', 'x'), ('start_date', 'inizio.txt', 'x'), ('membership_type', 'tipo.txt', 'x'),
+    ('price', 'prezzo.txt', 'x'), ('associate', 'mario.txt', 'x'), ('payment', 'pagato.txt', 'x')))
+response, effect = created('owner', {'price': '12.00', 'membership_type': 'Nome numerico'})
+add('add-multipart-numeric-file-name-price', 'owner', ADD, 201, response, content_type=FORM_TYPE, effect=effect, raw_body=multipart(
+    ('membership_type', 'Nome numerico'), ('price', '12', 'x')))
+# update: the form path with a file part (the file is ignored)
+response, effect = changed('owner', 'm3', membership_number='77')
+add('update-multipart-with-file', 'owner', one('m3', 'update'), 200, response, method='PATCH', content_type=FORM_TYPE, effect=effect,
+    raw_body=multipart(('membership_number', '77'), ('allegato', 'nota.txt', 'testo')))
+# documents_data: a filename the Document column rejects is a 500 after the saved rows; an earlier upload stays
+for suffix, filename in (('null-filename', None), ('nul-filename', 'a\u0000b.pdf'), ('long-filename', 'f' * 256)):
+    response, effect = created('owner', {'membership_type': suffix})
+    effect['documents'] = UPLOADS[:1]
+    add(f'add-document-{suffix}-keeps-rows', 'owner', ADD, 500, SERVER, effect=effect, body={
+        'membership_type': suffix, 'documents_data': [{'document': UPLOADS[0]['content'], 'filename': UPLOADS[0]['filename']},
+                                                       {'document': UPLOADS[0]['content'], 'filename': filename}]})
+# A new subscription_membership_id: Model.save() updates nothing and inserts a copy under the new key (a creation entry); the
+# old row and its links stay, the copy has no links of its own.
+COPY_ID, COPY_DOCS_ID = 'a1000000-0000-4000-8000-000000659101', 'a1000000-0000-4000-8000-000000659102'
+copy_row = {**STATE['m3'], 'description': 'Copia', 'documents': []}
+response, effect = created('owner', {key: copy_row[key] for key in STORED if key != 'subscription'} | {'subscription': None}, COPY_ID)
+add('update-new-id-inserts-copy', 'owner', one('m3', 'update'), 200, response, method='PATCH',
+    body={'subscription_membership_id': COPY_ID, 'description': 'Copia'}, effect=effect)
+copy_row = {**STATE['m3'], 'documents': [{'filename': 'copia.pdf'}]}
+response, effect = created('full_collaborator', {key: copy_row[key] for key in STORED if key != 'subscription'} | {'subscription': None,
+                                                                                                                    'documents': copy_row['documents']}, COPY_DOCS_ID)
+effect['documents'] = [{'filename': 'copia.pdf', 'content': UPLOADS[0]['content']}]
+add('update-new-id-with-document', 'full_collaborator', one('m3', 'update'), 200, response, method='PATCH',
+    body={'subscription_membership_id': COPY_DOCS_ID.upper(),
+          'documents_data': [{'document': UPLOADS[0]['content'], 'filename': 'copia.pdf'}]}, effect=effect)
 # DecimalField.validate_empty_values: a blank allow_null decimal is None.
 response, effect = changed('owner', 'm4', description='Nota', price=None)
 add('update-document-missing-key-keeps-change', 'owner', one('m4', 'update'), 400, MISSING_KEY, method='PATCH',

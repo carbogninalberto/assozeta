@@ -1211,8 +1211,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/memberships/add, PATCH …/<pk>/update | `documents_data` that would upload | ported (v2-sub-create) | **ported** | `routes/association/Members/detail/sections/modals/AddEditMembershipsModal.svelte:30-47` builds `documents_data` `{document: base64, filename}` from attached files, then sends at `:61-74,97`. Cost: medium. |
-| update | changed `subscription_membership_id` | | B | The hidden input carries the same id (`AddEditMembershipsModal.svelte:158`). Only a change is refused. |
-| add | multipart with files | | B | The UI sends JSON. |
+| update | changed `subscription_membership_id` | | ported | Ported in t2subsa (the copy under the new key, `subscription-memberships.md`). |
+| add | multipart with files | | ported | Ported in t2subsa (files merged into the mutable data, read per field). Form keys for `documents_data` stay refused: the UI sends JSON, and a repeated plain key is read as its last value by this API's form parser. |
 
 ### stripe-routes.md
 | route | refusal condition | Go site | class | evidence / notes |
