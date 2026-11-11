@@ -219,14 +219,6 @@ func subscriptionCreateRefuseInputs(data domain.RequestObject, today string) err
 			}
 		}
 	}
-	if custom, ok := data.Lookup("custom_data"); ok {
-		if object, isObject := custom.(domain.RequestObject); isObject {
-			if kind, _ := object.Lookup("type_of_associate"); subscriptionTruthy(kind) {
-				// The custom_data icontains filter is not ported.
-				return domain.ErrSubscriptionCreateNotPorted
-			}
-		}
-	}
 	return nil
 }
 
@@ -548,13 +540,20 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		}
 		names[i] = text
 	}
+	var customKind *string
 	if custom, present := data.Lookup("custom_data"); present && custom != nil {
-		if _, isObject := custom.(domain.RequestObject); !isObject {
+		object, isObject := custom.(domain.RequestObject)
+		if !isObject {
 			// data.get('custom_data', {}).get(...) on a non-dict.
 			return nil, pythonAttributeError(custom, "get")
 		}
+		if kind, _ := object.Lookup("type_of_associate"); subscriptionTruthy(kind) {
+			// Q(custom_data__icontains=custom_data['type_of_associate']) with str(value).
+			text := dto.PythonStr(kind)
+			customKind = &text
+		}
 	}
-	existing, err := tx.Existing(ctx, association, names[0], names[1], names[2], subscriptionCreateDay(season.Start), subscriptionCreateDay(season.End))
+	existing, err := tx.Existing(ctx, association, names[0], names[1], names[2], subscriptionCreateDay(season.Start), subscriptionCreateDay(season.End), customKind)
 	if err != nil {
 		return nil, err
 	}
@@ -885,7 +884,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		createdAt = season.Start
 		given = domain.SubscriptionDates{Start: &from, End: &to}
 	}
-	duplicate, err := tx.Existing(ctx, association, saved.FirstName, saved.LastName, saved.TaxCode, from, to)
+	duplicate, err := tx.Existing(ctx, association, saved.FirstName, saved.LastName, saved.TaxCode, from, to, nil)
 	if err != nil {
 		return nil, err
 	}

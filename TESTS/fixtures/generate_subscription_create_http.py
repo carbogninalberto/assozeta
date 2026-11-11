@@ -56,6 +56,8 @@ ASSOCIATES = {
     'payer': {'id': next(ids), 'association': OWN, 'first': 'Paola', 'last': 'Pagante', 'tax_code': 'PGNPLA75A41H501R', 'born': '1975-01-01',
               'user': 'owner', 'email': None},
 }
+ASSOCIATES['typed'] = {'id': next(ids), 'association': OWN, 'first': 'Tina', 'last': 'Tipata', 'tax_code': 'TPTTNI80A41H501K', 'born': '1980-01-01',
+                       'user': 'owner', 'email': None}
 CERTIFICATES = {
     'unowned': {'id': next(ids), 'user': None},
     'owned': {'id': next(ids), 'user': 'owner'},
@@ -70,6 +72,9 @@ SUBSCRIPTIONS = {
     'archived': {'id': next(ids), 'associate': 'archived', 'start': '$season_start', 'end': '$season_end', 'archived': True, 'number': '7'},
     'abroad': {'id': next(ids), 'associate': 'known_abroad', 'start': '$season_start', 'end': '$season_end', 'archived': False,
                'number': '900', 'association': FOREIGN},
+    # custom_data text 'type_of_associate': check_if_subscription_exists filters its candidates with custom_data__icontains.
+    'typed': {'id': next(ids), 'associate': 'typed', 'start': '$season_start', 'end': '$season_end', 'archived': False, 'number': '3',
+              'custom_data': {'type_of_associate': 'Atleta'}},
     'text_number': {'id': next(ids), 'associate': 'archived', 'start': '2020-01-01', 'end': '2020-12-31', 'archived': True,
                     'number': '5000A'},
 }
@@ -392,6 +397,23 @@ add('archived-subscription-not-duplicate', 'owner', 200, SUCCESS(25.0), body=req
                    payment=new_payment('25.00', audit_amount='25.0'),
                    subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '',
                                  'medical_id': CERTIFICATES['unowned']['id'], **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': None}))
+
+# custom_data['type_of_associate'] narrows the duplicate check: Q(custom_data__icontains=...) on the stored JSON text.
+typed = person('Tina', 'Tipata', 'TPTTNI80A41H501K', born='01/01/1980')
+add('type-of-associate-found-is-duplicate', 'owner', 409,
+    {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=request(typed, custom_data={'type_of_associate': 'ATLETA'}))
+add('type-of-associate-key-text-is-duplicate', 'owner', 409,
+    {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    body=request(typed, custom_data={'type_of_associate': 'type_of'}))
+add('type-of-associate-other-type-creates', 'owner', 200, SUCCESS(25.0), body=request(typed, custom_data={'type_of_associate': 'dirigente'}),
+    effect=success('owner', 'Tina Tipata', associate={'match': 'typed', 'columns': {'sex': 'M'}},
+                   associate_audit=[(1, {'sex': ['A', 'M']})],
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '',
+                                 'custom_data': {'type_of_associate': 'dirigente'}, **SEASON},
                    membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
                                'price': None}))
 

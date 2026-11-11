@@ -383,9 +383,10 @@ add('tax-code-match-outside-group-server-error', 'owner', 'grouped', 500, SERVER
     body=tutor(tax_code='GRPTGT66H06H501B', sport_association=OWN))
 
 # ---------------------------------------------------------------- t2subsa
-# strptime('%d/%m/%Y') reads the decimal digits of other scripts: the same tutor as the ASCII date.
+# strptime('%d/%m/%Y') reads the decimal digits of other scripts where its pattern has \\d (the second day digit, the year):
+# the same tutor as the ASCII date.
 row = new_row()
-add('tutor-born-date-other-script-digits', 'owner', 'unicode_born', 200, EDITED, body=tutor(born_date='\u0661\u0662/\u0660\u0664/\u0661\u0669\u0667\u0665'),
+add('tutor-born-date-other-script-digits', 'owner', 'unicode_born', 200, EDITED, body=tutor(born_date='1\u0662/04/\u0661\u0669\u0667\u0665'),
     effect=effect('owner', [
         created(row, ACTOR_OWN),
         updated('associate', 'unicode_born', MINOR, DIRECT),

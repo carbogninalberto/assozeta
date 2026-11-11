@@ -168,7 +168,7 @@ func (t *subscriptionMembershipTransaction) insertMembership(ctx context.Context
 		changes["price"] = [2]string{"None", *row.Price}
 	}
 	if copied {
-		if err = appendModelAudit(ctx, t.tx, subscriptionMembershipAudit(row.ID, 1, changes, &row.AssociationID, "direct", audit, at)); err != nil {
+		if err = appendModelAudit(ctx, t.tx, subscriptionMembershipAudit(row.ID, 1, changes, &row.AssociationID, "changes_json.sport_association", audit, at)); err != nil {
 			return err
 		}
 	}

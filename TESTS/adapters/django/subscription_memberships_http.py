@@ -240,7 +240,7 @@ def assert_effect(case, before, after, source, context):
     for position in range(leading):
         harness.check_audit_event(contract, case, added[position], indexes, before=before, ids=ids, model='SubscriptionMembership', key=key,
                                   action=1 if copy and position == 0 else action, changes=changes, actor=effect['actor'], association=own,
-                                  path=path, context=context)
+                                  path='changes_json.sport_association' if copy and position == 0 else path, context=context)
     types = {ct['model']: ct['id'] for ct in before['contenttypes.ContentType'] if ct['app_label'] == 'docmanager'}
     for event in added[leading:]:
         ident = event['object_pk']

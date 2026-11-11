@@ -168,7 +168,8 @@ type SubscriptionCreateTransaction interface {
 	// Settings is user.sport_association (exactly one live association, else
 	// nil) with its owner's settings, the association row locked.
 	Settings(ctx context.Context, user string) (*SubscriptionCreateSettings, int, error)
-	Existing(ctx context.Context, association string, first, last, tax *string, start, end CalendarDate) (*SubscriptionCreateExisting, error)
+	// custom is the custom_data['type_of_associate'] text of the check_if_subscription_exists call (icontains on custom_data); nil: no filter.
+	Existing(ctx context.Context, association string, first, last, tax *string, start, end CalendarDate, custom *string) (*SubscriptionCreateExisting, error)
 	FutureRenewal(ctx context.Context, association string, end CalendarDate, tax *string) (bool, error)
 	Certificate(ctx context.Context, id string) (found bool, user *string, err error)
 	// LinkableCertificate is _linkable_medical_certificates: the certificate by id when it
