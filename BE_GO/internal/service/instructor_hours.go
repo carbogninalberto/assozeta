@@ -132,22 +132,12 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	// Refuse, before any write, the rows whose loop would delete a document
-	// Django's collector would cascade from (and compensation prints when no
-	// printer is configured).
+	// Refuse, before any write, compensation prints when no printer is configured.
 	for _, row := range rows {
 		switch {
 		case row.PaymentID != nil && row.DocumentID == nil:
 			if s.printer == nil {
 				return nil, domain.ErrInstructorHoursNotPorted
-			}
-		case row.PaymentID == nil && row.DocumentID != nil:
-			deletable, err := tx.DocumentDeletable(ctx, *row.DocumentID)
-			if err != nil {
-				return nil, err
-			}
-			if !deletable {
-				return nil, domain.ErrDocumentCascadeUnsupported
 			}
 		}
 	}
@@ -191,12 +181,7 @@ func (s *InstructorHoursService) List(ctx context.Context, identity domain.Resol
 			}
 			deleted[*row.DocumentID] = true
 			// The response keeps the in-memory document id and token.
-			changes, err := tx.DeleteDocument(ctx, *row.DocumentID)
-			if err != nil {
-				return nil, err
-			}
-			event := domain.InstructorHoursAudit{Model: "Document", Key: *row.DocumentID, Action: 2, Changes: changes}
-			if err := tx.AppendAudit(ctx, event, association, audit, s.moment()); err != nil {
+			if err := s.deleteDocument(ctx, tx, *row.DocumentID, association, audit); err != nil {
 				return nil, err
 			}
 		}
@@ -636,27 +621,13 @@ func (s *InstructorHoursService) Delete(ctx context.Context, identity domain.Res
 	if err != nil {
 		return err
 	}
-	if row.DocumentID != nil {
-		deletable, err := tx.DocumentDeletable(ctx, *row.DocumentID)
-		if err != nil {
-			return err
-		}
-		if !deletable {
-			return domain.ErrDocumentCascadeUnsupported
-		}
-	}
 	// The in-memory hour keeps its document id after the document's delete.
 	changes, err := tx.DeletedChanges(ctx, row.ID)
 	if err != nil {
 		return err
 	}
 	if row.DocumentID != nil {
-		documentChanges, err := tx.DeleteDocument(ctx, *row.DocumentID)
-		if err != nil {
-			return err
-		}
-		event := domain.InstructorHoursAudit{Model: "Document", Key: *row.DocumentID, Action: 2, Changes: documentChanges}
-		if err := tx.AppendAudit(ctx, event, association, audit, s.moment()); err != nil {
+		if err := s.deleteDocument(ctx, tx, *row.DocumentID, association, audit); err != nil {
 			return err
 		}
 	}
@@ -668,6 +639,25 @@ func (s *InstructorHoursService) Delete(ctx context.Context, identity domain.Res
 		return err
 	}
 	return tx.Commit()
+}
+
+// deleteDocument is Document.delete(): a document only SET_NULL rows reference
+// is deleted with its audit entry; any other reference goes through the shared collector.
+func (s *InstructorHoursService) deleteDocument(ctx context.Context, tx domain.InstructorHoursTransaction, id string, association *string,
+	audit domain.LoginAuditContext) error {
+	deletable, err := tx.DocumentDeletable(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !deletable {
+		return tx.DeleteDocumentCascade(ctx, id, audit, s.moment())
+	}
+	changes, err := tx.DeleteDocument(ctx, id)
+	if err != nil {
+		return err
+	}
+	event := domain.InstructorHoursAudit{Model: "Document", Key: id, Action: 2, Changes: changes}
+	return tx.AppendAudit(ctx, event, association, audit, s.moment())
 }
 
 func instructorHoursAnswer(status int, key, message string) error {

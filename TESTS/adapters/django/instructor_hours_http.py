@@ -56,7 +56,8 @@ contract = types.SimpleNamespace(**{name: getattr(base_contract, name) for name 
 contract.assert_case = _assert_case
 service_context = printer.service_context
 HOURS, DOCUMENT = 'application.InstructorHours', 'docmanager.Document'
-MANAGED = (HOURS, DOCUMENT, harness.AUDIT, harness.INDEX)
+LINKS = 'application.Instructor_documents'
+MANAGED = (HOURS, DOCUMENT, LINKS, harness.AUDIT, harness.INDEX)
 
 
 def models():
@@ -95,6 +96,9 @@ def seed_rows(source, created):
                                       if row['default_percentage_billing'] else None, **values))
         Instructor.documents.through.objects.bulk_create([Instructor.documents.through(instructor_id=row['id'], document_id=source['documents'][d])
                                                          for d in row['documents']])
+    Instructor.documents.through.objects.bulk_create([
+        Instructor.documents.through(instructor_id=source['instructors'][link['instructor']]['id'],
+                                     document_id=source['hour_documents'][link['document']]['id']) for link in source.get('document_links', ())])
     for row in source['payments'].values():
         insert(Payment, Payment(payment_id=row['id'], sport_association_id=row['association'], subject=Payment.COURSE,
                                 amount=Decimal(row['amount']), paid=row['paid'], payment_date=when(row['date']), deleted=row['deleted'],
@@ -235,6 +239,14 @@ def check_documents(before, after, effect, source):
     contract.require(set(new) == set(old) - removed and all(new[k] == old[k] for k in new), 'state.documents')
 
 
+def check_links(before, after, effect, source):
+    """Document.delete() cascades to the instructor document links of the removed documents."""
+    removed = {source['hour_documents'][label]['id'] for label in effect['links']}
+    plain = lambda value: value['value'] if isinstance(value, dict) else str(value)
+    expected = [row for row in before[LINKS] if plain(row['document_id']) not in removed]
+    contract.require(after[LINKS] == expected and (not effect['links'] or len(expected) < len(before[LINKS])), 'state.links')
+
+
 def check_event(case, event, indexes, *, before, after, ids, spec, key, changes, context):
     app = 'docmanager' if spec['model'] == 'Document' else 'application'
     types = {(ct['app_label'], ct['model']): ct['id'] for ct in before['contenttypes.ContentType']}
@@ -279,6 +291,7 @@ def assert_effect(case, before, after, source, context):
     context['keys'] = {}
     check_hours(case, before, after, effect, source, context)
     check_documents(before, after, effect, source)
+    check_links(before, after, effect, source)
     added, indexes = harness.audit_delta(contract, before, after)
     contract.require(len(added) == len(effect['audit']), 'audit.count')
     remaining = sorted(added, key=lambda event: event['id'])

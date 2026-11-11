@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"unicode"
 	"unicode/utf8"
@@ -76,9 +77,9 @@ func TestProfileTemplateFloat(t *testing.T) {
 		{true, 1, nil}, {false, 0, nil}, {json.Number("20"), 20, nil}, {json.Number("12.345"), 12.345, nil},
 		{json.Number("1e3"), 1000, nil}, {"1e3", 1000, nil}, {".5", 0.5, nil}, {"5.", 5, nil}, {"+5", 5, nil},
 		{"-3", -3, nil}, {"INF", math.Inf(1), nil}, {"-Infinity", math.Inf(-1), nil},
-		{"12,5", 0, ErrProfileTemplateNotPorted}, {"", 0, ErrProfileTemplateNotPorted}, {" 5", 0, ErrProfileTemplateNotPorted},
-		{"1_0", 0, ErrProfileTemplateNotPorted}, {json.Number("1e400"), 0, ErrProfileTemplateNotPorted},
-		{json.Number("1234567890123456"), 0, ErrProfileTemplateNotPorted},
+		{"12,5", 0, ErrProfileTemplatePython}, {"", 0, ErrProfileTemplatePython}, {" 5", 5, nil}, {"1__0", 0, ErrProfileTemplatePython},
+		{"1_0", 10, nil}, {json.Number("1e400"), math.Inf(1), nil}, {"1e400", math.Inf(1), nil}, {"\u0661\u0662", 12, nil},
+		{json.Number("1234567890123456"), 1234567890123456, nil}, {json.Number("1" + strings.Repeat("0", 400)), 0, ErrProfileTemplatePython},
 		{nil, 0, ErrProfileTemplatePython}, {[]any{}, 0, ErrProfileTemplatePython}, {domain.RequestObject{}, 0, ErrProfileTemplatePython},
 	} {
 		got, err := ProfileTemplateFloat(tc.value)
@@ -192,9 +193,12 @@ func TestPlanProfileTemplate(t *testing.T) {
 		{domain.RequestField{Name: "subscription_fee_plans", Value: []any{"x"}}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "membership_fee_plans", Value: []any{domain.RequestObject{{Name: "membership_fee", Value: json.Number("1")}}}},
 			ErrProfileTemplatePython},
-		{domain.RequestField{Name: "logo", Value: json.Number("5")}, ErrProfileTemplateNotPorted},
-		{domain.RequestField{Name: "invoice_template", Value: []any{}}, ErrProfileTemplateNotPorted},
-		{domain.RequestField{Name: "enabled_for", Value: []any{"\xed\xa0\x80"}}, ErrProfileTemplateNotPorted},
+		{domain.RequestField{Name: "logo", Value: json.Number("5")}, nil},
+		{domain.RequestField{Name: "invoice_template", Value: []any{}}, nil},
+		{domain.RequestField{Name: "enabled_for", Value: []any{"\xed\xa0\x80"}}, nil},
+		{domain.RequestField{Name: "invoice_template", Value: "\xed\xa0\x80"}, ErrProfileTemplatePython},
+		{domain.RequestField{Name: "logo", Value: "a,\xed\xa0\x80"}, ErrProfileTemplatePython},
+		{domain.RequestField{Name: "logo", Value: "\xed\xa0\x80,AA"}, ErrProfileTemplateNotPorted},
 	} {
 		if _, err := PlanProfileTemplate(profileTemplateTestPayload(tc.field)); !errors.Is(err, tc.err) {
 			t.Errorf("%s=%#v: %v", tc.field.Name, tc.field.Value, err)

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydatetime"
 )
 
 // CalendarExport ports full_events_calendar_export (attendee_views.py): the
@@ -305,286 +305,43 @@ func (m calendarExportMoment) render() string {
 	return ":" + text
 }
 
-// calendarExportOffset reads a UTC offset written ±HH, ±HHMM or ±HH:MM.
-// ok=false for another form (seconds, minutes past 59).
-func calendarExportOffset(zone string) (minutes int, ok bool) {
-	if len(zone) < 3 || (zone[0] != '+' && zone[0] != '-') {
-		return 0, false
-	}
-	digits := zone[1:]
-	if len(digits) == 5 && digits[2] == ':' {
-		digits = digits[:2] + digits[3:]
-	}
-	if len(digits) != 2 && len(digits) != 4 {
-		return 0, false
-	}
-	hours, valid := calendarExportDigits(digits[:2])
-	if !valid {
-		return 0, false
-	}
-	if len(digits) == 4 {
-		if minutes, valid = calendarExportDigits(digits[2:]); !valid || minutes > 59 {
-			return 0, false
-		}
-	}
-	minutes += hours * 60
-	if zone[0] == '-' {
-		minutes = -minutes
-	}
-	return minutes, true
-}
-
-// calendarExportZoned names the timezone of a parsed offset. named is the
-// timezone's own name (datetime.timezone: "UTC+05:45"), used when icalendar's
-// table lacks the offset; without it such an offset is refused. An offset of
-// 24 hours or more is no timezone (ValueError).
-func calendarExportZoned(moment *calendarExportMoment, minutes int, named bool) (*calendarExportMoment, error) {
-	if moment == nil {
-		return nil, nil
-	}
-	if minutes == 0 {
-		moment.utc = true
-		return moment, nil
-	}
-	size := minutes
-	if size < 0 {
-		size = -size
-	}
-	if size >= 24*60 {
-		return nil, domain.ErrMiscRoutesServer
-	}
-	if zone, known := calendarExportZones[minutes]; known {
-		moment.zone = zone
-		return moment, nil
-	}
-	if !named {
-		return nil, domain.ErrMiscRoutesNotPorted
-	}
-	sign := "+"
-	if minutes < 0 {
-		sign = "-"
-	}
-	moment.zone = fmt.Sprintf("UTC%s%02d:%02d", sign, size/60, size%60)
-	return moment, nil
-}
-
-// calendarExportParse is django.utils.dateparse.parse_datetime for the forms
-// Go reproduces: nil (no result) when Django returns None, an error when it
-// raises or for a form outside the ported subset. Only naive and zero-offset
-// values are ported (icalendar names other fixed offsets with a TZID).
+// calendarExportParse is django.utils.dateparse.parse_datetime: nil (no
+// result) when Django returns None, domain.ErrMiscRoutesServer when it raises
+// (a non-str value is a TypeError, a shaped-but-invalid text a ValueError).
 func calendarExportParse(value any) (*calendarExportMoment, error) {
 	text, isText := value.(string)
 	if !isText {
 		return nil, domain.ErrMiscRoutesServer // fromisoformat(non-str) raises TypeError
 	}
-	for _, char := range text {
-		if char > 0x7f {
-			return nil, domain.ErrMiscRoutesNotPorted
-		}
-	}
-	if moment, ok, err := calendarExportISO(text); ok || err != nil {
-		return moment, err
-	}
-	return calendarExportRegex(text)
-}
-
-func calendarExportDigits(text string) (int, bool) {
-	if text == "" {
-		return 0, false
-	}
-	for _, char := range text {
-		if char < '0' || char > '9' {
-			return 0, false
-		}
-	}
-	value, err := strconv.Atoi(text)
-	return value, err == nil
-}
-
-// calendarExportBuild is datetime(...): an invalid component raises.
-func calendarExportBuild(year, month, day, hour, minute, second, micro int, utc bool) (*calendarExportMoment, error) {
-	if year < 1 || month < 1 || month > 12 || day < 1 || hour > 23 || minute > 59 || second > 59 {
-		return nil, domain.ErrMiscRoutesServer
-	}
-	at := time.Date(year, time.Month(month), day, hour, minute, second, micro*1000, time.UTC)
-	if at.Day() != day {
-		return nil, domain.ErrMiscRoutesServer
-	}
-	return &calendarExportMoment{at: at, utc: utc}, nil
-}
-
-// calendarExportISO is the ported subset of datetime.fromisoformat: ok=false
-// means fromisoformat raises ValueError (the regex fallback runs); an error
-// refuses a form outside the subset.
-func calendarExportISO(text string) (*calendarExportMoment, bool, error) {
-	var year, month, day int
-	var rest string
-	switch {
-	case len(text) >= 10 && text[4] == '-' && text[7] == '-':
-		y, ok1 := calendarExportDigits(text[0:4])
-		m, ok2 := calendarExportDigits(text[5:7])
-		d, ok3 := calendarExportDigits(text[8:10])
-		if !(ok1 && ok2 && ok3) {
-			if len(text) > 5 && text[5] == 'W' {
-				return nil, false, domain.ErrMiscRoutesNotPorted
-			}
-			return nil, false, nil
-		}
-		year, month, day, rest = y, m, d, text[10:]
-	case len(text) >= 8 && text[4] != '-':
-		y, ok1 := calendarExportDigits(text[0:4])
-		m, ok2 := calendarExportDigits(text[4:6])
-		d, ok3 := calendarExportDigits(text[6:8])
-		if !(ok1 && ok2 && ok3) {
-			if len(text) > 4 && text[4] == 'W' {
-				return nil, false, domain.ErrMiscRoutesNotPorted
-			}
-			return nil, false, nil
-		}
-		year, month, day, rest = y, m, d, text[8:]
-	default:
-		return nil, false, nil
-	}
-	if rest == "" {
-		moment, err := calendarExportBuild(year, month, day, 0, 0, 0, 0, false)
-		if err != nil {
-			return nil, false, nil // ValueError: the regex (which needs a time) answers None
-		}
-		return moment, true, nil
-	}
-	if rest[0] != 'T' && rest[0] != ' ' {
-		// fromisoformat accepts any single separator character.
-		return nil, false, domain.ErrMiscRoutesNotPorted
-	}
-	clock := rest[1:]
-	utc, offset := false, 0
-	if index := strings.IndexAny(clock, "+-Z"); index >= 0 {
-		zone := clock[index:]
-		clock = clock[:index]
-		if zone == "Z" {
-			utc = true
-		} else {
-			minutes, known := calendarExportOffset(zone)
-			if !known {
-				return nil, false, domain.ErrMiscRoutesNotPorted
-			}
-			if minutes <= -24*60 || minutes >= 24*60 {
-				// fromisoformat's ValueError; the regex raises on the same offset or answers None.
-				return nil, false, domain.ErrMiscRoutesServer
-			}
-			utc, offset = minutes == 0, minutes
-		}
-	}
-	hour, minute, second, micro, ok := calendarExportClock(clock)
-	if !ok {
-		// Outside the ported clock forms: the regex fallback (for example
-		// single-digit hours) answers, else the input is refused.
-		moment, err := calendarExportRegex(text)
-		if moment == nil && err == nil {
-			err = domain.ErrMiscRoutesNotPorted
-		}
-		return moment, true, err
-	}
-	moment, err := calendarExportBuild(year, month, day, hour, minute, second, micro, utc)
+	parsed, err := pydatetime.ParseDatetime(text)
 	if err != nil {
-		// fromisoformat's ValueError; the regex would raise on the same values.
-		return nil, false, err
+		return nil, domain.ErrMiscRoutesServer
 	}
-	if offset != 0 {
-		if moment, err = calendarExportZoned(moment, offset, true); err != nil {
-			return nil, false, err
-		}
-	}
-	return moment, true, nil
-}
-
-// calendarExportClock parses HH[:MM[:SS[.f]]] or HHMM[SS[.f]] (',' or '.').
-func calendarExportClock(clock string) (hour, minute, second, micro int, ok bool) {
-	fraction := ""
-	if index := strings.IndexAny(clock, ".,"); index >= 0 {
-		fraction = clock[index+1:]
-		clock = clock[:index]
-		if _, valid := calendarExportDigits(fraction); !valid {
-			return 0, 0, 0, 0, false
-		}
-	}
-	var parts []string
-	if strings.Contains(clock, ":") {
-		parts = strings.Split(clock, ":")
-	} else {
-		for i := 0; i < len(clock); i += 2 {
-			if i+2 > len(clock) {
-				return 0, 0, 0, 0, false
-			}
-			parts = append(parts, clock[i:i+2])
-		}
-	}
-	if len(parts) == 0 || len(parts) > 3 || (fraction != "" && len(parts) != 3) {
-		return 0, 0, 0, 0, false
-	}
-	values := [3]int{}
-	for i, part := range parts {
-		if len(part) != 2 {
-			return 0, 0, 0, 0, false
-		}
-		value, valid := calendarExportDigits(part)
-		if !valid {
-			return 0, 0, 0, 0, false
-		}
-		values[i] = value
-	}
-	if fraction != "" {
-		if len(fraction) > 6 {
-			fraction = fraction[:6]
-		}
-		micro, _ = strconv.Atoi(fraction + strings.Repeat("0", 6-len(fraction)))
-	}
-	return values[0], values[1], values[2], micro, true
-}
-
-// calendarExportPattern is dateparse.datetime_re (ASCII input only).
-var calendarExportPattern = regexp.MustCompile(`^(\d{4})-(\d{1,2})-(\d{1,2})[T ](\d{1,2}):(\d{1,2})(?::(\d{1,2})(?:[.,](\d{1,6})\d*)?)?[ \t\n\r\f\v]*(Z|[+-]\d{2}(?::?\d{2})?)?\n?$`)
-
-func calendarExportRegex(text string) (*calendarExportMoment, error) {
-	match := calendarExportPattern.FindStringSubmatch(text)
-	if match == nil {
+	if parsed == nil {
 		return nil, nil
 	}
-	number := func(index int) int {
-		value, _ := strconv.Atoi(match[index])
-		return value
+	return calendarExportFromMoment(*parsed)
+}
+
+// calendarExportFromMoment names the timezone of a parsed value the way
+// icalendar does: UTC for a zero offset, the first identifier of its table for
+// an offset of whole minutes it lists, else the tzinfo's own name. Offsets
+// that leave the table by whole minutes are the timezone's own name.
+func calendarExportFromMoment(parsed pydatetime.Moment) (*calendarExportMoment, error) {
+	moment := &calendarExportMoment{at: parsed.Wall()}
+	if !parsed.Aware {
+		return moment, nil
 	}
-	second, micro := 0, 0
-	if match[6] != "" {
-		second = number(6)
+	if parsed.Offset == 0 {
+		moment.utc = true
+		return moment, nil
 	}
-	if match[7] != "" {
-		micro, _ = strconv.Atoi(match[7] + strings.Repeat("0", 6-len(match[7])))
-	}
-	utc, offset := false, 0
-	switch zone := match[8]; {
-	case zone == "":
-	case zone == "Z":
-		utc = true
-	case strings.Trim(zone[1:], "0:") == "":
-		utc = true
-	default:
-		// get_fixed_timezone: minutes past 59 add up (the regex takes any two digits).
-		digits := strings.ReplaceAll(zone[1:], ":", "")
-		offset, _ = strconv.Atoi(digits[:2])
-		offset *= 60
-		if len(digits) == 4 {
-			minutes, _ := strconv.Atoi(digits[2:])
-			offset += minutes
-		}
-		if zone[0] == '-' {
-			offset = -offset
+	if parsed.Offset%60000000 == 0 {
+		if zone, known := calendarExportZones[int(parsed.Offset/60000000)]; known {
+			moment.zone = zone
+			return moment, nil
 		}
 	}
-	moment, err := calendarExportBuild(number(1), number(2), number(3), number(4), number(5), second, micro, utc)
-	if err != nil || offset == 0 {
-		return moment, err
-	}
-	// The timezone is named "+HHMM" here; only the offsets of icalendar's table are ported.
-	return calendarExportZoned(moment, offset, false)
+	moment.zone = parsed.ZoneName()
+	return moment, nil
 }

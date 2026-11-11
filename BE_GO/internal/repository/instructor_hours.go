@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -227,6 +228,27 @@ func (t *instructorHoursTransaction) DocumentDeletable(ctx context.Context, id s
 		}
 	}
 	return true, nil
+}
+
+// DeleteDocumentCascade is Document.delete() for a document other rows
+// reference beyond SET_NULL: the shared collector deletes the dependants.
+func (t *instructorHoursTransaction) DeleteDocumentCascade(ctx context.Context, id string, audit domain.LoginAuditContext, at time.Time) error {
+	graph, err := documentDeleteGraph()
+	if err != nil {
+		return err
+	}
+	run := &collaboratorDeleteRun{tx: t.tx, graph: graph, audit: audit, now: func() time.Time { return at }}
+	rows, err := run.load(ctx, graph.Models[documentDeleteLabel], `t.document_id = $1::uuid FOR UPDATE`, id)
+	if err != nil {
+		return err
+	}
+	if len(rows) == 0 {
+		return sql.ErrNoRows
+	}
+	if err = run.Delete(ctx, documentDeleteLabel, rows); err != nil {
+		return fmt.Errorf("instructor hours document delete: %w", err)
+	}
+	return nil
 }
 
 // instructorHoursDocumentReverse are Document's reverse foreign keys that

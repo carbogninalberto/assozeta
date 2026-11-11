@@ -70,15 +70,19 @@ sidecar under `/static/`. DRF handles each request in this order:
   (`InstanceBootstrapLocale` now covers the schema paths). `CSRF_COOKIE_SECURE`
   is read into the Go configuration (`env.bool`, default `not DEBUG`).
 
+Ported in t4l2: any `lang` or `version` (the version line is emitted by the
+PyYAML scalar emitter or the JSON escaper, the Content-Disposition by Django's
+header encoder, a line break in it is the 500 page, page URLs are
+quote_plus-encoded), and Accept parameters through the shared `internal/pyheader`
+parser (quoted strings, comments, RFC 2231, non-ASCII; an unknown charset is the
+unhandled ValueError, the 500 page).
+
 ## Not ported (refused with the 500 page)
 
-- `lang` values outside `[A-Za-z0-9_.@:-]` and non-empty `version` values
-  outside `[A-Za-z0-9._-]` (Django accepts any text and escapes it into YAML,
-  JSON, the filename and the page URLs). Real language codes and version
-  labels fit.
-- Accept headers with quoted strings, backslashes, angle brackets,
-  parentheses, RFC 2231 (`name*=`) parameters, control or non-ASCII bytes:
-  Django parses those through `email.message`.
+- A `lang` containing `/` (gettext then looks up paths relative to the Django
+  host's file layout).
+- Accept parameters in RFC 2231 charsets whose decoder is not ported (anything
+  but utf-8, ascii, latin-1 and windows-1252).
 - A query with more than 1000 fields (Django: 400 `TooManyFieldsSent`).
 
 Known differences outside parity: with several Accept values of the same

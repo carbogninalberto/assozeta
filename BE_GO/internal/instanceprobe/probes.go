@@ -121,15 +121,27 @@ func IntegrationTarget(provider string, value map[string]any) (target string, in
 		}
 		return "", true, nil
 	}
-	if !aiBaseURL.MatchString(url) {
+	match := aiBaseURL.FindStringSubmatch(url)
+	if match == nil {
 		return "", false, ErrProbeNotPorted
 	}
+	if strings.Contains(match[2], "@") {
+		// urlsplit's username or password: the probe answers 'invalid'. An
+		// empty pair passes it and is rewritten by requests (not ported).
+		if strings.Trim(match[2], ":@") == "" {
+			return "", false, ErrProbeNotPorted
+		}
+		return "", true, nil
+	}
+	// requests sends the scheme and the host in lower case.
+	url = strings.ToLower(match[1]) + "://" + strings.ToLower(match[3]) + match[4] + match[5]
 	return strings.TrimRight(url, "/") + "/models", false, nil
 }
 
 // aiBaseURL is the subset of base URLs urlsplit accepts and requests sends
-// unchanged.
-var aiBaseURL = regexp.MustCompile(`^https?://([a-z0-9.-]+|\[[0-9a-f:.]+\])(:[0-9]{1,5})?(/([A-Za-z0-9._~!$&'()*+,;=:@/-]|%[0-9A-Fa-f]{2})*)?$`)
+// unchanged but for the case of the scheme and the host: scheme, user
+// information, host, port and path.
+var aiBaseURL = regexp.MustCompile(`^([Hh][Tt][Tt][Pp][Ss]?)://((?:[A-Za-z0-9._~!$&'()*+,;=:-]|%[0-9A-Fa-f]{2})*@)?([A-Za-z0-9.-]+|\[[0-9A-Fa-f:.]+\])(:[0-9]{1,5})?((?:/(?:[A-Za-z0-9._~!$&'()*+,;=:@/-]|%[0-9A-Fa-f]{2})*)?)$`)
 
 var printableASCII = regexp.MustCompile(`^[!-~]*$`)
 

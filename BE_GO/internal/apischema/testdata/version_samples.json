@@ -1,0 +1,366 @@
+[
+ {
+  "version": "v 1",
+  "yaml": "  version: 1.0.0 (v 1)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (v 1).yaml\"",
+  "json": "        \"version\": \"1.0.0 (v 1)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (v 1).json\""
+ },
+ {
+  "version": "a#b",
+  "yaml": "  version: 1.0.0 (a#b)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a#b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a#b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a#b).json\""
+ },
+ {
+  "version": "x: y",
+  "yaml": "  version: '1.0.0 (x: y)'\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (x: y).yaml\"",
+  "json": "        \"version\": \"1.0.0 (x: y)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (x: y).json\""
+ },
+ {
+  "version": "- z",
+  "yaml": "  version: 1.0.0 (- z)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (- z).yaml\"",
+  "json": "        \"version\": \"1.0.0 (- z)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (- z).json\""
+ },
+ {
+  "version": "it's",
+  "yaml": "  version: 1.0.0 (it's)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (it's).yaml\"",
+  "json": "        \"version\": \"1.0.0 (it's)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (it's).json\""
+ },
+ {
+  "version": "q\"r",
+  "yaml": "  version: 1.0.0 (q\"r)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (q\"r).yaml\"",
+  "json": "        \"version\": \"1.0.0 (q\\\"r)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (q\"r).json\""
+ },
+ {
+  "version": "é",
+  "yaml": "  version: 1.0.0 (é)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (é).yaml\"",
+  "json": "        \"version\": \"1.0.0 (é)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (é).json\""
+ },
+ {
+  "version": "ünï cödé",
+  "yaml": "  version: 1.0.0 (ünï cödé)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (ünï cödé).yaml\"",
+  "json": "        \"version\": \"1.0.0 (ünï cödé)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (ünï cödé).json\""
+ },
+ {
+  "version": "日本",
+  "yaml": "  version: 1.0.0 (日本)\n",
+  "yaml_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo5pel5pysKS55YW1sIg==?=",
+  "json": "        \"version\": \"1.0.0 (日本)\",\n",
+  "json_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo5pel5pysKS5qc29uIg==?="
+ },
+ {
+  "version": "a\tb",
+  "yaml": "  version: \"1.0.0 (a\\tb)\"\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a\tb).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a\\tb)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a\tb).json\""
+ },
+ {
+  "version": "a\\b",
+  "yaml": "  version: 1.0.0 (a\\b)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a\\b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a\\\\b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a\\b).json\""
+ },
+ {
+  "version": "1.0",
+  "yaml": "  version: 1.0.0 (1.0)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (1.0).yaml\"",
+  "json": "        \"version\": \"1.0.0 (1.0)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (1.0).json\""
+ },
+ {
+  "version": "null",
+  "yaml": "  version: 1.0.0 (null)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (null).yaml\"",
+  "json": "        \"version\": \"1.0.0 (null)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (null).json\""
+ },
+ {
+  "version": " lead",
+  "yaml": "  version: 1.0.0 ( lead)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API ( lead).yaml\"",
+  "json": "        \"version\": \"1.0.0 ( lead)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API ( lead).json\""
+ },
+ {
+  "version": "trail ",
+  "yaml": "  version: 1.0.0 (trail )\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (trail ).yaml\"",
+  "json": "        \"version\": \"1.0.0 (trail )\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (trail ).json\""
+ },
+ {
+  "version": "a  b",
+  "yaml": "  version: 1.0.0 (a  b)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a  b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a  b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a  b).json\""
+ },
+ {
+  "version": "[x]",
+  "yaml": "  version: 1.0.0 ([x])\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API ([x]).yaml\"",
+  "json": "        \"version\": \"1.0.0 ([x])\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API ([x]).json\""
+ },
+ {
+  "version": "{y}",
+  "yaml": "  version: 1.0.0 ({y})\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API ({y}).yaml\"",
+  "json": "        \"version\": \"1.0.0 ({y})\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API ({y}).json\""
+ },
+ {
+  "version": "a, b",
+  "yaml": "  version: 1.0.0 (a, b)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a, b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a, b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a, b).json\""
+ },
+ {
+  "version": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "yaml": "  version: 1.0.0 (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx).yaml\"",
+  "json": "        \"version\": \"1.0.0 (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx).json\""
+ },
+ {
+  "version": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+  "yaml": "  version: 1.0.0 (word word word word word word word word word word word word word\n    word word word word word word word word word word word word word word word word\n    word)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word).yaml\"",
+  "json": "        \"version\": \"1.0.0 (word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word).json\""
+ },
+ {
+  "version": "a\u0001b",
+  "yaml": "  version: \"1.0.0 (a\\x01b)\"\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a\u0001b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a\\u0001b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a\u0001b).json\""
+ },
+ {
+  "version": "a b",
+  "yaml": "  version: '1.0.0 (a     b)'\n",
+  "yaml_disposition": "=?utf-8?q?inline=3B_filename=3D=22Bakney_Sport_API_=28a?=\n =?utf-8?b?IGIpLnlhbWwi?=",
+  "json": "        \"version\": \"1.0.0 (a\\u2028b)\",\n",
+  "json_disposition": "=?utf-8?q?inline=3B_filename=3D=22Bakney_Sport_API_=28a?=\n =?utf-8?b?IGIpLmpzb24i?="
+ },
+ {
+  "version": "a%b",
+  "yaml": "  version: 1.0.0 (a%b)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a%b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a%b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a%b).json\""
+ },
+ {
+  "version": "a&b<c>",
+  "yaml": "  version: 1.0.0 (a&b<c>)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a&b<c>).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a&b<c>)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a&b<c>).json\""
+ },
+ {
+  "version": "ab",
+  "yaml": "  version: '1.0.0 (a    b)'\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (ab).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a",
+  "json_disposition": "inline; filename=\"Bakney Sport API (ab).json\""
+ },
+ {
+  "version": "ab",
+  "yaml": "  version: \"1.0.0 (a\\x7Fb)\"\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (ab).yaml\"",
+  "json": "        \"version\": \"1.0.0 (ab)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (ab).json\""
+ },
+ {
+  "version": "a b",
+  "yaml": "  version: 1.0.0 (a b)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a b).json\""
+ },
+ {
+  "version": "😀",
+  "yaml": "  version: 1.0.0 (😀)\n",
+  "yaml_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo8J+YgCkueWFtbCI=?=",
+  "json": "        \"version\": \"1.0.0 (😀)\",\n",
+  "json_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo8J+YgCkuanNvbiI=?="
+ },
+ {
+  "version": "a﻿b",
+  "yaml": "  version: \"1.0.0 (a\\uFEFFb)\"\n",
+  "yaml_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAoYe+7v2IpLnlhbWwi?=",
+  "json": "        \"version\": \"1.0.0 (a﻿b)\",\n",
+  "json_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAoYe+7v2IpLmpzb24i?="
+ },
+ {
+  "version": "�",
+  "yaml": "  version: 1.0.0 (�)\n",
+  "yaml_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo77+9KS55YW1sIg==?=",
+  "json": "        \"version\": \"1.0.0 (�)\",\n",
+  "json_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo77+9KS5qc29uIg==?="
+ },
+ {
+  "version": "?",
+  "yaml": "  version: 1.0.0 (?)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (?).yaml\"",
+  "json": "        \"version\": \"1.0.0 (?)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (?).json\""
+ },
+ {
+  "version": ": ",
+  "yaml": "  version: '1.0.0 (: )'\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (: ).yaml\"",
+  "json": "        \"version\": \"1.0.0 (: )\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (: ).json\""
+ },
+ {
+  "version": "*a",
+  "yaml": "  version: 1.0.0 (*a)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (*a).yaml\"",
+  "json": "        \"version\": \"1.0.0 (*a)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (*a).json\""
+ },
+ {
+  "version": "&a",
+  "yaml": "  version: 1.0.0 (&a)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (&a).yaml\"",
+  "json": "        \"version\": \"1.0.0 (&a)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (&a).json\""
+ },
+ {
+  "version": "!t",
+  "yaml": "  version: 1.0.0 (!t)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (!t).yaml\"",
+  "json": "        \"version\": \"1.0.0 (!t)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (!t).json\""
+ },
+ {
+  "version": "| x",
+  "yaml": "  version: 1.0.0 (| x)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (| x).yaml\"",
+  "json": "        \"version\": \"1.0.0 (| x)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (| x).json\""
+ },
+ {
+  "version": "a: ",
+  "yaml": "  version: '1.0.0 (a: )'\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a: ).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a: )\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a: ).json\""
+ },
+ {
+  "version": "a #b",
+  "yaml": "  version: '1.0.0 (a #b)'\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a #b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a #b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a #b).json\""
+ },
+ {
+  "version": "'q'",
+  "yaml": "  version: 1.0.0 ('q')\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API ('q').yaml\"",
+  "json": "        \"version\": \"1.0.0 ('q')\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API ('q').json\""
+ },
+ {
+  "version": "\"d\"",
+  "yaml": "  version: 1.0.0 (\"d\")\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (\"d\").yaml\"",
+  "json": "        \"version\": \"1.0.0 (\\\"d\\\")\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (\"d\").json\""
+ },
+ {
+  "version": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "yaml": "  version: 1.0.0 (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n    yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy).yaml\"",
+  "json": "        \"version\": \"1.0.0 (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy).json\""
+ },
+ {
+  "version": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ",
+  "yaml": "  version: 1.0.0 (a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a\n    a a a a a a a a a a a a a a a a a a a a a a a a a a a a )\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a )\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ).json\""
+ },
+ {
+  "version": "　",
+  "yaml": "  version: 1.0.0 (　)\n",
+  "yaml_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo44CAKS55YW1sIg==?=",
+  "json": "        \"version\": \"1.0.0 (　)\",\n",
+  "json_disposition": "=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo44CAKS5qc29uIg==?="
+ },
+ {
+  "version": " ",
+  "yaml": "  version: 1.0.0 ( )\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API ( ).yaml\"",
+  "json": "        \"version\": \"1.0.0 ( )\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API ( ).json\""
+ },
+ {
+  "version": "--- ",
+  "yaml": "  version: 1.0.0 (--- )\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (--- ).yaml\"",
+  "json": "        \"version\": \"1.0.0 (--- )\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (--- ).json\""
+ },
+ {
+  "version": "... ",
+  "yaml": "  version: 1.0.0 (... )\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (... ).yaml\"",
+  "json": "        \"version\": \"1.0.0 (... )\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (... ).json\""
+ },
+ {
+  "version": "%",
+  "yaml": "  version: 1.0.0 (%)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (%).yaml\"",
+  "json": "        \"version\": \"1.0.0 (%)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (%).json\""
+ },
+ {
+  "version": "@",
+  "yaml": "  version: 1.0.0 (@)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (@).yaml\"",
+  "json": "        \"version\": \"1.0.0 (@)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (@).json\""
+ },
+ {
+  "version": "`",
+  "yaml": "  version: 1.0.0 (`)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (`).yaml\"",
+  "json": "        \"version\": \"1.0.0 (`)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (`).json\""
+ },
+ {
+  "version": "\\",
+  "yaml": "  version: 1.0.0 (\\)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (\\).yaml\"",
+  "json": "        \"version\": \"1.0.0 (\\\\)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (\\).json\""
+ },
+ {
+  "version": "a'                                                                                b",
+  "yaml": "  version: 1.0.0 (a'                                                                                b)\n",
+  "yaml_disposition": "inline; filename=\"Bakney Sport API (a'                                                                                b).yaml\"",
+  "json": "        \"version\": \"1.0.0 (a'                                                                                b)\",\n",
+  "json_disposition": "inline; filename=\"Bakney Sport API (a'                                                                                b).json\""
+ }
+]

@@ -41,11 +41,14 @@ def _data():
     return catalog, keys, base
 
 
-def expected_document(form, lang, version, indent):
+def expected_document(form, lang, version, indent, version_text=None):
     catalog, keys, base = _data()
     lines = list(base[form])
     line = catalog['version_lines'][form]
-    if version:
+    if version_text is not None:
+        # Authored from Django's output: the renderer's own scalar style for the version.
+        lines[line] = version_text
+    elif version:
         lines[line] = lines[line].replace(catalog['version'], f"{catalog['version']} ({version})", 1)
     out, position = [], 0
     for start, end, replacement in catalog['variants'][catalog['variant_of'][keys[lang]]][form]:
@@ -67,7 +70,8 @@ def expected_body(response):
     catalog, _keys, _base = _data()
     kind = response['kind']
     if kind == 'document':
-        return expected_document(response['format'], response['lang'], response['version'], response['indent']).encode(), None
+        return expected_document(response['format'], response['lang'], response['version'], response['indent'],
+                                 response.get('version_text')).encode(), None
     if kind == 'options':
         text = catalog['options'][response['language']][response['format']]
         if response['indent'] != 4:

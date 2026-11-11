@@ -49,8 +49,17 @@ def schema(name, status, response, *, content_type, query='', **options):
     add(name, '/schema/' + query, status, response, content_type=content_type, vary=SCHEMA_VARY, **options)
 
 
-def document(form, lang, version='', indent=4):
-    return {'kind': 'document', 'format': form, 'lang': lang, 'version': version, 'indent': indent}
+def document(form, lang, version='', indent=4, version_text=None):
+    """version_text: the text Django emits for the info.version line(s) when it is not a plain substitution."""
+    value = {'kind': 'document', 'format': form, 'lang': lang, 'version': version, 'indent': indent}
+    if version_text is not None:
+        value['version_text'] = version_text
+    return value
+
+
+def quoted_disposition(version, form):
+    """Content-Disposition for a version that is not plain ASCII (urllib reads header bytes as latin-1)."""
+    return f'inline; filename="Bakney Sport API ({version}).{form}"'
 
 
 def yaml_disposition(version=''):
@@ -124,6 +133,53 @@ schema('version-json-with-lang', 200, document('json', 'de', version='1.2-rc_3')
        query='?version=1.2-rc_3&lang=de', headers={'Accept': JSON2}, disposition=json_disposition('1.2-rc_3'))
 schema('version-empty', 200, document('json', 'it'), content_type=JSON2, query='?version=', headers={'Accept': JSON2},
        disposition=json_disposition())
+
+# The version is emitted by the format's own renderer: PyYAML picks the scalar style and folds long lines.
+schema('version-yaml-quoted', 200, document('yaml', 'it', version='x: y', version_text="  version: '1.0.0 (x: y)'\n"),
+       content_type=YAML + '; charset=utf-8', query='?version=x%3A+y', disposition=yaml_disposition('x: y'))
+schema('version-yaml-tab', 200, document('yaml', 'it', version='a\tb', version_text='  version: "1.0.0 (a\\tb)"\n'),
+       content_type=YAML + '; charset=utf-8', query='?version=a%09b', disposition=yaml_disposition('a\tb'))
+schema('version-yaml-single-quote-and-hash', 200, document('yaml', 'it', version="it's #1", version_text="  version: '1.0.0 (it''s #1)'\n"),
+       content_type=YAML + '; charset=utf-8', query="?version=it%27s+%231", disposition=yaml_disposition("it's #1"))
+WORDS = ('word ' * 30).strip()
+schema('version-yaml-folded', 200, document('yaml', 'it', version=WORDS, version_text=(
+    '  version: 1.0.0 (word word word word word word word word word word word word word\n'
+    '    word word word word word word word word word word word word word word word word\n    word)\n')),
+       content_type=YAML + '; charset=utf-8', query='?version=' + WORDS.replace(' ', '+'), disposition=yaml_disposition(WORDS))
+schema('version-json-quote-and-backslash', 200, document('json', 'it', version='a"b\\c', version_text='        "version": "1.0.0 (a\\"b\\\\c)",\n'),
+       content_type=JSON2, query='?version=a%22b%5Cc', headers={'Accept': JSON2}, disposition=json_disposition('a"b\\c'))
+schema('version-json-non-ascii', 200, document('json', 'it', version='caf\u00e9', version_text='        "version": "1.0.0 (caf\u00e9)",\n'),
+       content_type=JSON2, query='?version=caf%C3%A9', headers={'Accept': JSON2}, disposition=json_disposition('caf\u00e9'))
+schema('version-yaml-non-latin', 200, document('yaml', 'it', version='\u65e5\u672c', version_text='  version: 1.0.0 (\u65e5\u672c)\n'),
+       content_type=YAML + '; charset=utf-8', query='?version=%E6%97%A5%E6%9C%AC',
+       disposition='=?utf-8?b?aW5saW5lOyBmaWxlbmFtZT0iQmFrbmV5IFNwb3J0IEFQSSAo5pel5pysKS55YW1sIg==?=')
+add('version-line-break-server-error', '/schema/?version=a%0Ab', 500, SERVER, content_type='text/html; charset=utf-8',
+    vary=('Cookie', 'origin', 'Accept-Language'), allow=None)
+schema('lang-space-unknown', 200, document('json', 'de ch'), content_type=JSON2, query='?lang=de+ch', headers={'Accept': JSON2},
+       disposition=json_disposition())
+schema('lang-non-ascii', 200, document('yaml', 'd\u00e9'), content_type=YAML + '; charset=utf-8', query='?lang=d%C3%A9',
+       disposition=yaml_disposition())
+schema('lang-folds-to-ascii', 200, document('json', 'IT-\u0131'), content_type=JSON2, query='?lang=IT-%C4%B1',
+       headers={'Accept': JSON2}, disposition=json_disposition())
+schema('lang-sharp-s-territory', 200, document('json', 'de-\u00df'), content_type=JSON2, query='?lang=de-%C3%9F',
+       headers={'Accept': JSON2}, disposition=json_disposition())
+
+# Accept parameters go through email.message: quoted strings, comments, RFC 2231 and non-ASCII text.
+schema('accept-indent-quoted', 200, document('json', 'it', indent=3), content_type=JSON2, headers={'Accept': JSON2 + '; indent="3"'},
+       disposition=json_disposition())
+schema('accept-indent-quoted-with-semicolon', 200, document('json', 'it', indent=5), content_type=JSON2,
+       headers={'Accept': JSON2 + '; title="a;b"; indent=5'}, disposition=json_disposition())
+schema('accept-indent-rfc2231', 200, document('json', 'it', indent=2), content_type=JSON2,
+       headers={'Accept': JSON2 + "; indent*=utf-8''2"}, disposition=json_disposition())
+schema('accept-indent-rfc2231-continued', 200, document('json', 'it', indent=6), content_type=JSON2,
+       headers={'Accept': JSON2 + "; indent*0*=utf-8'en'%36; x=1"}, disposition=json_disposition())
+add('accept-unknown-rfc2231-charset-server-error', '/schema/', 500, SERVER, content_type='text/html; charset=utf-8',
+    headers={'Accept': JSON2 + "; indent*=bogus''3"}, vary=('Cookie', 'origin', 'Accept-Language'), allow=None)
+schema('accept-comment-parameter-ignored', 200, document('json', 'it'), content_type=JSON2,
+       headers={'Accept': JSON2 + '; x=(a)'}, disposition=json_disposition())
+schema('accept-non-ascii-subtype-not-acceptable', 406, yaml_detail('Impossibile soddisfare l\'header "Accept" presente nella richiesta.',
+                                                                'not_acceptable'),
+       content_type=YAML + '; charset=utf-8', headers={'Accept': 'application/json\u00f6'})
 
 # --- schema/: methods, HEAD, OPTIONS, encodings ---------------------------------------------
 schema('head-yaml', 200, document('yaml', 'it'), content_type=YAML + '; charset=utf-8', method='HEAD', disposition=yaml_disposition())
@@ -219,6 +275,8 @@ page('swagger-legacy-csrf', SWAGGER, 200, {'kind': 'swagger', 'url': '/schema/'}
      headers={'Accept': 'text/html', 'Cookie': f'csrftoken={LEGACY}'}, csrf=SECRET)
 page('swagger-malformed-csrf', SWAGGER, 200, {'kind': 'swagger', 'url': '/schema/'},
      headers={'Accept': 'text/html', 'Cookie': 'csrftoken=short!'}, csrf='new')
+page('swagger-query-outside-safe-charset', SWAGGER + '?lang=d%C3%A9&version=a%26b%20c', 200,
+     {'kind': 'swagger', 'url': '/schema/?lang=d%C3%A9&version=a%26b+c'}, headers={'Accept': 'text/html'}, csrf='new')
 page('swagger-head', SWAGGER, 200, {'kind': 'swagger', 'url': '/schema/'}, method='HEAD', headers={'Accept': 'text/html'}, csrf='new')
 page('swagger-options-server-error', SWAGGER, 500, SERVER, method='OPTIONS', headers={'Accept': 'text/html'}, allow=None)
 page('swagger-json-not-acceptable', SWAGGER, 406, '406 Not Acceptable', headers={'Accept': JSON2})
@@ -232,6 +290,8 @@ page('swagger-restricted-collaborator', SWAGGER, 403, '403 Forbidden', actor='re
 page('redoc', REDOC, 200, {'kind': 'redoc', 'url': '/schema/'}, headers={'Accept': BROWSER})
 page('redoc-query', REDOC + '?lang=pt-br&version=2', 200, {'kind': 'redoc', 'url': '/schema/?lang=pt-br&version=2'},
      actor='owner', headers={'Accept': 'text/html', 'Accept-Language': 'en'}, language='en')
+page('redoc-query-outside-safe-charset', REDOC + '?lang=%E6%97%A5&version=a%3Cb%3E%22', 200,
+     {'kind': 'redoc', 'url': '/schema/?lang=%E6%97%A5&version=a%3Cb%3E%22'}, headers={'Accept': 'text/html'})
 page('redoc-head', REDOC, 200, {'kind': 'redoc', 'url': '/schema/'}, method='HEAD')
 page('redoc-options', REDOC, 200, {'kind': 'redoc_options'}, method='OPTIONS', headers={'Accept': 'text/html'})
 page('redoc-json-not-acceptable', REDOC, 406, '406 Not Acceptable', headers={'Accept': JSON2})

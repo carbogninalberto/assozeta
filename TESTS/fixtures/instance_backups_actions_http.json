@@ -9601,6 +9601,757 @@
     "name": "assozeta-20261101T020000Z.tar.gz",
     "recovery_key": "AGE-SECRET-KEY-1PLACEHOLDER"
    }
+  },
+  {
+   "name": "instance-backups-actions-schedule-form-saved",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "schedule": {
+     "enabled": true,
+     "frequency": "daily",
+     "time": "02:30",
+     "weekday": 6,
+     "keep": 7
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"schedule\": {\"enabled\": true, \"frequency\": \"daily\", \"time\": \"02:30\", \"weekday\": 6, \"keep\": 7}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PUT",
+      "path": "/backups/schedule",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "enabled": true,
+        "frequency": "weekly",
+        "time": "02:30",
+        "weekday": 6,
+        "keep": 7
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_schedule": [
+      "",
+      "{\"enabled\": true, \"frequency\": \"weekly\", \"keep\": 7, \"time\": \"02:30\", \"weekday\": 6}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": false,
+   "raw_body": "enabled=on&frequency=weekly&time=02%3A30&weekday=&keep=7&keep=x&keep=7",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-schedule-form-without-enabled",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "schedule": {
+     "enabled": true,
+     "frequency": "daily",
+     "time": "02:30",
+     "weekday": 6,
+     "keep": 7
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"schedule\": {\"enabled\": true, \"frequency\": \"daily\", \"time\": \"02:30\", \"weekday\": 6, \"keep\": 7}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PUT",
+      "path": "/backups/schedule",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "enabled": false,
+        "frequency": "daily",
+        "time": "02:30",
+        "weekday": 2,
+        "keep": 7
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_schedule": [
+      "",
+      "{\"enabled\": false, \"frequency\": \"daily\", \"keep\": 7, \"time\": \"02:30\", \"weekday\": 2}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": false,
+   "raw_body": "frequency=daily&time=02%3A30&weekday=2&keep=7",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-schedule-form-empty",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "frequency": [
+     "This field is required."
+    ],
+    "time": [
+     "This field is required."
+    ],
+    "keep": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-schedule-form-blank-values",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "enabled": [
+     "Must be a valid boolean."
+    ],
+    "frequency": [
+     "\"\" is not a valid choice."
+    ],
+    "time": [
+     "This field may not be blank."
+    ],
+    "keep": [
+     "A valid integer is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "enabled=&frequency=&time=&weekday=&keep=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-schedule-multipart-files",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "enabled": [
+     "Must be a valid boolean."
+    ],
+    "time": [
+     "This value does not match the required pattern."
+    ],
+    "weekday": [
+     "A valid integer is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"enabled\"; filename=\"true\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"frequency\"; filename=\"daily\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"time\"; filename=\"02:30\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"weekday\"; filename=\"x.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"keep\"; filename=\"7\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-schedule-multipart-file-choice",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "frequency": [
+     "\"monthly.txt\" is not a valid choice."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\ntrue\r\n--fixture\r\nContent-Disposition: form-data; name=\"frequency\"; filename=\"monthly.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"time\"\r\n\r\n02:30\r\n--fixture\r\nContent-Disposition: form-data; name=\"keep\"; filename=\"7\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-schedule-multipart-saved",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "schedule": {
+     "enabled": true,
+     "frequency": "daily",
+     "time": "02:30",
+     "weekday": 6,
+     "keep": 7
+    }
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"schedule\": {\"enabled\": true, \"frequency\": \"daily\", \"time\": \"02:30\", \"weekday\": 6, \"keep\": 7}}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PUT",
+      "path": "/backups/schedule",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "enabled": true,
+        "frequency": "daily",
+        "time": "02:30",
+        "weekday": 6,
+        "keep": 7
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_schedule": [
+      "",
+      "{\"enabled\": true, \"frequency\": \"daily\", \"keep\": 7, \"time\": \"02:30\", \"weekday\": 6}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": false,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\ntrue\r\n--fixture\r\nContent-Disposition: form-data; name=\"frequency\"; filename=\"daily\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"time\"\r\n\r\n02:30\r\n--fixture\r\nContent-Disposition: form-data; name=\"keep\"; filename=\"7\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-remote-put-form",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "configured": true,
+    "enabled": true
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"configured\": true, \"enabled\": true}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PUT",
+      "path": "/backups/remote",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "endpoint": "",
+        "path_style": false,
+        "enabled": false
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_remote_settings": [
+      "",
+      "{\"enabled\": false, \"endpoint\": \"\", \"path_style\": false}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "raw_body": "password=Fixture-backup-placeholder-2&retention=&endpoint=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-remote-put-multipart",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "configured": true,
+    "enabled": true
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"configured\": true, \"enabled\": true}",
+    "early": false,
+    "expect": [
+     {
+      "method": "PUT",
+      "path": "/backups/remote",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "bucket": "b",
+        "path_style": true,
+        "retention": 3,
+        "enabled": true
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_remote_settings": [
+      "",
+      "{\"bucket\": \"b\", \"enabled\": true, \"path_style\": true, \"retention\": 3}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"password\"\r\n\r\nFixture-backup-placeholder-2\r\n--fixture\r\nContent-Disposition: form-data; name=\"bucket\"\r\n\r\nb\r\n--fixture\r\nContent-Disposition: form-data; name=\"path_style\"\r\n\r\non\r\n--fixture\r\nContent-Disposition: form-data; name=\"retention\"; filename=\"3\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\n1\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-remote-put-form-rules",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "region": [
+     "Not a valid string."
+    ],
+    "path_style": [
+     "Must be a valid boolean."
+    ],
+    "retention": [
+     "A valid integer is required."
+    ],
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"region\"; filename=\"r.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"path_style\"\r\n\r\nmaybe\r\n--fixture\r\nContent-Disposition: form-data; name=\"retention\"; filename=\"x.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\n\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-remote-test-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "ok": true,
+    "message": "Connessione riuscita."
+   },
+   "runner": {
+    "state": "up",
+    "status": 200,
+    "body": "{\"ok\": true, \"message\": \"Connessione riuscita.\"}",
+    "early": false,
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/backups/remote/test",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "$length"
+      },
+      "body": {
+       "json": {
+        "bucket": "b",
+        "path_style": false
+       }
+      }
+     }
+    ]
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": {
+    "changes": {
+     "backup_remote_test": [
+      "",
+      "{\"bucket\": \"b\", \"path_style\": false}"
+     ]
+    },
+    "additional_data": {
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association"
+   },
+   "send": null,
+   "no_store": true,
+   "raw_body": "password=Fixture-backup-placeholder-2&bucket=b",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-remote-test-form-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-remote-test-form-rules",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/remote/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "enabled": [
+     "Must be a valid boolean."
+    ],
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "enabled=maybe",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-keep-multipart-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"keep\"\r\n\r\ntrue\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-delete-multipart-confirm",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Richiesta non valida."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"confirm\"; filename=\"c.txt\"\r\nContent-Type: text/plain\r\n\r\ntrue\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-delete-multipart-password-file",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "Not a valid string."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"password\"; filename=\"p.txt\"\r\nContent-Type: text/plain\r\n\r\nFixture-backup-placeholder-2\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-backups-actions-restore-lone-surrogates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz/restore",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "Surrogate characters are not allowed: U+D800."
+    ],
+    "confirm": [
+     "Surrogate characters are not allowed: U+DFFF."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "{\"password\": \"a\\ud800b\\udc00\", \"confirm\": \" \\udfff\\ud800 \"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instance-backups-actions-schedule-time-lone-surrogate",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/schedule",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "time": [
+     "Surrogate characters are not allowed: U+DBFF.",
+     "This value does not match the required pattern."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "{\"enabled\": true, \"frequency\": \"daily\", \"time\": \"02:3\\udbff\", \"keep\": 7}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instance-backups-actions-remote-put-lone-surrogate",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/backups/remote",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "bucket": [
+     "Ensure this field has no more than 63 characters.",
+     "Null characters are not allowed.",
+     "Surrogate characters are not allowed: U+D83D."
+    ],
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "{\"bucket\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\\u0000\\ud83d\"}",
+   "content_type": "application/json"
   }
  ]
 }

@@ -72,6 +72,8 @@ type BackupActionsReply struct {
 // BackupActionsRequest is the actor and the audit context of one request.
 type BackupActionsRequest struct {
 	Actor string
+	// Form is a form or multipart body: the serializers read HTML input.
+	Form  bool
 	Audit domain.LoginAuditContext
 }
 
@@ -270,7 +272,7 @@ func (s *InstanceBackupActions) Delete(ctx context.Context, request BackupAction
 
 // Schedule is BackupScheduleView.put.
 func (s *InstanceBackupActions) Schedule(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
-	value, errs, err := dto.ValidateBackupActions(body, dto.BackupScheduleFields)
+	value, errs, err := dto.ValidateBackupActionsInput(body, dto.BackupScheduleFields, request.Form)
 	if err != nil {
 		return nil, ErrInstanceBackupsNotPorted
 	}
@@ -461,7 +463,7 @@ var remoteSettingsFields = []string{"endpoint", "region", "bucket", "prefix", "a
 // SaveRemoteSettings is RemoteBackupSettingsView.put: the audit records what
 // changed, the secret only as 'changed'.
 func (s *InstanceBackupActions) SaveRemoteSettings(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
-	validated, errs, err := dto.ValidateBackupActions(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, true))
+	validated, errs, err := dto.ValidateBackupActionsInput(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, true), request.Form)
 	if err != nil {
 		return nil, ErrInstanceBackupsNotPorted
 	}
@@ -497,9 +499,10 @@ func (s *InstanceBackupActions) SaveRemoteSettings(ctx context.Context, request 
 // 'provided'.
 func (s *InstanceBackupActions) TestRemote(ctx context.Context, request BackupActionsRequest, body any) (*BackupActionsReply, error) {
 	if !backupActionsTruthy(body) {
-		body = domain.RequestObject{}
+		// request.data or {}: an empty form is replaced by a plain dict.
+		body, request.Form = domain.RequestObject{}, false
 	}
-	validated, errs, err := dto.ValidateBackupActions(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, true))
+	validated, errs, err := dto.ValidateBackupActionsInput(body, dto.BackupRemoteSettingsFields(s.limits.AllowHTTP, true), request.Form)
 	if err != nil {
 		return nil, ErrInstanceBackupsNotPorted
 	}

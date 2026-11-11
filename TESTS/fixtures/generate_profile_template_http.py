@@ -168,6 +168,17 @@ def audit_json(value):
     return json.dumps(value, sort_keys=True)
 
 
+def jsonb(value):
+    """What jsonb gives back: a float json.dumps wrote with an exponent is a numeric, read as an int when it has no fraction."""
+    if isinstance(value, float) and 'e+' in repr(value):
+        return int(Decimal(repr(value)))
+    if isinstance(value, list):
+        return [jsonb(item) for item in value]
+    if isinstance(value, dict):
+        return {key: jsonb(item) for key, item in value.items()}
+    return value
+
+
 def save(state, data, failing=False):
     """The view's assignments, the stored row and auditlog's change pairs."""
     raw, new = {}, dict(state)
@@ -236,7 +247,7 @@ def save(state, data, failing=False):
         elif name in DECIMALS:
             new[name] = None if value is None else db_decimal(value)
         elif name in JSON_FIELDS:
-            new[name] = value
+            new[name] = jsonb(value)
         else:
             new[name] = None if value is None else str(value)
     return new, changes
@@ -429,6 +440,65 @@ for name, changes in (
         ('plans-object', {'subscription_fee_plans': {'name': 'A'}}),
 ):
     add(name, 'owner', 500, SERVER, body={'sport_association': frontend_payload(STATE, **changes)})
+
+# === t4l2: float() spellings, containers and numbers in text fields, a logo that is not a string ====
+write('owner', frontend_payload(
+    STATE, subscription_fee='\u2003 1_0.5\n', membership_fee='\u0661\u0662.\u0665',
+    subscription_fee_plans=[{'name': 'Grande', 'subscription_fee': 12345678901234567890}, {'name': 'Mille', 'subscription_fee': '1_000'},
+                            {'name': 'Spazi', 'subscription_fee': ' 7 '}, {'name': 'Esponente', 'subscription_fee': '1e3'}],
+    invoice_template=['a', 1, None, 2.5, {'k': "it's"}], extra_text_invoices={'k': 1.5, '\u00e8': [True, 'x\ny']},
+    subscription_template=12345678901234567890123, logo=5), name='float-spellings-and-containers')
+write('owner', frontend_payload(STATE, logo={'a': [1.5, None]}, subscription_fee='+.5', membership_fee='5.'), name='logo-object')
+write('owner', frontend_payload(STATE, logo=True, invoice_template=None, extra_text_invoices=None), name='logo-boolean')
+for name, changes in (
+        ('fee-string-past-float-range', {'subscription_fee': '1e400'}),
+        ('flag-container', {'show_demand_to_members': ['t']}),
+        ('flag-object', {'enable_quotes_management': {'a': 1}}),
+        # The audit entry holds the JSON text (escaped); the jsonb column then refuses the character.
+        ('json-with-nul', {'enabled_for': ['a\x00']}),
+):
+    data = frontend_payload(STATE, **changes)
+    _, pairs = save(STATE, data, failing=True)
+    add(name, 'owner', 500, SERVER, body={'sport_association': data},
+        effect={'association': {k: STATE[k] for k in WRITTEN}, 'audits': [{'actor': 'owner', 'changes': pairs}]})
+# A JSON number past the float range is inf: the fee fails its conversion after the audit entry.
+data = frontend_payload(STATE, subscription_fee='@fee@')
+_, pairs = save(STATE, {**data, 'subscription_fee': float('inf')}, failing=True)
+add('fee-number-past-float-range', 'owner', 500, SERVER,
+    raw_body=json.dumps({'sport_association': data}).replace('"@fee@"', '1e400'), content_type='application/json',
+    effect={'association': {k: STATE[k] for k in WRITTEN}, 'audits': [{'actor': 'owner', 'changes': pairs}]})
+# float() raises, or the audit entry cannot hold the text: the 500 page, nothing written.
+for name, changes in (
+        ('fee-integer-past-float-range', {'subscription_fee': 10 ** 400}),
+        ('fee-double-underscore', {'subscription_fee': '1__0'}),
+        ('fee-inner-space', {'membership_fee': '1 0'}),
+        ('text-with-nul', {'extra_text_invoices': 'a\x00b'}),
+        ('flag-with-nul', {'show_demand_to_both': 't\x00'}),
+        ('logo-without-comma-with-nul', {'logo': 'a\x00b'}),
+):
+    add(name, 'owner', 500, SERVER, body={'sport_association': frontend_payload(STATE, **changes)})
+for name, field, value in (
+        ('text-with-lone-surrogate', 'extra_text_invoices', '"a\\ud800b"'),
+        ('logo-data-with-lone-surrogate', 'logo', '"data:image/png;base64,AA\\ud800"'),
+        ('number-list-in-json-past-float-range', 'enabled_for', None),
+):
+    if value is None:
+        continue
+    add(name, 'owner', 500, SERVER, content_type='application/json',
+        raw_body=json.dumps({'sport_association': frontend_payload(STATE, **{field: '@value@'})}).replace('"@value@"', value))
+data = frontend_payload(STATE, additional_fields='@value@')
+_, pairs = save(STATE, {**data, 'additional_fields': {'a\udc00': 1}}, failing=True)
+add('json-key-with-lone-surrogate', 'owner', 500, SERVER, content_type='application/json',
+    raw_body=json.dumps({'sport_association': data}).replace('"@value@"', '{"a\\udc00": 1}'),
+    effect={'association': {k: STATE[k] for k in WRITTEN}, 'audits': [{'actor': 'owner', 'changes': pairs}]})
+# A container in a text field is stored as its repr, which escapes the character.
+write('owner', frontend_payload(STATE, extra_text_invoices=['a\x00b'], logo=['\x00']), name='text-container-with-nul')
+add('multipart-body', 'owner', 500, SERVER, content_type='multipart/form-data; boundary=fixture',
+    raw_body='--fixture\r\nContent-Disposition: form-data; name="sport_association"\r\n\r\n{}\r\n'
+             '--fixture\r\nContent-Disposition: form-data; name="logo"; filename="logo.png"\r\nContent-Type: image/png\r\n\r\nx\r\n'
+             '--fixture--\r\n')
+add('multipart-file-as-association', 'owner', 500, SERVER, content_type='multipart/form-data; boundary=fixture',
+    raw_body='--fixture\r\nContent-Disposition: form-data; name="sport_association"; filename="a.json"\r\n\r\n{}\r\n--fixture--\r\n')
 
 # An administrator session saves for the owner (wide logo re-encoded at its size).
 write('admin', frontend_payload(STATE, logo=LOGO_WIDE, demand='<pre><code>riga 1\n  riga 2</code></pre>'), name='admin-session-save',

@@ -169,3 +169,11 @@ account's e-mail, username conflicts and the transfer path. A `signin` effect re
   Go on `oauth-accounts-reset-shared-email` (`reset.tokens`) — CAUGHT.
 - Re-run with the shared changes (`oauth-rerun-r1`): email-render-routes 82/82, instance-setup 86/86, collaborators-writes 45/45
   on native Django and Go; `go test ./internal/...`.
+
+## Ported in t4l2
+
+Social signup with a name that is not a string: `create_user` stores `str(value)` (lists and objects as their Python repr), and
+the welcome mail and the login response write the same text. None fails the NOT NULL column and a text over 150 characters the
+column length: the 500 page. A float name is still handed off (the mail writes it in the locale's number format). Cases
+`signup-social-name-null`, `signup-social-name-too-long-list`, `signup-social-names-not-strings`,
+`signup-social-names-boolean-and-object` (168 cases). Mutation control: accepting a null name fails `signup-social-name-null` on Go.

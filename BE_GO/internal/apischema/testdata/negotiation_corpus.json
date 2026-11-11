@@ -2238,6 +2238,2118 @@
   "outcome": 404
  },
  {
+  "view": "schema",
+  "accept": "application/json; indent=\"2\"",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"2\"",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2\"",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"2\"",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2\"",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"2\"",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2\"",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2\"",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"\\\"2\"",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"\\\"2\"",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"\\\"2\"",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"2",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"2",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=\"2",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=\"2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent='2'",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent='2'",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent='2'",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent='2'",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent='2'",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent='2'",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent='2'",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent='2'",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent='2'",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent='2'",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; title=\"a;b\"; indent=3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; title=\"a;b\"; indent=3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; title=\"a;b\"; indent=3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; x=\"a\\\\b\"; indent=5",
+  "indent": 5
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; x=\"a\\\\b\"; indent=5",
+  "indent": 5
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; x=\"a\\\\b\"; indent=5",
+  "indent": 5
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=(b)",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=(b)",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=(b)",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=(b)",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=(b)",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=(b)",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=(b)",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=<b>",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=<b>",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=<b>",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=<b>",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=<b>",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=<b>",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=<b>",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=(3)",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=(3)",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=(3)",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=(3)",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=(3)",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=(3)",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=(3)",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=(3)",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=(3)",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=(3)",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json\u0001",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json\u0001",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json\u0001",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json\u0001",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json\u0001",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json\u0001",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json\u0001",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=utf-8''x",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; title*=utf-8''x",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; title*=utf-8''x",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; title*=utf-8''x",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=bogus''x",
+  "format": null,
+  "outcome": 500
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=bogus''x",
+  "format": "",
+  "outcome": 500
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=bogus''x",
+  "format": "json",
+  "outcome": 500
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=bogus''x",
+  "format": "yaml",
+  "outcome": 500
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=bogus''x",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=bogus''x",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; title*=bogus''x",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8''3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8''3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8''3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0=utf-8''3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0=utf-8''3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0=utf-8''3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*1=3; indent*0=1",
+  "indent": 8
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*1=3; indent*0=1",
+  "indent": 8
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*1=3; indent*0=1",
+  "indent": 8
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=iso-8859-1''%33",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=iso-8859-1''%33",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=iso-8859-1''%33",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=us-ascii''%C3%A9",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=us-ascii''%C3%A9",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=us-ascii''%C3%A9",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=''3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=''3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=''3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=''3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=''3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=''3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=''3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=''3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=''3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=''3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8'en'%E2%82",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8'en'%E2%82",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8'en'%E2%82",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8'a'b'c",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8'a'b'c",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=utf-8'a'b'c",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;title=é"
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;title=é"
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 2,
+  "media_type": "application/vnd.oai.openapi+json;title=é",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "yaml",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;title=é"
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;indent=3"
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;indent=3"
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 2,
+  "media_type": "application/vnd.oai.openapi+json;indent=3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "yaml",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;indent=3"
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/*; indent*0=2",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;indent=2"
+ },
+ {
+  "view": "schema",
+  "accept": "application/*; indent*0=2",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;indent=2"
+ },
+ {
+  "view": "schema",
+  "accept": "application/*; indent*0=2",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 2,
+  "media_type": "application/vnd.oai.openapi+json;indent=2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/*; indent*0=2",
+  "format": "yaml",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "application/vnd.oai.openapi;indent=2"
+ },
+ {
+  "view": "schema",
+  "accept": "application/*; indent*0=2",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/*; indent*0=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/*; indent*0=2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "indent": 8
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "indent": 8
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "indent": 8
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=windows-1252''%80",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=windows-1252''%80",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent*=windows-1252''%80",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "ÿ/*",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "ÿ/*",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "ÿ/*",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "ÿ/*",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "ÿ/*",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "ÿ/*",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "ÿ/*",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/jsön",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/jsön",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/jsön",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/jsön",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/jsön",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/jsön",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/jsön",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=٣",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=٣",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=٣",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=٣",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=٣",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=٣",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=٣",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=٣",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=٣",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=٣",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent= 3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent= 3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent= 3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent= 3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent= 3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent= 3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent= 3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent= 3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent= 3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent= 3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=  2",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=  2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=  2",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=  2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=  2",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=  2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=  2",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=  2",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=  2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=  2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=²",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=²",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=²",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=²",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=²",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=²",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=²",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=²",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=²",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=²",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=３",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=３",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=３",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=３",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=３",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=３",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=３",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=３",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=３",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=３",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; =3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; =3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; =3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; =3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; =3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; =3",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; =3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; =3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; =3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; =3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; ; indent=2",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; ; indent=2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; ; indent=2",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; ; indent=2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; ; indent=2",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; ; indent=2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; ; indent=2",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; ; indent=2",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; ; indent=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; ; indent=2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": ";indent=2",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": ";indent=2",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": ";indent=2",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": ";indent=2",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": ";indent=2",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": ";indent=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": ";indent=2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json;;;",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json;;;",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json;;;",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json;;;",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json;;;",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json;;;",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json;;;",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json;;;",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json;;;",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json;;;",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3",
+  "indent": 3
+ },
+ {
+  "view": "schema",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "\"application/json\"",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "\"application/json\"",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "\"application/json\"",
+  "format": "json",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "\"application/json\"",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "\"application/json\"",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "\"application/json\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "\"application/json\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3 ; Indent=4",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3 ; Indent=4",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; indent=3 ; Indent=4",
+  "indent": 4
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; INDENT=2",
+  "format": null,
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; INDENT=2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; INDENT=2",
+  "format": "",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; INDENT=2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; INDENT=2",
+  "format": "json",
+  "outcome": 200,
+  "renderer": 3,
+  "media_type": "application/json; INDENT=2",
+  "indent": 2
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; INDENT=2",
+  "format": "yaml",
+  "outcome": 406
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; INDENT=2",
+  "format": "html",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; INDENT=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "schema",
+  "accept": "application/json; INDENT=2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
   "view": "page",
   "accept": null,
   "format": null,
@@ -4232,6 +6344,1842 @@
  {
   "view": "page",
   "accept": "application/json;Indent=3;q=0.5",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2\"",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2\"",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2\"",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2\"",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2\"",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"\\\"2\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=\"2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent='2'",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent='2'",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent='2'",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent='2'",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent='2'",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent='2'",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent='2'",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title=\"a;b\"; indent=3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; x=\"a\\\\b\"; indent=5",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=(b)",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=(b)"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=(b)",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=(b)"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=(b)",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=(b)",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=(b)",
+  "format": "html",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=(b)"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=(b)",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=(b)",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=<b>",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=<b>"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=<b>",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=<b>"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=<b>",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=<b>",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=<b>",
+  "format": "html",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=<b>"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=<b>",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=<b>",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=\"b;c\"; q=0.5"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=\"b;c\"; q=0.5"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "html",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html; a=\"b;c\"; q=0.5"
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "text/html; a=\"b;c\"; q=0.5",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=(3)",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=(3)",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=(3)",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=(3)",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=(3)",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=(3)",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=(3)",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json\u0001",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json\u0001",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json\u0001",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json\u0001",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json\u0001",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json\u0001",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json\u0001",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=utf-8''x",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=utf-8''x",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=bogus''x",
+  "format": null,
+  "outcome": 500
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=bogus''x",
+  "format": "",
+  "outcome": 500
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=bogus''x",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=bogus''x",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=bogus''x",
+  "format": "html",
+  "outcome": 500
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=bogus''x",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; title*=bogus''x",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8''3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=utf-8''3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0*=utf-8'en'%33; x=1",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*1=3; indent*0=1",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=iso-8859-1''%33",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=us-ascii''%C3%A9",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=''3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=''3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=''3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=''3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=''3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=''3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=''3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'en'%E2%82",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=utf-8'a'b'c",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html;title=é"
+ },
+ {
+  "view": "page",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html;title=é"
+ },
+ {
+  "view": "page",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "html",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html;title=é"
+ },
+ {
+  "view": "page",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; title*=utf-8''%C3%A9",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": null,
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html;indent=3"
+ },
+ {
+  "view": "page",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html;indent=3"
+ },
+ {
+  "view": "page",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "html",
+  "outcome": 200,
+  "renderer": 0,
+  "media_type": "text/html;indent=3"
+ },
+ {
+  "view": "page",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "*/*; indent*=iso-8859-1''%33",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/*; indent*0=2",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/*; indent*0=2",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/*; indent*0=2",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/*; indent*0=2",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/*; indent*0=2",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/*; indent*0=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/*; indent*0=2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*0=\"1\"; indent*1=\"0\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent*=windows-1252''%80",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "ÿ/*",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "ÿ/*",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "ÿ/*",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "ÿ/*",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "ÿ/*",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "ÿ/*",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "ÿ/*",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/jsön",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/jsön",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/jsön",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/jsön",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/jsön",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/jsön",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/jsön",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=٣",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=٣",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=٣",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=٣",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=٣",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=٣",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=٣",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent= 3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent= 3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent= 3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent= 3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent= 3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent= 3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent= 3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=  2",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=  2",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=  2",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=  2",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=  2",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=  2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=  2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=²",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=²",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=²",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=²",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=²",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=²",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=²",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=３",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=３",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=３",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=３",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=３",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=３",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=３",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; =3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; =3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; =3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; =3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; =3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; =3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; =3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; ; indent=2",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; ; indent=2",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; ; indent=2",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; ; indent=2",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; ; indent=2",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; ; indent=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; ; indent=2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": ";indent=2",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": ";indent=2",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": ";indent=2",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": ";indent=2",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": ";indent=2",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": ";indent=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": ";indent=2",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json;;;",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json;;;",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json;;;",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json;;;",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json;;;",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json;;;",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json;;;",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "a;b=c, application/json; indent=3",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "\"application/json\"",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "\"application/json\"",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "\"application/json\"",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "\"application/json\"",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "\"application/json\"",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "\"application/json\"",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "\"application/json\"",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; indent=3 ; Indent=4",
+  "format": "JSON",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; INDENT=2",
+  "format": null,
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; INDENT=2",
+  "format": "",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; INDENT=2",
+  "format": "json",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; INDENT=2",
+  "format": "yaml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; INDENT=2",
+  "format": "html",
+  "outcome": 406
+ },
+ {
+  "view": "page",
+  "accept": "application/json; INDENT=2",
+  "format": "xml",
+  "outcome": 404
+ },
+ {
+  "view": "page",
+  "accept": "application/json; INDENT=2",
   "format": "JSON",
   "outcome": 404
  }

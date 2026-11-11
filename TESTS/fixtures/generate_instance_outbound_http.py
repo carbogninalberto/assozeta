@@ -543,6 +543,14 @@ integration_case('integration-test-ai-invalid-url', 'ai', {**AI, 'base_url': 'ft
                  {'status': 'failed', 'level': 'configuration', 'message': 'URL del provider non valido.'})
 integration_case('integration-test-ai-no-key', 'ai', {**AI, 'api_key': ''}, 8,
                  {'status': 'not_configured', 'level': 'configuration', 'message': 'Chiave API mancante.'})
+# requests sends the scheme and the host in lower case; user information is the probe's invalid URL.
+integration_case('integration-test-ai-upper-case-host', 'ai', {**AI, 'base_url': 'HTTPS://LLM.Example.TEST/v1/'}, 9,
+                 {'status': 'failed', 'level': 'connectivity', 'message': 'Il provider non ha restituito un elenco modelli compatibile.'},
+                 ai('/v1/models', reply(200, {'data': {'id': 'fixture-model'}})))
+for number, address in ((10, 'https://user:pw@llm.example.test/v1'), (11, 'https://user@LLM.example.test/v1'),
+                        (12, 'https://:pw@llm.example.test')):
+    integration_case(f'integration-test-ai-user-info-{number}', 'ai', {**AI, 'base_url': address}, number,
+                     {'status': 'failed', 'level': 'configuration', 'message': 'URL del provider non valido.'})
 # The request revision is compared with Python equality.
 integration_case('integration-test-ai-revision-string', 'ai', AI, 9,
                  {'status': 'passed', 'level': 'connectivity',

@@ -1,6 +1,6 @@
 // Code generated from CPython 3.13 codecs.lookup; DO NOT EDIT.
 
-package handler
+package pyheader
 
 // pythonCodecs maps a normalized codec name (encodings.aliases keys, codec module names) to the registered
 // codec name and whether it is a text encoding.

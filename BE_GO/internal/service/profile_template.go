@@ -30,9 +30,6 @@ func NewProfileTemplate(store domain.ProfileTemplateStore, profiles LoginRespons
 
 // Update is the view after authorization and method dispatch.
 func (s *ProfileTemplate) Update(ctx context.Context, identity domain.ResolvedIdentity, body any, audit domain.LoginAuditContext) (*dto.ProfileUpdateResponse, error) {
-	if dto.ProfileSettingsHasUpload(body) {
-		return nil, dto.ErrProfileTemplateNotPorted
-	}
 	user, role, err := profileMiscRequestUser(identity)
 	if err != nil {
 		return nil, err
@@ -72,6 +69,10 @@ func (s *ProfileTemplate) save(ctx context.Context, identity domain.ResolvedIden
 		return ErrLoginImageProcessorUnavailable
 	}
 	var logo *string
+	if plan.RawLogo != nil {
+		text := dto.ProfileTemplateStr(plan.RawLogo)
+		plan.Logo = &text
+	}
 	if plan.Logo != nil {
 		compressed, err := s.images.CompressTemplateLogo(ctx, *plan.Logo)
 		if err != nil {

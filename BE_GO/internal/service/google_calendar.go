@@ -4,16 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"math/big"
 	"os"
-	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/googleapi"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pydatetime"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyheader"
 )
 
 // GoogleCalendarSettings is the Django configuration the views read:
@@ -333,8 +332,6 @@ type GoogleExportResult struct {
 
 const googleCalendarDescription = "Il calendario viene sincronizzato in automatico, non modificarlo."
 
-var googleColor = regexp.MustCompile(`^.[0-9A-Fa-f]{6}$`)
-
 // Export is google_calendar_export_course.
 func (s *GoogleCalendar) Export(ctx context.Context, identity domain.ResolvedIdentity, courseID, group string,
 	audit domain.LoginAuditContext) (*GoogleExportResult, error) {
@@ -350,15 +347,11 @@ func (s *GoogleCalendar) Export(ctx context.Context, identity domain.ResolvedIde
 	if course == nil {
 		return &GoogleExportResult{Status: 404, Body: map[string]any{"msg": "Course not found."}}, nil
 	}
-	// Inputs whose Python handling is not reproduced are refused before any request.
-	if course.Color != nil && !googleColor.MatchString(*course.Color) {
-		return nil, domain.ErrGoogleServer
-	}
 	registry, err := s.store.FirstRegistry(ctx, course.ID)
 	if err != nil {
 		return nil, err
 	}
-	events, err := googleRegistryEvents(registry)
+	events, err := googleRegistryEvents(registry, course.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -426,6 +419,10 @@ func (s *GoogleCalendar) Export(ctx context.Context, identity domain.ResolvedIde
 		return nil, domain.ErrGoogleServer
 	}
 	color := *course.Color
+	foreground, ok := googleForeground(color)
+	if !ok {
+		return nil, domain.ErrGoogleServer // int(background_color[1:3], 16) raises ValueError
+	}
 	_, err = session.Execute(ctx, googleapi.Call{Method: "DELETE", Path: "/calendar/v3/users/me/calendarList/" + googleapi.PathSegment(calendarID),
 		Raw: true})
 	if err := swallow(err); err != nil {
@@ -433,7 +430,7 @@ func (s *GoogleCalendar) Export(ctx context.Context, identity domain.ResolvedIde
 	}
 	if _, err := session.Execute(ctx, googleapi.Call{Method: "POST", Path: "/calendar/v3/users/me/calendarList", HasBody: true,
 		Body: domain.RequestObject{{Name: "id", Value: calendarID}, {Name: "backgroundColor", Value: color},
-			{Name: "foregroundColor", Value: googleForeground(color)}}}); err != nil {
+			{Name: "foregroundColor", Value: foreground}}}); err != nil {
 		return nil, googleFailure(err)
 	}
 	if registry == nil {
@@ -460,13 +457,69 @@ func (s *GoogleCalendar) Export(ctx context.Context, identity domain.ResolvedIde
 	return &GoogleExportResult{Status: 200, Body: map[string]any{"msg": "exported.", "google_calendar_id": stored}}, nil
 }
 
-func googleForeground(color string) string {
-	value := func(text string) int64 { number, _ := strconv.ParseInt(text, 16, 64); return number }
-	r, g, b := value(color[1:3]), value(color[3:5]), value(color[5:7])
-	if r*299+g*587+b*114 >= 128000 {
-		return "#000000"
+// googleForeground is foreground_color(): int(background_color[1:3], 16) and so on
+// over code points; ok is false when int() raises ValueError.
+func googleForeground(color string) (string, bool) {
+	runes := []rune(color)
+	slice := func(from, to int) string {
+		from, to = min(from, len(runes)), min(to, len(runes))
+		return string(runes[from:to])
 	}
-	return "#ffffff"
+	r, ok1 := pythonHexInt(slice(1, 3))
+	g, ok2 := pythonHexInt(slice(3, 5))
+	b, ok3 := pythonHexInt(slice(5, 7))
+	if !ok1 || !ok2 || !ok3 {
+		return "", false
+	}
+	if r*299+g*587+b*114 >= 128000 {
+		return "#000000", true
+	}
+	return "#ffffff", true
+}
+
+// pythonHexInt is int(text, 16): surrounding whitespace, a sign, an optional
+// 0x prefix and digits with single underscores between them; Unicode decimal
+// digits count as their value.
+func pythonHexInt(text string) (int64, bool) {
+	text = strings.TrimFunc(text, pyheader.IsSpace)
+	negative := false
+	if text != "" && (text[0] == '+' || text[0] == '-') {
+		negative = text[0] == '-'
+		text = text[1:]
+	}
+	if len(text) >= 2 && text[0] == '0' && (text[1] == 'x' || text[1] == 'X') {
+		text = text[2:]
+		text = strings.TrimPrefix(text, "_")
+	}
+	if text == "" || strings.HasSuffix(text, "_") || strings.Contains(text, "__") || strings.HasPrefix(text, "_") {
+		return 0, false
+	}
+	var value int64
+	for _, r := range text {
+		if r == '_' {
+			continue
+		}
+		var digit int64
+		switch {
+		case r >= '0' && r <= '9':
+			digit = int64(r - '0')
+		case r >= 'a' && r <= 'f':
+			digit = int64(r-'a') + 10
+		case r >= 'A' && r <= 'F':
+			digit = int64(r-'A') + 10
+		default:
+			number, isDigit := pydatetime.DecimalDigit(r)
+			if !isDigit {
+				return 0, false
+			}
+			digit = int64(number)
+		}
+		value = value*16 + digit
+	}
+	if negative {
+		value = -value
+	}
+	return value, true
 }
 
 type googleEvents struct {
@@ -476,8 +529,8 @@ type googleEvents struct {
 }
 
 // googleRegistryEvents reads registry.events and refuses, before any write,
-// events whose Python handling is not reproduced.
-func googleRegistryEvents(registry *domain.GoogleRegistry) (googleEvents, error) {
+// events whose dates Python formats in a platform-dependent way.
+func googleRegistryEvents(registry *domain.GoogleRegistry, courseID string) (googleEvents, error) {
 	if registry == nil {
 		return googleEvents{}, nil
 	}
@@ -491,8 +544,10 @@ func googleRegistryEvents(registry *domain.GoogleRegistry) (googleEvents, error)
 	switch v := parsed.(type) {
 	case []any:
 		for _, raw := range v {
-			if googleEventNotPorted(raw) {
-				return googleEvents{}, domain.ErrGoogleServer
+			// A dry run of the conversion: only years below 1000 are refused (strftime('%Y')
+			// pads on BSD libc and not on glibc), every other failure is the view's 500 later.
+			if _, err := googleEventBody(courseID, "", raw); errors.Is(err, errGoogleYearUnpadded) {
+				return googleEvents{}, googleapi.ErrNotPorted
 			}
 		}
 		return googleEvents{items: v}, nil
@@ -504,125 +559,14 @@ func googleRegistryEvents(registry *domain.GoogleRegistry) (googleEvents, error)
 	return googleEvents{failure: true}, nil
 }
 
-func googleEventNotPorted(raw any) bool {
-	event, ok := raw.(domain.RequestObject)
-	if !ok {
-		return false
-	}
-	for _, name := range []string{"start", "end"} {
-		value, _ := googleLookup(event, name)
-		if text, ok := value.(string); ok && text != "None" {
-			moment, err := googleParseDatetime(text)
-			if errors.Is(err, domain.ErrMiscRoutesNotPorted) {
-				return true
-			}
-			if moment != nil {
-				if rome := moment.rome(); rome.Year() < 1000 || rome.Year() > 9998 || moment.at.Year() < 1000 || moment.at.Year() > 9998 {
-					return true
-				}
-			}
-		}
-	}
-	if props, present := googleLookup(event, "extendedProps"); present {
-		if object, ok := props.(domain.RequestObject); ok {
-			if instructor, ok := googleLookupObject(object, "instructor"); ok {
-				if label, present := googleLookup(instructor, "label"); present {
-					if _, ok := googleLabel(label); !ok {
-						return true
-					}
-				}
-			}
-		}
-	}
-	return false
-}
+// errGoogleYearUnpadded marks an event date before the year 1000.
+var errGoogleYearUnpadded = errors.New("google: event year below 1000")
 
 func googleLookupObject(object domain.RequestObject, name string) (domain.RequestObject, bool) {
 	value, present := googleLookup(object, name)
 	inner, ok := value.(domain.RequestObject)
 	return inner, present && ok
 }
-
-// googleLabel is f"{label}" for the ported label types.
-func googleLabel(value any) (string, bool) {
-	switch v := value.(type) {
-	case nil:
-		return "None", true
-	case bool:
-		if v {
-			return "True", true
-		}
-		return "False", true
-	case string:
-		return v, true
-	case json.Number:
-		if number, ok := new(big.Int).SetString(string(v), 10); ok {
-			return number.String(), true
-		}
-	}
-	return "", false
-}
-
-// googleMoment is a parse_datetime result: wall clock fields and the UTC offset (nil when naive).
-type googleMoment struct {
-	at     time.Time
-	offset *time.Duration
-}
-
-var googleOffset = regexp.MustCompile(`^(\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?)([+-])(\d{2}):?(\d{2})$`)
-
-// googleParseDatetime is django.utils.dateparse.parse_datetime for the
-// calendar-export subset plus fixed ±HH:MM offsets: nil when Django answers
-// None, ErrMiscRoutesServer when it raises.
-func googleParseDatetime(text string) (*googleMoment, error) {
-	if match := googleOffset.FindStringSubmatch(text); match != nil {
-		hours, _ := strconv.Atoi(match[3])
-		minutes, _ := strconv.Atoi(match[4])
-		if hours > 23 || minutes > 59 {
-			return nil, domain.ErrMiscRoutesNotPorted
-		}
-		moment, err := calendarExportParse(match[1])
-		if err != nil || moment == nil {
-			return nil, domain.ErrMiscRoutesNotPorted
-		}
-		offset := time.Duration(hours)*time.Hour + time.Duration(minutes)*time.Minute
-		if match[2] == "-" {
-			offset = -offset
-		}
-		return &googleMoment{at: moment.at, offset: &offset}, nil
-	}
-	moment, err := calendarExportParse(text)
-	if err != nil || moment == nil {
-		return nil, err
-	}
-	if moment.zone != "" {
-		// An offset in a form googleOffset does not read (the calendar export names it).
-		return nil, domain.ErrMiscRoutesNotPorted
-	}
-	result := &googleMoment{at: moment.at}
-	if moment.utc {
-		zero := time.Duration(0)
-		result.offset = &zero
-	}
-	return result, nil
-}
-
-// rome is calendar_datetime_in_rome: naive values are UTC.
-func (m googleMoment) rome() time.Time {
-	instant := m.at
-	if m.offset != nil {
-		instant = instant.Add(-*m.offset)
-	}
-	return instant.In(googleRome)
-}
-
-var googleRome = func() *time.Location {
-	location, err := time.LoadLocation("Europe/Rome")
-	if err != nil {
-		panic(err)
-	}
-	return location
-}()
 
 // googleEventBody converts one registry event (the loop body before the
 // insert): any Python exception is the view's 500.
@@ -637,13 +581,13 @@ func googleEventBody(courseID, calendarID string, raw any) (domain.RequestObject
 		return nil, domain.ErrGoogleServer
 	}
 	identifier = strings.ReplaceAll(identifier, "-", "")
-	parse := func(name string) (*googleMoment, error) {
+	parse := func(name string) (*pydatetime.Moment, error) {
 		value, present := googleLookup(event, name)
 		text, ok := value.(string)
 		if !present || !ok {
 			return nil, domain.ErrGoogleServer
 		}
-		moment, err := googleParseDatetime(text)
+		moment, err := pydatetime.ParseDatetime(text)
 		if err != nil {
 			return nil, domain.ErrGoogleServer
 		}
@@ -677,8 +621,7 @@ func googleEventBody(courseID, calendarID string, raw any) (domain.RequestObject
 			}
 			if instructor, ok := googleLookupObject(object, "instructor"); ok {
 				if label, present := googleLookup(instructor, "label"); present {
-					text, _ := googleLabel(label)
-					description = "Istruttore: " + text
+					description = "Istruttore: " + dto.PythonStr(label)
 				}
 			}
 		}
@@ -687,7 +630,7 @@ func googleEventBody(courseID, calendarID string, raw any) (domain.RequestObject
 	if !present {
 		return nil, domain.ErrGoogleServer
 	}
-	var end *googleMoment
+	var end *pydatetime.Moment
 	allDay := false
 	if text, isText := endValue.(string); endValue != nil && !(isText && text == "None") {
 		if end, err = parse("end"); err != nil {
@@ -699,14 +642,21 @@ func googleEventBody(courseID, calendarID string, raw any) (domain.RequestObject
 			return nil, domain.ErrGoogleServer
 		}
 		copied := *start
-		copied.at = time.Date(start.at.Year(), start.at.Month(), start.at.Day(), 23, 59, start.at.Second(), start.at.Nanosecond(), time.UTC)
+		copied.Hour, copied.Minute = 23, 59
 		end = &copied
 	}
 	title, present := googleLookup(event, "title")
 	if !present || start == nil || end == nil {
 		return nil, domain.ErrGoogleServer
 	}
-	startRome, endRome := start.rome(), end.rome()
+	startRome, ok1 := start.InRome()
+	endRome, ok2 := end.InRome()
+	if !ok1 || !ok2 {
+		return nil, domain.ErrGoogleServer // OverflowError
+	}
+	if startRome.Year() < 1000 || endRome.Year() < 1000 {
+		return nil, errGoogleYearUnpadded
+	}
 	body := domain.RequestObject{
 		{Name: "extendedProperties", Value: domain.RequestObject{{Name: "private", Value: domain.RequestObject{
 			{Name: "course_id", Value: courseID}, {Name: "event_id", Value: identifier}}}}},

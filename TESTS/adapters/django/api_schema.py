@@ -121,7 +121,37 @@ EXTRA_KEY_SAMPLES = ('de-ch', 'DE-CH', 'de_CH.UTF-8', 'de_DE.ISO-8859-1@euro', '
                      'sr-Latn-RS', 'zh-hans', 'zh-Hant-TW', 'zh_TW', 'pt-br', 'pt', 'no', 'nb-no', 'iw', 'in', 'en-us',
                      'EN', 'english_uk', 'it_IT', 'IT', 'it-ch', 'es-419', 'fr:utf8', 'ca@valencia', 'be@latin',
                      'uz@cyrillic', 'ku', 'c.utf8', 'POSIX', 'universal', 'x', 'a.b.c', '@', '_', '-', '.', 'de_', 'de-',
-                     'ja_JP.eucJP', 'ko.euckr', 'el_GR@euro', 'deutsch', 'french', 'nynorsk', 'bokmal')
+                     'ja_JP.eucJP', 'ko.euckr', 'el_GR@euro', 'deutsch', 'french', 'nynorsk', 'bokmal',
+                     # Outside the safe charset: spaces, punctuation, non-ASCII text, characters that fold to ASCII.
+                     'de ch', 'de%ch', 'de,ch', 'de!', 'de\t', 'de\x01', 'DE-CH ', 'de\u00e9', 'd\u00e9', '\u00e9', 'de-\u00df', 'de-\u017f',
+                     'de-\u0131', 'de-ch\u0130', '\u212a', '\u0130t', 'it\u0307', 'IT-\u0131', 'en\u017f', 'EN\u212a', 'ZH-HANT\u00c4',
+                     'pt-\u0392r', 'sr-lat\u0131n', 'sr_RS@lat\u0131n', 'de.\u00fc', 'de@\u00fc', 'de:\u00fc', 'de\u2028', 'de\u0085',
+                     'zh-\u0049\u0307', 'x' * 400, "de'", 'de"', 'de<ch>', 'de&ch', 'de;ch', 'de=ch', 'de+ch', 'de#', 'de?', 'de\\ch')
+
+
+VERSION_SAMPLES = ('v 1', 'a#b', 'x: y', '- z', "it's", 'q"r', '\u00e9', '\u00fcn\u00ef c\u00f6d\u00e9', '\u65e5\u672c', 'a\tb', 'a\\b', '1.0',
+                   'null', ' lead', 'trail ', 'a  b', '[x]', '{y}', 'a, b', 'x' * 100, ('word ' * 30).strip(), 'a\x01b', 'a\u2028b', 'a%b',
+                   'a&b<c>', 'a\u0085b', 'a\x7fb', 'a\u00a0b', '\U0001f600', 'a\ufeffb', '\ufffd', '?', ': ', '*a', '&a', '!t', '| x',
+                   'a: ', 'a #b', "'q'", '"d"', 'x' * 70 + ' ' + 'y' * 30, 'a ' * 60, '\u3000', ' ', '--- ', '... ', '%', '@', '`', '\\', 'a\'' + ' ' * 80 + 'b')
+
+
+def version_samples(client):
+    """The info.version line(s) Django emits, and the Content-Disposition it sets, for `version` values."""
+    samples = []
+    for version in VERSION_SAMPLES:
+        sample = {'version': version}
+        for form, media in (('yaml', YAML), ('json', JSON)):
+            response = client.get(SCHEMA, {'version': version}, HTTP_ACCEPT=media)
+            assert response.status_code == 200, (version, form)
+            text = response.content.decode().splitlines(keepends=True)
+            start = next(n for n, line in enumerate(text) if line.startswith(('  version:', '        "version"')))
+            end = start + 1
+            while form == 'yaml' and end < len(text) and text[end].startswith('   '):
+                end += 1
+            sample[form] = ''.join(text[start:end])
+            sample[form + '_disposition'] = response.headers['Content-Disposition']
+        samples.append(sample)
+    return samples
 
 
 def lines(text):
@@ -195,7 +225,20 @@ NEGOTIATION_ACCEPTS = (
     'application/json;q=0', 'application/json; charset=utf-8', JSON + '; indent=1', '*/*; indent=2', 'application/*; indent=6',
     'text/html; q=1', 'application/json;', 'application/json; foo', ' application/json ', 'application/json,', ',',
     'application/json;indent=+2', 'application/json;indent=1_0', 'application/json;indent=4_', 'json', 'application',
-    'text/html;level=1', 'TEXT/HTML', 'text/plain, */*', 'application/json;Indent=3;q=0.5')
+    'text/html;level=1', 'TEXT/HTML', 'text/plain, */*', 'application/json;Indent=3;q=0.5',
+    # Quoted strings, backslashes, comments, RFC 2231 parameters and non-ASCII text.
+    'application/json; indent="2"', 'application/json; indent="\\"2"', 'application/json; indent="2', "application/json; indent='2'",
+    'application/json; title="a;b"; indent=3', 'application/json; x="a\\\\b"; indent=5', 'text/html; a=(b)', 'text/html; a=<b>',
+    'text/html; a="b;c"; q=0.5', 'application/json; indent=(3)', 'application/json\x01', 'application/json; indent=3\x7f',
+    "application/json; title*=utf-8''x", "application/json; title*=bogus''x", "application/json; indent*=utf-8''3",
+    "application/json; indent*0=utf-8''3", "application/json; indent*0*=utf-8'en'%33; x=1", "application/json; indent*1=3; indent*0=1",
+    "application/json; indent*=iso-8859-1''%33", "application/json; indent*=us-ascii''%C3%A9", "application/json; indent*=''3",
+    "application/json; indent*=utf-8'en'%E2%82", "application/json; indent*=utf-8'a'b'c", "*/*; title*=utf-8''%C3%A9",
+    "*/*; indent*=iso-8859-1''%33", "application/*; indent*0=2", "application/json; indent*0=\"1\"; indent*1=\"0\"",
+    "application/json; indent*=windows-1252''%80", 'ÿ/*', 'application/jsön',
+    'application/json; indent=\u0663', 'application/json; indent=\u00a03', 'application/json; indent=\u2003 2', 'application/json; indent=²',
+    'application/json; indent=\uff13', 'application/json; =3', 'application/json; ; indent=2', ';indent=2', 'application/json;;;',
+    'a;b=c, application/json; indent=3', '"application/json"', 'application/json; indent=3 ; Indent=4', 'application/json; INDENT=2')
 NEGOTIATION_FORMATS = (None, '', 'json', 'yaml', 'html', 'xml', 'JSON')
 
 
@@ -222,10 +265,16 @@ def negotiation_corpus():
                     case['outcome'] = 404
                 except NotAcceptable:
                     case['outcome'] = 406
+                except ValueError:
+                    # An unhandled exception: Django answers the server error page.
+                    case['outcome'] = 500
                 else:
                     case.update(outcome=200, renderer=renderers.index(renderer), media_type=media_type)
                     if hasattr(renderer, 'get_indent'):
-                        case['indent'] = renderer.get_indent(media_type, {})
+                        try:
+                            case['indent'] = renderer.get_indent(media_type, {})
+                        except ValueError:
+                            case['indent_error'] = True
                 corpus.append(case)
     return corpus
 
@@ -314,6 +363,7 @@ def generate():
         'schema.yaml': ''.join(base['yaml']),
         'schema.json': ''.join(base['json']),
         'catalog.json': json.dumps(catalog, ensure_ascii=False, indent=1) + '\n',
+        'testdata/version_samples.json': json.dumps(version_samples(client), ensure_ascii=False, indent=1) + '\n',
         'testdata/catalog_keys.json': json.dumps(samples, ensure_ascii=False, indent=1) + '\n',
         'testdata/render_corpus.json': json.dumps(render_corpus(), ensure_ascii=False, indent=1) + '\n',
         'testdata/negotiation_corpus.json': json.dumps(negotiation_corpus(), ensure_ascii=False, indent=1) + '\n',

@@ -2,6 +2,9 @@ package apischema
 
 import (
 	"strings"
+	"unicode"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyheader"
 )
 
 // Renderer is a DRF renderer class as content negotiation sees it.
@@ -23,34 +26,11 @@ var (
 
 // Negotiation is the outcome of DRF's DefaultContentNegotiation.
 type Negotiation struct {
-	Status    int // 0 when a renderer was selected, else 404 (format) or 406
+	Status int // 0 when a renderer was selected, else 404 (format), 406, or 500 (a ValueError from the Accept parameters)
+	// NotPorted is set when an Accept parameter names a charset whose decoder is not ported.
+	NotPorted bool
 	Renderer  int // index into the renderer list
 	MediaType string
-}
-
-// SupportedAccept reports whether every Accept value stays within the media
-// range syntax this port parses exactly as Django's parse_header_parameters
-// (email.message parameters): quoted strings, comments, RFC 2231 names and
-// non-ASCII bytes are not supported.
-func SupportedAccept(accept string) bool {
-	for i := 0; i < len(accept); i++ {
-		c := accept[i]
-		if c != '\t' && (c < 0x20 || c > 0x7E) {
-			return false
-		}
-		if strings.IndexByte("\"\\<>()", c) >= 0 {
-			return false
-		}
-	}
-	for _, token := range strings.Split(accept, ",") {
-		parameters := strings.Split(token, ";")
-		for _, parameter := range parameters[1:] {
-			if name, _, _ := strings.Cut(parameter, "="); strings.Contains(name, "*") {
-				return false
-			}
-		}
-	}
-	return true
 }
 
 // Negotiate mirrors DefaultContentNegotiation.select_renderer. accept is the
@@ -76,26 +56,36 @@ func Negotiate(renderers []Renderer, accept string, present bool, format string)
 	var groups [4][]string
 	seen := map[string]bool{}
 	for _, token := range strings.Split(accept, ",") {
+		// order_by_precedence parses every value before anything is matched.
+		_, outcome := parseMediaType(strings.TrimSpace(token))
+		if outcome == pyheader.Invalid {
+			return Negotiation{Status: 500}
+		}
+		if outcome == pyheader.NotPorted {
+			return Negotiation{NotPorted: true}
+		}
+	}
+	for _, token := range strings.Split(accept, ",") {
 		token = strings.TrimSpace(token)
 		if seen[token] {
 			continue
 		}
 		seen[token] = true
-		precedence := parseMediaType(token).precedence()
+		precedence := mustMediaType(token).precedence()
 		groups[3-precedence] = append(groups[3-precedence], token)
 	}
 	for _, group := range groups {
 		for _, index := range candidates {
-			own := parseMediaType(renderers[index].MediaType)
+			own := mustMediaType(renderers[index].MediaType)
 			for _, token := range group {
-				client := parseMediaType(token)
+				client := mustMediaType(token)
 				if !own.matches(client) {
 					continue
 				}
 				if own.precedence() > client.precedence() {
 					full := renderers[index].MediaType
 					for _, parameter := range client.params {
-						full += ";" + parameter.name + "=" + parameter.value
+						full += ";" + parameter.Name + "=" + parameter.Value
 					}
 					return Negotiation{Renderer: index, MediaType: full}
 				}
@@ -106,7 +96,7 @@ func Negotiate(renderers []Renderer, accept string, present bool, format string)
 	return Negotiation{Status: 406}
 }
 
-type mediaParameter struct{ name, value string }
+type mediaParameter = pyheader.Param
 
 type mediaType struct {
 	main, sub string
@@ -114,52 +104,24 @@ type mediaType struct {
 }
 
 // parseMediaType is DRF's _MediaType over Django's parse_header_parameters.
-func parseMediaType(value string) mediaType {
-	full, params := parseHeaderParameters(value)
+func parseMediaType(value string) (mediaType, pyheader.Outcome) {
+	full, params, outcome := pyheader.Parse(value)
 	main, sub, _ := strings.Cut(full, "/")
-	return mediaType{main: main, sub: sub, params: params}
+	return mediaType{main: main, sub: sub, params: params}, outcome
 }
 
-func parseHeaderParameters(line string) (string, []mediaParameter) {
-	if line == "" {
-		return "", nil
+func mustMediaType(value string) mediaType {
+	media, outcome := parseMediaType(value)
+	if outcome != pyheader.Parsed {
+		panic("apischema: media type parsed before: " + value)
 	}
-	if !strings.Contains(line, ";") {
-		return strings.ToLower(strings.TrimSpace(line)), nil
-	}
-	var key string
-	var params []mediaParameter
-	for index, part := range strings.Split(line, ";") {
-		// email.message._parseparam lower-cases only names given with a value.
-		name, value := strings.TrimSpace(part), ""
-		if position := strings.IndexByte(part, '='); position >= 0 {
-			name = strings.ToLower(strings.TrimSpace(part[:position]))
-			value = strings.TrimSpace(part[position+1:])
-		}
-		if index == 0 {
-			key = strings.ToLower(name)
-			continue
-		}
-		if name == "" {
-			continue
-		}
-		replaced := false
-		for i := range params {
-			if params[i].name == name {
-				params[i].value, replaced = value, true
-			}
-		}
-		if !replaced {
-			params = append(params, mediaParameter{name, value})
-		}
-	}
-	return key, params
+	return media
 }
 
 func (m mediaType) param(name string) (string, bool) {
 	for _, parameter := range m.params {
-		if parameter.name == name {
-			return parameter.value, true
+		if parameter.Name == name {
+			return parameter.Value, true
 		}
 	}
 	return "", false
@@ -171,7 +133,7 @@ func (m mediaType) precedence() int {
 		return 0
 	case m.sub == "*":
 		return 1
-	case len(m.params) == 0 || (len(m.params) == 1 && m.params[0].name == "q"):
+	case len(m.params) == 0 || (len(m.params) == 1 && m.params[0].Name == "q"):
 		return 2
 	}
 	return 3
@@ -179,10 +141,10 @@ func (m mediaType) precedence() int {
 
 func (m mediaType) matches(other mediaType) bool {
 	for _, parameter := range m.params {
-		if parameter.name == "q" {
+		if parameter.Name == "q" {
 			continue
 		}
-		if value, ok := other.param(parameter.name); !ok || value != parameter.value {
+		if value, ok := other.param(parameter.Name); !ok || value != parameter.Value {
 			return false
 		}
 	}
@@ -194,29 +156,33 @@ func (m mediaType) matches(other mediaType) bool {
 
 // JSONIndent is OpenApiJsonRenderer.get_indent for the accepted media type:
 // an `indent` parameter clamped to 0..8, where 0 (and its absence) means 4.
-func JSONIndent(accepted string) int {
-	_, params := parseHeaderParameters(accepted)
+// The outcome is Invalid when the media type no longer parses (a ValueError).
+func JSONIndent(accepted string) (int, pyheader.Outcome) {
+	_, params, outcome := pyheader.Parse(accepted)
+	if outcome != pyheader.Parsed {
+		return 4, outcome
+	}
 	for _, parameter := range params {
-		if parameter.name != "indent" {
+		if parameter.Name != "indent" {
 			continue
 		}
-		value, ok := pythonInt(parameter.value)
+		value, ok := pythonInt(parameter.Value)
 		if !ok {
-			return 4
+			return 4, pyheader.Parsed
 		}
 		value = max(min(value, 8), 0)
 		if value == 0 {
-			return 4
+			return 4, pyheader.Parsed
 		}
-		return value
+		return value, pyheader.Parsed
 	}
-	return 4
+	return 4, pyheader.Parsed
 }
 
-// pythonInt is int(str) for ASCII input: optional surrounding whitespace and
-// sign, decimal digits with single underscores between digits.
+// pythonInt is int(str): optional surrounding whitespace and sign, decimal
+// digits (any Unicode Nd digit) with single underscores between digits.
 func pythonInt(value string) (int, bool) {
-	value = strings.Trim(value, " \t\n\r\v\f\x1c\x1d\x1e\x1f")
+	value = strings.TrimFunc(value, pyheader.IsSpace)
 	negative := false
 	if value != "" && (value[0] == '+' || value[0] == '-') {
 		negative = value[0] == '-'
@@ -226,20 +192,41 @@ func pythonInt(value string) (int, bool) {
 		return 0, false
 	}
 	result := 0
-	for i := 0; i < len(value); i++ {
-		c := value[i]
-		if c == '_' {
+	for _, r := range value {
+		if r == '_' {
 			continue
 		}
-		if c < '0' || c > '9' {
+		digit, ok := decimalDigit(r)
+		if !ok {
 			return 0, false
 		}
 		if result < 1<<30 {
-			result = result*10 + int(c-'0')
+			result = result*10 + digit
 		}
 	}
 	if negative {
 		result = -result
 	}
 	return result, true
+}
+
+// decimalDigit is unicodedata.decimal for a code point: Nd series start at a zero.
+func decimalDigit(r rune) (int, bool) {
+	if r >= '0' && r <= '9' {
+		return int(r - '0'), true
+	}
+	if r < 0x80 || !unicode.Is(unicode.Nd, r) {
+		return 0, false
+	}
+	for _, rng := range unicode.Nd.R16 {
+		if r >= rune(rng.Lo) && r <= rune(rng.Hi) {
+			return int(r-rune(rng.Lo)) % 10, true
+		}
+	}
+	for _, rng := range unicode.Nd.R32 {
+		if r >= rune(rng.Lo) && r <= rune(rng.Hi) {
+			return int(r-rune(rng.Lo)) % 10, true
+		}
+	}
+	return 0, false
 }
