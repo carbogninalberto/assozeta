@@ -259,6 +259,244 @@ CASES += [
 ]
 
 
+def with_additional(case, items):
+    case['spec']['additional'] = items
+    return case
+
+
+# Paragraph tags that draw lines (u, strike): single and several fragments, centred, over several lines, cut between pages.
+RICH = 'il <u>corso</u> di <strike>nuoto</strike> e <u color="red" width="2">pallanuoto</u> <u kind="double">agonistico</u> si tiene <b><u>ogni</u></b> settimana'
+RICH_CELLS = [
+    '<u>sottolineato</u>', '<strike>barrato</strike>', 'a <u>b</u> c', '<u>a b c d e f g h i j k l m n o p</u>', RICH,
+    '<u color="blue" kind="triple" gap="2">x</u> y', '<u width="0.5*f" offset="-0.2*F">z</u>', '<u><strike>entrambi</strike></u>',
+    '<u>a<br/>b</u>', '<strike color="#00aa00">verde</strike> <u color="rgb(255,0,255)">viola</u>', '<u width="1mm">mm</u>',
+    '<b><u>grassetto</u></b> <i><strike>corsivo</strike></i>', '<u>poli\xadsportiva</u> ' + SHY, '<u>' + 'lunga ' * 12 + '</u>',
+]
+CASES += [
+    balance('bs-underline', header(None, 'ASD <u>Aurora</u> club', city='<u>Roma</u>', address='<strike>Via</strike> Roma 1')),
+    balance('bs-underline-long', header(None, ' '.join([RICH] * 3), city=RICH, address='<u>' + LONG + '</u>')),
+    balance('bs-underline-style', header(None, '<u color="red" width="3" offset="-4" kind="triple" gap="2">ASD</u> Aurora',
+                                         city='<strike color="blue" width="2" kind="double">Roma</strike>')),
+    balance('bs-underline-error', header(None, 'ASD <u color="notacolor">Aurora</u>')),
+    balance('bs-underline-kind-error', header(None, 'ASD <u kind="quad">Aurora</u>')),
+    balance('bs-underline-width-error', header(None, 'ASD <u width="x">Aurora</u>')),
+    balance('bs-underline-unclosed', header(None, 'ASD <u>Aurora')),
+    with_additional(balance('bs-underline-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <u>sono</u> riportati al <strike>31/12/2025</strike>.'],
+                     ['altro', ' '.join([RICH] * 4)], ['solo', '<u>tutto sottolineato</u>']]),
+    report('rt-underline-cells', ['<u>Nome</u>', 'Testo <strike>barrato</strike>', 'Note'],
+           [[RICH_CELLS[i], RICH_CELLS[(i + 5) % len(RICH_CELLS)], RICH_CELLS[(i + 9) % len(RICH_CELLS)]] for i in range(len(RICH_CELLS))],
+           'Sottolineature'),
+    report('rt-underline-squeezed', ['<u>Colonna</u> %d' % i for i in range(12)],
+           [[RICH_CELLS[(i * 5 + j) % len(RICH_CELLS)] for j in range(12)] for i in range(len(RICH_CELLS))], 'Sottolineature strette'),
+    report('rt-underline-pages', ['N', 'Testo'], [[str(i), ' '.join([RICH_CELLS[i % len(RICH_CELLS)]] * (1 + i % 4))] for i in range(120)],
+           'Sottolineature su pagine'),
+    report('rt-underline-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([RICH] * 130),
+           text_after=' '.join([RICH + '<br/>'] * 70)),
+    report('rt-underline-text-whole', ['Nome'], [['x']], 'Tutto', text_before='<u>' + 'sottolineato ' * 400 + '</u>',
+           text_after='<strike>' + 'barrato ' * 300 + '</strike>'),
+    report('rt-underline-cell-error', ['A'], [['<u color="nope">x</u>']], 'Errore'),
+    attendance('at-underline', ('Yoga <u>adulti</u>', ['01/01/2026', '<u>x</u>'], [('<strike>Rossi</strike> Anna', ['P', '<u>A</u>'])]),
+               ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
+# Fonts, sizes, colours, backgrounds, rises (font, span, nobr, sup, sub): lines of mixed sizes and colours.
+FONTED = ('il <font color="red">corso</font> di <font size="14">nuoto</font> e <font size="6" color="#0000ff">pallanuoto</font> '
+          '<font name="Helvetica-BoldOblique">agonistico</font> si tiene <font bgcolor="yellow">ogni</font> settimana m<sup>2</sup> H<sub>2</sub>O')
+FONTED_CELLS = [
+    '<font color="red">rosso</font>', '<font size="12">grande</font>', '<font size="5">piccolo</font>', 'a <font size="+3">b</font> c',
+    '<font size="-2" color="green">d</font> e', FONTED, '<font name="Symbol">abc</font> x', '<font name="ZapfDingbats">abc</font>',
+    '<span color="#aa00aa" size="9">span</span>', '<nobr>non spezzare questo testo</nobr> poi altro', 'm<sup>2</sup> e m<sup rise="4" size="5">3</sup>',
+    'H<sub>2</sub>O', '<sup>a</sup><sub>b</sub><sup>c</sup>', '<font bgcolor="#ffee00" color="#220000">sfondo</font> senza', '<b><font color="blue">b</font></b>',
+    '<font size="11">' + 'lungo testo che va a capo ' * 6 + '</font>', '<font color="red">poli\xadsportiva</font> ' + SHY,
+    '<font size="30">G</font>randi <font size="4">p</font>iccoli', '<sup rise="50%" size="50%">pct</sup>', '<font size="2mm">mm</font>',
+]
+CASES += [
+    balance('bs-font', header(None, 'ASD <font color="red" size="30">Aurora</font> club', city='<font size="10">Roma</font>',
+                              address='<font color="blue">Via</font> Roma 1')),
+    balance('bs-font-long', header(None, ' '.join([FONTED] * 3), city=FONTED, address='<font size="9" color="#444444">' + LONG + '</font>')),
+    balance('bs-font-background', header(None, 'ASD <font bgcolor="yellow">Aurora</font> club', city='<font bgcolor="red" color="white">Roma</font>')),
+    balance('bs-sup-sub', header(None, 'ASD m<sup>2</sup> H<sub>2</sub>O', city='<sup>alto</sup>', address='<sub rise="3" size="6">basso</sub> x')),
+    balance('bs-font-error', header(None, 'ASD <font color="nope">Aurora</font>')),
+    balance('bs-font-name-error', header(None, 'ASD <font name="Arial">Aurora</font>')),
+    balance('bs-font-size-error', header(None, 'ASD <font size="x">Aurora</font>')),
+    balance('bs-sup-error', header(None, 'ASD <sup rise="x">Aurora</sup>')),
+    balance('bs-span-style-error', header(None, 'ASD <span style="x">Aurora</span>')),
+    with_additional(balance('bs-font-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <font color="red">sono</font> riportati al <font size="14">31/12/2025</font>.'],
+                     ['altro', ' '.join([FONTED] * 4)], ['solo', '<font size="16" color="green">tutto grande</font>']]),
+    report('rt-font-cells', ['<font color="red">Nome</font>', 'Testo <font size="12">grande</font>', 'Note'],
+           [[FONTED_CELLS[i], FONTED_CELLS[(i + 5) % len(FONTED_CELLS)], FONTED_CELLS[(i + 9) % len(FONTED_CELLS)]]
+            for i in range(len(FONTED_CELLS))], 'Caratteri'),
+    report('rt-font-squeezed', ['<font size="6">Colonna</font> %d' % i for i in range(12)],
+           [[FONTED_CELLS[(i * 5 + j) % len(FONTED_CELLS)] for j in range(12)] for i in range(len(FONTED_CELLS))], 'Caratteri stretti'),
+    report('rt-font-pages', ['N', 'Testo'], [[str(i), ' '.join([FONTED_CELLS[i % len(FONTED_CELLS)]] * (1 + i % 4))] for i in range(120)],
+           'Caratteri su pagine'),
+    report('rt-font-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([FONTED] * 130), text_after=' '.join([FONTED + '<br/>'] * 70)),
+    report('rt-font-text-whole', ['Nome'], [['x']], 'Tutto', text_before='<font size="13" color="#334455">' + 'testo grande ' * 300 + '</font>',
+           text_after='<font size="5">' + 'testo piccolo ' * 600 + '</font>'),
+    report('rt-font-soft-hyphen-cut', ['Nome'], [['x']], 'Sillabe', text_before=' '.join(['<font size="8">' + SHY + '</font>'] * 400)),
+    report('rt-font-break', ['Nome'], [['x']], 'A capo', text_before='<br/>'.join(['<font size="%d">riga %d</font>' % (6 + i % 9, i) for i in range(120)])),
+    report('rt-font-cell-error', ['A'], [['<font size="">x</font>']], 'Errore'),
+    attendance('at-font', ('Yoga <font color="red">adulti</font>', ['01/01/2026', '<sup>x</sup>'],
+                           [('<font size="9">Rossi</font> Anna', ['P', '<font bgcolor="yellow">A</font>'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
+# Links (a, link): annotations on the page, one per run of a link on a line.
+LINKED = ('il <a href="https://example.test/corso?a=1&amp;b=2">corso</a> di <link href="mailto:info@example.test" color="blue">nuoto</link> e '
+          '<a href="https://example.test/p" color="red" underline="1">pallanuoto</a> <a href="pdf:altro.pdf">agonistico</a> si tiene '
+          '<a href="https://example.test/o"><b>ogni</b> <i>settimana</i></a> <font size="12"><a href="www.example.test">qui</a></font>')
+LINKED_CELLS = [
+    '<a href="https://example.test/a">link</a>', 'a <a href="b">b</a> c', '<link href="mailto:x@example.test">posta</link>',
+    '<a href="https://example.test/lungo">' + 'testo del collegamento che va a capo ' * 4 + '</a>', LINKED, '<a href="">vuoto</a>', '<a>senza</a>',
+    '<a href="https://example.test/u" underline="yes" ucolor="green" uwidth="1.5" ukind="double">sotto</a>', '<a href="a(b)c">parentesi</a>',
+    '<a href="https://example.test/br">uno<br/>due</a>', '<a href="x:y">schema</a> <a href="PDF:f.pdf">pdf</a> <a href=" https://example.test/s ">spazi</a>',
+    '<sup><a href="https://example.test/n">1</a></sup> nota', '<a href="https://example.test/f" size="14" bgcolor="yellow">grande</a>',
+    '<a href="https://example.test/s">poli\xadsportiva</a> ' + SHY,
+]
+CASES += [
+    balance('bs-link', header(None, 'ASD <a href="https://example.test/">Aurora</a> club', city='<a href="mailto:a@example.test">Roma</a>',
+                              address='<link href="https://example.test/via">Via</link> Roma 1')),
+    balance('bs-link-long', header(None, ' '.join([LINKED] * 3), city=LINKED, address='<a href="https://example.test/l">' + LONG + '</a>')),
+    balance('bs-link-error', header(None, 'ASD <a href="y" underline="maybe">Aurora</a>')),
+    balance('bs-link-font-error', header(None, 'ASD <link href="y" name="Arial">Aurora</link>')),
+    balance('bs-link-unclosed', header(None, 'ASD <a href="y">Aurora')),
+    with_additional(balance('bs-link-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <a href="https://example.test/s">sono</a> riportati.'], ['altro', ' '.join([LINKED] * 4)],
+                     ['solo', '<a href="https://example.test/t">tutto un link</a>']]),
+    report('rt-link-cells', ['<a href="https://example.test/h">Nome</a>', 'Testo', 'Note'],
+           [[LINKED_CELLS[i], LINKED_CELLS[(i + 5) % len(LINKED_CELLS)], LINKED_CELLS[(i + 9) % len(LINKED_CELLS)]] for i in range(len(LINKED_CELLS))],
+           'Collegamenti'),
+    report('rt-link-squeezed', ['<a href="https://example.test/c%d">Colonna</a> %d' % (i, i) for i in range(12)],
+           [[LINKED_CELLS[(i * 5 + j) % len(LINKED_CELLS)] for j in range(12)] for i in range(len(LINKED_CELLS))], 'Collegamenti stretti'),
+    report('rt-link-pages', ['N', 'Testo'], [[str(i), ' '.join([LINKED_CELLS[i % len(LINKED_CELLS)]] * (1 + i % 4))] for i in range(120)],
+           'Collegamenti su pagine'),
+    report('rt-link-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join([LINKED] * 130), text_after=' '.join([LINKED + '<br/>'] * 70)),
+    report('rt-link-text-whole', ['Nome'], [['x']], 'Tutto', text_before='<a href="https://example.test/w">' + 'collegamento lungo ' * 300 + '</a>',
+           text_after='<link href="mailto:z@example.test">' + 'posta ' * 600 + '</link>'),
+    report('rt-link-cell-error', ['A'], [['<a href="y" underline="maybe">x</a>']], 'Errore'),
+    attendance('at-link', ('Yoga <a href="https://example.test/y">adulti</a>', ['01/01/2026', '<a href="x">x</a>'],
+                           [('<a href="https://example.test/r">Rossi</a> Anna', ['P', '<a href="a">A</a>'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
+# Inline images (img with a JPEG data URL): in the line, sized and aligned, wrapped and cut between pages.
+PIX = 'data:image/jpeg;base64,' + jpeg(30, 20, (200, 30, 30))
+TALL = 'data:image/jpeg;base64,' + jpeg(8, 40, (20, 160, 60))
+GREY = 'data:image/jpeg;base64,' + jpeg(12, 12, 90, 'L')
+CMYK = 'data:image/jpeg;base64,' + jpeg(16, 8, (10, 200, 30, 5), 'CMYK')
+PICTURED_CELLS = [
+    '<img src="%s"/>' % PIX, 'a <img src="%s" width="12" height="8"/> b' % PIX, 'testo <img src="%s"/> altro testo ancora' % TALL,
+    '<img src="%s" valign="middle"/> <img src="%s" valign="top"/> <img src="%s" valign="baseline"/>' % (PIX, PIX, PIX),
+    '<img src="%s" valign="text-top"/>x<img src="%s" valign="sub"/>y<img src="%s" valign="super"/>z' % (GREY, GREY, GREY),
+    '<img src="%s" width="50%%"/>' % PIX, '<img src="%s" height="200%%" valign="30%%"/>' % PIX, 'x<img src="%s" width="0"/>y' % PIX,
+    ' '.join(['parola <img src="%s" width="9" height="6"/>' % PIX] * 14), '<b>grassetto <img src="%s"/></b> <u>sotto <img src="%s"/></u>' % (GREY, GREY),
+    '<a href="https://example.test/i"><img src="%s"/></a> link' % GREY, '<img src="%s"/><br/><img src="%s"/>' % (PIX, TALL),
+    '<img src="%s" valign="3" width="2mm" height="0.1in"/>' % CMYK, 'poli\xadsportiva <img src="%s"/> ' % PIX + SHY,
+    '<font size="16">grande <img src="%s" valign="middle"/></font> <sub><img src="%s"/></sub>' % (PIX, GREY),
+]
+CASES += [
+    balance('bs-image', header(None, 'ASD <img src="%s" width="14" height="10"/> Aurora' % PIX, city='<img src="%s"/>' % GREY,
+                               address='Via <img src="%s" valign="middle"/> Roma 1' % TALL)),
+    balance('bs-image-logo', header('data:image/jpeg;base64,' + jpeg(30, 30, (20, 160, 60)), 'ASD <img src="%s" width="20" height="10"/> Aurora' % PIX)),
+    balance('bs-image-long', header(None, ' '.join(['ASD <img src="%s" width="14" height="10"/> Aurora' % PIX] * 6), city=PICTURED_CELLS[8])),
+    balance('bs-image-error', header(None, 'ASD <img src="%s" width="x"/> Aurora' % PIX)),
+    balance('bs-image-no-src', header(None, 'ASD <img/> Aurora')),
+    balance('bs-image-content-error', header(None, 'ASD <img src="%s">x</img> Aurora' % PIX)),
+    balance('bs-image-bad-base64', header(None, 'ASD <img src="data:image/jpeg;base64,QUJDR"/> Aurora')),
+    with_additional(balance('bs-image-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', 'I saldi <img src="%s" width="10" height="7"/> riportati.' % PIX],
+                     ['altro', ' '.join(['x <img src="%s" width="10" height="7"/>' % GREY] * 40)], ['solo', '<img src="%s"/>' % PIX]]),
+    report('rt-image-cells', ['<img src="%s" width="10" height="7"/> Nome' % PIX, 'Testo', 'Note'],
+           [[PICTURED_CELLS[i], PICTURED_CELLS[(i + 5) % len(PICTURED_CELLS)], PICTURED_CELLS[(i + 9) % len(PICTURED_CELLS)]]
+            for i in range(len(PICTURED_CELLS))], 'Immagini'),
+    report('rt-image-pages', ['N', 'Testo'], [[str(i), ' '.join([PICTURED_CELLS[i % len(PICTURED_CELLS)]] * (1 + i % 4))] for i in range(100)],
+           'Immagini su pagine'),
+    report('rt-image-text-cut', ['Nome'], [['x']], 'Tagliato', text_before=' '.join(['parola <img src="%s" width="9" height="6"/>' % PIX] * 700),
+           text_after=' '.join(['riga <img src="%s"/><br/>' % GREY] * 70)),
+    report('rt-image-text-pct', ['Nome'], [['x']], 'Percentuale', text_before=' '.join(['x <img src="%s" width="20%%"/> y' % PIX] * 80)),
+    report('rt-image-cell-pct', ['A', 'B'], [['<img src="%s" width="50%%"/>' % PIX, 'y']], 'Percentuale in cella'),
+    report('rt-image-cell-error', ['A'], [['<img src="%s" valign="bogus"/>' % PIX]], 'Errore'),
+    attendance('at-image', ('Yoga <img src="%s" width="8" height="6"/>' % PIX, ['01/01/2026', '<img src="%s"/>' % GREY],
+                            [('<img src="%s" width="6" height="4"/> Rossi' % PIX, ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
+# <para> with attributes: the style of the paragraph (size, font, colour, leading, spacing, alignment, background, line defaults).
+PARAS = [
+    '<para size="12" color="red">grande rosso</para>', '<para leading="20" align="center">centrato con interlinea ampia</para>',
+    '<para align="right">a destra</para>', '<para align="right" size="8" bgcolor="#dddddd">a destra con sfondo</para>',
+    '<para backcolor="yellow" spaceb="5" spacea="7">sfondo</para>', '<para font="Helvetica-Bold" size="9">grassetto <u>sotto</u> <i>x</i></para>',
+    '<para font="Helvetica-Oblique" fg="#005500">' + 'testo lungo che va a capo ' * 8 + '</para>', '<para face="Symbol">abc</para>',
+    '<para underlinewidth="2" underlinecolor="blue" underlineoffset="-3" underlinegap="2">a <u kind="double">b</u></para>',
+    '<para strikeoffset="1" strikewidth="1.5">a <strike>b</strike></para>', '<para size="+3" leading="+4">relativo</para>',
+    '<para splitlongwords="0">' + 'x' * 120 + '</para>', '<para spaceshrinkage="0.3">' + 'parola ' * 40 + '</para>',
+    '<para align="center" size="7">a <font size="11" color="green">b</font> <sup>c</sup> <a href="https://example.test/p">d</a></para>',
+    '<para lindent="0" rindent="0" findent="0" borderwidth="0">zero</para>', '<para allowwidows="0">' + 'riga uno due tre quattro cinque sei ' * 30 + '</para>',
+    '<para alloworphans="1">' + 'riga uno due tre quattro cinque sei ' * 30 + '</para>', '<para size="0.5in">pollici</para>',
+]
+CASES += [
+    balance('bs-para', header(None, '<para color="red" size="22">ASD Aurora</para>', city='<para size="10" align="center">Roma</para>',
+                              address='<para backcolor="#eeeeee">Via Roma 1</para>')),
+    with_additional(balance('bs-para-additional', header(None, 'ASD Aurora')),
+                    [['balance_at_date', '<para align="right" backcolor="#eeeeee" spaceb="6" spacea="3">I saldi sono riportati.</para>'],
+                     ['altro', '<para size="14" color="blue" align="left">' + 'testo lungo ' * 30 + '</para>']]),
+    balance('bs-para-attribute-error', header(None, '<para size="x">ASD</para>')),
+    balance('bs-para-unknown-error', header(None, '<para foo="1">ASD</para>')),
+    balance('bs-para-font-error', header(None, '<para font="Arial">ASD</para>')),
+    report('rt-para-cells', ['<para color="red">Nome</para>', 'Testo', 'Note'],
+           [[PARAS[i], PARAS[(i + 5) % len(PARAS)], PARAS[(i + 9) % len(PARAS)]] for i in range(len(PARAS))], 'Attributi'),
+    report('rt-para-pages', ['N', 'Testo'], [[str(i), PARAS[i % len(PARAS)]] for i in range(120)], 'Attributi su pagine'),
+    report('rt-para-text-cut', ['Nome'], [['x']], 'Tagliato', text_before='<para backcolor="#eeeeee" size="10" leading="13">' + 'testo con sfondo ' * 700 + '</para>',
+           text_after='<para allowwidows="0" align="right">' + 'riga destra ' * 500 + '</para>'),
+    report('rt-para-text-orphans', ['Nome'], [['x']], 'Orfane', text_before='<para alloworphans="1" allowwidows="0">' + 'riga ' * 900 + '</para>'),
+    attendance('at-para', ('<para color="red">Yoga</para>', ['01/01/2026', '<para align="right">x</para>'],
+                           [('<para size="8">Rossi</para>', ['P', 'A'])]), ('Nuoto', ['02/01/2026'], [('Neri', ['P'])])),
+]
+
+
+# Random mixtures of the tags above (a fixed seed): lines, fonts, sizes, colours, rises, links, images and breaks in one text.
+import random  # noqa: E402
+
+FUZZ_WORDS = ['il', 'corso', 'di', 'nuoto', 'Supercalifragilistichespiralidoso', 'a', 'b', '&amp;', 'poli\xadsportiva', 'x' * 30, '1,00', 'è']
+FUZZ_OPEN = ['<b>', '<i>', '<u>', '<strike>', '<font size="12">', '<font size="6" color="#ff0000">', '<font bgcolor="yellow">', '<sup>', '<sub>',
+             '<a href="https://example.test/f">', '<u color="blue" kind="double">', '<span color="green">', '<nobr>', '<font name="Symbol">']
+FUZZ_CLOSE = {'<b>': '</b>', '<i>': '</i>', '<u>': '</u>', '<strike>': '</strike>', '<font size="12">': '</font>',
+              '<font size="6" color="#ff0000">': '</font>', '<font bgcolor="yellow">': '</font>', '<sup>': '</sup>', '<sub>': '</sub>',
+              '<a href="https://example.test/f">': '</a>', '<u color="blue" kind="double">': '</u>', '<span color="green">': '</span>',
+              '<nobr>': '</nobr>', '<font name="Symbol">': '</font>'}
+
+
+def fuzz_text(rng, words):
+    out, stack = [], []
+    for _ in range(words):
+        roll = rng.random()
+        if roll < 0.18:
+            tag = rng.choice(FUZZ_OPEN)
+            stack.append(tag)
+            out.append(tag)
+        elif roll < 0.34 and stack:
+            out.append(FUZZ_CLOSE[stack.pop()])
+        elif roll < 0.38:
+            out.append('<br/>')
+        elif roll < 0.42:
+            out.append('<img src="%s" width="%d" height="%d"/>' % (rng.choice([PIX, GREY, TALL]), rng.choice([6, 12, 20]), rng.choice([5, 9, 14])))
+        else:
+            out.append(rng.choice(FUZZ_WORDS))
+    while stack:
+        out.append(FUZZ_CLOSE[stack.pop()])
+    return ' '.join(out)
+
+
+for seed in range(6):
+    fuzz = random.Random(20261111 + seed)
+    CASES.append(report('rt-fuzz-%d' % seed, ['N', 'Testo', 'Altro'],
+                        [[str(i), fuzz_text(fuzz, fuzz.randint(3, 40)), fuzz_text(fuzz, fuzz.randint(1, 12))] for i in range(60)], 'Miscela %d' % seed,
+                        text_before=fuzz_text(fuzz, 900), text_after=fuzz_text(fuzz, 300)))
+
+
 def main():
     cases = []
     for case in CASES:

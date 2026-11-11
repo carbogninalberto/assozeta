@@ -127,8 +127,11 @@ matrix for the MCP server as well.
 ## Not ported (refused with the HTML 500 page before any query)
 
 - In the file tools: workbook labels that are numbers equal to one another or
-  beyond 64 bits, and the paragraph tags `pdfexport` refuses (pdf-exports.md,
-  "Paragraph markup"). Labels, cells and texts with `&`, `<`, entities, `<b>`,
+  beyond 64 bits, and the paragraph markup `pdfexport` still refuses (pdf-exports.md,
+  "Paragraph markup": anchors, internal links, images that are not base64 JPEG data URLs, Courier and Times, `<para>` indents,
+  justification and borders). `u`, `strike`, `font`, `span`, `nobr`, `sup`, `sub`, `a`, `link`, base64 JPEG `img` and `<para>`
+  with attributes are drawn (cases `export-pdf-rich-markup`, `export-pdf-rich-markup-over-pages`, `export-pdf-inline-image` and
+  the three `export-pdf-rich-*-error` ones). Labels, cells and texts with `&`, `<`, entities, `<b>`,
   `<i>`, `<br/>` or soft hyphens are drawn as reportlab draws them, and markup
   its parser raises on (`A<B` opens a tag) fails the export like any other
   exception (`v2rep3-*` receipts).

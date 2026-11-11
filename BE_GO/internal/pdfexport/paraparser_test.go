@@ -7,6 +7,76 @@ import (
 	"testing"
 )
 
+func rgbOf(c *color) any {
+	if c == nil {
+		return nil
+	}
+	return []float64{c.r, c.g, c.b}
+}
+
+func usValue(v usVal) any {
+	if v.isNum {
+		return v.num
+	}
+	return v.str
+}
+
+// describeStyle is the form generate_pdf_paragraphs.py writes for a style.
+func describeStyle(s paraStyle) []any {
+	if !s.linesSet {
+		s.lines = defaultLines()
+	}
+	lines := []any{}
+	for _, l := range s.lines {
+		var col *color
+		if l.hasColor {
+			col = &l.color
+		}
+		lines = append(lines, []any{usValue(l.width), usValue(l.offset), usValue(l.gap), rgbOf(col)})
+	}
+	return []any{s.fontName, s.fontSize, s.leading, s.alignment(), s.spaceBefore, s.spaceAfter, rgbOf(&s.textColor), rgbOf(s.backColor), lines,
+		s.shrinkage(), !s.noSplit, !s.denyWidows, s.allowOrphans}
+}
+
+// describeFrag is the form generate_pdf_paragraphs.py writes for a fragment.
+func describeFrag(f *frag) []any {
+	lines := []any{}
+	for _, l := range f.us {
+		kind := "underline"
+		if l.kind == lineStrike {
+			kind = "strike"
+		}
+		var col *color
+		if l.hasColor {
+			col = &l.color
+		}
+		lines = append(lines, []any{l.n, kind, rgbOf(col), usValue(l.width), usValue(l.offset), l.rise, l.mult, usValue(l.gap)})
+	}
+	links := []any{}
+	for _, l := range f.links {
+		links = append(links, []any{l.n, l.target})
+	}
+	var img any
+	if f.img != nil {
+		dimOf := func(d dim) any {
+			if d.pct {
+				return []any{"pct", d.v}
+			}
+			return d.v
+		}
+		va := f.img.valign
+		var vaValue any = va.name
+		switch {
+		case va.pct:
+			vaValue = []any{"pct", va.v}
+		case va.name == "":
+			vaValue = va.v
+		}
+		img = []any{"img", f.img.src, dimOf(f.img.width), dimOf(f.img.height), vaValue}
+	}
+	return []any{f.font.name, f.text, f.lineBreak, f.size, rgbOf(&f.color), f.rise, lines, links, rgbOf(f.back), f.nobr, img}
+}
+
 // The corpus comes from reportlab's own Paragraph
 // (TESTS/fixtures/generate_pdf_paragraphs.py): the fragments of a text, an
 // exception, or fragments this package refuses.
@@ -17,12 +87,13 @@ func TestParagraphParserCorpus(t *testing.T) {
 	}
 	var file struct {
 		Cases []struct {
-			Text      string  `json:"text"`
-			Font      string  `json:"font"`
-			Refusable bool    `json:"refusable"`
-			Error     bool    `json:"error"`
-			Other     bool    `json:"other"`
-			Frags     [][]any `json:"frags"`
+			Text      string `json:"text"`
+			Font      string `json:"font"`
+			Refusable bool   `json:"refusable"`
+			Error     bool   `json:"error"`
+			Other     bool   `json:"other"`
+			Frags     []any  `json:"frags"`
+			Style     []any  `json:"style"`
 		} `json:"cases"`
 	}
 	if err := json.Unmarshal(raw, &file); err != nil {
@@ -30,9 +101,9 @@ func TestParagraphParserCorpus(t *testing.T) {
 	}
 	exact, failures := 0, 0
 	for _, item := range file.Cases {
-		frags, err := parseParagraph(paraClean(item.Text), paraStyle{fontName: item.Font, fontSize: 9, leading: 12})
+		frags, style, err := parseParagraph(paraClean(item.Text), paraStyle{fontName: item.Font, fontSize: 9, leading: 12})
 		if errors.Is(err, ErrNotPorted) {
-			if !item.Refusable {
+			if !item.Refusable && !item.Other {
 				t.Errorf("%q: refused", item.Text)
 			}
 			continue
@@ -50,17 +121,22 @@ func TestParagraphParserCorpus(t *testing.T) {
 				t.Errorf("%q: %v", item.Text, err)
 				continue
 			}
-			same := len(frags) == len(item.Frags)
-			for i := 0; same && i < len(frags); i++ {
-				same = frags[i].font.name == item.Frags[i][0].(string) && frags[i].text == item.Frags[i][1].(string) &&
-					frags[i].lineBreak == item.Frags[i][2].(bool)
+			got := []any{}
+			for _, f := range frags {
+				got = append(got, describeFrag(f))
 			}
-			if !same {
-				got := [][]any{}
-				for _, f := range frags {
-					got = append(got, []any{f.font.name, f.text, f.lineBreak})
-				}
-				t.Errorf("%q:\nwant %v\n got %v", item.Text, item.Frags, got)
+			wantStyle, _ := json.Marshal(item.Style)
+			haveStyle, _ := json.Marshal(describeStyle(style))
+			if string(wantStyle) != string(haveStyle) {
+				t.Errorf("%q: style\nwant %s\n got %s", item.Text, wantStyle, haveStyle)
+			}
+			want, _ := json.Marshal(item.Frags)
+			have, _ := json.Marshal(got)
+			if len(item.Frags) == 0 && len(got) == 0 {
+				want, have = nil, nil
+			}
+			if string(want) != string(have) {
+				t.Errorf("%q:\nwant %s\n got %s", item.Text, want, have)
 			}
 			exact++
 		}

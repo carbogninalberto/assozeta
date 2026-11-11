@@ -1,7 +1,6 @@
 package pdfexport
 
 import (
-	"strconv"
 	"strings"
 )
 
@@ -13,6 +12,58 @@ type paraStyle struct {
 	centred     bool
 	spaceBefore float64
 	spaceAfter  float64
+	textColor   color
+	align       int
+	backColor   *color
+	// shrink is spaceShrinkage when shrinkSet; denyWidows, allowOrphans and
+	// noSplit are allowWidows=0, allowOrphans=1 and splitLongWords=0.
+	shrink       float64
+	shrinkSet    bool
+	denyWidows   bool
+	allowOrphans bool
+	noSplit      bool
+	// lines are the underline and strike defaults of the style; linesSet is
+	// false for a style built by a document, which has reportlab's.
+	lines    [2]lineDefaults
+	linesSet bool
+}
+
+// lineDefaults are underlineWidth, underlineOffset, underlineGap and
+// underlineColor of ParagraphStyle (and the strike ones).
+type lineDefaults struct {
+	hasColor           bool
+	color              color
+	width, offset, gap usVal
+}
+
+const (
+	alignLeft = iota
+	alignCenter
+	alignRight
+)
+
+// alignment is the alignment of the style: centred for the documents'
+// centred styles, else align.
+func (s paraStyle) alignment() int {
+	if s.centred {
+		return alignCenter
+	}
+	return s.align
+}
+
+// shrinkage is spaceShrinkage.
+func (s paraStyle) shrinkage() float64 {
+	if s.shrinkSet {
+		return s.shrink
+	}
+	return 0.05
+}
+
+func defaultLines() [2]lineDefaults {
+	return [2]lineDefaults{
+		lineUnderline: {width: usVal{}, offset: usVal{str: "-0.125*F"}, gap: usVal{str: "1"}},
+		lineStrike:    {width: usVal{}, offset: usVal{str: "0.25*F"}, gap: usVal{str: "1"}},
+	}
 }
 
 // styleNormal is getSampleStyleSheet()['Normal'].
@@ -187,7 +238,7 @@ type paragraph struct {
 	kind      int
 	lines     []simpleLine
 	fragLines []*fragLine
-	lineFont  *font
+	lineFrag  *frag
 	width     float64
 	height    float64
 }
@@ -246,7 +297,7 @@ func paraClean(text string) string {
 
 // newParagraph is Paragraph(text, style): the text cleaned and parsed.
 func newParagraph(text string, style paraStyle) (*paragraph, error) {
-	frags, err := parseParagraph(paraClean(text), style)
+	frags, style, err := parseParagraph(paraClean(text), style)
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +346,7 @@ func hasSoftHyphen(text []rune) bool {
 // the available width: the styles have no indents).
 func (p *paragraph) breakSimple(maxWidth float64) {
 	f := p.frags[0]
-	p.kind, p.lines, p.lineFont = 0, nil, f.font
+	p.kind, p.lines, p.lineFrag = 0, nil, f
 	var words []*simpleWord
 	if f.hasWords {
 		blank := true
@@ -316,9 +367,9 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 		}
 		words = plainWords(paraSplit(text))
 	}
-	size := p.style.fontSize
+	size := f.size
 	spaceWidth := stringWidth(" ", f.font, size)
-	shrink := 0.05 * spaceWidth
+	shrink := p.style.shrinkage() * spaceWidth
 	hyphenWidth := stringWidth("-", f.font, size)
 	var line []*simpleWord
 	currentWidth := -spaceWidth
@@ -349,7 +400,7 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 					}
 				}
 			}
-			if !word.split && !forced && wordWidth > maxWidth {
+			if !p.style.noSplit && !word.split && !forced && wordWidth > maxWidth {
 				words = append(splitWord(word.text, currentWidth+spaceWidth, maxWidth, f.font, size), words...)
 				forced = true
 				continue
@@ -378,12 +429,12 @@ func (p *paragraph) breakSimple(maxWidth float64) {
 	}
 }
 
-func fragWidth(text []rune, f *frag, size float64) float64 {
-	return stringWidth(string(text), f.font, size)
+func fragWidth(text []rune, f *frag) float64 {
+	return stringWidth(string(text), f.font, f.size)
 }
 
 // rejoinSplitFragWords is _rejoinSplitFragWords.
-func rejoinSplitFragWords(pieces []*fragWord, size float64) *fragWord {
+func rejoinSplitFragWords(pieces []*fragWord) *fragWord {
 	out := &fragWord{}
 	length := 0.0
 	var previous *frag
@@ -395,7 +446,7 @@ func rejoinSplitFragWords(pieces []*fragWord, size float64) *fragWord {
 				if len(text.s) == 0 {
 					panic(paraFailure{"string index out of range"})
 				}
-				length -= fragWidth(text.s[len(text.s)-1:], part.f, size) + 1e-8
+				length -= fragWidth(text.s[len(text.s)-1:], part.f) + 1e-8
 				text = shyUnsplit(text, nil)
 			}
 			if previous == part.f {
@@ -421,8 +472,7 @@ func rejoinSplitFragWords(pieces []*fragWord, size float64) *fragWord {
 }
 
 // fragWords is _getFragWords.
-func (p *paragraph) fragWords() []*fragWord {
-	size := p.style.fontSize
+func (p *paragraph) fragWords(maxWidth float64, hasMax bool) []*fragWord {
 	var out []*fragWord
 	if p.processed != nil {
 		var pieces []*fragWord
@@ -433,19 +483,19 @@ func (p *paragraph) fragWords() []*fragWord {
 			if word.split {
 				pieces = append(pieces, word)
 				if word.hs {
-					out = append(out, rejoinSplitFragWords(pieces, size))
+					out = append(out, rejoinSplitFragWords(pieces))
 					pieces = nil
 				}
 				continue
 			}
 			if len(pieces) > 0 {
-				out = append(out, rejoinSplitFragWords(pieces, size))
+				out = append(out, rejoinSplitFragWords(pieces))
 				pieces = nil
 			}
 			out = append(out, word)
 		}
 		if len(pieces) > 0 {
-			out = append(out, rejoinSplitFragWords(pieces, size))
+			out = append(out, rejoinSplitFragWords(pieces))
 		}
 		if len(out) == 0 {
 			panic(paraFailure{"no frag words"})
@@ -462,7 +512,7 @@ func (p *paragraph) fragWords() []*fragWord {
 			shy = true
 		}
 		word.parts = append(word.parts, fragPart{f, part})
-		n += fragWidth(part.s, f, size)
+		n += fragWidth(part.s, f)
 	}
 	flush := func(set func(w *fragWord)) {
 		word.width = n
@@ -519,6 +569,27 @@ func (p *paragraph) fragWords() []*fragWord {
 					}
 				})
 			}
+		case f.img != nil:
+			width := f.img.width.norm(maxWidth)
+			if f.img.width.pct && !hasMax {
+				panic(paraFailure{"unsupported operand type(s) for *: 'NoneType' and 'float'"})
+			}
+			if f.img.width.v != 0 {
+				if len(word.parts) > 0 {
+					flush(func(*fragWord) {})
+				}
+				f.kind = fragImage
+				out = append(out, &fragWord{width: width, parts: []fragPart{{f, shyText{}}}})
+				hangingStrip = false
+			} else {
+				f.kind = fragAppend
+				if len(word.parts) == 0 && len(out) > 0 && out[len(out)-1].hs {
+					last := out[len(out)-1]
+					last.parts = append(last.parts, fragPart{f, shyText{}})
+				} else {
+					word.parts = append(word.parts, fragPart{f, shyText{}})
+				}
+			}
 		case f.lineBreak:
 			if len(word.parts) > 0 {
 				flush(func(*fragWord) {})
@@ -541,7 +612,7 @@ func (p *paragraph) fragWords() []*fragWord {
 
 // shyphenate is _SHYWord.shyphenate: the word cut at its last soft hyphen
 // that fits, as a head ending in '-' and the rest.
-func (w *fragWord) shyphenate(newWidth, maxWidth, size float64) []*fragWord {
+func (w *fragWord) shyphenate(newWidth, maxWidth float64) []*fragWord {
 	ww := w.width
 	w.fsww = fsNever
 	if ww == 0 {
@@ -560,11 +631,11 @@ func (w *fragWord) shyphenate(newWidth, maxWidth, size float64) []*fragWord {
 	first, hasFirst := 0.0, false
 	for i, part := range w.parts {
 		if part.text.indexed {
-			hyphen := fragWidth([]rune{'-'}, part.f, size)
+			hyphen := fragWidth([]rune{'-'}, part.f)
 			bw := baseWidth + hyphen
 			for j, x := range part.text.idx {
 				left, right := part.text.s[:min(x, len(part.text.s))], part.text.s[min(x, len(part.text.s)):]
-				leftWidth := bw + fragWidth(left, part.f, size)
+				leftWidth := bw + fragWidth(left, part.f)
 				if !hasFirst {
 					first, hasFirst = leftWidth, true
 				}
@@ -574,9 +645,9 @@ func (w *fragWord) shyphenate(newWidth, maxWidth, size float64) []*fragWord {
 				}
 				possible = &cut{i, j, x, leftWidth, left, right, hyphen}
 			}
-			baseWidth += fragWidth(part.text.s, part.f, size)
+			baseWidth += fragWidth(part.text.s, part.f)
 		} else {
-			baseWidth += fragWidth(part.text.s, part.f, size)
+			baseWidth += fragWidth(part.text.s, part.f)
 			exceeded = baseWidth > maxWidth
 		}
 		if exceeded && hasFirst {
@@ -608,7 +679,7 @@ func (w *fragWord) shyphenate(newWidth, maxWidth, size float64) []*fragWord {
 
 // splitFragWord is _splitFragWord: a frag word too long for a line cut
 // character by character.
-func splitFragWord(w *fragWord, maxWidth, lineWidthMax, size float64) []*fragWord {
+func splitFragWord(w *fragWord, maxWidth, lineWidthMax float64) []*fragWord {
 	var out []*fragWord
 	var parts []fragPart
 	lineWidth, wordWidth := 0.0, 0.0
@@ -641,7 +712,7 @@ func splitFragWord(w *fragWord, maxWidth, lineWidthMax, size float64) []*fragWor
 			continue
 		}
 		for _, r := range part.text.s {
-			step(part.f, fragWidth([]rune{r}, part.f, size), []rune{r})
+			step(part.f, fragWidth([]rune{r}, part.f), []rune{r})
 		}
 	}
 	parts = append(parts, fragPart{f, shyText{s: text}})
@@ -654,21 +725,17 @@ func splitFragWord(w *fragWord, maxWidth, lineWidthMax, size float64) []*fragWor
 	return append(out, last)
 }
 
-func sameFrag(f, g *frag) bool {
-	return !f.lineBreak && !g.lineBreak && f.font == g.font
-}
-
 // breakFrags is Paragraph.breakLines for several fragments or a frag word
 // list.
 func (p *paragraph) breakFrags(maxWidth float64) {
-	size := p.style.fontSize
 	p.kind, p.fragLines = 1, nil
-	pending := p.fragWords()
+	pending := p.fragWords(maxWidth, true)
 	var words []*frag
 	var done []*fragWord
 	var g *frag
 	sFW, n := 0, 0
 	spaceWidth, currentWidth := 0.0, 0.0
+	maxSize := 0.0
 	injected := func(f *frag) *fragWord {
 		broken := f.clone()
 		broken.kind, broken.text = fragBreak, ""
@@ -681,9 +748,11 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 		if len(w.parts) == 0 {
 			panic(paraFailure{"'float' object is not subscriptable"})
 		}
-		lastFont := w.parts[len(w.parts)-1].f.font
+		last := w.parts[len(w.parts)-1].f
+		lastFont, lastSize := last.font, last.size
 		if len(words) == 0 {
 			n, spaceWidth, currentWidth = 0, 0, 0
+			maxSize = lastSize
 		}
 		wordWidth := w.width
 		f := w.parts[0].f
@@ -696,33 +765,36 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 		for _, wi := range words {
 			if wi.kind == fragText {
 				if ns := strings.Count(wi.text, " "); ns > 0 {
-					spaceShrink += float64(ns) * stringWidth(" ", wi.font, size)
+					spaceShrink += float64(ns) * stringWidth(" ", wi.font, wi.size)
 				}
 			}
 		}
-		limWidth := maxWidth + spaceShrink*0.05
-		if !lineBreak && newWidth > limWidth && !w.splitH {
+		limWidth := maxWidth + spaceShrink*p.style.shrinkage()
+		if !lineBreak && newWidth > limWidth && !w.splitH && f.img == nil {
 			if w.shy {
-				if cut := w.shyphenate(newWidth, limWidth, size); cut != nil {
+				if cut := w.shyphenate(newWidth, limWidth); cut != nil {
 					pending = append([]*fragWord{cut[0], injected(f), cut[1]}, pending...)
 					done = done[:len(done)-1]
 					continue
 				} else if len(done) > 1 && w.fsww+1e-8 <= maxWidth {
-					if w.shyphenate(wordWidth, maxWidth, size) != nil {
+					if w.shyphenate(wordWidth, maxWidth) != nil {
 						pending = append([]*fragWord{injected(f), w}, pending...)
 						done = done[:len(done)-1]
 						continue
 					}
 				}
 			}
-			if !w.split && wordWidth > maxWidth {
-				cut := splitFragWord(w, maxWidth-spaceWidth-currentWidth, maxWidth, size)
+			if !p.style.noSplit && !w.split && wordWidth > maxWidth {
+				cut := splitFragWord(w, maxWidth-spaceWidth-currentWidth, maxWidth)
 				pending = append(append([]*fragWord{cut[0], injected(f)}, cut[1:]...), pending...)
 				done = done[:len(done)-1]
 				continue
 			}
 		}
-		follow := func() float64 {
+		// The space after a word is that of its last fragment's font, at the
+		// size of the first fragment when the word stays on the line and of
+		// the last one when it starts a line (paragraph.py reuses fontSize).
+		follow := func(size float64) float64 {
 			if w.hs {
 				return stringWidth(" ", lastFont, size)
 			}
@@ -733,6 +805,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			if text != "" {
 				n++
 			}
+			maxSize = max(maxSize, f.size)
 			switch {
 			case len(words) == 0:
 				g = f.clone()
@@ -761,7 +834,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			default:
 				g.text += text
 			}
-			spaceWidth = follow()
+			spaceWidth = follow(f.size)
 			more := false
 			for _, part := range w.parts[1:] {
 				g = part.f.clone()
@@ -770,6 +843,7 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 					more = true
 				}
 				words = append(words, g)
+				maxSize = max(maxSize, g.size)
 			}
 			if text == "" && more {
 				n++
@@ -781,28 +855,36 @@ func (p *paragraph) breakFrags(maxWidth float64) {
 			g = f.clone()
 			words = append(words, g)
 		}
-		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: size, sFW: sFW})
+		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: maxSize, sFW: sFW})
 		sFW = len(done) - 1
 		if lineBreak {
 			words = nil
 			continue
 		}
-		spaceWidth = follow()
+		spaceWidth = follow(lastSize)
 		currentWidth = wordWidth
 		n = 1
 		g = f.clone()
+		maxSize = g.size
 		words = []*frag{g}
 		g.text = string(w.parts[0].text.s)
 		for _, part := range w.parts[1:] {
 			g = part.f.clone()
 			g.text = string(part.text.s)
 			words = append(words, g)
+			maxSize = max(maxSize, g.size)
 		}
 	}
 	if len(words) > 0 {
-		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: size, sFW: sFW})
+		p.fragLines = append(p.fragLines, &fragLine{extra: maxWidth - currentWidth, wordCount: n, words: words, fontSize: maxSize, sFW: sFW})
 	}
 	p.processed = done
+}
+
+// simpleKind is the test of Paragraph.breakLines for the one-font layout: a
+// single fragment that is no image and has no background.
+func (p *paragraph) simpleKind() bool {
+	return len(p.frags) == 1 && p.frags[0].img == nil && p.frags[0].back == nil
 }
 
 func (p *paragraph) lineCount() int {
@@ -820,8 +902,8 @@ func (p *paragraph) wrap(c *canvas, availWidth, availHeight float64) (float64, f
 	p.wrapped = true
 	switch {
 	case p.count() == 0:
-		p.kind, p.lines, p.fragLines, p.lineFont = 0, nil, nil, fontsByName[p.style.fontName]
-	case p.processed == nil && len(p.frags) == 1:
+		p.kind, p.lines, p.fragLines, p.lineFrag = 0, nil, nil, &frag{font: fontsByName[p.style.fontName], size: p.style.fontSize, color: p.style.textColor}
+	case p.processed == nil && p.simpleKind():
 		p.breakSimple(availWidth)
 	default:
 		p.breakFrags(availWidth)
@@ -833,7 +915,8 @@ func (p *paragraph) wrap(c *canvas, availWidth, availHeight float64) (float64, f
 // simplePart is _split_blParaSimple: the words of some lines, the pieces of
 // a long word joined again.
 func (p *paragraph) simplePart(lines []simpleLine) *paragraph {
-	part := &frag{font: p.lineFont, hasWords: true, words: []*simpleWord{}}
+	part := p.lineFrag.clone()
+	part.text, part.hasWords, part.words = "", true, []*simpleWord{}
 	var pieces []*simpleWord
 	join := func() {
 		joined := &simpleWord{}
@@ -895,13 +978,21 @@ func (p *paragraph) split(c *canvas, availWidth, availHeight float64) []flowable
 		p.wrap(c, availWidth, availHeight)
 	}
 	s := int(availHeight / p.style.leading)
-	if s <= 1 {
+	if !p.style.allowOrphans && s <= 1 || s == 0 {
 		p.wrapped = false
 		return nil
 	}
 	n := p.lineCount()
 	if n <= s {
 		return []flowable{p}
+	}
+	if p.style.denyWidows && n == s+1 {
+		if p.style.allowOrphans && n == 3 || n > 3 {
+			s--
+		} else {
+			p.wrapped = false
+			return nil
+		}
 	}
 	if p.kind == 1 {
 		return []flowable{p.processedPart(0, s), p.processedPart(s, n)}
@@ -926,148 +1017,16 @@ func (p *paragraph) minWidth() float64 {
 			words = strings.Split(f.text, " ")
 		}
 		for i, word := range words {
-			if w := stringWidth(word, f.font, p.style.fontSize); i == 0 || w > widest {
+			if w := stringWidth(word, f.font, f.size); i == 0 || w > widest {
 				widest = w
 			}
 		}
 		return widest
 	}
-	for i, word := range p.fragWords() {
+	for i, word := range p.fragWords(0, false) {
 		if i == 0 || word.width > widest {
 			widest = word.width
 		}
 	}
 	return widest
-}
-
-// textObject is the part of PDFTextObject a paragraph uses.
-type textObject struct {
-	c        *canvas
-	code     []string
-	font     *font
-	fontSize float64
-	leading  float64
-}
-
-// moveCursor is PDFTextObject.moveCursor(dx, 0): a move right after another
-// one replaces it.
-func (t *textObject) moveCursor(dx float64) {
-	dy := 0.0
-	if n := len(t.code); n > 0 && strings.HasSuffix(t.code[n-1], " Td") {
-		if fields := strings.Fields(t.code[n-1]); len(fields) == 3 {
-			lastDx, _ := strconv.ParseFloat(fields[0], 64)
-			lastDy, _ := strconv.ParseFloat(fields[1], 64)
-			t.code = t.code[:n-1]
-			dx += lastDx
-			dy -= lastDy
-		}
-	}
-	t.code = append(t.code, fpStrs(dx, -dy)+" Td")
-}
-
-// setXPos is paragraph.setXPos.
-func (t *textObject) setXPos(dx float64) {
-	if dx > 1e-6 || dx < -1e-6 {
-		t.moveCursor(dx)
-	}
-}
-
-// textOut is PDFTextObject._textOut.
-func (t *textObject) textOut(text string, newLine bool) {
-	out := t.c.formatText(text, t.font, t.fontSize, t.leading)
-	if newLine {
-		out += " T*"
-	}
-	t.code = append(t.code, out)
-}
-
-func nbspCount(text string) int { return strings.Count(text, " ") }
-
-// draw is Paragraph.drawPara for left-aligned and centred lines.
-func (p *paragraph) draw(c *canvas) {
-	if p.lineCount() == 0 {
-		return
-	}
-	c.saveState()
-	size, leading := p.style.fontSize, p.style.leading
-	tx := &textObject{c: c}
-	if p.kind == 0 {
-		c.setFillColor(colorBlack)
-		f := p.lineFont
-		tx.font, tx.fontSize, tx.leading = f, size, leading
-		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, p.height-size) + " Tm", c.fontRef(f) + " " + fpStr(size) + " Tf " + fpStr(leading) + " TL"}
-		for _, line := range p.lines {
-			texts := make([]string, len(line.words))
-			for i, word := range line.words {
-				texts[i] = string(word.text)
-			}
-			text := strings.Join(texts, " ")
-			simple := line.extra > -1e-8
-			spaces := 0
-			if !simple {
-				spaces = len(line.words) + nbspCount(text) - 1
-				simple = spaces <= 0
-			}
-			if simple {
-				m := 0.0
-				if p.style.centred {
-					m = 0 + 0.5*line.extra
-				}
-				tx.setXPos(m)
-				tx.textOut(text, true)
-				tx.setXPos(-m)
-				continue
-			}
-			tx.code = append(tx.code, fpStr(line.extra/float64(spaces))+" Tw")
-			tx.textOut(text, true)
-			tx.code = append(tx.code, "0 Tw")
-		}
-	} else {
-		tx.code = []string{"BT", "1 0 0 1 " + fpStrs(0, p.height-p.fragLines[0].fontSize) + " Tm"}
-		leadingSet, coloured := false, false
-		put := func(line *fragLine) {
-			if !leadingSet {
-				leadingSet = true
-				tx.leading = leading
-				tx.code = append(tx.code, fpStr(leading)+" TL")
-			}
-			for i, f := range line.words {
-				if tx.font != f.font || tx.fontSize != size {
-					tx.font, tx.fontSize = f.font, size
-					tx.code = append(tx.code, c.fontRef(f.font)+" "+fpStr(size)+" Tf")
-				}
-				if !coloured {
-					coloured = true
-					tx.code = append(tx.code, fpStrs(0, 0, 0)+" rg")
-				}
-				tx.textOut(f.text, i == len(line.words)-1)
-			}
-		}
-		for _, line := range p.fragLines {
-			simple := line.extra > -1e-8
-			spaces := 0
-			if !simple {
-				spaces = line.wordCount - 1
-				for _, word := range line.words {
-					spaces += nbspCount(word.text)
-				}
-				simple = spaces <= 0
-			}
-			m := 0.0
-			if simple {
-				if p.style.centred {
-					m = 0 + 0.5*line.extra
-				}
-				tx.setXPos(m)
-				put(line)
-			} else {
-				tx.code = append(tx.code, fpStr(line.extra/float64(spaces))+" Tw")
-				put(line)
-				tx.code = append(tx.code, "0 Tw")
-			}
-			tx.setXPos(-m)
-		}
-	}
-	c.add(strings.Join(append(tx.code, "ET"), " "))
-	c.restoreState()
 }

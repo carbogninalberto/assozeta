@@ -139,10 +139,14 @@ Receipts are `quality-reports/go-migration/<family>-http-v2rep3-*`; pdf-exports.
 | templates-reports | `POST saved-reports/<pk>/run` | XLSX column labels (B): labels that are equal numbers (`1` and `1.0`, `true` and `1`), and an integer label beyond 64 bits | 182 cases; RED: the documented refusal; GREEN `v2rep3-b-versioned-r2` 4 transports; 202 golden workbooks from the Django exporter (`go test ./internal/xlsxexport`) |
 | mcp-server-tools | stdio `export_data`, `export_multi_sheet`, `get_attendance_matrix(export=true)`; also the assistant channel | the XLSX and PDF results (B / A for the assistant): built with the code of the saved-report run and answered with `row_count`, `sheet_count` or `total_dates` and `save_info` | 147 cases, 146 identical and 1 refused (`title` that is not a string), 4/4 sessions identical; RED: the 3 documented refusals of `v2rep2-r2`; GREEN `v2rep3-b-mcp-r3-mcp-server-tools`; mutation `v2rep3-b-mcp-mut1-mcp-server-tools` (row count one too high in the attendance `save_info`) CAUGHT on `get_attendance_matrix export` |
 
-Still refused in these PDFs (B): the paragraph tags that draw lines, links, images, rises, other sizes or colours (`u`,
-`strike`, `a`, `font`, `sup` and the others in pdf-exports.md), a `<para>` with attributes, and logo data Python's base64
-accepts that is not a JPEG Go's decoder reads. Markup reportlab's parser raises on (an unclosed tag, `A<B`) is no refusal:
-the export fails as in Django. Still refused on the MCP transport: an exporter exception whose text Go does not reproduce and argument types `save_info` would write back differently (mcp-server.md). Re-run green natively: printing-generate 113/113 and subscription-reads 350/350
+Ported in t3pdf: the paragraph tags that draw lines, links, images, rises, other sizes and colours (`u`, `strike`, `a`, `link`,
+`font`, `span`, `nobr`, `sup`, `sub`, base64 JPEG `img`) and a `<para>` with attributes (see "Fragments with their own style" in
+pdf-exports.md). Still refused in these PDFs (B), each because Go cannot or does not reproduce it: `<a name>` anchors and
+`#`/`document:` links (named destinations), `img` of a file, URL, PNG or other format (server files and network, PIL
+re-encoding), the Courier and Times fonts (no metrics), colours that are CMYK, transparent or Python expressions, `<para>`
+indents, justified lines, borders, text transforms, `autoLeading`, `wordWrap`, end dots and hyphenation, the tags `greek`,
+`unichar`, `bullet`, `seq*`, `onDraw` and `index`, and logo data Python's base64 accepts that is not a JPEG Go's decoder reads.
+Markup reportlab's parser raises on (an unclosed tag, `A<B`) is no refusal: the export fails as in Django. Still refused on the MCP transport: an exporter exception whose text Go does not reproduce and argument types `save_info` would write back differently (mcp-server.md). Re-run green natively: printing-generate 113/113 and subscription-reads 350/350
 (`v2rep3-rerun-r1`), course-list 159/159 and course-subscriptions 145/145 (`v2rep3-rerun-r2`).
 
 ### Ported in the v2-pdf change
