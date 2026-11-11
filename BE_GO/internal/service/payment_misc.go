@@ -269,11 +269,12 @@ func paymentMiscActivePlans(plans *string, day, month int) ([]paymentQuotePlan, 
 	return active, nil
 }
 
-// paymentMiscPattern is icontains' pattern of str(value); other lookup
-// values are not ported.
+// paymentMiscPattern is icontains' pattern of str(value): strings and numbers
+// as written, booleans, lists and objects as their Python repr. A null value
+// (ValueError: Cannot use None as a query value) is for the callers to stop on.
 func paymentMiscPattern(value any) (string, error) {
 	switch value.(type) {
-	case string, json.Number:
+	case string, json.Number, bool, []any, domain.RequestObject:
 		return "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(dto.PythonStr(value)) + "%", nil
 	}
 	return "", domain.ErrPaymentMiscNotPorted
@@ -281,17 +282,47 @@ func paymentMiscPattern(value any) (string, error) {
 
 var paymentMiscDecimal = regexp.MustCompile(`^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)$`)
 
-// paymentMiscAmount is DecimalField.to_python of the plan fee: the stored
-// text, auditlog's str() of the raw value and the float when it is one.
-func paymentMiscAmount(fee any) (string, string, *float64, error) {
-	var stored, audit string
-	var float *float64
+// paymentMiscDecimalGrammar is the text Python's Decimal() accepts (ASCII
+// digits): anything else raises in DecimalField.to_python.
+var paymentMiscDecimalGrammar = regexp.MustCompile(`^[+-]?(([0-9]+(_[0-9]+)*(\.([0-9]+(_[0-9]+)*)?)?|\.[0-9]+(_[0-9]+)*)([eE][+-]?[0-9]+(_[0-9]+)*)?|(?i:inf|infinity|nan[0-9]*|snan[0-9]*))$`)
+
+// paymentMiscAmountStops reports a fee DecimalField.to_python raises on: the
+// exception ends the run inside the views' try (an object, a list or text
+// that is no decimal literal).
+func paymentMiscAmountStops(fee any) bool {
 	switch v := fee.(type) {
+	case []any, domain.RequestObject:
+		return true
+	case string:
+		text := strings.TrimFunc(v, unicode.IsSpace)
+		for _, r := range text {
+			if r > unicode.MaxASCII {
+				return false
+			}
+		}
+		return !paymentMiscDecimalGrammar.MatchString(text)
+	}
+	return false
+}
+
+// paymentMiscAmountRange is DecimalField.to_python of the plan fee: the stored
+// text (empty for a null fee), auditlog's str() of the raw value and the float
+// when it is one. A value beyond numeric(9, 2) converts but matches no row and
+// fails the insert (outOfRange).
+func paymentMiscAmountRange(fee any) (stored, audit string, float *float64, outOfRange bool, err error) {
+	switch v := fee.(type) {
+	case nil:
+		return "", "None", nil, false, nil
+	case bool:
+		if v {
+			return "1", "True", nil, false, nil
+		}
+		return "0", "False", nil, false, nil
 	case json.Number:
 		if strings.ContainsAny(string(v), ".eE") {
-			number, err := strconv.ParseFloat(string(v), 64)
-			if err != nil || math.IsInf(number, 0) {
-				return "", "", nil, domain.ErrPaymentMiscNotPorted
+			number, perr := strconv.ParseFloat(string(v), 64)
+			if perr != nil || math.IsInf(number, 0) {
+				return "", "", nil, false, domain.ErrPaymentMiscNotPorted
 			}
 			float = &number
 			stored, audit = dto.DecimalFromFloat9(number), dto.PythonFloatStr(number)
@@ -301,16 +332,37 @@ func paymentMiscAmount(fee any) (string, string, *float64, error) {
 	case string:
 		text := strings.TrimFunc(v, unicode.IsSpace)
 		if !paymentMiscDecimal.MatchString(text) {
-			return "", "", nil, domain.ErrPaymentMiscNotPorted
+			return "", "", nil, false, domain.ErrPaymentMiscNotPorted
 		}
 		stored, audit = text, v
 	default:
+		return "", "", nil, false, domain.ErrPaymentMiscNotPorted
+	}
+	// numeric(9, 2): larger values match no row and fail the insert.
+	number, ok := new(big.Float).SetString(stored)
+	if !ok {
+		return "", "", nil, false, domain.ErrPaymentMiscNotPorted
+	}
+	return stored, audit, float, new(big.Float).Abs(number).Cmp(big.NewFloat(9999999.995)) >= 0, nil
+}
+
+func paymentMiscOutOfRange(stored string) bool {
+	number, ok := new(big.Float).SetString(stored)
+	return ok && new(big.Float).Abs(number).Cmp(big.NewFloat(9999999.995)) >= 0
+}
+
+// paymentMiscAmount is paymentMiscAmountRange for the callers that port only
+// stored amounts: a null, out of range or unconverted fee is not ported.
+func paymentMiscAmount(fee any) (string, string, *float64, error) {
+	if fee == nil {
 		return "", "", nil, domain.ErrPaymentMiscNotPorted
 	}
-	// numeric(9, 2): larger values fail the insert (not ported).
-	number, ok := new(big.Float).SetString(stored)
-	if !ok || new(big.Float).Abs(number).Cmp(big.NewFloat(9999999.995)) >= 0 {
-		return "", "", nil, domain.ErrPaymentMiscNotPorted
+	stored, audit, float, outOfRange, err := paymentMiscAmountRange(fee)
+	if err == nil && outOfRange {
+		err = domain.ErrPaymentMiscNotPorted
+	}
+	if err != nil {
+		return "", "", nil, err
 	}
 	return stored, audit, float, nil
 }
@@ -405,18 +457,27 @@ func (r *paymentMiscRun) quotes(ctx context.Context, visit func(paymentQuotePlan
 			return err
 		}
 		for _, subscription := range subscriptions {
+			if plan.id == nil {
+				return errPaymentMiscStop // ValueError: Cannot use None as a query value
+			}
 			idPattern, err := paymentMiscPattern(plan.id)
 			if err != nil {
 				return err
 			}
-			stored, audit, float, err := paymentMiscAmount(plan.fee)
+			if paymentMiscAmountStops(plan.fee) {
+				return errPaymentMiscStop
+			}
+			stored, audit, float, outOfRange, err := paymentMiscAmountRange(plan.fee)
 			if err != nil {
 				return err
 			}
-			exists, err := r.tx.QuoteExists(ctx, domain.PaymentQuoteCheck{User: subscription.UserID, Associate: subscription.AssociateID,
-				Pattern: idPattern, Amount: stored, Group: r.group})
-			if err != nil {
-				return err
+			exists := false
+			if !outOfRange {
+				exists, err = r.tx.QuoteExists(ctx, domain.PaymentQuoteCheck{User: subscription.UserID, Associate: subscription.AssociateID,
+					Pattern: idPattern, Amount: stored, Group: r.group})
+				if err != nil {
+					return err
+				}
 			}
 			if exists {
 				continue
@@ -514,6 +575,10 @@ func (s *PaymentMisc) Apply(ctx context.Context, identity domain.ResolvedIdentit
 	configured := false
 	err = run.quotes(ctx, func(plan paymentQuotePlan, subscription domain.PaymentSimulationSubscription, stored, audit string,
 		float *float64) error {
+		// A null fee violates NOT NULL and a fee beyond numeric(9, 2) overflows: the insert raises.
+		if plan.fee == nil || paymentMiscOutOfRange(stored) {
+			return errPaymentMiscStop
+		}
 		other := subscription.UserID != run.association.OwnerID
 		if other && subscription.AssociateID != nil {
 			if s.mails == nil {
