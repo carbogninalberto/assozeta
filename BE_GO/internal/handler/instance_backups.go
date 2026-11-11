@@ -104,7 +104,7 @@ func (h *InstanceBackupsHandler) Overview(c echo.Context) error {
 	return h.notAllowed(c)
 }
 
-// Token is BackupDownloadTokenView (POST); form and multipart bodies are refused.
+// Token is BackupDownloadTokenView (POST); its fields are required CharFields, so a form body reads like JSON strings.
 func (h *InstanceBackupsHandler) Token(c echo.Context) error {
 	actor, err := h.instanceBackupsBegin(c, "POST, OPTIONS", "instance_backup_download_token")
 	if actor == nil {
@@ -119,9 +119,6 @@ func (h *InstanceBackupsHandler) Token(c echo.Context) error {
 			return err
 		}
 		defer release()
-		if write.Form {
-			return h.fail(c, service.ErrInstanceBackupsNotPorted)
-		}
 		reply, err := h.backups.Token(write.Context, actor.ID, write.Body, write.Audit)
 		return h.instanceBackupsReply(c, reply, err)
 	}

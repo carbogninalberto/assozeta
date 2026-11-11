@@ -135,8 +135,14 @@ add('csrf-token-mismatch', 'anonymous', '/chat/test/', 403, failure_page('other'
     headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': 'a' * 32})
 add('csrf-token-missing', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
     headers={'Cookie': f'csrftoken={CSRF}'})
+# process_request replaces a malformed CSRF cookie by a new one on the answer (random value, whatever the method).
+NEW_CSRF_COOKIE = '<new-csrftoken-cookie>'
 add('csrf-cookie-wrong-length', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
-    headers={'Cookie': 'csrftoken=short', 'X-CSRFToken': 'short'})
+    headers={'Cookie': 'csrftoken=short', 'X-CSRFToken': 'short'}, cookie=NEW_CSRF_COOKIE)
+add('csrf-cookie-invalid-character', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
+    headers={'Cookie': 'csrftoken=' + '!' * 32, 'X-CSRFToken': CSRF}, cookie=NEW_CSRF_COOKIE)
+add('anonymous-get-malformed-csrf-cookie', 'anonymous', '/chat/test/', 302, '<empty>', headers={'Cookie': 'csrftoken=short'},
+    location=redirect, cookie=NEW_CSRF_COOKIE)
 add('csrf-bad-origin', 'anonymous', '/chat/test/', 403, failure_page('other'), method='POST', vary=FAILED_VARY,
     headers={'Cookie': f'csrftoken={CSRF}', 'X-CSRFToken': CSRF, 'Origin': 'http://evil.example'})
 add('csrf-https-no-referer', 'anonymous', '/chat/test/', 403, failure_page('referer'), method='POST', vary=FAILED_VARY,

@@ -6536,6 +6536,148 @@
    }
   },
   {
+   "name": "instance-backups-token-form-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/download-token",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field is required."
+    ],
+    "password": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-token-form-blank-values",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/download-token",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field may not be blank."
+    ],
+    "password": [
+     "This field may not be blank."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "raw_body": "name=&password=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-token-form-wrong-password",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/download-token",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Password non corretta."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {
+    "attempts": {
+     "a1000000-0000-4000-8000-000000700001": {
+      "value": 1,
+      "ttl": "fresh"
+     }
+    }
+   },
+   "token": null,
+   "password": null,
+   "audit": null,
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "raw_body": "name=assozeta-20261101T020000Z.tar.gz&password=wrong&password=wrong2",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-token-form-granted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/download-token",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "download_token": "$backup-token:assozeta-20261101T020000Z.tar.gz:owner",
+    "expires_in": 300
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "objects": {},
+   "bucket_absent": false,
+   "cache": {},
+   "cache_after": {},
+   "token": null,
+   "password": null,
+   "audit": {
+    "object_pk": "7305",
+    "object_repr": "Instance: Istanza di prova (instance-backups.example.test)",
+    "changes": {
+     "backup_download": [
+      "",
+      "assozeta-20261101T020000Z.tar.gz"
+     ]
+    },
+    "additional_data": {
+     "backup": "assozeta-20261101T020000Z.tar.gz",
+     "actor_id": "a1000000-0000-4000-8000-000000700001"
+    },
+    "actor": "owner",
+    "association": "own_association",
+    "resolution_path": "actor.sport_association"
+   },
+   "rehash": false,
+   "stream": null,
+   "database": false,
+   "raw_body": "name=assozeta-20261101T020000Z.tar.gz&password=Fixture-backup-placeholder-1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "instance-backups-token-granted",
    "actor": "owner",
    "method": "POST",

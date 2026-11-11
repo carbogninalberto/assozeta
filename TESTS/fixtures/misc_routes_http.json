@@ -590,11 +590,11 @@
       "x": "y"
      },
      "title": {
-      "it": "L'uno",
       "n": [
        true,
        null
-      ]
+      ],
+      "it": "L'uno"
      },
      "start": "2026-03-08T10:00:00Z",
      "end": "2026-03-08T11:00:00Z",
@@ -870,7 +870,7 @@
    "headers": {},
    "status": 200,
    "response": {
-    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Primo\r\nSUMMARY:Secondo\\, due\r\nSUMMARY:3\r\nSUMMARY:None\r\nSUMMARY:[1\\, 'x']\r\nDTSTART:20260307T100000Z\r\nDTEND:20260307T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:id-a\r\nUID:id-b\r\nDESCRIPTION:Instructor: ['Ana'\\, {'k': 1.5}]\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:{'it': \"L'uno\"\\, 'n': [True\\, None]}\r\nDTSTART:20260308T100000Z\r\nDTEND:20260308T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:{'x': 'y'}\r\nDESCRIPTION:Instructor: {'nome': 'Bea'}\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20260309T100000Z\r\nDTEND:20260309T110000Z\r\nDTSTAMP:$dtstamp\r\nDESCRIPTION:Instructor: []\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+    "$ics": "BEGIN:VCALENDAR\r\nBEGIN:VEVENT\r\nSUMMARY:Primo\r\nSUMMARY:Secondo\\, due\r\nSUMMARY:3\r\nSUMMARY:None\r\nSUMMARY:[1\\, 'x']\r\nDTSTART:20260307T100000Z\r\nDTEND:20260307T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:id-a\r\nUID:id-b\r\nDESCRIPTION:Instructor: ['Ana'\\, {'k': 1.5}]\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nSUMMARY:{'n': [True\\, None]\\, 'it': \"L'uno\"}\r\nDTSTART:20260308T100000Z\r\nDTEND:20260308T110000Z\r\nDTSTAMP:$dtstamp\r\nUID:{'x': 'y'}\r\nDESCRIPTION:Instructor: {'nome': 'Bea'}\r\nEND:VEVENT\r\nBEGIN:VEVENT\r\nDTSTART:20260309T100000Z\r\nDTEND:20260309T110000Z\r\nDTSTAMP:$dtstamp\r\nDESCRIPTION:Instructor: []\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
    },
    "effect": null
   },

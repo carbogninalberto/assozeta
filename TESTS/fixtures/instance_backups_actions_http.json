@@ -3723,6 +3723,59 @@
    }
   },
   {
+   "name": "instance-backups-actions-restore-form-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz/restore",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "This field is required."
+    ],
+    "confirm": [
+     "This field is required."
+    ]
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-backups-actions-restore-form-wrong-word",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/backups/assozeta-20261101T020000Z.tar.gz/restore",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Scrivi RIPRISTINA per confermare."
+   },
+   "runner": {
+    "state": "up",
+    "expect": []
+   },
+   "cache": {},
+   "cache_after": {},
+   "password": null,
+   "rehash": false,
+   "audit": null,
+   "send": null,
+   "no_store": false,
+   "raw_body": "password=x&confirm=ripristina",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "instance-backups-actions-restore-blank-word",
    "actor": "owner",
    "method": "POST",

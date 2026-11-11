@@ -4,6 +4,7 @@ The page answers are not DRF responses: every case checks the exact status,
 Location, Set-Cookie (or its absence), Vary, Content-Language and the body
 ('<empty>' for redirects, the stable 500 page or the CSRF failure page otherwise; HEAD has no body).
 """
+import re
 from pathlib import Path
 
 from TESTS.contracts import http_family as family
@@ -11,6 +12,9 @@ from TESTS.contracts.http_family import require  # noqa: F401  (runner interface
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure
 from TESTS.http_client import Client
 
+NEW_CSRF_COOKIE = '<new-csrftoken-cookie>'
+NEW_COOKIE = re.compile(r'csrftoken=[A-Za-z0-9]{32}; expires=[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT; '
+                        r'Max-Age=31449600; Path=/; SameSite=Lax(; Secure)?')
 SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/chat_test_http.json'
 
 
@@ -29,7 +33,11 @@ def assert_case(case, base_url, *, token, sessions):
 
     check(type(status) is int and status == case['status'], 'response.status')
     check(received.get('Location') == case['location'], 'response.location')
-    check(received.get_all('Set-Cookie') == ([case['set_cookie']] if case['set_cookie'] else None), 'response.set-cookie')
+    cookies = received.get_all('Set-Cookie')
+    if case['set_cookie'] == NEW_CSRF_COOKIE:
+        check(cookies is not None and len(cookies) == 1 and NEW_COOKIE.fullmatch(cookies[0]) is not None, 'response.set-cookie')
+    else:
+        check(cookies == ([case['set_cookie']] if case['set_cookie'] else None), 'response.set-cookie')
     # Repeated Vary field lines are one comma-joined list (RFC 9110 5.3).
     check(', '.join(received.get_all('Vary') or []) == case['vary'], 'response.vary')
     check(received.get('Content-Language') == case['language'], 'response.language')

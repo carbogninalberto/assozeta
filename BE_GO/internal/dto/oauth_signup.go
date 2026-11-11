@@ -1,8 +1,8 @@
 package dto
 
 import (
-	"regexp"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -24,6 +24,8 @@ type OAuthSignupFields struct {
 	// UsernameChecked: the username reached the field validators, so the
 	// service runs the UniqueValidator query between the character and length checks.
 	UsernameChecked bool
+	// UsernameNUL: the username holds a NUL character, which the uniqueness query cannot carry.
+	UsernameNUL bool
 }
 
 // OAuthSignupValidation holds field errors in the serializer's field order:
@@ -35,7 +37,18 @@ type OAuthSignupValidation struct {
 	UsernameInvalid bool
 }
 
-var oauthUsernamePattern = regexp.MustCompile(`^[A-Za-z0-9_.@+-]+$`)
+// oauthUsernameValid is UnicodeUsernameValidator, r'^[\w.@+-]+\Z': Python's \w is every letter and number plus '_'.
+func oauthUsernameValid(text string) bool {
+	if text == "" {
+		return false
+	}
+	for _, r := range text {
+		if !unicode.IsLetter(r) && !unicode.IsNumber(r) && !strings.ContainsRune("_.@+-", r) {
+			return false
+		}
+	}
+	return true
+}
 
 // IsASCII reports text without non-ASCII code points (Python's Unicode
 // case mapping and \w classes are not ported).
@@ -96,11 +109,9 @@ func ParseOAuthSignup(object domain.RequestObject) (fields OAuthSignupFields, va
 			codes[0] == PaymentCategoryValidationBlank) {
 			validation.Errors["username"] = codes
 		} else {
-			if !IsASCII(username) || strings.ContainsRune(username, 0) {
-				return fields, validation, true
-			}
 			fields.Username, fields.UsernameChecked = username, true
-			validation.UsernameInvalid = !oauthUsernamePattern.MatchString(username)
+			fields.UsernameNUL = strings.ContainsRune(username, 0)
+			validation.UsernameInvalid = !oauthUsernameValid(username)
 			if len(codes) > 0 {
 				validation.Errors["username"] = codes
 			}

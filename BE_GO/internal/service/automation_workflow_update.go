@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
@@ -130,6 +131,9 @@ func automationWorkflowEnablePlan(tree any, now time.Time, rome *time.Location) 
 	return reset, automationWorkflowTriggerSchedule, at
 }
 
+// errAutomationWorkflowTreeRejected is the database refusing the tree at save time (the 500 page).
+var errAutomationWorkflowTreeRejected = errors.New("automation_tree rejected by the jsonb column")
+
 // Update ports communication_workflows_update: lookup (404), partial
 // validation (403 foreign relation, else 400), save, and on enabling the cron
 // reset save and trigger(); not-ported paths are refused before any write.
@@ -185,7 +189,7 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	if invalid {
 		return dto.ErrAutomationWorkflowInvalid
 	}
-	if patch.TreeRejected {
+	if patch.TreeTooDeep || patch.TreeRejected && copyID != "" {
 		return dto.ErrAutomationWorkflowFormTreeNotPorted
 	}
 	oldTree, err := dto.ParseProfileTablesJSON(old.Tree)
@@ -243,11 +247,25 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 			return tx.AppendAutomationWorkflowAudit(ctx, domain.AutomationWorkflowAudit{ID: row.ID, AssociationID: association, Action: 0,
 				Changes: changes, Context: auditContext, At: at})
 		}
+		changes := automationWorkflowUpdateChanges(before, automationWorkflowUpdateValues(row, tree))
+		if patch.TreeRejected {
+			// auditlog's pre_save entry is written, then the column refuses the document: the entry is kept
+			// and the answer is the 500 page.
+			if len(changes) > 0 {
+				if err := tx.AppendAutomationWorkflowAudit(ctx, domain.AutomationWorkflowAudit{ID: row.ID, AssociationID: association, Action: 1,
+					Changes: changes, Context: paymentCategoryAuditContext(identity, audit), At: at}); err != nil {
+					return err
+				}
+			}
+			if err := tx.Commit(); err != nil {
+				return err
+			}
+			return errAutomationWorkflowTreeRejected
+		}
 		row.Tree, row.UpdatedAt = json.RawMessage(dto.PythonJSONDumps(tree)), &at
 		if err := tx.UpdateAutomationWorkflow(ctx, row); err != nil {
 			return err
 		}
-		changes := automationWorkflowUpdateChanges(before, automationWorkflowUpdateValues(row, tree))
 		if len(changes) == 0 {
 			return nil
 		}

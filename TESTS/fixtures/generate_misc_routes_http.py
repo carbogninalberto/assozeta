@@ -173,12 +173,12 @@ REGISTRIES['foreign_zoned'] = {'id': next(ids), 'course': 'foreign_zoned', 'even
 COURSES['foreign_floats'] = course(FOREIGN)
 REGISTRIES['foreign_floats'] = {'id': next(ids), 'course': 'foreign_floats', 'events': [
     event(2.5, '2026-03-07T10:00:00Z', '2026-03-07T11:00:00Z', event_id=0.1, **instructor(1e-07))]}
-# A list becomes one property line per item (an empty list none), each str(item); a dict is its repr.
+# A list becomes one property line per item (an empty list none), each str(item); a dict is its repr (jsonb keeps shorter keys first).
 COURSES['foreign_containers'] = course(FOREIGN)
 REGISTRIES['foreign_containers'] = {'id': next(ids), 'course': 'foreign_containers', 'events': [
     event(['Primo', 'Secondo, due', 3, None, [1, 'x']], '2026-03-07T10:00:00Z', '2026-03-07T11:00:00Z', event_id=['id-a', 'id-b'],
           **instructor(['Ana', {'k': 1.5}])),
-    event({'it': "L'uno", 'n': [True, None]}, '2026-03-08T10:00:00Z', '2026-03-08T11:00:00Z', event_id={'x': 'y'},
+    event({'n': [True, None], 'it': "L'uno"}, '2026-03-08T10:00:00Z', '2026-03-08T11:00:00Z', event_id={'x': 'y'},
           **instructor({'nome': 'Bea'})),
     event([], '2026-03-09T10:00:00Z', '2026-03-09T11:00:00Z', event_id=[], **instructor([]))]}
 # An offset of a whole day or more is no timezone (ValueError); the last hour of year 9999 plus the default hour overflows.

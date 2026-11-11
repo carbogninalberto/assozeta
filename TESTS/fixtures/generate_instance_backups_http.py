@@ -425,6 +425,15 @@ add('token-unusable-password', 'admin', TOKEN, 400, error(WRONG), method='POST',
     password='!unusable-placeholder', cache_after=fresh_attempts(ADMIN, 1))
 add('token-other-actor-attempts', 'admin', TOKEN, 400, error(WRONG), method='POST', body={'name': ARCHIVE, 'password': 'x'},
     cache={'attempts': {OWNER: 5}}, cache_after={'attempts': {OWNER: {'value': 5, 'ttl': 'kept'}, ADMIN: {'value': 1, 'ttl': 'fresh'}}})
+# A form body reads like JSON strings: every field is a required CharField.
+FORM = 'application/x-www-form-urlencoded'
+add('token-form-empty', 'owner', TOKEN, 400, {'name': [REQUIRED], 'password': [REQUIRED]}, method='POST', raw_body='', content_type=FORM)
+add('token-form-blank-values', 'owner', TOKEN, 400, {'name': [BLANK], 'password': [BLANK]}, method='POST',
+    raw_body='name=&password=', content_type=FORM)
+add('token-form-wrong-password', 'owner', TOKEN, 400, error(WRONG), method='POST',
+    raw_body=f'name={ARCHIVE}&password=wrong&password=wrong2', content_type=FORM, cache_after=fresh_attempts(OWNER, 1))
+add('token-form-granted', 'owner', TOKEN, 200, token_response(ARCHIVE), method='POST',
+    raw_body=f'name={ARCHIVE}&password={PASSWORD}', content_type=FORM, audit=granted(ARCHIVE))
 add('token-granted', 'owner', TOKEN, 200, token_response(ARCHIVE), method='POST', body={'name': ARCHIVE, 'password': PASSWORD},
     audit=granted(ARCHIVE))
 add('token-granted-clears-attempts', 'owner', TOKEN, 200, token_response(SECOND), method='POST',

@@ -81,7 +81,11 @@ def assert_effect(case, before, after, source, context):
     if effect['session']:
         additional = {'impersonation_session': context['fixture']['sessions'][effect['session']], 'actor_id': actor,
                       'target_user_id': case['headers']['User-Id'], 'association_id': None}
-    contract.require(row['updated_at'] != previous['updated_at'] and recent(audit_time(row['updated_at'])), 'state.row-updated_at')
+    if effect.get('kept'):
+        # The UPDATE failed: the row is as it was and only the pre_save entry stays.
+        contract.require(row == previous, 'state.row-unchanged')
+    else:
+        contract.require(row['updated_at'] != previous['updated_at'] and recent(audit_time(row['updated_at'])), 'state.row-updated_at')
     for event, spec in zip(sorted(added, key=lambda event: event['id']), effect['audit']):
         contract.require(len(types) == 1 and event['content_type_id'] == types[0] and event['action'] == 1 and event['object_pk'] == key
                          and event['object_repr'] == f'AutomationWorkflow object ({key})', 'audit.identity')

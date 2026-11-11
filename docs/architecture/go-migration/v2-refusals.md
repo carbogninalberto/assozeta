@@ -676,7 +676,7 @@ No refusals documented or raised (`GET audit-logs/stats`, `audit-logs/models` fu
 |---|---|---|---|---|
 | PATCH communications/workflows/<uid>/update | enabling a cron workflow whose time text is outside the parsed form (`20200101`, hour-only) | service/automation_workflow_update.go (`automationWorkflowEnablePlan`) | B | Future times ported in v2-misc (Celery eta). The editor's `datetime-local` gives `YYYY-MM-DDTHH:MM`, a parsed form. **Ported in restb2** (`workflow-update.md`). |
 | PATCH communications/workflows/<uid>/update | body with a new `automation_workflow_id` not yet used | service/automation_workflow_update.go:169 | B | UI update bodies carry only `automation_tree`/`name` (`AutomationEditor.svelte:148-155`), `automation_tree` (`components/inputs/email-builder/EmailBuilder.svelte:32-36`) or `enabled`. Cost: medium. **Ported in restb2** (`workflow-update.md`). |
-| PATCH communications/workflows/<uid>/update | form-encoded `automation_tree` | dto/automation_workflow_write.go:145 (`ErrAutomationWorkflowFormTreeNotPorted`) | B (ported, tailplat) | UI sends JSON. Cost: cheap. Ported in tailplat: the form value is read with json.loads (invalid JSON, non-list, NaN/Infinity and huge integers are the generic 400). Only documents with lone surrogate escapes or nesting past 500 stay the stable 500 without Django's kept audit entry (open). |
+| PATCH communications/workflows/<uid>/update | form-encoded `automation_tree` | dto/automation_workflow_write.go:145 (`ErrAutomationWorkflowFormTreeNotPorted`) | B (ported, tailplat) | UI sends JSON. Cost: cheap. Ported in tailplat: the form value is read with json.loads (invalid JSON, non-list, NaN/Infinity and huge integers are the generic 400). Ported in t3plat: a lone surrogate escape saves nothing and keeps the pre_save audit entry, then answers the 500 page (cases `form-tree-lone-surrogate-*`). Nesting past 500 levels stays refused (kept: the recursion limit of Python's JSON codec is an interpreter detail); the django-handoff family now uses that case. |
 
 ### chat-test.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
@@ -813,7 +813,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST instance/admin/data-restore | multipart upload with a `file` part within the limit (archive validation) | ported (`acceptUpload`); archives the validation port hands off (legacy invoices, tutor reassignments) stay refused (B, legacy: yes) | ported | `routes/profile/sections/DataImport.svelte:172-174` posts `FormData` with `file`. Every restore upload is refused. Already ported before tailplat (stale row). |
-| POSTs | non-JSON/multipart bodies, CTE, non-UTF-8 RFC 2231 names | `handler/data_restore.go:273,295,303,312` | B | UI sends JSON or browser FormData. (`&` in the archive filename also refused at :312, but the upload is refused anyway.) cheap. Open in tailplat: not reached. |
+| POSTs | non-JSON/multipart bodies, CTE, non-UTF-8 RFC 2231 names | `handler/data_restore.go:273,295,303,312` | B | UI sends JSON or browser FormData. (`&` in the archive filename also refused at :312, but the upload is refused anyway.) cheap. Other media types are ported in t3plat (DRF answers 415, cases `upload-form-urlencoded-body`, `upload-text-body`, `action-text-body`). Content-Transfer-Encoding parts and RFC 2231 names stay refused (not done). |
 | GET data-restore (progress) | cached progress outside pickle subset | `service/data_restore.go:167,228` | B | Written by Django's own task; non-str keys not produced. legacy: no; medium. Open in tailplat: not reached. |
 | GET …/<id>/download | backup path outside `AWS_LOCATION` | `service/data_restore.go:456` | C | Paths are written by the restore task under the location. Kept refused: no request can produce this state (only the app writes it). |
 | all | `FileSystemStorage` | — | C | Self-host deployments use the S3 default storage. Kept refused: no request can produce this state (only the app writes it). |
@@ -866,7 +866,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### instance-backups.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST admin/backups/download-token | non-JSON body | `BE_GO/internal/handler/instance_backups.go:123` | B | UI JSON (`profile/sections/InstanceBackups.svelte:166`). cheap. Open in tailplat: not reached. |
+| POST admin/backups/download-token | non-JSON body | `BE_GO/internal/handler/instance_backups.go:123` | B | UI JSON (`profile/sections/InstanceBackups.svelte:166`). cheap. Ported in t3plat: both fields are required CharFields, so a form or multipart body reads like JSON strings (cases `token-form-*`). |
 | GET/POST admin/backups | runner replies Go cannot decode (UTF-16/32, NaN, surrogates, deep nesting) | `service/instance_backups.go:128` | B | Runner is the project's own updater emitting standard JSON. legacy: no; medium. Open in tailplat: not reached. |
 | GET admin/backups | cached sizes/attempt counters of other types | `service/instance_backups.go:227,273` | C | Cache written only by the app. Kept refused: no request can produce this state (only the app writes it). |
 | token/download | actor hex with Python `int()` extras; lone surrogates | `dto/instance_backups.go:89`, `service/instance_backups.go:112` | C | Tokens minted by the server. Kept refused: no request can produce this state (only the app writes it). |
@@ -880,7 +880,7 @@ Coordination/status doc; no refusals. Nothing to classify.
 ### instance-backups-actions.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| schedule/restore/remote/test/confirm/fetch, item view | form/multipart bodies | `BE_GO/internal/handler/instance_backup_actions.go:130,147`, `dto/instance_backup_actions.go:247` | B | UI JSON (`InstanceBackups.svelte:108,144,190,215`, `RemoteBackup.svelte:66,80,106,141`, `BackupSchedule.svelte:39`); upload uses `application/gzip` (`backupUpload.js:27`). cheap. Open in tailplat: not reached. |
+| schedule/restore/remote/test/confirm/fetch, item view | form/multipart bodies | `BE_GO/internal/handler/instance_backup_actions.go:130,147`, `dto/instance_backup_actions.go:247` | B | UI JSON (`InstanceBackups.svelte:108,144,190,215`, `RemoteBackup.svelte:66,80,106,141`, `BackupSchedule.svelte:39`); upload uses `application/gzip` (`backupUpload.js:27`). cheap. Ported in t3plat for restore, remote key, key confirmation and fetch (required CharFields only; cases `restore-form-*`). Schedule, remote settings and remote test stay refused (kept: their boolean/integer fields read HTML form input differently from JSON, per-field rules not yet ported); the item view stays refused for multipart. |
 | same | lone surrogates in CharFields; undecodable runner replies | `service/instance_backup_actions.go:275,304,334,466` | B | Not typable in the UI; own runner. legacy: no. Open in tailplat: not reached. |
 
 ### google-calendar.md
@@ -948,7 +948,7 @@ No refusals of its own (re-verification record). Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | `silk/` | not mounted in Go | — | C | DEBUG-only; production writes `DEBUG=False`. Not a request refusal: the debug toolbar route does not exist with DEBUG off. |
-| DRF router routes (`<prefix>/`, `<prefix>/<pk>/`, `.format`, `documents/bulk_delete/`, API root) | not served by Go | — | B | UI uses explicit routes only (`UI/endpoints.js`: `folders/list`, `documents/bulk-delete`, `templates/list`, `personas/list`, …; no `course-locations` use). Open in tailplat: not reached. |
+| DRF router routes (`<prefix>/`, `<prefix>/<pk>/`, `.format`, `documents/bulk_delete/`, API root) | not served by Go | — | B | UI uses explicit routes only (`UI/endpoints.js`: `folders/list`, `documents/bulk-delete`, `templates/list`, `personas/list`, …; no `course-locations` use). Obsolete: the stock router routes are served by `handler/router_stock*.go` (families `router-*`). |
 | management commands (`seed_selfhost`, manual fixtures, `migrate_subscription_signatures_to_s3`, …) | no Go port | — | B | Not HTTP. Not a request refusal: command line tools. |
 
 ### invoice-core.md
@@ -1049,10 +1049,10 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### oauth2-accounts.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| POST oauth2/signup (social) | a name that is not a string; a non-ASCII e-mail or username for a new account | `service/oauth_accounts.go` (`socialSignup`, `ErrOAuthNotPorted`) | B | The token path itself is ported (`secoauth-versioned-r1`): `routes/login/Login.svelte:425-447` sends strings, and its username is derived from the Google name. Cost: cheap–medium. Open in tailplat: not reached. |
-| POST oauth2/signup / reset | non-ASCII e-mail | `service/oauth_accounts.go:404` | B | Rare. The email field accepts it, but it is unusual. Cost: cheap–medium. Open in tailplat: not reached. |
-| POST oauth2/signup | non-ASCII or NUL username | `dto/oauth_signup.go:100` | B | The UI regex blocks non-ASCII (`Login.svelte:327`, ASCII `\w`). Open in tailplat: not reached. |
-| POST oauth2/signup / reset | password with NUL or lone surrogate | `service/oauth_accounts.go:273,518` | B | Exotic. Open in tailplat: not reached. |
+| POST oauth2/signup (social) | a name that is not a string; a non-ASCII e-mail or username for a new account | `service/oauth_accounts.go` (`socialSignup`, `ErrOAuthNotPorted`) | B | The token path itself is ported (`secoauth-versioned-r1`): `routes/login/Login.svelte:425-447` sends strings, and its username is derived from the Google name. Cost: cheap–medium. Ported in t3plat for the username (Unicode `\w` pattern, `str.upper()`, NUL answers the 500 of the uniqueness query; cases `signup-unicode-username*`, `signup-username-with-nul`). A non-ASCII e-mail stays refused (kept: the welcome mail to such an address depends on the SMTP server's SMTPUTF8 support). A name that is not a string stays refused (not done: needs the column adaptation of each JSON type). |
+| POST oauth2/signup / reset | non-ASCII e-mail | `service/oauth_accounts.go:404` | B | Rare. The email field accepts it, but it is unusual. Cost: cheap–medium. Kept refused: the reset mail and the welcome mail go to the address, and delivery to a non-ASCII address depends on the SMTP server's SMTPUTF8 support (platform error text). |
+| POST oauth2/signup | non-ASCII or NUL username | `dto/oauth_signup.go:100` | B | The UI regex blocks non-ASCII (`Login.svelte:327`, ASCII `\w`). Ported in t3plat (see the social signup row): Unicode usernames are accepted and stored upper-cased, a NUL answers the 500. |
+| POST oauth2/signup / reset | password with NUL or lone surrogate | `service/oauth_accounts.go:273,518` | B | Exotic. Ported in t3plat: a NUL is an ordinary character for the hasher (reset case `reset-password-with-nul`); a lone surrogate cannot be encoded and answers the 500 (`reset-password-with-lone-surrogate`). |
 
 ### operational-migrations.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1156,7 +1156,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### router-stock.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| bare router routes (`personas/`, `personas-subscriptions/`, `course-subscriptions/`, PUT/PATCH `<pk>/`) | inherited explicit-route refusals | `handler/router_stock*.go` | B | The UI calls the explicit action routes (`endpoints.js` `…/list`, `…/add`, `…/<uid>/update`), not the stock create/PUT. Refusals on the explicit routes are classified in their own families (e.g. personas-writes base64 picture = A, subscription-memberships documents = A). Open in tailplat: not reached. |
+| bare router routes (`personas/`, `personas-subscriptions/`, `course-subscriptions/`, PUT/PATCH `<pk>/`) | inherited explicit-route refusals | `handler/router_stock*.go` | B | The UI calls the explicit action routes (`endpoints.js` `…/list`, `…/add`, `…/<uid>/update`), not the stock create/PUT. Refusals on the explicit routes are classified in their own families (e.g. personas-writes base64 picture = A, subscription-memberships documents = A). No refusal of its own: the stock routes call the explicit-route services, whose refusals are classified in their own families. |
 | course-subscriptions create | DB error mid non-atomic writes | | C | Infrastructure only. Kept refused: no request can produce this state (only the app writes it). |
 
 ### subscription-import-upload.md
@@ -1306,8 +1306,8 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### unknown-paths.md
 | route | refusal condition | Go site | class | notes |
 |---|---|---|---|---|
-| DRF router (`course-locations/`, `folders/`, `documents/`, `templates/`, `subscription/memberships/`, `course-subscriptions/`, `personas/`, `personas-subscriptions/`, detail and `.format` twins, `documents/bulk_delete/`) and API root `/` | Go answers 404 (or the APPEND_SLASH 301) | routing (no handler) | B | Route not called by UI: `UI/endpoints.js` uses only the explicit `.../list`, `.../<uid>/update` and similar routes. legacy: n/a. expensive Open in tailplat: not reached. |
-| any | malformed `csrftoken` cookie not re-issued | server-wide | B | not a refusal. The UI does not use Django CSRF cookies Open in tailplat: not reached. |
+| DRF router (`course-locations/`, `folders/`, `documents/`, `templates/`, `subscription/memberships/`, `course-subscriptions/`, `personas/`, `personas-subscriptions/`, detail and `.format` twins, `documents/bulk_delete/`) and API root `/` | Go answers 404 (or the APPEND_SLASH 301) | routing (no handler) | B | Route not called by UI: `UI/endpoints.js` uses only the explicit `.../list`, `.../<uid>/update` and similar routes. legacy: n/a. expensive Obsolete: served by `handler/router_stock*.go` (families `router-*`). |
+| any | malformed `csrftoken` cookie not re-issued | server-wide | B | not a refusal. The UI does not use Django CSRF cookies Ported in t3plat for `chat/test/` (the only route that checks CSRF): the answer carries a new cookie. Not a refusal elsewhere (DRF views are exempt, no request is handed to Django). |
 
 ### supplier-invoice-stats.md
 | route | refusal condition | class | notes |
@@ -1325,7 +1325,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | PATCH communications/workflows/<id>/update | a cron time Go does not classify | `service/automation_workflow_update.go` | B | Future times ported in v2-misc (see workflow-update.md). **Ported in restb2** (`workflow-update.md`). |
 | same | time string not starting with 4 ASCII digits / out-of-range field | (500 after saves, Django too) | — | parity, not a refusal Not a refusal: parity with Django, nothing to port. |
 | same | new `automation_workflow_id` | `:169` | B | UI PATCH bodies carry only `enabled`, or `automation_tree` and `name` (`AutomationEditor.svelte:145-156`, `EmailBuilder.svelte:32`). legacy: no **Ported in restb2** (`workflow-update.md`). |
-| same | form-encoded `automation_tree` | `dto/automation_workflow_write.go:145` | B (ported, tailplat) | UI sends JSON Ported in tailplat (see automation-workflows). Lone-surrogate/deep documents: open, Django keeps its pre_save audit entry before the failing save. |
+| same | form-encoded `automation_tree` | `dto/automation_workflow_write.go:145` | B (ported, tailplat) | UI sends JSON Ported in tailplat (see automation-workflows). Lone surrogates ported in t3plat; nesting past 500 stays refused (django-handoff family example). |
 
 ### suppliers.md
 | route | refusal condition | Go site | class | notes |
@@ -1369,7 +1369,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### message_mutations_go.md / message_mutations_reference.md
 | route | refusal condition | class | notes |
 |---|---|---|---|
-| POST communications/messages/add, DELETE communications/messages/<uid>/delete | none (no not-ported sentinel in the message mutation code; only 400/403/404 parity errors) | — | — |
+| POST communications/messages/add, DELETE communications/messages/<uid>/delete | none (no not-ported sentinel in the message mutation code; only 400/403/404 parity errors): nothing to port | — | — |
 
 ### tasks-db-a/b/c/d/e/f.md, sync-v1035.md (worker jobs, not HTTP)
 Skipped per brief: Celery/periodic job refusals (`task_failed`) with Django as default owner, and no route's HTTP response depends on them.

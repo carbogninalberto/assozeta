@@ -326,6 +326,13 @@ add('upload-several-associations', 'owner', ROOT, 400, error(SINGLE), method='PO
                       'error': SEED['failed']['error']}})
 add('upload-json-body', 'owner', ROOT, 400, error(UPLOAD), method='POST', body={'file': 'backup.zip'})
 add('upload-empty-body', 'owner', ROOT, 400, error(UPLOAD), method='POST')
+# Neither MultiPartParser nor JSONParser takes another media type: DRF's 415 (the body is parsed only when it is not empty).
+add('upload-form-urlencoded-body', 'owner', ROOT, 415, {'detail': 'Unsupported media type "application/x-www-form-urlencoded" in request.'},
+    method='POST', raw=b'file=backup.zip', content_type='application/x-www-form-urlencoded')
+add('upload-text-body', 'owner', ROOT, 415, {'detail': 'Unsupported media type "text/plain" in request.'},
+    method='POST', raw=b'backup', content_type='text/plain')
+add('action-text-body', 'owner', action('completed', 'delete-backup'), 415, {'detail': 'Unsupported media type "text/plain" in request.'},
+    method='POST', raw=b'confirm', content_type='text/plain')
 body, kind = multipart(('file', None, ZIP))
 add('upload-file-as-field', 'owner', ROOT, 400, error(UPLOAD), method='POST', raw=body, content_type=kind)
 body, kind = multipart(('archive', 'backup.zip', ZIP), ('note', None, b'x'))
