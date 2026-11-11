@@ -253,11 +253,6 @@ func (s *CourseSubscriptions) Delete(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return err
 	}
-	if shared {
-		// The save would restore a payment the installments' signals deleted
-		// (an autocommitted IntegrityError after the deletes).
-		return ErrCourseSubscriptionNotPorted
-	}
 	context, err := s.auditContext(ctx, tx, identity, audit, group)
 	if err != nil {
 		return err
@@ -273,10 +268,29 @@ func (s *CourseSubscriptions) Delete(ctx context.Context, identity domain.Resolv
 		save.Changes = map[string][2]string{"deleted": {"False", "True"}}
 		save.AssociationID, save.ResolutionPath = row.CourseAssociationID, "course.sport_association"
 	}
+	if shared {
+		// An installment's signal deleted the row's own payment (the stored
+		// reference is cleared), the instance still holds it: auditlog records
+		// the save, the UPDATE fails on the missing payment and, nothing being
+		// atomic, the deletes and the entry stay.
+		save.AuditOnly = true
+		reference := [2]string{"None", *row.PaymentID}
+		if row.Deleted {
+			save.Overrides = map[string][2]string{"payment": reference}
+		} else {
+			save.Changes["payment"] = reference
+		}
+	}
 	if err = tx.SaveCourseSubscription(ctx, save, context); err != nil {
 		return err
 	}
-	return tx.Commit()
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	if shared {
+		return domain.ErrCourseSubscriptionServer
+	}
+	return nil
 }
 
 // bulkIDs is the course_subscription_id__in value: None is not iterable, a

@@ -141,11 +141,21 @@ Membership payments render PaymentSerializer's nested `instructor` and `invoice`
 
 - In the list exports a carnet `lessons_left` that is a list or an object: 500 (the list route itself fails on such a
   row in Django).
-- Update: unmatched installments sharing one
-  payment, a non-canonical `X-Group-Id` spelling with new events, a changed primary key (Model.save() would insert a copy)
-  and HTML-form input for the JSON fields `multiple_quote` and `events`: 500.
-- A soft delete whose row's own payment is also the unpaid payment of one of its installments (Django's save would fail
-  after the autocommitted deletes): 500.
+- Update: unmatched installments sharing one payment, and an HTML-form `multiple_quote` or `events` document the jsonb
+  column rejects: 500.
+
+## Changed primary key and shared payment (t4l3)
+
+- Update with another `course_subscription_id`: Model.save() writes the instance under the new key and leaves the row
+  the path names as it was (installment edits still apply to it). auditlog's pre-save entry diffs every field against
+  nothing and is indexed through the actor; a key no row has is inserted and gets the create entry (indexed through the
+  course); the key of a soft-deleted row passes the unique check and that row is written over (no create entry). The
+  membership's current payment is saved with the new key in its meta; the response renders the new row (no
+  installments, no membership payments). Cases `update-primary-key-*`, `list-after-*copy*`.
+- Delete of a row whose own payment is also the unpaid payment of one of its installments: the installment's signal
+  deletes the payment and clears the stored reference; the instance still holds it, so the save's entry is recorded
+  (`deleted` and `payment`, or every field for an already deleted row) and the UPDATE fails. Nothing is atomic: 500 with
+  the installments and the payment gone, the entry kept and the row not marked deleted. Cases `delete-shared-*`.
 
 ## Evidence
 
@@ -217,3 +227,5 @@ tailcourses: the events edit under a non-canonical `X-Group-Id` audits the creat
 ## Round t3courses
 
 HTML-form JSON for `multiple_quote` and `events`. 158 cases GREEN natively. Mutation CAUGHT by `update-form-events-invalid-json`.
+
+t4l3: 168 cases (`router-course-subscriptions` 45, shared seed). GREEN CI `t4l3-1`. Mutation `t4l3-cs-mut` (create entry written for the overwrite instead of the insert) CAUGHT on `update-primary-key-copies-row`.

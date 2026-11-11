@@ -263,6 +263,14 @@
    "title": "Corsa",
    "deleted": false,
    "group": null
+  },
+  "condiviso": {
+   "id": "a1000000-0000-4000-8000-000000669911",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "type": 1,
+   "title": "Condiviso",
+   "deleted": false,
+   "group": null
   }
  },
  "payments": {
@@ -803,6 +811,57 @@
    "attachment": false,
    "invoice": true,
    "instructor": true
+  },
+  "sh_pay_shared": {
+   "id": "a1000000-0000-4000-8000-000000669920",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "40.00",
+   "paid": false,
+   "meta": null,
+   "associate": null,
+   "user": null,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000000660001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota unica",
+   "attachment": false
+  },
+  "sh_pay_shared_gone": {
+   "id": "a1000000-0000-4000-8000-000000669921",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "40.00",
+   "paid": false,
+   "meta": null,
+   "associate": null,
+   "user": null,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000000660001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota unica",
+   "attachment": false
+  },
+  "sh_pay_shared_paid": {
+   "id": "a1000000-0000-4000-8000-000000669922",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 2,
+   "amount": "40.00",
+   "paid": true,
+   "meta": null,
+   "associate": null,
+   "user": null,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000000660001",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "description": "Quota unica",
+   "attachment": false
   }
  },
  "course_subscriptions": {
@@ -1378,6 +1437,72 @@
    "membership_payments": [
     "mp_inv"
    ]
+  },
+  "cs_shared": {
+   "id": "a1000000-0000-4000-8000-000000669930",
+   "course": "condiviso",
+   "subscription": null,
+   "paid": false,
+   "created": "2026-09-10T08:00:00Z",
+   "payment": "sh_pay_shared",
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false,
+   "membership_payments": []
+  },
+  "cs_shared_gone": {
+   "id": "a1000000-0000-4000-8000-000000669931",
+   "course": "condiviso",
+   "subscription": null,
+   "paid": false,
+   "created": "2026-09-10T08:00:00Z",
+   "payment": "sh_pay_shared_gone",
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": true,
+   "membership_payments": []
+  },
+  "cs_shared_paid": {
+   "id": "a1000000-0000-4000-8000-000000669932",
+   "course": "condiviso",
+   "subscription": null,
+   "paid": false,
+   "created": "2026-09-10T08:00:00Z",
+   "payment": "sh_pay_shared_paid",
+   "multi_payments": false,
+   "one_fee_payment": false,
+   "archived": false,
+   "type": 1,
+   "multiple_quote": null,
+   "billed_frequency": 1,
+   "billed_from": null,
+   "billed_until": null,
+   "billed_from_day_of_month": 1,
+   "membership_active": true,
+   "membership_fee": "0.00",
+   "auto_renewal": false,
+   "deleted": false,
+   "membership_payments": []
   }
  },
  "installments": {
@@ -1644,6 +1769,50 @@
    "deleted": false,
    "payment_date": "2026-10-01T22:30:00Z",
    "paid": false
+  },
+  "sh_i_shared": {
+   "id": "a1000000-0000-4000-8000-000000669940",
+   "cs": "cs_shared",
+   "number": 0,
+   "amount": "40.00",
+   "payment": "sh_pay_shared",
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-10-01T22:30:00Z",
+   "paid": false
+  },
+  "sh_i_shared_gone": {
+   "id": "a1000000-0000-4000-8000-000000669941",
+   "cs": "cs_shared_gone",
+   "number": 0,
+   "amount": "40.00",
+   "payment": "sh_pay_shared_gone",
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-10-01T22:30:00Z",
+   "paid": false
+  },
+  "sh_i_shared_paid": {
+   "id": "a1000000-0000-4000-8000-000000669942",
+   "cs": "cs_shared_paid",
+   "number": 0,
+   "amount": "40.00",
+   "payment": "sh_pay_shared_paid",
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-10-01T22:30:00Z",
+   "paid": false
+  },
+  "sh_i_plain": {
+   "id": "a1000000-0000-4000-8000-000000669949",
+   "cs": "cs_shared",
+   "number": 1,
+   "amount": "40.00",
+   "payment": null,
+   "group": null,
+   "deleted": false,
+   "payment_date": "2026-10-01T22:30:00Z",
+   "paid": false
   }
  },
  "carnets": {
@@ -1701,6 +1870,18 @@
    "disabled": false,
    "meta": {},
    "created": "2026-09-18T08:00:00Z"
+  },
+  "h_half": {
+   "id": "a1000000-0000-4000-8000-000000660113",
+   "carnet": "dieci",
+   "cs": [
+    "cs_invoiced"
+   ],
+   "disabled": false,
+   "meta": {
+    "lessons_left": 2.5
+   },
+   "created": "2026-09-19T08:00:00Z"
   },
   "h_deleted": {
    "id": "a1000000-0000-4000-8000-000000669904",
@@ -3574,6 +3755,84 @@
        }
       ],
       "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-09-01T10:00:00Z}</span>",
+      "carnets": [
+       {
+        "carnet_subscription_id": "a1000000-0000-4000-8000-000000660113",
+        "carnet_id": "a1000000-0000-4000-8000-000000660107",
+        "title": "Dieci ingressi",
+        "lessons_total": 10,
+        "lessons_left": 2.5,
+        "lessons_used": 7.5,
+        "lessons_display": "2.5/10",
+        "creation_date": "19/09/2026"
+       }
+      ]
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000669930",
+      "creation_date": "2026-09-10T08:00:00Z",
+      "paid": false,
+      "subscription": null,
+      "multi_payments": false,
+      "multiple_quote": null,
+      "one_fee_payment": false,
+      "installments": [
+       {
+        "course_subscription_installment_id": "a1000000-0000-4000-8000-000000669940",
+        "id": 0,
+        "amount": "40.00",
+        "payment_date": "2026-10-01",
+        "paid": false
+       },
+       {
+        "course_subscription_installment_id": "a1000000-0000-4000-8000-000000669949",
+        "id": 1,
+        "amount": "40.00",
+        "payment_date": "2026-10-01",
+        "paid": false
+       }
+      ],
+      "course": "a1000000-0000-4000-8000-000000669911",
+      "type": 1,
+      "billed_frequency": 1,
+      "billed_from": null,
+      "billed_until": null,
+      "billed_from_day_of_month": 1,
+      "membership_active": true,
+      "membership_fee": "0.00",
+      "auto_renewal": false,
+      "membership_payments": [],
+      "medical_label": null,
+      "carnets": []
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000669932",
+      "creation_date": "2026-09-10T08:00:00Z",
+      "paid": false,
+      "subscription": null,
+      "multi_payments": false,
+      "multiple_quote": null,
+      "one_fee_payment": false,
+      "installments": [
+       {
+        "course_subscription_installment_id": "a1000000-0000-4000-8000-000000669942",
+        "id": 0,
+        "amount": "40.00",
+        "payment_date": "2026-10-01",
+        "paid": true
+       }
+      ],
+      "course": "a1000000-0000-4000-8000-000000669911",
+      "type": 1,
+      "billed_frequency": 1,
+      "billed_from": null,
+      "billed_until": null,
+      "billed_from_day_of_month": 1,
+      "membership_active": true,
+      "membership_fee": "0.00",
+      "auto_renewal": false,
+      "membership_payments": [],
+      "medical_label": null,
       "carnets": []
      }
     ]
