@@ -607,6 +607,7 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	}
 	// Values Python would convert differently are refused before any write.
 	names := [2]string{}
+	namesStorable := true
 	for index, pair := range [2][2]any{{social.FirstName, "first_name"}, {social.LastName, "last_name"}} {
 		value := pair[0]
 		if pythonFalsy(value) {
@@ -615,9 +616,28 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 				value = sent
 			}
 		}
-		text, ok := value.(string)
-		if !ok || oauthTextUnsupported(text) {
+		var text string
+		switch v := value.(type) {
+		case string:
+			if oauthTextUnsupported(v) {
+				return nil, ErrOAuthNotPorted
+			}
+			text = v
+		case nil:
+			namesStorable = false // NOT NULL: create_user raises IntegrityError
+		case json.Number:
+			if strings.ContainsAny(string(v), ".eE") {
+				return nil, ErrOAuthNotPorted // the welcome mail writes a float in the locale's number format
+			}
+			text = dto.PythonStr(v)
+		case float64:
 			return nil, ErrOAuthNotPorted
+		default:
+			// The column stores str(value); the mail and the response write the same text.
+			text = dto.PythonStr(value)
+			if utf8.RuneCountInString(text) > 150 {
+				namesStorable = false // varchar(150): DataError
+			}
 		}
 		names[index] = text
 	}
@@ -632,6 +652,9 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	}
 	if !usernameText || username == "" {
 		return nil, ErrOAuthServer // data['username'].upper() / "The given username must be set"
+	}
+	if !namesStorable {
+		return nil, ErrOAuthServer
 	}
 	hash, err := s.oauthUnusablePassword()
 	if err != nil {
