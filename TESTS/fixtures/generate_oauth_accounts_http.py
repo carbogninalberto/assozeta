@@ -474,13 +474,16 @@ add('signup-athlete', 'anonymous', SIGNUP, 200, '$signup',
     effect=created(first='Mario', last="D'Arco <it>", username='NUOVO-ATLETA', email='Nuovo.Atleta@example.test',
                    password='  Valid-Pass1!  ', partial='athlete'))
 # Usernames are Unicode: UnicodeUsernameValidator accepts every letter and number, the stored name is str.upper()
-# (U+00DF becomes SS); a NUL cannot be sent to the uniqueness query (500, nothing written).
+# (U+00DF becomes SS); a NUL fails the pattern and the null-character check (DRF's qs_exists swallows the driver's refusal).
 add('signup-unicode-username', 'anonymous', SIGNUP, 200, '$signup', body=body(31, username='Èlia_ß.é'),
     effect=created(username='ÈLIA_SS.É', email='persona31@example.test'))
 add('signup-unicode-username-invalid-character', 'anonymous', SIGNUP, 400,
     details(username=['Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.']),
     body=body(32, username='Éli☃'))
-add('signup-username-with-nul', 'anonymous', SIGNUP, 500, SERVER, body=body(33, username='abc\u0000def'))
+add('signup-username-with-nul', 'anonymous', SIGNUP, 400,
+    details(username=['Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.',
+                      'Null characters are not allowed.']),
+    body=body(33, username='abc\u0000def'))
 add('signup-athlete-username-taken-now', 'anonymous', SIGNUP, 400, details(username=['A user with that username already exists.']),
     body=body(8, username='NUOVO-ATLETA'))
 add('signup-athlete-owner-actor', 'owner', SIGNUP, 200, '$signup',

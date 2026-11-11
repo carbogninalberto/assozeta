@@ -24,7 +24,7 @@ type OAuthSignupFields struct {
 	// UsernameChecked: the username reached the field validators, so the
 	// service runs the UniqueValidator query between the character and length checks.
 	UsernameChecked bool
-	// UsernameNUL: the username holds a NUL character, which the uniqueness query cannot carry.
+	// UsernameNUL: the username holds a NUL character: the uniqueness query is not run (DRF's qs_exists answers False).
 	UsernameNUL bool
 }
 

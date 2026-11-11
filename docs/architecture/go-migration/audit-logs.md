@@ -16,7 +16,7 @@
 ## Not ported (refused explicitly with the 500 page, never a guessed body)
 
 - `datetime.fromisoformat` forms outside `YYYY-MM-DD[(T| )HH:MM[:SS[.fff|.ffffff]][±HH:MM]]` when the text starts with a 4-digit year (compact, week dates, other fraction widths, `24:00`); years below 1000 in any strftime.
-- `json.loads` input with `NaN`/`Infinity` literals, lone surrogate escapes or nesting deeper than 500.
+- `json.loads` input nested deeper than 500 (the recursion limit depends on the live call stack). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
 - `str.title()`/`str.capitalize()` of non-ASCII text (field labels, unlabelled model names, permission segments).
 - Malformed UTF-8 in the query parameters the list reads.
 

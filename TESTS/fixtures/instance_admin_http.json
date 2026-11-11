@@ -6136,6 +6136,156 @@
    }
   },
   {
+   "name": "instance-admin-integration-ai-url-idn-host-valid",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "model": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "revision": 0,
+    "enabled": true,
+    "model": "",
+    "cheap_model": "fixture-cheap",
+    "base_url": "https://llm.bücher.example/v1",
+    "max_iterations": 15,
+    "max_results": 5000,
+    "query_timeout": 10,
+    "ws_rate_limit": 10,
+    "ws_timeout": 240,
+    "history_cap": 50
+   }
+  },
+  {
+   "name": "instance-admin-integration-ai-url-idn-host-fullwidth-valid",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "model": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "revision": 0,
+    "enabled": true,
+    "model": "",
+    "cheap_model": "fixture-cheap",
+    "base_url": "https://ｌｌｍ.日本語。example/v1",
+    "max_iterations": 15,
+    "max_results": 5000,
+    "query_timeout": 10,
+    "ws_rate_limit": 10,
+    "ws_timeout": 240,
+    "history_cap": 50
+   }
+  },
+  {
+   "name": "instance-admin-integration-ai-url-idn-label-too-long",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "base_url": [
+     "Enter a valid URL."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "revision": 0,
+    "enabled": true,
+    "model": "fixture-model",
+    "cheap_model": "fixture-cheap",
+    "base_url": "https://éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé.example/v1",
+    "max_iterations": 15,
+    "max_results": 5000,
+    "query_timeout": 10,
+    "ws_rate_limit": 10,
+    "ws_timeout": 240,
+    "history_cap": 50
+   }
+  },
+  {
+   "name": "instance-admin-integration-ai-url-idn-prohibited-character",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "base_url": [
+     "Enter a valid URL."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "revision": 0,
+    "enabled": true,
+    "model": "fixture-model",
+    "cheap_model": "fixture-cheap",
+    "base_url": "https://é x.example/v1",
+    "max_iterations": 15,
+    "max_results": 5000,
+    "query_timeout": 10,
+    "ws_rate_limit": 10,
+    "ws_timeout": 240,
+    "history_cap": 50
+   }
+  },
+  {
+   "name": "instance-admin-integration-ai-url-non-ascii-path",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "model": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "body": {
+    "revision": 0,
+    "enabled": true,
+    "model": "",
+    "cheap_model": "fixture-cheap",
+    "base_url": "https://llm.example.test/modèle",
+    "max_iterations": 15,
+    "max_results": 5000,
+    "query_timeout": 10,
+    "ws_rate_limit": 10,
+    "ws_timeout": 240,
+    "history_cap": 50
+   }
+  },
+  {
    "name": "instance-admin-integration-ai-url-too-long",
    "actor": "owner",
    "method": "PUT",

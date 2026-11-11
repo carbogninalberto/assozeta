@@ -3230,8 +3230,16 @@
    "method": "POST",
    "path": "/oauth2/signup",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": {
+    "msg": "Invalid request.",
+    "details": {
+     "username": [
+      "Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.",
+      "Null characters are not allowed."
+     ]
+    }
+   },
    "effect": null,
    "body": {
     "sport_association": false,

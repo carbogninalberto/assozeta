@@ -39,7 +39,9 @@ def assert_case(case, base_url, *, token, sessions):
     else:
         check(cookies == ([case['set_cookie']] if case['set_cookie'] else None), 'response.set-cookie')
     # Repeated Vary field lines are one comma-joined list (RFC 9110 5.3).
-    check(', '.join(received.get_all('Vary') or []) == case['vary'], 'response.vary')
+    # Go may order the names differently (GZipMiddleware's Accept-Encoding comes last in Django): compare the set.
+    names = lambda text: sorted(part.strip() for part in text.split(',') if part.strip())
+    check(names(', '.join(received.get_all('Vary') or [])) == names(case['vary']), 'response.vary')
     check(received.get('Content-Language') == case['language'], 'response.language')
     check(received.get('Content-Type') == 'text/html; charset=utf-8', 'response.type')
     if case['method'] == 'HEAD' or case['response'] == '<empty>':

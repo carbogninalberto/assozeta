@@ -123,8 +123,13 @@ func (s *InstanceSetup) Configure(ctx context.Context, body any, audit domain.Lo
 	if err != nil {
 		return nil, err
 	}
-	if input.RefusedURL || !input.DomainASCII {
+	if input.RefusedURL {
 		return nil, domain.ErrInstanceSetupRefused
+	}
+	// The configuration row is the first insert of the transaction; Python's lower() can lengthen the domain
+	// (U+0130 becomes two characters) past its column.
+	if len([]rune(input.Domain)) > 255 {
+		return setupFailure(500, "value too long for type character varying(255)\n"), nil
 	}
 	if len([]rune(input.SupportEmail)) > 254 {
 		// The configuration row is the first insert of the transaction.

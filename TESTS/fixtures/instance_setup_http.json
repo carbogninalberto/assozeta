@@ -1103,6 +1103,94 @@
    }
   },
   {
+   "name": "instance-setup-configure-client-portal-idn-valid",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "oem": {
+      "name": [
+       "This field may not be blank."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " "
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    },
+    "stripe": {
+     "clientPortal": "https://portale.bücher.example/area"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-client-portal-idn-invalid",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "stripe": {
+      "clientPortal": [
+       "Enter a valid URL."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    },
+    "stripe": {
+     "clientPortal": "https://éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé.example"
+    }
+   }
+  },
+  {
    "name": "instance-setup-configure-long-domain",
    "actor": "anonymous",
    "method": "POST",
@@ -2477,6 +2565,41 @@
      "type": "fresh",
      "associationName": "Associazione Setup",
      "ownerEmail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@İ.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-domain-grows-when-lowercased",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "value too long for type character varying(255)\n"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "İİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİ",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
      "ownerPassword": "setup-password-1"
     }
    }

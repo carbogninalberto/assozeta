@@ -209,6 +209,11 @@ add('configure-field-rules', 'anonymous', CONFIGURE, 400, invalid({
           'oauth': {'googleClientId': 'g' * 256, 'appleClientId': {'id': 1}},
           'stripe': {'clientPortal': 'not a url', 'publicKey': None},
           'initialization': {'type': 'restore'}}, headers=TOKEN)
+# clientPortal goes through URLValidator, whose IDNA retry accepts an internationalized name (the name error shows alone).
+add('configure-client-portal-idn-valid', 'anonymous', CONFIGURE, 400, invalid({'oem': {'name': [BLANK]}}),
+    body=setup_body(oem={'name': ' '}, stripe={'clientPortal': 'https://portale.bücher.example/area'}), headers=TOKEN)
+add('configure-client-portal-idn-invalid', 'anonymous', CONFIGURE, 400, invalid({'stripe': {'clientPortal': [URL_INVALID]}}),
+    body=setup_body(stripe={'clientPortal': 'https://' + 'é' * 64 + '.example'}), headers=TOKEN)
 add('configure-long-domain', 'anonymous', CONFIGURE, 400,
     invalid({'domain': ['Ensure this field has no more than 255 characters.'], 'oem': [NULL]}),
     body={'domain': 'd' * 256, 'oem': None, 'initialization': {'type': 'fresh', 'associationName': 'A', 'ownerEmail': 'a@b.example',
@@ -322,6 +327,9 @@ assert len(DOTTED) == 254
 add('configure-owner-email-grows-when-lowercased', 'anonymous', CONFIGURE, 500, failed(TOO_LONG),
     body=setup_body(initialization={'type': 'fresh', 'associationName': 'Associazione Setup', 'ownerEmail': DOTTED,
                                     'ownerPassword': 'setup-password-1'}), headers=TOKEN)
+# The domain is stored lower-cased by Python: 255 dotted capitals double in length and the column refuses them.
+add('configure-domain-grows-when-lowercased', 'anonymous', CONFIGURE, 500, failed('value too long for type character varying(255)\n'),
+    body=setup_body(domain='İ' * 255), headers=TOKEN)
 add('configure-email-over-validator-limit', 'anonymous', CONFIGURE, 400,
     invalid({'oem': {'supportEmail': [EMAIL_INVALID]}}),
     body=setup_body(oem={'name': 'Istanza Setup', 'supportEmail': 'x' * 310 + '@setup.example.test'}), headers=TOKEN)

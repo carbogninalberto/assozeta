@@ -453,13 +453,14 @@ func (s *OAuthAccounts) Signup(ctx context.Context, identity domain.ResolvedIden
 	if unported {
 		return nil, ErrOAuthNotPorted
 	}
-	if fields.UsernameNUL {
-		return nil, ErrOAuthServer // UniqueValidator: psycopg2 refuses a NUL in the query text
-	}
 	if fields.UsernameChecked {
-		taken, err := s.store.UsernameTaken(ctx, fields.Username)
-		if err != nil {
-			return nil, err
+		taken := false
+		if !fields.UsernameNUL {
+			// DRF's qs_exists answers False when the driver refuses the query (a NUL in the text).
+			var err error
+			if taken, err = s.store.UsernameTaken(ctx, fields.Username); err != nil {
+				return nil, err
+			}
 		}
 		var codes []string
 		if validation.UsernameInvalid {
