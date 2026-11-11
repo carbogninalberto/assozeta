@@ -1168,50 +1168,6 @@ func PythonStrptimeDate(text string) (time.Time, bool) {
 	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC), true
 }
 
-// PythonUTF8Replace is bytes.decode('utf-8', 'replace'): one U+FFFD for each
-// maximal ill-formed subpart (unlike a per-byte replacement, a truncated
-// multi-byte sequence yields a single replacement character).
-func PythonUTF8Replace(text string) string {
-	if utf8.ValidString(text) {
-		return text
-	}
-	var out strings.Builder
-	for i := 0; i < len(text); {
-		if r, size := utf8.DecodeRuneInString(text[i:]); r != utf8.RuneError || size > 1 {
-			out.WriteString(text[i : i+size])
-			i += size
-			continue
-		}
-		// An ill-formed start: consume the longest prefix of a valid sequence.
-		first, need := text[i], 0
-		lo, hi := byte(0x80), byte(0xBF)
-		switch {
-		case first >= 0xC2 && first <= 0xDF:
-			need = 1
-		case first == 0xE0:
-			need, lo = 2, 0xA0
-		case first >= 0xE1 && first <= 0xEC, first == 0xEE, first == 0xEF:
-			need = 2
-		case first == 0xED:
-			need, hi = 2, 0x9F
-		case first == 0xF0:
-			need, lo = 3, 0x90
-		case first >= 0xF1 && first <= 0xF3:
-			need = 3
-		case first == 0xF4:
-			need, hi = 3, 0x8F
-		}
-		j := i + 1
-		for k := 0; k < need && j < len(text) && text[j] >= lo && text[j] <= hi; k++ {
-			j++
-			lo, hi = 0x80, 0xBF
-		}
-		out.WriteString("�")
-		i = j
-	}
-	return out.String()
-}
-
 // PythonParseDate is django.utils.dateparse.parse_date for a str: date.fromisoformat
 // (basic and ISO week forms), then date_re (\d{4}-\d{1,2}-\d{1,2}$ with Unicode
 // digits, and $ also before a final newline). It returns the date as YYYY-MM-DD;

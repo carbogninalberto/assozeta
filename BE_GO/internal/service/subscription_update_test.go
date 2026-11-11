@@ -90,7 +90,7 @@ func TestSubscriptionUpdatePublishesAfterCommit(t *testing.T) {
 }
 
 // A value the save rejects commits only the pre_save entry and publishes nothing;
-// a refused value writes nothing.
+// an ISO week date is read as date.fromisoformat reads it and saves.
 func TestSubscriptionUpdateKeptEntryDoesNotPublish(t *testing.T) {
 	updates, _, events := updateFixture()
 	if err := updates.Update(context.Background(), approveIdentity(), approveSubscription, "", updateBody("type", "-1"), false, nil,
@@ -102,7 +102,7 @@ func TestSubscriptionUpdateKeptEntryDoesNotPublish(t *testing.T) {
 	}
 	updates, _, events = updateFixture()
 	if err := updates.Update(context.Background(), approveIdentity(), approveSubscription, "", updateBody("acceptance_date", "2026W01"), false, nil,
-		domain.LoginAuditContext{}); !errors.Is(err, ErrSubscriptionUpdateNotPorted) || len(*events) != 0 {
+		domain.LoginAuditContext{}); err != nil || strings.Join(*events, ",") != "save,commit,publish" {
 		t.Fatalf("err %v events %v", err, *events)
 	}
 }
