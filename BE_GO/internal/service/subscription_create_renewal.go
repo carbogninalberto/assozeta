@@ -180,11 +180,19 @@ func groupedCustomData(ctx context.Context, tx domain.SubscriptionCreateTransact
 	if err != nil || len(rows) == 0 {
 		return nil, err
 	}
+	row := rows[0]
 	if len(rows) > 1 && rows[0].CreationDate.Equal(rows[1].CreationDate) {
-		// order_by('-creation_date').first() among equal dates is not ported.
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// order_by('-creation_date').first(): the database breaks the tie, as in Django.
+		newest, err := tx.NewestGroupedCustomData(ctx, user)
+		if err != nil {
+			return nil, err
+		}
+		if newest == nil {
+			return nil, domain.ErrSubscriptionCreateServer
+		}
+		row = *newest
 	}
-	parsed, err := dto.ParsePythonJSON(rows[0].CustomData)
+	parsed, err := dto.ParsePythonJSON(row.CustomData)
 	if err != nil {
 		return nil, err
 	}

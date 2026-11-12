@@ -37,7 +37,12 @@ type SubscriptionCreateRequest struct {
 	Mode          *string // request.GET.get('m')
 	Authorization *string // request.headers.get('authorization')
 	Group         string
-	Audit         domain.LoginAuditContext
+	// GroupID is the canonical X-Group-Id (nil: no header).
+	GroupID *string
+	// GroupInvalid marks a header the group-aware managers cannot parse: their
+	// queries run unfiltered and the first create through a manager fails.
+	GroupInvalid bool
+	Audit        domain.LoginAuditContext
 	// Language is the request's locale (the welcome e-mail).
 	Language string
 	// StorageKeys collects the objects stored during the request (cleanup_storage_keys on failure).
@@ -104,13 +109,34 @@ func objectHas(object domain.RequestObject, name string) bool {
 	return present
 }
 
+// subscriptionCreateGroup parses the X-Group-Id header: the canonical UUID when
+// Python's uuid.UUID(hex=...) accepts it (dashes anywhere included), else the
+// text as sent. A blank header is no header. subscriptionRenewGroup then decides
+// whether the managers can filter with it or must run unfiltered.
+func subscriptionCreateGroup(header string) (stored *string, sent string) {
+	header = strings.TrimSpace(header)
+	if header == "" {
+		return nil, ""
+	}
+	if parsed, err := paymentInfoParseUUID(header); err == nil {
+		canonical := parsed.String()
+		return &canonical, header
+	}
+	return &header, header
+}
+
 // Add follows subscription_add: owners and collaborators, the public form
 // (anonymous) and a logged-in athlete naming an association.
 func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
 	// Form bodies are not ported.
-	if request.Form || strings.TrimSpace(request.Group) != "" {
+	if request.Form {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
+	group, _ := subscriptionCreateGroup(request.Group)
+	// A malformed header leaves the manager queries unfiltered but still fails
+	// the first create: the query group is nil, the flag marks the failure point.
+	queryGroup, invalidGroup := subscriptionRenewGroup(group)
+	request.GroupInvalid = invalidGroup
 	// _prepare_subscription_request logs data.get('is_family_wizard'): only a dict passes.
 	data, ok := request.Body.(domain.RequestObject)
 	if !ok {
@@ -133,13 +159,14 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 	request.AthleteRequest = user.Role != domain.RoleAssociation && objectHas(data, "sport_association")
 	if quick {
 		if user.Role != domain.RoleAssociation && objectHas(data, "sport_association") && objectHas(data, "associate") {
-			return nil, s.quickMember(ctx, identity, data)
+			return nil, s.quickMember(ctx, identity, data, queryGroup)
 		}
 		if user.Role == domain.RoleAssociation {
 			tx, err := s.store.BeginSubscriptionCreate(ctx)
 			if err != nil {
 				return nil, err
 			}
+			tx.SetGroup(queryGroup)
 			association, err := tx.ActiveAssociationOf(ctx, user.ID)
 			_ = tx.Rollback()
 			if err != nil {
@@ -151,7 +178,7 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 			}
 			// data['sport_association'] is set to it: an associate key takes the quick branch.
 			if objectHas(data, "associate") {
-				return s.quick(ctx, identity, data, request)
+				return s.quick(ctx, identity, data, request, queryGroup)
 			}
 		}
 		return nil, errSubscriptionCreateValidation
@@ -162,9 +189,9 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 		}
 	}
 	if family, _ := data.Lookup("is_family_wizard"); family == true {
-		return s.family(ctx, identity, data, request)
+		return s.family(ctx, identity, data, request, queryGroup)
 	}
-	return s.create(ctx, identity, data, request)
+	return s.create(ctx, identity, data, request, queryGroup)
 }
 
 // subscriptionMedicalDate is create_subscription's expiration parse:
@@ -300,19 +327,87 @@ type subscriptionAudit struct {
 	tx      domain.SubscriptionCreateTransaction
 	context domain.LoginAuditContext
 	now     func() time.Time
+	// group is the canonical X-Group-Id; sent is the header text auditlog writes
+	// for rows created through the manager (the instance keeps the sent spelling).
+	group     *string
+	sentGroup string
+	// invalidGroup marks a malformed header: the manager queries ignore it and
+	// the first row created through a manager raises (auditlog never runs).
+	invalidGroup bool
+	// inserted marks associates created through the manager with the group: a
+	// later save compares the stored uuid with the sent spelling.
+	inserted map[string]bool
 }
 
-func (a subscriptionAudit) associate(ctx context.Context, key string, action int, created bool, changes map[string][2]string, association *string,
-	path string) error {
-	if !created && len(changes) == 0 {
+func (a subscriptionAudit) invalid() bool {
+	// A malformed header reaches flows that build their own audit literal (quick):
+	// there the query group is nil while the sent text is not.
+	return a.invalidGroup || (a.group == nil && a.sentGroup != "")
+}
+
+func (a subscriptionAudit) visible(stored *domain.SubscriptionEditAssociate) bool {
+	if a.group == nil {
+		return true
+	}
+	return stored != nil && stored.GroupID != nil && *stored.GroupID == *a.group
+}
+
+// index is the AuditLogIndex resolution of the entry: the group-aware manager
+// finds the row (direct), else the live association in the changes, else the
+// caller's fallback (the actor's association).
+func (a subscriptionAudit) index(stored *domain.SubscriptionEditAssociate, association *string, path string) (*string, string) {
+	if a.group == nil || a.visible(stored) {
+		return association, path
+	}
+	if stored != nil && stored.AssociationID != nil {
+		return stored.AssociationID, "changes_json.sport_association"
+	}
+	return association, path
+}
+
+func (a subscriptionAudit) associate(ctx context.Context, key string, action int, created bool, stored *domain.SubscriptionEditAssociate,
+	changes map[string][2]string, association *string, path string) error {
+	indexAssociation, indexPath := a.index(stored, association, path)
+	if created {
+		var overrides map[string][2]string
+		if a.group != nil && a.inserted[key] {
+			overrides = map[string][2]string{"group": {"None", a.sentGroup}}
+		}
+		return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Action: action, Created: true, Changes: changes,
+			Overrides: overrides, Association: indexAssociation, Path: indexPath, Context: a.context, At: a.now().UTC()})
+	}
+	if !a.visible(stored) {
+		// auditlog's old row lookup goes through the group-aware manager and
+		// finds nothing: it renders every field against None, like a create.
+		return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Action: action, Created: true, Changes: nil,
+			Association: indexAssociation, Path: indexPath, Context: a.context, At: a.now().UTC()})
+	}
+	if a.inserted[key] && a.group != nil && a.sentGroup != *a.group {
+		if changes == nil {
+			changes = map[string][2]string{}
+		}
+		changes["group"] = [2]string{*a.group, a.sentGroup}
+	}
+	if len(changes) == 0 {
 		return nil
 	}
-	return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Action: action, Created: created, Changes: changes,
-		Association: association, Path: path, Context: a.context, At: a.now().UTC()})
+	return a.tx.Audit(ctx, domain.SubscriptionEditAudit{Model: "associate", Key: key, Action: action, Created: false, Changes: changes,
+		Association: indexAssociation, Path: indexPath, Context: a.context, At: a.now().UTC()})
 }
 
 func (a subscriptionAudit) created(ctx context.Context, model, representation, table, column, key string, overrides map[string][2]string,
 	association *string, path string) error {
+	if a.invalid() {
+		// Payment.objects.create / Subscription.objects.create through the manager
+		// fails on the raw header; the transaction rolls back.
+		return domain.ErrSubscriptionCreateServer
+	}
+	if a.group != nil && (model == "payment" || model == "subscription") {
+		if overrides == nil {
+			overrides = map[string][2]string{}
+		}
+		overrides["group"] = [2]string{"None", a.sentGroup}
+	}
 	return a.tx.AuditEntry(ctx, domain.SubscriptionCreateAudit{App: "application", Model: model, Representation: representation, Table: table,
 		Column: column, Key: key, Action: 0, Created: true, Overrides: overrides, Association: association, Path: path, Context: a.context,
 		At: a.now().UTC()})
@@ -344,7 +439,7 @@ type subscriptionCreated struct {
 }
 
 func (s *SubscriptionCreates) create(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
-	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
+	request SubscriptionCreateRequest, group *string) (*SubscriptionCreateResult, error) {
 	// A preregistration that renews a subscription replaces these inputs: they are checked after the fill.
 	if !subscriptionRenewalRequested(data) {
 		if err := subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.now())); err != nil {
@@ -355,9 +450,11 @@ func (s *SubscriptionCreates) create(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
+	tx.SetGroup(group)
 	defer tx.Rollback()
 	keys := []string{}
 	request.StorageKeys = &keys
+	request.GroupID = group
 	created, err := s.createSubscription(ctx, tx, identity, data, request)
 	if err == nil {
 		err = tx.Commit()
@@ -373,6 +470,7 @@ func (s *SubscriptionCreates) create(ctx context.Context, identity domain.Resolv
 func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.SubscriptionCreateTransaction, identity domain.ResolvedIdentity,
 	data domain.RequestObject, request SubscriptionCreateRequest) (*subscriptionCreated, error) {
 	server := domain.ErrSubscriptionCreateServer
+	group := request.GroupID
 	user := identity.ScopeUser
 	now := s.now().UTC()
 	today := subscriptionCreateDay(now)
@@ -407,28 +505,9 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	if !present {
 		return nil, pythonKeyError("born_date")
 	}
-	// person_date(str(born_date)): str() of None, a boolean or an integer; that of
-	// floats and containers is not ported.
-	var bornText string
-	switch typed := bornValue.(type) {
-	case string:
-		bornText = typed
-	case nil:
-		bornText = "None"
-	case bool:
-		bornText = "False"
-		if typed {
-			bornText = "True"
-		}
-	case json.Number:
-		integer, isInteger := new(big.Int).SetString(string(typed), 10)
-		if !isInteger {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
-		bornText = integer.String()
-	default:
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
+	// person_date(str(born_date)): Python str() of any JSON value (None, a
+	// boolean, an integer, a float or a container), then dateutil's reading.
+	bornText := dto.PythonStr(bornValue)
 	born, result, failure := dto.PersonDateText(bornText, now)
 	if result == dto.DateutilUnsupported {
 		return nil, domain.ErrSubscriptionCreateNotPorted
@@ -580,7 +659,8 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			return nil, domain.ErrSubscriptionCreateDuplicate
 		}
 	}
-	audit := subscriptionAudit{tx: tx, context: request.Audit, now: s.now}
+	audit := subscriptionAudit{tx: tx, context: request.Audit, now: s.now, group: group, sentGroup: request.Group,
+		invalidGroup: request.GroupInvalid, inserted: map[string]bool{}}
 	ownAssociation := &association
 	// A new member account (or the user with its e-mail) replaces user from here on.
 	newMember, err := s.newMember(ctx, tx, data, settings, request)
@@ -592,13 +672,13 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		member, welcome = newMember.member, newMember.welcome
 	}
 	memberID := member.ID
-	saved, err := s.saveAssociate(ctx, tx, audit, associate, association, nil)
+	saved, err := s.saveAssociate(ctx, tx, audit, associate, association, nil, group)
 	if err != nil {
 		return nil, err
 	}
 	var savedTutor *domain.SubscriptionEditAssociate
 	if saved.IsMinor && tutor != nil {
-		savedTutor, err = s.saveAssociate(ctx, tx, audit, tutor, association, &saved.ID)
+		savedTutor, err = s.saveAssociate(ctx, tx, audit, tutor, association, &saved.ID, group)
 		if err != nil {
 			return nil, err
 		}
@@ -608,7 +688,7 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			if err = tx.SaveAssociate(ctx, *savedTutor); err != nil {
 				return nil, err
 			}
-			if err = audit.associate(ctx, savedTutor.ID, 1, false, associateChanges(old, *savedTutor), ownAssociation, "direct"); err != nil {
+			if err = audit.associate(ctx, savedTutor.ID, 1, false, &old, associateChanges(old, *savedTutor), ownAssociation, "direct"); err != nil {
 				return nil, err
 			}
 			relations, err := tx.Relations(ctx, saved.ID)
@@ -641,12 +721,19 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			}
 		}
 	}
+	// associate.save() of the instance the serializer returned. When the tutor save updated
+	// that same row (the tutor's tax code matched the minor's), the stored row now holds the
+	// tutor's fields: the stale instance writes the minor's values back, and auditlog's entry
+	// compares against that stored row.
 	old := *saved
+	if savedTutor != nil && savedTutor.ID == saved.ID {
+		old = *savedTutor
+	}
 	saved.UserID = &memberID
 	if err = tx.SaveAssociate(ctx, *saved); err != nil {
 		return nil, err
 	}
-	if err = audit.associate(ctx, saved.ID, 1, false, associateChanges(old, *saved), ownAssociation, "direct"); err != nil {
+	if err = audit.associate(ctx, saved.ID, 1, false, &old, associateChanges(old, *saved), ownAssociation, "direct"); err != nil {
 		return nil, err
 	}
 	signatureValue, _ := data.Lookup("signature")
@@ -756,9 +843,11 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	var paymentID *string
 	amountJSON := "0"
 	if fees.payment {
-		amount, ok := dto.SubscriptionCreateDecimal(fees.amount)
+		// The amount filter and the insert both pass through the DecimalField, which
+		// raises for an infinite or NaN value.
+		amount, ok := dto.SubscriptionCreateDecimalValue(fees.amount)
 		if !ok {
-			return nil, domain.ErrSubscriptionCreateNotPorted
+			return nil, server
 		}
 		day := calendarTime(today)
 		reusable, tied, err := tx.ReusablePayments(ctx, saved.ID, association, amount, day)
@@ -766,7 +855,15 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			return nil, err
 		}
 		if tied {
-			return nil, domain.ErrSubscriptionCreateNotPorted
+			// order_by('-creation_date').first(): the database breaks the tie, as in Django.
+			newest, err := tx.NewestReusablePayment(ctx, saved.ID, association, amount, day)
+			if err != nil {
+				return nil, err
+			}
+			if newest == nil {
+				return nil, server
+			}
+			reusable = []string{*newest}
 		}
 		if len(reusable) > 0 {
 			paymentID = &reusable[0]
@@ -791,6 +888,10 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 			id := uuid.NewString()
 			row := domain.SubscriptionCreatePayment{ID: id, AssociationID: association, AssociateID: saved.ID, UserID: memberID, Amount: amount,
 				CategoryID: category, AccountID: account, MetaCategories: fees.metaCategories, Meta: fees.meta, PaymentDate: day, Created: s.now().UTC()}
+			if request.GroupInvalid {
+				// Payment.objects.create through the manager fails on the raw header.
+				return nil, server
+			}
 			if err = tx.InsertPayment(ctx, row); err != nil {
 				return nil, err
 			}
@@ -916,6 +1017,10 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		Type: subscriptionType, Role: role, Status: status, MedicalID: medical, PaymentID: paymentID, CustomData: customData,
 		AdditionalFields: additionalFields, Meta: meta, Number: number.String(), SubscriptionType: settings.DefaultMembershipType,
 		Created: createdAt, Start: dates.Start, End: dates.End, Renewal: renewal, RenewedUser: renewedUser}
+	if request.GroupInvalid {
+		// Subscription.objects.create through the manager fails on the raw header.
+		return nil, server
+	}
 	if err = tx.InsertSubscription(ctx, row); err != nil {
 		return nil, err
 	}
@@ -945,11 +1050,8 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		if settings.DefaultMembershipType != nil && *settings.DefaultMembershipType != "" {
 			membershipType = *settings.DefaultMembershipType
 		} else if membershipPlanName != nil {
-			text, isText := membershipPlanName.(string)
-			if !isText {
-				return nil, domain.ErrSubscriptionCreateNotPorted
-			}
-			membershipType = text
+			// A CharField stores str() of any other value the plan's name holds.
+			membershipType = dto.PythonStr(membershipPlanName)
 		} else {
 			membershipType = fmt.Sprintf("Tesseramento %d/%d", memberSeason.Start.Year(), memberSeason.End.Year())
 		}
@@ -969,9 +1071,12 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 		rendered := ""
 		if fees.membershipSet {
 			if fees.membershipFloat {
-				text, ok := dto.SubscriptionCreateDecimal(fees.membershipFee)
+				// DecimalField(max_digits=9, decimal_places=2): PostgreSQL rounds the
+				// decimal Django sends to the stored two places; a later save() reads
+				// that stored value back against the in-memory float.
+				text, ok := dto.SubscriptionCreateDecimalStored(fees.membershipFee)
 				if !ok {
-					return nil, domain.ErrSubscriptionCreateNotPorted
+					return nil, server
 				}
 				price, rendered = &text, dto.PythonFloatText(fees.membershipFee)
 			} else {
@@ -1099,29 +1204,32 @@ func subscriptionCreateNormalize(tutor, associate domain.RequestObject, age int)
 // saveAssociate is AssociateSerializer(data=object): is_valid (raising for the
 // associate, skipped for an invalid tutor: nil) and create().
 func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.SubscriptionCreateTransaction, audit subscriptionAudit,
-	object domain.RequestObject, association string, minorOf *string) (*domain.SubscriptionEditAssociate, error) {
+	object domain.RequestObject, association string, minorOf *string, group *string) (*domain.SubscriptionEditAssociate, error) {
 	isTutor := minorOf != nil
-	bornValue, _ := object.Lookup("born_date")
+	bornValue, bornPresent := object.Lookup("born_date")
 	var born time.Time
 	var bornError []string
+	// bornNull is born_date None: the serializer's DateField is not required (blank=True)
+	// and accepts null (null=True), so a missing key is skipped and an explicit null is
+	// validated as None; both store None. An associate without one never reaches this call
+	// (create_subscription's first step fails), so that branch keeps refusing.
+	bornNull := false
 	switch v := bornValue.(type) {
 	case nil:
-		if isTutor && !objectHas(object, "born_date") {
-			// A tutor without born_date stores None; not ported.
+		if !isTutor {
 			return nil, domain.ErrSubscriptionCreateNotPorted
 		}
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		bornNull = true
 	case string:
 		parsed, ok := dto.SubscriptionCreateBornDate(v)
 		if !ok {
 			bornError = []string{dto.SubscriptionCreateDateFormat}
 		}
 		born = parsed
-	case json.Number, bool:
-		// DateField: strptime of a number or a boolean raises TypeError, the same 'invalid' error.
-		bornError = []string{dto.SubscriptionCreateDateFormat}
 	default:
-		return nil, domain.ErrSubscriptionCreateNotPorted
+		// DateField: strptime of any other value (a number, a boolean, a list, a
+		// dict) raises TypeError, the same 'invalid' error.
+		bornError = []string{dto.SubscriptionCreateDateFormat}
 	}
 	write, invalid, err := dto.ParseAssociateTutor(object, born, func(id string) (bool, error) {
 		if id != association {
@@ -1148,15 +1256,41 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 		}
 		return nil, &domain.SubscriptionCreateInvalid{Fields: fields}
 	}
+	// apply is the serializer's setattr loop: a None born_date is stored NULL, except for a
+	// missing key on an existing row (not in validated_data, so the stored value stays).
+	apply := func(row *domain.SubscriptionEditAssociate) {
+		stored := row.BornDate
+		applyAssociateTutorWrite(row, write)
+		if bornNull {
+			row.BornDate = nil
+			if !bornPresent {
+				row.BornDate = stored
+			}
+		}
+	}
 	if write.AssociateID != nil && *write.AssociateID != "" {
-		return s.saveAssociateByID(ctx, tx, audit, write, association, minorOf)
+		if audit.invalid() {
+			// AssociateSerializer.create runs Associate.objects.create for an unknown
+			// key (the manager fails on the raw header); an existing key is only saved.
+			// The valid-header path keeps its exact queries.
+			if parsed, err := paymentInfoParseUUID(*write.AssociateID); err == nil {
+				existing, err := tx.AssociateAny(ctx, parsed.String())
+				if err != nil {
+					return nil, err
+				}
+				if existing == nil {
+					return nil, domain.ErrSubscriptionCreateServer
+				}
+			}
+		}
+		return s.saveAssociateByID(ctx, tx, audit, write, association, minorOf, group)
 	}
 	ownAssociation := &association
 	tax := write.Text["tax_code"]
 	if tax != nil && *tax != "" {
 		upper := dto.AssociateUpper(*tax)
 		write.Text["tax_code"] = &upper
-		matches, err := tx.TaxCodeMatches(ctx, upper, ownAssociation, nil)
+		matches, err := tx.TaxCodeMatches(ctx, upper, ownAssociation, group)
 		if err != nil {
 			return nil, err
 		}
@@ -1164,7 +1298,7 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 			row := matches[0]
 			if len(matches) > 1 {
 				// MultipleObjectsReturned: order_by('-creation_date').first(); the database breaks a tie as in Django.
-				newest, err := tx.NewestTaxCodeMatch(ctx, upper, ownAssociation, nil)
+				newest, err := tx.NewestTaxCodeMatch(ctx, upper, ownAssociation, group)
 				if err != nil {
 					return nil, err
 				}
@@ -1173,26 +1307,39 @@ func (s *SubscriptionCreates) saveAssociate(ctx context.Context, tx domain.Subsc
 				}
 				row = *newest
 			}
-			if minorOf != nil && row.ID == *minorOf {
-				return nil, domain.ErrSubscriptionCreateNotPorted
-			}
+			// A tutor whose tax code matches the minor's own row reaches this update too:
+			// get_or_create returns that row and the serializer's setattr loop writes the
+			// tutor's fields over it; the view then links the row to itself and its stale
+			// minor instance writes the old values back.
 			old := row
-			applyAssociateTutorWrite(&row, write)
+			apply(&row)
 			if err = tx.SaveAssociate(ctx, row); err != nil {
 				return nil, err
 			}
-			if err = audit.associate(ctx, row.ID, 1, false, associateChanges(old, row), ownAssociation, "direct"); err != nil {
+			if err = audit.associate(ctx, row.ID, 1, false, &old, associateChanges(old, row), ownAssociation, "direct"); err != nil {
 				return nil, err
 			}
 			return &row, nil
 		}
 	}
 	row := domain.SubscriptionEditAssociate{ID: uuid.NewString(), Sex: "A", CreationDate: s.now().UTC()}
-	applyAssociateTutorWrite(&row, write)
+	// Associate.objects.create (no tax code) runs the manager's create, which adds
+	// the group; get_or_create (a tax code) does not, and the stored row keeps it null.
+	if tax == nil || *tax == "" {
+		if audit.invalid() {
+			// The manager's create receives the raw header and fails before the insert.
+			return nil, domain.ErrSubscriptionCreateServer
+		}
+		row.GroupID = group
+	}
+	apply(&row)
 	if err = tx.InsertAssociate(ctx, row); err != nil {
 		return nil, err
 	}
-	if err = audit.associate(ctx, row.ID, 0, true, nil, ownAssociation, "direct"); err != nil {
+	if row.GroupID != nil {
+		audit.inserted[row.ID] = true
+	}
+	if err = audit.associate(ctx, row.ID, 0, true, &row, nil, ownAssociation, "direct"); err != nil {
 		return nil, err
 	}
 	return &row, nil
@@ -1219,9 +1366,7 @@ func subscriptionCreatePlan(raw []byte, id any) (domain.RequestObject, error) {
 		if !present {
 			return nil, domain.ErrSubscriptionCreateServer
 		}
-		if _, isFloat := value.(json.Number); isFloat && strings.ContainsAny(string(value.(json.Number)), ".eE") {
-			return nil, domain.ErrSubscriptionCreateNotPorted
-		}
+		// str() renders a JSON float id the way Python does ('1.0', '1e+16').
 		if dto.PythonStr(value) == wanted {
 			return plan, nil
 		}
@@ -1241,11 +1386,9 @@ type subscriptionFees struct {
 
 func subscriptionCreateFloat(value any) (float64, error) {
 	number, ok, server := dto.SubscriptionCreateFloat(value)
-	if server {
+	if server || !ok {
+		// float() raises (ValueError, TypeError or OverflowError): the view does not handle it.
 		return 0, domain.ErrSubscriptionCreateServer
-	}
-	if !ok {
-		return 0, domain.ErrSubscriptionCreateNotPorted
 	}
 	return number, nil
 }

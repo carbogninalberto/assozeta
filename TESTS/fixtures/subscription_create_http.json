@@ -271,6 +271,46 @@
    "born": "1980-01-01",
    "user": "owner",
    "email": null
+  },
+  "group_seed": {
+   "id": "a1000000-0000-4000-8000-000000963001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Sergio",
+   "last": "Seme",
+   "tax_code": "GRPSED80A01H501X",
+   "born": "1980-01-01",
+   "user": null,
+   "email": null
+  },
+  "group_duplicate": {
+   "id": "a1000000-0000-4000-8000-000000963002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Duccio",
+   "last": "Doppione",
+   "tax_code": "GRPDUP81A01H501Y",
+   "born": "1981-01-01",
+   "user": null,
+   "email": null
+  },
+  "group_known": {
+   "id": "a1000000-0000-4000-8000-000000963003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Carla",
+   "last": "Conosciuta",
+   "tax_code": "GRPKNW82A01H501Z",
+   "born": "1982-01-01",
+   "user": null,
+   "email": null
+  },
+  "payment_tie": {
+   "id": "a1000000-0000-4000-8000-000000960001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Teresa",
+   "last": "Doppia",
+   "tax_code": "DPPTRS80A41H501A",
+   "born": "1980-01-01",
+   "user": null,
+   "email": null
   }
  },
  "certificates": {
@@ -506,6 +546,64 @@
    "end": "$season_end",
    "archived": false,
    "number": "21"
+  },
+  "group_seed": {
+   "id": "a1000000-0000-4000-8000-000000963004",
+   "associate": "group_seed",
+   "start": "$season_start",
+   "end": "$season_end",
+   "archived": false,
+   "number": "1",
+   "group": "own_group"
+  },
+  "group_duplicate": {
+   "id": "a1000000-0000-4000-8000-000000963005",
+   "associate": "group_duplicate",
+   "start": "$season_start",
+   "end": "$season_end",
+   "archived": false,
+   "number": "1",
+   "group": "own_group"
+  },
+  "grouped_tie_a": {
+   "id": "a1000000-0000-4000-8000-000000960004",
+   "associate": "grouped_club",
+   "start": "2025-01-01",
+   "end": "2025-12-31",
+   "archived": true,
+   "number": "10",
+   "created": "2025-06-01T00:00:00Z",
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": "Tie ASD",
+    "city": "Torino",
+    "province": "TO",
+    "address": "Via Tie 1",
+    "zip": "10100",
+    "country": "Italia",
+    "tax_code": "TIEASD80A01H501T",
+    "email": "tie@example.test"
+   }
+  },
+  "grouped_tie_b": {
+   "id": "a1000000-0000-4000-8000-000000960005",
+   "associate": "grouped_club",
+   "start": "2025-01-01",
+   "end": "2025-12-31",
+   "archived": true,
+   "number": "11",
+   "created": "2025-06-01T00:00:00Z",
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": "Altra ASD",
+    "city": "Bologna",
+    "province": "BO",
+    "address": "Via Altra 2",
+    "zip": "40100",
+    "country": "Italia",
+    "tax_code": "ALTRSD80A01H501U",
+    "email": "altra@example.test"
+   }
   }
  },
  "payments": {
@@ -522,6 +620,22 @@
    "amount": "25.00",
    "paid": false,
    "date": "$today"
+  },
+  "payment_tie_a": {
+   "id": "a1000000-0000-4000-8000-000000960002",
+   "associate": "payment_tie",
+   "amount": "25.00",
+   "paid": false,
+   "date": "$today",
+   "created": "2025-03-01T00:00:00Z"
+  },
+  "payment_tie_b": {
+   "id": "a1000000-0000-4000-8000-000000960003",
+   "associate": "payment_tie",
+   "amount": "25.00",
+   "paid": false,
+   "date": "$today",
+   "created": "2025-03-01T00:00:00Z"
   }
  },
  "relations": {
@@ -16725,15 +16839,15 @@
        "end_date": "$season_end",
        "subscription_number": "555",
        "custom_data": {
-        "city": "Milano",
+        "city": "Torino",
         "nota": "propria",
-        "denomination": "Scuola Nuova",
-        "province": "MI",
-        "address": "Via Larga 1",
-        "cap": "20100",
+        "denomination": "Tie ASD",
+        "province": "TO",
+        "address": "Via Tie 1",
+        "cap": "10100",
         "country": "Italia",
-        "tax_code": 12345678901,
-        "email": null
+        "tax_code": "TIEASD80A01H501T",
+        "email": "tie@example.test"
        },
        "additional_fields": null
       }
@@ -18768,6 +18882,4070 @@
      "first_name": "Pino",
      "last_name": "Giovane",
      "tax_code": "GVNPNI80A01H501M",
+     "born_date": "01/01/1980",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-born-date-float-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "born_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Fiamma",
+     "last_name": "Mobile",
+     "tax_code": "FLMMBL90A41H501K",
+     "born_date": 25.5,
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-born-date-list-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Lino",
+     "last_name": "Lista",
+     "tax_code": "LSTLNI90A41H501L",
+     "born_date": [
+      "01/01/2000"
+     ],
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-born-date-dict-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Dino",
+     "last_name": "Dizionario",
+     "tax_code": "DZNDNI90A41H501M",
+     "born_date": {
+      "d": "01/01/2000"
+     },
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-born-date-integer-text-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Ivan",
+     "last_name": "Virgola",
+     "tax_code": "VGNIVN90A41H501N",
+     "born_date": 2000.0,
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-tutor-born-date-list-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Nina",
+      "last_name": "Tutelata",
+      "tax_code": "TTLNNA15A41H501P",
+      "born_date": "2015-01-01",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "is_minor": true
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "560"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "560"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Nina Tutelata.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nina",
+     "last_name": "Tutelata",
+     "tax_code": "TTLNNA15A41H501P",
+     "born_date": "01/01/2015",
+     "sex": "F",
+     "is_minor": true
+    },
+    "associate_tutor_data": {
+     "first_name": "Tullio",
+     "last_name": "Lista",
+     "tax_code": "TRTLLS80A01H501Q",
+     "born_date": [
+      "x"
+     ],
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-own",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Gilda",
+      "last_name": "Gruppo",
+      "tax_code": null,
+      "born_date": "1990-01-01",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "group_id": "a1000000-0000-4000-8000-000000714001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null,
+      "group_id": "a1000000-0000-4000-8000-000000714001"
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ],
+      "group": [
+       "None",
+       "a1000000-0000-4000-8000-000000714001"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "group_id": "a1000000-0000-4000-8000-000000714001",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "2"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "2"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Gilda Gruppo.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Gilda",
+     "last_name": "Gruppo",
+     "tax_code": null,
+     "born_date": "01/01/1990",
+     "sex": "F"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-own-other-spelling",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "A1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Guido",
+      "last_name": "Gruppo",
+      "tax_code": null,
+      "born_date": "1991-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "group_id": "a1000000-0000-4000-8000-000000714001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null,
+      "group_id": "a1000000-0000-4000-8000-000000714001"
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ],
+      "group": [
+       "None",
+       "A1000000-0000-4000-8000-000000714001"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "group_id": "a1000000-0000-4000-8000-000000714001",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "3"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "3"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "A1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "group": [
+        "a1000000-0000-4000-8000-000000714001",
+        "A1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ],
+       "group": [
+        "None",
+        "A1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {
+       "group": [
+        "None",
+        "A1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Guido Gruppo.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Guido",
+     "last_name": "Gruppo",
+     "tax_code": null,
+     "born_date": "01/01/1991",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-unknown-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000939999"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nora",
+     "last_name": "Ignota",
+     "tax_code": null,
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-not-a-uuid-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "zzz"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nora",
+     "last_name": "Ignota",
+     "tax_code": null,
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-not-a-uuid-duplicate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "zzz"
+   },
+   "status": 409,
+   "response": {
+    "msg": "Questa iscrizione esiste già.",
+    "code": "409",
+    "ref": "subscription_duplicate"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "dora",
+     "last_name": "DOPPIA",
+     "tax_code": "dppdro90a41h501x",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-of-another-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Gioia",
+      "last_name": "Estera",
+      "tax_code": null,
+      "born_date": "1992-01-01",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "group_id": "a1000000-0000-4000-8000-000000714002"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null,
+      "group_id": "a1000000-0000-4000-8000-000000714002"
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ],
+      "group": [
+       "None",
+       "a1000000-0000-4000-8000-000000714002"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "group_id": "a1000000-0000-4000-8000-000000714002",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "1"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "1"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714002"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714002"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714002"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Gioia Estera.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Gioia",
+     "last_name": "Estera",
+     "tax_code": null,
+     "born_date": "01/01/1992",
+     "sex": "F"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-minor-with-tutor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Mina",
+      "last_name": "Minore",
+      "tax_code": null,
+      "born_date": "2015-01-01",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "group_id": "a1000000-0000-4000-8000-000000714001",
+      "is_minor": true
+     }
+    },
+    "tutor": {
+     "match": "new",
+     "columns": {
+      "first_name": "Tino",
+      "last_name": "Tutore",
+      "tax_code": "TTRTNO80A01H501R",
+      "born_date": "1980-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "relation": true,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null,
+      "group_id": "a1000000-0000-4000-8000-000000714001"
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ],
+      "group": [
+       "None",
+       "a1000000-0000-4000-8000-000000714001"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "group_id": "a1000000-0000-4000-8000-000000714001",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "4"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "4"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "changes_json.sport_association"
+      ],
+      "created_diff": true
+     },
+     {
+      "model": "associatetutorrelation",
+      "action": 0,
+      "ref": "relation",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-000000714001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Mina Minore.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Mina",
+     "last_name": "Minore",
+     "tax_code": null,
+     "born_date": "01/01/2015",
+     "sex": "F",
+     "is_minor": true
+    },
+    "associate_tutor_data": {
+     "first_name": "Tino",
+     "last_name": "Tutore",
+     "tax_code": "TTRTNO80A01H501R",
+     "born_date": "01/01/1980",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-known-associate-without-group-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Carla",
+     "last_name": "Conosciuta",
+     "tax_code": "GRPKNW82A01H501Z",
+     "born_date": "01/01/1982",
+     "sex": "F"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-duplicate-in-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 409,
+   "response": {
+    "msg": "Questa iscrizione esiste già.",
+    "code": "409",
+    "ref": "subscription_duplicate"
+   },
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Duccio",
+     "last_name": "Doppione",
+     "tax_code": "GRPDUP81A01H501Y",
+     "born_date": "01/01/1981",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-quick-associate-without-group-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate": "a1000000-0000-4000-8000-000000930017"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-group-own-dashes-elsewhere",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-0000007-14001"
+   },
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Gaspare",
+      "last_name": "Trattino",
+      "tax_code": null,
+      "born_date": "1993-01-01",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "group_id": "a1000000-0000-4000-8000-000000714001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null,
+      "group_id": "a1000000-0000-4000-8000-000000714001"
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ],
+      "group": [
+       "None",
+       "a1000000-0000-4000-8000-0000007-14001"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "group_id": "a1000000-0000-4000-8000-000000714001",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "5"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "5"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-0000007-14001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "group": [
+        "a1000000-0000-4000-8000-000000714001",
+        "a1000000-0000-4000-8000-0000007-14001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ],
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-0000007-14001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {
+       "group": [
+        "None",
+        "a1000000-0000-4000-8000-0000007-14001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Gaspare Trattino.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Gaspare",
+     "last_name": "Trattino",
+     "tax_code": null,
+     "born_date": "01/01/1993",
+     "sex": "F"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-reuses-unpaid-payment-tie",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "a1000000-0000-4000-8000-000000960002",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "payment_tie",
+     "columns": {
+      "sex": "M",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "payment_tie_a"
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "561"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "561"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "sex": [
+        "A",
+        "M"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Teresa Doppia.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Teresa",
+     "last_name": "Doppia",
+     "tax_code": "DPPTRS80A41H501A",
+     "born_date": "01/01/1980",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-grouped-subscriptions-custom-data-tie",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "subs": [],
+    "payments": "$payments"
+   },
+   "effect": {
+    "actor": "anonymous",
+    "new": [
+     {
+      "label": "family",
+      "bind": "$family",
+      "match": {
+       "type": "grouped_subscriptions"
+      },
+      "columns": {}
+     },
+     {
+      "label": "associate",
+      "bind": "$associate_0",
+      "match": {
+       "first_name": "Tino",
+       "last_name": "Gruppo"
+      },
+      "columns": {
+       "tax_code": "GRPTNO10A01H501H",
+       "born_date": "1990-03-15",
+       "sex": "F",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "family_id": "$family"
+      }
+     },
+     {
+      "label": "payment",
+      "bind": "$payment_0",
+      "match": {
+       "associate_id": "$associate_0"
+      },
+      "columns": {
+       "subject": 1,
+       "description": "Iscrizione",
+       "payment_category_id": "$category",
+       "user_id": "$owner",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "custom_accounts_id": "a1000000-0000-4000-8000-000000930028",
+       "amount": "25.00",
+       "payment_date": "$today_midnight",
+       "meta_payment_categories": null,
+       "meta": null
+      }
+     },
+     {
+      "label": "subscription",
+      "bind": "$subscription_0",
+      "match": {
+       "associate_id": "$associate_0"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "user_id": "$owner",
+       "payment_id": "$payment_0",
+       "type": 2,
+       "role": 1,
+       "status_flag": 1,
+       "meta": {
+        "plan_id": null,
+        "plan_name": null,
+        "membership_plan_id": null,
+        "membership_plan_name": null
+       },
+       "subscription_type": "",
+       "start_date": "$season_start",
+       "end_date": "$season_end",
+       "subscription_number": "562",
+       "custom_data": {
+        "city": "Torino",
+        "nota": "propria",
+        "denomination": "Tie ASD",
+        "province": "TO",
+        "address": "Via Tie 1",
+        "cap": "10100",
+        "country": "Italia",
+        "tax_code": "TIEASD80A01H501T",
+        "email": "tie@example.test"
+       },
+       "additional_fields": null
+      }
+     },
+     {
+      "label": "membership",
+      "bind": "$subscription_0_membership",
+      "match": {
+       "subscription_id": "$subscription_0"
+      },
+      "columns": {
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+       "associate_id": "$associate_0",
+       "payment_id": "$payment_0",
+       "membership_type": "$default_membership_type",
+       "start_date": "$season_start",
+       "end_date": "$season_end",
+       "price": null,
+       "membership_number": "562"
+      }
+     }
+    ],
+    "changed": {},
+    "deleted": {},
+    "tags": [],
+    "audit": [
+     {
+      "model": "family",
+      "action": 0,
+      "ref": "$family",
+      "changes": {},
+      "index": null,
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "$associate_0",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "$associate_0",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "$payment_0",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "$subscription_0",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "$subscription_0_membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ],
+      "app": "application"
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        {
+         "uuid": "$subscription_0"
+        }
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription_0",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notifications": [
+     {
+      "msg": "Nuova Iscrizione aggiunta per Tino Gruppo.",
+      "association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ],
+    "payments": [
+     "$payment_0"
+    ]
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Capo",
+     "last_name": "Famiglia",
+     "tax_code": "FMGCPA80A01H501F",
+     "born_date": "15/03/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": null,
+    "membership_plan_id": null,
+    "medical_certificate": {
+     "medical_id": null,
+     "certificate_expring_date": null
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "subscription_id": null,
+    "is_family_wizard": true,
+    "multiple_entry_form_data": [
+     {
+      "new_user_account": {
+       "new_member": false
+      },
+      "associate_data": {
+       "first_name": "Tino",
+       "last_name": "Gruppo",
+       "tax_code": "GRPTNO10A01H501H",
+       "born_date": "15/03/1990",
+       "sex": "F"
+      },
+      "associate_tutor_data": null,
+      "signature": {
+       "there_is_signature": false,
+       "data": ""
+      },
+      "plan_id": null,
+      "membership_plan_id": null,
+      "custom_data": {
+       "city": "Propria",
+       "nota": "propria"
+      },
+      "additional_fields": null,
+      "medical_certificate": {
+       "medical_id": null,
+       "certificate_expring_date": null
+      },
+      "valid": true
+     }
+    ],
+    "sport_association": "message-reads-700001",
+    "type": "grouped_subscriptions"
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-plan-float-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 30.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Filippo",
+      "last_name": "Virgola",
+      "tax_code": "VRGFLP90A01H501R",
+      "born_date": "1990-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "30.00",
+      "meta_payment_categories": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 30,
+        "name": "Piano virgola",
+        "id": 1.0
+       }
+      }
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "30.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "subscription_type": "",
+     "meta": {
+      "plan_id": 1.0,
+      "plan_name": "Piano virgola",
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "563"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "563"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "30.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Filippo Virgola.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Filippo",
+     "last_name": "Virgola",
+     "tax_code": "VRGFLP90A01H501R",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": 1.0
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": true,
+     "multiple_membership_fee": false,
+     "subscription_fee_plans": [
+      {
+       "id": 1.0,
+       "name": "Piano virgola",
+       "subscription_fee": 30
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 7,
+       "name": "Tessera gold",
+       "membership_fee": "12.5"
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
+  },
+  {
+   "name": "subscription-create-plan-fee-exponent-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 110.5
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Elena",
+      "last_name": "Esponente",
+      "tax_code": "SPNLNE90A41H501S",
+      "born_date": "1990-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "110.50",
+      "meta_payment_categories": [
+       {
+        "payment_category_id": "$category",
+        "amount": 10.5,
+        "subject": 0,
+        "title": "Tessera trattino",
+        "id": "3"
+       }
+      ],
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": " 1e2 ",
+        "name": "Piano esponente",
+        "id": "exp"
+       }
+      }
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "110.5"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "subscription_type": "",
+     "meta": {
+      "plan_id": "exp",
+      "plan_name": "Piano esponente",
+      "membership_plan_id": 3,
+      "membership_plan_name": "Tessera trattino"
+     },
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "564"
+    },
+    "membership": {
+     "membership_type": "Tessera trattino",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": "10.50",
+     "membership_number": "564"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "110.5"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {
+       "price": [
+        "None",
+        "10.5"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 1,
+      "ref": "membership",
+      "changes": {
+       "price": [
+        "10.50",
+        "10.5"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Elena Esponente.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Elena",
+     "last_name": "Esponente",
+     "tax_code": "SPNLNE90A41H501S",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": "exp",
+    "membership_plan_id": 3
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": true,
+     "multiple_membership_fee": true,
+     "subscription_fee_plans": [
+      {
+       "id": "exp",
+       "name": "Piano esponente",
+       "subscription_fee": " 1e2 "
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 3,
+       "name": "Tessera trattino",
+       "membership_fee": "1_0.5"
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
+  },
+  {
+   "name": "subscription-create-plan-fee-not-a-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nadia",
+     "last_name": "Nonnumero",
+     "tax_code": "NNMNDA90A41H501T",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": "bad"
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": true,
+     "multiple_membership_fee": false,
+     "subscription_fee_plans": [
+      {
+       "id": "bad",
+       "name": "Piano rotto",
+       "subscription_fee": "non-un-numero"
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 7,
+       "name": "Tessera gold",
+       "membership_fee": "12.5"
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
+  },
+  {
+   "name": "subscription-create-fee-third-decimal-rounded",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.005
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Teresa",
+      "last_name": "Terzadecimale",
+      "tax_code": "TRZTRS90A41H501U",
+      "born_date": "1990-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.01",
+      "meta_payment_categories": null,
+      "meta": {
+       "subscription_data": {
+        "subscription_fee": 25.005,
+        "name": "Piano terzo",
+        "id": "third"
+       }
+      }
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.005"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "subscription_type": "",
+     "meta": {
+      "plan_id": "third",
+      "plan_name": "Piano terzo",
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "565"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "565"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.005"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Teresa Terzadecimale.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Teresa",
+     "last_name": "Terzadecimale",
+     "tax_code": "TRZTRS90A41H501U",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": "third"
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": true,
+     "multiple_membership_fee": false,
+     "subscription_fee_plans": [
+      {
+       "id": "third",
+       "name": "Piano terzo",
+       "subscription_fee": 25.005
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 7,
+       "name": "Tessera gold",
+       "membership_fee": "12.5"
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
+  },
+  {
+   "name": "subscription-create-membership-plan-name-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 37.5
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Nora",
+      "last_name": "Nomenumero",
+      "tax_code": "NMRNRA90A41H501V",
+      "born_date": "1990-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "37.50",
+      "meta_payment_categories": [
+       {
+        "payment_category_id": "$category",
+        "amount": 12.5,
+        "subject": 0,
+        "title": 42,
+        "id": "9"
+       }
+      ],
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "37.5"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "subscription_type": "",
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": 9,
+      "membership_plan_name": 42
+     },
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "566"
+    },
+    "membership": {
+     "membership_type": "42",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": "12.50",
+     "membership_number": "566"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "37.5"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {
+       "price": [
+        "None",
+        "12.5"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 1,
+      "ref": "membership",
+      "changes": {
+       "price": [
+        "12.50",
+        "12.5"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Nora Nomenumero.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nora",
+     "last_name": "Nomenumero",
+     "tax_code": "NMRNRA90A41H501V",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "membership_plan_id": 9
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": false,
+     "multiple_membership_fee": true,
+     "subscription_fee_plans": [
+      {
+       "id": "plan-base",
+       "name": "Piano base",
+       "subscription_fee": 40
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 9,
+       "name": 42,
+       "membership_fee": 12.5
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
+  },
+  {
+   "name": "subscription-create-plan-fee-infinite-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Ivan",
+     "last_name": "Infinito",
+     "tax_code": "NFNIVN90A41H501W",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": "inf"
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": true,
+     "multiple_membership_fee": false,
+     "subscription_fee_plans": [
+      {
+       "id": "inf",
+       "name": "Piano infinito",
+       "subscription_fee": "inf"
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 7,
+       "name": "Tessera gold",
+       "membership_fee": "12.5"
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
+  },
+  {
+   "name": "subscription-create-plan-fee-nan-no-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": null,
+    "amount": 0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Nina",
+      "last_name": "Nonumero",
+      "tax_code": "NNINNA90A41H501X",
+      "born_date": "1990-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "tutor": null,
+    "relation": false,
+    "payment": null,
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "subscription_type": "",
+     "meta": {
+      "plan_id": "nan",
+      "plan_name": "Piano nonnumero",
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "567"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "567"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Nina Nonumero.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nina",
+     "last_name": "Nonumero",
+     "tax_code": "NNINNA90A41H501X",
+     "born_date": "01/01/1990",
+     "sex": "M"
+    },
+    "associate_tutor_data": null,
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    },
+    "plan_id": "nan"
+   },
+   "setup": {
+    "association": {
+     "enable_quotes_management": true,
+     "subscription_fee": "25.00",
+     "membership_fee": null,
+     "multiple_subscription_fee": true,
+     "multiple_membership_fee": false,
+     "subscription_fee_plans": [
+      {
+       "id": "nan",
+       "name": "Piano nonnumero",
+       "subscription_fee": "nan"
+      }
+     ],
+     "membership_fee_plans": [
+      {
+       "id": 7,
+       "name": "Tessera gold",
+       "membership_fee": "12.5"
+      }
+     ]
+    },
+    "owner": {
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "show_zero_payments": false
+    }
+   }
+  },
+  {
+   "name": "subscription-create-tutor-without-born-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Nino",
+      "last_name": "Senonata",
+      "tax_code": "SNNNNO15A41H501B",
+      "born_date": "2015-01-01",
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "is_minor": true
+     }
+    },
+    "tutor": {
+     "match": "new",
+     "columns": {
+      "first_name": "Tullio",
+      "last_name": "Senonata",
+      "tax_code": "SNNTLL80A01H501C",
+      "born_date": null,
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "relation": true,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "568"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "568"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "action": 0,
+      "ref": "relation",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Nino Senonata.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nino",
+     "last_name": "Senonata",
+     "tax_code": "SNNNNO15A41H501B",
+     "born_date": "01/01/2015",
+     "sex": "M",
+     "is_minor": true
+    },
+    "associate_tutor_data": {
+     "first_name": "Tullio",
+     "last_name": "Senonata",
+     "tax_code": "SNNTLL80A01H501C",
+     "sex": "M"
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-tutor-born-date-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Nilla",
+      "last_name": "Senonata",
+      "tax_code": "SNNNLL15A41H501D",
+      "born_date": "2015-01-01",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "is_minor": true
+     }
+    },
+    "tutor": {
+     "match": "new",
+     "columns": {
+      "first_name": "Tullia",
+      "last_name": "Senonata",
+      "tax_code": "SNNTLA80A41H501E",
+      "born_date": null,
+      "sex": "M",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    "relation": true,
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "569"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "569"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "tutor",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "action": 0,
+      "ref": "relation",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Nilla Senonata.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Nilla",
+     "last_name": "Senonata",
+     "tax_code": "SNNNLL15A41H501D",
+     "born_date": "01/01/2015",
+     "sex": "F",
+     "is_minor": true
+    },
+    "associate_tutor_data": {
+     "first_name": "Tullia",
+     "last_name": "Senonata",
+     "tax_code": "SNNTLA80A41H501E",
+     "sex": "M",
+     "born_date": null
+    },
+    "signature": {
+     "there_is_signature": false,
+     "data": ""
+    }
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-tutor-same-tax-code-as-minor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new",
+    "amount": 25.0
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "new",
+     "columns": {
+      "first_name": "Tina",
+      "last_name": "Uguale",
+      "tax_code": "UGLTNI15A41H501D",
+      "born_date": "2015-01-01",
+      "sex": "F",
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "is_minor": true
+     }
+    },
+    "tutor": null,
+    "relation": "self",
+    "payment": {
+     "match": "new",
+     "columns": {
+      "amount": "25.00",
+      "meta_payment_categories": null,
+      "meta": null
+     },
+     "audit": {
+      "amount": [
+       "None",
+       "25.0"
+      ]
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null,
+      "plan_name": null,
+      "membership_plan_id": null,
+      "membership_plan_name": null
+     },
+     "subscription_type": "",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "subscription_number": "570"
+    },
+    "membership": {
+     "membership_type": "$default_membership_type",
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "price": null,
+     "membership_number": "570"
+    },
+    "medical": null,
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "associate",
+      "action": 0,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "first_name": [
+        "Tina",
+        "Tino"
+       ],
+       "sex": [
+        "F",
+        "M"
+       ],
+       "born_date": [
+        "2015-01-01",
+        "1980-01-01"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "action": 0,
+      "ref": "relation",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "associate",
+      "changes": {
+       "first_name": [
+        "Tino",
+        "Tina"
+       ],
+       "sex": [
+        "M",
+        "F"
+       ],
+       "born_date": [
+        "1980-01-01",
+        "2015-01-01"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptionmembership",
+      "action": 0,
+      "ref": "membership",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Tina Uguale.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "new_user_account": {
+     "new_member": false
+    },
+    "associate_data": {
+     "first_name": "Tina",
+     "last_name": "Uguale",
+     "tax_code": "UGLTNI15A41H501D",
+     "born_date": "01/01/2015",
+     "sex": "F",
+     "is_minor": true
+    },
+    "associate_tutor_data": {
+     "first_name": "Tino",
+     "last_name": "Uguale",
+     "tax_code": "UGLTNI15A41H501D",
      "born_date": "01/01/1980",
      "sex": "M"
     },

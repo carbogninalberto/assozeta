@@ -4,9 +4,11 @@ service_context points Django's channel layer (GoMirroredRedisChannelLayer)
 at the run's private Redis database 0, as subscription_create_http does.
 seed_rows applies the association/owner settings and inserts (audit disabled)
 associates (one soft-deleted, two in another association), payments (one
-referenced by the previous subscription), subscriptions, tags, a certificate,
-a user named by e-mail, the default bank account, import drafts and import
-statuses. A case's `setup` updates the settings and draft `valid` flags first.
+referenced by the previous subscription, an optional `created` date), subscriptions,
+tags, a certificate, a user named by e-mail, the default bank account, import drafts
+and import statuses (a draft marked `late` waits for its case). A case's `setup`
+updates the settings, clears the APPROVING statuses an earlier case left, inserts the
+late drafts and updates draft `valid` flags first.
 
 Every case is checked against the complete model state:
 - new rows (matched by authored columns, bound to names) equal the model's
@@ -111,6 +113,14 @@ def apply_settings(ids, settings):
     with disable_auditlog():
         for label, valid in (settings.get('drafts') or {}).items():
             AssociateImportDraft._base_manager.filter(pk=STATE['source']['drafts'][label]['id']).update(valid=valid)
+        for label in settings.get('drafts_insert') or ():
+            row = STATE['source']['drafts'][label]
+            AssociateImportDraft._base_manager.bulk_create([AssociateImportDraft(
+                associate_import_draft_id=row['id'], sport_association_id=row['association'], data=row['data'], valid=row['valid'])])
+        if settings.get('approving_cleared'):
+            # The APPROVING rows an earlier case's crash left; nothing is audited.
+            from application.models.subscriptions_models import AssociateImportDraftStatus
+            AssociateImportDraftStatus._base_manager.filter(status_type=AssociateImportDraftStatus.APPROVING).delete()
         # Rows handed to another account (a case's setup).
         from application.models import Associate, Subscription
         accounts = settings.get('accounts') or {}
@@ -135,7 +145,7 @@ def restore_usernames(ids):
 
 
 def seed_rows(source, created):
-    from application.models import Associate, Payment, PaymentCategory, Subscription, User
+    from application.models import Associate, Payment, PaymentCategory, SportAssociation, Subscription, User
     from application.models.balance_sheet_models import CustomAccounts
     from application.models.subscriptions_models import AssociateImportDraft, AssociateImportDraftStatus, MedicalCertificate, Tags
     ids = source['ids']
@@ -156,6 +166,15 @@ def seed_rows(source, created):
                                           sport_association_id=ids['own_association']))
     target = source['target_user']
     insert(User, User(user_id=target['id'], username=target['username'], email=target['email'], role=User.ATHLETE, password='!synthetic'))
+    # Accounts that own an association but are not its association-role account (a member renewal's owner).
+    extra_users = {**source.get('extra_users', {}), **source.get('users', {})}
+    account_id = lambda label: extra_users[label]['id'] if label in extra_users else ids[label]
+    for row in source.get('users', {}).values():
+        insert(User, User(user_id=row['id'], username=row['username'], email=row['email'], role=row['role'],
+                          connected_user_id=account_id(row['connected']) if row.get('connected') else None, password='!synthetic'))
+    for row in source.get('associations', {}).values():
+        insert(SportAssociation, SportAssociation(sport_association_id=row['id'], user_id=account_id(row['user']),
+                                                   denomination=row['denomination'], tax_code=row['tax_code']))
     from application.models.user_models import Family
     insert(Family, Family(family_id=source['family']))
     for row in source['associates'].values():
@@ -173,11 +192,13 @@ def seed_rows(source, created):
         insert(Payment, Payment(invoice_id=source['invoices'][row['invoice']]['id'] if row.get('invoice') else None,payment_id=row['id'], associate_id=source['associates'][row['associate']]['id'],
                                 sport_association_id=ids['own_association'], user_id=ids['owner'], subject=row['subject'],
                                 amount=row['amount'], paid=row['paid'], description='Iscrizione', payment_category_id=STATE['category'],
-                                payment_date=datetime.combine(resolve_date(row['date']), day_time(), tzinfo=timezone.utc)))
+                                payment_date=datetime.combine(resolve_date(row['date']), day_time(), tzinfo=timezone.utc),
+                                **({'creation_date': datetime.combine(resolve_date(row['created']), day_time(), tzinfo=timezone.utc)}
+                                   if row.get('created') else {})))
     for row in source['subscriptions'].values():
         insert(Subscription, Subscription(
             subscription_id=row['id'], sport_association_id=source['associates'][row['associate']]['association'],
-            user_id=ids[row.get('user', 'owner')],
+            user_id=account_id(row.get('user', 'owner')),
             associate_id=source['associates'][row['associate']]['id'], start_date=resolve_date(row['start']),
             end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
             payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None))
@@ -190,6 +211,10 @@ def seed_rows(source, created):
     for row in source['tags'].values():
         insert(Tags, Tags(tag_id=row['id'], tag_name=row['name'], sport_association_id=row['association']))
     for row in source['drafts'].values():
+        # A draft another case seeds (setup) is inserted then: the table's order for the
+        # earlier cases stays the one they were written against.
+        if row.get('late'):
+            continue
         insert(AssociateImportDraft, AssociateImportDraft(associate_import_draft_id=row['id'], sport_association_id=row['association'],
                                                           data=row['data'], valid=row['valid']))
     for row in source['statuses'].values():

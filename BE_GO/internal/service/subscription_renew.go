@@ -11,6 +11,8 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // SubscriptionRenewFailure is subscription_renew's 400 {"status": "error", "msg": str(e)}.
@@ -52,19 +54,54 @@ func renewError(err error) error {
 	return err
 }
 
+// subscriptionRenewGroup is the X-Group-Id the group-aware managers apply. The
+// manager filters only a value its UUID lookup accepts; an invalid one raises
+// while get_queryset builds the filter, and the manager's own except keeps the
+// query unfiltered. query is nil in that case; invalid reports it so a create
+// (which still receives the raw value and fails) can be reproduced.
+func subscriptionRenewGroup(group *string) (query *string, invalid bool) {
+	if group == nil {
+		return nil, false
+	}
+	if _, err := uuid.Parse(*group); err != nil {
+		return nil, true
+	}
+	return group, false
+}
+
+// subscriptionRenewDatabaseError renders a database error like psycopg2's
+// str(): the primary message, then DETAIL when the server sent one, each
+// followed by a newline.
+func subscriptionRenewDatabaseError(err error) error {
+	var database *pgconn.PgError
+	if !errors.As(err, &database) {
+		return err
+	}
+	text := database.Message + "\n"
+	if database.Detail != "" {
+		text += "DETAIL:  " + database.Detail + "\n"
+	}
+	return &SubscriptionRenewFailure{Text: text}
+}
+
 // Renew follows subscription_renew for owners and collaborators.
 func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionCreateRequest) (*SubscriptionRenewResult, error) {
 	user := identity.ScopeUser
-	// Form bodies and X-Group-Id are not ported.
-	if user == nil || request.Form || strings.TrimSpace(request.Group) != "" {
+	// A form body is a parsed RequestObject like a JSON one: its values are
+	// strings (the last value of a repeated key) or file parts.
+	if user == nil {
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
+	group, sentGroup := subscriptionCreateGroup(request.Group)
+	queryGroup, invalidGroup := subscriptionRenewGroup(group)
 	request.Audit = paymentCategoryAuditContext(identity, request.Audit)
 	committed := false
 	tx, err := s.store.BeginSubscriptionRenew(ctx)
 	if err != nil {
 		return nil, err
 	}
+	tx.SetGroup(queryGroup)
+	request.GroupID = queryGroup
 	defer tx.Rollback()
 	// Only an association account chooses the account of the renewed subscription.
 	byAssociation := user.Role == domain.RoleAssociation
@@ -91,8 +128,22 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	if !ok {
 		return nil, renewError(pythonAttributeError(request.Body, "keys"))
 	}
-	if err = subscriptionCreateRefuse(data, subscriptionCreateToday(s.creates.now())); err != nil {
-		return nil, err
+	// create_subscription's first read of the form is
+	// data['associate_data']['born_date']: a text value reaches the TypeError of
+	// the shared flow below, a multipart file part is named by its upload class.
+	// `preregistration` is the text "True" in a form, never `is True`: no branch.
+	if value, present := data.Lookup("associate_data"); present {
+		if upload, isUpload := value.(domain.RequestUpload); isUpload {
+			return nil, renewError(renewUploadSubscriptError(upload))
+		}
+	}
+	// A preregistration that renews a subscription replaces these inputs: they
+	// are checked after the fill, inside create_subscription (which fills the
+	// person, certificate and data from the renewed subscription).
+	if !subscriptionRenewalRequested(data) {
+		if err = subscriptionCreateRefuseInputs(data, subscriptionCreateToday(s.creates.now())); err != nil {
+			return nil, err
+		}
 	}
 	keys := []string{}
 	request.StorageKeys = &keys
@@ -103,7 +154,19 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 	}()
 	created, err := s.creates.createSubscription(ctx, tx, identity, data, request)
 	if err != nil {
+		if invalidGroup && err == domain.ErrSubscriptionCreateServer {
+			// The group-aware managers ignore the malformed header in queries, but
+			// the first row they create carries it: UUIDField.to_python's
+			// ValidationError leaves the view's except as its 400 body.
+			return nil, renewError(djangoInvalidUUID(sentGroup))
+		}
 		return nil, renewError(err)
+	}
+	if invalidGroup {
+		// The group-aware managers ignore the malformed header in queries, but
+		// every row they create still carries it: the first insert raises
+		// UUIDField.to_python's ValidationError. Nothing has been committed.
+		return nil, renewError(djangoInvalidUUID(sentGroup))
 	}
 	if err = s.cleanPayments(ctx, tx, identity, created, request); err != nil {
 		return nil, renewError(err)
@@ -115,7 +178,9 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 		return nil, renewError(err)
 	}
 	if err = tx.Commit(); err != nil {
-		return nil, err
+		// The association's foreign keys are deferred: an unknown group surfaces
+		// here, as the exception leaving Django's atomic block does.
+		return nil, renewError(subscriptionRenewDatabaseError(err))
 	}
 	committed = true
 	s.creates.afterCommit(ctx, identity, created, request)
@@ -124,7 +189,9 @@ func (s *SubscriptionRenewals) Renew(ctx context.Context, identity domain.Resolv
 
 // renewRequesterOwner is scoped_queryset(request, SportAssociation.objects).get(
 // sport_association_id=data['sport_association']['sport_association_id']).user,
-// before the view's try block: every failure is the 500 page.
+// before the view's try block: every failure is the 500 page. The member check is
+// _member_renewal_association's; the account's role is then User.sport_association
+// inside the try (a 403 for an athlete, a DoesNotExist body for a collaborator).
 func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domain.SubscriptionRenewTransaction, identity domain.ResolvedIdentity,
 	body any) (*domain.Account, error) {
 	data, ok := body.(domain.RequestObject)
@@ -174,11 +241,36 @@ func (s *SubscriptionRenewals) renewRequesterOwner(ctx context.Context, tx domai
 	if !allowed {
 		return nil, &domain.PermissionDenied{Detail: "User not allowed."}
 	}
-	if owner.Role != domain.RoleAssociation {
-		// An association whose user is not an owner account is not ported.
+	if owner.Role == domain.RoleAthlete {
+		// User.sport_association raises PermissionDenied('User is not a sport
+		// association'); the view's except APIException re-raises it (403).
+		return nil, &domain.PermissionDenied{Detail: "User is not a sport association"}
+	}
+	if owner.Role == domain.RoleCollaborator {
+		// A collaborator account's association is its connected account's:
+		// SportAssociation.objects.get(user=self.connected_user), so no connected
+		// account (or none owning a live association) is DoesNotExist. A single
+		// association is not ported yet.
+		count, err := tx.ConnectedAssociationCount(ctx, owner.ID)
+		if err != nil {
+			return nil, err
+		}
+		if count != 1 {
+			return nil, renewError(subscriptionAssociationGet(count))
+		}
 		return nil, domain.ErrSubscriptionCreateNotPorted
 	}
 	return owner, nil
+}
+
+// renewUploadSubscriptError is data['associate_data']['born_date'] on a multipart
+// file part: the TypeError names Django's upload class.
+func renewUploadSubscriptError(upload domain.RequestUpload) error {
+	class := "InMemoryUploadedFile"
+	if upload.Temp {
+		class = "TemporaryUploadedFile"
+	}
+	return pythonFailure("'" + class + "' object is not subscriptable")
 }
 
 // renewMemberAllowed is _member_renewal_association's check on
@@ -220,7 +312,7 @@ func (s *SubscriptionRenewals) cleanPayments(ctx context.Context, tx domain.Subs
 	}
 	// QuerySet.delete() of invoiced payments leaves their invoices: Payment.invoice points from the payment.
 	ids, _, err := tx.RenewalPayments(ctx, created.association, created.first, created.last, created.tax, calendarTime(*created.start),
-		calendarTime(*created.end), created.result.PaymentID, paymentStateScope(identity))
+		calendarTime(*created.end), created.result.PaymentID, paymentStateScope(identity), request.GroupID)
 	if err != nil {
 		return err
 	}
@@ -354,7 +446,7 @@ func (s *SubscriptionRenewals) courses(ctx context.Context, tx domain.Subscripti
 			if err != nil {
 				return djangoInvalidUUID(v)
 			}
-			if course, err = enrolment.Course(ctx, id.String(), nil); err != nil {
+			if course, err = enrolment.Course(ctx, id.String(), request.GroupID); err != nil {
 				return err
 			}
 		default:
@@ -455,12 +547,15 @@ func NewSubscriptionDraftApprovals(store domain.SubscriptionDraftApproveStore, c
 	return &SubscriptionDraftApprovals{store: store, creates: creates}
 }
 
-// draftPythonError reports an exception the view's except block swallows.
+// draftPythonError reports an exception the view's except block swallows. A
+// database error of one draft's savepoint is such an exception too (the outer
+// view catches everything); the savepoint is rolled back before the next draft.
 func draftPythonError(err error) bool {
 	var invalid *domain.SubscriptionCreateInvalid
 	var denied *domain.PermissionDenied
+	var database *pgconn.PgError
 	return errors.Is(err, domain.ErrSubscriptionCreateServer) || errors.Is(err, domain.ErrSubscriptionCreateDuplicate) ||
-		errors.As(err, &invalid) || errors.As(err, &denied)
+		errors.As(err, &invalid) || errors.As(err, &denied) || errors.As(err, &database)
 }
 
 func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionCreateRequest) (*SubscriptionDraftApproveResult, error) {
@@ -472,9 +567,10 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 	if user.Role == domain.RoleAthlete {
 		return nil, domain.ErrAssociateDraftUnauthorized
 	}
-	if request.Form || strings.TrimSpace(request.Group) != "" {
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
+	// A form body is a parsed RequestObject: a string value for
+	// subscription_details is the attribute error of the shared flow.
+	group, _ := subscriptionCreateGroup(request.Group)
+	queryGroup, invalidGroup := subscriptionRenewGroup(group)
 	request.Audit = paymentCategoryAuditContext(identity, request.Audit)
 	data, ok := request.Body.(domain.RequestObject)
 	if !ok {
@@ -519,6 +615,8 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 	if err != nil {
 		return nil, err
 	}
+	tx.SetGroup(queryGroup)
+	request.GroupID = queryGroup
 	defer tx.Rollback()
 	count, err := tx.AssociationCount(ctx, user.ID)
 	if err != nil {
@@ -557,8 +655,12 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 			crashed = true
 			break
 		}
-		if err = subscriptionCreateRefuse(draft, subscriptionCreateToday(s.creates.now())); err != nil {
-			return nil, err
+		// A draft whose data renews a subscription replaces these inputs; they
+		// are checked after the fill, inside create_subscription.
+		if !subscriptionRenewalRequested(draft) {
+			if err = subscriptionCreateRefuseInputs(draft, subscriptionCreateToday(s.creates.now())); err != nil {
+				return nil, err
+			}
 		}
 		if err = tx.Savepoint(ctx); err != nil {
 			return nil, err
@@ -573,6 +675,15 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 			}
 			continue
 		}
+		if invalidGroup {
+			// A malformed group reaches every create with the raw header and the
+			// first insert raises UUIDField.to_python's ValidationError; the
+			// draft's own transaction is rolled back and the exception swallowed.
+			if err = tx.RollbackSavepoint(ctx); err != nil {
+				return nil, err
+			}
+			continue
+		}
 		if err = tx.ReleaseSavepoint(ctx); err != nil {
 			return nil, err
 		}
@@ -582,7 +693,15 @@ func (s *SubscriptionDraftApprovals) Approve(ctx context.Context, identity domai
 			return nil, err
 		}
 		created.validated = &subscribed
-		if err = tx.DeleteDraft(ctx, row.ID, approvedDraftRepr(draft), request.Audit, at()); err != nil {
+		repr := approvedDraftRepr(draft)
+		if subscriptionRenewalRequested(draft) {
+			// create_subscription filled the draft from the renewed subscription:
+			// the delete entry renders the filled data.
+			if repr, err = s.approvedRenewalDraftRepr(ctx, tx, identity, draft, request, user.ID, *association); err != nil {
+				return nil, err
+			}
+		}
+		if err = tx.DeleteDraft(ctx, row.ID, repr, request.Audit, at()); err != nil {
 			return nil, err
 		}
 		approved++
@@ -671,4 +790,38 @@ func approvedDraftRepr(data domain.RequestObject) string {
 		}
 	}
 	return dto.PythonStr(final)
+}
+
+// approvedRenewalDraftRepr is str(draft.data) after a create_subscription that
+// filled the draft from the renewed subscription (fill_data_preregisration):
+// the renaming's own 'associate' and 'associate_tutor' keep the draft's values,
+// while 'associate_data' and 'associate_tutor_data' are the renewed member's
+// data, whose sport_association and user create_subscription set to the
+// association and the account of the request.
+func (s *SubscriptionDraftApprovals) approvedRenewalDraftRepr(ctx context.Context, tx domain.SubscriptionDraftApproveTransaction,
+	identity domain.ResolvedIdentity, draft domain.RequestObject, request SubscriptionCreateRequest, user, association string) (string, error) {
+	filled, _, err := s.creates.fillPreregistration(ctx, tx, identity, draft, request)
+	if err != nil {
+		return "", err
+	}
+	uuids := func(value any) any {
+		object, ok := value.(domain.RequestObject)
+		if !ok {
+			return value
+		}
+		object = objectSet(objectSet(object, "sport_association", dto.PythonUUID(association)), "user", dto.PythonUUID(user))
+		return object
+	}
+	associate, _ := filled.Lookup("associate_data")
+	tutor, _ := filled.Lookup("associate_tutor_data")
+	final := append(domain.RequestObject{}, filled...)
+	for index, field := range final {
+		switch field.Name {
+		case "associate_data":
+			final[index].Value = uuids(associate)
+		case "associate_tutor_data":
+			final[index].Value = uuids(tutor)
+		}
+	}
+	return dto.PythonStr(final), nil
 }

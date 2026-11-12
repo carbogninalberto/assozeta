@@ -205,8 +205,10 @@ def seed_rows(source, created):
     for row in source['subscriptions'].values():
         association = row.get('association', ids['own_association'])
         owner = ids['owner'] if association == ids['own_association'] else ids['foreign_owner']
-        # Optional authored columns: the account, the role, the JSON fields and the creation date.
+        # Optional authored columns: the account, the role, the JSON fields, the creation date and the group.
         extra = {name: row[name] for name in ('role', 'custom_data', 'additional_fields') if name in row}
+        if 'group' in row:
+            extra['group_id'] = ids[row['group']] if row['group'] else None
         if 'created' in row:
             extra['creation_date'] = datetime.fromisoformat(row['created'].replace('Z', '+00:00'))
         insert(Subscription, Subscription(
@@ -215,10 +217,14 @@ def seed_rows(source, created):
             end_date=resolve_date(row['end']), archived=row['archived'], subscription_number=row['number'], status_flag=4,
             medical_id=source['certificates'][row['medical']]['id'] if row.get('medical') else None, **extra))
     for row in source['payments'].values():
+        # An optional authored creation date breaks the newest-first ties the way PostgreSQL does.
+        extra = {}
+        if 'created' in row:
+            extra['creation_date'] = datetime.fromisoformat(row['created'].replace('Z', '+00:00'))
         insert(Payment, Payment(payment_id=row['id'], associate_id=source['associates'][row['associate']]['id'],
                                 sport_association_id=ids['own_association'], user_id=ids['owner'], subject=Payment.SUBSCRIPTION,
                                 amount=row['amount'], paid=row['paid'], description='Iscrizione', payment_category_id=STATE['category'],
-                                payment_date=datetime.combine(resolve_date(row['date']), day_time(), tzinfo=timezone.utc)))
+                                payment_date=datetime.combine(resolve_date(row['date']), day_time(), tzinfo=timezone.utc), **extra))
 
 
 def redis_db(raw, db):
@@ -504,7 +510,9 @@ def check_rows(case, effect, before, after, ids, since, until, binding):
     contract.require(len(relations) == (1 if effect.get('relation') else 0), 'state.relation-count')
     if relations:
         row = relations[0]
-        contract.require(row == {'id': row['id'], 'associate_id': bound['$associate'], 'tutor_id': bound['$tutor'], 'is_primary': True},
+        # relation='self': the tutor is the associate itself (the tutor's tax code matched its row).
+        tutor = bound['$associate'] if effect.get('relation') == 'self' else bound['$tutor']
+        contract.require(row == {'id': row['id'], 'associate_id': bound['$associate'], 'tutor_id': tutor, 'is_primary': True},
                          'state.relation')
         binding['$relation'] = str(row['id'])
     # Certificates.
@@ -726,6 +734,10 @@ def check_audit(case, effect, before, after, fixture, ids, context, binding):
             if spec['model'] == 'user':
                 overrides = {**overrides, 'username': ['None', binding['$token_username']]}
             expected = created_changes(instance, overrides)
+        elif spec.get('created_diff'):
+            # A save whose old row the group-aware manager did not find: auditlog
+            # renders every stored field against None, like a create.
+            expected = created_changes(instance, resolve(spec['changes'], binding))
         else:
             expected = resolve(spec['changes'], binding)
         contract.require(event['changes'] == expected, 'audit.changes' + where + json.dumps(

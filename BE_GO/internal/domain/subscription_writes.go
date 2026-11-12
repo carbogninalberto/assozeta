@@ -56,12 +56,14 @@ type SubscriptionEditRelation struct {
 // SubscriptionEditAudit is one auditlog entry; Created renders the stored row
 // as a create diff (with the reverse accessors), otherwise Changes are used.
 type SubscriptionEditAudit struct {
-	Model       string // "associate" or "associatetutorrelation"
-	Key         string // object_pk as the instance holds it (the spelling a client sent)
-	Row         string // the stored row's canonical key when Key is a spelling of it
-	Action      int
-	Created     bool
-	Changes     map[string][2]string
+	Model   string // "associate" or "associatetutorrelation"
+	Key     string // object_pk as the instance holds it (the spelling a client sent)
+	Row     string // the stored row's canonical key when Key is a spelling of it
+	Action  int
+	Created bool
+	Changes map[string][2]string
+	// Overrides replace the stored rendering of created fields (for example the group text as sent).
+	Overrides   map[string][2]string
 	Association *string
 	Path        string
 	Context     LoginAuditContext

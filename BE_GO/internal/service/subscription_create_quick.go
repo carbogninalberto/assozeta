@@ -214,7 +214,7 @@ func subscriptionQuickCertificate(certificates []domain.SubscriptionQuickCertifi
 // association: the body's association and associate are looked up (a miss or a
 // malformed id is the 500 page), then the answer is 403, since the quick
 // re-subscription is for the association's own owner.
-func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject) error {
+func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject, group *string) error {
 	// In an association-scoped session scoped_queryset keeps both lookups to
 	// the session's association (the request guard has checked the ids).
 	scope := identity.ImpersonationAssociationID
@@ -227,6 +227,7 @@ func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.R
 	if err != nil {
 		return err
 	}
+	tx.SetGroup(group)
 	defer tx.Rollback()
 	found, err := tx.QuickAssociationExists(ctx, association)
 	if err != nil {
@@ -252,7 +253,7 @@ func (s *SubscriptionCreates) quickMember(ctx context.Context, identity domain.R
 
 // quick follows _handle_quick_subscription for an owner (or a collaborator acting as one).
 func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
-	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
+	request SubscriptionCreateRequest, group *string) (*SubscriptionCreateResult, error) {
 	scope := identity.ImpersonationAssociationID
 	value, _ := data.Lookup("associate")
 	id, err := subscriptionQuickID(value)
@@ -264,6 +265,7 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 	if err != nil {
 		return nil, err
 	}
+	tx.SetGroup(group)
 	defer tx.Rollback()
 	// The association row is locked (select_for_update) with the owner's settings.
 	settings, count, err := tx.Settings(ctx, user.ID)
@@ -312,7 +314,8 @@ func (s *SubscriptionCreates) quick(ctx context.Context, identity domain.Resolve
 	if err != nil {
 		return nil, err
 	}
-	audit := subscriptionAudit{tx: tx, context: request.Audit, now: s.now}
+	audit := subscriptionAudit{tx: tx, context: request.Audit, now: s.now, group: group, sentGroup: request.Group,
+		inserted: map[string]bool{}}
 	ownAssociation := &association
 	paymentID := uuid.NewString()
 	if err = tx.InsertPayment(ctx, domain.SubscriptionCreatePayment{ID: paymentID, AssociationID: association, AssociateID: associate.ID,

@@ -199,8 +199,10 @@ def success(actor, full_name, *, associate, subscription, payment=None, membersh
 
 
 def created_associate(data, **columns):
+    born = data.get('born_date')
     return {'match': 'new', 'columns': {'first_name': data['first_name'], 'last_name': data['last_name'],
-                                        'tax_code': data.get('tax_code'), 'born_date': '-'.join(reversed(data['born_date'].split('/'))),
+                                        'tax_code': data.get('tax_code'),
+                                        'born_date': '-'.join(reversed(born.split('/'))) if born else None,
                                         'sex': data.get('sex', 'A'), 'sport_association_id': OWN, 'user_id': OWNER, **columns}}
 
 
@@ -1189,9 +1191,9 @@ grouped_child = person('Gaia', 'Gruppo', 'GRPGAI10A41H501G', sex='F')
 grouped = family_effect('anonymous', [grouped_child], kind='grouped_subscriptions')
 for row in grouped['new']:
     if row['label'] == 'subscription':
-        row['columns']['custom_data'] = {'city': 'Milano', 'nota': 'propria', 'denomination': 'Scuola Nuova', 'province': 'MI',
-                                         'address': 'Via Larga 1', 'cap': '20100', 'country': 'Italia', 'tax_code': 12345678901,
-                                         'email': None}
+        row['columns']['custom_data'] = {'city': 'Torino', 'nota': 'propria', 'denomination': 'Tie ASD', 'province': 'TO',
+                                         'address': 'Via Tie 1', 'cap': '10100', 'country': 'Italia', 'tax_code': 'TIEASD80A01H501T',
+                                         'email': 'tie@example.test'}
 add('family-wizard-grouped', 'anonymous', 200, FAMILY_SUCCESS,
     body=family_body([family_entry(grouped_child, custom_data={'city': 'Propria', 'nota': 'propria'})], sport_association=OWNER_NAME,
                      type='grouped_subscriptions'),
@@ -1297,6 +1299,333 @@ effect = success('owner', 'Dina Giovane', associate=created_associate(young, is_
                              'price': None})
 effect['associate']['columns']['born_date'] = '$day_first_minor_iso'
 add('minor-day-first-birth-date', 'owner', 200, SUCCESS(25.0), body=request(young, tutor=young_tutor), effect=effect)
+
+# --- Birth dates of any JSON type -------------------------------------------------------------------------------
+# The first step is person_date(str(associate_data['born_date'])): Python str() of a float is its repr ('25.5',
+# '2000.0'), of a list or dict its repr ("['01/01/2000']", "{'d': '01/01/2000'}"). dateutil reads '25.5' as a date,
+# which AssociateSerializer's DateField then rejects because the value is a float; '2000.0' and the containers are
+# texts dateutil does not read, so the call raises before any write. A tutor is saved only when its serializer is
+# valid: an invalid one is skipped, like a tutor whose birth date is text in another format.
+add('born-date-float-invalid', 'owner', 400, BORN_FORMAT, body=request(person('Fiamma', 'Mobile', 'FLMMBL90A41H501K', born=25.5)))
+add('born-date-list-server-error', 'owner', 500, SERVER,
+    body=request(person('Lino', 'Lista', 'LSTLNI90A41H501L', born=['01/01/2000'])))
+add('born-date-dict-server-error', 'owner', 500, SERVER,
+    body=request(person('Dino', 'Dizionario', 'DZNDNI90A41H501M', born={'d': '01/01/2000'})))
+add('born-date-integer-text-float', 'owner', 500, SERVER,
+    body=request(person('Ivan', 'Virgola', 'VGNIVN90A41H501N', born=2000.0)))
+
+tutor_listed = person('Nina', 'Tutelata', 'TTLNNA15A41H501P', born='01/01/2015', is_minor=True, sex='F')
+add('tutor-born-date-list-invalid', 'owner', 200, SUCCESS(25.0),
+    body=request(tutor_listed, tutor=person('Tullio', 'Lista', 'TRTLLS80A01H501Q', born=['x'])),
+    effect=success('owner', 'Nina Tutelata', associate=created_associate(tutor_listed, is_minor=True),
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': None}))
+
+# --- The X-Group-Id header --------------------------------------------------------------------------------------
+# A non-empty header is group scoped: manager queries filter group_id, manager
+# create() writes it. The seeded subscriptions give own_group a stored number 1
+# (the first registration there is 2) while foreign_group starts empty. Two
+# people go through Associate.objects.create (no tax code), so their associate
+# row takes the group; a tax code goes through get_or_create, which does not.
+group_ids = iter(f'a1000000-0000-4000-8000-{963001 + n:012d}' for n in range(40))
+ASSOCIATES['group_seed'] = {'id': next(group_ids), 'association': OWN, 'first': 'Sergio', 'last': 'Seme', 'tax_code': 'GRPSED80A01H501X',
+                            'born': '1980-01-01', 'user': None, 'email': None}
+ASSOCIATES['group_duplicate'] = {'id': next(group_ids), 'association': OWN, 'first': 'Duccio', 'last': 'Doppione',
+                                 'tax_code': 'GRPDUP81A01H501Y', 'born': '1981-01-01', 'user': None, 'email': None}
+ASSOCIATES['group_known'] = {'id': next(group_ids), 'association': OWN, 'first': 'Carla', 'last': 'Conosciuta',
+                             'tax_code': 'GRPKNW82A01H501Z', 'born': '1982-01-01', 'user': None, 'email': None}
+SUBSCRIPTIONS['group_seed'] = {'id': next(group_ids), 'associate': 'group_seed', 'start': '$season_start', 'end': '$season_end',
+                               'archived': False, 'number': '1', 'group': 'own_group'}
+SUBSCRIPTIONS['group_duplicate'] = {'id': next(group_ids), 'associate': 'group_duplicate', 'start': '$season_start', 'end': '$season_end',
+                                    'archived': False, 'number': '1', 'group': 'own_group'}
+
+
+def group_success(full_name, associate_data, group_label, sent, *, number, tutor=None, membership=True, minor=False):
+    """A registration inside a group: created rows and the audit text as sent."""
+    saved_number = NUMBER[0]
+    effect = success('owner', full_name, associate=created_associate(associate_data, group_id=IDS[group_label], **(
+        {'is_minor': True} if minor else {})),
+        tutor=created_associate(tutor) if tutor is not None else None, relation=tutor is not None,
+        payment=new_payment('25.00', audit_amount='25.0'),
+        subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', 'group_id': IDS[group_label],
+                      '$explicit_number': number, **SEASON},
+        membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                    'price': None} if membership else None)
+    # The explicit number does not advance the stored maximum: the next default number stays put.
+    NUMBER[0] = saved_number
+    effect['payment']['columns']['group_id'] = IDS[group_label]
+    for entry in effect['audit']:
+        if entry['model'] in ('payment', 'subscription'):
+            entry['changes']['group'] = ['None', sent]
+        if entry['model'] == 'associate' and entry['ref'] == 'associate':
+            if entry['action'] == 0:
+                entry['changes'] = {**entry['changes'], 'group': ['None', sent]}
+            elif sent != IDS[group_label]:
+                entry['changes']['group'] = [IDS[group_label], sent]
+    return effect
+
+
+group_own = person('Gilda', 'Gruppo', None, born='01/01/1990', sex='F')
+add('group-own', 'owner', 200, SUCCESS(25.0), headers={'X-Group-Id': IDS['own_group']}, body=request(group_own),
+    effect=group_success('Gilda Gruppo', group_own, 'own_group', IDS['own_group'], number='2'))
+
+group_spelling = person('Guido', 'Gruppo', None, born='01/01/1991')
+add('group-own-other-spelling', 'owner', 200, SUCCESS(25.0), headers={'X-Group-Id': IDS['own_group'].upper()},
+    body=request(group_spelling), effect=group_success('Guido Gruppo', group_spelling, 'own_group', IDS['own_group'].upper(), number='3'))
+
+add('group-unknown-server-error', 'owner', 500, SERVER, headers={'X-Group-Id': UNKNOWN}, body=request(person('Nora', 'Ignota', None)))
+add('group-not-a-uuid-server-error', 'owner', 500, SERVER, headers={'X-Group-Id': 'zzz'}, body=request(person('Nora', 'Ignota', None)))
+# The malformed header leaves the manager queries unfiltered: the duplicate check
+# answers 409 before the first group-aware create would fail.
+add('group-not-a-uuid-duplicate', 'owner', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    headers={'X-Group-Id': 'zzz'}, body=request(person('dora', 'DOPPIA', 'dppdro90a41h501x', born='01/01/1990')))
+
+group_foreign = person('Gioia', 'Estera', None, born='01/01/1992', sex='F')
+add('group-of-another-association', 'owner', 200, SUCCESS(25.0), headers={'X-Group-Id': IDS['foreign_group']},
+    body=request(group_foreign), effect=group_success('Gioia Estera', group_foreign, 'foreign_group', IDS['foreign_group'], number='1'))
+
+group_minor = person('Mina', 'Minore', None, born='01/01/2015', is_minor=True, sex='F')
+group_tutor = person('Tino', 'Tutore', 'TTRTNO80A01H501R', born='01/01/1980')
+add('group-minor-with-tutor', 'owner', 200, SUCCESS(25.0), headers={'X-Group-Id': IDS['own_group']},
+    body=request(group_minor, tutor=group_tutor),
+    effect=group_success('Mina Minore', group_minor, 'own_group', IDS['own_group'], number='4', tutor=group_tutor, minor=True))
+# The tutor was created without the group, so the group-aware lookup of the row
+# before its second save finds nothing: auditlog renders every field against None
+# and the index resolves through the changes' sport_association.
+for audit_entry in cases[-1]['effect']['audit']:
+    if audit_entry['model'] == 'associate' and audit_entry['ref'] == 'tutor':
+        audit_entry['index'] = [OWN, 'changes_json.sport_association']
+        if audit_entry['action'] == 1:
+            audit_entry['created_diff'] = True
+
+add('group-known-associate-without-group-server-error', 'owner', 500, SERVER, headers={'X-Group-Id': IDS['own_group']},
+    body=request(person('Carla', 'Conosciuta', 'GRPKNW82A01H501Z', born='01/01/1982', sex='F')))
+add('group-duplicate-in-group', 'owner', 409, {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'},
+    headers={'X-Group-Id': IDS['own_group']},
+    body=request(person('Duccio', 'Doppione', 'GRPDUP81A01H501Y', born='01/01/1981')))
+
+add('group-quick-associate-without-group-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    headers={'X-Group-Id': IDS['own_group']}, body={'associate': ASSOCIATES['quick']['id']})
+
+# Python's uuid.UUID(hex=...) removes dashes wherever they sit, so a differently
+# grouped header reaches the same group; auditlog keeps the text as sent.
+group_compact = IDS['own_group'].replace('-', '')
+group_spelled = '-'.join([group_compact[:8], group_compact[8:12], group_compact[12:16], group_compact[16:20], group_compact[20:27],
+                          group_compact[27:]])
+group_dashed = person('Gaspare', 'Trattino', None, born='01/01/1993', sex='F')
+add('group-own-dashes-elsewhere', 'owner', 200, SUCCESS(25.0), headers={'X-Group-Id': group_spelled}, body=request(group_dashed),
+    effect=group_success('Gaspare Trattino', group_dashed, 'own_group', group_spelled, number='5'))
+
+# --- Newest-first ties ----------------------------------------------------------------------------------------
+# PostgreSQL breaks equal creation dates. A second query mirrors each Django
+# .order_by('-creation_date').first() so the port reads the same row.
+tie_ids = iter(f'a1000000-0000-4000-8000-{960001 + n:012d}' for n in range(40))
+
+# Two unpaid same-day payments of the same amount: the reuse lookup has a tie.
+ASSOCIATES['payment_tie'] = {'id': next(tie_ids), 'association': OWN, 'first': 'Teresa', 'last': 'Doppia', 'tax_code': 'DPPTRS80A41H501A',
+                             'born': '1980-01-01', 'user': None, 'email': None}
+PAYMENTS['payment_tie_a'] = {'id': next(tie_ids), 'associate': 'payment_tie', 'amount': '25.00', 'paid': False, 'date': '$today',
+                             'created': '2025-03-01T00:00:00Z'}
+PAYMENTS['payment_tie_b'] = {'id': next(tie_ids), 'associate': 'payment_tie', 'amount': '25.00', 'paid': False, 'date': '$today',
+                             'created': '2025-03-01T00:00:00Z'}
+payment_tie = person('Teresa', 'Doppia', 'DPPTRS80A41H501A', born='01/01/1980')
+add('reuses-unpaid-payment-tie', 'owner', 200, {'status': 'success', 'payment_id': PAYMENTS['payment_tie_a']['id'], 'amount': 25.0},
+    body=request(payment_tie),
+    effect=success('owner', 'Teresa Doppia', associate={'match': 'payment_tie', 'columns': {'sex': 'M', 'user_id': OWNER}},
+                   associate_audit=[(1, {'sex': ['A', 'M']}), (1, {'user': ['None', OWNER]})],
+                   payment={'match': 'payment_tie_a'},
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': None}))
+
+# Two earlier club subscriptions of the account with the same creation date and
+# different asd-o-ssd data: the grouped wizard's club-data lookup has a tie.
+SUBSCRIPTIONS['grouped_tie_a'] = {'id': next(tie_ids), 'associate': 'grouped_club', 'start': '2025-01-01', 'end': '2025-12-31',
+                                  'archived': True, 'number': '10', 'created': '2025-06-01T00:00:00Z',
+                                  'custom_data': {'type_of_associate': 'asd-o-ssd', 'denomination': 'Tie ASD', 'city': 'Torino',
+                                                  'province': 'TO', 'address': 'Via Tie 1', 'zip': '10100',
+                                                  'country': 'Italia', 'tax_code': 'TIEASD80A01H501T', 'email': 'tie@example.test'}}
+SUBSCRIPTIONS['grouped_tie_b'] = {'id': next(tie_ids), 'associate': 'grouped_club', 'start': '2025-01-01', 'end': '2025-12-31',
+                                  'archived': True, 'number': '11', 'created': '2025-06-01T00:00:00Z',
+                                  'custom_data': {'type_of_associate': 'asd-o-ssd', 'denomination': 'Altra ASD', 'city': 'Bologna',
+                                                  'province': 'BO', 'address': 'Via Altra 2', 'zip': '40100',
+                                                  'country': 'Italia', 'tax_code': 'ALTRSD80A01H501U', 'email': 'altra@example.test'}}
+grouped_tie_child = person('Tino', 'Gruppo', 'GRPTNO10A01H501H', sex='F')
+grouped_tie = family_effect('anonymous', [grouped_tie_child], kind='grouped_subscriptions')
+for row in grouped_tie['new']:
+    if row['label'] == 'subscription':
+        row['columns']['custom_data'] = {'city': 'Torino', 'nota': 'propria', 'denomination': 'Tie ASD', 'province': 'TO',
+                                         'address': 'Via Tie 1', 'cap': '10100', 'country': 'Italia', 'tax_code': 'TIEASD80A01H501T',
+                                         'email': 'tie@example.test'}
+add('grouped-subscriptions-custom-data-tie', 'anonymous', 200, FAMILY_SUCCESS,
+    body=family_body([family_entry(grouped_tie_child, custom_data={'city': 'Propria', 'nota': 'propria'})], sport_association=OWNER_NAME,
+                     type='grouped_subscriptions'),
+    effect=grouped_tie)
+
+# --- Plan and amount shapes ------------------------------------------------------------------------------------
+# Plans are compared with str(plan['id']) == str(plan_id), so a stored or requested JSON float id matches its
+# Python text ('1.0'). Every fee goes through float(): surrounding whitespace, exponents, underscores, other-
+# script digits, inf and nan are accepted, while any other text raises ValueError (500). The Payment amount is
+# DecimalField(max_digits=9, decimal_places=2): Django sends Context(prec=9).create_decimal_from_float(value)
+# and PostgreSQL rounds it to numeric(9,2) halves away from zero, so 25.005 is stored 25.01 while the audit
+# entry and the response keep the in-memory float 25.005. A membership plan name that is not a string reaches
+# the SubscriptionMembership.membership_type CharField through str() (an int 42 is stored and audited '42').
+FEES_SETTINGS = {'association': {'enable_quotes_management': True, 'subscription_fee': '25.00', 'membership_fee': None,
+                                 'multiple_subscription_fee': False, 'multiple_membership_fee': False,
+                                 'subscription_fee_plans': PLAN['subscription'], 'membership_fee_plans': PLAN['membership']},
+                 'owner': {'subscription_start_day': 1, 'subscription_start_month': 1, 'subscription_duration': 2,
+                           'membership_duration': 2, 'membership_starting_number': 0, 'default_membership_type': '',
+                           'show_zero_payments': False}}
+
+
+def fees_setup(**association):
+    return {'association': {**FEES_SETTINGS['association'], **association}, 'owner': dict(FEES_SETTINGS['owner'])}
+
+
+float_id = person('Filippo', 'Virgola', 'VRGFLP90A01H501R', born='01/01/1990')
+add('plan-float-id', 'owner', 200, SUCCESS(30.0),
+    setup=fees_setup(multiple_subscription_fee=True,
+                     subscription_fee_plans=[{'id': 1.0, 'name': 'Piano virgola', 'subscription_fee': 30}]),
+    body=request(float_id, plan_id=1.0),
+    effect=success('owner', 'Filippo Virgola', associate=created_associate(float_id),
+                   payment=new_payment('30.00', audit_amount='30.0',
+                                       meta={'subscription_data': {'subscription_fee': 30, 'name': 'Piano virgola', 'id': 1.0}}),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'subscription_type': '',
+                                 'meta': {'plan_id': 1.0, 'plan_name': 'Piano virgola', 'membership_plan_id': None,
+                                          'membership_plan_name': None}, **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                               'end_date': '$season_end', 'price': None}))
+
+exponent = person('Elena', 'Esponente', 'SPNLNE90A41H501S', born='01/01/1990')
+add('plan-fee-exponent-text', 'owner', 200, SUCCESS(110.5),
+    setup=fees_setup(multiple_subscription_fee=True, multiple_membership_fee=True,
+                     subscription_fee_plans=[{'id': 'exp', 'name': 'Piano esponente', 'subscription_fee': ' 1e2 '}],
+                     membership_fee_plans=[{'id': 3, 'name': 'Tessera trattino', 'membership_fee': '1_0.5'}]),
+    body=request(exponent, plan_id='exp', membership_plan_id=3),
+    effect=success('owner', 'Elena Esponente', associate=created_associate(exponent),
+                   payment=new_payment('110.50', audit_amount='110.5',
+                                       meta_categories=[{'payment_category_id': '$category', 'amount': 10.5, 'subject': 0,
+                                                         'title': 'Tessera trattino', 'id': '3'}],
+                                       meta={'subscription_data': {'subscription_fee': ' 1e2 ', 'name': 'Piano esponente', 'id': 'exp'}}),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'subscription_type': '',
+                                 'meta': {'plan_id': 'exp', 'plan_name': 'Piano esponente', 'membership_plan_id': 3,
+                                          'membership_plan_name': 'Tessera trattino'}, **SEASON},
+                   membership={'membership_type': 'Tessera trattino', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': '10.50', '$audit': {'price': ['None', '10.5']}}))
+
+add('plan-fee-not-a-number-server-error', 'owner', 500, SERVER,
+    setup=fees_setup(multiple_subscription_fee=True,
+                     subscription_fee_plans=[{'id': 'bad', 'name': 'Piano rotto', 'subscription_fee': 'non-un-numero'}]),
+    body=request(person('Nadia', 'Nonnumero', 'NNMNDA90A41H501T', born='01/01/1990'), plan_id='bad'))
+
+third = person('Teresa', 'Terzadecimale', 'TRZTRS90A41H501U', born='01/01/1990')
+add('fee-third-decimal-rounded', 'owner', 200, SUCCESS(25.005),
+    setup=fees_setup(multiple_subscription_fee=True,
+                     subscription_fee_plans=[{'id': 'third', 'name': 'Piano terzo', 'subscription_fee': 25.005}]),
+    body=request(third, plan_id='third'),
+    effect=success('owner', 'Teresa Terzadecimale', associate=created_associate(third),
+                   payment=new_payment('25.01', audit_amount='25.005',
+                                       meta={'subscription_data': {'subscription_fee': 25.005, 'name': 'Piano terzo', 'id': 'third'}}),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'subscription_type': '',
+                                 'meta': {'plan_id': 'third', 'plan_name': 'Piano terzo', 'membership_plan_id': None,
+                                          'membership_plan_name': None}, **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                               'end_date': '$season_end', 'price': None}))
+
+name_number = person('Nora', 'Nomenumero', 'NMRNRA90A41H501V', born='01/01/1990')
+add('membership-plan-name-number', 'owner', 200, SUCCESS(37.5),
+    setup=fees_setup(multiple_membership_fee=True,
+                     membership_fee_plans=[{'id': 9, 'name': 42, 'membership_fee': 12.5}]),
+    body=request(name_number, membership_plan_id=9),
+    effect=success('owner', 'Nora Nomenumero', associate=created_associate(name_number),
+                   payment=new_payment('37.50', audit_amount='37.5',
+                                       meta_categories=[{'payment_category_id': '$category', 'amount': 12.5, 'subject': 0,
+                                                         'title': 42, 'id': '9'}]),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'subscription_type': '',
+                                 'meta': {'plan_id': None, 'plan_name': None, 'membership_plan_id': 9,
+                                          'membership_plan_name': 42}, **SEASON},
+                   membership={'membership_type': '42', 'start_date': '$season_start', 'end_date': '$season_end',
+                               'price': '12.50', '$audit': {'price': ['None', '12.5']}}))
+
+add('plan-fee-infinite-server-error', 'owner', 500, SERVER,
+    setup=fees_setup(multiple_subscription_fee=True,
+                     subscription_fee_plans=[{'id': 'inf', 'name': 'Piano infinito', 'subscription_fee': 'inf'}]),
+    body=request(person('Ivan', 'Infinito', 'NFNIVN90A41H501W', born='01/01/1990'), plan_id='inf'))
+
+# nan is not > 0, so no payment is due (as with a negative fee): neither the amount filter nor the Payment
+# insert reaches the DecimalField, and the subscription is created without one.
+not_a_number = person('Nina', 'Nonumero', 'NNINNA90A41H501X', born='01/01/1990')
+add('plan-fee-nan-no-payment', 'owner', 200, {'status': 'success', 'payment_id': None, 'amount': 0},
+    setup=fees_setup(multiple_subscription_fee=True,
+                     subscription_fee_plans=[{'id': 'nan', 'name': 'Piano nonnumero', 'subscription_fee': 'nan'}]),
+    body=request(not_a_number, plan_id='nan'),
+    effect=success('owner', 'Nina Nonumero', associate=created_associate(not_a_number),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'subscription_type': '',
+                                 'meta': {'plan_id': 'nan', 'plan_name': 'Piano nonnumero', 'membership_plan_id': None,
+                                          'membership_plan_name': None}, **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                               'end_date': '$season_end', 'price': None}))
+
+# --- A tutor without a usable birth date, and a tutor that is the minor itself -----------------------------------
+# born_date is DateField(null=True, blank=True): the serializer's field is not required (a missing key is
+# skipped, stored None) and accepts null (allow_null). The tutor row is created with born_date NULL and the
+# flow continues; the audit entries render the field as absent.
+def tutor_person(first, last, tax_code, **extra):
+    """A tutor payload whose born_date key is absent unless given."""
+    return {'first_name': first, 'last_name': last, 'tax_code': tax_code, 'sex': 'M', **extra}
+
+
+no_born_minor = person('Nino', 'Senonata', 'SNNNNO15A41H501B', born='01/01/2015', is_minor=True, sex='M')
+no_born_tutor = tutor_person('Tullio', 'Senonata', 'SNNTLL80A01H501C')
+add('tutor-without-born-date', 'owner', 200, SUCCESS(25.0),
+    body=request(no_born_minor, tutor=no_born_tutor),
+    effect=success('owner', 'Nino Senonata', associate=created_associate(no_born_minor, is_minor=True),
+                   tutor=created_associate(no_born_tutor), relation=True,
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                               'end_date': '$season_end', 'price': None}))
+
+null_born_minor = person('Nilla', 'Senonata', 'SNNNLL15A41H501D', born='01/01/2015', is_minor=True, sex='F')
+null_born_tutor = tutor_person('Tullia', 'Senonata', 'SNNTLA80A41H501E', born_date=None)
+add('tutor-born-date-null', 'owner', 200, SUCCESS(25.0),
+    body=request(null_born_minor, tutor=null_born_tutor),
+    effect=success('owner', 'Nilla Senonata', associate=created_associate(null_born_minor, is_minor=True),
+                   tutor=created_associate(null_born_tutor), relation=True,
+                   payment=new_payment('25.00', audit_amount='25.0'),
+                   subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                   membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                               'end_date': '$season_end', 'price': None}))
+
+# The tutor's tax code matches the row the minor's serializer just created: get_or_create returns that row,
+# the serializer's setattr loop writes the tutor's fields over it, the view then links the row to itself
+# (associate.tutors.add, the only tutor: add_main_tutor) and its stale minor instance saves the minor's
+# values back, undoing the tutor's fields in a last update entry.
+same_tax_minor = person('Tina', 'Uguale', 'UGLTNI15A41H501D', born='01/01/2015', is_minor=True, sex='F')
+same_tax_tutor = person('Tino', 'Uguale', 'UGLTNI15A41H501D', born='01/01/1980', sex='M')
+same_tax_effect = success('owner', 'Tina Uguale', associate=created_associate(same_tax_minor, is_minor=True), associate_audit=[],
+                          payment=new_payment('25.00', audit_amount='25.0'),
+                          subscription={'type': 2, 'role': 1, 'status_flag': 1, 'meta': NO_PLANS, 'subscription_type': '', **SEASON},
+                          membership={'membership_type': '$default_membership_type', 'start_date': '$season_start',
+                                      'end_date': '$season_end', 'price': None})
+same_tax_effect['relation'] = 'self'
+same_tax_effect['audit'] = [
+    {'model': 'associate', 'action': 0, 'ref': 'associate', 'changes': {'user': ['None', 'None']}, 'index': [OWN, 'direct']},
+    # The tutor's serializer save over the minor's row.
+    {'model': 'associate', 'action': 1, 'ref': 'associate',
+     'changes': {'first_name': ['Tina', 'Tino'], 'sex': ['F', 'M'], 'born_date': ['2015-01-01', '1980-01-01']},
+     'index': [OWN, 'direct']},
+    # associate_tutor.user = user; save()
+    {'model': 'associate', 'action': 1, 'ref': 'associate', 'changes': {'user': ['None', OWNER]}, 'index': [OWN, 'direct']},
+    {'model': 'associatetutorrelation', 'action': 0, 'ref': 'relation', 'changes': {}, 'index': [OWN, 'associate.sport_association']},
+    # associate.user = user; associate.save() of the stale minor instance.
+    {'model': 'associate', 'action': 1, 'ref': 'associate',
+     'changes': {'first_name': ['Tino', 'Tina'], 'sex': ['M', 'F'], 'born_date': ['1980-01-01', '2015-01-01']},
+     'index': [OWN, 'direct']},
+] + same_tax_effect['audit']
+add('tutor-same-tax-code-as-minor', 'owner', 200, SUCCESS(25.0), body=request(same_tax_minor, tutor=same_tax_tutor), effect=same_tax_effect)
 
 # --- Limits of requests without an account --------------------------------------------------------------------
 # Requests without an account are counted per address (30 in 600 seconds): the next one is asked to wait before the body
