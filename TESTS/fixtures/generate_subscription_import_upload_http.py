@@ -646,8 +646,8 @@ upload('xlsx-big-number-labels', 'owner', 'grandi-colonna.xlsx', workbook([[1e20
        columns=[BIG, 2], texts=['100000000000000000000', '2'], kind=XLSX, content_type=XLSX, keep='big_number_labels')
 imported('big-number-labels', 'owner', 'big_number_labels', {'map': {
     'nome': BIG, 'cognome': 2.0, 'città di nascita': 1e20, 'indirizzo': True, 'telefono': '2', 'sesso': -BIG}},
-    columns=[BIG, 2], drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi', 'born_city': 'Ada'},
-                                    {'first_name': 'Bea', 'last_name': 'Verdi', 'born_city': 'Bea'}]))
+    columns=[BIG, 2], drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi', 'born_city': 'Ada', 'sex': 'A'},
+                                    {'first_name': 'Bea', 'last_name': 'Verdi', 'born_city': 'Bea', 'sex': 'A'}]))
 UINT = 2 ** 63 + 5
 upload('xlsx-uint-labels', 'owner', 'uint-colonna.xlsx', workbook([[UINT, 2], ['Ada', 'Rossi']]), columns=[UINT, 2],
        texts=[str(UINT), '2'], kind=XLSX, content_type=XLSX, keep='uint_labels')

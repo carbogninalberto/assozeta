@@ -4436,7 +4436,8 @@
        "associate": {
         "first_name": "Ada",
         "last_name": "Rossi",
-        "born_city": "Ada"
+        "born_city": "Ada",
+        "sex": "A"
        },
        "associate_tutor": {}
       },
@@ -4447,7 +4448,8 @@
        "associate": {
         "first_name": "Bea",
         "last_name": "Verdi",
-        "born_city": "Bea"
+        "born_city": "Bea",
+        "sex": "A"
        },
        "associate_tutor": {}
       },
