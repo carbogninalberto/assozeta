@@ -6862,9 +6862,43 @@
    }
   },
   {
-   "name": "instance-admin-admin-final",
-   "actor": "admin",
-   "method": "GET",
+   "name": "instance-admin-branding-form-empty",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Only instance branding can be edited here."
+   ],
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-branding-form-dotted-oem",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Only instance branding can be edited here."
+   ],
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "oem.name=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-branding-form-plain-oem",
+   "actor": "owner",
+   "method": "PUT",
    "path": "/instance/admin",
    "headers": {},
    "status": 200,
@@ -6932,6 +6966,1544 @@
       "federationRegistration": false,
       "multipleRegistration": false,
       "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    }
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "oem=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-branding-form-blank-version",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza v1",
+      "abbreviation": "AB",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "Admin@Example.test",
+      "primaryColor": "#ABCDEF",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": "fixture.apps.googleusercontent.com",
+      "appleClientId": "org.example.fixture",
+      "googleEnabled": true
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza v1",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v1"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    }
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v1",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "uiApiVersion=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-branding-form-repeated-version",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "uiApiVersion": [
+     "\"v9\" is not a valid choice."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "uiApiVersion=v1&uiApiVersion=v9",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-branding-form-version",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza v1",
+      "abbreviation": "AB",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "Admin@Example.test",
+      "primaryColor": "#ABCDEF",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": "fixture.apps.googleusercontent.com",
+      "appleClientId": "org.example.fixture",
+      "googleEnabled": true
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza v1",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v2"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    }
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": {
+    "actor": "owner",
+    "association": "own_association",
+    "changes": {
+     "ui_api_version": [
+      "v1",
+      "v2"
+     ]
+    }
+   },
+   "raw_body": "uiApiVersion=v2",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-branding-form-version-file",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza v1",
+      "abbreviation": "AB",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "Admin@Example.test",
+      "primaryColor": "#ABCDEF",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": "fixture.apps.googleusercontent.com",
+      "appleClientId": "org.example.fixture",
+      "googleEnabled": true
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza v1",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v2"
+     },
+     "setup": {
+      "provenance": "fresh",
+      "onboardingComplete": false
+     }
+    }
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {
+      "host": "mail.example.test",
+      "port": 465,
+      "security": "tls",
+      "username": "relay",
+      "from_email": "relay@example.test",
+      "sender_name": "Relay"
+     },
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 5,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"uiApiVersion\"\r\n\r\nv2\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-branding-form-version-image",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "uiApiVersion": [
+     "\"a.png\" is not a valid choice."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"uiApiVersion\"\r\n\r\na.png\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-email-put-form-empty",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "revision": [
+     "This field is required."
+    ],
+    "host": [
+     "This field is required."
+    ],
+    "port": [
+     "This field is required."
+    ],
+    "security": [
+     "This field is required."
+    ],
+    "username": [
+     "This field is required."
+    ],
+    "from_email": [
+     "This field is required."
+    ],
+    "sender_name": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-email-put-form-blank",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "revision": [
+     "A valid integer is required."
+    ],
+    "host": [
+     "This field may not be blank."
+    ],
+    "port": [
+     "A valid integer is required."
+    ],
+    "security": [
+     "\"\" is not a valid choice."
+    ],
+    "from_email": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=&host=&port=&security=&username=&password=&clear_password=&from_email=&sender_name=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-email-put-form-password-file",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "password": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n0\r\n--fixture\r\nContent-Disposition: form-data; name=\"host\"\r\n\r\nsmtp.example.test\r\n--fixture\r\nContent-Disposition: form-data; name=\"port\"\r\n\r\n587\r\n--fixture\r\nContent-Disposition: form-data; name=\"security\"\r\n\r\ntls\r\n--fixture\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"from_email\"\r\n\r\na@example.com\r\n--fixture\r\nContent-Disposition: form-data; name=\"sender_name\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"password\"; filename=\"p.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-email-put-form-revision-file",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_password": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"host\"\r\n\r\nsmtp.example.test\r\n--fixture\r\nContent-Disposition: form-data; name=\"port\"\r\n\r\n587\r\n--fixture\r\nContent-Disposition: form-data; name=\"security\"\r\n\r\ntls\r\n--fixture\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"from_email\"\r\n\r\na@example.com\r\n--fixture\r\nContent-Disposition: form-data; name=\"sender_name\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_password\"\r\n\r\ntrue\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-email-put-form-host-file",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "host": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n0\r\n--fixture\r\nContent-Disposition: form-data; name=\"port\"\r\n\r\n25\r\n--fixture\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"from_email\"\r\n\r\na@example.com\r\n--fixture\r\nContent-Disposition: form-data; name=\"sender_name\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"host\"\r\n\r\nh.txt\r\n--fixture\r\nContent-Disposition: form-data; name=\"security\"\r\n\r\nssl\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-email-put-form",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "host": "smtp.form.example.test",
+    "port": 587,
+    "security": "tls",
+    "username": "",
+    "from_email": "form@example.test",
+    "sender_name": "",
+    "source": "instance",
+    "revision": 6,
+    "password_configured": false,
+    "credential_error": false,
+    "restart_required": false,
+    "application": "Nuovi invii da API e worker; le connessioni già aperte terminano con la configurazione precedente."
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {
+      "host": "smtp.form.example.test",
+      "port": 587,
+      "security": "tls",
+      "username": "",
+      "from_email": "form@example.test",
+      "sender_name": ""
+     },
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 6,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=5&host=+smtp.form.example.test+&port=587&security=tls&username=&from_email=form%40example.test&sender_name=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-email-delete-form-missing-revision",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "This field may not be null."
+   ],
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-email-delete-form",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "source": "environment",
+    "host": "",
+    "port": 465,
+    "username": "segreteria@polisportiva.example",
+    "security": "none",
+    "from_email": "segreteria@polisportiva.example",
+    "sender_name": "A.S.D. Polisportiva Città (Aurora)",
+    "revision": 7,
+    "password_configured": false,
+    "credential_error": false,
+    "restart_required": false,
+    "application": "Nuovi invii da API e worker; le connessioni già aperte terminano con la configurazione precedente."
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {},
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 7,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=6",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-form-list-positions",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "1": [
+      "\"x\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=2&model=fixture-model&cheap_model=fixture-cheap&base_url=&max_iterations=5&max_results=10&query_timeout=5&ws_rate_limit=5&ws_timeout=5&history_cap=5&clear_secrets%5B0%5D=api_key&clear_secrets%5B2%5D=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-form-blank-list",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "clear_secrets": {
+     "0": [
+      "\"\" is not a valid choice."
+     ]
+    }
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=2&model=fixture-model&cheap_model=fixture-cheap&base_url=&max_iterations=5&max_results=10&query_timeout=5&ws_rate_limit=5&ws_timeout=5&history_cap=5&clear_secrets=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-form-enabled-file",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n2\r\n--fixture\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\nfixture-model\r\n--fixture\r\nContent-Disposition: form-data; name=\"cheap_model\"\r\n\r\nfixture-cheap\r\n--fixture\r\nContent-Disposition: form-data; name=\"base_url\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_iterations\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"max_results\"\r\n\r\n10\r\n--fixture\r\nContent-Disposition: form-data; name=\"query_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_rate_limit\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"ws_timeout\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"history_cap\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"enabled\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_secrets\"; filename=\"api_key\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-integration-ai-put-form",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/admin/integrations/ai",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "enabled": false,
+    "model": "fixture-model",
+    "cheap_model": "fixture-cheap",
+    "base_url": "",
+    "max_iterations": 5,
+    "max_results": 10,
+    "query_timeout": 5,
+    "ws_rate_limit": 5,
+    "ws_timeout": 5,
+    "history_cap": 5,
+    "source": "instance",
+    "revision": 3,
+    "api_key_configured": false,
+    "provider": "ai",
+    "credential_error": false,
+    "last_test": null,
+    "restart_required": false,
+    "webhook_url": null,
+    "authorized_origin": null,
+    "web_login_available": false
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {},
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 7,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "api_key": {
+         "$secret": ""
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=2&model=fixture-model&cheap_model=fixture-cheap&base_url=&max_iterations=5&max_results=10&query_timeout=5&ws_rate_limit=5&ws_timeout=5&history_cap=5&clear_secrets=api_key&clear_secrets=api_key",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-integration-google-delete-form",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/integrations/google",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "client_id": "",
+    "enabled": false,
+    "source": "environment",
+    "revision": 2,
+    "provider": "google",
+    "credential_error": false,
+    "last_test": null,
+    "restart_required": false,
+    "webhook_url": null,
+    "authorized_origin": "https://example.org",
+    "web_login_available": true
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {},
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 7,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 2,
+       "settings": null
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "api_key": {
+         "$secret": ""
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-updates-post-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Gli aggiornamenti reali sono disabilitati in sviluppo."
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "release_id=7&tag=v9.9.9&request_id=b2000000-0000-4000-8000-000000000001",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-updates-post-form-blank",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "release_id": [
+     "A valid integer is required."
+    ],
+    "tag": [
+     "This field may not be blank."
+    ],
+    "request_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "release_id=&tag=&request_id=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-updates-post-form-request-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "request_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"tag\"\r\n\r\nt\r\n--fixture\r\nContent-Disposition: form-data; name=\"release_id\"\r\n\r\n7\r\n--fixture\r\nContent-Disposition: form-data; name=\"request_id\"\r\n\r\nb2000000-0000-4000-8000-000000000001\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-restarts-post-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Il riavvio dei container è disabilitato in sviluppo."
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "request_id=b2000000-0000-4000-8000-000000000001",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-restarts-post-form-blank",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "request_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "request_id=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-restarts-post-form-extra-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "È richiesto soltanto l’identificativo della richiesta."
+   ],
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "request_id=b2000000-0000-4000-8000-000000000001&force=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-restarts-post-form-request-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "request_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "cache_control": null,
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"request_id\"\r\n\r\nb2000000-0000-4000-8000-000000000001\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-admin-admin-final",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instance/admin",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "config": {
+     "oem": {
+      "name": "Istanza v1",
+      "abbreviation": "AB",
+      "logo": "/oem/assozeta/brand/logo.svg",
+      "supportEmail": "Admin@Example.test",
+      "primaryColor": "#ABCDEF",
+      "displaySettings": {
+       "general": {
+        "searchBar": true,
+        "cookieConsent": true,
+        "showDemoButton": false
+       },
+       "login": {
+        "showSportAssociationCreation": false,
+        "allowOauthLogin": true,
+        "showFooterInfo": true,
+        "allowOnlyAthletes": false,
+        "showTestimonials": false,
+        "termsAndConditionsUrl": ""
+       },
+       "navbar": {
+        "showAffiliateLink": false,
+        "showReview": false,
+        "showNotifications": true
+       },
+       "sidebar": {
+        "showPlanUpgrades": false,
+        "showPrivacyPolicy": true,
+        "showTermsOfService": true,
+        "showPreferences": true
+       }
+      },
+      "manualUrl": "/#/manuale"
+     },
+     "oauth": {
+      "googleClientId": null,
+      "appleClientId": "org.example.fixture",
+      "googleEnabled": false
+     },
+     "stripe": {
+      "publicKey": null,
+      "pricingTable": null,
+      "clientPortal": null
+     },
+     "meta": {
+      "title": "Istanza v1",
+      "description": "Gestionale per associazioni sportive",
+      "manifest": "/api/instance/manifest.json"
+     },
+     "features": {
+      "aiEnabled": false,
+      "manualEnabled": false,
+      "isReseller": false,
+      "selfHosted": true,
+      "supportMultipleAssociations": false,
+      "showCourseAthletes": true,
+      "showMinorExemption": true,
+      "showTutorial": true,
+      "familyRegistration": true,
+      "federationRegistration": false,
+      "multipleRegistration": false,
+      "uiApiVersion": "v2"
      },
      "setup": {
       "provenance": "fresh",
@@ -7073,9 +8645,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
@@ -7221,9 +8793,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
@@ -7244,7 +8816,7 @@
      "abbreviation": "AB",
      "primary_color": "#ABCDEF",
      "support_email": "Admin@Example.test",
-     "ui_api_version": "v1",
+     "ui_api_version": "v2",
      "email_settings": {
       "host": "mail.example.test",
       "port": 465,
@@ -7256,7 +8828,7 @@
      "email_password": {
       "$secret": "placeholder secret 2"
      },
-     "email_revision": 5,
+     "email_revision": 7,
      "diagnostic_results": {
       "checks": [
        {
@@ -7388,11 +8960,8 @@
        "settings": null
       },
       "google": {
-       "revision": 1,
-       "settings": {
-        "enabled": true,
-        "client_id": "fixture.apps.googleusercontent.com"
-       }
+       "revision": 2,
+       "settings": null
       },
       "apple": {
        "revision": 1,
@@ -7402,21 +8971,21 @@
        }
       },
       "ai": {
-       "revision": 2,
+       "revision": 3,
        "settings": {
         "enabled": false,
-        "model": "fixture-model",
-        "cheap_model": "fixture-cheap",
-        "base_url": "http://[::1]:8080/v1",
-        "max_iterations": 1,
-        "max_results": 1,
-        "query_timeout": 1,
-        "ws_rate_limit": 1000,
-        "ws_timeout": 1,
-        "history_cap": 1000,
         "api_key": {
          "$secret": ""
-        }
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
        }
       }
      }
@@ -7725,9 +9294,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
@@ -7873,9 +9442,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
@@ -7896,7 +9465,7 @@
      "abbreviation": "AB",
      "primary_color": "#ABCDEF",
      "support_email": "Admin@Example.test",
-     "ui_api_version": "v1",
+     "ui_api_version": "v2",
      "email_settings": {
       "host": "mail.example.test",
       "port": 465,
@@ -7908,7 +9477,7 @@
      "email_password": {
       "$secret": ""
      },
-     "email_revision": 5,
+     "email_revision": 7,
      "diagnostic_results": {
       "checks": [
        {
@@ -8039,11 +9608,8 @@
        "settings": null
       },
       "google": {
-       "revision": 1,
-       "settings": {
-        "enabled": true,
-        "client_id": "fixture.apps.googleusercontent.com"
-       }
+       "revision": 2,
+       "settings": null
       },
       "apple": {
        "revision": 1,
@@ -8053,21 +9619,21 @@
        }
       },
       "ai": {
-       "revision": 2,
+       "revision": 3,
        "settings": {
         "enabled": false,
-        "model": "fixture-model",
-        "cheap_model": "fixture-cheap",
-        "base_url": "http://[::1]:8080/v1",
-        "max_iterations": 1,
-        "max_results": 1,
-        "query_timeout": 1,
-        "ws_rate_limit": 1000,
-        "ws_timeout": 1,
-        "history_cap": 1000,
         "api_key": {
          "$secret": ""
-        }
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
        }
       }
      }
@@ -8357,9 +9923,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
@@ -8380,7 +9946,7 @@
      "abbreviation": "AB",
      "primary_color": "#ABCDEF",
      "support_email": "Admin@Example.test",
-     "ui_api_version": "v1",
+     "ui_api_version": "v2",
      "email_settings": {
       "host": "mail.example.test",
       "port": 465,
@@ -8392,7 +9958,7 @@
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
-     "email_revision": 5,
+     "email_revision": 7,
      "diagnostic_results": {
       "checks": [
        {
@@ -8523,11 +10089,8 @@
        "settings": null
       },
       "google": {
-       "revision": 1,
-       "settings": {
-        "enabled": true,
-        "client_id": "fixture.apps.googleusercontent.com"
-       }
+       "revision": 2,
+       "settings": null
       },
       "apple": {
        "revision": 1,
@@ -8537,21 +10100,21 @@
        }
       },
       "ai": {
-       "revision": 2,
+       "revision": 3,
        "settings": {
         "enabled": false,
-        "model": "fixture-model",
-        "cheap_model": "fixture-cheap",
-        "base_url": "http://[::1]:8080/v1",
-        "max_iterations": 1,
-        "max_results": 1,
-        "query_timeout": 1,
-        "ws_rate_limit": 1000,
-        "ws_timeout": 1,
-        "history_cap": 1000,
         "api_key": {
          "$secret": ""
-        }
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
        }
       }
      }
@@ -8837,9 +10400,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
@@ -8860,7 +10423,7 @@
      "abbreviation": "AB",
      "primary_color": "#ABCDEF",
      "support_email": "Admin@Example.test",
-     "ui_api_version": "v1",
+     "ui_api_version": "v2",
      "email_settings": {
       "host": "mail.example.test",
       "port": 465,
@@ -8872,7 +10435,7 @@
      "email_password": {
       "$secret": ""
      },
-     "email_revision": 5,
+     "email_revision": 7,
      "diagnostic_results": {
       "checks": [
        {
@@ -9003,11 +10566,8 @@
        "settings": null
       },
       "google": {
-       "revision": 1,
-       "settings": {
-        "enabled": true,
-        "client_id": "fixture.apps.googleusercontent.com"
-       }
+       "revision": 2,
+       "settings": null
       },
       "apple": {
        "revision": 1,
@@ -9017,21 +10577,21 @@
        }
       },
       "ai": {
-       "revision": 2,
+       "revision": 3,
        "settings": {
         "enabled": false,
-        "model": "fixture-model",
-        "cheap_model": "fixture-cheap",
-        "base_url": "http://[::1]:8080/v1",
-        "max_iterations": 1,
-        "max_results": 1,
-        "query_timeout": 1,
-        "ws_rate_limit": 1000,
-        "ws_timeout": 1,
-        "history_cap": 1000,
         "api_key": {
          "$secret": ""
-        }
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
        }
       }
      }
@@ -9317,9 +10877,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
@@ -9340,7 +10900,7 @@
      "abbreviation": "AB",
      "primary_color": "#ABCDEF",
      "support_email": "Admin@Example.test",
-     "ui_api_version": "v1",
+     "ui_api_version": "v2",
      "email_settings": {
       "host": "mail.example.test",
       "port": 465,
@@ -9352,7 +10912,7 @@
      "email_password": {
       "$secret": "placeholder secret 2"
      },
-     "email_revision": 6,
+     "email_revision": 8,
      "diagnostic_results": {
       "checks": [
        {
@@ -9473,11 +11033,8 @@
        "settings": null
       },
       "google": {
-       "revision": 1,
-       "settings": {
-        "enabled": true,
-        "client_id": "fixture.apps.googleusercontent.com"
-       }
+       "revision": 2,
+       "settings": null
       },
       "apple": {
        "revision": 1,
@@ -9487,21 +11044,21 @@
        }
       },
       "ai": {
-       "revision": 2,
+       "revision": 3,
        "settings": {
         "enabled": false,
-        "model": "fixture-model",
-        "cheap_model": "fixture-cheap",
-        "base_url": "http://[::1]:8080/v1",
-        "max_iterations": 1,
-        "max_results": 1,
-        "query_timeout": 1,
-        "ws_rate_limit": 1000,
-        "ws_timeout": 1,
-        "history_cap": 1000,
         "api_key": {
          "$secret": ""
-        }
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
        }
       }
      }
@@ -9791,9 +11348,9 @@
      {
       "id": "google",
       "label": "Accesso Google",
-      "status": "passed",
+      "status": "not_configured",
       "level": "configuration",
-      "message": "Client ID configurato. Un accesso reale con il provider non è stato verificato.",
+      "message": "Integrazione facoltativa non configurata.",
       "checked_at": "$isonow",
       "core": false
      },
