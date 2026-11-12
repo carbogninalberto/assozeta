@@ -12,8 +12,8 @@ is_valid_uuid; ``data.keys()`` (a list or string body is a 500); a missing 'numb
 500; cancelled defaults to False; payment_date through strptime('%Y-%m-%d') (any error:
 None); the scoped association (.filter().first(); None: 500); the scoped, live, group-aware,
 unarchived invoice of the association (None: 500); ``int(number)``, ``bool(cancelled)``;
-'selected_tutor' present: the first scoped, live, group-aware associate by id (UUIDField
-to_python errors: 500; none: unchanged), absent: None; the first scoped, live, group-aware
+'selected_tutor' present: the first scoped, live, group-aware associate by id within
+the invoice's association (UUIDField to_python errors: 500; none: unchanged), absent: None; the first scoped, live, group-aware
 payment of the invoice by pk: a truthy payment_date is assigned, payment.save() (defaults,
 audited), then generate_invoice_description(payment, association); invoice.save() (audited
 before the UPDATE); the print task; InvoiceSerializer of the invoice. Nothing is atomic.
@@ -54,6 +54,8 @@ ASSOCIATES = {
     'carla': {'id': next(ids), 'first': 'Carla', 'last': 'Gialli', 'association': OWN, 'group': GROUP_ID, 'deleted': False},
     'dora': {'id': next(ids), 'first': 'Dora', 'last': 'Cancellata', 'association': OWN, 'group': None, 'deleted': True},
     'hans': {'id': next(ids), 'first': 'Hans', 'last': 'Muller', 'association': FOREIGN, 'group': None, 'deleted': False},
+    'greta': {'id': 'a1000000-0000-4000-8000-000000998901', 'first': 'Greta', 'last': 'Neri', 'association': FOREIGN,
+              'group': GROUP_ID, 'deleted': False},
 }
 A = lambda label: ASSOCIATES[label]['id']
 
@@ -127,6 +129,12 @@ PAYMENTS = {
     'p_free': {'id': next(ids), **row(description='Pagamento libero')},
 }
 P = lambda label: PAYMENTS[label]['id']
+
+# A customer invoice of the other association with the number and fiscal year the add below reuses.
+CUSTOMER_INVOICES = {
+    'foreign_number': {'id': 'a1000000-0000-4000-8000-000000998902', 'association': FOREIGN, 'prefix': 'FPR',
+                       'number': 520, 'fiscal_year': 2031},
+}
 
 
 def subscription(associate, *, payment=None, start=None, end=None, group=None):
@@ -358,7 +366,7 @@ updated('i_plain', {'number': 7.9, 'cancelled': 'false', 'selected_tutor': A('an
         name='update-plain-float-number-string-cancelled')
 for name, tutor in (('deleted', A('dora')), ('null', None), ('integer', 5)):
     updated('i_plain', {'number': 7, 'cancelled': True, 'selected_tutor': tutor}, tutor='kept', name=f'update-plain-tutor-{name}-kept')
-updated('i_plain', {'number': 7, 'selected_tutor': A('hans')}, tutor='hans', name='update-plain-tutor-resolved-by-id')
+updated('i_plain', {'number': 7, 'selected_tutor': A('hans')}, tutor='kept', name='update-plain-tutor-other-association-kept')
 updated('i_plain', {'number': True, 'cancelled': 0, 'selected_tutor': A('bruno').upper()}, tutor='bruno',
         name='update-plain-bool-number-upper-tutor')
 updated('i_plain', {'number': ' 8 ', 'cancelled': [], 'selected_tutor': A('bruno')}, tutor='bruno', name='update-plain-spaced-number')
@@ -415,6 +423,10 @@ updated('i_noparty', {'number': 101}, payment='p_noparty', description=other('Va
 updated('i_two', {'number': 141}, payment='p_two_a', description=other('Prima'), name='update-first-live-payment-by-key')
 updated('i_group', {'number': 151, 'selected_tutor': A('anna')}, tutor='kept', headers=GROUP,
         name='update-group-invoice-payment-and-tutor-outside-group')
+updated('i_group', {'number': 152, 'selected_tutor': A('carla')}, tutor='carla', headers=GROUP,
+        name='update-group-invoice-own-group-tutor')
+updated('i_group', {'number': 153, 'selected_tutor': A('greta')}, tutor='kept', headers=GROUP,
+        name='update-group-invoice-other-association-tutor-kept')
 updated('i_foreignpay', {'number': 161, 'payment_date': '2026-07-01'}, payment='p_foreignpay',
         payment_changes={'payment_date': '2026-07-01T00:00:00Z'}, description=other(CATEGORY['name']),
         name='update-payment-resolved-by-invoice')
@@ -509,6 +521,8 @@ def added(name, body, *, actor='owner', memory=None, stored=None, second=None, x
 
 AMOUNT_DEFAULT = {'payment_total_amount': ['0.00', '0']}
 added('add-defaults', {**BASE, 'number': 501}, memory={}, stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT)
+added('add-number-of-other-association-accepted', {**BASE, 'number': 520}, memory={},
+      stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT)
 MIXED = [LINE('Corso <nuoto> & "acqua"', 2, 'ore', 19.99, 22), LINE('Libro', 3, 'pz', '0.125', '4'),
          LINE('Servizio', 1.5, 'h', 33.333, 10.0)]
 EXPLICIT_ID = next(ids)
@@ -537,7 +551,8 @@ OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'invoice/<uid>/updat
                                                             'invoice and audit effects',
                               'ids': IDS, 'category': CATEGORY, 'documents': {'pdf': DOCUMENT, 'attached': ATTACHED},
                               'supplier': SUPPLIER, 'instructor': INSTRUCTOR, 'associates': ASSOCIATES, 'invoices': INVOICES,
-                              'payments': PAYMENTS, 'subscriptions': SUBSCRIPTIONS, 'memberships': MEMBERSHIPS, 'courses': COURSES,
+                              'payments': PAYMENTS, 'customer_invoices': CUSTOMER_INVOICES, 'subscriptions': SUBSCRIPTIONS,
+                              'memberships': MEMBERSHIPS, 'courses': COURSES,
                               'course_subscriptions': COURSE_SUBSCRIPTIONS, 'installments': INSTALLMENTS, 'carnets': CARNETS,
                               'carnet_subscriptions': CARNET_SUBSCRIPTIONS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

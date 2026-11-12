@@ -43,7 +43,7 @@ remains the production execution owner.
   403, escaping the field errors; the payment queryset is the live,
   group-aware manager), then `UniqueTogetherValidator` (skipped when a value
   is None) and `validate()` (a transmitter id or contact e-mail is required;
-  the number and fiscal year must be new).
+  the number and fiscal year must be new within the caller's association).
 - **Customer update:** `paid` and `transmitted` are assigned raw (`in` tests
   key presence, list membership or a substring; a scalar body is a
   TypeError) and `Model.save()` runs. auditlog's `pre_save` diff compares

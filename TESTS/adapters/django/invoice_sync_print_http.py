@@ -191,8 +191,8 @@ def day(text):
 
 
 def seed_rows(source, created):
-    from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, Instructor, Invoice, Payment,
-                                    PaymentCategory, Subscription, SubscriptionMembership, SupplierAndCustomers)
+    from application.models import (Associate, Course, CourseSubscription, CourseSubscriptionInstallment, CustomerInvoice, Instructor,
+                                    Invoice, Payment, PaymentCategory, Subscription, SubscriptionMembership, SupplierAndCustomers)
     from application.models.carnet_models import Carnet, CarnetSubscription
     from docmanager.models import Document
     ids = source['ids']
@@ -236,6 +236,9 @@ def seed_rows(source, created):
             values[column] = moment(values[column])
         values['amount'] = Decimal(values['amount'])
         insert(Payment, Payment(payment_id=row['id'], **values))
+    for row in source.get('customer_invoices', {}).values():
+        insert(CustomerInvoice, CustomerInvoice(customer_invoice_id=row['id'], sport_association_id=row['association'],
+                                                prefix=row['prefix'], number=row['number'], fiscal_year=row['fiscal_year']))
     payments, subs = source['payments'], source['subscriptions']
     for row in subs.values():
         insert(Subscription, Subscription(subscription_id=row['id'], sport_association_id=row['association'], user_id=row['user'],
