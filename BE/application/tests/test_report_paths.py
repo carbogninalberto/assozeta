@@ -44,6 +44,19 @@ class PathAllowlistTests(SimpleTestCase):
     def test_unknown_name_stays_readable(self):
         self.assertTrue(is_path_allowed(model('Tags'), 'colour'))
 
+    def test_blocked_name_as_first_segment_is_not_readable(self):
+        cases = [
+            ('Tags', 'password'),
+            ('Tags', 'password__icontains'),
+            ('Tags', 'token'),
+        ]
+        for model_name, path in cases:
+            with self.subTest(model=model_name, path=path):
+                self.assertFalse(is_path_allowed(model(model_name), path))
+
+    def test_json_key_after_readable_field_stays_readable(self):
+        self.assertTrue(is_path_allowed(model('CarnetSubscription'), 'meta__token'))
+
     def test_relation_to_account_model_is_not_readable(self):
         cases = [
             ('Instructor', 'user__password'),
@@ -96,6 +109,10 @@ class FilterPathTests(SimpleTestCase):
         for key in ('user__email', 'subscription__user__password'):
             with self.subTest(key=key):
                 self.assertEqual(validate_filter_fields(model('Instructor'), {key: 'x'}), {})
+
+    def test_filter_validation_drops_blocked_name_that_is_not_a_field(self):
+        validated = validate_filter_fields(model('Tags'), {'password': 'x', 'tag_name': 'a'})
+        self.assertEqual(validated, {'tag_name': 'a'})
 
 
 class FieldListTests(SimpleTestCase):

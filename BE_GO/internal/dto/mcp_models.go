@@ -218,14 +218,21 @@ func (m *mcpModel) reportRelationListed(name string) bool {
 	return m.ReportRelations != nil && mcpContains(*m.ReportRelations, name)
 }
 
-// mcpPathAllowed is security.is_path_allowed: walks the __ segments from
-// model. A relation must be listed for the model it is reached on and leads
-// to the related model; a concrete field, or a relation's <name>_id column,
-// must be listed and ends the walk; a segment that names no field of the
-// current model also ends the walk.
+// mcpPathAllowed is security.is_path_allowed: the first __ segment is checked
+// against the name blocklist (reportAllowed) before the walk, whether or not
+// the model has a field of that name, so a blocked name is refused even when
+// nothing on the model matches it. The remaining segments are walked from
+// model: a relation must be listed for the model it is reached on and leads to
+// the related model; a concrete field, or a relation's <name>_id column, must
+// be listed and ends the walk; a later segment that names no field of the
+// current model also ends the walk (a lookup, a JSON key or an unknown name).
 func mcpPathAllowed(model *mcpModel, path string) bool {
+	segments := strings.Split(path, "__")
+	if !reportAllowed(segments[0]) {
+		return false
+	}
 	current := model
-	for _, segment := range strings.Split(path, "__") {
+	for _, segment := range segments {
 		if current == nil || current.ReportFields == nil {
 			return false
 		}

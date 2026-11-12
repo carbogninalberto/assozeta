@@ -320,13 +320,19 @@ def is_field_allowed(field_name: str) -> bool:
 def is_path_allowed(model, path) -> bool:
     """Whether every field and relation named along ``path`` may be read.
 
-    Walks the ``__`` segments from ``model``: a relation must be listed for the model it is reached on and leads to
-    the related model; a concrete field (or a relation's ``<name>_id`` column) must be listed and ends the walk
-    (what follows is a transform or lookup). A segment that names no field of the current model also ends the walk:
-    it is a lookup or an unknown name, which the ORM answers as before.
+    The first ``__`` segment is checked against the name blocklist (``is_field_allowed``) before the walk, whether
+    or not the model has a field of that name: a blocked name is refused even when nothing on the model matches it,
+    so the walk never treats it as an unknown name. The remaining segments are walked from ``model``: a relation
+    must be listed for the model it is reached on and leads to the related model; a concrete field (or a relation's
+    ``<name>_id`` column) must be listed and ends the walk (what follows is a transform or lookup). A later segment
+    that names no field of the current model also ends the walk: it is a lookup, a JSON key or an unknown name,
+    which the ORM answers as before.
     """
+    segments = path.split('__')
+    if not is_field_allowed(segments[0]):
+        return False
     current = model
-    for segment in path.split('__'):
+    for segment in segments:
         allowed = REPORT_ALLOWLIST.get(f'{current._meta.app_label}.{current.__name__}')
         if allowed is None:
             return False

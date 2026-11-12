@@ -46,6 +46,12 @@ func TestReportPathAllowed(t *testing.T) {
 		{"CourseSubscription", "course__in", true},
 		// test_unknown_name_stays_readable
 		{"Tags", "colour", true},
+		// test_blocked_name_as_first_segment_is_not_readable
+		{"Tags", "password", false},
+		{"Tags", "password__icontains", false},
+		{"Tags", "token", false},
+		// test_json_key_after_readable_field_stays_readable
+		{"CarnetSubscription", "meta__token", true},
 		// test_relation_to_account_model_is_not_readable
 		{"Instructor", "user__password", false},
 		{"SportAssociation", "user__email", false},
@@ -124,6 +130,22 @@ func TestReportFilterPaths(t *testing.T) {
 			if argument == "x" {
 				t.Errorf("%s: args %#v keep the blocked value", condition, planned.Statements[1].Args)
 			}
+		}
+	}
+	// test_filter_validation_drops_blocked_name_that_is_not_a_field: a blocked
+	// name that is no field of the model is dropped, not walked as unknown.
+	planned = reportTestPlan(t, "query_data", `{"model_name":"Tags","fields":["tag_name"],
+		"filters":{"password":"x","tag_name":"a"}}`)
+	query = planned.Statements[1].SQL
+	if !strings.Contains(query, `"application_tags"."tag_name" = $`) {
+		t.Errorf("query %q lacks the kept filter on tag_name", query)
+	}
+	if strings.Contains(query, "password") {
+		t.Errorf("query %q keeps the dropped filter password", query)
+	}
+	for _, argument := range planned.Statements[1].Args {
+		if argument == "x" {
+			t.Errorf("args %#v keep the dropped value", planned.Statements[1].Args)
 		}
 	}
 }
