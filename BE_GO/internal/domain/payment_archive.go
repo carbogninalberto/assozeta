@@ -19,6 +19,9 @@ type PaymentSaveRow struct {
 	Description   *string `db:"description"`
 	Meta          *string `db:"meta"`
 	Course        *string `db:"course"`
+	// CustomAccounts is whether custom_accounts is set; nil unless the query
+	// selects it.
+	CustomAccounts *bool `db:"custom_accounts_set"`
 }
 
 // PaymentLinkedName is get_course_carnet_name's linked row: the first course

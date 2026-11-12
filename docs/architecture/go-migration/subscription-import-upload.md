@@ -125,10 +125,9 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 ## Not ported (refused with the 500 page before any write)
 
 - Workbooks outside `pandasxlsx`'s subset (`ReadAll`): a first sheet that is not a worksheet, text looked up in a header
-  made only of dates or only of durations, a label that is a whole number outside 64 bits, ISO date cells openpyxl
-  raises on, an infinite number cell, numbers beyond a float, number-like text whose reading depends on how pandas was
-  compiled, XML that is not UTF-8, a part above 256 MiB, a stored file above 64 MiB. In the golden corpus 6,128 of the
-  6,246 workbooks pandas reads are accepted.
+  made only of dates or only of durations, ISO date cells openpyxl raises on, an infinite number cell, numbers beyond a
+  float, number-like text whose reading depends on how pandas was compiled, XML that is not UTF-8, a part above 256 MiB,
+  a stored file above 64 MiB. In the golden corpus 6,133 of the 6,246 workbooks pandas reads are accepted.
 - CSV files outside `pandascsv`'s subset (`Read`, `ReadText`): a line that starts with whitespace after a bare carriage
   return, and decimal text whose value depends on how pandas was compiled (1,904 of 97,442 corpus outcomes).
 - Import values: date text or a number in a date column over 64 KiB (date text and numbers are otherwise read by the whole
@@ -217,3 +216,14 @@ stays small).
 
 89 cases. Local: `t6x2-a1` 89/89 on native Django and native Go; mutation `t6x2-mut-a` CAUGHT
 (`subscription-import-upload-mixed-labels`).
+
+## t11camps
+
+Header labels that are whole numbers outside int64 (written as digits or as an integral float such as `1E+20`) are
+answered: within [0, 2**64) they make a uint64 Index, with a float or nan label a float64 Index when every whole number
+fits int64 or uint64, an object Index otherwise. The answer writes them as digits. The lookup follows pandas: a uint64
+Index takes whole numbers only; an object Index compares by Python equality and reads an int key as a position when its
+labels are whole numbers mixed only with floats or nan. `TESTS/adapters/go/pandas_xlsx_lookup_golden.py` records pandas'
+lookups (`pandasxlsx/testdata/pandas_lookups.json`, `TestPandasLookups`). 98 cases; local `t11camps-dbg2` and CI
+`t11camps-1` (run 43196596071) green on four transports; mutation `t11camps-mut2` (int keys always read as labels)
+CAUGHT (`big-float-labels-position-fails`).

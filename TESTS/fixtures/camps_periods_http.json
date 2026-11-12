@@ -139,6 +139,39 @@
    "fee": "40.00",
    "max": null,
    "created": "2026-06-06T10:00:00Z"
+  },
+  "november": {
+   "id": "a1000000-0000-4000-8000-000000985201",
+   "camp": "camp",
+   "start": "2026-11-01T08:00:00Z",
+   "end": "2026-11-05T18:00:00Z",
+   "title": "Novembre",
+   "description": "Autunno",
+   "fee": "20.00",
+   "max": null,
+   "created": "2026-06-14T09:00:00Z"
+  },
+  "december": {
+   "id": "a1000000-0000-4000-8000-000000985202",
+   "camp": "camp",
+   "start": "2026-12-01T08:00:00Z",
+   "end": "2026-12-05T18:00:00Z",
+   "title": "Dicembre",
+   "description": null,
+   "fee": "25.00",
+   "max": null,
+   "created": "2026-06-14T10:00:00Z"
+  },
+  "winter": {
+   "id": "a1000000-0000-4000-8000-000000985203",
+   "camp": "plain",
+   "start": "2027-01-01T08:00:00Z",
+   "end": "2027-01-05T18:00:00Z",
+   "title": "Inverno",
+   "description": null,
+   "fee": "30.00",
+   "max": null,
+   "created": "2026-06-14T11:00:00Z"
   }
  },
  "services": {
@@ -213,6 +246,33 @@
    "fee": "8.00",
    "category": null,
    "created": "2026-06-11T10:00:00Z"
+  },
+  "sled": {
+   "id": "a1000000-0000-4000-8000-000000985204",
+   "period": "november",
+   "title": "Slitta",
+   "description": null,
+   "fee": "5.00",
+   "category": "own",
+   "created": "2026-06-14T12:00:00Z"
+  },
+  "skates": {
+   "id": "a1000000-0000-4000-8000-000000985205",
+   "period": "december",
+   "title": "Pattini",
+   "description": null,
+   "fee": "6.00",
+   "category": "own",
+   "created": "2026-06-14T12:00:01Z"
+  },
+  "boots": {
+   "id": "a1000000-0000-4000-8000-000000985206",
+   "period": "winter",
+   "title": "Scarponi",
+   "description": null,
+   "fee": "7.00",
+   "category": "own",
+   "created": "2026-06-14T12:00:02Z"
   }
  },
  "subscriptions": {
@@ -299,6 +359,85 @@
    ],
    "created": "2026-06-13T12:00:00Z",
    "deleted": true
+  },
+  "november_1": {
+   "id": "a1000000-0000-4000-8000-000000985207",
+   "amount": "25.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Novembre",
+   "category": "own",
+   "notes": null,
+   "meta": null,
+   "created": "2026-06-14T13:00:00Z"
+  },
+  "november_2": {
+   "id": "a1000000-0000-4000-8000-000000985208",
+   "amount": "25.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Novembre",
+   "category": "own",
+   "notes": null,
+   "meta": null,
+   "created": "2026-06-14T13:00:01Z"
+  },
+  "december": {
+   "id": "a1000000-0000-4000-8000-000000985209",
+   "amount": "31.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Quota Corso",
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985205",
+     "title": "Pattini",
+     "amount": 6.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "payment_meta": [
+    "description"
+   ],
+   "created": "2026-06-14T13:00:02Z"
+  },
+  "winter_1": {
+   "id": "a1000000-0000-4000-8000-000000985210",
+   "amount": "37.00",
+   "paid": false,
+   "subject": 3,
+   "description": null,
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985206",
+     "title": "Scarponi",
+     "amount": 7.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "created": "2026-06-14T13:00:03Z"
+  },
+  "winter_2": {
+   "id": "a1000000-0000-4000-8000-000000985211",
+   "amount": "37.00",
+   "paid": false,
+   "subject": 3,
+   "description": null,
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985206",
+     "title": "Scarponi",
+     "amount": 7.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "created": "2026-06-14T13:00:04Z"
   }
  },
  "subscription_periods": {
@@ -352,6 +491,51 @@
    "services": [
     "canoe"
    ]
+  },
+  "november_1": {
+   "id": "a1000000-0000-4000-8000-000000985212",
+   "period": "november",
+   "subscription": "camp",
+   "payment": "november_1",
+   "services": [
+    "sled"
+   ]
+  },
+  "november_2": {
+   "id": "a1000000-0000-4000-8000-000000985213",
+   "period": "november",
+   "subscription": "camp",
+   "payment": "november_2",
+   "services": [
+    "sled"
+   ]
+  },
+  "december": {
+   "id": "a1000000-0000-4000-8000-000000985214",
+   "period": "december",
+   "subscription": "camp",
+   "payment": "december",
+   "services": [
+    "skates"
+   ]
+  },
+  "winter_1": {
+   "id": "a1000000-0000-4000-8000-000000985215",
+   "period": "winter",
+   "subscription": "plain",
+   "payment": "winter_1",
+   "services": [
+    "boots"
+   ]
+  },
+  "winter_2": {
+   "id": "a1000000-0000-4000-8000-000000985216",
+   "period": "winter",
+   "subscription": "plain",
+   "payment": "winter_2",
+   "services": [
+    "boots"
+   ]
   }
  },
  "period_links": {
@@ -364,6 +548,15 @@
   ],
   "august": [
    "snack"
+  ],
+  "november": [
+   "sled"
+  ],
+  "december": [
+   "skates"
+  ],
+  "winter": [
+   "boots"
   ]
  },
  "cases": [
@@ -4370,6 +4563,135 @@
    },
    "body": {
     "title": "Guida alpina"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-null-metas-two-payments-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985204/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'NoneType' object is not iterable"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985204": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985201",
+       "title": "Slitta nuova",
+       "description": null,
+       "fee": "5.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985204",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Slitta",
+        "Slitta nuova"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "title": "Slitta nuova"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-description-failure-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985205/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "list indices must be integers or slices, not str"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985205": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985202",
+       "title": "Pattini nuovi",
+       "description": null,
+       "fee": "6.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985205",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Pattini",
+        "Pattini nuovi"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "title": "Pattini nuovi"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-transfer-description-two-payments-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985206/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'NoneType' object has no attribute 'name'"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985206": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985203",
+       "title": "Scarponi nuovi",
+       "description": null,
+       "fee": "7.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985206",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Scarponi",
+        "Scarponi nuovi"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "title": "Scarponi nuovi"
    }
   },
   {

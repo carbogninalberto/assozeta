@@ -25,6 +25,9 @@ const (
 	DatetimeIndex
 	// TimedeltaIndex holds durations (and NaT).
 	TimedeltaIndex
+	// Uint64Index is a uint64 Index: whole numbers in [0, 2**64) that do
+	// not all fit int64.
+	Uint64Index
 )
 
 // Lookup is `key in row.keys()` and the position row[key] reads, for a key
@@ -53,14 +56,29 @@ func (f *Frame) Lookup(key any) (position int, found, raises bool, err error) {
 			}
 		}
 		return 0, false, false, nil
-	case IntIndex, FloatIndex:
+	case IntIndex, FloatIndex, Uint64Index:
 		// The engine takes whole numbers and floats, never booleans; an
-		// int64 Index only floats without a fraction.
+		// int64 Index only floats without a fraction, a uint64 Index only
+		// whole numbers in [0, 2**64).
 		number, isNumber := key.(json.Number)
 		if !isNumber {
 			return 0, false, false, nil
 		}
 		whole, value, isWhole := jsonNumber(number)
+		if f.Index == Uint64Index {
+			if !isWhole {
+				if math.IsNaN(value) || math.IsInf(value, 0) || value != math.Trunc(value) {
+					return 0, false, false, nil
+				}
+				whole, _ = new(big.Float).SetFloat64(value).Int(nil)
+			}
+			for index, label := range f.Labels {
+				if labelWhole := labelInteger(label); labelWhole != nil && labelWhole.Cmp(whole) == 0 {
+					return index, true, false, nil
+				}
+			}
+			return 0, false, false, nil
+		}
 		if f.Index == IntIndex {
 			if !isWhole {
 				if value != math.Trunc(value) || math.IsInf(value, 0) {
@@ -108,9 +126,9 @@ func (f *Frame) Lookup(key any) (position int, found, raises bool, err error) {
 		whole, value, isWhole := jsonNumber(typed)
 		if isWhole {
 			match = f.numberLabel(whole, 0)
-			if match >= 0 && !f.integerLabels() {
+			if match >= 0 && !f.intLabels() {
 				// Series.__getitem__ reads a whole number as a position
-				// unless the labels hold whole numbers.
+				// unless the Index infers as 'integer' or 'mixed-integer'.
 				if !whole.IsInt64() || whole.Int64() >= int64(len(f.Labels)) || whole.Int64() < -int64(len(f.Labels)) {
 					return 0, true, true, nil
 				}
@@ -148,7 +166,7 @@ func jsonNumber(number json.Number) (whole *big.Int, value float64, isWhole bool
 func (f *Frame) numberLabel(whole *big.Int, value float64) int {
 	for index, label := range f.Labels {
 		switch label.Kind {
-		case Int, Bool, Float:
+		case Int, Bool, Float, BigInt:
 		default:
 			continue
 		}
@@ -164,6 +182,25 @@ func (f *Frame) numberLabel(whole *big.Int, value float64) int {
 			if value == math.Trunc(value) && !math.IsInf(value, 0) {
 				exact, _ := new(big.Float).SetFloat64(value).Int(nil)
 				if exact.IsInt64() && exact.Int64() == label.I {
+					return index
+				}
+			}
+			continue
+		case BigInt:
+			// A Python int outside int64: its digits are in S.
+			bigValue, ok := new(big.Int).SetString(label.S, 10)
+			if !ok {
+				continue
+			}
+			if whole != nil {
+				if bigValue.Cmp(whole) == 0 {
+					return index
+				}
+				continue
+			}
+			if value == math.Trunc(value) && !math.IsNaN(value) && !math.IsInf(value, 0) {
+				exact, _ := new(big.Float).SetFloat64(value).Int(nil)
+				if exact.Cmp(bigValue) == 0 {
 					return index
 				}
 			}
@@ -188,13 +225,38 @@ func (f *Frame) numberLabel(whole *big.Int, value float64) int {
 	return -1
 }
 
-// integerLabels reports whether the object Index infers as 'mixed-integer':
-// one of its labels is a whole number (a boolean is none).
-func (f *Frame) integerLabels() bool {
+// labelInteger is the whole number a label of a uint64 Index holds.
+func labelInteger(label Value) *big.Int {
+	switch label.Kind {
+	case Int:
+		return big.NewInt(label.I)
+	case BigInt:
+		if value, ok := new(big.Int).SetString(label.S, 10); ok {
+			return value
+		}
+	case Uint64:
+		return new(big.Int).SetUint64(label.U)
+	}
+	return nil
+}
+
+// intLabels reports whether Series.__getitem__ reads a whole-number key of an
+// object Index as a label: it does when the Index infers as 'integer' (whole
+// numbers only) or 'mixed-integer' (whole numbers with text, booleans, dates
+// or durations). An Index inferring as 'mixed-integer-float' (whole numbers
+// with floats or nan) reads it as a position, and so does one without a whole
+// number.
+func (f *Frame) intLabels() bool {
+	whole, floats, other := false, false, false
 	for _, label := range f.Labels {
-		if label.Kind == Int {
-			return true
+		switch label.Kind {
+		case Int, BigInt:
+			whole = true
+		case Float, NaN:
+			floats = true
+		default:
+			other = true
 		}
 	}
-	return false
+	return whole && (other || !floats)
 }
