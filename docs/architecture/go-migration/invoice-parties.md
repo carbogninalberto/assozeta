@@ -141,7 +141,7 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
   form bodies stay the 500 page in both. Success cases live in the invoice-sync-print fixture, error cases here.
 - Still refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and form JSON nested deeper than the
   ported depth.
-- Fixture: 277 cases (was 186); invoice-sync-print 82 (was 77). Local sweep `t11inv-local`: both green (CI: t11inv-1).
+- Fixture: 277 cases (was 186); invoice-sync-print 82 (was 77). Local sweep `t11inv-local`: both green (CI `t11inv-1`, GitHub run 43213252219: 4 transports green).
 
 ## Not ported (refused with a 500 before any write)
 
