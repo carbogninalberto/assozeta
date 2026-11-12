@@ -60,6 +60,10 @@ func invoicePartyMessages(request *http.Request, value any) any {
 				} else {
 					result = append(result, "I campi prefix, number, fiscal_year, sport_association devono costituire un insieme unico.")
 				}
+			case code == dto.PersonaDateFormat && english:
+				result = append(result, "Date has wrong format. Use one of these formats instead: DD/MM/YYYY.")
+			case code == dto.PersonaDateFormat:
+				result = append(result, "La data è in un formato errato. Usa uno dei seguenti formati: DD/MM/YYYY.")
 			case strings.HasPrefix(code, dto.InvoicePartyMaxValue):
 				limit := strings.TrimPrefix(code, dto.InvoicePartyMaxValue)
 				if english {

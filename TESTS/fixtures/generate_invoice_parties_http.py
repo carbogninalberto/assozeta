@@ -11,9 +11,11 @@ Django semantics pinned here, in each view's order:
   Then every invoice of the association by -creation_date with
   CustomerInvoiceSerializer (fields '__all__' plus the PDF token).
 - invoice-customers/add: request.user.sport_association, then the view writes
-  into request.data (a list, scalar or form body is a 500), defaults missing
-  or null dates to today, converts both dates with strptime('%Y-%m-%d') (a
-  500 otherwise) and validates CustomerInvoiceSerializer: field rules, the
+  into request.data (a list, scalar or form body without file parts is a 500;
+  a multipart body with a file part is a mutable QueryDict read as HTML-form
+  input), defaults missing or null dates to today, converts both dates with
+  strptime('%Y-%m-%d') (a 500 otherwise) and validates CustomerInvoiceSerializer:
+  field rules, the
   tenant-scoped relations (another tenant's payment is DRF's generic 403),
   UniqueTogetherValidator and validate() (a contact is required; the number
   and fiscal year must be new). A valid invoice is saved
@@ -31,7 +33,11 @@ Django semantics pinned here, in each view's order:
 - invoice-suppliers/add: request.user.sport_association, the bank account
   (default or the association's named one), the live group-aware supplier, the
   "Pagamento Fornitore" category (the association's, else the shared one),
-  then PaymentEntrySerializer and InvoiceSuppliersSerializer validation; a
+  then PaymentEntrySerializer and InvoiceSuppliersSerializer validation (a
+  nested payment object, or a form body's payment.<key> fields, is the
+  PaymentSerializer value: its field errors join the invoice errors, another
+  association's reference is DRF's generic 403 and a valid value is the same
+  500 as a nested supplier); a
   non-blank payment_id must name a live payment of the caller's association
   visible under the group header (a field error, before anything is created,
   otherwise), and the payment is created and saved, then the invoice is created
@@ -42,6 +48,9 @@ Django semantics pinned here, in each view's order:
 - invoice-suppliers/<uid>/update: is_valid_uuid, the scoped association and
   invoice (500), the partial serializer (its read-only invoice_supplier_id
   ignores a key in the body, so the path's invoice is saved in place; a
+  nested payment value is validated like on add: field errors write nothing,
+  another association's reference is the generic 403 and a valid value is the
+  nested-write 500 before the invoice is written; a
   non-blank payment_id must name a live payment of the invoice's association
   visible under the group header, or the invoice's current payment, and a
   field error writes nothing), the
@@ -482,6 +491,44 @@ add('supplier-list-foreign-owner-nested-payments', 'foreign_owner', 'GET', query
 
 # ------------------------------------------------------- customer add ---
 
+def multipart(*parts, boundary='invoicepartiesboundary'):
+    """parts: (name, filename or None, content type or None, text) as a multipart/form-data body."""
+    chunks = []
+    for name, filename, content_type, text in parts:
+        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename is not None else '')
+        chunks.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n'
+                      + (f'Content-Type: {content_type}\r\n' if content_type else '') + f'\r\n{text}\r\n')
+    return ''.join(chunks) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
+
+
+def form_value(value):
+    """The HTML form text of a value (JSON for a list or a dict)."""
+    if isinstance(value, (list, dict)):
+        return json.dumps(value)
+    if value is True:
+        return 'true'
+    if value is False:
+        return 'false'
+    if value is None:
+        return ''
+    return str(value)
+
+
+def form_parts(fields):
+    """(name, filename, content type, text) parts for a dict's items, in order."""
+    return [(name, None, None, form_value(value)) for name, value in fields.items()]
+
+
+LINE = lambda description, quantity, unit, price, vat: {'description': description, 'quantity': quantity, 'unit_of_measure': unit,
+                                                         'unit_price': price, 'vat': vat}
+BASE = {'fiscal_year': 2031, 'assignor_vat_number': '01234567890', 'assignor_tax_code': '01234567890',
+        'assignor_denomination': 'ASD Alfa & Figli', 'assignor_address': 'Via Roma 1', 'assignor_postal_code': '10100',
+        'assignor_city': 'Torino', 'assignor_province': 'TO', 'assignor_contact_email': 'alfa@example.test',
+        'assignor_contact_phone': '0111234567', 'transferor_tax_code': 'RSSMRA80A01L219X', 'transferor_denomination': 'Mario Rossi <Ditta>',
+        'transferor_address': 'Via Po 2', 'transferor_postal_code': '10123', 'transferor_city': 'Torino', 'transferor_province': 'TO',
+        'transferor_contact_email': 'mario.pec@example.test', 'causal': 'Quota & servizi',
+        'lines': [LINE('Quota annuale', 1, 'unita', 100.0, 22.0)], 'payment_condition': 'TP02', 'payment_modality': 'MP05'}
+
 CA = '/invoice-customers/add'
 access('customer-add', CA, 'POST', 'clientinvoices', 'create', 'Invoice Customers Add', 'GET')
 add('customer-add-athlete-not-association', 'athlete', 'POST', CA, 403, NOT_ASSOCIATION, body={})
@@ -489,6 +536,39 @@ add('customer-add-owner-without-association-server-error', 'owner_without_associ
 add('customer-add-list-body-server-error', 'owner', 'POST', CA, 500, SERVER, body=[])
 add('customer-add-string-body-server-error', 'owner', 'POST', CA, 500, SERVER, body='invoice')
 add('customer-add-form-body-server-error', 'owner', 'POST', CA, 500, SERVER, raw_body='number=4', content_type=FORM)
+MULTIPART_FILE = ('allegato', 'fattura.txt', 'text/plain', 'x')
+# A multipart body without a file part is still an immutable QueryDict.
+mp, ct = multipart(*form_parts({**BASE, 'number': 602}))
+add('customer-add-multipart-without-file-server-error', 'owner', 'POST', CA, 500, SERVER, raw_body=mp, content_type=ct)
+# A multipart body with a file part is read as HTML-form input: text values, absent booleans False,
+# JSON fields parsed from their text (a file's name) and empty inputs by allow_null/allow_blank.
+mp, ct = multipart(*form_parts({'number': 'x', 'lines': '', 'json': '{bad', 'e_invoice': 'maybe', 'paid': '',
+                                'fiscal_year': '99999999999', 'payment_total_amount': 'abc', 'payment_modality': 'MP99',
+                                'creation_date': 'ieri', 'customer_invoice_id': 'zz'}), MULTIPART_FILE)
+add('customer-add-multipart-field-errors', 'owner', 'POST', CA, 400, {
+    'customer_invoice_id': ['Must be a valid UUID.'], 'number': ['A valid integer is required.'],
+    'fiscal_year': ['Ensure this value is less than or equal to 2147483647.'], 'e_invoice': ['Must be a valid boolean.'],
+    'lines': ['Value must be valid JSON.'], 'payment_modality': ['"MP99" is not a valid choice.'],
+    'payment_total_amount': ['A valid number is required.'], 'json': ['Value must be valid JSON.'],
+    'creation_date': ['Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].']},
+    raw_body=mp, content_type=ct)
+# The view's strptime runs on the raw last value before the serializer.
+mp, ct = multipart(*form_parts({**BASE, 'number': 604, 'transmitting_date': ''}), MULTIPART_FILE)
+add('customer-add-multipart-blank-transmitting-date-server-error', 'owner', 'POST', CA, 500, SERVER, raw_body=mp, content_type=ct)
+# File parts win a repeated key: the file's name is the text the field validates.
+mp, ct = multipart(*form_parts({**BASE, 'number': 606}), ('causal', 'c.txt', 'text/plain', 'x'),
+                   ('number', 'n.txt', 'text/plain', '7'), ('lines', 'l.txt', 'text/plain', '[]'), MULTIPART_FILE)
+add('customer-add-multipart-file-parts-field-errors', 'owner', 'POST', CA, 400, {
+    'number': ['A valid integer is required.'], 'causal': ['Not a valid string.'],
+    'lines': ['Value must be valid JSON.']}, raw_body=mp, content_type=ct)
+MULTIPART_WITHOUT_PEC = {key: value for key, value in BASE.items() if key != 'transferor_contact_email'}
+MULTIPART_WITHOUT_PEC['number'] = 609
+mp, ct = multipart(*form_parts(MULTIPART_WITHOUT_PEC), MULTIPART_FILE)
+add('customer-add-multipart-contact-required', 'owner', 'POST', CA, 400,
+    {'non_field_errors': ['Either transferor_contact_email or id_transmitter must be provided!']}, raw_body=mp, content_type=ct)
+mp, ct = multipart(MULTIPART_FILE)
+add('customer-add-multipart-file-only', 'owner', 'POST', CA, 400,
+    {'non_field_errors': ['Either transferor_contact_email or id_transmitter must be provided!']}, raw_body=mp, content_type=ct)
 add('customer-add-bad-transmitting-date-server-error', 'owner', 'POST', CA, 500, SERVER, body={'transmitting_date': '02/10/2026'})
 add('customer-add-number-transmitting-date-server-error', 'owner', 'POST', CA, 500, SERVER, body={'transmitting_date': 20261002})
 add('customer-add-impossible-expiry-date-server-error', 'owner', 'POST', CA, 500, SERVER,
@@ -569,16 +649,6 @@ add('customer-update-invalid-boolean-audited-server-error', 'owner', 'PATCH', CU
 add('customer-update-null-paid-audited-server-error', 'owner', 'PATCH', CU('one'), 500, SERVER, body={'transmitted': None},
     effect=effect('owner', rows={'customerinvoice': {key_one: {'paid': True, 'transmitted': True}}},
                   audits=[audit('customerinvoice', key_one, 1, {'transmitted': ['True', 'None']})]))
-def multipart(*parts, boundary='invoicepartiesboundary'):
-    """parts: (name, filename or None, content type or None, text) as a multipart/form-data body."""
-    chunks = []
-    for name, filename, content_type, text in parts:
-        disposition = f'form-data; name="{name}"' + (f'; filename="{filename}"' if filename is not None else '')
-        chunks.append(f'--{boundary}\r\nContent-Disposition: {disposition}\r\n'
-                      + (f'Content-Type: {content_type}\r\n' if content_type else '') + f'\r\n{text}\r\n')
-    return ''.join(chunks) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
-
-
 # A file in the body is str() of its name in the entry, and not a boolean for the column.
 mp, ct = multipart(('paid', 'stato.txt', 'text/plain', 'x'))
 add('customer-update-paid-as-file-audited-server-error', 'owner', 'PATCH', CU('one'), 500, SERVER, raw_body=mp, content_type=ct,
@@ -761,6 +831,111 @@ for _name, _nested in (('without-association', {'name': 'Nuovo'}), ('own-associa
         body={**VALID, 'supplier': _nested}, effect=effect('owner', new={
             'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno')},
             audits=payment_audits(OWN, 'uno')))
+
+# The nested serializer keeps its primary key writable: supplier_id is a UUIDField (required=False) with a
+# UniqueValidator over SupplierAndCustomers.objects (live rows, narrowed to the group header when sent). Its field and
+# uniqueness errors join the other nested field errors; any value that validates is the 500 page, and on add the payment
+# is kept.
+NESTED_SUPPLIER_ID_TAKEN = {'supplier': {'supplier_id': ['supplier and customers with this supplier id already exists.']}}
+FRESH_SUPPLIER_ID = 'a1000000-0000-4000-8000-000000846990'
+
+
+def nested_supplier_id(value):
+    return {**VALID, 'supplier': {'name': 'N', 'supplier_id': value}}
+
+
+for _name, _value, _response in (
+        ('malformed', 'abc', {'supplier': {'supplier_id': ['Must be a valid UUID.']}}),
+        ('blank', '', {'supplier': {'supplier_id': ['Must be a valid UUID.']}}),
+        ('null', None, {'supplier': {'supplier_id': ['This field may not be null.']}}),
+        ('existing-own', SUPPLIERS['uno']['supplier_id'], NESTED_SUPPLIER_ID_TAKEN),
+        ('existing-other-association', SUPPLIERS['abroad']['supplier_id'], NESTED_SUPPLIER_ID_TAKEN)):
+    add(f'supplier-add-nested-supplier-id-{_name}', 'owner', 'POST', SA, 400, _response, body=nested_supplier_id(_value))
+for _name, _value in (('deleted', SUPPLIERS['gone']['supplier_id']), ('unused', FRESH_SUPPLIER_ID), ('integer', 5)):
+    add(f'supplier-add-nested-supplier-id-{_name}-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
+        body=nested_supplier_id(_value), effect=effect('owner', new={
+            'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno')},
+            audits=payment_audits(OWN, 'uno')))
+add('supplier-add-nested-supplier-id-field-errors', 'owner', 'POST', SA, 400, {'supplier': {
+    'supplier_id': ['Must be a valid UUID.'], 'name': ['This field is required.'],
+    'email': ['Enter a valid email address.']}}, body={**VALID, 'supplier': {'supplier_id': 'abc', 'email': 'x'}})
+# A multipart body with a file part: its supplier.<key> fields form the nested value (a blank no-value text field is
+# absent, an absent boolean of the full nested form is False). A valid nested object keeps the payment, then answers 500.
+mp, ct = multipart(*FORM_VALID, ('allegato', 'fattura.txt', 'text/plain', 'x'), ('supplier.name', None, None, 'N'))
+add('supplier-add-multipart-nested-supplier-name-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
+    raw_body=mp, content_type=ct, effect=effect('owner', new={
+        'payment': new_payment('bank', '7.25', True, '2026-10-21T10:00:00Z', '2026-10-21T10:00:00Z', 'uno')},
+        audits=payment_audits(OWN, 'uno')))
+mp, ct = multipart(*FORM_VALID, ('allegato', 'fattura.txt', 'text/plain', 'x'), ('supplier.name', None, None, ''),
+                   ('supplier.supplier_id', None, None, 'abc'), ('supplier.deleted', None, None, ''))
+add('supplier-add-multipart-nested-supplier-field-errors', 'owner', 'POST', SA, 400, {'supplier': {
+    'supplier_id': ['Must be a valid UUID.'], 'name': ['This field may not be blank.']}}, raw_body=mp, content_type=ct)
+mp, ct = multipart(*FORM_VALID, ('allegato', 'fattura.txt', 'text/plain', 'x'), ('supplier.name', None, None, 'N'),
+                   ('supplier.supplier_id', None, None, SUPPLIERS['uno']['supplier_id']))
+add('supplier-add-multipart-nested-supplier-existing-id', 'owner', 'POST', SA, 400, NESTED_SUPPLIER_ID_TAKEN,
+    raw_body=mp, content_type=ct)
+mp, ct = multipart(*FORM_VALID, ('allegato', 'fattura.txt', 'text/plain', 'x'),
+                   ('supplier.name', 'n.txt', 'text/plain', 'x'))
+add('supplier-add-multipart-nested-supplier-name-as-file', 'owner', 'POST', SA, 400,
+    {'supplier': {'name': ['Not a valid string.']}}, raw_body=mp, content_type=ct)
+
+# A nested payment object is validated by PaymentSerializer (partial on update). Its field errors join the invoice
+# errors; another association's reference is the generic 403; a valid object is the 500 page (the payment is kept on
+# add, then InvoiceSuppliers.objects.create(<dict>) raises).
+PROBE_UNKNOWN_PK = 'a1000000-0000-4000-8000-0000009fffff'  # the probe's unknown id (not this generator's UNKNOWN)
+FRESH_PAYMENT_ID = 'a1000000-0000-4000-8000-0000009aaaa1'
+FRESH_PAYMENT_SUPPLIER_ID = 'a1000000-0000-4000-8000-0000009aaaa2'
+PAYMENT_NUMBER = 'A valid number is required.'
+PAYMENT_DATE_DMY = 'Date has wrong format. Use one of these formats instead: DD/MM/YYYY.'
+PAYMENT_CAP = 'Enter exactly 5 digits'
+PAYMENT_REQUIRED = 'This field is required.'
+NESTED_PAYMENT_VALID = {'user': {}, 'associate': {},
+                        'instructor': {'first_name': 'a', 'last_name': 'b', 'user': OWNER}, 'supplier': {'name': 's'}}
+
+
+def kept_payment_effect(amount, payment_date):
+    """A valid nested payment: the payment row is created and saved, then the invoice create raises."""
+    return effect('owner', new={'payment': new_payment('bank', amount, True, payment_date, payment_date, 'uno')},
+                  audits=payment_audits(OWN, 'uno'))
+
+
+add('supplier-add-nested-payment-required', 'owner', 'POST', SA, 400, {'payment': {
+    'user': [PAYMENT_REQUIRED], 'associate': [PAYMENT_REQUIRED], 'instructor': [PAYMENT_REQUIRED],
+    'supplier': [PAYMENT_REQUIRED]}}, body={**VALID, 'payment': {}})
+add('supplier-add-nested-payment-valid-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
+    body={**VALID, 'payment': NESTED_PAYMENT_VALID},
+    effect=kept_payment_effect('50.50', '2026-10-20T10:00:00Z'))
+add('supplier-add-nested-payment-null-nested', 'owner', 'POST', SA, 400, {'payment': {
+    'user': ['This field may not be null.'], 'associate': ['This field may not be null.'],
+    'instructor': ['This field may not be null.'], 'supplier': ['This field may not be null.']}},
+    body={**VALID, 'payment': {'user': None, 'associate': None, 'instructor': None, 'supplier': None, 'invoice': None}})
+add('supplier-add-nested-payment-invoice-required', 'owner', 'POST', SA, 400, {'payment': {'invoice': {
+    'membership_fee': [PAYMENT_REQUIRED], 'activity_fee': [PAYMENT_REQUIRED],
+    'sport_association': [PAYMENT_REQUIRED]}}}, body={**VALID, 'payment': {**NESTED_PAYMENT_VALID, 'invoice': {}}})
+add('supplier-add-nested-payment-nested-required', 'owner', 'POST', SA, 400, {'payment': {
+    'instructor': {'first_name': [PAYMENT_REQUIRED], 'last_name': [PAYMENT_REQUIRED], 'user': [PAYMENT_REQUIRED]},
+    'supplier': {'name': [PAYMENT_REQUIRED]}}},
+    body={**VALID, 'payment': {'user': {}, 'associate': {}, 'instructor': {}, 'supplier': {}}})
+add('supplier-add-nested-payment-own-references-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
+    body={**VALID, 'payment': {
+        'payment_id': FRESH_PAYMENT_ID, 'user': {'role': 1},
+        'associate': {'first_name': 'x', 'sport_association': OWN},
+        'instructor': {'first_name': 'a', 'last_name': 'b', 'user': OWNER,
+                       'documents': [DOCUMENTS['pdf_one']['document_id']]},
+        'supplier': {'name': 's', 'supplier_id': FRESH_PAYMENT_SUPPLIER_ID},
+        'invoice': {'membership_fee': '1', 'activity_fee': '2', 'sport_association': OWN},
+        'amount': '3', 'payment_category': CATEGORIES['own']['payment_category_id']}},
+    effect=kept_payment_effect('50.50', '2026-10-20T10:00:00Z'))
+# A multipart body with a file part: its payment.<key> fields form the nested value (a blank no-value text field is
+# absent, an absent boolean is False). The errors join the invoice errors.
+mp, ct = multipart(*FORM_VALID, ('allegato', 'fattura.txt', 'text/plain', 'x'), ('payment.amount', None, None, 'x'))
+add('supplier-add-multipart-nested-payment-amount-field-errors', 'owner', 'POST', SA, 400, {'payment': {
+    'user': [PAYMENT_REQUIRED], 'associate': [PAYMENT_REQUIRED], 'instructor': [PAYMENT_REQUIRED],
+    'supplier': [PAYMENT_REQUIRED], 'amount': [PAYMENT_NUMBER]}}, raw_body=mp, content_type=ct)
+mp, ct = multipart(*FORM_VALID, ('allegato', 'fattura.txt', 'text/plain', 'x'), ('payment.user.email', None, None, ''))
+add('supplier-add-multipart-nested-payment-user-email-field-errors', 'owner', 'POST', SA, 400, {'payment': {
+    'associate': [PAYMENT_REQUIRED], 'instructor': [PAYMENT_REQUIRED], 'supplier': [PAYMENT_REQUIRED]}},
+    raw_body=mp, content_type=ct)
 
 # ------------------------------------------------------- supplier update ---
 
@@ -952,6 +1127,226 @@ add('supplier-update-nested-supplier-valid-server-error', 'owner', 'PATCH', SU('
     body={'supplier': {'name': 'Nuovo', 'sport_association': OWN}})
 add('supplier-update-nested-supplier-field-errors', 'owner', 'PATCH', SU('c'), 400, NESTED_SUPPLIER_ERRORS,
     body={'supplier': NESTED_SUPPLIER_FIELDS})
+# The nested supplier_id on update: the same UUIDField and UniqueValidator; a value that validates is the 500 page before
+# the invoice is written, and a field error writes nothing.
+for _name, _value, _response in (
+        ('malformed', 'abc', {'supplier': {'supplier_id': ['Must be a valid UUID.']}}),
+        ('blank', '', {'supplier': {'supplier_id': ['Must be a valid UUID.']}}),
+        ('null', None, {'supplier': {'supplier_id': ['This field may not be null.']}}),
+        ('existing-own', SUPPLIERS['uno']['supplier_id'], NESTED_SUPPLIER_ID_TAKEN),
+        ('existing-other-association', SUPPLIERS['abroad']['supplier_id'], NESTED_SUPPLIER_ID_TAKEN)):
+    add(f'supplier-update-nested-supplier-id-{_name}', 'owner', 'PATCH', SU('c'), 400, _response,
+        body={'supplier': {'supplier_id': _value}})
+for _name, _value in (('deleted', SUPPLIERS['gone']['supplier_id']), ('unused', FRESH_SUPPLIER_ID), ('integer', 5)):
+    add(f'supplier-update-nested-supplier-id-{_name}-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+        body={'supplier': {'supplier_id': _value}})
+# Form bodies: the nested value is the supplier.<key> fields (a repeated key keeps its last value; a blank no-value text
+# field is absent), validated with the same rules as a JSON object.
+for _name, _raw, _status, _response in (
+        ('blank-name-invalid-email', 'supplier.name=&supplier.email=x&notes=n', 400, {'supplier': {
+            'name': ['This field may not be blank.'], 'email': ['Enter a valid email address.']}}),
+        ('name-server-error', 'supplier.name=Z', 500, SERVER),
+        ('malformed-id', 'supplier.supplier_id=abc&supplier.name=Q', 400, {'supplier': {
+            'supplier_id': ['Must be a valid UUID.']}}),
+        ('blank-deleted-and-email-server-error', 'supplier.deleted=&supplier.email=', 500, SERVER)):
+    add(f'supplier-update-form-nested-supplier-{_name}', 'owner', 'PATCH', SU('c'), _status, _response,
+        raw_body=_raw, content_type=FORM)
+
+# Nested payment objects on update: the partial nested serializer answers field errors, another association's
+# reference is the generic 403, and a valid object is DRF's nested-write assertion (the 500 page) before the invoice is
+# written, so nothing changes.
+add('supplier-update-nested-payment-empty-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER, body={'payment': {}})
+add('supplier-update-nested-payment-field-errors', 'owner', 'PATCH', SU('c'), 400, {'payment': {
+    'payment_id': ['Must be a valid UUID.'],
+    'user': ['This field may not be null.'],
+    'associate': {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']},
+    'instructor': {'non_field_errors': ['Invalid data. Expected a dictionary, but got int.']},
+    'supplier': {'name': ['This field may not be blank.']},
+    'invoice': {'membership_fee': [PAYMENT_NUMBER]},
+    'type': ['"zzz" is not a valid choice.'],
+    'subject': ['"9" is not a valid choice.'],
+    'amount': [PAYMENT_NUMBER],
+    'creation_date': ['This field may not be null.'],
+    'payment_date': [DATETIME],
+    'paid': ['Must be a valid boolean.'],
+    'expense': ['Must be a valid boolean.'],
+    'description': ['This field may not be blank.'],
+    'payment_intent_id': ['Ensure this field has no more than 125 characters.'],
+    'archived': ['This field may not be null.'],
+    'payment_category': ['“abc” is not a valid UUID.'],
+    'sport_association': [f'Invalid pk "{PROBE_UNKNOWN_PK}" - object does not exist.'],
+    'custom_accounts': [f'Invalid pk "{PROBE_UNKNOWN_PK}" - object does not exist.'],
+    'signature': ['“abc” is not a valid UUID.'],
+    'group': [f'Invalid pk "{PROBE_UNKNOWN_PK}" - object does not exist.']}},
+    body={'payment': {
+        'amount': 'x', 'type': 'zzz', 'subject': 9, 'paid': 'maybe', 'description': '', 'payment_date': 'y',
+        'meta': {'a': 1}, 'payment_category': 'abc', 'custom_accounts': PROBE_UNKNOWN_PK, 'payment_id': 'abc',
+        'user': None, 'associate': [], 'instructor': 5, 'supplier': {'name': ''},
+        'invoice': {'membership_fee': 'x'}, 'notes': 5, 'creation_date': None, 'course': 'x',
+        'group': PROBE_UNKNOWN_PK, 'signature': 'abc', 'sport_association': PROBE_UNKNOWN_PK, 'archived': None,
+        'expense': 'si', 'payment_intent_id': 'p' * 126}})
+add('supplier-update-nested-payment-id-taken', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'payment_id': ['payment with this payment id already exists.']}},
+    body={'payment': {'payment_id': PAYMENTS['a']['payment_id']}})
+add('supplier-update-nested-payment-user-field-errors', 'owner', 'PATCH', SU('c'), 400, {'payment': {'user': {
+    'first_name': ['Ensure this field has no more than 150 characters.'],
+    'last_name': ['This field may not be null.'], 'email': ['Enter a valid email address.'],
+    'username': ['This field may not be null.'], 'role': ['"9" is not a valid choice.']}}},
+    body={'payment': {'user': {'email': 'x', 'role': 9, 'first_name': 'a' * 151, 'phone': None, 'username': None,
+                               'last_name': None}}})
+add('supplier-update-nested-payment-associate-field-errors', 'owner', 'PATCH', SU('c'), 400, {'payment': {'associate': {
+    'associate_id': ['This field may not be null.'], 'address_cap': [PAYMENT_CAP], 'born_date': [PAYMENT_DATE_DMY],
+    'email': ['Enter a valid email address.'], 'sex': ['"Z" is not a valid choice.'],
+    'is_minor': ['Must be a valid boolean.'], 'sport_association': ['“abc” is not a valid UUID.'],
+    'tax_code': ['Ensure this field has no more than 25 characters.'],
+    'family': [f'Invalid pk "{PROBE_UNKNOWN_PK}" - object does not exist.']}}},
+    body={'payment': {'associate': {
+        'address_cap': 'abc', 'born_date': 'x', 'sex': 'Z', 'is_minor': 'maybe', 'sport_association': 'abc',
+        'family': PROBE_UNKNOWN_PK, 'email': 'bad', 'associate_id': None, 'first_name': None, 'tax_code': 't' * 26}}})
+add('supplier-update-nested-payment-instructor-field-errors', 'owner', 'PATCH', SU('c'), 400, {'payment': {'instructor': {
+    'instructor_id': ['Must be a valid UUID.'], 'first_name': ['This field may not be blank.'],
+    'draft': ['Must be a valid boolean.'], 'associated_user_id': ['Must be a valid UUID.'],
+    'stipulated_contract_in': [PAYMENT_DATE_DMY], 'default_hourly_billing': [PAYMENT_NUMBER],
+    'default_percentage_billing': ['Ensure that there are no more than 2 digits before the decimal point.'],
+    'user': [f'Invalid pk "{PROBE_UNKNOWN_PK}" - object does not exist.'],
+    'documents': ['Expected a list of items but got type "str".']}}},
+    body={'payment': {'instructor': {
+        'first_name': '', 'user': PROBE_UNKNOWN_PK, 'default_hourly_billing': 'x', 'documents': 'abc',
+        'instructor_id': 'abc', 'draft': 'maybe', 'stipulated_contract_in': 'x',
+        'default_percentage_billing': '123.4', 'associated_user_id': 'z'}}})
+add('supplier-update-nested-payment-invoice-field-errors', 'owner', 'PATCH', SU('c'), 400, {'payment': {'invoice': {
+    'invoice_id': ['Must be a valid UUID.'], 'membership_fee': [PAYMENT_NUMBER],
+    'number': ['A valid integer is required.'], 'sport_association': ['This field may not be null.'],
+    'selected_tutor': ['“abc” is not a valid UUID.'],
+    'attached_documents': [f'Invalid pk "{PROBE_UNKNOWN_PK}" - object does not exist.']}}},
+    body={'payment': {'invoice': {
+        'membership_fee': 'x', 'number': 'y', 'sport_association': None, 'invoice_id': 'abc',
+        'attached_documents': [PROBE_UNKNOWN_PK], 'selected_tutor': 'abc', 'imported_from_associami': None,
+        'meta': 'x'}}})
+add('supplier-update-nested-payment-foreign-payment-category', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'payment_category': CATEGORIES['abroad']['payment_category_id']}})
+add('supplier-update-nested-payment-foreign-custom-account', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'custom_accounts': ACCOUNTS['abroad']['custom_account_id'], 'amount': 'x'}})
+add('supplier-update-nested-payment-own-references-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'payment_category': CATEGORIES['own']['payment_category_id'],
+                      'custom_accounts': ACCOUNTS['bank']['custom_account_id'], 'sport_association': OWN}})
+add('supplier-update-nested-payment-null-invoice-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'invoice': None, 'amount': '1'}})
+add('supplier-update-nested-payment-amount-joins-invoice-errors', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'amount': [PAYMENT_NUMBER]}, 'amount': [PAYMENT_NUMBER]},
+    body={'payment': {'amount': 'x'}, 'amount': 'y'})
+add('supplier-update-nested-payment-empty-documents-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'instructor': {'documents': []}, 'invoice': {'attached_documents': []}}})
+add('supplier-update-nested-payment-document-uuids', 'owner', 'PATCH', SU('c'), 400, {'payment': {
+    'instructor': {'documents': ['“abc” is not a valid UUID.']},
+    'invoice': {'attached_documents': ['“x” is not a valid UUID.']}}},
+    body={'payment': {'instructor': {'documents': ['abc', PROBE_UNKNOWN_PK]},
+                      'invoice': {'attached_documents': [DOCUMENTS['pdf_one']['document_id'], 'x']}}})
+add('supplier-update-nested-payment-existing-documents-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'instructor': {'documents': [DOCUMENTS['pdf_one']['document_id']]},
+                      'invoice': {'attached_documents': [DOCUMENTS['pdf_one']['document_id']],
+                                  'document_pdf': DOCUMENTS['pdf_one']['document_id']}}})
+add('supplier-update-nested-payment-foreign-instructor-user', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'instructor': {'user': FOREIGN_OWNER}}})
+add('supplier-update-nested-payment-athlete-instructor-user-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'instructor': {'user': IDS['athlete']}}})
+add('supplier-update-nested-payment-unlinked-instructor-user-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'instructor': {'user': IDS['owner_without_association']}}})
+add('supplier-update-nested-payment-owner-instructor-user-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'instructor': {'user': IDS['owner']}}})
+add('supplier-update-nested-payment-deleted-association-instructor-user-server-error', 'owner', 'PATCH', SU('c'), 500,
+    SERVER, body={'payment': {'instructor': {'user': IDS['deleted_association_owner']}}})
+add('supplier-update-nested-payment-foreign-association', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'sport_association': FOREIGN}})
+add('supplier-update-nested-payment-deleted-association', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'sport_association': IDS['deleted_association']}})
+add('supplier-update-nested-payment-foreign-associate-association', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'associate': {'sport_association': FOREIGN}}})
+add('supplier-update-nested-payment-foreign-invoice-association', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'invoice': {'sport_association': FOREIGN}}})
+add('supplier-update-nested-payment-foreign-selected-tutor', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'invoice': {'selected_tutor': ASSOCIATES['socio']['associate_id']}}})
+add('supplier-update-nested-payment-own-group-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'group': IDS['own_group']}})
+add('supplier-update-nested-payment-foreign-group', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'group': IDS['foreign_group']}})
+add('supplier-update-nested-payment-deleted-payment-id-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'payment_id': PAYMENTS['g']['payment_id']}})
+add('supplier-update-nested-payment-other-association-payment-id', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'payment_id': ['payment with this payment id already exists.']}},
+    body={'payment': {'payment_id': PAYMENTS['abroad']['payment_id']}})
+add('supplier-update-nested-payment-fresh-payment-id-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'payment_id': FRESH_PAYMENT_ID}})
+add('supplier-update-nested-payment-instructor-id-taken', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'instructor': {'instructor_id': ['instructor with this instructor id already exists.']}}},
+    body={'payment': {'instructor': {'instructor_id': INSTRUCTORS['docente']['instructor_id']}}})
+add('supplier-update-nested-payment-invoice-id-taken', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'invoice': {'invoice_id': ['invoice with this invoice id already exists.']}}},
+    body={'payment': {'invoice': {'invoice_id': INVOICES['ricevuta']['invoice_id']}}})
+add('supplier-update-nested-payment-user-list', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'user': {'non_field_errors': ['Invalid data. Expected a dictionary, but got list.']}}},
+    body={'payment': {'user': []}})
+add('supplier-update-nested-payment-user-text-role-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'user': {'role': '1', 'email': '', 'first_name': ''}}})
+add('supplier-update-nested-payment-user-float-role', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'user': {'role': ['"2.0" is not a valid choice.']}}}, body={'payment': {'user': {'role': 2.0}}})
+add('supplier-update-nested-payment-valid-associate-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'associate': {'sex': '', 'born_date': '10/05/1990', 'address_cap': '12345',
+                                    'is_minor': 'true', 'associate_id': 5}}})
+add('supplier-update-nested-payment-associate-nulls', 'owner', 'PATCH', SU('c'), 400, {'payment': {'associate': {
+    'address_cap': [PAYMENT_CAP], 'born_date': [PAYMENT_DATE_DMY], 'sex': ['This field may not be null.']}}},
+    body={'payment': {'associate': {'sex': None, 'born_date': '1990-05-10', 'address_cap': '1234', 'email': '',
+                                    'tax_code': None}}})
+add('supplier-update-nested-payment-empty-invoice-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'invoice': {}}})
+add('supplier-update-nested-payment-foreign-group-amount', 'owner', 'PATCH', SU('c'), 403, FORBIDDEN,
+    body={'payment': {'amount': 'x', 'group': IDS['foreign_group']}})
+add('supplier-update-nested-payment-subject-cash-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'payment': {'subject': '2', 'type': 'cash', 'amount': 5, 'description': None}})
+add('supplier-update-nested-payment-instructor-nulls', 'owner', 'PATCH', SU('c'), 400, {'payment': {'instructor': {
+    'first_name': ['This field may not be null.'],
+    'last_name': ['Ensure this field has no more than 150 characters.'],
+    'email': ['Enter a valid email address.'], 'born_date': [PAYMENT_DATE_DMY],
+    'role': ['This field may not be blank.'], 'phone': ['Ensure this field has no more than 20 characters.'],
+    'default_hourly_billing': ['This field may not be null.']}}},
+    body={'payment': {'instructor': {'first_name': None, 'last_name': 'x' * 151, 'email': 'a@b', 'role': '',
+                                     'phone': '1' * 21, 'born_date': '31/02/2020',
+                                     'default_hourly_billing': None, 'is_volunteer': 1}}})
+add('supplier-update-nested-payment-invoice-decimals', 'owner', 'PATCH', SU('c'), 400, {'payment': {'invoice': {
+    'creation_date': [DATETIME],
+    'membership_fee': ['Ensure that there are no more than 2 decimal places.'],
+    'activity_fee': ['This field may not be null.'], 'description': ['This field may not be blank.'],
+    'number': ['Ensure this value is less than or equal to 2147483647.']}}},
+    body={'payment': {'invoice': {'membership_fee': '1.234', 'activity_fee': None, 'creation_date': 'x',
+                                  'description': '', 'number': '2147483648', 'archived': 't', 'meta': None,
+                                  'deleted': 'no'}}})
+# Form bodies: the nested value is the payment.<key> fields (a repeated key keeps every value; a blank no-value text
+# field is absent), validated with the same rules as a JSON object.
+add('supplier-update-form-nested-payment-amount-user-email', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'user': {'email': ['Enter a valid email address.']}, 'amount': [PAYMENT_NUMBER]}},
+    raw_body='payment.amount=x&payment.user.email=y', content_type=FORM)
+add('supplier-update-form-nested-payment-amount-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    raw_body='payment.amount=3', content_type=FORM)
+add('supplier-update-form-nested-payment-blank-booleans-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    raw_body='payment.paid=&payment.archived=&payment.amount=', content_type=FORM)
+add('supplier-update-form-nested-payment-invalid-json', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'meta': ['Value must be valid JSON.']}},
+    raw_body='payment.meta=x&payment.course={"a":1}', content_type=FORM)
+add('supplier-update-form-nested-payment-blank-text-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    raw_body='payment.description=&payment.payment_date=&payment.payment_category=&payment.notes=', content_type=FORM)
+add('supplier-update-form-nested-payment-repeated-documents', 'owner', 'PATCH', SU('c'), 400,
+    {'payment': {'instructor': {'documents': ['“abc” is not a valid UUID.']}}},
+    raw_body='payment.instructor.documents=abc&payment.instructor.documents=' + PROBE_UNKNOWN_PK, content_type=FORM)
+add('supplier-update-form-nested-payment-blank-user-text-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    raw_body='payment.user.role=&payment.user.phone=&payment.user.username=', content_type=FORM)
+add('supplier-update-form-nested-payment-invoice-blanks', 'owner', 'PATCH', SU('c'), 400, {'payment': {'invoice': {
+    'membership_fee': [PAYMENT_NUMBER], 'sport_association': ['This field may not be null.']}}},
+    raw_body='payment.invoice.number=&payment.invoice.membership_fee=&payment.invoice.sport_association=',
+    content_type=FORM)
+add('supplier-update-form-nested-payment-blank-associate-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    raw_body='payment.associate.sex=&payment.associate.born_date=&payment.associate.associate_id=', content_type=FORM)
+add('supplier-update-form-nested-payment-blank-ids-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    raw_body='payment.payment_id=&payment.subject=', content_type=FORM)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Customer and supplier invoice list, add and update authored sequence',
