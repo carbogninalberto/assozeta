@@ -291,6 +291,54 @@
     true,
     true
    ]
+  },
+  "jsonvalues": {
+   "user": "a1000000-0000-4000-8000-000000985013",
+   "id": "a1000000-0000-4000-8000-000000985014",
+   "role": "association",
+   "email": "valori@example.test",
+   "deleted": false,
+   "denomination": "Valori & <JSON>",
+   "tax_code": "55555555555",
+   "address": null,
+   "address_city": null,
+   "address_cap": null,
+   "logo": null,
+   "regulation": null,
+   "demand": null,
+   "federation": null,
+   "enroll_number": null,
+   "iban": null,
+   "website": null,
+   "sport": null,
+   "abbreviated": null,
+   "document_header": null,
+   "invoice_footer": null,
+   "subscription_template": "subscription.html",
+   "additional_sections": [
+    {
+     "name": "Sezione ß",
+     "text": "<p>Testo &amp; <b>grassetto</b></p>",
+     "show_to": "solo-soci",
+     "show_to_both": true
+    },
+    {
+     "name": "Sezione Σ",
+     "text": null,
+     "show_to_members": true
+    }
+   ],
+   "additional_fields": null,
+   "regulation_flags": [
+    false,
+    false,
+    false
+   ],
+   "demand_flags": [
+    false,
+    false,
+    false
+   ]
   }
  },
  "associates": {
@@ -661,6 +709,67 @@
    "created": "2026-09-09T09:09:09+00:00",
    "payment": null,
    "additional_fields": null,
+   "signature_url": null,
+   "group": null
+  },
+  "jsonvalues": {
+   "id": "a1000000-0000-4000-8000-000000985046",
+   "association": "jsonvalues",
+   "associate": "greek",
+   "type": 2,
+   "role": 1,
+   "created": "2026-10-10T10:10:10+00:00",
+   "payment": null,
+   "additional_fields": [
+    {
+     "props": {
+      "label": "Numero grande",
+      "value": 12345678901234567890123
+     }
+    },
+    {
+     "props": {
+      "label": "Peso",
+      "value": 12.5
+     }
+    },
+    {
+     "props": {
+      "label": "Lista",
+      "value": [
+       1,
+       "due",
+       null
+      ]
+     }
+    },
+    {
+     "props": {
+      "label": "Mappa",
+      "value": {
+       "chiave": "valore"
+      }
+     }
+    },
+    {
+     "props": {
+      "label": "Città",
+      "value": "Ǻthos ŉ ǰ ß"
+     }
+    }
+   ],
+   "signature_url": null,
+   "group": null
+  },
+  "fieldsnumber": {
+   "id": "a1000000-0000-4000-8000-000000985047",
+   "association": "alpha",
+   "associate": "mario",
+   "type": 2,
+   "role": 1,
+   "created": "2026-10-11T10:10:10+00:00",
+   "payment": null,
+   "additional_fields": 12345678901234567890123,
    "signature_url": null,
    "group": null
   }
@@ -6876,6 +6985,529 @@
      }
     }
    }
+  },
+  {
+   "name": "document-views-subscription-json-values",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985046/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [],
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985046"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "Valori & <JSON>"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "55555555555"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "list",
+            "v": [
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Sezione ß"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "<p>Testo &amp; <b>grassetto</b></p>"
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 2
+                  }
+                 ]
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Sezione Σ"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "none"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 1
+                  }
+                 ]
+                }
+               ]
+              ]
+             }
+            ]
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-10-10T10:10:10+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 1
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Δημήτρης"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Παπαδόπουλος "
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "xx"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "M"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1990-12-31"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Αθήνα"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Οδός 1"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Αθήνα"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10431"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "d@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Δημήτρης Παπαδόπουλος"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Δημήτρης Παπαδόπουλος"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": false
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "none"
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "list",
+         "v": [
+          {
+           "t": "dict",
+           "v": [
+            [
+             "props",
+             {
+              "t": "dict",
+              "v": [
+               [
+                "label",
+                {
+                 "t": "str",
+                 "v": "Numero grande"
+                }
+               ],
+               [
+                "value",
+                {
+                 "t": "int",
+                 "v": 12345678901234567890123
+                }
+               ]
+              ]
+             }
+            ]
+           ]
+          },
+          {
+           "t": "dict",
+           "v": [
+            [
+             "props",
+             {
+              "t": "dict",
+              "v": [
+               [
+                "label",
+                {
+                 "t": "str",
+                 "v": "Peso"
+                }
+               ],
+               [
+                "value",
+                {
+                 "t": "float",
+                 "v": 12.5
+                }
+               ]
+              ]
+             }
+            ]
+           ]
+          },
+          {
+           "t": "dict",
+           "v": [
+            [
+             "props",
+             {
+              "t": "dict",
+              "v": [
+               [
+                "label",
+                {
+                 "t": "str",
+                 "v": "Lista"
+                }
+               ],
+               [
+                "value",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 1
+                  },
+                  {
+                   "t": "str",
+                   "v": "due"
+                  },
+                  {
+                   "t": "none"
+                  }
+                 ]
+                }
+               ]
+              ]
+             }
+            ]
+           ]
+          },
+          {
+           "t": "dict",
+           "v": [
+            [
+             "props",
+             {
+              "t": "dict",
+              "v": [
+               [
+                "label",
+                {
+                 "t": "str",
+                 "v": "Mappa"
+                }
+               ],
+               [
+                "value",
+                {
+                 "t": "dict",
+                 "v": [
+                  [
+                   "chiave",
+                   {
+                    "t": "str",
+                    "v": "valore"
+                   }
+                  ]
+                 ]
+                }
+               ]
+              ]
+             }
+            ]
+           ]
+          },
+          {
+           "t": "dict",
+           "v": [
+            [
+             "props",
+             {
+              "t": "dict",
+              "v": [
+               [
+                "label",
+                {
+                 "t": "str",
+                 "v": "Città"
+                }
+               ],
+               [
+                "value",
+                {
+                 "t": "str",
+                 "v": "Ǻthos ŉ ǰ ß"
+                }
+               ]
+              ]
+             }
+            ]
+           ]
+          }
+         ]
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": false
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": []
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": []
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": ""
+     },
+     "footer": {
+      "t": "str",
+      "v": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-additional-fields-number",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985047/view/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": []
   },
   {
    "name": "document-views-subscription-scoped-athlete",

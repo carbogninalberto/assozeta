@@ -131,6 +131,11 @@ func (s *DocumentViews) Render(ctx context.Context, identity domain.ResolvedIden
 		if errors.Is(err, djtemplate.ErrUnsupported) || errors.Is(err, mentions.ErrUnsupported) || errors.Is(err, domain.ErrViewTutorWrite) {
 			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
 		}
+		if errors.Is(err, djtemplate.ErrPython) {
+			// An exception Django raises for a value the database can hold:
+			// the 500 page, not a request for Django.
+			return nil, fmt.Errorf("%w: %v", ErrDocumentViewServer, err)
+		}
 		var input *PaymentInfoUUIDError
 		if errors.As(err, &input) {
 			return &DocumentViewReply{Status: 400, JSON: []string{input.Detail}}, nil

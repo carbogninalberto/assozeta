@@ -52,10 +52,11 @@ func (t *invoiceSyncTransaction) SyncInvoice(ctx context.Context, id, associatio
 	return &row, nil
 }
 
-func (t *invoiceSyncTransaction) SyncAssociate(ctx context.Context, id string, scope, group *string) (bool, error) {
+func (t *invoiceSyncTransaction) SyncAssociate(ctx context.Context, id, association string, scope, group *string) (bool, error) {
 	var found bool
-	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_associate WHERE associate_id=$1 AND NOT deleted
- AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR sport_association_id=$3::uuid))`, id, group, scope)
+	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM application_associate WHERE associate_id=$1
+ AND sport_association_id=$2 AND NOT deleted AND ($3::uuid IS NULL OR group_id=$3::uuid) AND ($4::uuid IS NULL OR sport_association_id=$4::uuid))`,
+		id, association, group, scope)
 	return found, err
 }
 

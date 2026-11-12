@@ -7,9 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/emailrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 // Context values. The renderer accepts exactly these types; anything else
@@ -20,7 +19,9 @@ import (
 //	Safe       SafeString (mark_safe)
 //	bool       bool
 //	int64      int
-//	float64    float (finite)
+//	*big.Int   int beyond int64 (a JSON column's integer)
+//	float64    float (including ±Inf, as Python's float() reads an overflowing
+//	           decimal)
 //	Decimal    decimal.Decimal, given by its str()
 //	Date       datetime.date
 //	DateTime   aware datetime.datetime (rendered in UTC, Django's TIME_ZONE)
@@ -126,8 +127,81 @@ func (d Date) time() time.Time {
 // String is str(date): YYYY-MM-DD.
 func (d Date) String() string { return fmt.Sprintf("%04d-%02d-%02d", d.Year, d.Month, d.Day) }
 
-// PythonStr is str(value) for the scalar types (str() of containers and
-// objects is refused).
+// pythonFloatRepr is repr(float) (and so str(float)): Python's shortest
+// round-trip text, with inf, -inf and nan for the non-finite values
+// dto.PythonFloatStr writes as JSON spells them.
+func pythonFloatRepr(value float64) (string, error) {
+	switch text := dto.PythonFloatStr(value); text {
+	case "Infinity":
+		return "inf", nil
+	case "-Infinity":
+		return "-inf", nil
+	case "NaN":
+		return "nan", nil
+	default:
+		return text, nil
+	}
+}
+
+// pythonRepr is repr(value) for the context's types: dto.PythonRepr for the
+// scalars (its quoting and float notation are str.__repr__'s) and a recursive
+// repr for the containers a JSON column can nest.
+func pythonRepr(value any) (string, error) {
+	switch v := value.(type) {
+	case nil, bool, string, float64:
+		return dto.PythonRepr(v), nil
+	case Safe:
+		return dto.PythonRepr(string(v)), nil
+	case int64:
+		return strconv.FormatInt(v, 10), nil
+	case *big.Int:
+		return v.String(), nil
+	case Decimal:
+		if _, err := decimalRat(v); err != nil {
+			return "", err
+		}
+		return "Decimal('" + string(v) + "')", nil
+	case List:
+		items := make([]string, len(v))
+		for i, item := range v {
+			text, err := pythonRepr(item)
+			if err != nil {
+				return "", err
+			}
+			items[i] = text
+		}
+		return "[" + strings.Join(items, ", ") + "]", nil
+	case Tuple:
+		items := make([]string, len(v))
+		for i, item := range v {
+			text, err := pythonRepr(item)
+			if err != nil {
+				return "", err
+			}
+			items[i] = text
+		}
+		joined := strings.Join(items, ", ")
+		if len(items) == 1 {
+			return "(" + joined + ",)", nil
+		}
+		return "(" + joined + ")", nil
+	case *Dict:
+		items := make([]string, 0, v.Len())
+		for _, key := range v.Keys() {
+			item, _ := v.Get(key)
+			text, err := pythonRepr(item)
+			if err != nil {
+				return "", err
+			}
+			items = append(items, dto.PythonRepr(key)+": "+text)
+		}
+		return "{" + strings.Join(items, ", ") + "}", nil
+	}
+	return "", unsupported("repr of %T", value)
+}
+
+// PythonStr is str(value): strings unchanged, ints in decimal, floats by
+// repr (inf, -inf, nan) and lists, tuples and dicts by their Python repr.
 func PythonStr(value any) (string, error) {
 	switch v := value.(type) {
 	case nil:
@@ -143,8 +217,10 @@ func PythonStr(value any) (string, error) {
 		return "False", nil
 	case int64:
 		return strconv.FormatInt(v, 10), nil
+	case *big.Int:
+		return v.String(), nil
 	case float64:
-		return emailrender.FloatRepr(v)
+		return pythonFloatRepr(v)
 	case Decimal:
 		if _, err := decimalRat(v); err != nil {
 			return "", err
@@ -154,6 +230,8 @@ func PythonStr(value any) (string, error) {
 		return v.String(), nil
 	case DateTime:
 		return pythonDateTimeStr(v.Time), nil
+	case List, Tuple, *Dict:
+		return pythonRepr(value)
 	}
 	return "", unsupported("str() of %T", value)
 }
@@ -191,6 +269,8 @@ func numeric(value any) (*big.Rat, bool, error) {
 		return new(big.Rat), true, nil
 	case int64:
 		return new(big.Rat).SetInt64(v), true, nil
+	case *big.Int:
+		return new(big.Rat).SetInt(v), true, nil
 	case float64:
 		if math.IsInf(v, 0) || math.IsNaN(v) {
 			return nil, true, unsupported("non-finite float")
@@ -203,49 +283,13 @@ func numeric(value any) (*big.Rat, bool, error) {
 	return nil, false, nil
 }
 
-// Python's str.upper()/str.lower() use full case mappings (and the final
-// sigma rule); Go's simple mappings agree except for these runes, which
-// are refused.
-func specialUpper(r rune) bool {
-	switch {
-	case r == 0xDF, r == 0x149, r == 0x1F0, r == 0x390, r == 0x3B0, r == 0x587:
-		return true
-	case r >= 0x1E96 && r <= 0x1E9A, r >= 0x1F50 && r <= 0x1F56, r >= 0x1F80 && r <= 0x1FFC,
-		r >= 0xFB00 && r <= 0xFB06, r >= 0xFB13 && r <= 0xFB17:
-		return true
-	}
-	return false
-}
+// pythonUpper is str.upper(): the full Unicode case mapping (SpecialCasing
+// included: 'ß' is "SS").
+func pythonUpper(text string) (string, error) { return dto.PythonUpper(text), nil }
 
-func specialLower(r rune) bool { return r == 0x130 || r == 0x3A3 || (r >= 0x1F88 && r <= 0x1FFC) }
-
-// Full uppercase mappings Python applies to Latin text (SpecialCasing).
-var upperExpansions = map[rune]string{0xDF: "SS", 0xFB00: "FF", 0xFB01: "FI", 0xFB02: "FL", 0xFB03: "FFI", 0xFB04: "FFL",
-	0xFB05: "ST", 0xFB06: "ST"}
-
-func pythonUpper(text string) (string, error) {
-	var out strings.Builder
-	for _, r := range text {
-		if expansion, ok := upperExpansions[r]; ok {
-			out.WriteString(expansion)
-			continue
-		}
-		if specialUpper(r) {
-			return "", unsupported("upper() of %U", r)
-		}
-		out.WriteRune(unicode.ToUpper(r))
-	}
-	return out.String(), nil
-}
-
-func pythonLower(text string) (string, error) {
-	for _, r := range text {
-		if specialLower(r) {
-			return "", unsupported("lower() of %U", r)
-		}
-	}
-	return strings.Map(unicode.ToLower, text), nil
-}
+// pythonLower is str.lower(): the full Unicode case mapping (SpecialCasing
+// included: a final Greek sigma and 'İ').
+func pythonLower(text string) (string, error) { return dto.PythonLower(text), nil }
 
 // Truthy is bool(value).
 func Truthy(value any) (bool, error) {
@@ -260,6 +304,8 @@ func Truthy(value any) (bool, error) {
 		return v != "", nil
 	case int64:
 		return v != 0, nil
+	case *big.Int:
+		return v.Sign() != 0, nil
 	case float64:
 		return v != 0, nil
 	case Decimal:

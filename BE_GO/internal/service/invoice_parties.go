@@ -235,7 +235,7 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 		return &dto.InvoicePartyValidationError{Errors: dto.InvoicePartyErrors{"non_field_errors": []string{
 			dto.InvoicePartyText + "Either transferor_contact_email or id_transmitter must be provided!"}}}
 	}
-	taken, err := s.store.CustomerNumberTaken(ctx, input.Number, input.FiscalYear)
+	taken, err := s.store.CustomerNumberTaken(ctx, input.Number, input.FiscalYear, association)
 	if err != nil {
 		return err
 	}
@@ -414,6 +414,32 @@ func (s *InvoiceParties) supplierRelations(ctx context.Context, input dto.Suppli
 	return s.related(ctx, errors, "document_pdf", "docmanager_document", "document_id", input.Document)
 }
 
+// supplierPaymentLink checks InvoiceSuppliersSerializer's payment_id: an
+// absent, null or blank value is left to the write; on update the invoice's
+// current payment is accepted as it is; any other value must be the UUID of a
+// live payment of the invoice's association that the group header sees.
+func (s *InvoiceParties) supplierPaymentLink(ctx context.Context, input dto.SupplierInvoiceInput, errors dto.InvoicePartyErrors,
+	association string, current *string, group *string) error {
+	if input.PaymentID == nil || *input.PaymentID == "" {
+		return nil
+	}
+	id, ok := dto.DjangoUUIDLookup(*input.PaymentID)
+	if ok && current != nil && id == *current {
+		return nil
+	}
+	if ok {
+		payment, visible, err := s.store.Payment(ctx, id, group)
+		if err != nil {
+			return err
+		}
+		if payment != nil && visible && payment.AssociationID != nil && *payment.AssociationID == association {
+			return nil
+		}
+	}
+	errors["payment_id"] = []string{"related-does-not-exist:" + *input.PaymentID}
+	return nil
+}
+
 // nestedSupplier validates a nested supplier object with SupplierSerializer's
 // field rules (partial on update) and the shared reference checks; another
 // association's reference is the invoice 403, errors join the invoice errors.
@@ -555,6 +581,9 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	if err = s.nestedSupplier(ctx, input, errors, association, false, invoicePartyGroup(request.Group)); err != nil {
 		return err
 	}
+	if err = s.supplierPaymentLink(ctx, input, errors, association, nil, invoicePartyGroup(request.Group)); err != nil {
+		return err
+	}
 	if len(errors) > 0 {
 		return &dto.InvoicePartyValidationError{Errors: errors}
 	}
@@ -606,9 +635,8 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	invoice.DocumentID = input.Document.ID
 	stored := "None"
 	if input.PaymentID != nil {
-		// create(payment_id=text): '' is stored as NULL, anything else must be a
-		// UUID (ValidationError: 500 with the payment kept) of a stored payment
-		// (the key constraint: 500); the entry carries the text as sent.
+		// create(payment_id=text): '' is stored as NULL and an accepted value
+		// is stored as its UUID; the entry carries the text as sent.
 		invoice.PaymentText = input.PaymentID
 		if *input.PaymentID != "" {
 			id, ok := dto.DjangoUUIDLookup(*input.PaymentID)
@@ -650,6 +678,9 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 			return err
 		}
 		if err = s.nestedSupplier(ctx, input, errors, association, true, invoicePartyGroup(request.Group)); err != nil {
+			return err
+		}
+		if err = s.supplierPaymentLink(ctx, input, errors, association, row.PaymentID, invoicePartyGroup(request.Group)); err != nil {
 			return err
 		}
 	}
@@ -702,7 +733,8 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	}
 	// payment_id is assigned after the nested payment: its text is audited as
 	// sent, '' is stored as NULL (the payment access after the save then
-	// raises), other text must be the UUID of a stored payment.
+	// raises), other text must name a live payment of the invoice's association
+	// (or the current one), checked before the other field errors are returned.
 	blank, rejected := false, false
 	group := invoicePartyGroup(request.Group)
 	var payment *domain.InvoicePartyPayment
@@ -728,10 +760,6 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		}
 		if payment == nil {
 			rejected = true // the key constraint rejects the save
-		} else if (row.PaymentID == nil || *row.PaymentID != payment.ID) &&
-			(payment.AssociationID == nil || *payment.AssociationID != row.AssociationID) {
-			// Linking a payment outside the invoice's association is not ported.
-			return domain.ErrInvoicePartyNotPorted
 		}
 	}
 	var paid any

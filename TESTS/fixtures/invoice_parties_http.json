@@ -5365,7 +5365,7 @@
    }
   },
   {
-   "name": "invoice-parties-customer-add-number-taken-elsewhere",
+   "name": "invoice-parties-customer-add-number-taken-other-prefix",
    "actor": "owner",
    "method": "POST",
    "path": "/invoice-customers/add",
@@ -5379,8 +5379,9 @@
    "effect": null,
    "prints": [],
    "body": {
-    "number": 3,
+    "number": 1,
     "fiscal_year": 2026,
+    "prefix": "ZZ",
     "transferor_contact_email": "x@example.test",
     "pdf": "a1000000-0000-4000-8000-000000846100"
    }
@@ -7510,83 +7511,22 @@
    }
   },
   {
-   "name": "invoice-parties-supplier-add-payment-id-not-a-uuid-keeps-payment-server-error",
+   "name": "invoice-parties-supplier-add-payment-id-not-a-uuid-unknown-pk",
    "actor": "owner",
    "method": "POST",
    "path": "/invoice-suppliers/add",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"zzz\" - object does not exist."
+    ]
+   },
    "effect": {
     "actor": "owner",
     "rows": {},
-    "new": {
-     "payment": {
-      "type": "default",
-      "subject": 0,
-      "amount": "50.50",
-      "creation_date": "2026-10-20T10:00:00Z",
-      "payment_date": "2026-10-20T10:00:00Z",
-      "paid": true,
-      "expense": true,
-      "description": "$description:Fornitore Uno",
-      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
-      "meta_payment_categories": null,
-      "invoice_id": null,
-      "user_id": "a1000000-0000-4000-8000-000000700001",
-      "associate_id": null,
-      "supplier_id": "a1000000-0000-4000-8000-000000846110",
-      "instructor_id": null,
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "payment_intent_id": null,
-      "archived": false,
-      "invoice_fiscal_code": null,
-      "meta": null,
-      "notes": null,
-      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
-      "signature_id": null,
-      "deleted": false,
-      "group_id": null,
-      "course": null
-     }
-    },
-    "audits": [
-     {
-      "model": "payment",
-      "key": "$payment",
-      "action": 0,
-      "changes": {
-       "$created": [
-        "user",
-        "sport_association",
-        "supplier"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "actor.sport_association"
-     },
-     {
-      "model": "payment",
-      "key": "$payment",
-      "action": 1,
-      "changes": {
-       "user": [
-        "None",
-        "a1000000-0000-4000-8000-000000700001"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "supplier": [
-        "None",
-        "a1000000-0000-4000-8000-000000846110"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "changes_json.sport_association"
-     }
-    ]
+    "new": {},
+    "audits": []
    },
    "prints": [],
    "body": {
@@ -7602,83 +7542,22 @@
    }
   },
   {
-   "name": "invoice-parties-supplier-add-payment-id-unknown-keeps-payment-server-error",
+   "name": "invoice-parties-supplier-add-payment-id-unknown-pk",
    "actor": "owner",
    "method": "POST",
    "path": "/invoice-suppliers/add",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846999\" - object does not exist."
+    ]
+   },
    "effect": {
     "actor": "owner",
     "rows": {},
-    "new": {
-     "payment": {
-      "type": "default",
-      "subject": 0,
-      "amount": "50.50",
-      "creation_date": "2026-10-20T10:00:00Z",
-      "payment_date": "2026-10-20T10:00:00Z",
-      "paid": true,
-      "expense": true,
-      "description": "$description:Fornitore Uno",
-      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
-      "meta_payment_categories": null,
-      "invoice_id": null,
-      "user_id": "a1000000-0000-4000-8000-000000700001",
-      "associate_id": null,
-      "supplier_id": "a1000000-0000-4000-8000-000000846110",
-      "instructor_id": null,
-      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
-      "payment_intent_id": null,
-      "archived": false,
-      "invoice_fiscal_code": null,
-      "meta": null,
-      "notes": null,
-      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
-      "signature_id": null,
-      "deleted": false,
-      "group_id": null,
-      "course": null
-     }
-    },
-    "audits": [
-     {
-      "model": "payment",
-      "key": "$payment",
-      "action": 0,
-      "changes": {
-       "$created": [
-        "user",
-        "sport_association",
-        "supplier"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "actor.sport_association"
-     },
-     {
-      "model": "payment",
-      "key": "$payment",
-      "action": 1,
-      "changes": {
-       "user": [
-        "None",
-        "a1000000-0000-4000-8000-000000700001"
-       ],
-       "sport_association": [
-        "None",
-        "a1000000-0000-4000-8000-000000701001"
-       ],
-       "supplier": [
-        "None",
-        "a1000000-0000-4000-8000-000000846110"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "changes_json.sport_association"
-     }
-    ]
+    "new": {},
+    "audits": []
    },
    "prints": [],
    "body": {
@@ -7691,6 +7570,37 @@
     "expire_date": "2026-12-31T00:00:00Z",
     "notes": "nuova",
     "payment_id": "a1000000-0000-4000-8000-000000846999"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-payment-id-other-association-unknown-pk",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846122\" - object does not exist."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {},
+    "audits": []
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "payment_id": "a1000000-0000-4000-8000-000000846122"
    }
   },
   {
@@ -9288,13 +9198,17 @@
    }
   },
   {
-   "name": "invoice-parties-supplier-update-payment-id-not-a-uuid-audited-server-error",
+   "name": "invoice-parties-supplier-update-payment-id-not-a-uuid-unknown-pk",
    "actor": "owner",
    "method": "PATCH",
    "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"zzz\" - object does not exist."
+    ]
+   },
    "effect": {
     "actor": "owner",
     "rows": {
@@ -9313,21 +9227,7 @@
      }
     },
     "new": {},
-    "audits": [
-     {
-      "model": "invoicesuppliers",
-      "key": "a1000000-0000-4000-8000-000000846127",
-      "action": 1,
-      "changes": {
-       "payment": [
-        "None",
-        "zzz"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "direct"
-     }
-    ]
+    "audits": []
    },
    "prints": [],
    "body": {
@@ -9335,13 +9235,17 @@
    }
   },
   {
-   "name": "invoice-parties-supplier-update-payment-id-unknown-audited-server-error",
+   "name": "invoice-parties-supplier-update-payment-id-unknown-unknown-pk",
    "actor": "owner",
    "method": "PATCH",
    "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846999\" - object does not exist."
+    ]
+   },
    "effect": {
     "actor": "owner",
     "rows": {
@@ -9360,21 +9264,7 @@
      }
     },
     "new": {},
-    "audits": [
-     {
-      "model": "invoicesuppliers",
-      "key": "a1000000-0000-4000-8000-000000846127",
-      "action": 1,
-      "changes": {
-       "payment": [
-        "None",
-        "a1000000-0000-4000-8000-000000846999"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "direct"
-     }
-    ]
+    "audits": []
    },
    "prints": [],
    "body": {
@@ -9459,6 +9349,229 @@
    }
   },
   {
+   "name": "invoice-parties-supplier-update-payment-id-other-association-unknown-pk",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846122\" - object does not exist."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "Modulo",
+       "amount": "2.75",
+       "payment_date": null,
+       "expire_date": "2027-02-28T00:00:00Z",
+       "payment": "a1000000-0000-4000-8000-000000846121",
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     },
+     "payment": {
+      "a1000000-0000-4000-8000-000000846122": {
+       "paid": false,
+       "payment_date": null
+      }
+     }
+    },
+    "new": {},
+    "audits": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000846122",
+    "paid": true
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-payment-id-deleted-unknown-pk",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846705\" - object does not exist."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "Modulo",
+       "amount": "2.75",
+       "payment_date": null,
+       "expire_date": "2027-02-28T00:00:00Z",
+       "payment": "a1000000-0000-4000-8000-000000846121",
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     },
+     "payment": {
+      "a1000000-0000-4000-8000-000000846705": {
+       "paid": false,
+       "payment_date": null
+      }
+     }
+    },
+    "new": {},
+    "audits": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000846705",
+    "paid": true
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-payment-id-group-hidden-unknown-pk",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846120\" - object does not exist."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "Modulo",
+       "amount": "2.75",
+       "payment_date": null,
+       "expire_date": "2027-02-28T00:00:00Z",
+       "payment": "a1000000-0000-4000-8000-000000846121",
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     },
+     "payment": {
+      "a1000000-0000-4000-8000-000000846120": {
+       "paid": true
+      }
+     }
+    },
+    "new": {},
+    "audits": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000846120",
+    "paid": true
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-payment-id-from-other-association-unknown-pk",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846129/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846120\" - object does not exist."
+    ]
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846129": {
+       "invoice_identifier": "FD-004",
+       "amount": "30.00",
+       "payment_date": null,
+       "expire_date": "2026-12-01T00:00:00Z",
+       "payment": "a1000000-0000-4000-8000-000000846123",
+       "paid": true,
+       "notes": null,
+       "document_pdf": null,
+       "supplier": "a1000000-0000-4000-8000-000000846113"
+      }
+     },
+     "payment": {
+      "a1000000-0000-4000-8000-000000846120": {
+       "paid": true
+      }
+     }
+    },
+    "new": {},
+    "audits": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000846120",
+    "paid": true
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-payment-id-joins-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment_id": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000846122\" - object does not exist."
+    ],
+    "amount": [
+     "A valid number is required."
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846127": {
+       "invoice_identifier": "Modulo",
+       "amount": "2.75",
+       "payment_date": null,
+       "expire_date": "2027-02-28T00:00:00Z",
+       "payment": "a1000000-0000-4000-8000-000000846121",
+       "paid": false,
+       "notes": "prima nota",
+       "document_pdf": null,
+       "supplier": null
+      }
+     },
+     "payment": {
+      "a1000000-0000-4000-8000-000000846122": {
+       "paid": false,
+       "payment_date": null
+      }
+     }
+    },
+    "new": {},
+    "audits": []
+   },
+   "prints": [],
+   "body": {
+    "payment_id": "a1000000-0000-4000-8000-000000846122",
+    "amount": "x"
+   }
+  },
+  {
    "name": "invoice-parties-supplier-update-deleted-payment-audited-whole",
    "actor": "foreign_owner",
    "method": "PATCH",
@@ -9521,6 +9634,72 @@
    "prints": [],
    "body": {
     "paid": true
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-payment-id-current-hidden-accepted",
+   "actor": "foreign_owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846706/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice updated"
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "rows": {
+     "invoicesuppliers": {
+      "a1000000-0000-4000-8000-000000846706": {
+       "invoice_identifier": "FG-007",
+       "amount": "120.50",
+       "payment_date": null,
+       "expire_date": "2026-12-01T00:00:00Z",
+       "payment": "a1000000-0000-4000-8000-000000846705",
+       "paid": false,
+       "notes": null,
+       "document_pdf": null,
+       "supplier": "a1000000-0000-4000-8000-000000846113"
+      }
+     },
+     "payment": {
+      "a1000000-0000-4000-8000-000000846705": {
+       "paid": false,
+       "payment_date": "$now"
+      }
+     }
+    },
+    "new": {},
+    "audits": [
+     {
+      "model": "invoicesuppliers",
+      "key": "a1000000-0000-4000-8000-000000846706",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "True",
+        "False"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "direct"
+     },
+     {
+      "model": "payment",
+      "key": "a1000000-0000-4000-8000-000000846705",
+      "action": 1,
+      "changes": {
+       "$created": []
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "paid": false,
+    "payment_id": "a1000000-0000-4000-8000-000000846705"
    }
   },
   {

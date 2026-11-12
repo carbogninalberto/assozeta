@@ -294,14 +294,18 @@ func (s *InstanceOutbound) emailProbePlan(row *domain.InstanceAdminRow, revision
 	return plan, nil
 }
 
-// emailMessage renders the probe's EmailMessage, or ErrUnsupported.
-func (s *InstanceOutbound) emailMessage(plan *emailPlan, recipient string) ([]byte, error) {
-	if err := smtpsend.CheckEnvelope(plan.from, []string{recipient}); err != nil {
-		return nil, err
+// emailMessage renders the probe's EmailMessage and returns the formataddr
+// value the SMTP backend uses as from_email. ErrFormatAddr is the exception
+// formataddr raises for a non-ASCII sender address.
+func (s *InstanceOutbound) emailMessage(plan *emailPlan, recipient string) ([]byte, string, error) {
+	from, err := smtpsend.FormatAddr(plan.sender, plan.from)
+	if err != nil {
+		return nil, "", err
 	}
 	now := s.now()
-	return smtpsend.RenderDjangoText(smtpsend.DjangoText{EncodedSubject: emailTestSubject, Body: emailTestBody, SenderName: plan.sender,
+	message, err := smtpsend.RenderDjangoText(smtpsend.DjangoText{EncodedSubject: emailTestSubject, Body: emailTestBody, SenderName: plan.sender,
 		FromEmail: plan.from, To: recipient, Date: now, MessageID: smtpsend.MessageID(now, s.localName())})
+	return message, from, err
 }
 
 // EmailTest is EmailTestView.post.
@@ -321,15 +325,10 @@ func (s *InstanceOutbound) EmailTest(ctx context.Context, body any) (map[string]
 	if input.Recipient != nil {
 		recipient = *input.Recipient
 	}
-	// Inputs this port does not send are refused before the lease.
-	plan, err := s.emailProbePlan(row, input.Revision)
-	if err != nil {
+	// Every input the serializer accepts is rendered: the probe reads the
+	// settings again, so a malformed stored value is still caught here.
+	if _, err := s.emailProbePlan(row, input.Revision); err != nil {
 		return nil, err
-	}
-	if plan.answer == nil && input.Action == "send" {
-		if _, err := s.emailMessage(plan, recipient); err != nil {
-			return nil, refused("test message outside the rendered subset")
-		}
 	}
 	if _, err := s.storedResults(row); err != nil {
 		return nil, err
@@ -401,15 +400,15 @@ func (s *InstanceOutbound) runEmailProbe(ctx context.Context, action string, rev
 	if plan.answer != nil {
 		return *plan.answer, nil
 	}
-	var message []byte
-	if action == "send" {
-		if message, err = s.emailMessage(plan, recipient); err != nil {
-			return instanceprobe.Result{}, refused("test message outside the rendered subset")
-		}
-	}
 	backend, err := smtpsend.OpenBackend(ctx, plan.server)
 	if err == nil && action == "send" {
-		err = backend.SendMail(plan.from, []string{recipient}, message)
+		// The probe enters the connection before formataddr, message() and
+		// send(), so ErrFormatAddr is a generic failure after QUIT.
+		var message []byte
+		var from string
+		if message, from, err = s.emailMessage(plan, recipient); err == nil {
+			err = backend.SendDjangoTestMail(from, recipient, message)
+		}
 	}
 	if backend != nil {
 		backend.Close()

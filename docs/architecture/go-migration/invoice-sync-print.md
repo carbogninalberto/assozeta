@@ -35,8 +35,11 @@ Go reads `CURRENT_HOST` from the environment (Django's required setting). The re
 3. `int(number)` (Python `int()`: strings with spaces, floats truncated, booleans; text, None, lists and `1e999` are a 500) and
    `bool(cancelled)` (Python truthiness: `'false'` is True, `0`, `[]`, `None` and `''` are False);
 4. `selected_tutor` present: `UUIDField.to_python` of the filter value (a malformed or blank string, a float or a dict is a 500; None
-   matches nothing; an int is `UUID(int=)`), then the first scoped, live, `X-Group-Id`-aware associate by id: when found it is set,
-   otherwise the invoice keeps its tutor. Without the key the tutor becomes None. Outside impersonation the associate resolves by id;
+   matches nothing; an int is `UUID(int=)`), then the first scoped, live, `X-Group-Id`-aware associate by id within the invoice's
+   association: when found it is set, otherwise the invoice keeps its tutor. Without the key the tutor becomes None. Outside
+   impersonation the associate also resolves by id within the invoice's association. Cases
+   `update-plain-tutor-other-association-kept`, `update-group-invoice-own-group-tutor` and
+   `update-group-invoice-other-association-tutor-kept` cover the resolved and kept tutors;
 5. the first scoped, live, `X-Group-Id`-aware payment of the invoice by primary key: a parsed `payment_date` is assigned as a naive
    midnight (stored as UTC midnight, audited as `YYYY-MM-DD 00:00:00`), `Payment.save()` applies its defaults (default category,
    `get_course_carnet_name()`, `Quota Corso`) and writes its auditlog entry (only changed fields, indexed `direct` on the payment's

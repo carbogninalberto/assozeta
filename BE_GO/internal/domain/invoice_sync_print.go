@@ -31,8 +31,9 @@ type InvoiceSyncTransaction interface {
 	// SyncInvoice is scoped_queryset(Invoice.objects).filter(invoice_id=id,
 	// sport_association=association, archived=False).first() (live, X-Group-Id aware).
 	SyncInvoice(ctx context.Context, id, association string, scope, group *string) (*InvoiceSyncRow, error)
-	// SyncAssociate is scoped_queryset(Associate.objects).filter(associate_id=id).first() is not None.
-	SyncAssociate(ctx context.Context, id string, scope, group *string) (bool, error)
+	// SyncAssociate is scoped_queryset(Associate.objects).filter(associate_id=id,
+	// sport_association=association).first() is not None.
+	SyncAssociate(ctx context.Context, id, association string, scope, group *string) (bool, error)
 	// InvoicePayment is scoped_queryset(Payment.objects).filter(invoice=invoice).first() (by pk), locked.
 	InvoicePayment(ctx context.Context, invoice string, scope, group *string) (*PaymentStateRow, error)
 	// SaveInvoicePayment writes what payment.save() changes in invoice_update.
