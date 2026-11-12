@@ -289,6 +289,20 @@ class ReadOnlyServiceTests(SimpleTestCase):
         health.return_value = False
         self.assertEqual(probe('renderer', {})['status'], 'failed')
 
+    @patch('instance.diagnostic_probe.health_response')
+    @override_settings(DIAGNOSTICS_API_URL='http://127.0.0.1:65001', RUNNING_VERSION='1.0.3')
+    def test_api_probe_uses_the_configured_address(self, health):
+        health.return_value = True
+        self.assertEqual(probe('api', {})['status'], 'passed')
+        health.assert_called_with('http://127.0.0.1:65001/healthz', '1.0.3')
+
+    @patch('instance.diagnostic_probe.health_response')
+    def test_api_probe_defaults_to_the_local_address(self, health):
+        health.return_value = True
+        self.assertEqual(settings.DIAGNOSTICS_API_URL, 'http://127.0.0.1:8000')
+        self.assertEqual(probe('api', {})['status'], 'passed')
+        health.assert_called_with('http://127.0.0.1:8000/healthz', settings.RUNNING_VERSION)
+
     @override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}})
     def test_scheduler_needs_fresh_heartbeat_not_just_a_running_process(self):
         import time
