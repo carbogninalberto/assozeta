@@ -650,7 +650,10 @@ def invoice_suppliers_add(request):
     data = request.data
 
     data['sport_association'] = request.user.sport_association.sport_association_id
-    invoice = InvoiceSuppliersSerializer(data=data)
+    invoice = InvoiceSuppliersSerializer(
+        data=data,
+        context={'request': request, 'sport_association': request.user.sport_association}
+    )
 
     if data['custom_accounts'] is None:
         custom_accounts = CustomAccounts.objects.filter(
@@ -737,7 +740,12 @@ def invoice_suppliers_update(request, uid):
             sport_association=sport_association
         ).first()
         if invoice is not None:
-            invoice = InvoiceSuppliersSerializer(invoice, data=data, partial=True)
+            invoice = InvoiceSuppliersSerializer(
+                invoice,
+                data=data,
+                partial=True,
+                context={'request': request, 'sport_association': sport_association}
+            )
             if invoice.is_valid(raise_exception=True):
                 invoice = invoice.save()
                 if invoice.payment:
