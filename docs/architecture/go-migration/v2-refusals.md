@@ -16,8 +16,7 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
   marks data a long-lived self-hosted dataset may contain.
 - **C**: impossible with production data or configuration.
 
-Counts (table rows, appendix): **A 69** (about 63 distinct after duplicates; 2 ported in v2subs3 (the placeholder certificate image, in `subscription/add` and in set-certificate-expiration); 1 ported and 1 narrowed (the Biella form, to associations with a stored signature) in v2-documents-rest; 5 ported in v2-pdf (the reportlab documents); 2 ported in v2-deletes; 13 ported in the earlier changes, 10 in v2-courses, 11 in v2-subscriptions, 3 in v2-payments, 1 in v2-payments-2, 5 in v2-documents, 4 in v2-sub-create, 3 in v2-public-forms, 5 in v2-misc (one v2-misc row duplicated a v2-documents port), 2 in v2-misc-2 and 1 in v2-athlete-payments, plus 1 in v2-wizard, 3 in v2-misc-3 (which also narrows the smtp/verify row to connect timeouts) and 1 in the famwiz change (the preregistration that renews a subscription; also the excel half of the course-subscriptions export row), below), **B 218** (54 with
-`legacy: yes`; 3 ported and 3 narrowed in v2-documents-3, below), **C 38**. Celery-worker handoffs are not HTTP refusals and are not counted.
+Counts (appendix table rows, 2026-11-12, after t11): **377 rows: 276 ported, 72 not a request refusal (structure, ownership or class C notes), 29 kept refused with a one-line reason, 0 open.** Several ported rows keep a narrow sub-case refused, with its reason written in the row. Celery-worker handoffs are not HTTP refusals and are not counted.
 
 Cross-cutting facts used for the classes:
 - The UI never sends `X-Group-Id` (nothing writes `localStorage.selectedGroup`): every group-header refusal is B.
