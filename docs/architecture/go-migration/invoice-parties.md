@@ -43,7 +43,7 @@ remains the production execution owner.
   403, escaping the field errors; the payment queryset is the live,
   group-aware manager), then `UniqueTogetherValidator` (skipped when a value
   is None) and `validate()` (a transmitter id or contact e-mail is required;
-  the number and fiscal year must be new).
+  the number and fiscal year must be new within the caller's association).
 - **Customer update:** `paid` and `transmitted` are assigned raw (`in` tests
   key presence, list membership or a substring; a scalar body is a
   TypeError) and `Model.save()` runs. auditlog's `pre_save` diff compares
@@ -114,7 +114,9 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
 
 ## t6x1
 
-- A non-null `payment_id` is stored and audited as sent; a payment of another association stays refused.
+- A non-blank `payment_id` must name a live payment of the invoice's association visible under the group header, or the
+  invoice's current payment on update; a payment of another association is an unknown pk, and any other value is a 400
+  field error with nothing written. An accepted value is audited as sent.
 - A linked payment the manager does not see is audited against None and indexed through `changes_json.sport_association`.
 - Every branch of `Payment.save()`'s description hook is written (course label, default category name, account transfer raising after the invoice save).
 - Supplier invoices render the shared `PaymentSerializer` with an associate, instructor or invoice.

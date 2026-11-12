@@ -34,7 +34,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from TESTS.adapters.django import message_reads as oracle
-from TESTS.adapters.django.historical_read_routes import DB_NAME
+from TESTS.adapters.django.historical_read_routes import DB_NAME, database_target
 from TESTS.adapters.go.query_observation import (
     MAX_BYTES, read_query_observations, assert_message_request_budget,
 )
@@ -299,15 +299,16 @@ def private_environment(work, redis_port, tool_environment):
     """Build isolated application configuration from only the tracked example."""
     values = read_tracked_environment()
     private, public = signing_key_pair()
+    host, name = database_target(work)
     values.update({
         "DJANGO_SETTINGS_MODULE": "TESTS.adapters.django.settings",
-        "TESTS_DATABASE": DATABASE,
+        "TESTS_DATABASE": name,
         "TESTS_WORKDIR": str(work),
         "DBTYPE": "POSTGRES",
-        "DBNAME": DATABASE,
+        "DBNAME": name,
         "DBUSER": "contracts",
         "DBPASSWORD": "synthetic-db-only",
-        "DBHOST": str(work),
+        "DBHOST": host,
         "DBPORT": "5432",
         "USE_PGBOUNCER": "False",
         "REDIS_HOST": "127.0.0.1",
@@ -385,13 +386,13 @@ def apply_private_environment(environment):
 
 
 @contextmanager
-def owned_message_database(output, report):
+def owned_message_database(output, report, *, shared=None):
     """Remove private files even when service teardown retains live DB data."""
     from TESTS.adapters.django.historical_read_routes import owned_database
 
     work = None
     try:
-        with owned_database(output, report) as owned:
+        with owned_database(output, report, shared=shared) as owned:
             work, _, _ = owned
             try:
                 yield owned

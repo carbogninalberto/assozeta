@@ -12,6 +12,8 @@ import shlex
 import subprocess
 import tempfile
 
+from TESTS.adapters.go.binary_cache import cached_build
+
 ROOT = Path(__file__).resolve().parents[3]
 NATIVE = ROOT / 'BE_GO/pkg/storage/loginimage/native/jpeg_encode.c'
 
@@ -54,9 +56,13 @@ def vectors():
 
 
 def build_codec(output, log, tool_env, extra_flags=()):
-    flags = shlex.split(subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libjpeg', 'libwebpdemux', 'libwebp'], text=True, env=tool_env))
-    subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', *extra_flags, str(NATIVE), str(NATIVE.with_name("jpeg_decode.c")), str(NATIVE.with_name("png_stream.c")), str(NATIVE.with_name("webp_decode.c")), *flags, "-lz", '-o', str(output)],
-        check=True, timeout=60, env=tool_env, stdout=log, stderr=subprocess.STDOUT)
+    pkg_config = subprocess.check_output(['pkg-config', '--cflags', '--libs', 'libjpeg', 'libwebpdemux', 'libwebp'], text=True, env=tool_env)
+    flags = shlex.split(pkg_config)
+    output = Path(output)
+    def build():
+        subprocess.run(['cc', '-std=c11', '-O2', '-Wall', '-Wextra', '-Werror', *extra_flags, str(NATIVE), str(NATIVE.with_name("jpeg_decode.c")), str(NATIVE.with_name("png_stream.c")), str(NATIVE.with_name("webp_decode.c")), *flags, "-lz", '-o', str(output)],
+            check=True, timeout=60, env=tool_env, stdout=log, stderr=subprocess.STDOUT)
+    cached_build('cc', output, ['cc', *extra_flags, 'image-codec'], tool_env, build, extra=pkg_config)
 
 
 def build_fault_codec(output, log, tool_env):

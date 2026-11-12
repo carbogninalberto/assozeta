@@ -31,14 +31,20 @@ Django semantics pinned here, in each view's order:
 - invoice-suppliers/add: request.user.sport_association, the bank account
   (default or the association's named one), the live group-aware supplier, the
   "Pagamento Fornitore" category (the association's, else the shared one),
-  then PaymentEntrySerializer and InvoiceSuppliersSerializer validation; the
-  payment is created and saved, then the invoice is created and saved. Requests
-  are not atomic: a failing invoice insert keeps the payment. invoice_supplier_id
+  then PaymentEntrySerializer and InvoiceSuppliersSerializer validation; a
+  non-blank payment_id must name a live payment of the caller's association
+  visible under the group header (a field error, before anything is created,
+  otherwise), and the payment is created and saved, then the invoice is created
+  and saved. Requests are not atomic: a failing invoice insert keeps the
+  payment. invoice_supplier_id
   is read-only: a key in the body is ignored and the model default generates the
   new invoice's key.
 - invoice-suppliers/<uid>/update: is_valid_uuid, the scoped association and
   invoice (500), the partial serializer (its read-only invoice_supplier_id
-  ignores a key in the body, so the path's invoice is saved in place), the
+  ignores a key in the body, so the path's invoice is saved in place; a
+  non-blank payment_id must name a live payment of the invoice's association
+  visible under the group header, or the invoice's current payment, and a
+  field error writes nothing), the
   invoice save, then the linked payment gets the raw paid value and the current
   time (a missing key or a rejected value fails after the invoice save).
 Run with ``python3 -I``.
@@ -516,8 +522,9 @@ add('customer-add-unique-together', 'full_collaborator', 'POST', CA, 400,
 add('customer-add-contact-required', 'owner', 'POST', CA, 400,
     {'non_field_errors': ['Either transferor_contact_email or id_transmitter must be provided!']},
     body={'number': 41, 'fiscal_year': 2026, 'transferor_contact_email': None, 'payment': PAYMENTS['a']['payment_id']})
-add('customer-add-number-taken-elsewhere', 'owner', 'POST', CA, 400, {'non_field_errors': ['Invoice already exists!']},
-    body={'number': 3, 'fiscal_year': 2026, 'transferor_contact_email': 'x@example.test', 'pdf': DOCUMENTS['pdf_one']['document_id']})
+add('customer-add-number-taken-other-prefix', 'owner', 'POST', CA, 400, {'non_field_errors': ['Invoice already exists!']},
+    body={'number': 1, 'fiscal_year': 2026, 'prefix': 'ZZ', 'transferor_contact_email': 'x@example.test',
+          'pdf': DOCUMENTS['pdf_one']['document_id']})
 
 # ------------------------------------------------------- customer update ---
 
@@ -698,7 +705,8 @@ add('supplier-add-long-notes-keeps-payment-server-error', 'owner', 'POST', SA, 5
         audits=payment_audits(OWN, 'uno')))
 
 # payment_id is a CharField: create() stores it before the view links the new payment. '' is stored as NULL and audited as
-# sent; other text must be the UUID of a stored payment (a 500 with the new payment kept otherwise).
+# sent; other text must name a live, visible payment of the caller's association (a 400 field error before anything is
+# created otherwise).
 BRACED = '{' + PAYMENTS['a']['payment_id'].upper() + '}'
 for _name, _text, _stored in (('blank', '', 'None'), ('other-spelling', BRACED, PAYMENTS['a']['payment_id'])):
     _audits = invoice_audits('uno')
@@ -709,11 +717,13 @@ for _name, _text, _stored in (('blank', '', 'None'), ('other-spelling', BRACED, 
             'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno'),
             'invoicesuppliers': new_invoice('FP-' + _name, '50.50', True, '2026-10-20T10:00:00Z', '2026-12-31T00:00:00Z', 'nuova', 'uno')},
             audits=payment_audits(OWN, 'uno') + _audits))
-for _name, _text in (('not-a-uuid', 'zzz'), ('unknown', UNKNOWN)):
-    add(f'supplier-add-payment-id-{_name}-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
-        body={**VALID, 'payment_id': _text}, effect=effect('owner', new={
-            'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno')},
-            audits=payment_audits(OWN, 'uno')))
+add('supplier-add-payment-id-not-a-uuid-unknown-pk', 'owner', 'POST', SA, 400,
+    {'payment_id': ['Invalid pk "zzz" - object does not exist.']}, body={**VALID, 'payment_id': 'zzz'}, effect=effect('owner'))
+add('supplier-add-payment-id-unknown-pk', 'owner', 'POST', SA, 400, {'payment_id': [f'Invalid pk "{UNKNOWN}" - object does not exist.']},
+    body={**VALID, 'payment_id': UNKNOWN}, effect=effect('owner'))
+add('supplier-add-payment-id-other-association-unknown-pk', 'owner', 'POST', SA, 400,
+    {'payment_id': [f'Invalid pk "{PAYMENTS["abroad"]["payment_id"]}" - object does not exist.']},
+    body={**VALID, 'payment_id': PAYMENTS['abroad']['payment_id']}, effect=effect('owner'))
 
 # A multipart body with a file part is a mutable copy: the view reads it as a form (every value is text, never None).
 FORM_VALID = [('custom_accounts', None, None, ACCOUNTS['bank']['custom_account_id']), ('supplier_id', None, None, SUPPLIERS['uno']['supplier_id']),
@@ -846,12 +856,16 @@ add('supplier-update-long-notes-audited-server-error', 'owner', 'PATCH', SU('c')
     effect=effect('owner', rows={'invoicesuppliers': {key_c: {f: SUPPLIER_INVOICES['c'][f] for f in INVOICE_FIELDS}}},
                   audits=[audit('invoicesuppliers', key_c, 1, {'notes': ['prima nota', 'n' * 256]})]))
 
-# payment_id on update: the text is audited as sent, then '' is stored as NULL and the payment access raises; text that is
-# not a UUID, or the UUID of no payment, fails the save after the entry.
-for _name, _text in (('blank', ''), ('not-a-uuid', 'zzz'), ('unknown', UNKNOWN)):
-    add(f'supplier-update-payment-id-{_name}-audited-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER, body={'payment_id': _text},
-        effect=effect('owner', rows={'invoicesuppliers': {key_c: {f: SUPPLIER_INVOICES['c'][f] for f in INVOICE_FIELDS}}},
-                      audits=[audit('invoicesuppliers', key_c, 1, {'payment': ['None', _text]})]))
+# payment_id on update: '' is stored as NULL and audited as sent, then the payment access raises. Other non-blank text
+# must name a live, visible payment of the invoice's association (the current payment is accepted as it is); a non-UUID
+# or unknown value is a field error and nothing is written.
+add('supplier-update-payment-id-blank-audited-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER, body={'payment_id': ''},
+    effect=effect('owner', rows={'invoicesuppliers': {key_c: {f: SUPPLIER_INVOICES['c'][f] for f in INVOICE_FIELDS}}},
+                  audits=[audit('invoicesuppliers', key_c, 1, {'payment': ['None', '']})]))
+for _name, _text in (('not-a-uuid', 'zzz'), ('unknown', UNKNOWN)):
+    add(f'supplier-update-payment-id-{_name}-unknown-pk', 'owner', 'PATCH', SU('c'), 400,
+        {'payment_id': [f'Invalid pk "{_text}" - object does not exist.']}, body={'payment_id': _text},
+        effect=effect('owner', rows={'invoicesuppliers': {key_c: {f: SUPPLIER_INVOICES['c'][f] for f in INVOICE_FIELDS}}}))
 # The association's own payment in another spelling: linked, then saved with the raw paid value.
 supplier_update('supplier-update-payment-id-links-payment', 'owner', 'c', 200, UPDATED,
                 {'payment_id': PAYMENTS['b']['payment_id'].upper(), 'paid': False},
@@ -859,12 +873,49 @@ supplier_update('supplier-update-payment-id-links-payment', 'owner', 'c', 200, U
 cases[-1]['effect']['audits'][0]['changes']['payment'][1] = PAYMENTS['b']['payment_id'].upper()
 
 
-def hidden_payment_update(name, actor, label, body, association, **extra):
+def pinned_fields(row, fields):
+    """An untouched row, with the fields whose running value is still a marker left out: a marker in a row pin means
+    the value of this request, which an untouched row must not claim."""
+    return {f: row[f] for f in fields if not (isinstance(row[f], str) and row[f].startswith('$'))}
+
+
+def payment_link_rows(label, payment_label):
+    """The invoice row and the payment a refused payment_id names, both unchanged."""
+    return {'invoicesuppliers': {SUPPLIER_INVOICES[label]['invoice_supplier_id']: pinned_fields(SUPPLIER_INVOICES[label], INVOICE_FIELDS)},
+            'payment': {PAYMENTS[payment_label]['payment_id']: pinned_fields(PAYMENTS[payment_label], PAYMENT_FIELDS)}}
+
+
+def unknown_pk(value):
+    return {'payment_id': [f'Invalid pk "{value}" - object does not exist.']}
+
+
+add('supplier-update-payment-id-other-association-unknown-pk', 'owner', 'PATCH', SU('c'), 400,
+    unknown_pk(PAYMENTS['abroad']['payment_id']), body={'payment_id': PAYMENTS['abroad']['payment_id'], 'paid': True},
+    effect=effect('owner', rows=payment_link_rows('c', 'abroad')))
+# A deleted payment of the other association is no live payment either.
+add('supplier-update-payment-id-deleted-unknown-pk', 'owner', 'PATCH', SU('c'), 400, unknown_pk(PAYMENTS['g']['payment_id']),
+    body={'payment_id': PAYMENTS['g']['payment_id'], 'paid': True}, effect=effect('owner', rows=payment_link_rows('c', 'g')))
+# The group header hides the association's own payment.
+add('supplier-update-payment-id-group-hidden-unknown-pk', 'owner', 'PATCH', SU('c'), 400, unknown_pk(PAYMENTS['a']['payment_id']),
+    body={'payment_id': PAYMENTS['a']['payment_id'], 'paid': True}, headers={'X-Group-Id': IDS['own_group']},
+    effect=effect('owner', rows=payment_link_rows('c', 'a')))
+# The foreign association's invoice cannot link the own association's payment.
+add('supplier-update-payment-id-from-other-association-unknown-pk', 'foreign_owner', 'PATCH', SU('d'), 400,
+    unknown_pk(PAYMENTS['a']['payment_id']), body={'payment_id': PAYMENTS['a']['payment_id'], 'paid': True},
+    effect=effect('foreign_owner', rows=payment_link_rows('d', 'a')))
+# The payment error joins the other field errors of the same serializer.
+add('supplier-update-payment-id-joins-field-errors', 'owner', 'PATCH', SU('c'), 400,
+    {**unknown_pk(PAYMENTS['abroad']['payment_id']), 'amount': ['A valid number is required.']},
+    body={'payment_id': PAYMENTS['abroad']['payment_id'], 'amount': 'x'},
+    effect=effect('owner', rows=payment_link_rows('c', 'abroad')))
+
+
+def hidden_payment_update(name, actor, label, body, association, body_extra=None, **extra):
     """A linked payment the live, group-aware manager does not see: auditlog diffs the saved instance against None."""
     key, pkey = SUPPLIER_INVOICES[label]['invoice_supplier_id'], PAYMENTS[label]['payment_id']
     pairs = changed(SUPPLIER_INVOICES, label, paid=body['paid'])
     PAYMENTS[label].update(paid=body['paid'], payment_date='$now')
-    add(name, actor, 'PATCH', SU(label), 200, UPDATED, body=body, effect=effect(actor, rows={
+    add(name, actor, 'PATCH', SU(label), 200, UPDATED, body={**body, **(body_extra or {})}, effect=effect(actor, rows={
         'invoicesuppliers': {key: {f: SUPPLIER_INVOICES[label][f] for f in INVOICE_FIELDS}},
         'payment': {pkey: {f: PAYMENTS[label][f] for f in PAYMENT_FIELDS}}},
         audits=([audit('invoicesuppliers', key, 1, pairs, association=association)] if pairs else [])
@@ -873,6 +924,9 @@ def hidden_payment_update(name, actor, label, body, association, **extra):
 
 
 hidden_payment_update('supplier-update-deleted-payment-audited-whole', 'foreign_owner', 'g', {'paid': True}, FOREIGN)
+# The invoice's current payment is accepted even when it is deleted and the manager does not see it.
+hidden_payment_update('supplier-update-payment-id-current-hidden-accepted', 'foreign_owner', 'g', {'paid': False}, FOREIGN,
+                      body_extra={'payment_id': PAYMENTS['g']['payment_id']})
 hidden_payment_update('supplier-update-group-hides-payment-audited-whole', 'owner', 'a', {'paid': False}, OWN,
                       headers={'X-Group-Id': IDS['own_group']})
 # Payment.save() without a description: a course payment takes its course label, a payment without a category takes the

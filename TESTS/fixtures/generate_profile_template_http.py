@@ -500,9 +500,90 @@ add('multipart-body', 'owner', 500, SERVER, content_type='multipart/form-data; b
 add('multipart-file-as-association', 'owner', 500, SERVER, content_type='multipart/form-data; boundary=fixture',
     raw_body='--fixture\r\nContent-Disposition: form-data; name="sport_association"; filename="a.json"\r\n\r\n{}\r\n--fixture--\r\n')
 
+# === t6x2: a logo with a NUL or a lone surrogate before its comma, or a NUL in its data ============
+# compress_base64 reads the data whatever the header says and b64decode drops a NUL. An image it re-encodes is stored
+# as a new JPEG data URI (the header is gone); one it returns unchanged keeps the character, which the audit entry
+# cannot hold: the 500 page, nothing written.
+def spoiled(uri, header='', data=''):
+    head, encoded = uri.split(',', 1)
+    return f'{head}{header},{encoded[:8]}{data}{encoded[8:]}'
+
+
+for name, logo in (
+        ('logo-header-with-nul-unchanged', spoiled(LOGO_AT_BOUND, header='\x00')),
+        ('logo-data-with-nul-unchanged', spoiled(LOGO_AT_BOUND, data='\x00')),
+        ('logo-undecodable-header-with-nul', spoiled(LOGO_UNDECODABLE, header='\x00')),
+):
+    add(name, 'owner', 500, SERVER, body={'sport_association': frontend_payload(STATE, logo=logo)})
+add('logo-header-with-lone-surrogate-unchanged', 'owner', 500, SERVER, content_type='application/json',
+    raw_body=json.dumps({'sport_association': frontend_payload(STATE, logo='@value@')}).replace(
+        '"@value@"', json.dumps(spoiled(LOGO_AT_BOUND, header='@s@')).replace('@s@', '\\ud800')))
+write('owner', frontend_payload(STATE, logo=spoiled(LOGO_SMALL, header='\x00')), name='logo-header-with-nul-recompressed')
+write('owner', frontend_payload(STATE, logo=spoiled(LOGO_WIDE, data='\x00\x00')), name='logo-data-with-nul-recompressed')
+
 # An administrator session saves for the owner (wide logo re-encoded at its size).
 write('admin', frontend_payload(STATE, logo=LOGO_WIDE, demand='<pre><code>riga 1\n  riga 2</code></pre>'), name='admin-session-save',
       headers=ADMIN_OWNER, impersonation='admin_owner')
+
+# === t6x3: HTML of any shape ====================================================================
+# A document an older editor could have stored: bs4's html.parser recovery and
+# prettify() reproduce it in full, whatever its shape.
+LEGACY_REGULATION = (
+    '<!-- saved by an older editor -->'
+    '<!DOCTYPE html>'
+    '<![CDATA[legacy & data]]>'
+    '<?xml-stylesheet type="text/xsl" href="style.xsl"?>'
+    '<![if gte mso 9]><p>Word document</p><![endif]>'
+    '<P CLASS=legacy data-role=note hidden>Regolamento&nbsp del socio</P>'
+    '<p class="a" class="b" data-x=1>Quota &#150; annuale & socio &foo; &copy</p>'
+    '<a href="https://example.test/x?a=1&copy=1" title>statuto</a>'
+    '<p>a < b</p>'
+    '<p>senza chiusura'
+    '<ul><li>uno<li>due</ul>'
+    '<b><i>x</b>y</i>'
+    '<br></br>'
+    '<table><tr><td>cella<td>altra</table>'
+    '<o:p>paragrafo office</o:p>'
+    '<my-widget data-kind="legacy">widget</my-widget>'
+)
+write('owner', frontend_payload(STATE, regulation=LEGACY_REGULATION), name='legacy-html-regulation')
+# Raw-text elements keep their text, rcdata elements escape the tags inside, and
+# the meta tags take the encoding the soup was decoded with.
+LEGACY_DEMAND = (
+    '<script>if (a < b && c > d) { document.write("</p>"); }</script>'
+    '<style>p > a { content: "<&>"; } /* </p> */</style>'
+    '<textarea>Testo &amp; <b>grassetto</b> &lt;test&gt;</textarea>'
+    '<title>Domanda &amp; <i>socio</i> &copy;</title>'
+    '<pre>  prima riga\n    seconda riga\n\ttabulata</pre>'
+    '<meta charset="iso-8859-1">'
+    '<meta http-equiv="Content-Type" content="text/html; charset=latin1">'
+    '<p>Il sottoscritto chiede di essere ammesso come <em>socio</em>.</p>'
+)
+write('owner', frontend_payload(STATE, demand=LEGACY_DEMAND), name='legacy-html-demand')
+write('owner', frontend_payload(STATE, additional_sections=[
+    {'name': 'commento', 'text': '<p>a</p><!-- fine'},
+    {'name': 'attributi', 'text': '<p class=a class=b data-x=\'1"2\'>x</p></div><p>&#x41;&#65&AMP;&ampx;'},
+]), name='legacy-html-sections')
+# The frontend reloads and saves the stored values again.
+write('full_collaborator', frontend_payload(STATE, subscription_fee=float(STATE['subscription_fee']),
+                                            membership_fee=float(STATE['membership_fee'])), name='html-resave')
+# Vertical tab, U+0085, U+2028 and a form feed between tags.
+write('owner', frontend_payload(STATE, regulation='<p>prima</p>\x0b<p>dopo</p>\x85<p>next</p>\u2028<p>last</p>\x0c<p>fine</p>'),
+      name='html-control-characters')
+
+# bs4 itself raises (the integer digit limit, the constructor's surrogate check):
+# the 500 page, nothing written.
+add('html-charref-too-long', 'owner', 500, SERVER,
+    body={'sport_association': frontend_payload(STATE, regulation='<p>&#' + '1' * 5000 + ';</p>')})
+data = frontend_payload(STATE, demand='@value@')
+add('html-short-surrogate', 'owner', 500, SERVER, content_type='application/json',
+    raw_body=json.dumps({'sport_association': data}).replace('"@value@"', '"' + 'x' * 200 + '\\ud800"'))
+# bs4 produces U+0000 or a lone surrogate, and the audit entry cannot hold the
+# text: the 500 page, nothing written.
+add('html-nul-reference', 'owner', 500, SERVER,
+    body={'sport_association': frontend_payload(STATE, regulation='<p>&#0;</p>')})
+add('html-surrogate-reference', 'owner', 500, SERVER,
+    body={'sport_association': frontend_payload(STATE, regulation='<p>&#xD800;</p>')})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

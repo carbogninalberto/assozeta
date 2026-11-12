@@ -7617,6 +7617,101 @@
    }
   },
   {
+   "name": "instance-outbound-email-test-form-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "revision": [
+     "This field is required."
+    ],
+    "action": [
+     "This field is required."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-email-test-form-send-without-recipient",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "recipient": [
+     "Inserisci il destinatario del messaggio di prova."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "revision=0&action=send&recipient=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-email-test-form-invalid-action",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "action": [
+     "\"probe\" is not a valid choice."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "revision=0&action=probe",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-email-test-form-recipient-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "recipient": [
+     "Enter a valid email address."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"action\"\r\n\r\nsend\r\n--fixture\r\nContent-Disposition: form-data; name=\"recipient\"; filename=\"a@example.com\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"revision\"; filename=\"3\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
    "name": "instance-outbound-email-test-stale",
    "actor": "owner",
    "method": "POST",
@@ -8693,6 +8788,330 @@
    }
   },
   {
+   "name": "instance-outbound-email-test-send-quoted-recipient",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "functional",
+    "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": "placeholder-smtp-password",
+    "email_revision": 14,
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 14,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 14,
+      "action": "send"
+     },
+     "operation_leases": {
+      "email_test": "$lease"
+     }
+    },
+    "integration_settings": {}
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": {
+    "server": "starttls",
+    "transcript": [
+     "ehlo <local>\r\n",
+     "STARTTLS\r\n",
+     "<tls>",
+     "ehlo <local>\r\n",
+     "AUTH PLAIN AG1haWxlcgBwbGFjZWhvbGRlci1zbXRwLXBhc3N3b3Jk\r\n",
+     "mail from:<mittente@example.test> size=<size>\r\n",
+     "rcpt to:<\"a,b\"@example.test>\r\n",
+     "data\r\n",
+     "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Prova <mittente@example.test>\r\nTo: \"a,b\"@example.test\r\nDate: <date>\r\nMessage-ID: <message-id>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email.\r\n.\r\n",
+     "quit\r\n",
+     "<quit>"
+    ]
+   },
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 14,
+    "action": "send",
+    "recipient": "\"a,b\"@example.test"
+   }
+  },
+  {
+   "name": "instance-outbound-email-test-send-idn-recipient",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "functional",
+    "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": "placeholder-smtp-password",
+    "email_revision": 15,
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Prova"
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 15,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 15,
+      "action": "send"
+     },
+     "operation_leases": {
+      "email_test": "$lease"
+     }
+    },
+    "integration_settings": {}
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": {
+    "server": "starttls",
+    "transcript": [
+     "ehlo <local>\r\n",
+     "STARTTLS\r\n",
+     "<tls>",
+     "ehlo <local>\r\n",
+     "AUTH PLAIN AG1haWxlcgBwbGFjZWhvbGRlci1zbXRwLXBhc3N3b3Jk\r\n",
+     "mail from:<mittente@example.test> size=<size>\r\n",
+     "rcpt to:<x@xn--bcher-kva.example>\r\n",
+     "data\r\n",
+     "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Prova <mittente@example.test>\r\nTo: x@xn--bcher-kva.example\r\nDate: <date>\r\nMessage-ID: <message-id>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email.\r\n.\r\n",
+     "quit\r\n",
+     "<quit>"
+    ]
+   },
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 15,
+    "action": "send",
+    "recipient": "x@bücher.example"
+   }
+  },
+  {
+   "name": "instance-outbound-email-test-send-non-ascii-sender-address",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "connectivity",
+    "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "info@exämple.test",
+     "sender_name": "Prova"
+    },
+    "email_password": "placeholder-smtp-password",
+    "email_revision": 16,
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "info@exämple.test",
+     "sender_name": "Prova"
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 16,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "failed",
+      "level": "connectivity",
+      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "checked_at": "$isonow",
+      "revision": 16,
+      "action": "send"
+     },
+     "operation_leases": {
+      "email_test": "$lease"
+     }
+    },
+    "integration_settings": {}
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": {
+    "server": "starttls",
+    "transcript": [
+     "ehlo <local>\r\n",
+     "STARTTLS\r\n",
+     "<tls>",
+     "ehlo <local>\r\n",
+     "AUTH PLAIN AG1haWxlcgBwbGFjZWhvbGRlci1zbXRwLXBhc3N3b3Jk\r\n",
+     "quit\r\n",
+     "<quit>"
+    ]
+   },
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 16,
+    "action": "send",
+    "recipient": "destinatario@example.test"
+   }
+  },
+  {
+   "name": "instance-outbound-email-test-send-long-sender-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "functional",
+    "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": "placeholder-smtp-password",
+    "email_revision": 17,
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "operation_leases": {
+      "email_test": "$lease"
+     }
+    },
+    "integration_settings": {}
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": {
+    "server": "starttls",
+    "transcript": [
+     "ehlo <local>\r\n",
+     "STARTTLS\r\n",
+     "<tls>",
+     "ehlo <local>\r\n",
+     "AUTH PLAIN AG1haWxlcgBwbGFjZWhvbGRlci1zbXRwLXBhc3N3b3Jk\r\n",
+     "mail from:<mittente@example.test> size=<size>\r\n",
+     "rcpt to:<destinatario@example.test>\r\n",
+     "data\r\n",
+     "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni.\" <mittente@example.test>\r\nTo: destinatario@example.test\r\nDate: <date>\r\nMessage-ID: <message-id>\r\n\r\nQuesto messaggio Ã¨ stato richiesto dal proprietario dellâistanza per verificare la configurazione email.\r\n.\r\n",
+     "quit\r\n",
+     "<quit>"
+    ]
+   },
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 17,
+    "action": "send",
+    "recipient": "destinatario@example.test"
+   }
+  },
+  {
    "name": "instance-outbound-email-test-stale-revision-send",
    "actor": "owner",
    "method": "POST",
@@ -8712,20 +9131,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      }
     },
@@ -8806,6 +9225,90 @@
    "body": {
     "revision": -1
    }
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "This field may not be null."
+   ],
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "A valid integer is required."
+   ],
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "revision=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Configurazione cambiata. Ricarica prima di verificare."
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"; filename=\"9\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-file-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "A valid integer is required."
+   ],
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"; filename=\"r.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
   },
   {
    "name": "instance-outbound-integration-test-list-body",
@@ -8903,20 +9406,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "operation_leases": {
@@ -9004,20 +9507,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9106,20 +9609,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9207,20 +9710,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9308,20 +9811,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9409,20 +9912,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9510,20 +10013,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9611,20 +10114,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9712,20 +10215,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9813,20 +10316,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -9912,20 +10415,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10013,20 +10516,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10112,20 +10615,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10193,20 +10696,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10281,20 +10784,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10400,20 +10903,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10482,20 +10985,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10593,20 +11096,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10741,20 +11244,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -10889,20 +11392,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -11037,20 +11540,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -11185,20 +11688,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -11333,20 +11836,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -11460,20 +11963,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -11603,20 +12106,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -11790,20 +12293,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -11977,20 +12480,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -12164,20 +12667,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -12351,20 +12854,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -12538,20 +13041,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -12704,20 +13207,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -12870,20 +13373,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -13036,20 +13539,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -13223,20 +13726,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -13389,20 +13892,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -13555,20 +14058,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {
@@ -13658,6 +14161,899 @@
    }
   },
   {
+   "name": "instance-outbound-integration-test-ai-dot-segments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "connectivity",
+    "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 13,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/a/../v1/",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "passed",
+       "level": "connectivity",
+       "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+       "checked_at": "$isonow",
+       "revision": 13
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 13,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/a/../v1/",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "llm.example.test:443",
+     "method": "GET",
+     "path": "/v1/models",
+     "headers": {
+      "host": "llm.example.test",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive",
+      "authorization": "Bearer placeholder-ai-key"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJvYmplY3QiOiAibGlzdCIsICJkYXRhIjogW3siaWQiOiAib3RoZXItbW9kZWwifSwgIm5vdC1hbi1vYmplY3QiLCB7ImlkIjogImZpeHR1cmUtbW9kZWwiLCAib3duZWRfYnkiOiAiZml4dHVyZSJ9XX0="
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 13
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-quoted-path",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "connectivity",
+    "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/q\"x{}",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "passed",
+       "level": "connectivity",
+       "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+       "checked_at": "$isonow",
+       "revision": 14
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/q\"x{}",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "llm.example.test:443",
+     "method": "GET",
+     "path": "/q%22x%7B%7D/models",
+     "headers": {
+      "host": "llm.example.test",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive",
+      "authorization": "Bearer placeholder-ai-key"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJvYmplY3QiOiAibGlzdCIsICJkYXRhIjogW3siaWQiOiAib3RoZXItbW9kZWwifSwgIm5vdC1hbi1vYmplY3QiLCB7ImlkIjogImZpeHR1cmUtbW9kZWwiLCAib3duZWRfYnkiOiAiZml4dHVyZSJ9XX0="
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 14
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-escape-case",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "connectivity",
+    "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 15,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/%7euser/%2f",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "passed",
+       "level": "connectivity",
+       "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+       "checked_at": "$isonow",
+       "revision": 15
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 15,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/%7euser/%2f",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "llm.example.test:443",
+     "method": "GET",
+     "path": "/~user/%2F/models",
+     "headers": {
+      "host": "llm.example.test",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive",
+      "authorization": "Bearer placeholder-ai-key"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJvYmplY3QiOiAibGlzdCIsICJkYXRhIjogW3siaWQiOiAib3RoZXItbW9kZWwifSwgIm5vdC1hbi1vYmplY3QiLCB7ImlkIjogImZpeHR1cmUtbW9kZWwiLCAib3duZWRfYnkiOiAiZml4dHVyZSJ9XX0="
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 15
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-port-out-of-range",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "connectivity",
+    "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 16,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test:65536/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+       "checked_at": "$isonow",
+       "revision": 16
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 16,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test:65536/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 16
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-invalid-idn-host",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "connectivity",
+    "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 17,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://́example.example/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+       "checked_at": "$isonow",
+       "revision": 17
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 17,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://́example.example/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 17
+   }
+  },
+  {
    "name": "instance-outbound-integration-test-ai-revision-string",
    "actor": "owner",
    "method": "POST",
@@ -13721,20 +15117,20 @@
      "security": "tls",
      "username": "mailer",
      "from_email": "mittente@example.test",
-     "sender_name": "Prova"
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
     },
     "email_password": {
      "$secret": "placeholder-smtp-password"
     },
-    "email_revision": 13,
+    "email_revision": 17,
     "diagnostic_results": {
      "checked_at": "2026-01-02T03:04:06+00:00",
      "email_test": {
-      "status": "failed",
-      "level": "connectivity",
-      "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
       "checked_at": "$isonow",
-      "revision": 13,
+      "revision": 17,
       "action": "send"
      },
      "integration_tests": {

@@ -35,6 +35,7 @@ UTC date as dd/mm/YYYY.
 
 Run with ``python3 -I``.
 """
+import base64
 import json
 from pathlib import Path
 
@@ -51,6 +52,10 @@ def uid(n):
 
 UNKNOWN = uid(999)
 ATHLETE_ASSOCIATE = 'a1000000-0000-4000-8000-000000700101'
+# Signature objects stored in the family's private bucket: the view reads them
+# as default_storage does and writes the bytes as a PNG data URI.
+SIGNATURE_OBJECTS = [{'name': 'signatures/t6x2-stored.png', 'body_b64': base64.b64encode(b'signature fixture bytes').decode('ascii')}]
+SIGNATURE_MISSING = 'signatures/t6x2-missing.png'
 
 
 # --- tagged template values (rendered by the contract with Django) ----------------------------
@@ -188,6 +193,19 @@ ASSOCIATIONS = {
                 'website': None, 'sport': None, 'abbreviated': None, 'document_header': None, 'invoice_footer': None,
                 'subscription_template': None, 'additional_sections': [], 'additional_fields': None,
                 'regulation_flags': (True, True, True), 'demand_flags': (True, True, True)},
+    # JSON column values: the subscription's additional_fields hold a big int, a
+    # float, a list, a dict and a non-ASCII string; a section is stored with
+    # show_to as a string (the view rewrites it from the flags).
+    'jsonvalues': {'user': uid(13), 'id': uid(14), 'role': 'association', 'email': 'valori@example.test', 'deleted': False,
+                   'denomination': 'Valori & <JSON>', 'tax_code': '55555555555', 'address': None, 'address_city': None,
+                   'address_cap': None, 'logo': None, 'regulation': None, 'demand': None, 'federation': None, 'enroll_number': None,
+                   'iban': None, 'website': None, 'sport': None, 'abbreviated': None, 'document_header': None, 'invoice_footer': None,
+                   'subscription_template': 'subscription.html',
+                   'additional_sections': [
+                       {'name': 'Sezione ß', 'text': '<p>Testo &amp; <b>grassetto</b></p>', 'show_to': 'solo-soci',
+                        'show_to_both': True},
+                       {'name': 'Sezione Σ', 'text': None, 'show_to_members': True}],
+                   'additional_fields': None, 'regulation_flags': (False, False, False), 'demand_flags': (False, False, False)},
 }
 # The base fixture's own association (model defaults).
 OWN_ASSOCIATION = {'id': OWN, 'denomination': 'Message reads own', 'tax_code': '70000000001', 'address': None, 'address_city': None,
@@ -258,11 +276,32 @@ SUBSCRIPTIONS = {
              'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
     'tino': {'id': uid(45), 'association': 'alpha', 'associate': 'tino', 'type': 1, 'role': 1, 'created': '2026-04-05T04:04:04+00:00',
              'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
+    # The stored signature: one object under the bucket's location, one missing name.
+    'signaturestored': {'id': uid(46), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 5,
+                        'created': '2026-10-10T10:10:10+00:00', 'payment': None, 'additional_fields': None,
+                        'signature_url': None, 'signature_key': SIGNATURE_OBJECTS[0]['name'], 'group': None},
+    'signaturemissing': {'id': uid(47), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 5,
+                         'created': '2026-10-11T11:11:11+00:00', 'payment': None, 'additional_fields': None,
+                         'signature_url': None, 'signature_key': SIGNATURE_MISSING, 'group': None},
     'own': {'id': uid(50), 'association': 'own', 'associate': 'athlete', 'type': 2, 'role': 1, 'created': '2026-08-08T08:08:08+00:00',
             'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None, 'user': 'athlete'},
     # A later subscription of the athlete's associate, entered by the association.
     'renewal': {'id': uid(51), 'association': 'own', 'associate': 'athlete', 'type': 1, 'role': 2, 'created': '2026-09-09T09:09:09+00:00',
                 'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
+    # JSON values in additional_fields (big int, float, list, dict, non-ASCII
+    # string) and a number in additional_fields (iterating it raises).
+    'jsonvalues': {'id': uid(46), 'association': 'jsonvalues', 'associate': 'greek', 'type': 2, 'role': 1,
+                   'created': '2026-10-10T10:10:10+00:00', 'payment': None,
+                   'additional_fields': [
+                       {'props': {'label': 'Numero grande', 'value': 12345678901234567890123}},
+                       {'props': {'label': 'Peso', 'value': 12.5}},
+                       {'props': {'label': 'Lista', 'value': [1, 'due', None]}},
+                       {'props': {'label': 'Mappa', 'value': {'chiave': 'valore'}}},
+                       {'props': {'label': 'Città', 'value': 'Ǻthos ŉ ǰ ß'}}],
+                   'signature_url': None, 'group': None},
+    'fieldsnumber': {'id': uid(47), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 1,
+                     'created': '2026-10-11T10:10:10+00:00', 'payment': None,
+                     'additional_fields': 12345678901234567890123, 'signature_url': None, 'group': None},
 }
 # Another member of the association (an athlete account without records).
 EXTRA_USERS = {'member': {'id': uid(52), 'username': 'document-views-member', 'email': 'document-views-member@example.test'},
@@ -435,14 +474,29 @@ def associate_object(label, *, with_tutor=True):
     return obj(**attrs)
 
 
+def signature_context_value(sub):
+    """Subscription.get_signature_base64: a readable stored object's data URI, else None (the legacy URL stays refused)."""
+    key, url = sub.get('signature_key'), sub['signature_url']
+    if key:
+        stored = next((row for row in SIGNATURE_OBJECTS if row['name'] == key), None)
+        if stored:
+            return s('data:image/png;base64,' + stored['body_b64'])
+    assert not url, 'fixture.signature-url-refused'
+    return NONE
+
+
 def subscription_context(key, header, footer, *, uid_value=None):
     sub = SUBSCRIPTIONS[key]
     a = association_spec(sub['association'])
     payment = PAYMENTS.get(sub['payment']) if sub['payment'] else None
     payment_data = json_value(payment['meta']) if payment and payment['meta'] else NONE
-    subscription = obj(sport_association=association_object(sub['association']), creation_date=dt(sub['created']), type=i(sub['type']),
-                       role=i(sub['role']), associate=associate_object(sub['associate']) if sub['associate'] else NONE,
-                       additional_fields=json_value(sub['additional_fields']), has_signature=b(bool(sub['signature_url'])))
+    has_signature = bool(sub['signature_url']) or bool(sub.get('signature_key'))
+    attrs = dict(sport_association=association_object(sub['association']), creation_date=dt(sub['created']), type=i(sub['type']),
+                 role=i(sub['role']), associate=associate_object(sub['associate']) if sub['associate'] else NONE,
+                 additional_fields=json_value(sub['additional_fields']), has_signature=b(has_signature))
+    if has_signature:
+        attrs['get_signature_base64'] = signature_context_value(sub)
+    subscription = obj(**attrs)
     show = lambda flags: lst(*[i(n) for n, flag in zip((1, 2, 3), flags) if flag])
     template = 'subscription_classic.html' if a['subscription_template'] == 'subscription_classic.html' else 'subscription.html'
     return {'template': 'document/application/' + template, 'language': 'en', 'context': {
@@ -480,7 +534,17 @@ add('subscription-minor-promoted-tutor-again', 'owner', SUB('sara'), 200, HTML, 
 add('subscription-head', 'owner', SUB('mario'), 405, method('HEAD'), method_='HEAD')
 add('subscription-head-anonymous', 'anonymous', SUB('mario'), 401, ANONYMOUS, method_='HEAD')
 add('subscription-classic-template', 'owner', SUB('classic'), 200, HTML, html=subscription_context('classic', '', '<p>Grazie</p>'))
+# get_signature_base64: the stored object as a PNG data URI, or None when the object is missing and no legacy URL is set.
+add('subscription-signature-stored', 'owner', SUB('signaturestored'), 200, HTML,
+    html=subscription_context('signaturestored', *ALPHA_SUB))
+add('subscription-signature-missing', 'owner', SUB('signaturemissing'), 200, HTML,
+    html=subscription_context('signaturemissing', *ALPHA_SUB))
 add('subscription-fallback-template', 'owner', SUB('fallback'), 200, HTML, html=subscription_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT))
+# The JSON columns' values render as json.loads gives them (a big int, a
+# float, a list, a dict and a non-ASCII string); additional_fields holding a
+# number is iterated, which raises TypeError in Django (the 500 page).
+add('subscription-json-values', 'owner', SUB('jsonvalues'), 200, HTML, html=subscription_context('jsonvalues', '', ''))
+add('subscription-additional-fields-number', 'owner', SUB('fieldsnumber'), 500, SERVER)
 add('subscription-scoped-athlete', 'owner', SUB('own'), 200, HTML, headers=SCOPED, html=subscription_context('own', '', ''))
 # The page is rendered for the association's staff and for the member the subscription belongs to.
 add('subscription-athlete-own', 'athlete', SUB('own'), 200, HTML, html=subscription_context('own', '', ''))
@@ -736,6 +800,7 @@ OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'document HTML views',
     'ids': IDS, 'associations': ASSOCIATIONS, 'associates': ASSOCIATES, 'tutors': TUTORS, 'payments': PAYMENTS,
     'subscriptions': SUBSCRIPTIONS, 'courses': COURSES, 'course_subscriptions': COURSE_SUBSCRIPTIONS, 'instructors': INSTRUCTORS,
-    'signatures': SIGNATURES, 'compensations': COMPENSATIONS, 'hours': HOURS, 'templates': TEMPLATES, 'medical': MEDICAL,
+    'signatures': SIGNATURES, 'signature_objects': SIGNATURE_OBJECTS, 'compensations': COMPENSATIONS, 'hours': HOURS,
+    'templates': TEMPLATES, 'medical': MEDICAL,
     'extra_users': EXTRA_USERS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

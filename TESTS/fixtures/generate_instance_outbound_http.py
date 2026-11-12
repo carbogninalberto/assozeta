@@ -300,6 +300,35 @@ add('email-test-types', 'owner', EMAIL_TEST, 400, {'revision': [INTEGER], 'actio
     method='POST', body={'revision': 'zero', 'action': None, 'recipient': ''})
 add('email-test-send-without-recipient', 'owner', EMAIL_TEST, 400, {'recipient': ['Inserisci il destinatario del messaggio di prova.']},
     method='POST', body={'revision': 0, 'action': 'send'})
+# === t6x2: form and multipart bodies read as HTML input =============================================
+# Field.get_value: an absent field that is not required is skipped, a blank
+# value of a field that is not required is skipped too, and an uploaded file
+# reads as its name where the field calls str() on it (never as a string for an
+# EmailField).
+FORM = 'application/x-www-form-urlencoded'
+MULTIPART = 'multipart/form-data; boundary=fixture'
+
+
+def parts(*fields):
+    """fields: (name, value) for a plain field, (name, file name, content) for a file."""
+    body = ''
+    for field in fields:
+        head = f'--fixture\r\nContent-Disposition: form-data; name="{field[0]}"'
+        if len(field) == 3:
+            head += f'; filename="{field[1]}"\r\nContent-Type: text/plain'
+        body += head + '\r\n\r\n' + field[-1] + '\r\n'
+    return body + '--fixture--\r\n'
+
+
+add('email-test-form-required', 'owner', EMAIL_TEST, 400, {'revision': [REQUIRED], 'action': [REQUIRED]}, method='POST',
+    raw_body='', content_type=FORM)
+add('email-test-form-send-without-recipient', 'owner', EMAIL_TEST, 400,
+    {'recipient': ['Inserisci il destinatario del messaggio di prova.']}, method='POST',
+    raw_body='revision=0&action=send&recipient=', content_type=FORM)
+add('email-test-form-invalid-action', 'owner', EMAIL_TEST, 400, {'action': ['"probe" is not a valid choice.']}, method='POST',
+    raw_body='revision=0&action=probe', content_type=FORM)
+add('email-test-form-recipient-file', 'owner', EMAIL_TEST, 400, {'recipient': ['Enter a valid email address.']}, method='POST',
+    raw_body=parts(('action', 'send'), ('recipient', 'a@example.com', 'x'), ('revision', '3', 'x')), content_type=MULTIPART)
 add('email-test-stale', 'owner', EMAIL_TEST, 409, {'error': 'La configurazione è cambiata. Ricarica prima di eseguire il test.'},
     method='POST', body={'revision': 1, 'action': 'connect'})
 # The environment has no SMTP host.
@@ -398,6 +427,32 @@ email_case('email-test-send-quoted-sender', smtp_settings('ssl', 'ssl', sender='
 email_case('email-test-send-recipient-refused', smtp_settings('starttls', 'tls'), SMTP_PASSWORD, 13, 'send', GENERIC,
            {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<rifiutato@example.test>\r\n', 'rset\r\n', 'quit\r\n', '<quit>']},
            recipient='rifiutato@example.test')
+# The fixture's 100-character sender name; its From header folds like the
+# golden row in BE_GO/internal/smtpsend/testdata/django_test_mail.json.
+LONG_SENDER_NAME = 'Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni.'
+LONG_SENDER_HEADER = ('"Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n'
+                      ' Giovanni in Persiceto e dintorni." <mittente@example.test>')
+email_case('email-test-send-quoted-recipient', smtp_settings('starttls', 'tls'), SMTP_PASSWORD, 14, 'send', SENT,
+           {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<"a,b"@example.test>\r\n', 'data\r\n',
+                                                                message('Prova <mittente@example.test>', '"a,b"@example.test'),
+                                                                'quit\r\n', '<quit>']},
+           recipient='"a,b"@example.test')
+email_case('email-test-send-idn-recipient', smtp_settings('starttls', 'tls'), SMTP_PASSWORD, 15, 'send', SENT,
+           {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<x@xn--bcher-kva.example>\r\n', 'data\r\n',
+                                                                message('Prova <mittente@example.test>', 'x@xn--bcher-kva.example'),
+                                                                'quit\r\n', '<quit>']},
+           recipient='x@bücher.example')
+# formataddr raises after the connection and authentication: no mail from.
+email_case('email-test-send-non-ascii-sender-address',
+           {**smtp_settings('starttls', 'tls'), 'from_email': 'info@exämple.test'}, SMTP_PASSWORD, 16, 'send', GENERIC,
+           {'server': 'starttls', 'transcript': ['ehlo <local>\r\n', 'STARTTLS\r\n', '<tls>', 'ehlo <local>\r\n', PLAIN_AUTH,
+                                                  'quit\r\n', '<quit>']},
+           recipient='destinatario@example.test')
+email_case('email-test-send-long-sender-name', smtp_settings('starttls', 'tls', sender=LONG_SENDER_NAME), SMTP_PASSWORD, 17, 'send', SENT,
+           {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<destinatario@example.test>\r\n', 'data\r\n',
+                                                                message(LONG_SENDER_HEADER, 'destinatario@example.test'),
+                                                                'quit\r\n', '<quit>']},
+           recipient='destinatario@example.test')
 # A request for an older revision.
 fields = release_lease()
 add('email-test-stale-revision-send', 'owner', EMAIL_TEST, 409, {'error': 'La configurazione è cambiata. Ricarica prima di eseguire il test.'},
@@ -410,6 +465,32 @@ add('integration-test-revision-missing', 'owner', test_path('stripe'), 400, [NUL
 add('integration-test-revision-invalid', 'owner', test_path('stripe'), 400, [INTEGER], method='POST', body={'revision': 'x'})
 add('integration-test-revision-negative', 'owner', test_path('google'), 400, ['Ensure this value is greater than or equal to 0.'],
     method='POST', body={'revision': -1})
+# A form body reads request.data.get('revision'): the last value of the key,
+# None when absent, an uploaded file as its name.
+FORM = 'application/x-www-form-urlencoded'
+MULTIPART = 'multipart/form-data; boundary=fixture'
+
+
+def parts(*fields):
+    """fields: (name, value) for a plain field, (name, file name, content) for a file."""
+    body = ''
+    for field in fields:
+        head = f'--fixture\r\nContent-Disposition: form-data; name="{field[0]}"'
+        if len(field) == 3:
+            head += f'; filename="{field[1]}"\r\nContent-Type: text/plain'
+        body += head + '\r\n\r\n' + field[-1] + '\r\n'
+    return body + '--fixture--\r\n'
+
+
+add('integration-test-form-revision-missing', 'owner', test_path('stripe'), 400, [NULL], method='POST',
+    raw_body='', content_type=FORM)
+add('integration-test-form-revision-invalid', 'owner', test_path('stripe'), 400, [INTEGER], method='POST',
+    raw_body='revision=x', content_type=FORM)
+add('integration-test-form-revision-file', 'owner', test_path('stripe'), 409,
+    {'error': 'Configurazione cambiata. Ricarica prima di verificare.'}, method='POST',
+    raw_body=parts(('revision', '9', 'x')), content_type=MULTIPART)
+add('integration-test-form-revision-file-text', 'owner', test_path('stripe'), 400, [INTEGER], method='POST',
+    raw_body=parts(('revision', 'r.txt', 'x')), content_type=MULTIPART)
 add('integration-test-list-body', 'owner', test_path('google'), 500, SERVER, method='POST', body=[1])
 add('integration-test-stale', 'owner', test_path('stripe'), 409, {'error': 'Configurazione cambiata. Ricarica prima di verificare.'},
     method='POST', body={'revision': 1})
@@ -551,6 +632,23 @@ for number, address in ((10, 'https://user:pw@llm.example.test/v1'), (11, 'https
                         (12, 'https://:pw@llm.example.test')):
     integration_case(f'integration-test-ai-user-info-{number}', 'ai', {**AI, 'base_url': address}, number,
                      {'status': 'failed', 'level': 'configuration', 'message': 'URL del provider non valido.'})
+AI_PASSED = {'status': 'passed', 'level': 'connectivity',
+             'message': 'Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.'}
+# requests rewrites the URL with urllib3 before sending: dot segments,
+# quoted characters, escape case and the exact request line path. The fake
+# provider's host is ASCII (its certificate only covers the fixed hosts), so
+# an invalid IDNA label stands in for a valid non-ASCII host it cannot reach:
+# requests raises before sending and the probe answers the generic failure.
+integration_case('integration-test-ai-dot-segments', 'ai', {**AI, 'base_url': 'https://llm.example.test/a/../v1/'}, 13,
+                 AI_PASSED, ai('/v1/models', reply(200, MODELS)))
+integration_case('integration-test-ai-quoted-path', 'ai', {**AI, 'base_url': 'https://llm.example.test/q"x{}'}, 14,
+                 AI_PASSED, ai('/q%22x%7B%7D/models', reply(200, MODELS)))
+integration_case('integration-test-ai-escape-case', 'ai', {**AI, 'base_url': 'https://llm.example.test/%7euser/%2f'}, 15,
+                 AI_PASSED, ai('/~user/%2F/models', reply(200, MODELS)))
+integration_case('integration-test-ai-port-out-of-range', 'ai', {**AI, 'base_url': 'https://llm.example.test:65536/v1'}, 16,
+                 GENERIC)
+integration_case('integration-test-ai-invalid-idn-host', 'ai', {**AI, 'base_url': 'https://\u0301example.example/v1'}, 17,
+                 GENERIC)
 # The request revision is compared with Python equality.
 integration_case('integration-test-ai-revision-string', 'ai', AI, 9,
                  {'status': 'passed', 'level': 'connectivity',

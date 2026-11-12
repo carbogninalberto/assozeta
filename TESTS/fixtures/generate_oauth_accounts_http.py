@@ -382,13 +382,16 @@ def details(**errors):
     return {'msg': 'Invalid request.', 'details': errors}
 
 
-def created(*, first='Nome', last='Cognome', username, email, password='Valid-Pass1!', role=2, connected=None,
+def created(*, first='Nome', last='Cognome', mail_first=None, mail_last=None, username, email, password='Valid-Pass1!', role=2, connected=None,
             collaborator_role=1, permissions=None, actor=None, index=None, partial=None, invite=None, response=True, social=False):
     """create_user's row with its create entry (the validated phone is not passed: it stays None);
     partial / invite: the seeded rows deleted before it (social: the invite before it, the partial after it;
     password None: no usable password).
+    mail_first / mail_last: the welcome mail's value when it is not the stored text (a float is localised by the
+    template engine).
     response: tokens, build_login_response and the welcome e-mail follow."""
-    welcome = render(WELCOME, {'first_name': first, 'last_name': last, **BRAND})
+    welcome = render(WELCOME, {'first_name': first if mail_first is None else mail_first,
+                               'last_name': last if mail_last is None else mail_last, **BRAND})
     return {'kind': 'signup', 'social': social, 'user': {'first_name': first, 'last_name': last, 'username': username, 'email': email, 'phone': None,
                                        'role': role, 'connected_user_id': connected, 'collaborator_role': collaborator_role,
                                        'collaborator_permissions': permissions},
@@ -632,6 +635,14 @@ sadd('names-boolean-and-object', 200, '$signup',
      social(41, identity('google', 'persona41@example.test', claims={'given_name': True, 'family_name': 0}), last_name={'a': False}),
      GOOGLE, effect=created(first='True', last="{'a': False}", username='PERSONA-41', email='persona41@example.test', password=None,
                             social=True))
+sadd('names-float', 200, '$signup',
+     social(42, identity('google', 'persona42@example.test'), first_name=1.5, last_name=1e16), GOOGLE,
+     effect=created(first='1.5', last='1e+16', mail_first=1.5, mail_last=1e16, username='PERSONA-42',
+                    email='persona42@example.test', password=None, social=True))
+sadd('names-float-from-claims', 200, '$signup',
+     social(43, identity('google', 'persona43@example.test', claims={'given_name': 2.0, 'family_name': -2.5e-07})), GOOGLE,
+     effect=created(first='2.0', last='-2.5e-07', mail_first=2.0, mail_last=-2.5e-07, username='PERSONA-43',
+                    email='persona43@example.test', password=None, social=True))
 sadd('google-athlete', 200, '$signup',
      social(22, identity('google', 'Social.New@Example.TEST', claims={'given_name': 'Zoë', 'family_name': "D'Arco <it>"}),
             email='Social.Partial@example.test', username='social-nuovo', first_name='ignored', last_name='ignored', unknown=1),

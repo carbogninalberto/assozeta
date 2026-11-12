@@ -45,7 +45,8 @@ the production execution owner.
   `AssociateSerializer`.
 - **_handle_tutors:** the listed ids (`data['tutor']['associate_id']` for truthy tutors: non-dict entries, non-dict tutors, a
   missing key or unhashable ids are a 500) — relations of the associate whose tutor is not listed are deleted (post_delete entries
-  in descending key order); for each truthy tutor, `Associate.objects.get` (live, group-aware) by id: found, a partial
+  in descending key order); for each truthy tutor, `Associate.objects.get` (live, group-aware) by id within the persona's
+  association (an id of another association is an unknown id): found, a partial
   `BasicAssociateSerializer` save (writable `associate_id` and `creation_date`; errors are a 400 with the tutor's errors, tenant_scope
   a 403); otherwise `associate_id`, `creation_date` and `tutors` are popped and a new tutor is created through the manager.
   `update_or_create` of the relation with `is_primary` (default False) runs in an atomic block: a second primary violates

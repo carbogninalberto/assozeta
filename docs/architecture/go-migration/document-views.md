@@ -83,11 +83,20 @@ unknown-paths family covers them).
 ## Not ported (refused with the 500 page; the views write nothing)
 
 - `get_main_tutor()` promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
-- `get_signature_base64()` (a subscription with a signature): it reads private storage or fetches the legacy URL.
+- `get_signature_base64()`'s legacy `signature_url` fetch (the reply of another server): the stored object is ported (t6x2).
 - Markup outside the `filter_mentions` subset, and mention paths that name an attribute the port declares but does not read
   (for example the model's methods and relations).
-- Template inputs outside `djtemplate`'s subset (for example `format` of a non-number raises in Django as well), an association
-  whose user is a collaborator (preview).
+- Template inputs outside `djtemplate`'s subset: the eight templates are fixed files, so their syntax is fully ported. The JSON columns
+  the views read with `json.loads` (`subscription.additional_fields`, the association's and the user association's
+  `additional_sections`, the association's `additional_fields`, `subscription.payment_meta`, `medical_appointment.meta`) are ported for
+  every value jsonb can store: integers beyond int64 (as `*big.Int`), floats (including `inf` read from an overflowing decimal,
+  subnormals and `-0.0`), booleans, null, nested lists and dicts, strings with quotes and non-ASCII letters (`str.upper()`/`str.lower()`
+  use Python's full case mapping). An int text of more than 4300 digits is a `ValueError` in `json.loads` and an iteration over a
+  number a `TypeError` in Django; Go fails on both with the 500 page (`ErrDocumentViewServer`), not with a request for Django. Stays
+  refused: a context value of a type outside `djtemplate`, and a lookup or filter the eight templates do not use (the templates are
+  fixed files, so neither is reachable for these columns). Duplicate keys and trailing data stay
+  refused because jsonb cannot hold them (the last key wins on write, a column holds one value). An association whose user is a
+  collaborator (preview).
 - The course list keeps Django's query without `ORDER BY`; several course subscriptions follow the database's order on both sides.
 
 ## Mention keys and periods (v2-rest-docs)
@@ -101,6 +110,24 @@ associate; a longer path under `other` after a missing key does as well. The obj
 empty) CAUGHT. A refusal after the tutor promotion is not replayed to Django:
 `internal/handler/document_views_handoff_test.go` runs the promotion's statements on the admitted request and then a refusal
 (500, no upstream call), and the same refusal without the promotion (replayed once).
+
+## t8out: JSON column values
+
+The views read six JSON columns with `json.loads`: `subscription.additional_fields`, the association's and the user association's
+`additional_sections`, the association's `additional_fields` (preview), `subscription.payment_meta` and `medical_appointment.meta`.
+`djtemplate` now renders every value jsonb can store through every expression the eight templates use: truthiness, `{% for %}`
+(a dict's keys, a string's characters; a number or a boolean raises `TypeError`), dict/attribute/index lookups (a missing name is
+`''`), `upper`/`lower` with Python's full Unicode case mapping, `safe`, `default`, `yesno`, and `format:"{:0.2f}"` (a big int becomes
+a float first and raises `OverflowError` beyond float64). Integers beyond int64 are `*big.Int`; floats include ±Inf (an overflowing
+decimal), subnormals and `-0.0`; lists, tuples and dicts print as Python's repr. `FromJSON` keeps jsonb's shape (dict key order; a
+duplicate key and trailing data stay refused since jsonb cannot store them) and turns Python's 4300-digit int limit into the 500 page,
+as `json.loads` raises there.
+
+Cases: `subscription-json-values` and `subscription-additional-fields-number` (168 fixture cases in
+`TESTS/fixtures/document_views_http.json`; the second iterates `additional_fields=12345678901234567890123` and is the 500 page).
+The golden script adds 58 authored renders (one per JSON kind and per expression; 12 of them raise in Django and must fail in Go):
+378 renders in `BE_GO/internal/djtemplate/testdata/django_renders.json`, all matching. `TestFromJSONStoredNumbers` pins the decoder on
+the stored text forms (big ints, 4300 and 4301 digits, an overflowing decimal, a subnormal, `-0.0`).
 
 ## Routes not in this family
 
@@ -177,3 +204,22 @@ owner and a member account get the page; the four print cases check the renderer
 156/156; Go 200 on `document-views-preview-anonymous`. GREEN (`imphard-versioned-r1`): 156/156 on native Django, native Go,
 Caddy `/api/v1` and `/api/v2`. Mutation (`imphard-mutation-r1`): rendering the PDF without the header fails Go on
 `document-views-preview-print` (`renderer.body:0`).
+
+## t6x2
+
+`Subscription.get_signature_base64()` reads its `signature_storage_key` through `default_storage` as django-storages
+does (the storage name is joined with `AWS_LOCATION` into the S3 key) and writes
+`"data:image/png;base64," + base64(bytes)`; a read that raises (a missing object, a storage error) falls through
+like Django's logged exception. Without a legacy `signature_url` the method returns `None`, and the template writes
+the text `None` (`<img src="None" .../>`). A record whose legacy `signature_url` is set stays the 500 page (refused):
+the URL is fetched from another server. `service.DocumentViews` takes the reader as an optional
+`domain.DocumentViewObjects` (`WithSignatureObjects`, wired in `cmd/server` to `composeDocumentObjects` with
+`documentkey.S3Key` and a bounded read); without a configured reader a stored signature keeps the previous refusal.
+`BE_GO/internal/service/document_views_signature_test.go` covers the four outcomes (data URI, `None`, both legacy-URL
+refusals) and the missing reader.
+
+The fixture has 168 cases (2 new): `document-views-subscription-signature-stored` (the seeded
+`signature_objects` bytes as the data URI) and `document-views-subscription-signature-missing` (a name without an
+object, no legacy URL: `None`). The document-views adapter composes the renderer stub with documents-writes'
+`service_context` (its private MinIO bucket, `AWS_LOCATION` and the same `AWS_*` settings for Go), seeds the
+signature objects in `seed_rows` and removes them before that context checks its bucket at exit.
