@@ -112,6 +112,14 @@
    "association": "a1000000-0000-4000-8000-000000701002",
    "group": null,
    "deleted": false
+  },
+  "greta": {
+   "id": "a1000000-0000-4000-8000-000000998901",
+   "first": "Greta",
+   "last": "Neri",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": "a1000000-0000-4000-8000-000000714001",
+   "deleted": false
   }
  },
  "invoices": {
@@ -934,6 +942,15 @@
    "deleted": false,
    "group_id": null,
    "course": null
+  }
+ },
+ "customer_invoices": {
+  "foreign_number": {
+   "id": "a1000000-0000-4000-8000-000000998902",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "prefix": "FPR",
+   "number": 520,
+   "fiscal_year": 2031
   }
  },
  "subscriptions": {
@@ -1896,7 +1913,7 @@
    }
   },
   {
-   "name": "invoice-sync-print-update-plain-tutor-resolved-by-id",
+   "name": "invoice-sync-print-update-plain-tutor-other-association-kept",
    "actor": "owner",
    "method": "PATCH",
    "path": "/invoice/a1000000-0000-4000-8000-000000998013/update",
@@ -1920,7 +1937,7 @@
      "deleted": false,
      "document_pdf": "a1000000-0000-4000-8000-000000998002",
      "sport_association": "a1000000-0000-4000-8000-000000701001",
-     "selected_tutor": "a1000000-0000-4000-8000-000000998012",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998008",
      "group": null,
      "attached_documents": [
       "a1000000-0000-4000-8000-000000998004"
@@ -1934,7 +1951,7 @@
       "number": 7,
       "cancelled": false,
       "description": "Ricevuta seed",
-      "selected_tutor_id": "a1000000-0000-4000-8000-000000998012"
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998008"
      }
     },
     "payments": {},
@@ -1948,10 +1965,6 @@
        "cancelled": [
         "True",
         "False"
-       ],
-       "selected_tutor": [
-        "a1000000-0000-4000-8000-000000998008",
-        "a1000000-0000-4000-8000-000000998012"
        ]
       },
       "index": [
@@ -2031,7 +2044,7 @@
         "1"
        ],
        "selected_tutor": [
-        "a1000000-0000-4000-8000-000000998012",
+        "a1000000-0000-4000-8000-000000998008",
         "a1000000-0000-4000-8000-000000998009"
        ]
       },
@@ -4049,6 +4062,164 @@
    }
   },
   {
+   "name": "invoice-sync-print-update-group-invoice-own-group-tutor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998027/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998027",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 152,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998010",
+     "group": "a1000000-0000-4000-8000-000000714001",
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_group": {
+      "number": 152,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998010"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998027",
+      "action": 1,
+      "changes": {
+       "number": [
+        "151",
+        "152"
+       ],
+       "selected_tutor": [
+        "None",
+        "a1000000-0000-4000-8000-000000998010"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998027?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 152,
+    "selected_tutor": "a1000000-0000-4000-8000-000000998010"
+   }
+  },
+  {
+   "name": "invoice-sync-print-update-group-invoice-other-association-tutor-kept",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice/a1000000-0000-4000-8000-000000998027/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "message": "Invoice updated",
+    "invoice": {
+     "invoice_id": "a1000000-0000-4000-8000-000000998027",
+     "document_token": null,
+     "creation_date": "2026-01-05T09:00:00Z",
+     "membership_fee": "0.00",
+     "activity_fee": "10.00",
+     "meta_payment_categories": null,
+     "description": "Ricevuta seed",
+     "number": 153,
+     "archived": false,
+     "cancelled": false,
+     "meta": null,
+     "imported_from_associami": false,
+     "deleted": false,
+     "document_pdf": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "selected_tutor": "a1000000-0000-4000-8000-000000998010",
+     "group": "a1000000-0000-4000-8000-000000714001",
+     "attached_documents": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {
+     "i_group": {
+      "number": 153,
+      "cancelled": false,
+      "description": "Ricevuta seed",
+      "selected_tutor_id": "a1000000-0000-4000-8000-000000998010"
+     }
+    },
+    "payments": {},
+    "customer": null,
+    "audit": [
+     {
+      "model": "invoice",
+      "key": "a1000000-0000-4000-8000-000000998027",
+      "action": 1,
+      "changes": {
+       "number": [
+        "152",
+        "153"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/invoice/a1000000-0000-4000-8000-000000998027?send_receipt_email=False",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "number": 153,
+    "selected_tutor": "a1000000-0000-4000-8000-000000998901"
+   }
+  },
+  {
    "name": "invoice-sync-print-update-payment-resolved-by-invoice",
    "actor": "owner",
    "method": "PATCH",
@@ -4756,6 +4927,419 @@
     "payment_condition": "TP02",
     "payment_modality": "MP05",
     "number": 501
+   }
+  },
+  {
+   "name": "invoice-sync-print-add-number-of-other-association-accepted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 520,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": "$xml",
+      "pdf": null,
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 520,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "520"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "True"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ],
+       "xml": [
+        "None",
+        "$xml"
+       ],
+       "json": [
+        "null",
+        "$json_audit"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/$customer",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 520
    }
   },
   {

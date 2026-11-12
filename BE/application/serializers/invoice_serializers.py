@@ -103,7 +103,11 @@ class CustomerInvoiceSerializer(serializers.ModelSerializer):
         if data['transferor_contact_email'] is None and data['id_transmitter'] is None:
             raise serializers.ValidationError("Either transferor_contact_email or id_transmitter must be provided!")
         # check if the invoice is already present
-        if CustomerInvoice.objects.filter(number=data['number'], fiscal_year=data['fiscal_year']).exists():
+        if CustomerInvoice.objects.filter(
+                number=data['number'],
+                fiscal_year=data['fiscal_year'],
+                sport_association=data.get('sport_association'),
+        ).exists():
             raise serializers.ValidationError("Invoice already exists!")
         return data
 

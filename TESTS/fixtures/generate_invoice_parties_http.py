@@ -522,8 +522,9 @@ add('customer-add-unique-together', 'full_collaborator', 'POST', CA, 400,
 add('customer-add-contact-required', 'owner', 'POST', CA, 400,
     {'non_field_errors': ['Either transferor_contact_email or id_transmitter must be provided!']},
     body={'number': 41, 'fiscal_year': 2026, 'transferor_contact_email': None, 'payment': PAYMENTS['a']['payment_id']})
-add('customer-add-number-taken-elsewhere', 'owner', 'POST', CA, 400, {'non_field_errors': ['Invoice already exists!']},
-    body={'number': 3, 'fiscal_year': 2026, 'transferor_contact_email': 'x@example.test', 'pdf': DOCUMENTS['pdf_one']['document_id']})
+add('customer-add-number-taken-other-prefix', 'owner', 'POST', CA, 400, {'non_field_errors': ['Invoice already exists!']},
+    body={'number': 1, 'fiscal_year': 2026, 'prefix': 'ZZ', 'transferor_contact_email': 'x@example.test',
+          'pdf': DOCUMENTS['pdf_one']['document_id']})
 
 # ------------------------------------------------------- customer update ---
 

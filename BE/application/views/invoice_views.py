@@ -248,7 +248,10 @@ def invoice_update(request, uid):
             invoice.cancelled = bool(cancelled)
             if 'selected_tutor' in data.keys():
                 # get the selected tutor
-                selected_tutor = scoped_queryset(request, Associate.objects).filter(associate_id=data['selected_tutor']).first()
+                selected_tutor = scoped_queryset(request, Associate.objects).filter(
+                    associate_id=data['selected_tutor'],
+                    sport_association=sport_association,
+                ).first()
                 if selected_tutor is not None:
                     invoice.selected_tutor = selected_tutor
             else:

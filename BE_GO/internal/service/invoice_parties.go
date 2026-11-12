@@ -235,7 +235,7 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 		return &dto.InvoicePartyValidationError{Errors: dto.InvoicePartyErrors{"non_field_errors": []string{
 			dto.InvoicePartyText + "Either transferor_contact_email or id_transmitter must be provided!"}}}
 	}
-	taken, err := s.store.CustomerNumberTaken(ctx, input.Number, input.FiscalYear)
+	taken, err := s.store.CustomerNumberTaken(ctx, input.Number, input.FiscalYear, association)
 	if err != nil {
 		return err
 	}

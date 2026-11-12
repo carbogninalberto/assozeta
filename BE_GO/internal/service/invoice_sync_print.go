@@ -222,7 +222,7 @@ func (s *InvoiceSyncUpdates) Update(ctx context.Context, identity domain.Resolve
 			if !ok {
 				return nil, domain.ErrPaymentStateServer
 			}
-			found, err := tx.SyncAssociate(ctx, tutorID, scope, group)
+			found, err := tx.SyncAssociate(ctx, tutorID, invoice.AssociationID, scope, group)
 			if err != nil {
 				return nil, err
 			}

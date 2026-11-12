@@ -5365,7 +5365,7 @@
    }
   },
   {
-   "name": "invoice-parties-customer-add-number-taken-elsewhere",
+   "name": "invoice-parties-customer-add-number-taken-other-prefix",
    "actor": "owner",
    "method": "POST",
    "path": "/invoice-customers/add",
@@ -5379,8 +5379,9 @@
    "effect": null,
    "prints": [],
    "body": {
-    "number": 3,
+    "number": 1,
     "fiscal_year": 2026,
+    "prefix": "ZZ",
     "transferor_contact_email": "x@example.test",
     "pdf": "a1000000-0000-4000-8000-000000846100"
    }
