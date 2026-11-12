@@ -437,6 +437,10 @@ func ParseSupplierInvoice(body any, partial, form bool) (SupplierInvoiceInput, I
 			errors[name] = problem
 		case isObject && name == "supplier":
 			input.NestedSupplier, input.NestedSupplierSet = value.(domain.RequestObject), true
+			if _, keyed := input.NestedSupplier.Lookup("supplier_id"); keyed {
+				// A nested serializer still validates the key it is given: not ported.
+				input.NotPorted = true
+			}
 		case isObject:
 			input.NotPorted = true
 		case isNull && name == "payment":

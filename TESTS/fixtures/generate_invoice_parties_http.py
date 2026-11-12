@@ -746,9 +746,7 @@ add('supplier-add-nested-supplier-field-errors', 'owner', 'POST', SA, 400, NESTE
     body={**VALID, 'supplier': NESTED_SUPPLIER_FIELDS})
 add('supplier-add-nested-supplier-foreign-association', 'owner', 'POST', SA, 403, FORBIDDEN,
     body={**VALID, 'supplier': {'name': 'Nuovo', 'sport_association': FOREIGN}})
-# supplier_id is read-only in the nested serializer too: an existing key is ignored and the object is valid.
-for _name, _nested in (('without-association', {'name': 'Nuovo'}), ('own-association', {'name': 'Nuovo', 'sport_association': OWN}),
-                       ('existing-id-ignored', {'name': 'Nuovo', 'sport_association': OWN, 'supplier_id': SUPPLIERS['uno']['supplier_id']})):
+for _name, _nested in (('without-association', {'name': 'Nuovo'}), ('own-association', {'name': 'Nuovo', 'sport_association': OWN})):
     add(f'supplier-add-nested-supplier-valid-{_name}-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
         body={**VALID, 'supplier': _nested}, effect=effect('owner', new={
             'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno')},

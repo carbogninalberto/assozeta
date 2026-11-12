@@ -656,14 +656,14 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	if len(errors) > 0 {
 		return &dto.InvoicePartyValidationError{Errors: errors}
 	}
+	if input.NotPorted {
+		// A nested payment object and nested form fields are not ported.
+		return domain.ErrInvoicePartyNotPorted
+	}
 	if input.NestedSupplierSet {
 		// A valid nested supplier object on update: DRF's nested-write
 		// assertion, raised by save() before the invoice is written.
 		return domain.ErrInvoicePartyServer
-	}
-	if input.NotPorted {
-		// A nested payment object and nested form fields are not ported.
-		return domain.ErrInvoicePartyNotPorted
 	}
 	updated := *row
 	changes := map[string][2]string{}
