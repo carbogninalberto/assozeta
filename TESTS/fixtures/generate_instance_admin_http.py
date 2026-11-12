@@ -697,24 +697,34 @@ add('email-put-form-password-file', 'owner', EMAIL, 400, {'password': ['Not a va
     raw_body=parts(('revision', '0'), ('host', 'smtp.example.test'), ('port', '587'), ('security', 'tls'),
                    ('username', ''), ('from_email', 'a@example.com'), ('sender_name', ''),
                    ('password', 'p.txt', 'x')), content_type=MULTIPART)
-add('email-put-form-revision-file', 'owner', EMAIL, 400, {'clear_password': ['Must be a valid boolean.']}, method='PUT',
+# revision and clear_password are plain multipart fields here: the submit is
+# valid and clears the stored (already empty) password.
+email_persist({'host': 'smtp.example.test', 'port': 587, 'security': 'tls', 'username': '',
+               'from_email': 'a@example.com', 'sender_name': ''}, '')
+add('email-put-form-revision-and-clear-plain', 'owner', EMAIL, 200, public_email(), method='PUT',
     raw_body=parts(('host', 'smtp.example.test'), ('port', '587'), ('security', 'tls'), ('username', ''),
                    ('from_email', 'a@example.com'), ('sender_name', ''), ('revision', '5'),
-                   ('clear_password', 'true')), content_type=MULTIPART)
-add('email-put-form-host-file', 'owner', EMAIL, 400, {'host': ['Not a valid string.']}, method='PUT',
+                   ('clear_password', 'true')), content_type=MULTIPART, effect=write())
+# A plain host part is a valid CharField; the revision is the stale one.
+add('email-put-form-plain-host-stale-revision', 'owner', EMAIL, 409,
+    {'error': 'Configurazione modificata in un’altra sessione. Ricarica prima di salvare.'}, method='PUT',
     raw_body=parts(('revision', '0'), ('port', '25'), ('username', ''), ('from_email', 'a@example.com'),
                    ('sender_name', ''), ('host', 'h.txt'), ('security', 'ssl')), content_type=MULTIPART)
 FORM_EMAIL = {'host': 'smtp.form.example.test', 'port': 587, 'security': 'tls', 'username': '',
               'from_email': 'form@example.test', 'sender_name': ''}
 email_persist(FORM_EMAIL, '')
 add('email-put-form', 'owner', EMAIL, 200, public_email(), method='PUT',
-    raw_body='revision=5&host=+smtp.form.example.test+&port=587&security=tls&username=&from_email=form%40example.test&sender_name=',
+    raw_body='revision=6&host=+smtp.form.example.test+&port=587&security=tls&username=&from_email=form%40example.test&sender_name=',
     content_type=FORM, effect=write())
 add('email-delete-form-missing-revision', 'owner', EMAIL, 400, [NULL], method='DELETE', raw_body='', content_type=FORM)
 state['email_settings'] = {}
 email_persist({}, '')
-add('email-delete-form', 'owner', EMAIL, 200, public_email(), method='DELETE', raw_body='revision=6',
+add('email-delete-form', 'owner', EMAIL, 200, public_email(), method='DELETE', raw_body='revision=7',
     content_type=FORM, effect=write())
+# An uploaded file read through QueryDict semantics is str(file): its name.
+email_persist({}, '')
+add('email-delete-form-revision-file', 'owner', EMAIL, 200, public_email(), method='DELETE',
+    raw_body=parts(('revision', '8')), content_type=MULTIPART, effect=write())
 
 AI_FORM = ('revision=2&model=fixture-model&cheap_model=fixture-cheap&base_url=&max_iterations=5&max_results=10'
            '&query_timeout=5&ws_rate_limit=5&ws_timeout=5&history_cap=5')
@@ -738,13 +748,18 @@ add('integration-ai-put-form', 'owner', integration('ai'), 200, public_integrati
 integration_persist('google', 2, None)
 add('integration-google-delete-form', 'owner', integration('google'), 200, public_integration('google'), method='DELETE',
     raw_body='revision=1', content_type=FORM, effect=write())
+# The same QueryDict semantics on an integration DELETE: the file name is the revision.
+integration_persist('stripe', 7, None)
+add('integration-stripe-delete-form-revision-file', 'owner', integration('stripe'), 200, public_integration('stripe'),
+    method='DELETE', raw_body=parts(('revision', '6')), content_type=MULTIPART, effect=write())
 
 add('updates-post-form', 'owner', UPDATES, 409, {'error': 'Gli aggiornamenti reali sono disabilitati in sviluppo.'},
     method='POST', raw_body=f'release_id=7&tag=v9.9.9&request_id={REQUEST_ID}', content_type=FORM)
 add('updates-post-form-blank', 'owner', UPDATES, 400, {'release_id': [INTEGER], 'tag': [BLANK],
                                                        'request_id': ['Must be a valid UUID.']}, method='POST',
     raw_body='release_id=&tag=&request_id=', content_type=FORM)
-add('updates-post-form-request-file', 'owner', UPDATES, 400, {'request_id': ['Must be a valid UUID.']}, method='POST',
+add('updates-post-form-request-plain', 'owner', UPDATES, 409,
+    {'error': 'Gli aggiornamenti reali sono disabilitati in sviluppo.'}, method='POST',
     raw_body=parts(('tag', 't'), ('release_id', '7'), ('request_id', REQUEST_ID)), content_type=MULTIPART)
 add('restarts-post-form', 'owner', RESTARTS, 409, {'error': 'Il riavvio dei container è disabilitato in sviluppo.'},
     method='POST', raw_body=f'request_id={REQUEST_ID}', content_type=FORM)
@@ -752,7 +767,8 @@ add('restarts-post-form-blank', 'owner', RESTARTS, 400, {'request_id': ['Must be
     raw_body='request_id=', content_type=FORM)
 add('restarts-post-form-extra-key', 'owner', RESTARTS, 400, ONLY_REQUEST, method='POST',
     raw_body=f'request_id={REQUEST_ID}&force=1', content_type=FORM)
-add('restarts-post-form-request-file', 'owner', RESTARTS, 400, {'request_id': ['Must be a valid UUID.']}, method='POST',
+add('restarts-post-form-request-plain', 'owner', RESTARTS, 409,
+    {'error': 'Il riavvio dei container è disabilitato in sviluppo.'}, method='POST',
     raw_body=parts(('request_id', REQUEST_ID)), content_type=MULTIPART)
 
 add('admin-final', 'admin', ADMIN, 200, admin_body())

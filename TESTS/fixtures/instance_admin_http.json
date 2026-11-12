@@ -7730,56 +7730,18 @@
    "content_type": "multipart/form-data; boundary=fixture"
   },
   {
-   "name": "instance-admin-email-put-form-revision-file",
-   "actor": "owner",
-   "method": "PUT",
-   "path": "/instance/admin/email",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "clear_password": [
-     "Must be a valid boolean."
-    ]
-   },
-   "effect": null,
-   "cache_control": "no-store",
-   "retry_after": null,
-   "audit": null,
-   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"host\"\r\n\r\nsmtp.example.test\r\n--fixture\r\nContent-Disposition: form-data; name=\"port\"\r\n\r\n587\r\n--fixture\r\nContent-Disposition: form-data; name=\"security\"\r\n\r\ntls\r\n--fixture\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"from_email\"\r\n\r\na@example.com\r\n--fixture\r\nContent-Disposition: form-data; name=\"sender_name\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_password\"\r\n\r\ntrue\r\n--fixture--\r\n",
-   "content_type": "multipart/form-data; boundary=fixture"
-  },
-  {
-   "name": "instance-admin-email-put-form-host-file",
-   "actor": "owner",
-   "method": "PUT",
-   "path": "/instance/admin/email",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "host": [
-     "Not a valid string."
-    ]
-   },
-   "effect": null,
-   "cache_control": "no-store",
-   "retry_after": null,
-   "audit": null,
-   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n0\r\n--fixture\r\nContent-Disposition: form-data; name=\"port\"\r\n\r\n25\r\n--fixture\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"from_email\"\r\n\r\na@example.com\r\n--fixture\r\nContent-Disposition: form-data; name=\"sender_name\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"host\"\r\n\r\nh.txt\r\n--fixture\r\nContent-Disposition: form-data; name=\"security\"\r\n\r\nssl\r\n--fixture--\r\n",
-   "content_type": "multipart/form-data; boundary=fixture"
-  },
-  {
-   "name": "instance-admin-email-put-form",
+   "name": "instance-admin-email-put-form-revision-and-clear-plain",
    "actor": "owner",
    "method": "PUT",
    "path": "/instance/admin/email",
    "headers": {},
    "status": 200,
    "response": {
-    "host": "smtp.form.example.test",
+    "host": "smtp.example.test",
     "port": 587,
     "security": "tls",
     "username": "",
-    "from_email": "form@example.test",
+    "from_email": "a@example.com",
     "sender_name": "",
     "source": "instance",
     "revision": 6,
@@ -7796,11 +7758,11 @@
      "support_email": "Admin@Example.test",
      "ui_api_version": "v2",
      "email_settings": {
-      "host": "smtp.form.example.test",
+      "host": "smtp.example.test",
       "port": 587,
       "security": "tls",
       "username": "",
-      "from_email": "form@example.test",
+      "from_email": "a@example.com",
       "sender_name": ""
      },
      "email_password": {
@@ -7882,41 +7844,41 @@
    "cache_control": "no-store",
    "retry_after": null,
    "audit": null,
-   "raw_body": "revision=5&host=+smtp.form.example.test+&port=587&security=tls&username=&from_email=form%40example.test&sender_name=",
-   "content_type": "application/x-www-form-urlencoded"
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"host\"\r\n\r\nsmtp.example.test\r\n--fixture\r\nContent-Disposition: form-data; name=\"port\"\r\n\r\n587\r\n--fixture\r\nContent-Disposition: form-data; name=\"security\"\r\n\r\ntls\r\n--fixture\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"from_email\"\r\n\r\na@example.com\r\n--fixture\r\nContent-Disposition: form-data; name=\"sender_name\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n5\r\n--fixture\r\nContent-Disposition: form-data; name=\"clear_password\"\r\n\r\ntrue\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
   },
   {
-   "name": "instance-admin-email-delete-form-missing-revision",
+   "name": "instance-admin-email-put-form-plain-host-stale-revision",
    "actor": "owner",
-   "method": "DELETE",
+   "method": "PUT",
    "path": "/instance/admin/email",
    "headers": {},
-   "status": 400,
-   "response": [
-    "This field may not be null."
-   ],
+   "status": 409,
+   "response": {
+    "error": "Configurazione modificata in un’altra sessione. Ricarica prima di salvare."
+   },
    "effect": null,
    "cache_control": "no-store",
    "retry_after": null,
    "audit": null,
-   "raw_body": "",
-   "content_type": "application/x-www-form-urlencoded"
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n0\r\n--fixture\r\nContent-Disposition: form-data; name=\"port\"\r\n\r\n25\r\n--fixture\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"from_email\"\r\n\r\na@example.com\r\n--fixture\r\nContent-Disposition: form-data; name=\"sender_name\"\r\n\r\n\r\n--fixture\r\nContent-Disposition: form-data; name=\"host\"\r\n\r\nh.txt\r\n--fixture\r\nContent-Disposition: form-data; name=\"security\"\r\n\r\nssl\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
   },
   {
-   "name": "instance-admin-email-delete-form",
+   "name": "instance-admin-email-put-form",
    "actor": "owner",
-   "method": "DELETE",
+   "method": "PUT",
    "path": "/instance/admin/email",
    "headers": {},
    "status": 200,
    "response": {
-    "source": "environment",
-    "host": "",
-    "port": 465,
-    "username": "segreteria@polisportiva.example",
-    "security": "none",
-    "from_email": "segreteria@polisportiva.example",
-    "sender_name": "A.S.D. Polisportiva Città (Aurora)",
+    "host": "smtp.form.example.test",
+    "port": 587,
+    "security": "tls",
+    "username": "",
+    "from_email": "form@example.test",
+    "sender_name": "",
+    "source": "instance",
     "revision": 7,
     "password_configured": false,
     "credential_error": false,
@@ -7930,7 +7892,14 @@
      "primary_color": "#ABCDEF",
      "support_email": "Admin@Example.test",
      "ui_api_version": "v2",
-     "email_settings": {},
+     "email_settings": {
+      "host": "smtp.form.example.test",
+      "port": 587,
+      "security": "tls",
+      "username": "",
+      "from_email": "form@example.test",
+      "sender_name": ""
+     },
      "email_password": {
       "$secret": ""
      },
@@ -8010,8 +7979,247 @@
    "cache_control": "no-store",
    "retry_after": null,
    "audit": null,
-   "raw_body": "revision=6",
+   "raw_body": "revision=6&host=+smtp.form.example.test+&port=587&security=tls&username=&from_email=form%40example.test&sender_name=",
    "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-email-delete-form-missing-revision",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "This field may not be null."
+   ],
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-email-delete-form",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "source": "environment",
+    "host": "",
+    "port": 465,
+    "username": "segreteria@polisportiva.example",
+    "security": "none",
+    "from_email": "segreteria@polisportiva.example",
+    "sender_name": "A.S.D. Polisportiva Città (Aurora)",
+    "revision": 8,
+    "password_configured": false,
+    "credential_error": false,
+    "restart_required": false,
+    "application": "Nuovi invii da API e worker; le connessioni già aperte terminano con la configurazione precedente."
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {},
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 8,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "revision=7",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-admin-email-delete-form-revision-file",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/email",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "source": "environment",
+    "host": "",
+    "port": 465,
+    "username": "segreteria@polisportiva.example",
+    "security": "none",
+    "from_email": "segreteria@polisportiva.example",
+    "sender_name": "A.S.D. Polisportiva Città (Aurora)",
+    "revision": 9,
+    "password_configured": false,
+    "credential_error": false,
+    "restart_required": false,
+    "application": "Nuovi invii da API e worker; le connessioni già aperte terminano con la configurazione precedente."
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {},
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 9,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 6,
+       "settings": null
+      },
+      "google": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "fixture.apps.googleusercontent.com"
+       }
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 2,
+       "settings": {
+        "enabled": false,
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "http://[::1]:8080/v1",
+        "max_iterations": 1,
+        "max_results": 1,
+        "query_timeout": 1,
+        "ws_rate_limit": 1000,
+        "ws_timeout": 1,
+        "history_cap": 1000,
+        "api_key": {
+         "$secret": ""
+        }
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n8\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
   },
   {
    "name": "instance-admin-integration-ai-put-form-list-positions",
@@ -8114,7 +8322,7 @@
      "email_password": {
       "$secret": ""
      },
-     "email_revision": 7,
+     "email_revision": 9,
      "diagnostic_results": {
       "checks": [
        {
@@ -8224,7 +8432,7 @@
      "email_password": {
       "$secret": ""
      },
-     "email_revision": 7,
+     "email_revision": 9,
      "diagnostic_results": {
       "checks": [
        {
@@ -8301,6 +8509,115 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "instance-admin-integration-stripe-delete-form-revision-file",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instance/admin/integrations/stripe",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "public_key": "",
+    "enabled": false,
+    "source": "environment",
+    "revision": 7,
+    "secret_key_configured": false,
+    "webhook_secret_configured": false,
+    "provider": "stripe",
+    "credential_error": false,
+    "last_test": null,
+    "restart_required": false,
+    "webhook_url": "https://example.org/api/stripe/webhook",
+    "authorized_origin": null,
+    "web_login_available": null
+   },
+   "effect": {
+    "fields": {
+     "name": "Istanza v1",
+     "abbreviation": "AB",
+     "primary_color": "#ABCDEF",
+     "support_email": "Admin@Example.test",
+     "ui_api_version": "v2",
+     "email_settings": {},
+     "email_password": {
+      "$secret": ""
+     },
+     "email_revision": 9,
+     "diagnostic_results": {
+      "checks": [
+       {
+        "id": "database",
+        "status": "passed",
+        "level": "connectivity",
+        "message": "Database raggiungibile.",
+        "checked_at": "2026-01-02T03:04:05+00:00"
+       }
+      ],
+      "checked_at": "2026-01-02T03:04:06+00:00",
+      "integration_tests": {
+       "google": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:08+00:00",
+        "revision": 0
+       },
+       "apple": {
+        "status": "passed",
+        "level": "configuration",
+        "message": "Verifica completata.",
+        "checked_at": "2026-01-02T03:04:09+00:00",
+        "revision": 9
+       }
+      },
+      "operation_leases": {
+       "diagnostics": 4102444800.0
+      }
+     },
+     "integration_settings": {
+      "stripe": {
+       "revision": 7,
+       "settings": null
+      },
+      "google": {
+       "revision": 2,
+       "settings": null
+      },
+      "apple": {
+       "revision": 1,
+       "settings": {
+        "enabled": true,
+        "client_id": "org.example.fixture"
+       }
+      },
+      "ai": {
+       "revision": 3,
+       "settings": {
+        "enabled": false,
+        "api_key": {
+         "$secret": ""
+        },
+        "model": "fixture-model",
+        "cheap_model": "fixture-cheap",
+        "base_url": "",
+        "max_iterations": 5,
+        "max_results": 10,
+        "query_timeout": 5,
+        "ws_rate_limit": 5,
+        "ws_timeout": 5,
+        "history_cap": 5
+       }
+      }
+     }
+    },
+    "touched": true
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "audit": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"\r\n\r\n6\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
    "name": "instance-admin-updates-post-form",
    "actor": "owner",
    "method": "POST",
@@ -8343,16 +8660,14 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "instance-admin-updates-post-form-request-file",
+   "name": "instance-admin-updates-post-form-request-plain",
    "actor": "owner",
    "method": "POST",
    "path": "/instance/admin/updates",
    "headers": {},
-   "status": 400,
+   "status": 409,
    "response": {
-    "request_id": [
-     "Must be a valid UUID."
-    ]
+    "error": "Gli aggiornamenti reali sono disabilitati in sviluppo."
    },
    "effect": null,
    "cache_control": null,
@@ -8415,16 +8730,14 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
-   "name": "instance-admin-restarts-post-form-request-file",
+   "name": "instance-admin-restarts-post-form-request-plain",
    "actor": "owner",
    "method": "POST",
    "path": "/instance/admin/restarts",
    "headers": {},
-   "status": 400,
+   "status": 409,
    "response": {
-    "request_id": [
-     "Must be a valid UUID."
-    ]
+    "error": "Il riavvio dei container è disabilitato in sviluppo."
    },
    "effect": null,
    "cache_control": null,
@@ -8828,7 +9141,7 @@
      "email_password": {
       "$secret": "placeholder secret 2"
      },
-     "email_revision": 7,
+     "email_revision": 9,
      "diagnostic_results": {
       "checks": [
        {
@@ -8956,7 +9269,7 @@
      },
      "integration_settings": {
       "stripe": {
-       "revision": 6,
+       "revision": 7,
        "settings": null
       },
       "google": {
@@ -9477,7 +9790,7 @@
      "email_password": {
       "$secret": ""
      },
-     "email_revision": 7,
+     "email_revision": 9,
      "diagnostic_results": {
       "checks": [
        {
@@ -9604,7 +9917,7 @@
      },
      "integration_settings": {
       "stripe": {
-       "revision": 6,
+       "revision": 7,
        "settings": null
       },
       "google": {
@@ -9958,7 +10271,7 @@
      "email_password": {
       "$literal": "not-a-fernet-token"
      },
-     "email_revision": 7,
+     "email_revision": 9,
      "diagnostic_results": {
       "checks": [
        {
@@ -10085,7 +10398,7 @@
      },
      "integration_settings": {
       "stripe": {
-       "revision": 6,
+       "revision": 7,
        "settings": null
       },
       "google": {
@@ -10435,7 +10748,7 @@
      "email_password": {
       "$secret": ""
      },
-     "email_revision": 7,
+     "email_revision": 9,
      "diagnostic_results": {
       "checks": [
        {
@@ -10562,7 +10875,7 @@
      },
      "integration_settings": {
       "stripe": {
-       "revision": 6,
+       "revision": 7,
        "settings": null
       },
       "google": {
@@ -10912,7 +11225,7 @@
      "email_password": {
       "$secret": "placeholder secret 2"
      },
-     "email_revision": 8,
+     "email_revision": 10,
      "diagnostic_results": {
       "checks": [
        {
@@ -11029,7 +11342,7 @@
      },
      "integration_settings": {
       "stripe": {
-       "revision": 6,
+       "revision": 7,
        "settings": null
       },
       "google": {
