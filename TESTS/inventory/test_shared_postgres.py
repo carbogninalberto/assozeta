@@ -262,7 +262,7 @@ class TemplateKeyTests(InventoryTestCase):
 
 class ServerGuardTests(InventoryTestCase):
     def test_ensure_server_refuses_a_long_socket_path(self):
-        directory = self.tmp_path / ('x' * 60)
+        directory = self.tmp_path / ('x' * (sp.SOCKET_LIMIT + 1))
         self.patch(sp, 'postgres_binaries', lambda: Path('/should/not/be/used'))
         with self.assertRaisesRegex(AssertionError, 'too long'):
             sp.ensure_server(directory)

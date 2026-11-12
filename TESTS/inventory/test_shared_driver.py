@@ -13,6 +13,11 @@ import types
 import unittest
 from unittest import mock
 
+try:  # load the native extension once, before tests patch sys.modules
+    import cryptography.hazmat.primitives.serialization  # noqa: F401
+except ImportError:
+    pass
+
 from TESTS.adapters.django import historical_read_routes as adapter
 from TESTS.adapters.django import message_reads_runtime as reuse
 from TESTS.adapters.django import shared_postgres as sp
