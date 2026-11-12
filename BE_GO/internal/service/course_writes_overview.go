@@ -118,6 +118,12 @@ func (s *CourseWrites) OverviewDelete(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return err
 	}
+	shared := false
+	if row != nil {
+		if shared, err = tx.SharedPayment(ctx, *row, group); err != nil {
+			return err
+		}
+	}
 	audit, err := s.auditContext(ctx, tx, identity, request)
 	if err != nil {
 		return err
@@ -181,6 +187,11 @@ func (s *CourseWrites) OverviewDelete(ctx context.Context, identity domain.Resol
 	}
 	save := *row
 	save.Deleted = true
+	if shared {
+		// An installment's signal deleted the row's own payment and cleared the
+		// stored reference; the model reads it back before the save.
+		save.PaymentID = nil
+	}
 	if err = tx.SaveCourseSubscription(ctx, domain.CourseWriteSubscriptionSave{Row: save}, audit); err != nil {
 		if err == domain.ErrCourseWritesStalePayment {
 			return courseWritesLate(tx, domain.ErrCourseWritesServer)

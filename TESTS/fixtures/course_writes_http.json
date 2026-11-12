@@ -4945,19 +4945,24 @@
    }
   },
   {
-   "name": "course-writes-overview-delete-own-payment-fails",
+   "name": "course-writes-overview-delete-own-payment-completes",
    "actor": "owner",
    "method": "DELETE",
    "path": "/course/c0000000-0000-4000-8000-000000000027/overview/c0000000-0000-4000-8000-000000000005/delete",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 200,
+   "response": {
+    "data": {
+     "msg": "associate deleted."
+    }
+   },
    "effect": {
     "actor": "owner",
     "rows": {
      "application.CourseSubscription": {
       "c0000000-0000-4000-8000-000000000073": {
-       "payment_id": null
+       "payment_id": null,
+       "deleted": true
       }
      },
      "application.CourseSubscriptionInstallment": {
@@ -5031,10 +5036,6 @@
       "key": "c0000000-0000-4000-8000-000000000073",
       "action": 1,
       "changes": {
-       "payment": [
-        "None",
-        "c0000000-0000-4000-8000-000000000060"
-       ],
        "deleted": [
         "False",
         "True"
@@ -5044,7 +5045,7 @@
        "a1000000-0000-4000-8000-000000701001",
        "course.sport_association"
       ],
-      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000073'), 'course_id': UUID('c0000000-0000-4000-8000-000000000027'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': UUID('c0000000-0000-4000-8000-000000000060'), 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
+      "repr": "{'_state': <django.db.models.base.ModelState object at 0x?>, 'course_subscription_id': UUID('c0000000-0000-4000-8000-000000000073'), 'course_id': UUID('c0000000-0000-4000-8000-000000000027'), 'paid': False, 'creation_date': datetime.datetime(2026, 6, 1, 10, 0, tzinfo=datetime.timezone.utc), 'subscription_id': UUID('c0000000-0000-4000-8000-000000000005'), 'payment_id': None, 'multi_payments': True, 'one_fee_payment': False, 'archived': False, 'type': 1, 'multiple_quote': None, 'billed_frequency': 1, 'billed_from': None, 'billed_until': None, 'billed_from_day_of_month': 1, 'membership_active': True, 'membership_fee': Decimal('0.00'), 'auto_renewal': False, 'deleted': True}"
      }
     ]
    }
