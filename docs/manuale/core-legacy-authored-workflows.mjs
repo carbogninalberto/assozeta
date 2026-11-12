@@ -679,6 +679,7 @@ export const coreLegacyAuthoredWorkflows = Object.freeze({
       "BE/application/views/invoice_views.py",
       "BE/application/views/payment_views.py",
       "BE/application/views/profile_views.py",
+      "BE/docmanager/access.py",
       "BE/docmanager/tasks.py",
       "BE/docmanager/views/document_view.py",
       "BE/docmanager/views/printing_views.py",

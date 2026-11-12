@@ -76,9 +76,10 @@ await scenario({id, actions: async ({page, api, open, actor, input, capture, rep
             proof('reader_fiscal_write_denied', denied.status() === 403);
             proof('reader_denial_preserved_settings', Number((await settings()).balance_sheet_year) === 4);
             const current = await records();
-            // Seeded rows share one frozen timestamp, so compare record sets, not row order.
-            const same = (left, right) => JSON.stringify((Array.isArray(left) ? left : Object.entries(left)).map(row => JSON.stringify(row)).sort())
-                === JSON.stringify((Array.isArray(right) ? right : Object.entries(right)).map(row => JSON.stringify(row)).sort());
+            // Seeded rows share one frozen timestamp, so compare record sets, not row order
+            // (subscription/list answers an object keyed by row position).
+            const same = (left, right) => JSON.stringify((Array.isArray(left) ? left : Object.values(left)).map(row => JSON.stringify(row)).sort())
+                === JSON.stringify((Array.isArray(right) ? right : Object.values(right)).map(row => JSON.stringify(row)).sort());
             proof('members_and_payments_preserved', same(current.members, baseline.members) && same(current.payments, baseline.payments));
         } finally {
             if (changed) expect((await api('profile/settings', {method: 'POST', data: original})).status()).toBe(200);
