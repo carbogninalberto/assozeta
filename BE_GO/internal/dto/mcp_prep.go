@@ -598,15 +598,6 @@ func mcpDateTimeValue(value any) (string, error) {
 	return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid"], text)
 }
 
-// mcpJSONScalar is JSONField.get_prep_value (json.dumps) for scalars.
-func mcpJSONScalar(value any) (string, bool) {
-	switch value.(type) {
-	case string, bool, json.Number:
-		return string(PythonJSONDumps(value)), true
-	}
-	return "", false
-}
-
 // mcpUncertain marks a string whose Python conversion uses non-ASCII digits.
 type mcpUncertain struct{}
 

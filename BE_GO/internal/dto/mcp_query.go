@@ -602,7 +602,10 @@ func (q *mcpQuery) jsonKeySQL(e mcpExpr, text bool) (string, int, error) {
 	key := e.jsonKeys[0]
 	if number, ok := PythonIntText(key); ok {
 		if !number.IsInt64() {
-			return "", 0, mcpNotPorted("JSON key index outside 64 bits")
+			// psycopg2 sends the Python int as a numeric parameter; the
+			// jsonb -> operator has no numeric form, so PostgreSQL reports it.
+			placeholder, index := argument(number.String())
+			return "(" + e.jsonCol + " " + single + " " + placeholder + "::numeric)", index, nil
 		}
 		cast := "::int"
 		if value := number.Int64(); value < math.MinInt32 || value > math.MaxInt32 {
@@ -795,19 +798,6 @@ func mcpMatchingBlocks(a, b string, alo, ahi, blo, bhi int) int {
 	}
 	return bestsize + mcpMatchingBlocks(a, b, alo, besti, blo, bestj) +
 		mcpMatchingBlocks(a, b, besti+bestsize, ahi, bestj+bestsize, bhi)
-}
-
-func mcpDigits(text string) bool {
-	if text == "" {
-		return false
-	}
-	text = strings.TrimPrefix(text, "-")
-	for _, r := range text {
-		if r < '0' || r > '9' {
-			return false
-		}
-	}
-	return text != ""
 }
 
 // resolveField is add_fields/resolve_ref for one field expression: joins
@@ -1299,30 +1289,10 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 			}
 			flag = PythonTruthy(value)
 		}
-		if lhs.jsonKey {
-			return mcpLookup{}, mcpNotPorted("JSON key isnull")
-		}
 		if flag {
 			return mcpLookup{name: name, sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
 		}
 		return mcpLookup{name: name, sql: lhs.sql + " IS NOT NULL"}, nil
-	}
-	if name == "has_key" {
-		key, ok := value.(string)
-		if !ok {
-			return mcpLookup{}, mcpNotPorted("has_key value")
-		}
-		return mcpLookup{name: name, sql: lhs.sql + " ? " + q.args.add(key)}, nil
-	}
-	if lhs.jsonKey {
-		if value == nil {
-			return mcpLookup{}, mcpNotPorted("JSON key None")
-		}
-		encoded, ok := mcpJSONScalar(value)
-		if !ok {
-			return mcpLookup{}, mcpNotPorted("JSON key value")
-		}
-		return mcpLookup{name: name, sql: lhs.sql + " = " + q.args.add(encoded) + "::jsonb"}, nil
 	}
 	if value == nil {
 		if name == "exact" || name == "iexact" {
@@ -1397,9 +1367,6 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		}
 		return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
 	case "regex", "iregex":
-		if lhs.kind == "json" {
-			return mcpLookup{}, mcpNotPorted("lookup " + name)
-		}
 		argument, err := mcpRawArgument(value)
 		if err != nil {
 			return mcpLookup{}, err
@@ -1494,17 +1461,26 @@ func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
 		return q.args.add(typed), nil
 	case bool:
 		return q.args.add(typed) + "::boolean", nil
+	case domain.RequestObject:
+		// psycopg2 cannot adapt a dict: Django reports this before the
+		// statement is sent.
+		return "", mcpRaise("can't adapt type 'dict'")
 	case json.Number:
 		if strings.ContainsAny(string(typed), ".eE") {
 			number, err := strconv.ParseFloat(string(typed), 64)
 			if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
 				return "", mcpNotPorted("has_key number")
 			}
-			return q.args.add(number) + "::double precision", nil
+			// psycopg2's float adapter sends a numeric parameter.
+			return q.args.add(number) + "::numeric", nil
 		}
 		number, ok := new(big.Int).SetString(string(typed), 10)
-		if !ok || !number.IsInt64() {
+		if !ok {
 			return "", mcpNotPorted("has_key number")
+		}
+		if !number.IsInt64() {
+			// An int outside int64 reaches PostgreSQL as numeric.
+			return q.args.add(number.String()) + "::numeric", nil
 		}
 		cast := "::int"
 		if value := number.Int64(); value < math.MinInt32 || value > math.MaxInt32 {
@@ -1512,38 +1488,141 @@ func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
 		}
 		return q.args.add(number.Int64()) + cast, nil
 	case []any:
-		items := make([]string, len(typed))
-		allText := true
-		for i, item := range typed {
-			text, ok := item.(string)
-			if !ok {
-				allText = false
-				break
-			}
-			items[i] = text
-		}
-		if !allText {
-			return "", mcpNotPorted("has_key list")
-		}
-		return q.args.add(items) + "::text[]", nil
+		return q.mcpJSONKeyArray(typed)
 	}
 	return "", mcpNotPorted("has_key value")
+}
+
+// mcpJSONKeyArray adapts a has_key list the way psycopg2 sends an array: an
+// empty list is an unknown text value, other lists are arrays whose element
+// type PostgreSQL resolves from the values. Every non-empty array reaches the
+// operator error of jsonb ? because the operator only accepts text.
+func (q *mcpQuery) mcpJSONKeyArray(items []any) (string, error) {
+	if len(items) == 0 {
+		return q.args.add("{}"), nil
+	}
+	allNull := true
+	for _, item := range items {
+		if item != nil {
+			allNull = false
+			break
+		}
+	}
+	if allNull {
+		// psycopg2 writes an all-NULL list as the unknown literal {NULL,...}.
+		parts := make([]string, len(items))
+		for i := range parts {
+			parts[i] = "NULL"
+		}
+		return q.args.add("{" + strings.Join(parts, ",") + "}"), nil
+	}
+	if mcpJSONArrayHasObject(items) {
+		return "", mcpRaise("can't adapt type 'dict'")
+	}
+	allText, allBool, allInt, nested := true, true, true, false
+	anyFloat, anyWide := false, false
+	for _, item := range items {
+		switch typed := item.(type) {
+		case nil, string:
+			allBool, allInt = false, false
+		case bool:
+			allText, allInt = false, false
+		case json.Number:
+			allText, allBool = false, false
+			if strings.ContainsAny(string(typed), ".eE") {
+				allInt, anyFloat = false, true
+				continue
+			}
+			number, ok := new(big.Int).SetString(string(typed), 10)
+			if !ok {
+				return "", mcpNotPorted("has_key number")
+			}
+			if !number.IsInt64() {
+				anyWide = true
+			}
+		case []any:
+			allBool, allInt, nested = false, false, true
+		default:
+			return "", mcpNotPorted("has_key list")
+		}
+	}
+	if nested {
+		texts := make([]string, len(items))
+		for i, item := range items {
+			texts[i] = PythonStr(item)
+		}
+		return q.args.add(texts) + "::text[]", nil
+	}
+	switch {
+	case allText:
+		texts := make([]string, len(items))
+		for i, item := range items {
+			if item != nil {
+				texts[i] = item.(string)
+			}
+		}
+		return q.args.add(texts) + "::text[]", nil
+	case allBool:
+		values := make([]bool, len(items))
+		for i, item := range items {
+			values[i] = item.(bool)
+		}
+		return q.args.add(values) + "::boolean[]", nil
+	case allInt:
+		if anyWide {
+			texts := make([]string, len(items))
+			for i, item := range items {
+				texts[i] = string(item.(json.Number))
+			}
+			return q.args.add(texts) + "::numeric[]", nil
+		}
+		numbers := make([]int64, len(items))
+		wide := false
+		for i, item := range items {
+			number, _ := new(big.Int).SetString(string(item.(json.Number)), 10)
+			numbers[i] = number.Int64()
+			if numbers[i] < math.MinInt32 || numbers[i] > math.MaxInt32 {
+				wide = true
+			}
+		}
+		if wide {
+			return q.args.add(numbers) + "::bigint[]", nil
+		}
+		narrow := make([]int32, len(items))
+		for i, number := range numbers {
+			narrow[i] = int32(number)
+		}
+		return q.args.add(narrow) + "::int[]", nil
+	}
+	texts := make([]string, len(items))
+	for i, item := range items {
+		texts[i] = PythonStr(item)
+	}
+	if anyFloat || anyWide {
+		return q.args.add(texts) + "::numeric[]", nil
+	}
+	return q.args.add(texts) + "::int[]", nil
+}
+
+// mcpJSONArrayHasObject reports a dict anywhere in a has_key list value:
+// psycopg2 cannot adapt one, whatever its nesting.
+func mcpJSONArrayHasObject(items []any) bool {
+	for _, item := range items {
+		switch typed := item.(type) {
+		case domain.RequestObject:
+			return true
+		case []any:
+			if mcpJSONArrayHasObject(typed) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // jsonLookup ports django/db/models/fields/json.py on PostgreSQL: JSONField's
 // own lookups and the lookups KeyTransform and KeyTextTransform register.
 func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, error) {
-	// Names the expression's lookups do not offer stay refused.
-	switch name {
-	case "range":
-		if !lhs.jsonKey {
-			return mcpLookup{}, mcpNotPorted("JSON lookup " + name)
-		}
-	case "contained_by", "has_keys", "has_any_keys":
-		if lhs.jsonKey {
-			return mcpLookup{}, mcpNotPorted("JSON key lookup " + name)
-		}
-	}
 	switch name {
 	case "isnull":
 		// KeyTransformIsNull is IsNull: the key expression IS [NOT] NULL.
@@ -1663,10 +1742,6 @@ func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, e
 		}
 		var placeholders []string
 		for _, item := range items {
-			if item == nil {
-				placeholders = append(placeholders, q.args.add(nil))
-				continue
-			}
 			encoded, err := mcpJSONValue(item)
 			if err != nil {
 				return mcpLookup{}, err

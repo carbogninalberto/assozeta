@@ -333,14 +333,30 @@ func TestReportToolJSONLookups(t *testing.T) {
 	for _, statement := range values.Statements {
 		reportBindings(t, "get_field_values meta__note", statement.SQL, statement.Args)
 	}
-	// Lookups the expression does not offer stay refused.
-	for _, params := range []string{
-		`{"model_name":"Payment","filters":{"meta__range":[0,2]}}`,
-		`{"model_name":"Payment","filters":{"meta__a__has_keys":["x"]}}`,
-		`{"model_name":"Payment","filters":{"meta__a__contained_by":{}}}`,
+	// The lookups KeyTransform offers, and range on the whole column, build
+	// Django's SQL instead of being refused.
+	for _, tc := range []struct {
+		params string
+		sql    []string
+	}{
+		{`{"model_name":"Payment","filters":{"meta__range":[0,2]}}`,
+			[]string{meta + ` BETWEEN $`, `::jsonb`}},
+		{`{"model_name":"Payment","filters":{"meta__a__has_keys":["x"]}}`,
+			[]string{`(` + meta + ` -> $`, `) ?& $`, `::text[]`}},
+		{`{"model_name":"Payment","filters":{"meta__a__has_any_keys":["x"]}}`,
+			[]string{`(` + meta + ` -> $`, `) ?| $`, `::text[]`}},
+		{`{"model_name":"Payment","filters":{"meta__a__contained_by":{}}}`,
+			[]string{`(` + meta + ` -> $`, `) <@ $`, `::jsonb`}},
 	} {
-		if _, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings); !errors.Is(err, ErrReportNotPorted) {
-			t.Errorf("%s: got %v, want a refusal", params, err)
+		planned := plan(t, tc.params)
+		query := planned.Statements[1].SQL
+		for _, statement := range planned.Statements {
+			reportBindings(t, tc.params, statement.SQL, statement.Args)
+		}
+		for _, part := range tc.sql {
+			if !strings.Contains(query, part) {
+				t.Errorf("%s: query %q lacks %q", tc.params, query, part)
+			}
 		}
 	}
 	// A has_key value the operator cannot take reaches PostgreSQL; None is
@@ -349,6 +365,110 @@ func TestReportToolJSONLookups(t *testing.T) {
 		`{"model_name":"Payment","filters":{"meta__has_key":null}}`), "a1000000-0000-4000-8000-000000701001", settings); err == nil ||
 		err.Error() != "Cannot use None as a query value" {
 		t.Errorf("has_key None: got %v", err)
+	}
+}
+
+// TestReportToolJSONLookupsR3b covers the lookups R3 still refused: range on
+// the whole column, the KeyTransform lookups contained_by/has_keys/
+// has_any_keys, has_key values of other types, key indexes outside int64 and
+// every JSON value type in exact/contains/in.
+func TestReportToolJSONLookupsR3b(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	meta := `"application_payment"."meta"`
+	for _, tc := range []struct {
+		params string
+		sql    []string
+		args   []any
+	}{
+		{`{"model_name":"Payment","filters":{"meta__range":[null,{"z":1}]}}`,
+			[]string{meta + ` BETWEEN $`, `::jsonb`}, []any{"null", `{"z": 1}`}},
+		{`{"model_name":"Payment","filters":{"meta__a__range":[[1.0],[2.0]]}}`,
+			[]string{`(` + meta + ` -> $`, `) BETWEEN $`, `::jsonb`}, []any{"[1.0]", "[2.0]"}},
+		{`{"model_name":"Payment","filters":{"meta__a__contained_by":[1.0,"x & y"]}}`,
+			[]string{`(` + meta + ` -> $`, `) <@ $`, `::jsonb`}, []any{`[1.0, "x & y"]`}},
+		{`{"model_name":"Payment","filters":{"meta__a__has_keys":["x & y","1.0"]}}`,
+			[]string{`(` + meta + ` -> $`, `) ?& $`, `::text[]`}, []any{[]string{"x & y", "1.0"}}},
+		{`{"model_name":"Payment","filters":{"meta__a__has_any_keys":["zz","x"]}}`,
+			[]string{`(` + meta + ` -> $`, `) ?| $`, `::text[]`}, []any{[]string{"zz", "x"}}},
+		// has_key values keep the type psycopg2 gives them.
+		{`{"model_name":"Payment","filters":{"meta__has_key":1.5}}`,
+			[]string{meta + ` ? $`, `::numeric`}, []any{1.5}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":true}}`,
+			[]string{meta + ` ? $`, `::boolean`}, []any{true}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":123456789012345678901234567890}}`,
+			[]string{meta + ` ? $`, `::numeric`}, []any{"123456789012345678901234567890"}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":9223372036854775807}}`,
+			[]string{meta + ` ? $`, `::bigint`}, []any{int64(9223372036854775807)}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":[["a"]]}}`,
+			[]string{meta + ` ? $`, `::text[]`}, []any{[]string{"['a']"}}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":[1,2]}}`,
+			[]string{meta + ` ? $`, `::int[]`}, []any{[]int32{1, 2}}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":[1.5,2.5]}}`,
+			[]string{meta + ` ? $`, `::numeric[]`}, []any{[]string{"1.5", "2.5"}}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":["a",1]}}`,
+			[]string{meta + ` ? $`, `::int[]`}, []any{[]string{"a", "1"}}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":[]}}`,
+			[]string{meta + ` ? $`}, []any{"{}"}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":[null,null]}}`,
+			[]string{meta + ` ? $`}, []any{"{NULL,NULL}"}},
+		{`{"model_name":"Payment","filters":{"meta__has_keys":{"a":1,"b":2}}}`,
+			[]string{meta + ` ?& $`, `::text[]`}, []any{[]string{"a", "b"}}},
+		{`{"model_name":"Payment","filters":{"meta__has_keys":[["a"],1,true,null]}}`,
+			[]string{meta + ` ?& $`, `::text[]`}, []any{[]string{"['a']", "1", "True", "None"}}},
+		// A single key index keeps Django's int cast; outside int64 psycopg2
+		// sends numeric.
+		{`{"model_name":"Payment","filters":{"meta__-1":1}}`,
+			[]string{`(` + meta + ` -> $`, `::int`}, []any{int64(-1)}},
+		{`{"model_name":"Payment","filters":{"meta__9223372036854775807":1}}`,
+			[]string{`(` + meta + ` -> $`, `::bigint`}, []any{int64(9223372036854775807)}},
+		{`{"model_name":"Payment","filters":{"meta__99999999999999999999":1}}`,
+			[]string{`(` + meta + ` -> $`, `::numeric`}, []any{"99999999999999999999"}},
+		{`{"model_name":"Payment","filters":{"meta__a__-1":"x & y"}}`,
+			[]string{`(` + meta + ` #> $`, `) = $`, `::jsonb`}, []any{[]string{"a", "-1"}}},
+		// Every JSON value type in exact/contains/in is dumped with json.dumps.
+		{`{"model_name":"Payment","filters":{"meta__b__exact":{"x":{"y":[1,2]}}}}`,
+			[]string{`(` + meta + ` -> $`, `) = $`, `::jsonb`}, []any{`{"x": {"y": [1, 2]}}`}},
+		{`{"model_name":"Payment","filters":{"meta__a__contains":[{"x":1}]}}`,
+			[]string{`(` + meta + ` -> $`, `) @> $`, `::jsonb`}, []any{`[{"x": 1}]`}},
+		{`{"model_name":"Payment","filters":{"meta__b__in":[1.0,{"x":[true,null]},123456789012345678901234567890]}}`,
+			[]string{`(` + meta + ` -> $`, `) IN ($`}, []any{`1.0`, `{"x": [true, null]}`, "123456789012345678901234567890"}},
+	} {
+		planned, err := PlanReportTool("query_data", reportParams(t, tc.params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err != nil {
+			t.Errorf("%s: %v", tc.params, err)
+			continue
+		}
+		query := planned.Statements[1].SQL
+		for _, statement := range planned.Statements {
+			reportBindings(t, tc.params, statement.SQL, statement.Args)
+		}
+		for _, part := range tc.sql {
+			if !strings.Contains(query, part) {
+				t.Errorf("%s: query %q lacks %q", tc.params, query, part)
+			}
+		}
+		for _, want := range tc.args {
+			found := false
+			for _, argument := range planned.Statements[1].Args {
+				if fmt.Sprint(argument) == fmt.Sprint(want) {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("%s: args %#v lack %#v", tc.params, planned.Statements[1].Args, want)
+			}
+		}
+	}
+	// psycopg2 cannot adapt a dict parameter; Django reports its text before
+	// the statement reaches PostgreSQL.
+	for _, params := range []string{
+		`{"model_name":"Payment","filters":{"meta__has_key":{"a":1}}}`,
+		`{"model_name":"Payment","filters":{"meta__has_key":[{"a":1}]}}`,
+	} {
+		if _, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings); err == nil ||
+			err.Error() != "can't adapt type 'dict'" {
+			t.Errorf("%s: got %v", params, err)
+		}
 	}
 }
 

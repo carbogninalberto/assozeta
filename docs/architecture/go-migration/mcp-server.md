@@ -113,11 +113,10 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
   `export`, `multi_sheet`, `filename` or course/date argument of a type the save_info
   would write back differently.
 - ORM inputs whose Django text includes SQL or parts Go does not reproduce:
-  JSON `range` on a whole column, JSON multi-key lookups on a key value, `?`
-  ordering, ordering by a relation whose model has Meta.ordering, integer list
-  items outside the 64-bit parameter range, CSV cells holding JSON containers
-  or ISO-looking text other than the engine's own datetimes, attendance names
-  whose `str.lower()` differs from Go's.
+  `?` ordering, ordering by a relation whose model has Meta.ordering, integer
+  list items outside the 64-bit parameter range, CSV cells holding JSON
+  containers or ISO-looking text other than the engine's own datetimes,
+  attendance names whose `str.lower()` differs from Go's.
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.
