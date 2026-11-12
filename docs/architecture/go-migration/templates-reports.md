@@ -152,22 +152,24 @@ matrix for the MCP server as well.
   exception (`v2rep3-*` receipts).
 - The report tools use the query engine described in `mcp-server.md` (every
   whitelisted model, `get_schema`, relation paths). Still refused: `?` ordering
-  (not deterministic); ordering by a relation name whose related model declares
-  `Meta.ordering` (Django expands its default ordering columns; no readable
-  related model has one today); a list argument given a number or boolean (for
-  example `fields: 5` or `order_by: 5`), a non-string aggregation `field`
-  without an alias, an `offset` that is not a number, a string or null (for
-  example `[]`), and a negative `limit` with a positive `offset` (Django
-  answers an empty listing); Django's texts, or its empty answer, are not
-  reproduced for those inputs. The remaining refusals are defensive: a
-  relation, relation
-  target, relation kind or field kind the generated metadata does not describe,
-  a column value type or an aggregation/output type without an expression,
+  (not deterministic), and ordering by a relation name whose related model
+  declares `Meta.ordering` (Django expands its default ordering columns; no
+  readable related model has one today). A list argument that is not iterable
+  (`fields: 5`) raises Django's `'int' object is not iterable`, a string one is
+  iterated character by character and a dict one by its keys; an aggregation
+  `field` that is not a string is written with `str()` into the default alias
+  and then raises its `AttributeError` from the path walk; an `offset` that is
+  a list or a dict raises the `+` operand text; and a slice whose stop is below
+  its start (a negative `limit` with an offset that keeps the stop
+  non-negative, or a float limit that truncates to the start) answers the empty
+  listing with Django's `count` and `has_more`. The remaining refusals are
+  defensive: a relation, relation target, relation kind or field kind the
+  generated metadata does not describe, a column value type or an
+  aggregation/output type without an expression,
   JSON and `has_key` values outside the parsed JSON types, grouped or
-  unhashable choice maps, a method call or an iteration on a scalar value,
-  integers beyond 64 bits and non-finite floats as parameters, a non-finite or
-  otherwise untyped `limit`/`offset`, and a `__year` comparison without an
-  integer.
+  unhashable choice maps, a method call on a value outside the parsed JSON
+  types, integers beyond 64 bits and non-finite floats as parameters, a
+  non-finite `limit`/`offset`, and a `__year` comparison without an integer.
 
 ## Group and unusual arguments (`v2rep2-*` receipts)
 

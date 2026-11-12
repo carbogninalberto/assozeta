@@ -245,12 +245,12 @@ func TestReportAggregations(t *testing.T) {
 		t.Errorf("query %q lacks the aggregation on subscription__start_date", query)
 	}
 	// test_non_string_aggregation_field_raises_attribute_error: the alias
-	// text is built from the field before the walk, so a non-string field is
-	// refused as not ported instead of raising the AttributeError.
+	// default is written with str() and the field then reaches the path walk,
+	// which splits it like Django's is_path_allowed.
 	_, err := PlanMCPTool("aggregate_data", reportParams(t, `{"model_name":"Instructor",
 		"aggregations":[{"function":"sum","field":1}]}`), reportTestAssociation, reportTestSettings)
-	if !errors.Is(err, ErrReportNotPorted) {
-		t.Errorf("non-string aggregation field: got %v, want ErrReportNotPorted", err)
+	if err == nil || err.Error() != "'int' object has no attribute 'split'" {
+		t.Errorf("non-string aggregation field: got %v", err)
 	}
 }
 

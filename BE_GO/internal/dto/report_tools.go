@@ -212,7 +212,7 @@ func pythonIter(value any) ([]any, error) {
 		}
 		return items, nil
 	}
-	return nil, mcpNotPorted("iteration of a scalar")
+	return nil, mcpRaise("'%s' object is not iterable", pythonTypeName(value))
 }
 
 // mcpStrings iterates a list argument whose items get .split/.lstrip.
@@ -562,6 +562,10 @@ func mcpPyAdd(left any, right mcpPyNumber) (mcpPyNumber, error) {
 		return mcpPyNumber{}, mcpRaise("unsupported operand type(s) for +: 'NoneType' and '%s'", right.typeName())
 	case string:
 		return mcpPyNumber{}, mcpRaise("can only concatenate str (not \"%s\") to str", right.typeName())
+	case []any:
+		return mcpPyNumber{}, mcpRaise("can only concatenate list (not \"%s\") to list", right.typeName())
+	case domain.RequestObject:
+		return mcpPyNumber{}, mcpRaise("unsupported operand type(s) for +: 'dict' and '%s'", right.typeName())
 	}
 	return mcpPyNumber{}, mcpNotPorted("limit or offset type")
 }
@@ -583,6 +587,9 @@ type mcpSliceBounds struct {
 	offset *big.Int // SQL OFFSET (low_mark)
 	// end is offset + effective_limit before int() (has_more).
 	end mcpPyNumber
+	// empty is a slice whose int() bounds leave nothing to read
+	// (Query.set_limits marks the query empty when the marks are equal).
+	empty bool
 }
 
 // mcpSlice is effective_limit = min(limit or MAX, MAX) and
@@ -612,9 +619,6 @@ func mcpSlice(params domain.RequestObject, maximum int64) (mcpSliceBounds, error
 	if offset.isNegative() || end.isNegative() {
 		return mcpSliceBounds{}, mcpRaise("Negative indexing is not supported.")
 	}
-	if effective.isNegative() {
-		return mcpSliceBounds{}, mcpNotPorted("negative limit")
-	}
 	start, err := offset.intValue()
 	if err != nil {
 		return mcpSliceBounds{}, err
@@ -622,6 +626,11 @@ func mcpSlice(params domain.RequestObject, maximum int64) (mcpSliceBounds, error
 	stop, err := end.intValue()
 	if err != nil {
 		return mcpSliceBounds{}, err
+	}
+	// set_limits(low, high) clamps low to high, so a stop at or below the
+	// start leaves the two marks equal and the query empty.
+	if stop.Cmp(start) <= 0 {
+		return mcpSliceBounds{limit: new(big.Int), offset: start, end: end, empty: true}, nil
 	}
 	return mcpSliceBounds{limit: new(big.Int).Sub(stop, start), offset: start, end: end}, nil
 }
@@ -793,13 +802,25 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 		}
 		keys = append(keys, reference)
 	}
-	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL()
+	where := q.whereSQL()
+	if bounds.empty {
+		// The marks are equal: Django's compiler raises EmptyResultSet and the
+		// listing is empty (the same FALSE predicate as an empty filter).
+		if where == "" {
+			where = ` WHERE FALSE`
+		} else {
+			where += ` AND FALSE`
+		}
+	}
+	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + where
 	if len(keys) > 0 {
 		inner += ` ORDER BY ` + strings.Join(keys, ", ")
 	}
-	inner += ` LIMIT ` + bounds.limit.String()
-	if bounds.offset.Sign() > 0 {
-		inner += ` OFFSET ` + bounds.offset.String()
+	if !bounds.empty {
+		inner += ` LIMIT ` + bounds.limit.String()
+		if bounds.offset.Sign() > 0 {
+			inner += ` OFFSET ` + bounds.offset.String()
+		}
 	}
 	statement := mcpWrap(inner, columns, q.args.values)
 	return ReportPlan{Statements: []domain.ReportStatement{count, statement},
@@ -974,10 +995,8 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error
 		}
 		alias, present := object.Lookup("alias")
 		if !present {
+			// f'{func_name}_{field}': any field value is written with str().
 			alias = name + "_" + PythonStr(fieldValue)
-			if _, isText := fieldValue.(string); !isText {
-				return ReportPlan{}, mcpNotPorted("aggregate field type")
-			}
 		}
 		aliasText, ok := alias.(string)
 		if !ok {

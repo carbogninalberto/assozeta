@@ -452,6 +452,41 @@ CASES = [
     ('query_data', {'model_name': 'Payment', 'fields': ['amount', 'meta'], 'filters': {'meta__b__exact': True}, 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'Payment', 'fields': ['amount', 'meta'], 'filters': {'meta__a__1__exact': 'x & y'}, 'order_by': ['amount']}, None),
     ('query_data', {'model_name': 'CarnetSubscription', 'fields': ['carnet_subscription_id', 'meta'], 'filters': {'meta__lessons_left__in': [0, 3, 1.0]}, 'order_by': ['carnet_subscription_id']}, None),
+
+    # R6b: list arguments that are not iterable, a string (character by
+    # character) or a dict (its keys); aggregation fields that are not
+    # strings; an offset that is a list or a dict; and slices whose stop is
+    # below their start (negative and truncating limits) answering the empty
+    # listing with Django's count and has_more.
+    ('query_data', {'model_name': 'Tags', 'fields': 5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': True}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': 1.5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': 'tag_name'}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': {'tag_name': 1}}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': 5, 'order_by': ['tag_name']}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': 5}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'count', 'field': 5}]}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'count', 'field': None}]}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'count', 'field': ['tag_name']}]}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'count', 'field': 5, 'alias': 'n'}]}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'count', 'field': True}]}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'count', 'field': {'a': 1}}]}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'median', 'field': 5}]}, None),
+    ('aggregate_data', {'model_name': 'Tags', 'aggregations': 5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'offset': []}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'offset': {}, 'limit': 3}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'offset': 5, 'limit': []}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'offset': [], 'limit': 1.5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': -1, 'offset': 5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': -2, 'offset': 5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': 0.5, 'offset': 5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'limit': -1, 'offset': 1}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'limit': -1, 'offset': 2}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'limit': -5, 'offset': 5}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': -3, 'offset': 1}, None),
+    ('query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': -1}, None),
+    ('get_field_values', {'model_name': 'Tags', 'field_name': 'tag_name', 'limit': -1}, None),
+    ('get_field_values', {'model_name': 'Tags', 'field_name': 'tag_name', 'limit': 0}, None),
 ]
 
 # JSON-lines sessions for the stdio comparison: (label, association, lines).

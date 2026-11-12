@@ -920,3 +920,108 @@ func TestReportUnescape(t *testing.T) {
 		}
 	}
 }
+
+func TestReportToolArgumentShapes(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	plan := func(t *testing.T, tool, params string) ReportPlan {
+		t.Helper()
+		planned, err := PlanReportTool(tool, reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err != nil {
+			t.Fatalf("%s: %v", params, err)
+		}
+		return planned
+	}
+	// A list argument that is not iterable fails the tool's for loop.
+	for _, tc := range []struct{ tool, params, want string }{
+		{"query_data", `{"model_name":"Tags","fields":5}`, "'int' object is not iterable"},
+		{"query_data", `{"model_name":"Tags","fields":true}`, "'bool' object is not iterable"},
+		{"query_data", `{"model_name":"Tags","fields":1.5}`, "'float' object is not iterable"},
+		{"query_data", `{"model_name":"Tags","fields":["tag_name"],"order_by":5}`, "'int' object is not iterable"},
+		{"query_data", `{"model_name":"Tags","offset":[],"fields":["tag_name"]}`, `can only concatenate list (not "int") to list`},
+		{"query_data", `{"model_name":"Tags","offset":{},"fields":["tag_name"]}`, "unsupported operand type(s) for +: 'dict' and 'int'"},
+		{"query_data", `{"model_name":"Tags","fields":["tag_name"],"offset":[],"limit":1.5}`,
+			`can only concatenate list (not "float") to list`},
+		{"query_data", `{"model_name":"Tags","fields":["tag_name"],"limit":-3,"offset":1}`,
+			"Negative indexing is not supported."},
+		{"query_data", `{"model_name":"Tags","fields":["tag_name"],"limit":-1}`, "Negative indexing is not supported."},
+		{"aggregate_data", `{"model_name":"Tags","aggregations":5}`, "'int' object is not iterable"},
+		{"aggregate_data", `{"model_name":"Tags","aggregations":[{"function":"count","field":"*"}],"group_by":5}`,
+			"'int' object is not iterable"},
+	} {
+		_, err := PlanReportTool(tc.tool, reportParams(t, tc.params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err == nil || err.Error() != tc.want {
+			t.Errorf("%s %s: got %v, want %q", tc.tool, tc.params, err, tc.want)
+		}
+	}
+	// The alias default writes any field with str(); a field that is not a
+	// string then reaches the path walk, which splits it.
+	for params, want := range map[string]string{
+		`{"model_name":"Tags","aggregations":[{"function":"count","field":5}]}`:             "'int' object has no attribute 'split'",
+		`{"model_name":"Tags","aggregations":[{"function":"count","field":null}]}`:          "'NoneType' object has no attribute 'split'",
+		`{"model_name":"Tags","aggregations":[{"function":"count","field":["tag_name"]}]}`:  "'list' object has no attribute 'split'",
+		`{"model_name":"Tags","aggregations":[{"function":"count","field":true}]}`:          "'bool' object has no attribute 'split'",
+		`{"model_name":"Tags","aggregations":[{"function":"count","field":{"a":1}}]}`:       "'dict' object has no attribute 'split'",
+		`{"model_name":"Tags","aggregations":[{"function":"count","field":5,"alias":"n"}]}`: "'int' object has no attribute 'split'",
+	} {
+		_, err := PlanReportTool("aggregate_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err == nil || err.Error() != want {
+			t.Errorf("%s: got %v, want %q", params, err, want)
+		}
+	}
+	// An unsupported function is skipped before the field is walked.
+	if immediate := plan(t, "aggregate_data",
+		`{"model_name":"Tags","aggregations":[{"function":"median","field":5}]}`).Immediate; immediate == nil ||
+		immediate.Message != "No valid aggregations" {
+		t.Errorf("unsupported function: got %+v", immediate)
+	}
+	// A string list argument is iterated character by character: no name
+	// matches and every concrete field is selected (as values() does).
+	if query := plan(t, "query_data", `{"model_name":"Tags","fields":"tag_name"}`).Statements[1].SQL; !strings.Contains(
+		query, `"application_tags"."tag_id"`) || !strings.Contains(query, `"application_tags"."tag_name"`) {
+		t.Errorf("string fields: query %q does not select every field", query)
+	}
+	// A dict list argument yields its keys.
+	dictPlan := plan(t, "query_data", `{"model_name":"Tags","fields":{"tag_name":1}}`)
+	if query := dictPlan.Statements[1].SQL; !strings.Contains(query, `"application_tags"."tag_name"`) ||
+		strings.Contains(query, `"application_tags"."tag_id"`) {
+		t.Errorf("dict fields: query %q does not select only tag_name", query)
+	}
+	// A slice whose stop is below its start leaves the two marks equal: no
+	// row is read and no LIMIT/OFFSET is written.
+	for _, tc := range []struct {
+		params  string
+		hasMore bool
+	}{
+		{`{"model_name":"Tags","fields":["tag_name"],"order_by":["tag_name"],"limit":-1,"offset":5}`, false},
+		{`{"model_name":"Tags","fields":["tag_name"],"limit":-2,"offset":5}`, false},
+		{`{"model_name":"Tags","fields":["tag_name"],"limit":0.5,"offset":5}`, false},
+		{`{"model_name":"Tags","fields":["tag_name"],"limit":-1,"offset":1}`, true},
+		{`{"model_name":"Tags","fields":["tag_name"],"limit":-5,"offset":5}`, true},
+	} {
+		planned := plan(t, "query_data", tc.params)
+		query := planned.Statements[1].SQL
+		if !strings.Contains(query, "FALSE") || strings.Contains(query, "LIMIT") || strings.Contains(query, "OFFSET") {
+			t.Errorf("%s: query %q is not the empty listing", tc.params, query)
+		}
+		counted, err := planned.Render([][][]*string{{{ptr("2")}}, nil})
+		if err != nil {
+			t.Fatalf("%s: %v", tc.params, err)
+		}
+		object, ok := counted.(domain.RequestObject)
+		if !ok {
+			t.Fatalf("%s: got %T", tc.params, counted)
+		}
+		if hasMore, _ := object.Lookup("has_more"); hasMore != tc.hasMore {
+			t.Errorf("%s: has_more %v, want %v", tc.params, hasMore, tc.hasMore)
+		}
+		if data, _ := object.Lookup("data"); len(data.([]any)) != 0 {
+			t.Errorf("%s: data %v, want none", tc.params, data)
+		}
+	}
+	// get_field_values reads the limit as the slice's stop.
+	if _, err := PlanReportTool("get_field_values", reportParams(t,
+		`{"model_name":"Tags","field_name":"tag_name","limit":-1}`), "a1000000-0000-4000-8000-000000701001",
+		settings); err == nil || err.Error() != "Negative indexing is not supported." {
+		t.Errorf("field values negative limit: got %v", err)
+	}
+}
