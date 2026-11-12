@@ -32,6 +32,12 @@ on:
         description: With include_manual, force full manual verification and historical appliance rehearsal
         type: boolean
         default: false
+      include_arm64:
+        description: >-
+          Also build linux/arm64 images in addition to linux/amd64; pushes and
+          releases always build linux/amd64 only
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -220,6 +226,7 @@ jobs:
           echo "origin=$origin" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
+        if: github.event_name == 'workflow_dispatch' && inputs.include_arm64
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Buildx
@@ -250,7 +257,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
           target: ${{ matrix.target }}
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ (github.event_name == 'workflow_dispatch' && inputs.include_arm64) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}

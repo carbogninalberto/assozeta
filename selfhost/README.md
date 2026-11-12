@@ -469,6 +469,14 @@ See [PR checks](../docs/ci.md) for the selection matrix and required check.
 Main publishes `edge` and commit tags.
 GitHub releases publish semantic-version and `latest` tags and attach this
 self-host distribution as a release archive after all required gates pass.
+Push and release publication builds `linux/amd64` images only. To publish
+`linux/arm64` as well, run the workflow manually from a release tag that already
+contains this workflow change, set `release_tag` to that same selected release tag,
+and set `include_arm64=true`; both architectures are then built as one
+multi-platform image. An empty `release_tag` publishes commit images only.
+Republishing an existing release keeps its normal tag semantics: `latest` and the
+version aliases are updated together, so it is not a safe way to backfill ARM
+images for an old release.
 The Go compatibility inventory gate currently prevents installable releases.
 Managed manifests retain the four original core images and carry the immutable
 Go reference in `extensions.go_backend`, so older controllers can reach the new
