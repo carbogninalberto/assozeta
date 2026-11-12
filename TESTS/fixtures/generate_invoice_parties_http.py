@@ -720,6 +720,29 @@ mp, ct = multipart(*[part for part in FORM_VALID if part[0] != 'custom_accounts'
                    ('allegato', 'fattura.txt', 'text/plain', 'x'))
 add('supplier-add-multipart-blank-account-server-error', 'owner', 'POST', SA, 500, SERVER, raw_body=mp, content_type=ct)
 
+# A nested supplier object is validated by SupplierSerializer (partial on update). Errors join the invoice errors; another
+# association's reference is the generic 403; a valid object is the 500 page (the payment is kept on add).
+NESTED_SUPPLIER_FIELDS = {'name': '', 'email': 'x', 'type': 'zzz', 'sport_association': 'abc', 'group': 'abc', 'deleted': 'maybe',
+                          'vat_number': 5}
+NESTED_SUPPLIER_ERRORS = {'supplier': {
+    'name': ['This field may not be blank.'], 'email': ['Enter a valid email address.'],
+    'deleted': ['Must be a valid boolean.'], 'sport_association': ['“abc” is not a valid UUID.'],
+    'group': ['“abc” is not a valid UUID.']}}
+add('supplier-add-nested-supplier-empty', 'owner', 'POST', SA, 400, {'supplier': {'name': ['This field is required.']}},
+    body={**VALID, 'supplier': {}})
+add('supplier-add-nested-supplier-field-errors', 'owner', 'POST', SA, 400, NESTED_SUPPLIER_ERRORS,
+    body={**VALID, 'supplier': NESTED_SUPPLIER_FIELDS})
+add('supplier-add-nested-supplier-existing-id', 'owner', 'POST', SA, 400,
+    {'supplier': {'supplier_id': ['supplier and customers with this supplier id already exists.']}},
+    body={**VALID, 'supplier': {'name': 'Nuovo', 'sport_association': OWN, 'supplier_id': SUPPLIERS['uno']['supplier_id']}})
+add('supplier-add-nested-supplier-foreign-association', 'owner', 'POST', SA, 403, FORBIDDEN,
+    body={**VALID, 'supplier': {'name': 'Nuovo', 'sport_association': FOREIGN}})
+for _name, _nested in (('without-association', {'name': 'Nuovo'}), ('own-association', {'name': 'Nuovo', 'sport_association': OWN})):
+    add(f'supplier-add-nested-supplier-valid-{_name}-keeps-payment-server-error', 'owner', 'POST', SA, 500, SERVER,
+        body={**VALID, 'supplier': _nested}, effect=effect('owner', new={
+            'payment': new_payment('bank', '50.50', True, '2026-10-20T10:00:00Z', '2026-10-20T10:00:00Z', 'uno')},
+            audits=payment_audits(OWN, 'uno')))
+
 # ------------------------------------------------------- supplier update ---
 
 SU = lambda label: f'/invoice-suppliers/{SUPPLIER_INVOICES[label]["invoice_supplier_id"] if label in SUPPLIER_INVOICES else label}/update'
@@ -845,6 +868,16 @@ pairs_j = changed(SUPPLIER_INVOICES, 'j', paid=True)
 add('supplier-update-payment-transfer-description-server-error', 'foreign_owner', 'PATCH', SU('j'), 500, SERVER, body={'paid': True},
     effect=effect('foreign_owner', rows={'invoicesuppliers': {key_j: {f: SUPPLIER_INVOICES['j'][f] for f in INVOICE_FIELDS}}},
                   audits=[audit('invoicesuppliers', key_j, 1, pairs_j, association=FOREIGN)]))
+
+# Nested supplier objects on update: the partial nested serializer answers field errors; a valid object is DRF's nested-write
+# assertion (the 500 page) before the invoice is written.
+add('supplier-update-nested-supplier-empty-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER, body={'supplier': {}})
+add('supplier-update-nested-supplier-email-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'supplier': {'email': 'a@b.it'}, 'notes': 'y'})
+add('supplier-update-nested-supplier-valid-server-error', 'owner', 'PATCH', SU('c'), 500, SERVER,
+    body={'supplier': {'name': 'Nuovo', 'sport_association': OWN}})
+add('supplier-update-nested-supplier-field-errors', 'owner', 'PATCH', SU('c'), 400, NESTED_SUPPLIER_ERRORS,
+    body={'supplier': NESTED_SUPPLIER_FIELDS})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Customer and supplier invoice list, add and update authored sequence',

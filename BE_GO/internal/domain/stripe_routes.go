@@ -47,10 +47,12 @@ type StripePaymentQuery struct {
 }
 
 // StripeIntentMatch is the payment_intent_id lookup value: Null is
-// filter(payment_intent_id=None) (IS NULL).
+// filter(payment_intent_id=None) (IS NULL); NoMatch is a text that equals no
+// stored value (a Python repr that embeds an address), so the filter is empty.
 type StripeIntentMatch struct {
-	Value string
-	Null  bool
+	Value   string
+	Null    bool
+	NoMatch bool
 }
 
 type StripeRoutesStore interface {

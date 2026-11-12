@@ -16,7 +16,9 @@ byte-identical: different User-Agent, client user agent and retry/telemetry beha
 - `PaymentIntent.retrieve(id)`: `GET /v1/payment_intents/<quote_plus(id)>`, no body. `PaymentIntent.create(**params)`:
   `POST /v1/payment_intents` with `_api_encode` + `urlencode` (`quote_plus`) and the SDK's `%5B`/`%5D` -> `[`/`]`
   replacement: top-level `None` dropped, lists as `key[i]`, dicts as `key[sub]` (recursively), `None` inside a list as
-  `None`, bools as `True`/`False`. Floats and nested lists are refused (not ported) before any write.
+  `None`, bools as `True`/`False`. Every other value is `str(value)`: a float as Python's `str(float)` (`1.5`, `2.0`,
+  `1e+22`, `1e-05`, `100000.0`), an integer as all its digits (also past int64), and a list nested in a list as Python's
+  `str(list)` (`['sepa_debit', None, 2.0, True]`, quotes %-encoded).
 - Headers: `Authorization: Bearer <key>`, `Stripe-Version: 2025-02-24.acacia`, `User-Agent: Stripe/v1 PythonBindings/11.6.0`,
   `X-Stripe-Client-User-Agent` (`json.dumps` of `bindings_version`, `lang`, `publisher`, `httplib`, `lang_version`,
   `platform`, `uname`; the last three describe the running process, as in the SDK), and on POST
@@ -113,9 +115,8 @@ Stripe settings are `effective_integration('stripe')`: the self-hosted instance 
 
 - (Ported in v2-rest-a, see the end of this page: `X-Group-Id` in another spelling, float fee ties and
   `meta.subscription_data.name` values of any JSON type.)
-- `stripe_available_methods` values the client does not encode (floats, nested lists), `payments` lists mixing ids with
-  non-strings, objects whose `sport_association`/`payment_id` are not strings or null, a webhook `payment_intent` that is
-  not a string, integer, bool or null, a created intent without a string `id`, and amounts outside int64 cents.
+- Amounts outside int64 cents, and a created PaymentIntent whose `id` is a list or object (a reply shape the API never
+  sends).
 - A webhook body over `DATA_UPLOAD_MAX_MEMORY_SIZE` (Django's 413 handling).
 
 ## Scheduled tasks (not ported, listed)
@@ -184,3 +185,29 @@ RED `v2resta-red-r2`: Django 105/105, Go fails `stripe-routes-webhook-charge-gro
 `v2resta-green-r1` (after merging `codex/go-backend-parity` `b64953a5`): 105/105 on native Django, native Go, Caddy
 `/api/v1` and `/api/v2`. Mutation `v2resta-mutation-r1` (the create entry recording the stored uuid instead of the sent
 text) fails `stripe-routes-webhook-charge-group-upper-case` (CAUGHT).
+
+## Parameter encodings, id lists and created intent ids (t6x1)
+
+The fixture has 127 cases (17 new) and Go reproduces these inputs instead of refusing them:
+
+- `payment_method_types` (the association's stored `stripe_available_methods`, any JSON value): `_api_encode` yields
+  every scalar and every list item that is not a dict, and `urlencode` writes `str(value)`. So a float is Python's
+  `str(float)` (`1.5`, `1.50` -> `1.5`, `2.0`, `1e+22`, `1e-05`, `100000.0`), an integer keeps every digit (also past
+  int64), and a list nested in a list is Python's `str(list)` (`['sepa_debit', None, 2.0, True]`); top-level strings are
+  themselves, a top-level number or bool its `str()`, and dicts keep `key[sub]`. `dto.PythonStr` supplies the text. A
+  jsonb column keeps a numeric's scale, so the fixture's `1e+22` item is read back as the integer
+  `10000000000000000000000` by both backends (the float repr is pinned by the client unit test).
+- multiple-pay id lists: `payment_id__in` drops `None` in both modes (ids and objects with a `payment_id`), converts a
+  string with `uuid.UUID(hex=...)` and an int or bool with `uuid.UUID(int=...)` (`5` -> `...0005`, `true` -> `...0001`,
+  `false` -> `...0000`); a float, list or dict, a malformed string, or a negative/oversized integer is the lookup's 500
+  before any write or Stripe call. A rendered item's `sport_association`/`payment_id` is always a uuid string or null, so
+  the two later branches are now a plain 500.
+- webhook `charge.succeeded` `payment_intent`: `CharField.to_python` is `str(value)` for anything that is not a string or
+  None, so a float is `str(float)`, a list of scalars/lists Python's `str(list)`, and an object the SDK's
+  `StripeObject.__str__` (`json.dumps(obj, sort_keys=True, indent=2)`, ASCII-escaped). A list that holds an object
+  anywhere reprs the nested StripeObject with its address, so it equals no stored intent and the view answers the empty
+  400. `dto.PythonJSONDumpsSortedIndent` supplies the object text.
+- the created PaymentIntent's `id` (`payment_intent.stripe_id` is `getattr(self, 'id')`): no `id` key is the
+  AttributeError (500 before the save, in pay and multiple-pay); `null` sets the column to None (an audit entry only when
+  the stored value changes); a number or bool is saved as its `str()` (`5` -> `'5'`, `true` -> `'True'`, `1.5` ->
+  `'1.5'`). A list or object `id` stays refused.

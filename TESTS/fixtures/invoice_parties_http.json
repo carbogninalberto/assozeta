@@ -7617,6 +7617,330 @@
    "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
   },
   {
+   "name": "invoice-parties-supplier-add-nested-supplier-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "name": [
+      "This field is required."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {}
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "name": [
+      "This field may not be blank."
+     ],
+     "email": [
+      "Enter a valid email address."
+     ],
+     "deleted": [
+      "Must be a valid boolean."
+     ],
+     "sport_association": [
+      "“abc” is not a valid UUID."
+     ],
+     "group": [
+      "“abc” is not a valid UUID."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "",
+     "email": "x",
+     "type": "zzz",
+     "sport_association": "abc",
+     "group": "abc",
+     "deleted": "maybe",
+     "vat_number": 5
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-existing-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "supplier and customers with this supplier id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "Nuovo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "supplier_id": "a1000000-0000-4000-8000-000000846110"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-foreign-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "Nuovo",
+     "sport_association": "a1000000-0000-4000-8000-000000701002"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-valid-without-association-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "Nuovo"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-valid-own-association-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "Nuovo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
    "name": "invoice-parties-supplier-update-anonymous",
    "actor": "anonymous",
    "method": "PATCH",
@@ -9069,6 +9393,94 @@
    "prints": [],
    "body": {
     "paid": true
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-empty-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {}
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-email-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "email": "a@b.it"
+    },
+    "notes": "y"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-valid-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "name": "Nuovo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "name": [
+      "This field may not be blank."
+     ],
+     "email": [
+      "Enter a valid email address."
+     ],
+     "deleted": [
+      "Must be a valid boolean."
+     ],
+     "sport_association": [
+      "“abc” is not a valid UUID."
+     ],
+     "group": [
+      "“abc” is not a valid UUID."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "name": "",
+     "email": "x",
+     "type": "zzz",
+     "sport_association": "abc",
+     "group": "abc",
+     "deleted": "maybe",
+     "vat_number": 5
+    }
    }
   }
  ]

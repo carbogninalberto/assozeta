@@ -48,6 +48,8 @@ OUTPUT = Path(__file__).with_name('stripe_routes_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
 OWN, FOREIGN, OWNER = IDS['own_association'], IDS['foreign_association'], IDS['owner']
 ids = iter(f'a1000000-0000-4000-8000-{1520001 + n:012d}' for n in range(300))
+# t6x1's own ids, so the cases and rows above keep their ids.
+more = iter(f'a1000000-0000-4000-8000-{1529001 + n:012d}' for n in range(60))
 SERVER = '<stable-server-error-page>'
 EMPTY = '<empty>'
 CATEGORY = next(ids)
@@ -63,20 +65,29 @@ OFFLINE = {'user': next(ids), 'association': next(ids), 'denomination': 'Stripe 
            'checkout': None}
 PLAIN = {'user': next(ids), 'association': next(ids), 'denomination': 'Stripe senza metodi è', 'online': True, 'methods': None,
          'checkout': 'Paga entro il 10 è'}
-EXTRA_ASSOCIATIONS = {'offline': OFFLINE, 'plain': PLAIN}
-DENOMINATIONS = {OWN: 'Message reads own', OFFLINE['association']: OFFLINE['denomination'], PLAIN['association']: PLAIN['denomination']}
-METHODS = {OWN: ['card', 'sepa_debit'], OFFLINE['association']: OFFLINE['methods'], PLAIN['association']: PLAIN['methods']}
-CHECKOUT = {OWN: None, OFFLINE['association']: None, PLAIN['association']: PLAIN['checkout']}
+# t6x1: every JSON value the SDK encodes (float, nested list, a large numeric, a big int).
+ENCODED_METHODS = ['card', 1.5, ['sepa_debit', None, 2.0, True], 1e+22, 12345678901234567890]
+# A jsonb column keeps the numeric's value with its scale: 1e+22 (scale 0) is read back as that integer,
+# so the association the SDK encodes from the database holds the integer token, not a float.
+ENCODED_METHODS_READ = ['card', 1.5, ['sepa_debit', None, 2.0, True], 10000000000000000000000, 12345678901234567890]
+ENCODED = {'user': next(more), 'association': next(more), 'denomination': 'Stripe metodi encodés', 'online': True,
+           'methods': ENCODED_METHODS, 'checkout': None}
+EXTRA_ASSOCIATIONS = {'offline': OFFLINE, 'plain': PLAIN, 'encoded': ENCODED}
+DENOMINATIONS = {OWN: 'Message reads own', OFFLINE['association']: OFFLINE['denomination'], PLAIN['association']: PLAIN['denomination'],
+                 ENCODED['association']: ENCODED['denomination']}
+METHODS = {OWN: ['card', 'sepa_debit'], OFFLINE['association']: OFFLINE['methods'], PLAIN['association']: PLAIN['methods'],
+           ENCODED['association']: ENCODED_METHODS_READ}
+CHECKOUT = {OWN: None, OFFLINE['association']: None, PLAIN['association']: PLAIN['checkout'], ENCODED['association']: ENCODED['checkout']}
 SECRET_KEY, WEBHOOK_SECRET, PUBLIC_KEY = 'sk_test_placeholder', 'whsec_placeholder', 'pk_test_placeholder'
 
 
 def payment(amount='10.00', paid=False, *, association=OWN, subject=0, associate=True, user=True, intent=None, invoice=False,
             supplier_invoice=False, group=None, deleted=False, category=CATEGORY, description='Quota', created='2026-10-01T08:00:00Z',
-            paid_on=None, meta_categories=None, kind='default', meta=None):
-    return {'id': next(ids), 'association': association, 'subject': subject, 'amount': amount, 'paid': paid, 'associate': associate,
-            'user': user, 'intent': intent, 'invoice': invoice, 'supplier_invoice': supplier_invoice, 'group': group, 'deleted': deleted,
-            'category': category, 'description': description, 'created': created, 'payment_date': paid_on, 'meta_categories': meta_categories, 'meta': meta,
-            'type': kind}
+            paid_on=None, meta_categories=None, kind='default', meta=None, identifier=None):
+    return {'id': identifier or next(ids), 'association': association, 'subject': subject, 'amount': amount, 'paid': paid,
+            'associate': associate, 'user': user, 'intent': intent, 'invoice': invoice, 'supplier_invoice': supplier_invoice, 'group': group,
+            'deleted': deleted, 'category': category, 'description': description, 'created': created, 'payment_date': paid_on,
+            'meta_categories': meta_categories, 'meta': meta, 'type': kind}
 
 
 # Keys ascend in insertion order, so key order and physical order agree for multi-payment reads.
@@ -107,6 +118,11 @@ PAYMENTS = {
     'pay_no_associate': payment(associate=False),
     'pay_quoted_intent': payment(amount='8.00', intent='pi stub/1'),
     'pay_foreign': payment(association=FOREIGN),
+    # t6x1: every JSON payment_method_types value, and created intent ids that are not plain strings.
+    'pay_encoded_methods': payment(amount='21.00', association=ENCODED['association'], identifier=next(more)),
+    'pay_created_noid': payment(amount='22.50', identifier=next(more)),
+    'pay_created_nullid': payment(amount='23.50', identifier=next(more)),
+    'pay_created_numid': payment(amount='24.50', identifier=next(more)),
     # stripe/multiple-pay
     'mp_ids_a': payment(amount='10.00'),
     'mp_ids_b': payment(amount='5.50'),
@@ -121,10 +137,20 @@ PAYMENTS = {
     'mp_forged': payment(amount='3.00'),
     'mp_bare': payment(amount='3.25', association=PLAIN['association']),
     'mp_second_key': payment(amount='2.75'),
+    # t6x1: id lists (a dropped null, an integer id that matches no row) and encoded methods.
+    'mp_encoded_methods': payment(amount='6.75', association=ENCODED['association'], identifier=next(more)),
+    'mp_null_a': payment(amount='7.25', identifier=next(more)),
+    'mp_null_b': payment(amount='7.75', identifier=next(more)),
+    'mp_int_valid': payment(amount='8.25', identifier=next(more)),
+    'mp_reject': payment(amount='8.75', identifier=next(more)),
     # stripe/webhook
     'wh_invoiced': payment(amount='50.00', intent='pi_stub_wh', invoice=True, supplier_invoice=True),
     'wh_paid': payment(amount='51.00', paid=True, paid_on='2026-04-03T00:00:00Z', intent='pi_stub_wh_paid'),
     'wh_group': payment(amount='52.00', intent='pi_stub_wh_group', group='own_group', invoice=True, supplier_invoice=True),
+    # t6x1: the two payment_intent values str() writes for a float and for an object.
+    'wh_float_intent': payment(amount='53.00', intent='1.5', invoice=True, supplier_invoice=True, identifier=next(more)),
+    'wh_json_intent': payment(amount='54.00', intent=json.dumps({'b': 1, 'a': 'è'}, sort_keys=True, indent=2), invoice=True,
+                              supplier_invoice=True, identifier=next(more)),
     # paid flow (unpaid payments without an invoice), in the association without seeded invoices
     'pf_wh_other': payment(amount='25.00', association=PLAIN['association'], intent='pi_stub_pf_other'),
     'pf_pay_subscription': payment(amount='30.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_sub',
@@ -150,13 +176,17 @@ PAYMENTS = {
     'pf_wh_name_list': payment(amount='27.00', association=PLAIN['association'], subject=1, intent='pi_stub_pf_name_list',
                                meta={'subscription_data': {'name': ['Agonisti', {'anno': None, 'ok': True}, 2]}}),
 }
+# The t6x1 rows that also need invoice and supplier-invoice rows, whose ids come from `more`.
+T6X1_INVOICE_LABELS = ('wh_float_intent', 'wh_json_intent')
 COURSE = {'id': next(ids), 'title': 'Corso Stripe'}
 CARNET = {'id': next(ids), 'title': 'Carnet Stripe'}
 COURSE_SUBSCRIPTIONS = {'cs_pf': {'id': next(ids), 'payment': 'pf_wh_course'}, 'cs_pf_parent': {'id': next(ids), 'payment': None}}
 INSTALLMENTS = {'i_pf': {'id': next(ids), 'payment': 'pf_wh_installment', 'cs': 'cs_pf_parent'}}
 HOLDINGS = {'h_pf': {'id': next(ids), 'payment': 'pf_wh_carnet'}}
-INVOICES = {label: {'id': next(ids), 'number': n} for n, label in enumerate((k for k, v in PAYMENTS.items() if v['invoice']), start=900)}
-SUPPLIER_INVOICES = {label: {'id': next(ids), 'identifier': f'FT-S{n}', 'amount': PAYMENTS[label]['amount']}
+INVOICES = {label: {'id': next(more) if label in T6X1_INVOICE_LABELS else next(ids), 'number': n}
+            for n, label in enumerate((k for k, v in PAYMENTS.items() if v['invoice']), start=900)}
+SUPPLIER_INVOICES = {label: {'id': next(more) if label in T6X1_INVOICE_LABELS else next(ids), 'identifier': f'FT-S{n}',
+                             'amount': PAYMENTS[label]['amount']}
                      for n, label in enumerate(k for k, v in PAYMENTS.items() if v['supplier_invoice'])}
 STATE = copy.deepcopy(PAYMENTS)
 cases = []
@@ -178,28 +208,46 @@ def add(name, actor, path, status, response, *, method='POST', body=None, raw_bo
 # --- Stripe exchanges --------------------------------------------------------
 
 def form(params):
-    """stripe._encode._api_encode + urlencode, with the brackets left literal (the SDK's own body)."""
-    pairs = []
+    """stripe._encode._api_encode + urlencode, with the brackets left literal (the SDK's own body).
 
-    def walk(key, value):
-        if value is None:
-            return
-        if isinstance(value, list):
-            for index, item in enumerate(value):
-                walk(f'{key}[{index}]', item)
-        elif isinstance(value, dict):
-            for sub, item in value.items():
-                walk(f'{key}[{sub}]', item)
-        else:
-            pairs.append((key, value))
-    for key, value in params.items():
-        walk(key, value)
-    return urlencode(pairs).replace('%5B', '[').replace('%5D', ']')
+    A list item that is not a dict is yielded as-is, so urlencode writes
+    str(item): a nested list is its Python repr. None is dropped at the
+    parameter/dict level and written as 'None' inside a list.
+    """
+    def encode(data):
+        pairs = []
+        for key, value in data.items():
+            if value is None:
+                continue
+            if isinstance(value, list):
+                for index, item in enumerate(value):
+                    subkey = f'{key}[{index}]'
+                    if isinstance(item, dict):
+                        for sub, subvalue in encode(item):
+                            pairs.append((f'{subkey}[{sub}]', subvalue))
+                    else:
+                        pairs.append((subkey, item))
+            elif isinstance(value, dict):
+                for sub, subvalue in encode(value):
+                    pairs.append((f'{key}[{sub}]', subvalue))
+            else:
+                pairs.append((key, value))
+        return pairs
+    return urlencode(encode(params)).replace('%5B', '[').replace('%5D', ']')
 
 
 def intent(identifier, amount, status='requires_payment_method', secret='$default', metadata=None):
     return {'id': identifier, 'object': 'payment_intent', 'amount': amount, 'currency': 'eur',
             'client_secret': f'{identifier}_secret_stub' if secret == '$default' else secret, 'status': status, 'metadata': metadata or {}}
+
+
+def created_intent(secret, amount, *, identifier='omitted'):
+    """A PaymentIntent.create reply: no id key, an id of None, or any other id value."""
+    reply = {'object': 'payment_intent', 'amount': amount, 'currency': 'eur', 'client_secret': secret,
+             'status': 'requires_payment_method', 'metadata': {}}
+    if identifier != 'omitted':
+        reply['id'] = identifier
+    return reply
 
 
 def exchange(method, path, body, response, *, status=200, telemetry=None, same_key_as_previous=False):
@@ -447,6 +495,25 @@ add('pay-query-intent-bad-metadata-key-server-error', 'anonymous', PAY('pay_quer
     effect=effect(payments={'pay_query_bad_key': marked_state('pay_query_bad_key')}, audit=[stripe_marked('pay_query_bad_key', 'anonymous')]))
 add('pay-quoted-intent-id', 'anonymous', PAY('pay_quoted_intent'), 200, {'data': {'client_secret': 'pi stub/1_secret_stub'}},
     stripe=[retrieve('pi stub/1', intent('pi stub/1', 800))])
+# t6x1: every JSON value of the association's methods (float, nested list, 1e+22, big int).
+new = 'pi_stub_pay_encoded_methods'
+params = pay_params('pay_encoded_methods')
+add('pay-encodes-python-json-methods', 'anonymous', PAY('pay_encoded_methods'), 200, {'data': {'client_secret': f'{new}_secret_stub'}},
+    stripe=[create(params, intent(new, params['amount']))],
+    effect=effect(payments={'pay_encoded_methods': {'intent': new}}, audit=[set_intent('pay_encoded_methods', new, 'anonymous')]))
+# payment_intent.stripe_id (getattr(self, 'id')): a missing key is an AttributeError before the save.
+params = pay_params('pay_created_noid')
+add('pay-created-intent-without-id-server-error', 'anonymous', PAY('pay_created_noid'), 500, SERVER,
+    stripe=[create(params, created_intent('pi_stub_noid_secret_stub', params['amount']))])
+# stripe_id None is saved as None: the stored value does not change, so there is no audit entry.
+params = pay_params('pay_created_nullid')
+add('pay-created-intent-with-null-id', 'anonymous', PAY('pay_created_nullid'), 200, {'data': {'client_secret': 'pi_stub_nullid_secret_stub'}},
+    stripe=[create(params, created_intent('pi_stub_nullid_secret_stub', params['amount'], identifier=None))])
+# A number id is str() for the CharField.
+params = pay_params('pay_created_numid')
+add('pay-created-intent-with-integer-id', 'anonymous', PAY('pay_created_numid'), 200, {'data': {'client_secret': 'pi_stub_numid_secret_stub'}},
+    stripe=[create(params, created_intent('pi_stub_numid_secret_stub', params['amount'], identifier=5))],
+    effect=effect(payments={'pay_created_numid': {'intent': '5'}}, audit=[set_intent('pay_created_numid', '5', 'anonymous')]))
 
 # --- stripe/multiple-pay -------------------------------------------------------
 
@@ -533,6 +600,39 @@ add('multiple-pay-nothing-unpaid-zero-amount', 'anonymous', MULTI, 200,
     {'data': {'client_secret': 'pi_stub_zero_secret_stub', 'info': {'checkout_info': None}}, 'payments': [payment_item('mp_paid')]},
     body={'payments': sent}, stripe=[create({'amount': 0, 'currency': 'eur', 'description': '', 'payment_method_types': ['card', 'sepa_debit'],
                                              'metadata': {}}, intent('pi_stub_zero', 0))])
+# t6x1: every JSON value of the association's methods (float, nested list, 1e+22, big int).
+serialized = [payment_item('mp_encoded_methods')]
+params = multi_params(['mp_encoded_methods'], methods=ENCODED_METHODS_READ)
+add('multiple-pay-encodes-python-json-methods', 'anonymous', MULTI, 200,
+    {'data': {'client_secret': 'pi_stub_multi_encoded_secret_stub', 'info': {'checkout_info': None}}, 'payments': serialized},
+    body={'payments': [{'payment_id': P('mp_encoded_methods')}]},
+    stripe=[create(params, intent('pi_stub_multi_encoded', params['amount']))],
+    effect=effect(payments={'mp_encoded_methods': {'intent': 'pi_stub_multi_encoded'}},
+                  audit=[set_intent('mp_encoded_methods', 'pi_stub_multi_encoded', 'anonymous')]))
+# payment_id__in drops a null; the other ids are strings.
+serialized = [payment_item('mp_null_a'), payment_item('mp_null_b')]
+params = multi_params(['mp_null_a', 'mp_null_b'])
+add('multiple-pay-ids-with-null', 'anonymous', MULTI, 200,
+    {'data': {'client_secret': 'pi_stub_multi_null_secret_stub', 'info': {'checkout_info': None}}, 'payments': serialized},
+    body={'payments': [P('mp_null_a'), None, P('mp_null_b')]},
+    stripe=[create(params, intent('pi_stub_multi_null', params['amount']))],
+    effect=effect(payments={'mp_null_a': {'intent': 'pi_stub_multi_null'}, 'mp_null_b': {'intent': 'pi_stub_multi_null'}},
+                  audit=[set_intent('mp_null_a', 'pi_stub_multi_null', 'anonymous'), set_intent('mp_null_b', 'pi_stub_multi_null', 'anonymous')]))
+# An integer id is uuid.UUID(int=...): it matches no row and the valid id is used.
+serialized = [payment_item('mp_int_valid')]
+params = multi_params(['mp_int_valid'])
+add('multiple-pay-object-integer-and-valid-ids', 'anonymous', MULTI, 200,
+    {'data': {'client_secret': 'pi_stub_multi_int_secret_stub', 'info': {'checkout_info': None}}, 'payments': serialized},
+    body={'payments': [{'payment_id': 5}, {'payment_id': P('mp_int_valid')}]},
+    stripe=[create(params, intent('pi_stub_multi_int', params['amount']))],
+    effect=effect(payments={'mp_int_valid': {'intent': 'pi_stub_multi_int'}},
+                  audit=[set_intent('mp_int_valid', 'pi_stub_multi_int', 'anonymous')]))
+# UUIDField.to_python rejects a float, a dict where an id is expected and a negative integer: the 500 page before any request.
+add('multiple-pay-object-float-id-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [{'payment_id': 1.5}]})
+add('multiple-pay-string-then-float-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [P('mp_reject'), 1.5]})
+add('multiple-pay-string-then-object-server-error', 'anonymous', MULTI, 500, SERVER,
+    body={'payments': [P('mp_reject'), {'payment_id': P('mp_reject')}]})
+add('multiple-pay-object-negative-id-server-error', 'anonymous', MULTI, 500, SERVER, body={'payments': [{'payment_id': -1}]})
 
 # --- stripe/webhook --------------------------------------------------------------
 
@@ -581,6 +681,25 @@ add('webhook-charge-marks-supplier-invoice', 'anonymous', WEBHOOK, 200, EMPTY, r
 add('webhook-charge-group', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge('pi_stub_wh_group'), content_type=JSON, signature=VALID,
     headers=GROUP, effect=effect(payments={'wh_group': marked_state('wh_group')}, invoices={'wh_group': {'paid': True, 'payment_date': '$now'}},
                                  audit=[supplier_paid('wh_group', 'anonymous'), stripe_marked('wh_group', 'anonymous')]))
+# t6x1: CharField.to_python is str() for a float, a list or a StripeObject.
+# The two stored values below match only outside the X-Group-Id scope the other cases use.
+add('webhook-charge-float-intent-unknown', 'anonymous', WEBHOOK, 400, EMPTY, raw_body=charge(1.5), content_type=JSON, signature=VALID,
+    headers=GROUP)
+add('webhook-charge-list-intent-unknown', 'anonymous', WEBHOOK, 400, EMPTY, raw_body=charge(['pi_x', None, 2.0]), content_type=JSON,
+    signature=VALID)
+add('webhook-charge-object-intent-unknown', 'anonymous', WEBHOOK, 400, EMPTY, raw_body=charge({'b': 1, 'a': 'è'}), content_type=JSON,
+    signature=VALID, headers=GROUP)
+# str(list) of a list holding a StripeObject embeds an address, so no stored intent matches.
+add('webhook-charge-list-object-intent-unknown', 'anonymous', WEBHOOK, 400, EMPTY, raw_body=charge(['pi_x', {'a': 1}]), content_type=JSON,
+    signature=VALID)
+add('webhook-charge-float-intent-marks-payment', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge(1.5), content_type=JSON, signature=VALID,
+    effect=effect(payments={'wh_float_intent': marked_state('wh_float_intent')},
+                  invoices={'wh_float_intent': {'paid': True, 'payment_date': '$now'}},
+                  audit=[supplier_paid('wh_float_intent', 'anonymous'), stripe_marked('wh_float_intent', 'anonymous')]))
+add('webhook-charge-object-intent-marks-payment', 'anonymous', WEBHOOK, 200, EMPTY, raw_body=charge({'b': 1, 'a': 'è'}), content_type=JSON,
+    signature=VALID, effect=effect(payments={'wh_json_intent': marked_state('wh_json_intent')},
+                                   invoices={'wh_json_intent': {'paid': True, 'payment_date': '$now'}},
+                                   audit=[supplier_paid('wh_json_intent', 'anonymous'), stripe_marked('wh_json_intent', 'anonymous')]))
 
 # --- mark_payment_as_paid: paid flow -------------------------------------------------
 # An unpaid payment without an invoice, reached through the webhook (request

@@ -418,6 +418,36 @@ func (s *InvoiceParties) supplierRelations(ctx context.Context, input dto.Suppli
 	return s.related(ctx, errors, "document_pdf", "docmanager_document", "document_id", input.Document)
 }
 
+// nestedSupplier validates a nested supplier object with SupplierSerializer's
+// field rules (partial on update) and the shared reference checks; another
+// association's reference is the invoice 403, errors join the invoice errors.
+func (s *InvoiceParties) nestedSupplier(ctx context.Context, input dto.SupplierInvoiceInput, fieldErrors dto.InvoicePartyErrors,
+	association string, partial bool, group *string, exclude *string) error {
+	if !input.NestedSupplierSet {
+		return nil
+	}
+	write, invalid, err := dto.ParseSupplierWrite(input.NestedSupplier, partial, false)
+	if err != nil {
+		return err
+	}
+	invalid, err = validateSupplierReferences(ctx, s.store, write, invalid, association, group, exclude)
+	if errors.Is(err, domain.ErrSupplierForeignReference) {
+		return domain.ErrInvoicePartyForeignReference
+	}
+	if err != nil {
+		return err
+	}
+	if invalid == nil {
+		return nil
+	}
+	nested := make(map[string]any, len(invalid.Fields))
+	for _, field := range invalid.Fields {
+		nested[field.Name] = field.Codes
+	}
+	fieldErrors["supplier"] = nested
+	return nil
+}
+
 func invoicePartyRespond(status int, message string) error {
 	return &domain.InvoicePartyResponseError{Status: status, Message: message}
 }
@@ -526,6 +556,9 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	if err = s.supplierRelations(ctx, input, errors, association, ""); err != nil {
 		return err
 	}
+	if err = s.nestedSupplier(ctx, input, errors, association, false, invoicePartyGroup(request.Group), nil); err != nil {
+		return err
+	}
 	if len(errors) > 0 {
 		return &dto.InvoicePartyValidationError{Errors: errors}
 	}
@@ -566,6 +599,11 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 		AssociationID: &association, ResolutionPath: &changesPath}
 	if err = s.store.CreateSupplierPayment(ctx, payment, created, saved, owner, association, supplier.ID, auditContext, now); err != nil {
 		return err
+	}
+	if input.NestedSupplierSet {
+		// A valid nested supplier object: the payment is kept, then
+		// InvoiceSuppliers.objects.create(supplier=<dict>) raises.
+		return domain.ErrInvoicePartyServer
 	}
 	invoice := domain.NewSupplierInvoice{ID: s.ids(), Identifier: input.Identifier, Amount: input.Amount, AssociationID: association,
 		PaymentDate: input.PaymentDate, ExpireDate: input.ExpireDate, Paid: input.Paid, Notes: input.Notes}
@@ -618,9 +656,17 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		if err = s.supplierRelations(ctx, input, errors, association, row.ID); err != nil {
 			return err
 		}
+		if err = s.nestedSupplier(ctx, input, errors, association, true, invoicePartyGroup(request.Group), nil); err != nil {
+			return err
+		}
 	}
 	if len(errors) > 0 {
 		return &dto.InvoicePartyValidationError{Errors: errors}
+	}
+	if input.NestedSupplierSet {
+		// A valid nested supplier object on update: DRF's nested-write
+		// assertion, raised by save() before the invoice is written.
+		return domain.ErrInvoicePartyServer
 	}
 	if input.NotPorted || input.ID != nil && *input.ID != row.ID {
 		// Nested writes are not ported; a new primary key stays refused pending

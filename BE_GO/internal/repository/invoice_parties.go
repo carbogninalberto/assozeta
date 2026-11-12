@@ -300,6 +300,28 @@ func (r *InvoiceParties) LiveSupplier(ctx context.Context, id, association strin
 	return &supplier, err
 }
 
+func (r *InvoiceParties) AssociationExists(ctx context.Context, id string) (bool, error) {
+	var exists bool
+	err := r.db.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1)`, id)
+	return exists, err
+}
+
+func (r *InvoiceParties) GroupAssociation(ctx context.Context, id string) (*string, bool, error) {
+	var association *string
+	err := r.db.GetContext(ctx, &association, `SELECT sport_association_id FROM application_group WHERE group_id=$1`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	return association, err == nil, err
+}
+
+func (r *InvoiceParties) SupplierIDTaken(ctx context.Context, id string, group *string, exclude *string) (bool, error) {
+	var taken bool
+	err := r.db.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_supplierandcustomers
+ WHERE supplier_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid) AND ($3::uuid IS NULL OR supplier_id<>$3::uuid))`, id, group, exclude)
+	return taken, err
+}
+
 // SupplierPaymentCategory prefers the association's live "Pagamento
 // Fornitore" category, then a shared one (iexact; unordered first()).
 func (r *InvoiceParties) SupplierPaymentCategory(ctx context.Context, association string) (*string, error) {

@@ -391,8 +391,12 @@ type SupplierInvoiceInput struct {
 	PaymentIDSet                                  bool
 	PaymentID                                     *string
 	Association, Document                         InvoicePartyRelated
-	// NotPorted: a nested payment or supplier object (validated and written
-	// by DRF's nested serializers).
+	// NestedSupplier is a nested supplier object's raw value; the service
+	// validates it with SupplierSerializer's field rules and references.
+	NestedSupplier    domain.RequestObject
+	NestedSupplierSet bool
+	// NotPorted: a nested payment object or a form body's nested fields
+	// (validated and written by DRF's nested serializers).
 	NotPorted bool
 }
 
@@ -440,6 +444,8 @@ func ParseSupplierInvoice(body any, partial, form bool) (SupplierInvoiceInput, I
 		switch {
 		case problem != nil:
 			errors[name] = problem
+		case isObject && name == "supplier":
+			input.NestedSupplier, input.NestedSupplierSet = value.(domain.RequestObject), true
 		case isObject:
 			input.NotPorted = true
 		case isNull && name == "payment":

@@ -13,8 +13,8 @@ import (
 
 var (
 	// ErrInvoicePartyNotPorted refuses behaviour the Go port does not carry
-	// (XML/PDF generation, print tasks, nested payment or supplier writes),
-	// always before any write.
+	// (XML/PDF generation, print tasks, nested payment writes), always before
+	// any write.
 	ErrInvoicePartyNotPorted = refusal.New("invoice party behaviour not ported")
 	// ErrInvoicePartyNotAssociation is User.sport_association's
 	// PermissionDenied('User is not a sport association') for athletes.
@@ -245,6 +245,10 @@ type InvoicePartyStore interface {
 	BankAccount(ctx context.Context, association string, id *string) (*string, error)
 	LiveSupplier(ctx context.Context, id, association string, group *string) (*Supplier, error)
 	SupplierPaymentCategory(ctx context.Context, association string) (*string, error)
+	// SupplierSerializer's reference checks, shared with a nested supplier.
+	AssociationExists(ctx context.Context, id string) (bool, error)
+	GroupAssociation(ctx context.Context, id string) (association *string, found bool, err error)
+	SupplierIDTaken(ctx context.Context, id string, group *string, exclude *string) (bool, error)
 	DefaultPaymentCategory(ctx context.Context, association *string) (id, name *string, err error)
 	// PaymentLinkedName is get_course_carnet_name's linked row of a course payment.
 	PaymentLinkedName(ctx context.Context, payment string) (PaymentLinkedName, error)
