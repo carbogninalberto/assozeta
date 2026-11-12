@@ -124,7 +124,7 @@ await scenario({id, actions: async ({page, api, open, actor, input, capture, rep
             tax_code: 'RSSMRA80A01H501U', born_date: '01/01/1980', born_city: 'Roma',
             address: defaults.indirizzo, address_city: defaults['città di residenza'], address_cap: defaults.cap,
             email: 'mario@aurora.example.test', membership_start_date: '01/09/2026',
-            membership_end_date: '31/08/2027', subscription_number: 41});
+            membership_end_date: '31/08/2027', subscription_number: '0041'});
         expect(incomplete.associate).toMatchObject({last_name: 'Verdi', sex: 'F',
             tax_code: 'VRDLRA90C41H501M', born_date: '01/03/1990', email: 'laura@aurora.example.test',
             address: defaults.indirizzo, address_city: defaults['città di residenza'], address_cap: defaults.cap});

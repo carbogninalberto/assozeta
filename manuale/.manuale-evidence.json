@@ -4073,7 +4073,7 @@
     },
     "faq/come-si-importano-dei-soci.mdx#preparazione-del-file": {
       "title": "Preparazione del file",
-      "content_sha256": "c91799f3b0cc371a606363809f6a1614592f596a2c263040bd1ae1b7b3cd5b26",
+      "content_sha256": "4c7dae5ce1b91e5ada748046c6eb418bcd2bbe47e264d70a4b2685ab2d600672",
       "recipe_module": "docs/manuale/member-additional-reference-recipes.mjs",
       "recipe_sha256": "be0ef45f853caf1f0d6c4a2a61fc928777d3d6c230afab43e3a54f88e335c1f1",
       "content_source": "authored-mdx",
