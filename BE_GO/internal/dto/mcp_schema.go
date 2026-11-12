@@ -109,13 +109,21 @@ func mcpSchemaRelation(field *mcpField) domain.RequestObject {
 	return info
 }
 
+// mcpModelSchema is get_model_schema: only the model's listed fields and
+// relations (a model without a list has none).
 func mcpModelSchema(model *mcpModel) (domain.RequestObject, error) {
 	fields, relations := []any{}, []any{}
 	for _, field := range model.Fields {
 		if field.Relation {
+			if !model.reportRelationListed(field.Name) {
+				continue
+			}
 			if info := mcpSchemaRelation(field); info != nil {
 				relations = append(relations, info)
 			}
+			continue
+		}
+		if !model.reportFieldListed(field.Name) {
 			continue
 		}
 		info, err := mcpSchemaField(field, model.Name)

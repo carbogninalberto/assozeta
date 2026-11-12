@@ -115,7 +115,7 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		if !ok {
 			return ReportPlan{}, mcpNotPorted("field_name type")
 		}
-		if !reportAllowed(strings.Split(name, "__")[0]) {
+		if !mcpPathAllowed(model, name) {
 			return ReportPlan{}, mcpRaise("Field '%s' is not allowed", name)
 		}
 	}
@@ -236,6 +236,16 @@ func mcpStrings(value any, method string) ([]string, error) {
 // _apply_filters
 // ---------------------------------------------------------------------------
 
+// mcpParseFilterKey is security.parse_filter_key: the field path without a
+// trailing lookup suffix, and that suffix ('exact' when there is none).
+func mcpParseFilterKey(key string) (string, string) {
+	parts := strings.Split(key, "__")
+	if len(parts) >= 2 && mcpAllowedLookups[parts[len(parts)-1]] {
+		return strings.Join(parts[:len(parts)-1], "__"), parts[len(parts)-1]
+	}
+	return key, "exact"
+}
+
 // filterLeaves is validate_filter_fields + _coerce_filter_values.
 func (q *mcpQuery) filterLeaves(value any) ([]mcpLeaf, error) {
 	object, ok := value.(domain.RequestObject)
@@ -244,7 +254,8 @@ func (q *mcpQuery) filterLeaves(value any) ([]mcpLeaf, error) {
 	}
 	var leaves []mcpLeaf
 	for _, item := range PythonDict(object) {
-		if !reportAllowed(strings.Split(item.Name, "__")[0]) {
+		fieldPath, _ := mcpParseFilterKey(item.Name)
+		if !mcpPathAllowed(q.model, fieldPath) {
 			continue
 		}
 		leaves = append(leaves, mcpLeaf{key: item.Name, value: mcpCoerce(q.model, item.Name, item.Value)})
@@ -392,7 +403,7 @@ func (q *mcpQuery) validateOrder(value any) ([]mcpOrder, error) {
 	var orders []mcpOrder
 	for _, item := range items {
 		clean := strings.TrimLeft(item, "-")
-		if !reportAllowed(strings.Split(clean, "__")[0]) {
+		if !mcpPathAllowed(q.model, clean) {
 			continue
 		}
 		if item == "?" {
@@ -504,7 +515,7 @@ func (q *mcpQuery) queryFields(value any) ([]string, bool, error) {
 	if !PythonTruthy(value) {
 		var names []string
 		for _, field := range q.model.Fields {
-			if !field.Relation && reportAllowed(field.Name) {
+			if !field.Relation && mcpPathAllowed(q.model, field.Name) {
 				names = append(names, field.Name)
 			}
 		}
@@ -518,7 +529,7 @@ func (q *mcpQuery) queryFields(value any) ([]string, bool, error) {
 	seen := map[string]bool{}
 	for _, item := range items {
 		root := strings.Split(item, "__")[0]
-		if !q.model.known(root) || !reportAllowed(root) {
+		if !q.model.known(root) || !mcpPathAllowed(q.model, item) {
 			continue
 		}
 		if seen[item] {
@@ -814,7 +825,7 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error
 		}
 		aggregate := mcpAggregate{alias: aliasText, function: name}
 		if !(fieldText == "*" && name == "count") {
-			if !reportAllowed(strings.Split(fieldText, "__")[0]) {
+			if !mcpPathAllowed(q.model, fieldText) {
 				continue
 			}
 			aggregate.field = fieldText
@@ -843,7 +854,7 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error
 	var groups []string
 	for _, name := range groupNames {
 		root := strings.Split(name, "__")[0]
-		if !reportAllowed(root) || !q.model.known(root) {
+		if !mcpPathAllowed(q.model, name) || !q.model.known(root) {
 			continue
 		}
 		if mcpContains(groups, name) {

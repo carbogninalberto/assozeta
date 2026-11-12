@@ -2,6 +2,7 @@ import logging
 import re
 
 from django.apps import apps
+from django.core.exceptions import FieldDoesNotExist
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +115,137 @@ FIELD_BLACKLIST = {
 # Patterns to match against field names (prefix match)
 FIELD_BLACKLIST_PREFIXES = ('stripe_', 'two_fa', 'social_auth_')
 
+# Fields and relations a report may read, per whitelisted model. Relations lead only to whitelisted models.
+REPORT_ALLOWLIST = {
+    'application.SportAssociation': {
+        'fields': ('sport_association_id', 'denomination', 'address_city', 'address', 'address_cap', 'tax_code',
+            'email', 'phone', 'regulation', 'demand', 'additional_sections', 'logo', 'subscription_fee',
+            'multiple_subscription_fee', 'subscription_fee_plans', 'membership_fee', 'multiple_membership_fee',
+            'membership_fee_plans', 'custom_subscription_form_data', 'document_header', 'invoice_footer',
+            'enable_quotes_management', 'reviewed', 'affiliate_code', 'deleted', 'review_url',
+            'review_url_enabled', 'president_signature', 'stamp', 'president_first_name', 'president_last_name',
+            'enroll_number', 'federation', 'sport', 'enabled_for', 'checkout_info', 'additional_fields', 'iban',
+            'website', 'abbreviated', 'vat_number', 'whatsapp', 'imported_from_associami', 'extra_text_invoices',
+            'show_regulation_to_members', 'show_regulation_to_both', 'show_regulation_to_athletes',
+            'show_demand_to_members', 'show_demand_to_both', 'show_demand_to_athletes', 'invoice_template',
+            'subscription_template', 'notes',),
+        'relations': ('group', 'associate', 'balancesheet', 'customaccounts', 'invoice', 'payment',
+            'paymentcategory', 'subscription', 'tags', 'coursetags', 'course', 'reminders', 'carnet', 'module',),
+    },
+    'application.Associate': {
+        'fields': ('associate_id', 'picture_path', 'first_name', 'last_name', 'sex', 'tax_code', 'born_date',
+            'born_city', 'address_city', 'address', 'address_cap', 'nationality', 'nationality_residence', 'email',
+            'phone', 'phone_2', 'phone_3', 'phone_4', 'phone_label', 'phone_2_label', 'phone_3_label',
+            'phone_4_label', 'is_minor', 'disabled', 'draft', 'deleted', 'family_role', 'id_number',
+            'creation_date', 'migrated', 'notes',),
+        'relations': ('tutored_associates', 'invoice', 'payment', 'subscription', 'sport_association', 'group',
+            'tutors',),
+    },
+    'application.Group': {
+        'fields': ('group_id', 'name', 'description',),
+        'relations': ('associate', 'invoice', 'payment', 'subscription', 'course', 'sport_association',),
+    },
+    'application.Subscription': {
+        'fields': ('subscription_id', 'custom_data', 'additional_fields', 'type', 'role', 'acceptance_date',
+            'resignation_date', 'status_flag', 'creation_date', 'start_date', 'end_date', 'archived', 'draft',
+            'trial', 'meta', 'subscription_number', 'subscription_type', 'deleted', 'competitive', 'notes',),
+        'relations': ('coursesubscription', 'carnetsubscription', 'sport_association', 'associate', 'instructor',
+            'medical', 'payment', 'group', 'tags',),
+    },
+    'application.Course': {
+        'fields': ('course_id', 'status_flag', 'course_type', 'creation_date', 'title', 'description',
+            'multi_payments', 'fee', 'events', 'one_fee_payment', 'one_fee', 'google_calendar_id',
+            'google_background_color', 'multiple_quotes', 'start_date', 'end_date', 'pinned',
+            'billed_duration_is_sport_season', 'billed_frequency', 'billed_from_subscription_date',
+            'billed_from_day_of_month', 'auto_renewal', 'deleted',),
+        'relations': ('coursesubscription', 'attendanceregistry', 'sport_association', 'group', 'tags',),
+    },
+    'application.CourseSubscription': {
+        'fields': ('course_subscription_id', 'paid', 'creation_date', 'multi_payments', 'one_fee_payment',
+            'archived', 'type', 'multiple_quote', 'billed_frequency', 'billed_from', 'billed_until',
+            'billed_from_day_of_month', 'membership_active', 'membership_fee', 'auto_renewal', 'deleted',),
+        'relations': ('carnetsubscription', 'course', 'subscription', 'payment', 'membership_payments',),
+    },
+    'application.Payment': {
+        'fields': ('payment_id', 'type', 'subject', 'amount', 'creation_date', 'payment_date', 'paid', 'expense',
+            'description', 'meta_payment_categories', 'archived', 'invoice_fiscal_code', 'meta', 'notes',
+            'deleted', 'course',),
+        'relations': ('subscription', 'coursesubscription', 'membership_course_subscriptions',
+            'carnetsubscription', 'payment_category', 'invoice', 'associate', 'instructor', 'sport_association',
+            'custom_accounts', 'group',),
+    },
+    'application.PaymentCategory': {
+        'fields': ('payment_category_id', 'name', 'creation_date', 'expense', 'tax_deductible', 'archived', 'type',
+            'deleted',),
+        'relations': ('payment', 'sport_association',),
+    },
+    'application.Invoice': {
+        'fields': ('invoice_id', 'creation_date', 'membership_fee', 'activity_fee', 'meta_payment_categories',
+            'description', 'number', 'archived', 'cancelled', 'meta', 'imported_from_associami', 'deleted',),
+        'relations': ('invoicerows', 'payment', 'sport_association', 'selected_tutor', 'group',),
+    },
+    'application.InvoiceRows': {
+        'fields': ('invoice_row_id', 'description', 'quantity', 'unit_price', 'vat', 'unit_of_measure', 'meta',),
+        'relations': ('invoice',),
+    },
+    'application.MedicalCertificate': {
+        'fields': ('medical_id', 'creation_date', 'expiration_date', 'competitive_medical_certificate', 'notes',),
+        'relations': ('subscription',),
+    },
+    'application.Instructor': {
+        'fields': ('instructor_id', 'first_name', 'last_name', 'email', 'born_date', 'born_city', 'born_province',
+            'tax_code', 'address_city', 'address', 'address_province', 'civic_number', 'study_title', 'role',
+            'phone', 'phone_2', 'phone_3', 'phone_4', 'draft', 'is_volunteer', 'stipulated_contract_in',
+            'default_hourly_billing', 'default_percentage_billing',),
+        'relations': ('payment', 'subscription', 'reminders',),
+    },
+    'application.BalanceSheet': {
+        'fields': ('balance_sheet_id', 'status_flag', 'creation_date', 'year', 'data', 'archived',),
+        'relations': ('sport_association',),
+    },
+    'application.CustomAccounts': {
+        'fields': ('custom_account_id', 'enabled', 'name', 'initial_balance', 'account_type', 'account_code',
+            'editable',),
+        'relations': ('payment', 'sport_association',),
+    },
+    'application.Tags': {
+        'fields': ('tag_id', 'tag_name', 'creation_date',),
+        'relations': ('subscription', 'sport_association',),
+    },
+    'application.CourseTags': {
+        'fields': ('tag_id', 'tag_name', 'creation_date',),
+        'relations': ('course', 'sport_association',),
+    },
+    'application.Carnet': {
+        'fields': ('carnet_id', 'title', 'description', 'lessons_number', 'fee', 'creation_date', 'public', 'meta',),
+        'relations': ('carnetsubscription', 'sport_association',),
+    },
+    'application.CarnetSubscription': {
+        'fields': ('carnet_subscription_id', 'creation_date', 'disabled', 'meta',),
+        'relations': ('subscription', 'carnet_id', 'payment', 'course_subscription',),
+    },
+    'application.Module': {
+        'fields': ('module_id', 'custom_link', 'creation_date', 'title', 'require_approval', 'start_date',
+            'end_date', 'always_active', 'max_responses', 'queue_mode', 'only_users', 'payment_required',
+            'payment_data', 'response_message', 'allow_attachments', 'elements',),
+        'relations': ('sport_association',),
+    },
+    'application.AttendanceRegistry': {
+        'fields': ('attendance_registry_id', 'creation_date', 'events', 'status',),
+        'relations': ('attendanceday', 'course',),
+    },
+    'application.AttendanceDay': {
+        'fields': ('attendance_day_id', 'title', 'date', 'attendees', 'expected_absences', 'auto_marked',
+            'associated_event',),
+        'relations': ('attendance_registry',),
+    },
+    'application.Reminders': {
+        'fields': ('reminders_id', 'event_id', 'event_title', 'event_description', 'event_course_title',
+            'event_reminder_text', 'send_at', 'completed',),
+        'relations': ('instructor', 'sport_association',),
+    },
+}
+
 # Allowed ORM lookup suffixes
 ALLOWED_LOOKUPS = {
     'exact', 'iexact', 'contains', 'icontains',
@@ -185,6 +317,34 @@ def is_field_allowed(field_name: str) -> bool:
     return True
 
 
+def is_path_allowed(model, path) -> bool:
+    """Whether every field and relation named along ``path`` may be read.
+
+    Walks the ``__`` segments from ``model``: a relation must be listed for the model it is reached on and leads to
+    the related model; a concrete field (or a relation's ``<name>_id`` column) must be listed and ends the walk
+    (what follows is a transform or lookup). A segment that names no field of the current model also ends the walk:
+    it is a lookup or an unknown name, which the ORM answers as before.
+    """
+    current = model
+    for segment in path.split('__'):
+        allowed = REPORT_ALLOWLIST.get(f'{current._meta.app_label}.{current.__name__}')
+        if allowed is None:
+            return False
+        try:
+            field = current._meta.get_field(segment)
+        except FieldDoesNotExist:
+            return True
+        if field.is_relation and field.related_model is not None:
+            if field.name not in allowed['relations']:
+                return False
+            if segment != field.name:
+                return True
+            current = field.related_model
+            continue
+        return field.name in allowed['fields']
+    return True
+
+
 def validate_fields(model, fields: list) -> list:
     """Filter out blacklisted fields from a field list."""
     if not fields:
@@ -230,10 +390,9 @@ def validate_filter_fields(model, filters: dict) -> dict:
     for key, value in filters.items():
         field_path, lookup = parse_filter_key(key)
 
-        # Check the root field name
-        root_field = field_path.split('__')[0]
-        if not is_field_allowed(root_field):
-            logger.warning(f"Blocked filter on blacklisted field: {root_field}")
+        # Check the field path
+        if not is_path_allowed(model, field_path):
+            logger.warning(f"Blocked filter on field path: {field_path}")
             continue
 
         if lookup not in ALLOWED_LOOKUPS:

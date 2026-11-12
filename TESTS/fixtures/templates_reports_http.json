@@ -3194,6 +3194,271 @@
     "ui": {},
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930225",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title",
+      "sport_association__user__email"
+     ],
+     "filters": {
+      "title": "Tennis"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_filter_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930226",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_filter_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis",
+      "sport_association__user__password__startswith": "zzz"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_exclude_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930227",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_exclude_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis"
+     },
+     "exclude": {
+      "sport_association__user__is_superuser": false
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_or_filter_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930228",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_or_filter_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis"
+     },
+     "or_filters": [
+      {
+       "title": "Tennis"
+      },
+      {
+       "sport_association__user__username": "x"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_order_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930229",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_order_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title__in": [
+       "Tennis",
+       "Nuoto",
+       "Calcio a 5"
+      ]
+     },
+     "order_by": [
+      "sport_association__user__email",
+      "-title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_join_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930230",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_join_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis"
+     },
+     "joins": [
+      "sport_association__user"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_listed_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930231",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_listed_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title",
+      "group__name"
+     ],
+     "filters": {
+      "title": "Ginnastica dolce per gli ad (2)"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnet_unlisted_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930232",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnet_unlisted_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "user_id"
+     ],
+     "filters": {
+      "lessons_number": 10
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_unlisted_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930233",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_unlisted_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "sport_association__user_id"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_course_unlisted_relation_error": {
+    "id": "a1000000-0000-4000-8000-000000930234",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_course_unlisted_relation_error",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "Course",
+     "field_name": "sport_association__user__email"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_course_unlisted_relation_field_error": {
+    "id": "a1000000-0000-4000-8000-000000930235",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_course_unlisted_relation_field_error",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Course",
+     "aggregations": [
+      {
+       "function": "max",
+       "field": "sport_association__user__last_login"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_course_unlisted_relation_group_by_error": {
+    "id": "a1000000-0000-4000-8000-000000930236",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_course_unlisted_relation_group_by_error",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Course",
+     "aggregations": [
+      {
+       "function": "count",
+       "field": "*"
+      }
+     ],
+     "group_by": [
+      "sport_association__user__email"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
    }
   },
   "people": {
@@ -8540,6 +8805,265 @@
     "kind": "report-delete",
     "label": "remove"
    }
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930225/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-filter-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930226/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-exclude-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930227/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-or-filter-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930228/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-order-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930229/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      },
+      {
+       "title": "Nuoto"
+      },
+      {
+       "title": "Calcio a 5"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-join-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930230/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-listed-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930231/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Ginnastica dolce per gli ad (2)",
+       "group__name": "Palestra"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnet-unlisted-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930232/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Dieci ingressi"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-unlisted-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930233/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Nuoto"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-course-unlisted-relation-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930234/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-course-unlisted-relation-field-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930235/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No valid aggregations"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-course-unlisted-relation-group-by-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930236/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No valid group_by fields"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
   }
  ]
 }

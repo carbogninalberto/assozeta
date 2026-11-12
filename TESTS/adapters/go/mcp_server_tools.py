@@ -248,6 +248,17 @@ CASES = [
     ('get_field_values', {'model_name': 'Course', 'field_name': 'start_date__time'}, None),
     ('get_field_values', {'model_name': 'Course', 'field_name': 'start_date__minute'}, None),
     ('get_field_values', {'model_name': 'Payment', 'field_name': 'payment_date__time'}, None),
+
+    # Paths through relations that are not listed for the model: answered as an unknown or excluded name.
+    ('get_schema', {'model_name': 'Instructor'}, None),
+    ('get_schema', {'model_name': 'SportAssociation'}, None),
+    ('get_schema', {'model_name': 'Payment'}, None),
+    ('query_data', {'model_name': 'SportAssociation'}, None),
+    ('query_data', {'model_name': 'Instructor', 'fields': ['first_name', 'user__email']}, None),
+    ('get_field_values', {'model_name': 'Instructor', 'field_name': 'user__email'}, None),
+    ('aggregate_data', {'model_name': 'Instructor', 'aggregations': [{'function': 'count', 'field': '*'}], 'group_by': ['user__email']}, None),
+    ('query_data', {'model_name': 'Subscription', 'filters': {'associate__user__email__startswith': 'a'}, 'fields': ['subscription_id']}, None),
+    ('count_data', {'model_name': 'Payment', 'exclude': {'user__is_staff': True}}, None),
 ]
 
 # JSON-lines sessions for the stdio comparison: (label, association, lines).

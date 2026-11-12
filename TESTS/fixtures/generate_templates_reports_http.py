@@ -696,6 +696,48 @@ add('run-attendance-group-header-export', 'owner', 'POST', RUN('attendance_group
 # DELETE on the run route deletes the report (the viewset's delete()).
 add('run-delete-method-deletes', 'owner', 'DELETE', RUN('remove'), 204, '<empty>', effect={'kind': 'report-delete', 'label': 'remove'})
 
+# === t9rep: paths through relations that are not listed ===
+# A path with a segment that is not listed for the model it is reached on is dropped: a field item is skipped
+# (nothing left -> every column), a filter/exclude key is dropped, an or_filters key is dropped from its dict
+# (an emptied dict adds nothing to the OR), an order_by or joins item is dropped, a group_by item is skipped and
+# an aggregation is skipped; get_field_values raises (the fixed 500). A listed path keeps working.
+TENNIS = {'model_name': 'Course', 'fields': ['title'], 'filters': {'title': 'Tennis'}}
+run('query-course-unlisted-relation-field', 'query_data',
+    {'model_name': 'Course', 'fields': ['title', 'sport_association__user__email'], 'filters': {'title': 'Tennis'}}, 200,
+    listing(1, [{'title': 'Tennis'}]))
+run('query-course-unlisted-relation-filter-dropped', 'query_data',
+    {'model_name': 'Course', 'fields': ['title'],
+     'filters': {'title': 'Tennis', 'sport_association__user__password__startswith': 'zzz'}}, 200,
+    listing(1, [{'title': 'Tennis'}]))
+run('query-course-unlisted-relation-exclude-dropped', 'query_data',
+    {**TENNIS, 'exclude': {'sport_association__user__is_superuser': False}}, 200, listing(1, [{'title': 'Tennis'}]))
+run('query-course-unlisted-relation-or-filter-dropped', 'query_data',
+    {**TENNIS, 'or_filters': [{'title': 'Tennis'}, {'sport_association__user__username': 'x'}]}, 200,
+    listing(1, [{'title': 'Tennis'}]))
+run('query-course-unlisted-relation-order-dropped', 'query_data',
+    {'model_name': 'Course', 'fields': ['title'], 'filters': {'title__in': ['Tennis', 'Nuoto', 'Calcio a 5']},
+     'order_by': ['sport_association__user__email', '-title']}, 200,
+    listing(3, [{'title': 'Tennis'}, {'title': 'Nuoto'}, {'title': 'Calcio a 5'}]))
+run('query-course-unlisted-relation-join-dropped', 'query_data',
+    {**TENNIS, 'joins': ['sport_association__user']}, 200, listing(1, [{'title': 'Tennis'}]))
+run('query-course-listed-relation-field', 'query_data',
+    {'model_name': 'Course', 'fields': ['title', 'group__name'], 'filters': {'title': COURSES['gx']['title']}}, 200,
+    listing(1, [{'title': COURSES['gx']['title'], 'group__name': GROUPS['gym']['name']}]))
+run('query-carnet-unlisted-relation-field', 'query_data',
+    {'model_name': 'Carnet', 'fields': ['title', 'user_id'], 'filters': {'lessons_number': 10}}, 200,
+    listing(1, [{'title': 'Dieci ingressi'}]))
+run('query-tags-unlisted-relation-field', 'query_data',
+    {'model_name': 'Tags', 'fields': ['tag_name', 'sport_association__user_id'], 'filters': {'tag_name': 'Nuoto'}}, 200,
+    listing(1, [{'tag_name': 'Nuoto'}]))
+run('values-course-unlisted-relation-error', 'get_field_values',
+    {'model_name': 'Course', 'field_name': 'sport_association__user__email'}, 500, FAILED)
+run('aggregate-course-unlisted-relation-field-error', 'aggregate_data',
+    {'model_name': 'Course', 'aggregations': [{'function': 'max', 'field': 'sport_association__user__last_login'}]}, 400,
+    {'error': 'No valid aggregations'})
+run('aggregate-course-unlisted-relation-group-by-error', 'aggregate_data',
+    {'model_name': 'Course', 'aggregations': [{'function': 'count', 'field': '*'}],
+     'group_by': ['sport_association__user__email']}, 400, {'error': 'No valid group_by fields'})
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,
                               'seed': {'templates': TEMPLATES, 'tags': TAGS, 'categories': CATEGORIES, 'carnets': CARNETS, 'reports': REPORTS,

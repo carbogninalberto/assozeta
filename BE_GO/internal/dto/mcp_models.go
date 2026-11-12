@@ -71,6 +71,12 @@ type mcpModel struct {
 	ManagerFilters []string    `json:"manager_filters"`
 	// GroupManager: the default manager filters by the request's X-Group-Id.
 	GroupManager bool `json:"group_manager"`
+	// ReportFields and ReportRelations are REPORT_ALLOWLIST's lists for a
+	// whitelisted model, nil for the others (the generated JSON omits both
+	// keys there; a whitelisted model always has report_fields, possibly
+	// empty).
+	ReportFields    *[]string `json:"report_fields"`
+	ReportRelations *[]string `json:"report_relations"`
 }
 
 type mcpMetadata struct {
@@ -201,6 +207,48 @@ func (m *mcpModel) known(name string) bool {
 }
 
 func (f *mcpField) relatedModel() *mcpModel { return mcpModelByLabel(f.Related) }
+
+// reportFieldListed is `field.name in allowed['fields']`.
+func (m *mcpModel) reportFieldListed(name string) bool {
+	return m.ReportFields != nil && mcpContains(*m.ReportFields, name)
+}
+
+// reportRelationListed is `field.name in allowed['relations']`.
+func (m *mcpModel) reportRelationListed(name string) bool {
+	return m.ReportRelations != nil && mcpContains(*m.ReportRelations, name)
+}
+
+// mcpPathAllowed is security.is_path_allowed: walks the __ segments from
+// model. A relation must be listed for the model it is reached on and leads
+// to the related model; a concrete field, or a relation's <name>_id column,
+// must be listed and ends the walk; a segment that names no field of the
+// current model also ends the walk.
+func mcpPathAllowed(model *mcpModel, path string) bool {
+	current := model
+	for _, segment := range strings.Split(path, "__") {
+		if current == nil || current.ReportFields == nil {
+			return false
+		}
+		field := current.getField(segment)
+		if field == nil {
+			return true
+		}
+		if field.Relation && field.Related != "" {
+			if !current.reportRelationListed(field.Name) {
+				return false
+			}
+			if segment != field.Name {
+				return true
+			}
+			if current = field.relatedModel(); current == nil {
+				return false
+			}
+			continue
+		}
+		return current.reportFieldListed(field.Name)
+	}
+	return true
+}
 
 // valueType is the internal type of the values the field stores (a forward
 // relation stores its target's type).

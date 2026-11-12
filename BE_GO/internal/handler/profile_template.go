@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
@@ -42,7 +44,17 @@ func (h *ProfileTemplateHandler) Update(c echo.Context) error {
 	defer release()
 	response, err := h.template.Update(write.Context, *identity, write.Body, write.Audit)
 	if err != nil {
-		return messageReadsError(c, err)
+		return profileTemplateError(c, err)
 	}
 	return c.JSON(200, response)
+}
+
+// profileTemplateError is the view's Response: a rejected section text is the
+// 400 {"<field>": ["<message>"]}, everything else the shared mapping.
+func profileTemplateError(c echo.Context, err error) error {
+	var rejected *dto.ProfileTemplateTextRejected
+	if errors.As(err, &rejected) {
+		return c.JSON(http.StatusBadRequest, map[string][]string{rejected.Field: {rejected.Message}})
+	}
+	return messageReadsError(c, err)
 }

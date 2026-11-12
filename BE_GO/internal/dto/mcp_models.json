@@ -699,7 +699,49 @@
    "manager_filters": [
     "deleted"
    ],
-   "group_manager": true
+   "group_manager": true,
+   "report_fields": [
+    "associate_id",
+    "picture_path",
+    "first_name",
+    "last_name",
+    "sex",
+    "tax_code",
+    "born_date",
+    "born_city",
+    "address_city",
+    "address",
+    "address_cap",
+    "nationality",
+    "nationality_residence",
+    "email",
+    "phone",
+    "phone_2",
+    "phone_3",
+    "phone_4",
+    "phone_label",
+    "phone_2_label",
+    "phone_3_label",
+    "phone_4_label",
+    "is_minor",
+    "disabled",
+    "draft",
+    "deleted",
+    "family_role",
+    "id_number",
+    "creation_date",
+    "migrated",
+    "notes"
+   ],
+   "report_relations": [
+    "tutored_associates",
+    "invoice",
+    "payment",
+    "subscription",
+    "sport_association",
+    "group",
+    "tutors"
+   ]
   },
   "application.AssociateImportDraft": {
    "name": "AssociateImportDraft",
@@ -1190,7 +1232,19 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "attendance_day_id",
+    "title",
+    "date",
+    "attendees",
+    "expected_absences",
+    "auto_marked",
+    "associated_event"
+   ],
+   "report_relations": [
+    "attendance_registry"
+   ]
   },
   "application.AttendanceRegistry": {
    "name": "AttendanceRegistry",
@@ -1309,7 +1363,17 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "attendance_registry_id",
+    "creation_date",
+    "events",
+    "status"
+   ],
+   "report_relations": [
+    "attendanceday",
+    "course"
+   ]
   },
   "application.AuditLogIndex": {
    "name": "AuditLogIndex",
@@ -1548,7 +1612,18 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "balance_sheet_id",
+    "status_flag",
+    "creation_date",
+    "year",
+    "data",
+    "archived"
+   ],
+   "report_relations": [
+    "sport_association"
+   ]
   },
   "application.BillingPayment": {
    "name": "BillingPayment",
@@ -2811,7 +2886,21 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "carnet_id",
+    "title",
+    "description",
+    "lessons_number",
+    "fee",
+    "creation_date",
+    "public",
+    "meta"
+   ],
+   "report_relations": [
+    "carnetsubscription",
+    "sport_association"
+   ]
   },
   "application.CarnetSubscription": {
    "name": "CarnetSubscription",
@@ -2997,7 +3086,19 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "carnet_subscription_id",
+    "creation_date",
+    "disabled",
+    "meta"
+   ],
+   "report_relations": [
+    "subscription",
+    "carnet_id",
+    "payment",
+    "course_subscription"
+   ]
   },
   "application.CollaborationInvites": {
    "name": "CollaborationInvites",
@@ -3666,7 +3767,39 @@
    "manager_filters": [
     "deleted"
    ],
-   "group_manager": true
+   "group_manager": true,
+   "report_fields": [
+    "course_id",
+    "status_flag",
+    "course_type",
+    "creation_date",
+    "title",
+    "description",
+    "multi_payments",
+    "fee",
+    "events",
+    "one_fee_payment",
+    "one_fee",
+    "google_calendar_id",
+    "google_background_color",
+    "multiple_quotes",
+    "start_date",
+    "end_date",
+    "pinned",
+    "billed_duration_is_sport_season",
+    "billed_frequency",
+    "billed_from_subscription_date",
+    "billed_from_day_of_month",
+    "auto_renewal",
+    "deleted"
+   ],
+   "report_relations": [
+    "coursesubscription",
+    "attendanceregistry",
+    "sport_association",
+    "group",
+    "tags"
+   ]
   },
   "application.CourseLocation": {
    "name": "CourseLocation",
@@ -4183,7 +4316,32 @@
    "manager_filters": [
     "deleted"
    ],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "course_subscription_id",
+    "paid",
+    "creation_date",
+    "multi_payments",
+    "one_fee_payment",
+    "archived",
+    "type",
+    "multiple_quote",
+    "billed_frequency",
+    "billed_from",
+    "billed_until",
+    "billed_from_day_of_month",
+    "membership_active",
+    "membership_fee",
+    "auto_renewal",
+    "deleted"
+   ],
+   "report_relations": [
+    "carnetsubscription",
+    "course",
+    "subscription",
+    "payment",
+    "membership_payments"
+   ]
   },
   "application.CourseSubscriptionInstallment": {
    "name": "CourseSubscriptionInstallment",
@@ -4469,7 +4627,16 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "tag_id",
+    "tag_name",
+    "creation_date"
+   ],
+   "report_relations": [
+    "course",
+    "sport_association"
+   ]
   },
   "application.CumulativeSubscriptionGymLinks": {
    "name": "CumulativeSubscriptionGymLinks",
@@ -4774,7 +4941,20 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "custom_account_id",
+    "enabled",
+    "name",
+    "initial_balance",
+    "account_type",
+    "account_code",
+    "editable"
+   ],
+   "report_relations": [
+    "payment",
+    "sport_association"
+   ]
   },
   "application.CustomAccountsTransfer": {
    "name": "CustomAccountsTransfer",
@@ -6421,7 +6601,20 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "group_id",
+    "name",
+    "description"
+   ],
+   "report_relations": [
+    "associate",
+    "invoice",
+    "payment",
+    "subscription",
+    "course",
+    "sport_association"
+   ]
   },
   "application.Instructor": {
    "name": "Instructor",
@@ -6891,7 +7084,37 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "instructor_id",
+    "first_name",
+    "last_name",
+    "email",
+    "born_date",
+    "born_city",
+    "born_province",
+    "tax_code",
+    "address_city",
+    "address",
+    "address_province",
+    "civic_number",
+    "study_title",
+    "role",
+    "phone",
+    "phone_2",
+    "phone_3",
+    "phone_4",
+    "draft",
+    "is_volunteer",
+    "stipulated_contract_in",
+    "default_hourly_billing",
+    "default_percentage_billing"
+   ],
+   "report_relations": [
+    "payment",
+    "subscription",
+    "reminders"
+   ]
   },
   "application.InstructorHours": {
    "name": "InstructorHours",
@@ -7514,7 +7737,28 @@
    "manager_filters": [
     "deleted"
    ],
-   "group_manager": true
+   "group_manager": true,
+   "report_fields": [
+    "invoice_id",
+    "creation_date",
+    "membership_fee",
+    "activity_fee",
+    "meta_payment_categories",
+    "description",
+    "number",
+    "archived",
+    "cancelled",
+    "meta",
+    "imported_from_associami",
+    "deleted"
+   ],
+   "report_relations": [
+    "invoicerows",
+    "payment",
+    "sport_association",
+    "selected_tutor",
+    "group"
+   ]
   },
   "application.InvoiceRows": {
    "name": "InvoiceRows",
@@ -7659,7 +7903,19 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "invoice_row_id",
+    "description",
+    "quantity",
+    "unit_price",
+    "vat",
+    "unit_of_measure",
+    "meta"
+   ],
+   "report_relations": [
+    "invoice"
+   ]
   },
   "application.InvoiceSuppliers": {
    "name": "InvoiceSuppliers",
@@ -8277,7 +8533,17 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "medical_id",
+    "creation_date",
+    "expiration_date",
+    "competitive_medical_certificate",
+    "notes"
+   ],
+   "report_relations": [
+    "subscription"
+   ]
   },
   "application.Module": {
    "name": "Module",
@@ -8566,7 +8832,28 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "module_id",
+    "custom_link",
+    "creation_date",
+    "title",
+    "require_approval",
+    "start_date",
+    "end_date",
+    "always_active",
+    "max_responses",
+    "queue_mode",
+    "only_users",
+    "payment_required",
+    "payment_data",
+    "response_message",
+    "allow_attachments",
+    "elements"
+   ],
+   "report_relations": [
+    "sport_association"
+   ]
   },
   "application.ModuleResponses": {
    "name": "ModuleResponses",
@@ -8737,6 +9024,21 @@
      "target_attname": "payment_id",
      "related_name": null,
      "db_constraint": true
+    },
+    {
+     "name": "attachment_token_hash",
+     "class": "CharField",
+     "relation": false,
+     "concrete": true,
+     "attname": "attachment_token_hash",
+     "column": "attachment_token_hash",
+     "internal": "CharField",
+     "null": false,
+     "blank": true,
+     "has_default": true,
+     "max_length": 64,
+     "verbose_name": "attachment token hash",
+     "help_text": ""
     },
     {
      "name": "attachments",
@@ -10040,7 +10342,38 @@
    "manager_filters": [
     "deleted"
    ],
-   "group_manager": true
+   "group_manager": true,
+   "report_fields": [
+    "payment_id",
+    "type",
+    "subject",
+    "amount",
+    "creation_date",
+    "payment_date",
+    "paid",
+    "expense",
+    "description",
+    "meta_payment_categories",
+    "archived",
+    "invoice_fiscal_code",
+    "meta",
+    "notes",
+    "deleted",
+    "course"
+   ],
+   "report_relations": [
+    "subscription",
+    "coursesubscription",
+    "membership_course_subscriptions",
+    "carnetsubscription",
+    "payment_category",
+    "invoice",
+    "associate",
+    "instructor",
+    "sport_association",
+    "custom_accounts",
+    "group"
+   ]
   },
   "application.PaymentCategory": {
    "name": "PaymentCategory",
@@ -10282,7 +10615,21 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "payment_category_id",
+    "name",
+    "creation_date",
+    "expense",
+    "tax_deductible",
+    "archived",
+    "type",
+    "deleted"
+   ],
+   "report_relations": [
+    "payment",
+    "sport_association"
+   ]
   },
   "application.PreviewAndCustomFeatures": {
    "name": "PreviewAndCustomFeatures",
@@ -11074,7 +11421,21 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "reminders_id",
+    "event_id",
+    "event_title",
+    "event_description",
+    "event_course_title",
+    "event_reminder_text",
+    "send_at",
+    "completed"
+   ],
+   "report_relations": [
+    "instructor",
+    "sport_association"
+   ]
   },
   "application.SavedReport": {
    "name": "SavedReport",
@@ -12994,7 +13355,78 @@
    "manager_filters": [
     "deleted"
    ],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "sport_association_id",
+    "denomination",
+    "address_city",
+    "address",
+    "address_cap",
+    "tax_code",
+    "email",
+    "phone",
+    "regulation",
+    "demand",
+    "additional_sections",
+    "logo",
+    "subscription_fee",
+    "multiple_subscription_fee",
+    "subscription_fee_plans",
+    "membership_fee",
+    "multiple_membership_fee",
+    "membership_fee_plans",
+    "custom_subscription_form_data",
+    "document_header",
+    "invoice_footer",
+    "enable_quotes_management",
+    "reviewed",
+    "affiliate_code",
+    "deleted",
+    "review_url",
+    "review_url_enabled",
+    "president_signature",
+    "stamp",
+    "president_first_name",
+    "president_last_name",
+    "enroll_number",
+    "federation",
+    "sport",
+    "enabled_for",
+    "checkout_info",
+    "additional_fields",
+    "iban",
+    "website",
+    "abbreviated",
+    "vat_number",
+    "whatsapp",
+    "imported_from_associami",
+    "extra_text_invoices",
+    "show_regulation_to_members",
+    "show_regulation_to_both",
+    "show_regulation_to_athletes",
+    "show_demand_to_members",
+    "show_demand_to_both",
+    "show_demand_to_athletes",
+    "invoice_template",
+    "subscription_template",
+    "notes"
+   ],
+   "report_relations": [
+    "group",
+    "associate",
+    "balancesheet",
+    "customaccounts",
+    "invoice",
+    "payment",
+    "paymentcategory",
+    "subscription",
+    "tags",
+    "coursetags",
+    "course",
+    "reminders",
+    "carnet",
+    "module"
+   ]
   },
   "application.SportAssociationDocumentsArchive": {
    "name": "SportAssociationDocumentsArchive",
@@ -14335,7 +14767,40 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": true
+   "group_manager": true,
+   "report_fields": [
+    "subscription_id",
+    "custom_data",
+    "additional_fields",
+    "type",
+    "role",
+    "acceptance_date",
+    "resignation_date",
+    "status_flag",
+    "creation_date",
+    "start_date",
+    "end_date",
+    "archived",
+    "draft",
+    "trial",
+    "meta",
+    "subscription_number",
+    "subscription_type",
+    "deleted",
+    "competitive",
+    "notes"
+   ],
+   "report_relations": [
+    "coursesubscription",
+    "carnetsubscription",
+    "sport_association",
+    "associate",
+    "instructor",
+    "medical",
+    "payment",
+    "group",
+    "tags"
+   ]
   },
   "application.SubscriptionFile": {
    "name": "SubscriptionFile",
@@ -15370,7 +15835,16 @@
     }
    ],
    "manager_filters": [],
-   "group_manager": false
+   "group_manager": false,
+   "report_fields": [
+    "tag_id",
+    "tag_name",
+    "creation_date"
+   ],
+   "report_relations": [
+    "subscription",
+    "sport_association"
+   ]
   },
   "application.Testimonial": {
    "name": "Testimonial",

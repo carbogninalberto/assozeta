@@ -3,7 +3,7 @@ import logging
 from django.apps import apps
 from django.db import models
 
-from application.mcp_server.security import MODEL_WHITELIST, is_field_allowed
+from application.mcp_server.security import MODEL_WHITELIST, REPORT_ALLOWLIST, is_field_allowed
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +172,27 @@ def _get_relation_info(field) -> dict | None:
     return info
 
 
+def _fill_model_info(model_info: dict, model, model_label: str) -> None:
+    """Fill ``model_info['fields']`` / ``['relations']`` with the listed ones only."""
+    allowed = REPORT_ALLOWLIST.get(model_label)
+    if not allowed:
+        return
+    model_name = model_label.split('.')[1]
+    for field in model._meta.get_fields():
+        if field.is_relation:
+            if field.name not in allowed['relations']:
+                continue
+            rel_info = _get_relation_info(field)
+            if rel_info:
+                model_info['relations'].append(rel_info)
+        else:
+            if field.name not in allowed['fields']:
+                continue
+            field_info = _get_field_info(field, model_name=model_name)
+            if field_info:
+                model_info['fields'].append(field_info)
+
+
 def get_full_schema(app_label: str = None) -> dict:
     """
     Get schema for all whitelisted models.
@@ -215,16 +236,7 @@ def get_full_schema(app_label: str = None) -> dict:
             'relations': [],
         }
 
-        # Concrete fields (columns in the DB)
-        for field in meta.get_fields():
-            if field.is_relation:
-                rel_info = _get_relation_info(field)
-                if rel_info:
-                    model_info['relations'].append(rel_info)
-            else:
-                field_info = _get_field_info(field, model_name=label_model)
-                if field_info:
-                    model_info['fields'].append(field_info)
+        _fill_model_info(model_info, model, model_label)
 
         schema['models'].append(model_info)
 
@@ -253,14 +265,6 @@ def get_model_schema(model_label: str) -> dict | None:
         'relations': [],
     }
 
-    for field in meta.get_fields():
-        if field.is_relation:
-            rel_info = _get_relation_info(field)
-            if rel_info:
-                model_info['relations'].append(rel_info)
-        else:
-            field_info = _get_field_info(field, model_name=label_model)
-            if field_info:
-                model_info['fields'].append(field_info)
+    _fill_model_info(model_info, model, model_label)
 
     return model_info

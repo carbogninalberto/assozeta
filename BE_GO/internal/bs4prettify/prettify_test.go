@@ -330,6 +330,46 @@ func TestPrettifyRefusesOutsideSubset(t *testing.T) {
 	}
 }
 
+// TestPrettifyLimitedDepth checks the nesting bound: a top-level tag is depth
+// 1, comments and other strings do not count, and the tree is built before the
+// check so a markup bs4 raises on keeps ErrPythonRaises.
+func TestPrettifyLimitedDepth(t *testing.T) {
+	accepted := strings.Repeat("<b>", 32) + "x"
+	want, err := Prettify(accepted)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, err := PrettifyLimited(accepted, 32); err != nil || got != want {
+		t.Fatalf("depth 32: %q, %v", got, err)
+	}
+	if _, err := PrettifyLimited(strings.Repeat("<b>", 33)+"x", 32); !errors.Is(err, ErrTooDeep) {
+		t.Fatalf("depth 33: %v", err)
+	}
+	if _, err := Prettify(strings.Repeat("<b>", 33) + "x"); err != nil {
+		t.Fatalf("Prettify changed: %v", err)
+	}
+	if _, err := PrettifyLimited("text <!-- c -->", 0); err != nil {
+		t.Fatalf("strings counted as tags: %v", err)
+	}
+	if _, err := PrettifyLimited("<p><!-- c -->x</p>", 1); err != nil {
+		t.Fatalf("comment counted as a tag: %v", err)
+	}
+	if _, err := PrettifyLimited("<p>x</p>", 0); !errors.Is(err, ErrTooDeep) {
+		t.Fatalf("top-level tag at depth 0: %v", err)
+	}
+	deepRaise := strings.Repeat("<b>", 40) + "<p>&#" + strings.Repeat("1", 5000) + ";</p>"
+	if _, err := PrettifyLimited(deepRaise, 32); !errors.Is(err, ErrPythonRaises) {
+		t.Fatalf("bs4 raise behind deep nesting: %v", err)
+	}
+	start := time.Now()
+	if _, err := PrettifyLimited(strings.Repeat("<div>", 6000), 100); !errors.Is(err, ErrTooDeep) {
+		t.Fatalf("deep nesting: %v", err)
+	}
+	if elapsed := time.Since(start); elapsed > 2*time.Second {
+		t.Fatalf("deep nesting took %v", elapsed)
+	}
+}
+
 func TestPythonSpace(t *testing.T) {
 	// str.isspace() for every BMP code point outside the C0/C1 controls the parser refuses.
 	want := map[rune]bool{' ': true, '\t': true, '\n': true, '\r': true, '\f': true, '\v': true, 0xa0: true, 0x1680: true,

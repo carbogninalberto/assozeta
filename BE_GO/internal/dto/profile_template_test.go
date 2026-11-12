@@ -164,7 +164,7 @@ func TestProfileTemplateLegacyHTML(t *testing.T) {
 		{"legacy-html-regulation", legacyRegulation, legacyRegulationStored},
 		{"legacy-html-demand", legacyDemand, legacyDemandStored},
 	} {
-		got, err := profileTemplatePrettify(tc.markup)
+		got, err := profileTemplatePrettify(tc.markup, "regulation")
 		if err != nil || got != tc.want {
 			t.Errorf("%s: %q, %v", tc.name, got, err)
 		}
@@ -173,10 +173,158 @@ func TestProfileTemplateLegacyHTML(t *testing.T) {
 		"<p>&#" + strings.Repeat("1", 5000) + ";</p>",
 		strings.Repeat("x", 200) + "\xed\xa0\x80",
 	} {
-		if _, err := profileTemplatePrettify(markup); !errors.Is(err, ErrProfileTemplatePython) {
+		if _, err := profileTemplatePrettify(markup, "regulation"); !errors.Is(err, ErrProfileTemplatePython) {
 			t.Errorf("%q: %v", markup, err)
 		}
 	}
+}
+
+// TestProfileTemplateTextLimits covers _prettify_template_text: the length
+// check counts code points, the nesting check runs after the parse, and a
+// rejected text carries the field and message the view returns as its 400.
+func TestProfileTemplateTextLimits(t *testing.T) {
+	const (
+		longMessage = "Il testo è troppo lungo (massimo 500000 caratteri)."
+		deepMessage = "Il testo contiene troppi livelli annidati (massimo 32)."
+	)
+	rejected := func(t *testing.T, err error) *ProfileTemplateTextRejected {
+		t.Helper()
+		var rejection *ProfileTemplateTextRejected
+		if !errors.As(err, &rejection) {
+			t.Fatalf("%v is not a rejection", err)
+		}
+		return rejection
+	}
+	if _, err := profileTemplatePrettify(strings.Repeat("a", 500000), "regulation"); err != nil {
+		t.Fatalf("500000 characters: %v", err)
+	}
+	// A non-ASCII letter counts as one code point, not three bytes.
+	if _, err := profileTemplatePrettify(strings.Repeat("è", 500000), "regulation"); err != nil {
+		t.Fatalf("500000 non-ASCII characters: %v", err)
+	}
+	// An astral code point is one character too, not a surrogate pair.
+	if _, err := profileTemplatePrettify(strings.Repeat("😀", 500000), "regulation"); err != nil {
+		t.Fatalf("500000 astral characters: %v", err)
+	}
+	for _, tc := range []struct {
+		value any
+		field string
+	}{
+		{strings.Repeat("a", 500001), "demand"},
+		{strings.Repeat("è", 500001), "demand"},
+		{strings.Repeat("😀", 500001), "demand"},
+	} {
+		rejection := rejected(t, profileTemplatePrettifyError(t, tc.value, tc.field))
+		if rejection.Field != tc.field || rejection.Message != longMessage {
+			t.Fatalf("%s: %#v", tc.field, rejection)
+		}
+	}
+	accepted := strings.Repeat("<b>", 32) + "x"
+	if _, err := profileTemplatePrettify(accepted, "regulation"); err != nil {
+		t.Fatalf("depth 32: %v", err)
+	}
+	rejection := rejected(t, profileTemplatePrettifyError(t, strings.Repeat("<b>", 33)+"x", "regulation"))
+	if rejection.Field != "regulation" || rejection.Message != deepMessage {
+		t.Fatalf("depth 33: %#v", rejection)
+	}
+	// bs4 raises while parsing, before the tree is deep enough to be checked.
+	deepRaise := strings.Repeat("<b>", 40) + "<p>&#" + strings.Repeat("1", 5000) + ";</p>"
+	if _, err := profileTemplatePrettify(deepRaise, "regulation"); !errors.Is(err, ErrProfileTemplatePython) {
+		t.Fatalf("bs4 raise behind deep nesting: %v", err)
+	}
+	if _, err := profileTemplatePrettify(json.Number("5"), "regulation"); !errors.Is(err, ErrProfileTemplatePython) {
+		t.Fatalf("non-string: %v", err)
+	}
+	// Sections are prettified in list order, then regulation, then demand.
+	section := func(text any) []any {
+		return []any{domain.RequestObject{{Name: "name", Value: "A"}, {Name: "text", Value: text}}}
+	}
+	for _, tc := range []struct {
+		name       string
+		sections   any
+		regulation any
+		field      string
+		message    string
+	}{
+		{"section-depth-before-regulation-length", section(strings.Repeat("<b>", 33) + "x"),
+			strings.Repeat("a", 500001), "additional_sections", deepMessage},
+		{"section-length-before-regulation-depth", section(strings.Repeat("a", 500001)),
+			strings.Repeat("<b>", 33) + "x", "additional_sections", longMessage},
+		{"regulation-before-demand", nil, strings.Repeat("<b>", 33) + "x", "regulation", deepMessage},
+	} {
+		changes := []domain.RequestField{{Name: "regulation", Value: tc.regulation}}
+		if tc.sections != nil {
+			changes = append(changes, domain.RequestField{Name: "additional_sections", Value: tc.sections})
+		}
+		_, err := PlanProfileTemplate(profileTemplateTestPayload(changes...))
+		rejection := rejected(t, err)
+		if rejection.Field != tc.field || rejection.Message != tc.message {
+			t.Errorf("%s: %#v", tc.name, rejection)
+		}
+	}
+}
+
+// TestPlanProfileTemplateKeyOrder pins where each initial_data key is read: a
+// missing key raises at the access, so a text rejected before it still answers
+// the 400 while one behind it answers the 500.
+func TestPlanProfileTemplateKeyOrder(t *testing.T) {
+	deep := strings.Repeat("<b>", 33) + "x"
+	section := []any{domain.RequestObject{{Name: "name", Value: "A"}, {Name: "text", Value: deep}}}
+	payload := func(missing string, changes ...domain.RequestField) domain.RequestObject {
+		data := domain.RequestObject{}
+		for _, key := range profileTemplateKeys {
+			if key != missing {
+				data = append(data, domain.RequestField{Name: key})
+			}
+		}
+		for _, change := range changes {
+			data = PythonSet(data, change.Name, change.Value)
+		}
+		return data
+	}
+	for _, tc := range []struct {
+		name    string
+		missing string
+		change  domain.RequestField
+		field   string
+	}{
+		// additional_sections, the loop and regulation are read before demand.
+		{"section-depth-before-missing-demand", "demand",
+			domain.RequestField{Name: "additional_sections", Value: section}, "additional_sections"},
+		{"regulation-depth-before-missing-demand", "demand",
+			domain.RequestField{Name: "regulation", Value: deep}, "regulation"},
+		{"section-depth-before-missing-regulation", "regulation",
+			domain.RequestField{Name: "additional_sections", Value: section}, "additional_sections"},
+	} {
+		_, err := PlanProfileTemplate(payload(tc.missing, tc.change))
+		var rejection *ProfileTemplateTextRejected
+		if !errors.As(err, &rejection) {
+			t.Fatalf("%s: %v is not a rejection", tc.name, err)
+		}
+		if rejection.Field != tc.field {
+			t.Errorf("%s: %#v", tc.name, rejection)
+		}
+	}
+	for _, tc := range []struct {
+		name    string
+		missing string
+		change  domain.RequestField
+	}{
+		// demand is read after regulation, and the loop after additional_sections.
+		{"demand-depth-after-missing-regulation", "regulation", domain.RequestField{Name: "demand", Value: deep}},
+		{"regulation-depth-after-missing-additional-sections", "additional_sections",
+			domain.RequestField{Name: "regulation", Value: deep}},
+	} {
+		if _, err := PlanProfileTemplate(payload(tc.missing, tc.change)); !errors.Is(err, ErrProfileTemplatePython) {
+			t.Errorf("%s: %v", tc.name, err)
+		}
+	}
+}
+
+func profileTemplatePrettifyError(t *testing.T, value any, field string) error {
+	t.Helper()
+	_, err := profileTemplatePrettify(value, field)
+	return err
 }
 
 func profileTemplateTestPayload(changes ...domain.RequestField) domain.RequestObject {
