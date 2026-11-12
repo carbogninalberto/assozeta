@@ -86,8 +86,17 @@ unknown-paths family covers them).
 - `get_signature_base64()` (a subscription with a signature): it reads private storage or fetches the legacy URL.
 - Markup outside the `filter_mentions` subset, and mention paths that name an attribute the port declares but does not read
   (for example the model's methods and relations).
-- Template inputs outside `djtemplate`'s subset (for example `format` of a non-number raises in Django as well), an association
-  whose user is a collaborator (preview).
+- Template inputs outside `djtemplate`'s subset: the eight templates are fixed files, so their syntax is fully ported. The JSON columns
+  the views read with `json.loads` (`subscription.additional_fields`, the association's and the user association's
+  `additional_sections`, the association's `additional_fields`, `subscription.payment_meta`, `medical_appointment.meta`) are ported for
+  every value jsonb can store: integers beyond int64 (as `*big.Int`), floats (including `inf` read from an overflowing decimal,
+  subnormals and `-0.0`), booleans, null, nested lists and dicts, strings with quotes and non-ASCII letters (`str.upper()`/`str.lower()`
+  use Python's full case mapping). An int text of more than 4300 digits is a `ValueError` in `json.loads` and an iteration over a
+  number a `TypeError` in Django; Go fails on both with the 500 page (`ErrDocumentViewServer`), not with a request for Django. Stays
+  refused: a context value of a type outside `djtemplate`, and a lookup or filter the eight templates do not use (the templates are
+  fixed files, so neither is reachable for these columns). Duplicate keys and trailing data stay
+  refused because jsonb cannot hold them (the last key wins on write, a column holds one value). An association whose user is a
+  collaborator (preview).
 - The course list keeps Django's query without `ORDER BY`; several course subscriptions follow the database's order on both sides.
 
 ## Mention keys and periods (v2-rest-docs)
@@ -101,6 +110,24 @@ associate; a longer path under `other` after a missing key does as well. The obj
 empty) CAUGHT. A refusal after the tutor promotion is not replayed to Django:
 `internal/handler/document_views_handoff_test.go` runs the promotion's statements on the admitted request and then a refusal
 (500, no upstream call), and the same refusal without the promotion (replayed once).
+
+## t8out: JSON column values
+
+The views read six JSON columns with `json.loads`: `subscription.additional_fields`, the association's and the user association's
+`additional_sections`, the association's `additional_fields` (preview), `subscription.payment_meta` and `medical_appointment.meta`.
+`djtemplate` now renders every value jsonb can store through every expression the eight templates use: truthiness, `{% for %}`
+(a dict's keys, a string's characters; a number or a boolean raises `TypeError`), dict/attribute/index lookups (a missing name is
+`''`), `upper`/`lower` with Python's full Unicode case mapping, `safe`, `default`, `yesno`, and `format:"{:0.2f}"` (a big int becomes
+a float first and raises `OverflowError` beyond float64). Integers beyond int64 are `*big.Int`; floats include ±Inf (an overflowing
+decimal), subnormals and `-0.0`; lists, tuples and dicts print as Python's repr. `FromJSON` keeps jsonb's shape (dict key order; a
+duplicate key and trailing data stay refused since jsonb cannot store them) and turns Python's 4300-digit int limit into the 500 page,
+as `json.loads` raises there.
+
+Cases: `subscription-json-values` and `subscription-additional-fields-number` (168 fixture cases in
+`TESTS/fixtures/document_views_http.json`; the second iterates `additional_fields=12345678901234567890123` and is the 500 page).
+The golden script adds 58 authored renders (one per JSON kind and per expression; 12 of them raise in Django and must fail in Go):
+378 renders in `BE_GO/internal/djtemplate/testdata/django_renders.json`, all matching. `TestFromJSONStoredNumbers` pins the decoder on
+the stored text forms (big ints, 4300 and 4301 digits, an overflowing decimal, a subnormal, `-0.0`).
 
 ## Routes not in this family
 

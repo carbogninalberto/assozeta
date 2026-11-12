@@ -49,8 +49,18 @@ def i(v):
     return {'t': 'int', 'v': v}
 
 
+def big(v):
+    """An integer beyond int64, by its decimal text (json.loads gives int)."""
+    return {'t': 'bigint', 'v': v}
+
+
 def flt(v):
     return {'t': 'float', 'v': v}
+
+
+def flt_text(v):
+    """A float by the text float() reads (inf, -inf, -0.0, 1e-320)."""
+    return {'t': 'float_text', 'v': v}
 
 
 def dec(v):
@@ -101,6 +111,10 @@ def value(tagged):
         return mark_safe(v)
     if kind in ('bool', 'int', 'float'):
         return v
+    if kind == 'bigint':
+        return int(v)
+    if kind == 'float_text':
+        return float(v)
     if kind == 'decimal':
         return Decimal(v)
     if kind == 'date':
@@ -298,6 +312,129 @@ def model_context(rng):
     return {'template': rnd_html(rng), 'header': rnd_html(rng), 'footer': rnd_html(rng)}
 
 
+# --- authored JSON-column values ---------------------------------------------------------------
+# The JSON columns read with json.loads (subscription.additional_fields,
+# association.additional_sections and additional_fields, subscription.payment_meta,
+# medical_appointment.meta) can hold every JSON value; these contexts render
+# each of them through the expressions the document templates use.
+def field(label, value):
+    return dct(('props', dct(('label', label), ('value', value))))
+
+
+def section(name, text, show_to):
+    return dct(('name', name), ('text', text), ('show_to', show_to))
+
+
+def authored_subscription(additional_fields=NONE, sections=None, subscription_type=None, is_preview=False,
+                          payment_data=NONE):
+    subscription = obj(
+        sport_association=obj(logo=s(''), denomination=s('ASD Autore & <Figli>'), regulation=NONE, demand=NONE,
+                             address_city=s('Torino'), address=s('Via Roma 1'), address_cap=s('10100'),
+                             tax_code=s('01234567890'), federation=s('FIDAL'), enroll_number=s('ab-12'),
+                             additional_sections=lst() if sections is None else sections),
+        creation_date=dt('2026-03-04T10:00:00+00:00'), type=subscription_type, role=i(1),
+        associate=obj(first_name=s('Autore'), last_name=s('Rossi'), tax_code=s('RSSMRA80A01L219X'), sex=s('M'),
+                      born_date=d('1980-01-01'), born_city=s('Torino'), address=s('Via Po 2'), address_city=s('Torino'),
+                      address_cap=s('10123'), phone=s('011 123'), email=s('mario@example.test'),
+                      get_full_name=call(s('Autore Rossi')), is_minor_now=b(False)),
+        additional_fields=additional_fields, has_signature=b(False), get_signature_base64=call(NONE))
+    return {'uid': s('a1000000-0000-4000-8000-000000985046'), 'subscription': subscription,
+            'payment_data': payment_data, 'show_regulation_to': lst(i(1), i(3)), 'show_demand_to': lst(i(2)),
+            'is_preview': b(is_preview), 'header': s('<p>Intestazione</p>'), 'footer': s('')}
+
+
+def authored_medical(meta):
+    associate = obj(first_name=s('Autore'), last_name=s('Rossi'), tax_code=s('RSSMRA80A01L219X'), sex=s('M'),
+                    born_date=d('1980-01-01'), born_city=s('Torino'), address=s('Via Po 2'), address_city=s('Torino'),
+                    address_cap=s('10123'), phone=s('011 123'), email=s('mario@example.test'),
+                    full_name=s('Autore Rossi'), is_minor_now=b(False))
+    return {'medical_appointment': obj(date=d('2026-05-06'), sport=s('Calcio & corsa')),
+            'sport_association': obj(logo=s('data:image/png;base64,QUJD'), denomination=s('ASD Autore')),
+            'associate': associate, 'meta': meta}
+
+
+JSON_FIELDS = [
+    field(s('Intero grande'), big('123456789012345678901234567890')),
+    field(s('Intero negativo'), big('-123456789012345678901234567890')),
+    field(s('Decimale'), flt(1.5)),
+    field(s('Subnormale'), flt(1e-320)),
+    field(s('Infinito'), flt_text('inf')),
+    field(s('Zero negativo'), flt(-0.0)),
+    field(s('Vero'), b(True)),
+    field(s('Nullo'), NONE),
+    field(s('Lista'), lst(i(1), s('due'), NONE, flt(1.5), big('12345678901234567890123'))),
+    field(s('Mappa'), dct(('chiave', s('valore')), ('numero', i(7)), ('lista', lst(b(False))))),
+    field(s('Virgolette'), s('O\'Neil "Quote" \\ fine')),
+    field(s('Es'), s('ß ŉ ǰ ﬁ')),
+    field(s('Greco'), s('ΑΘΗΝΑ ΟΔΥΣΣΕΥΣ ς')),
+    field(s('Sigma'), s('Σοφός')),
+    # Elements that are not field dicts: field.props is missing.
+    s('testo'),
+    i(3),
+]
+LABEL_FIELDS = [
+    field(big('123456789012345678901234567890'), NONE),
+    field(big('-123456789012345678901234567890'), NONE),
+    field(lst(s('x'), i(2)), NONE),
+    field(dct(('a', i(1))), NONE),
+    field(flt(1.5), NONE),
+    field(flt(1e-320), NONE),
+    field(flt(1e300), NONE),
+    field(flt(-1.5e300), NONE),
+    field(flt(1e-200), NONE),
+    field(flt(1.2345678901234567e-200), NONE),
+    field(flt(1e-180), NONE),
+    field(flt_text('inf'), NONE),
+    field(flt_text('-inf'), NONE),
+    field(flt(-0.0), NONE),
+    field(b(True), NONE),
+    field(NONE, NONE),
+    field(i(5), NONE),
+]
+SECTIONS = [
+    section(s('Sezione stringa'), s('<p>Testo &amp; <b>grassetto</b></p>'), s('12')),
+    section(s('Sezione lista'), NONE,
+            lst(i(9), big('123456789012345678901234567890'), flt_text('inf'), s('2'), NONE, b(True), lst(i(1)),
+                dct(('a', i(1))), i(2))),
+    section(big('-12345678901234567890'), lst(i(1), dct(('k', b(True)))), dct(('1', i(1)), ('2', i(2)))),
+    section(big('12345678901234567890'), lst(i(1), s('due')), lst(i(2))),
+    section(flt_text('inf'), flt(1e-320), lst(i(2))),
+    section(dct(('a', s('b'))), flt(-0.0), lst(i(2))),
+    section(NONE, b(True), lst(i(2))),
+    section(lst(s('x'), s('ß')), big('9' * 40), i(2)),
+    section(s('Solo membri'), s(''), b(True)),
+    dct(('name', s('Senza show_to')), ('text', s('testo'))),
+    s('stringa'),
+]
+PAYMENT_DATA = [
+    dct(('subscription_data', dct(('name', s('Annuale <b>')), ('subscription_fee', big('12345678901234567890'))))),
+    dct(('subscription_data', dct(('name', s('Enorme')), ('subscription_fee', big('1' + '0' * 400))))),
+    dct(('subscription_data', dct(('name', s('Ridotta')), ('subscription_fee', flt(12.5))))),
+    dct(('subscription_data', dct(('name', s('Infinita')), ('subscription_fee', flt_text('inf'))))),
+    dct(('subscription_data', dct(('name', s('Negativa')), ('subscription_fee', flt(-0.0))))),
+    dct(('subscription_data', dct(('name', dct(('a', s('b')))), ('subscription_fee', flt(1.5))))),
+    dct(('subscription_data', dct(('name', lst(s('x'), i(1))), ('subscription_fee', b(True))))),
+    dct(('subscription_data', dct(('name', s('Testo')), ('subscription_fee', s('30'))))),
+    lst(i(1)),
+    big('12345678901234567890'),
+    dct(),
+]
+MEDICAL_METAS = [
+    dct(('first_affiliation', big('123456789012345678901234567890')), ('renewal', big('-12345678901234567890'))),
+    dct(('first_affiliation', flt(1e-320)), ('renewal', flt(-0.0))),
+    dct(('first_affiliation', flt_text('inf')), ('renewal', flt_text('-inf'))),
+    dct(('first_affiliation', lst()), ('renewal', lst(i(1), dct(('a', NONE))))),
+    dct(('first_affiliation', dct()), ('renewal', dct(('k', s('v'))))),
+    dct(('first_affiliation', s('')), ('renewal', s('no'))),
+    dct(('first_affiliation', NONE), ('renewal', NONE)),
+    dct(),
+    big('42'),
+    s('testo'),
+    lst(i(1)),
+    NONE,
+]
+
+
 TEMPLATES = [
     ('document/application/subscription.html', subscription_context, ('it', 'en')),
     ('document/application/subscription_classic.html', subscription_context, ('it', 'en')),
@@ -309,6 +446,44 @@ TEMPLATES = [
     ('document/medical-appointments/non-agonistica.html', medical_context, ('it', 'en')),
 ]
 PER_TEMPLATE = 40
+
+# Authored renders of the JSON-column values through every expression the
+# document templates use (the seeded renders above keep their contexts).
+AUTHORED = []
+for language, template in (('it', 'document/application/subscription.html'),
+                           ('en', 'document/application/subscription_classic.html')):
+    base = template.rsplit('/', 1)[1].removesuffix('.html')
+    AUTHORED.append((f'authored-json-fields-{base}', template, language,
+                     authored_subscription(additional_fields=lst(*JSON_FIELDS), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-labels-{base}', template, language,
+                     authored_subscription(additional_fields=lst(*LABEL_FIELDS), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-fields-dict-{base}', template, language,
+                     authored_subscription(additional_fields=dct(('ß', s('x')), ("O'Neil", NONE), ('ǰ', lst(i(1)))),
+                                           subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-fields-string-{base}', template, language,
+                     authored_subscription(additional_fields=s('aßŉǰ"'), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-fields-number-{base}', template, language,
+                     authored_subscription(additional_fields=big('12345678901234567890123'), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-fields-float-{base}', template, language,
+                     authored_subscription(additional_fields=flt(1.5), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-fields-bool-{base}', template, language,
+                     authored_subscription(additional_fields=b(True), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-fields-empty-{base}', template, language,
+                     authored_subscription(additional_fields=lst(), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-sections-{base}', template, language,
+                     authored_subscription(sections=lst(*SECTIONS), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-sections-preview-{base}', template, language,
+                     authored_subscription(sections=lst(*SECTIONS), subscription_type=NONE, is_preview=True)))
+    AUTHORED.append((f'authored-json-sections-string-{base}', template, language,
+                     authored_subscription(sections=s('ab'), subscription_type=i(2))))
+    AUTHORED.append((f'authored-json-sections-number-{base}', template, language,
+                     authored_subscription(sections=big('12'), subscription_type=i(2))))
+    for index, payment_data in enumerate(PAYMENT_DATA):
+        AUTHORED.append((f'authored-json-payment-{index}-{base}', template, language,
+                         authored_subscription(subscription_type=i(2), payment_data=payment_data)))
+for index, meta in enumerate(MEDICAL_METAS):
+    AUTHORED.append((f'authored-json-meta-{index}', 'document/medical-appointments/agonistica.html', 'it',
+                     authored_medical(meta)))
 
 
 # --- mentions ----------------------------------------------------------------------------------
@@ -462,6 +637,23 @@ def main():
                 if dump:
                     Path(dump, name + '.html').write_bytes(raw)
             renders.append(entry)
+    for name, template, language, context in AUTHORED:
+        with translation.override(language):
+            try:
+                html = render_to_string(template, {key: value(item) for key, item in context.items()})
+            except Exception as error:  # the 500 page: Go must fail as well
+                html, failure = None, f'{type(error).__name__}: {error}'
+            else:
+                failure = None
+        entry = {'name': name, 'template': template, 'language': language, 'context': context}
+        if html is None:
+            entry['error'] = failure
+        else:
+            raw = html.encode()
+            entry.update(sha256=hashlib.sha256(raw).hexdigest(), length=len(raw))
+            if dump:
+                Path(dump, name + '.html').write_bytes(raw)
+        renders.append(entry)
     names = {}
     for language in ('it', 'en'):
         with translation.override(language):

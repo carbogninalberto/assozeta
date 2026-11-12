@@ -188,6 +188,19 @@ ASSOCIATIONS = {
                 'website': None, 'sport': None, 'abbreviated': None, 'document_header': None, 'invoice_footer': None,
                 'subscription_template': None, 'additional_sections': [], 'additional_fields': None,
                 'regulation_flags': (True, True, True), 'demand_flags': (True, True, True)},
+    # JSON column values: the subscription's additional_fields hold a big int, a
+    # float, a list, a dict and a non-ASCII string; a section is stored with
+    # show_to as a string (the view rewrites it from the flags).
+    'jsonvalues': {'user': uid(13), 'id': uid(14), 'role': 'association', 'email': 'valori@example.test', 'deleted': False,
+                   'denomination': 'Valori & <JSON>', 'tax_code': '55555555555', 'address': None, 'address_city': None,
+                   'address_cap': None, 'logo': None, 'regulation': None, 'demand': None, 'federation': None, 'enroll_number': None,
+                   'iban': None, 'website': None, 'sport': None, 'abbreviated': None, 'document_header': None, 'invoice_footer': None,
+                   'subscription_template': 'subscription.html',
+                   'additional_sections': [
+                       {'name': 'Sezione ß', 'text': '<p>Testo &amp; <b>grassetto</b></p>', 'show_to': 'solo-soci',
+                        'show_to_both': True},
+                       {'name': 'Sezione Σ', 'text': None, 'show_to_members': True}],
+                   'additional_fields': None, 'regulation_flags': (False, False, False), 'demand_flags': (False, False, False)},
 }
 # The base fixture's own association (model defaults).
 OWN_ASSOCIATION = {'id': OWN, 'denomination': 'Message reads own', 'tax_code': '70000000001', 'address': None, 'address_city': None,
@@ -263,6 +276,20 @@ SUBSCRIPTIONS = {
     # A later subscription of the athlete's associate, entered by the association.
     'renewal': {'id': uid(51), 'association': 'own', 'associate': 'athlete', 'type': 1, 'role': 2, 'created': '2026-09-09T09:09:09+00:00',
                 'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
+    # JSON values in additional_fields (big int, float, list, dict, non-ASCII
+    # string) and a number in additional_fields (iterating it raises).
+    'jsonvalues': {'id': uid(46), 'association': 'jsonvalues', 'associate': 'greek', 'type': 2, 'role': 1,
+                   'created': '2026-10-10T10:10:10+00:00', 'payment': None,
+                   'additional_fields': [
+                       {'props': {'label': 'Numero grande', 'value': 12345678901234567890123}},
+                       {'props': {'label': 'Peso', 'value': 12.5}},
+                       {'props': {'label': 'Lista', 'value': [1, 'due', None]}},
+                       {'props': {'label': 'Mappa', 'value': {'chiave': 'valore'}}},
+                       {'props': {'label': 'Città', 'value': 'Ǻthos ŉ ǰ ß'}}],
+                   'signature_url': None, 'group': None},
+    'fieldsnumber': {'id': uid(47), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 1,
+                     'created': '2026-10-11T10:10:10+00:00', 'payment': None,
+                     'additional_fields': 12345678901234567890123, 'signature_url': None, 'group': None},
 }
 # Another member of the association (an athlete account without records).
 EXTRA_USERS = {'member': {'id': uid(52), 'username': 'document-views-member', 'email': 'document-views-member@example.test'},
@@ -481,6 +508,11 @@ add('subscription-head', 'owner', SUB('mario'), 405, method('HEAD'), method_='HE
 add('subscription-head-anonymous', 'anonymous', SUB('mario'), 401, ANONYMOUS, method_='HEAD')
 add('subscription-classic-template', 'owner', SUB('classic'), 200, HTML, html=subscription_context('classic', '', '<p>Grazie</p>'))
 add('subscription-fallback-template', 'owner', SUB('fallback'), 200, HTML, html=subscription_context('fallback', '<p><br/></p>', FALLBACK_FOOTER_OUT))
+# The JSON columns' values render as json.loads gives them (a big int, a
+# float, a list, a dict and a non-ASCII string); additional_fields holding a
+# number is iterated, which raises TypeError in Django (the 500 page).
+add('subscription-json-values', 'owner', SUB('jsonvalues'), 200, HTML, html=subscription_context('jsonvalues', '', ''))
+add('subscription-additional-fields-number', 'owner', SUB('fieldsnumber'), 500, SERVER)
 add('subscription-scoped-athlete', 'owner', SUB('own'), 200, HTML, headers=SCOPED, html=subscription_context('own', '', ''))
 # The page is rendered for the association's staff and for the member the subscription belongs to.
 add('subscription-athlete-own', 'athlete', SUB('own'), 200, HTML, html=subscription_context('own', '', ''))
