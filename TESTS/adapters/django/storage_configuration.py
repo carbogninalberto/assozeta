@@ -32,8 +32,8 @@ def main():
     def assigns(node,name):return isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id==name for t in node.targets)
     start=next(i for i,node in enumerate(source.body) if assigns(node,'STORE_ON_DISK'))
     end=next(i for i,node in enumerate(source.body) if assigns(node,'STORAGES'))
-    # Upload limits declared between the storage assignments are not storage configuration.
-    upload_limits=('SUBSCRIPTION_IMPORT_','MEDICAL_CERTIFICATE_')
+    # Upload and request limits declared between the storage assignments are not storage configuration.
+    upload_limits=('SUBSCRIPTION_IMPORT_','MEDICAL_CERTIFICATE_','PUBLIC_UPLOAD_','PUBLIC_REQUEST')
     def upload_limit(node):return isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id.startswith(upload_limits) for t in node.targets)
     nodes=[node for node in source.body[start:end+1] if not upload_limit(node)];assert len(nodes)==18,'storage declaration coverage changed'
     code=compile(ast.Module(body=nodes,type_ignores=[]),'core.settings storage assignments','exec')
