@@ -31312,18 +31312,18 @@
    "name": "personas-writes-update-tutor-other-association-creates-new",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas/a1000000-0000-4000-8000-000000677066/update",
+   "path": "/personas/a1000000-0000-4000-8000-000000677067/update",
    "headers": {},
    "status": 200,
    "response": {
-    "associate_id": "a1000000-0000-4000-8000-000000677066",
-    "full_name": "Ivana Intera",
+    "associate_id": "a1000000-0000-4000-8000-000000677067",
+    "full_name": "Irma Intera",
     "is_minor_now": {
-     "$minor": "2011-03-01"
+     "$minor": "2011-04-01"
     },
     "is_tutor": false,
     "age": {
-     "$age": "2011-03-01"
+     "$age": "2011-04-01"
     },
     "family_members": [],
     "tutors": [
@@ -31371,11 +31371,11 @@
      }
     ],
     "picture_path": null,
-    "first_name": "Ivana",
+    "first_name": "Irma",
     "last_name": "Intera",
     "sex": "A",
     "tax_code": null,
-    "born_date": "2011-03-01",
+    "born_date": "2011-04-01",
     "born_city": null,
     "address_city": null,
     "address": null,
@@ -31399,7 +31399,7 @@
     "id_number": null,
     "migrated": false,
     "notes": null,
-    "creation_date": "2024-03-09T07:00:00Z",
+    "creation_date": "2024-03-10T07:00:00Z",
     "user": null,
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "group": null,
@@ -31413,16 +31413,6 @@
    "effect": {
     "actor": "owner",
     "audit": [
-     {
-      "model": "associatetutorrelation",
-      "ref": "$r122",
-      "action": 2,
-      "changes": null,
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ]
-     },
      {
       "model": "associate",
       "ref": "$a126",
@@ -31513,7 +31503,7 @@
        ],
        "associate": [
         "None",
-        "a1000000-0000-4000-8000-000000677066"
+        "a1000000-0000-4000-8000-000000677067"
        ],
        "tutor": [
         "None",
@@ -31570,19 +31560,17 @@
      }
     ],
     "changed": {
-     "idu3": {}
+     "idu4": {}
     },
     "relations_created": [
      {
       "id": "$r127",
-      "associate": "idu3",
+      "associate": "idu4",
       "tutor": "$a126",
       "primary": true
      }
     ],
-    "relations_deleted": [
-     "$r122"
-    ],
+    "relations_deleted": [],
     "relations_changed": {}
    },
    "body": {
@@ -31601,19 +31589,15 @@
    "name": "personas-writes-update-tutor-deleted-other-association-creates-new",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas/a1000000-0000-4000-8000-000000677065/update",
+   "path": "/personas/a1000000-0000-4000-8000-000000677016/update",
    "headers": {},
    "status": 200,
    "response": {
-    "associate_id": "a1000000-0000-4000-8000-000000677065",
-    "full_name": "Ines Intera",
-    "is_minor_now": {
-     "$minor": "2011-02-01"
-    },
+    "associate_id": "a1000000-0000-4000-8000-000000677016",
+    "full_name": "Carlo Ripreso",
+    "is_minor_now": true,
     "is_tutor": false,
-    "age": {
-     "$age": "2011-02-01"
-    },
+    "age": 0,
     "family_members": [],
     "tutors": [
      {
@@ -31660,11 +31644,11 @@
      }
     ],
     "picture_path": null,
-    "first_name": "Ines",
-    "last_name": "Intera",
+    "first_name": "Carlo",
+    "last_name": "Ripreso",
     "sex": "A",
     "tax_code": null,
-    "born_date": "2011-02-01",
+    "born_date": null,
     "born_city": null,
     "address_city": null,
     "address": null,
@@ -31688,7 +31672,7 @@
     "id_number": null,
     "migrated": false,
     "notes": null,
-    "creation_date": "2024-03-08T07:00:00Z",
+    "creation_date": "2024-01-15T07:00:00Z",
     "user": null,
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "group": null,
@@ -31702,16 +31686,6 @@
    "effect": {
     "actor": "owner",
     "audit": [
-     {
-      "model": "associatetutorrelation",
-      "ref": "$r120",
-      "action": 2,
-      "changes": null,
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ]
-     },
      {
       "model": "associate",
       "ref": "$a128",
@@ -31802,7 +31776,7 @@
        ],
        "associate": [
         "None",
-        "a1000000-0000-4000-8000-000000677065"
+        "a1000000-0000-4000-8000-000000677016"
        ],
        "tutor": [
         "None",
@@ -31859,19 +31833,17 @@
      }
     ],
     "changed": {
-     "idu2": {}
+     "gone_collab": {}
     },
     "relations_created": [
      {
       "id": "$r129",
-      "associate": "idu2",
+      "associate": "gone_collab",
       "tutor": "$a128",
       "primary": true
      }
     ],
-    "relations_deleted": [
-     "$r120"
-    ],
+    "relations_deleted": [],
     "relations_changed": {}
    },
    "body": {
@@ -31890,19 +31862,15 @@
    "name": "personas-writes-update-tutor-same-association-updated",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/personas/a1000000-0000-4000-8000-000000677064/update",
+   "path": "/personas/a1000000-0000-4000-8000-000000677017/update",
    "headers": {},
    "status": 200,
    "response": {
-    "associate_id": "a1000000-0000-4000-8000-000000677064",
-    "full_name": "Ida Intera",
-    "is_minor_now": {
-     "$minor": "2011-01-01"
-    },
+    "associate_id": "a1000000-0000-4000-8000-000000677017",
+    "full_name": "Adele Ripresa",
+    "is_minor_now": true,
     "is_tutor": false,
-    "age": {
-     "$age": "2011-01-01"
-    },
+    "age": 0,
     "family_members": [],
     "tutors": [
      {
@@ -31949,11 +31917,11 @@
      }
     ],
     "picture_path": null,
-    "first_name": "Ida",
-    "last_name": "Intera",
+    "first_name": "Adele",
+    "last_name": "Ripresa",
     "sex": "A",
     "tax_code": null,
-    "born_date": "2011-01-01",
+    "born_date": null,
     "born_city": null,
     "address_city": null,
     "address": null,
@@ -31977,7 +31945,7 @@
     "id_number": null,
     "migrated": false,
     "notes": null,
-    "creation_date": "2024-03-07T07:00:00Z",
+    "creation_date": "2024-01-16T07:00:00Z",
     "user": null,
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "group": null,
@@ -31991,16 +31959,6 @@
    "effect": {
     "actor": "owner",
     "audit": [
-     {
-      "model": "associatetutorrelation",
-      "ref": "$r119",
-      "action": 2,
-      "changes": null,
-      "index": [
-       "a1000000-0000-4000-8000-000000701001",
-       "actor.sport_association"
-      ]
-     },
      {
       "model": "associate",
       "ref": "tutor_a",
@@ -32027,7 +31985,7 @@
        ],
        "associate": [
         "None",
-        "a1000000-0000-4000-8000-000000677064"
+        "a1000000-0000-4000-8000-000000677017"
        ],
        "tutor": [
         "None",
@@ -32046,7 +32004,7 @@
     ],
     "created": [],
     "changed": {
-     "idu": {},
+     "gone_admin": {},
      "tutor_a": {
       "phone": "3339998888"
      }
@@ -32054,14 +32012,12 @@
     "relations_created": [
      {
       "id": "$r130",
-      "associate": "idu",
+      "associate": "gone_admin",
       "tutor": "tutor_a",
       "primary": true
      }
     ],
-    "relations_deleted": [
-     "$r119"
-    ],
+    "relations_deleted": [],
     "relations_changed": {}
    },
    "body": {

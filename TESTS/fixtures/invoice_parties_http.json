@@ -9467,8 +9467,7 @@
      },
      "payment": {
       "a1000000-0000-4000-8000-000000846120": {
-       "paid": true,
-       "payment_date": "$now"
+       "paid": true
       }
      }
     },
@@ -9511,8 +9510,7 @@
      },
      "payment": {
       "a1000000-0000-4000-8000-000000846120": {
-       "paid": true,
-       "payment_date": "$now"
+       "paid": true
       }
      }
     },

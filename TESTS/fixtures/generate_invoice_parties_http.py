@@ -872,10 +872,16 @@ supplier_update('supplier-update-payment-id-links-payment', 'owner', 'c', 200, U
 cases[-1]['effect']['audits'][0]['changes']['payment'][1] = PAYMENTS['b']['payment_id'].upper()
 
 
+def pinned_fields(row, fields):
+    """An untouched row, with the fields whose running value is still a marker left out: a marker in a row pin means
+    the value of this request, which an untouched row must not claim."""
+    return {f: row[f] for f in fields if not (isinstance(row[f], str) and row[f].startswith('$'))}
+
+
 def payment_link_rows(label, payment_label):
     """The invoice row and the payment a refused payment_id names, both unchanged."""
-    return {'invoicesuppliers': {SUPPLIER_INVOICES[label]['invoice_supplier_id']: {f: SUPPLIER_INVOICES[label][f] for f in INVOICE_FIELDS}},
-            'payment': {PAYMENTS[payment_label]['payment_id']: {f: PAYMENTS[payment_label][f] for f in PAYMENT_FIELDS}}}
+    return {'invoicesuppliers': {SUPPLIER_INVOICES[label]['invoice_supplier_id']: pinned_fields(SUPPLIER_INVOICES[label], INVOICE_FIELDS)},
+            'payment': {PAYMENTS[payment_label]['payment_id']: pinned_fields(PAYMENTS[payment_label], PAYMENT_FIELDS)}}
 
 
 def unknown_pk(value):

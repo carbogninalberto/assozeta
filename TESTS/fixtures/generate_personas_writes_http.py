@@ -257,6 +257,12 @@ def relations_of(ref):
     return sorted((r for r in WORLD['rel'].values() if r['associate'] == ref), key=lambda r: r['id'])
 
 
+def seed_relations_only(ref):
+    """A case may expect the deletion of a seed relation only: the runner knows the seed keys."""
+    assert all(key in RELATIONS for key, rel in WORLD['rel'].items() if rel['associate'] == ref), \
+        f'{ref} has a relation created at run time'
+
+
 def m2m_tutors(ref, group):
     return [r['tutor'] for r in relations_of(ref) if visible(r['tutor'], group)]
 
@@ -1321,26 +1327,29 @@ add('add-tutor-other-association-creates-new', 'owner', 'POST', ADD, 201, info(r
     body={'first_name': 'Pestero', 'tutors_data': tutor_data}, allow=ALLOW_ADD, effect=effect)
 
 effect = Effect('owner')
-effect.save('idu3')
+seed_relations_only('idu4')
+effect.save('idu4')
 tutor_data = [{'tutor': {'associate_id': A['abroad'], 'first_name': 'Altro'}, 'is_primary': True}]
-handle_tutors(effect, 'idu3', tutor_data)
-add('update-tutor-other-association-creates-new', 'owner', 'PATCH', update_path('idu3'), 200, info('idu3'),
+handle_tutors(effect, 'idu4', tutor_data)
+add('update-tutor-other-association-creates-new', 'owner', 'PATCH', update_path('idu4'), 200, info('idu4'),
     body={'tutors_data': tutor_data}, allow=ALLOW_UPDATE, effect=effect)
 
 # A deleted tutor of another association was already not found before the scope: kept as a regression pin.
 effect = Effect('owner')
-effect.save('idu2')
+seed_relations_only('gone_collab')
+effect.save('gone_collab')
 tutor_data = [{'tutor': {'associate_id': A['gone_abroad'], 'first_name': 'Altro'}, 'is_primary': True}]
-handle_tutors(effect, 'idu2', tutor_data)
-add('update-tutor-deleted-other-association-creates-new', 'owner', 'PATCH', update_path('idu2'), 200, info('idu2'),
+handle_tutors(effect, 'gone_collab', tutor_data)
+add('update-tutor-deleted-other-association-creates-new', 'owner', 'PATCH', update_path('gone_collab'), 200, info('gone_collab'),
     body={'tutors_data': tutor_data}, allow=ALLOW_UPDATE, effect=effect)
 
 # An own live associate is still found and updated: the scope does not hide the persona's own rows.
 effect = Effect('owner')
-effect.save('idu')
+seed_relations_only('gone_admin')
+effect.save('gone_admin')
 tutor_data = [{'tutor': {'associate_id': A['tutor_a'], 'phone': '3339998888'}, 'is_primary': True}]
-handle_tutors(effect, 'idu', tutor_data)
-add('update-tutor-same-association-updated', 'owner', 'PATCH', update_path('idu'), 200, info('idu'),
+handle_tutors(effect, 'gone_admin', tutor_data)
+add('update-tutor-same-association-updated', 'owner', 'PATCH', update_path('gone_admin'), 200, info('gone_admin'),
     body={'tutors_data': tutor_data}, allow=ALLOW_UPDATE, effect=effect)
 
 assert len({c['name'] for c in cases}) == len(cases)
