@@ -278,6 +278,7 @@ class Stack:
                                               document_id=pk, date=(NOW - timedelta(days=days)).date())
              for i, (pk, days) in enumerate(((E_OLD, 40), (E_NEW1, 3), (E_NEW2, 2), (E_NEW3, 1)))])
         self.fix_defaults(started)
+        self.cluster_tables()
         self.reset_bucket(created_key)
         self.seeding = (started, datetime.now(timezone.utc))
 
@@ -324,6 +325,21 @@ class Stack:
                 fixed = SOURCE_CREATED if kind != 'date' else SOURCE_CREATED.date()
                 bound = started if kind != 'date' else started.date()
                 cursor.execute(f'UPDATE "{table}" SET "{column}" = %s WHERE "{column}" >= %s', [fixed, bound])
+
+    @staticmethod
+    def cluster_tables():
+        """Rewrite each public table's rows in primary-key order, so both export runs read them in the same physical order."""
+        from django.db import connection
+
+        def quoted(name):
+            return '"' + name.replace('"', '""') + '"'
+        with connection.cursor() as cursor:
+            cursor.execute("""SELECT c.relname, i.relname FROM pg_index x JOIN pg_class c ON c.oid = x.indrelid
+              JOIN pg_class i ON i.oid = x.indexrelid JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE x.indisprimary AND n.nspname = 'public' ORDER BY c.relname""")
+            for table, index in cursor.fetchall():
+                cursor.execute(f'CLUSTER {quoted(table)} USING {quoted(index)}')
+            cursor.execute('ANALYZE')
 
     def reset_bucket(self, created_key):
         for item in self.s3.list_objects_v2(Bucket=BUCKET).get('Contents', []):
