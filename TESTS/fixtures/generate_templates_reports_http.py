@@ -738,6 +738,115 @@ run('aggregate-course-unlisted-relation-group-by-error', 'aggregate_data',
     {'model_name': 'Course', 'aggregations': [{'function': 'count', 'field': '*'}],
      'group_by': ['sport_association__user__email']}, 400, {'error': 'No valid group_by fields'})
 
+# === t9rep: lookups, values, JSON, exclude and limits ===
+# Lookups: regular expressions on text, pattern lookups compare against the column's text, a UUID
+# against the nil UUID, an unsupported lookup name and a malformed regular expression.
+run('query-tags-regex', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'tag_name__regex': '^Nuoto$'},
+    'order_by': ['tag_name']}, 200, listing(1, [{'tag_name': 'Nuoto'}]))
+run('query-tags-iregex', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'tag_name__iregex': '^nuoto'},
+    'order_by': ['tag_name']}, 200, listing(2, [{'tag_name': 'Nuoto'}, {'tag_name': 'nuoto agonistico'}]))
+# A decimal filter value is coerced to a float, so the pattern is '45.5%' against the column's text '45.50'.
+run('query-carnets-fee-contains', 'query_data', {'model_name': 'Carnet', 'fields': ['title', 'fee'], 'filters': {'fee__contains': '45.5'},
+    'order_by': ['title']}, 200, listing(1, [{'title': 'Cinque', 'fee': 45.5}]))
+run('query-carnets-fee-startswith', 'query_data', {'model_name': 'Carnet', 'fields': ['title', 'fee'],
+    'filters': {'fee__startswith': '45.5'}, 'order_by': ['title']}, 200, listing(1, [{'title': 'Cinque', 'fee': 45.5}]))
+# An integer column is compared as text too: '10' and '0' both contain '0'.
+run('query-carnets-lessons-contains', 'query_data', {'model_name': 'Carnet', 'fields': ['title', 'lessons_number'],
+    'filters': {'lessons_number__contains': '0'}, 'order_by': ['lessons_number']}, 200,
+    listing(2, [{'title': None, 'lessons_number': 0}, {'title': 'Dieci ingressi', 'lessons_number': 10}]))
+run('query-tags-uuid-gt-nil', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'],
+    'filters': {'tag_id__gt': '00000000-0000-0000-0000-000000000000'}, 'order_by': ['tag_name']}, 200,
+    listing(3, [{'tag_name': 'Calcio & Basket'}, {'tag_name': 'Nuoto'}, {'tag_name': 'nuoto agonistico'}]))
+run('query-categories-unsupported-lookup-error', 'query_data', {'model_name': 'PaymentCategory', 'filters': {'name__nope': 'x'}}, 500, FAILED)
+run('query-tags-malformed-regex-error', 'query_data', {'model_name': 'Tags', 'filters': {'tag_name__regex': '('}}, 500, FAILED)
+# Date and time transforms on the seeded UTC creation dates: 10:00, 08:30.125, 00:00 on 1/15 September and 1 October 2026.
+run('query-tags-minute-transform', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'],
+    'filters': {'creation_date__minute': 0}, 'order_by': ['tag_name']}, 200,
+    listing(2, [{'tag_name': 'Calcio & Basket'}, {'tag_name': 'nuoto agonistico'}]))
+run('query-tags-time-transform', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'],
+    'filters': {'creation_date__time': '10:00:00'}, 'order_by': ['tag_name']}, 200, listing(1, [{'tag_name': 'Calcio & Basket'}]))
+# 1 October 2026 is a Thursday (ISO week day 4).
+run('query-tags-iso-week-day-transform', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'],
+    'filters': {'creation_date__iso_week_day': 4}, 'order_by': ['tag_name']}, 200, listing(1, [{'tag_name': 'nuoto agonistico'}]))
+run('query-tags-date-year-transform', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'],
+    'filters': {'creation_date__date__year': 2026}, 'order_by': ['tag_name']}, 200,
+    listing(3, [{'tag_name': 'Calcio & Basket'}, {'tag_name': 'Nuoto'}, {'tag_name': 'nuoto agonistico'}]))
+run('query-tags-time-field', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name', 'creation_date__time'],
+    'filters': {'tag_name__startswith': 'Calcio'}}, 200, listing(1, [{'tag_name': 'Calcio & Basket', 'creation_date__time': '10:00:00'}]))
+# Minutes 0 (Calcio, nuoto agonistico) and 30 (Nuoto), grouped in that order.
+run('aggregate-tags-group-minute', 'aggregate_data', {'model_name': 'Tags', 'aggregations': [{'function': 'count', 'field': '*'}],
+    'group_by': ['creation_date__minute']}, 200,
+    {'data': {'data': [{'creation_date__minute': 0, 'count_*': 2}, {'creation_date__minute': 30, 'count_*': 1}], 'count': 2}})
+run('query-tags-year-zero-error', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'],
+    'filters': {'creation_date__year': 0}}, 500, FAILED)
+# Filter values: a string for `in` (its characters), a one-item range, an integer outside the column
+# range (always false), a float and non-ASCII digits for an integer, an integer for a UUID, a basic-form
+# date and an ISO week date.
+run('query-tags-in-string', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'tag_name__in': 'Nuoto'},
+    'order_by': ['tag_name']}, 200, listing(0, []))
+run('query-carnets-range-one-item-error', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'lessons_number__range': [5]}}, 500, FAILED)
+run('query-carnets-huge-integer-empty', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'lessons_number': 99999999999999999999}, 'order_by': ['title']}, 200, listing(0, []))
+# int(5.9) and int('٥') are 5.
+run('query-carnets-float-for-integer', 'query_data', {'model_name': 'Carnet', 'fields': ['title'], 'filters': {'lessons_number': 5.9},
+    'order_by': ['title']}, 200, listing(1, [{'title': 'Cinque'}]))
+run('query-carnets-non-ascii-digits', 'query_data', {'model_name': 'Carnet', 'fields': ['title'], 'filters': {'lessons_number': '٥'},
+    'order_by': ['title']}, 200, listing(1, [{'title': 'Cinque'}]))
+run('query-tags-uuid-from-integer', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'tag_id': 5},
+    'order_by': ['tag_name']}, 200, listing(0, []))
+# 20261001 and 2026-W40-4 are both 1 October 2026 at midnight, the creation date of nuoto agonistico.
+run('query-tags-basic-date', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'creation_date': '20261001'},
+    'order_by': ['tag_name']}, 200, listing(1, [{'tag_name': 'nuoto agonistico'}]))
+run('query-tags-week-date', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'creation_date': '2026-W40-4'},
+    'order_by': ['tag_name']}, 200, listing(1, [{'tag_name': 'nuoto agonistico'}]))
+# JSON: the dieci carnet's meta is {'colore': 'blu'}; the others have no such key or a null meta.
+run('query-carnets-meta-contains', 'query_data', {'model_name': 'Carnet', 'fields': ['title', 'meta'],
+    'filters': {'meta__contains': {'colore': 'blu'}}, 'order_by': ['title']}, 200,
+    listing(1, [{'title': 'Dieci ingressi', 'meta': {'colore': 'blu'}}]))
+run('query-carnets-meta-has-keys', 'query_data', {'model_name': 'Carnet', 'fields': ['title', 'meta'],
+    'filters': {'meta__has_keys': ['colore']}, 'order_by': ['title']}, 200,
+    listing(1, [{'title': 'Dieci ingressi', 'meta': {'colore': 'blu'}}]))
+run('query-carnets-meta-key-icontains', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'meta__colore__icontains': 'BL'}, 'order_by': ['title']}, 200, listing(1, [{'title': 'Dieci ingressi'}]))
+run('query-carnets-meta-key-isnull', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'meta__colore__isnull': True}, 'order_by': ['title']}, 200, listing(2, [{'title': 'Cinque'}, {'title': None}]))
+run('query-carnets-meta-missing-key', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'filters': {'meta__manca__icontains': 'x'}, 'order_by': ['title']}, 200, listing(0, []))
+# Values on a key transform: one row per carnet, ordered by title (the null title last).
+run('query-carnets-meta-key-field', 'query_data', {'model_name': 'Carnet', 'fields': ['meta__colore'], 'order_by': ['title']}, 200,
+    listing(3, [{'meta__colore': None}, {'meta__colore': 'blu'}, {'meta__colore': None}]))
+# exclude across a many-valued relation (a reverse foreign key, and a path through it).
+run('query-courses-exclude-registry-status', 'query_data', {'model_name': 'Course', 'fields': ['title'],
+    'exclude': {'attendanceregistry__status': 2}, 'order_by': ['title']}, 200, listing(1, [{'title': 'Tennis'}]))
+# Only the baby's registry and tennis (no registry) have no days titled 'Lezione'.
+run('query-courses-exclude-registry-day', 'query_data', {'model_name': 'Course', 'fields': ['title'],
+    'exclude': {'attendanceregistry__attendanceday__title': 'Lezione'}, 'order_by': ['title']}, 200,
+    listing(2, [{'title': 'Nuoto baby'}, {'title': 'Tennis'}]))
+run('count-courses-exclude-paid-enrolments', 'count_data', {'model_name': 'Course', 'exclude': {'coursesubscription__paid': True}}, 200,
+    {'data': {'count': 8}})
+# One enrolment (nuoto's acca) is deleted.
+run('count-courses-exclude-deleted-enrolments', 'count_data', {'model_name': 'Course', 'exclude': {'coursesubscription__deleted': True}},
+    200, {'data': {'count': 7}})
+# Limits and offsets as other Python numbers, repeated names, and joins items that are not strings.
+run('query-tags-limit-boolean', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': True},
+    200, listing(3, [{'tag_name': 'Calcio & Basket'}], True))
+run('query-tags-limit-float', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'limit': 1.5},
+    200, listing(3, [{'tag_name': 'Calcio & Basket'}], True))
+run('query-tags-offset-string-error', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'offset': '1'},
+    500, FAILED)
+run('query-tags-fields-repeated', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name', 'tag_name'], 'order_by': ['tag_name']}, 200,
+    listing(3, [{'tag_name': 'Calcio & Basket'}, {'tag_name': 'Nuoto'}, {'tag_name': 'nuoto agonistico'}]))
+run('query-tags-joins-number-error', 'query_data', {'model_name': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name'], 'joins': [5]},
+    500, FAILED)
+# An integer outside the column range inside or_filters is dropped from the OR; a negated one excludes nothing.
+run('query-carnets-or-filters-huge-integer', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'or_filters': [{'lessons_number': 99999999999999999999}, {'title': 'Cinque'}], 'order_by': ['title']}, 200,
+    listing(1, [{'title': 'Cinque'}]))
+run('query-carnets-exclude-huge-integer', 'query_data', {'model_name': 'Carnet', 'fields': ['title'],
+    'exclude': {'lessons_number': 99999999999999999999}, 'order_by': ['lessons_number']}, 200,
+    listing(3, [{'title': None}, {'title': 'Cinque'}, {'title': 'Dieci ingressi'}]))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({'matrix_version': 1, 'scope': 'Template update and saved report run authored sequence', 'ids': IDS,
                               'seed': {'templates': TEMPLATES, 'tags': TAGS, 'categories': CATEGORIES, 'carnets': CARNETS, 'reports': REPORTS,

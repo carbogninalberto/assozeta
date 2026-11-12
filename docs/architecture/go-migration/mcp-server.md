@@ -89,6 +89,15 @@ execution owner; nothing here switches traffic.
   averages as floats, integers from Extract/Sum, JSON values, `html.unescape`
   (`internal/pyhtml`) of strings with `&`, Italian choice labels
   (`ITALIAN_CHOICE_OVERRIDES`, otherwise Django's translated choices).
+- Every `__` segment of a caller path is checked against the model's readable
+  fields and relations (`REPORT_ALLOWLIST` in
+  `BE/application/mcp_server/security.py`, generated into `mcp_models.json`; Go
+  `mcpPathAllowed`). A path outside the list is answered like a blocked name: a
+  `fields` item is skipped, a `filters`/`exclude` key is dropped, an
+  `or_filters` key is dropped from its dict, an `order_by`/`joins` item is
+  dropped, a `group_by` item and its aggregation are skipped, and
+  `get_field_values` answers the error; `get_schema` lists only those fields
+  and relations (cases `run-*-unlisted-relation-*`).
 
 ## Files
 
