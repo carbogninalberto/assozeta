@@ -329,7 +329,10 @@ func pythonIterate(value any) ([]any, bool) {
 	return nil, false
 }
 
-// handleTutors is AssociateSerializer._handle_tutors.
+// handleTutors is AssociateSerializer._handle_tutors. associate is the persona
+// as saved by the request; a tutor lookup by id is limited to that persona's
+// association, so a tutor id of another association (or of any association when
+// the persona has none) is an unknown id and creates a new associate.
 func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.PersonaAssociate, tutors any) error {
 	items, ok := pythonIterate(tutors)
 	if !ok {
@@ -402,6 +405,11 @@ func (r *personaWriteRun) handleTutors(ctx context.Context, associate domain.Per
 			parsed, _ := dto.PersonaUUIDValue(id)
 			if tutor, err = r.tx.Associate(ctx, parsed, true, r.group); err != nil {
 				return err
+			}
+			// The lookup is limited to the persona's association: an id of
+			// another association is not found (nil == nil when both have none).
+			if tutor != nil && !samePointer(tutor.AssociationID, associate.AssociationID) {
+				tutor = nil
 			}
 		}
 		var tutorRow domain.PersonaAssociate
