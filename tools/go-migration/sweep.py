@@ -6,8 +6,9 @@
 
 HTTP families are TESTS/fixtures/*_http.json (run through family.py run <family> --versioned --label sweep-L);
 process harnesses are TESTS/adapters/go/*_process.py with a __main__ entry (python -m TESTS.adapters.go.<name>).
---families limits the run to the named HTTP families. --shard I/N takes every Nth job of the sorted list,
-starting at the Ith (1-based), so N shards cover each job exactly once.
+--families limits the run to the named HTTP families and process harnesses (a name is read as a process
+harness when it is a process module name, otherwise as an HTTP family). --shard I/N takes every Nth job of
+the sorted list, starting at the Ith (1-based), so N shards cover each job exactly once.
 
 Guards: refuses a dirty tree, an empty label, an empty job list or an unknown family; every job has a
 timeout; a job passes only on exit 0 with a last stdout line containing "success": true.
@@ -37,27 +38,43 @@ class SweepError(Exception):
     pass
 
 
+def http_families(root):
+    """Every HTTP family name, from TESTS/fixtures/<name with _>_http.json written with dashes."""
+    return sorted(path.name[:-len('_http.json')].replace('_', '-') for path in (root / 'TESTS/fixtures').glob('*_http.json'))
+
+
+def process_harnesses(root):
+    """Every process harness module name, from TESTS/adapters/go/<name>_process.py with a __main__ entry."""
+    return sorted(path.stem for path in (root / 'TESTS/adapters/go').glob('*_process.py')
+                  if not path.name.startswith('test_') and '__main__' in path.read_text())
+
+
 def discover(root, only=None, families=None):
-    """Sorted (kind, name) jobs; families limits the run to those HTTP families."""
-    jobs = []
+    """Sorted (kind, name) jobs; families limits the run to those HTTP families and process harnesses."""
     if families is not None:
-        if only == 'process':
-            raise SweepError('--families selects HTTP families and cannot be combined with --only process')
-        only = 'http'
+        wanted = sorted(set(families))
+        if not wanted:
+            raise SweepError('unknown or empty family selection: <none>')
+        http, process = set(http_families(root)), set(process_harnesses(root))
+        known = {name: 'process' if name in process else 'http' for name in wanted if name in http or name in process}
+        unknown = [name for name in wanted if name not in known]
+        if unknown:
+            raise SweepError('unknown or empty family selection: ' + ', '.join(unknown))
+        if only == 'process' and any(kind == 'http' for kind in known.values()):
+            names = ', '.join(name for name, kind in known.items() if kind == 'http')
+            raise SweepError(f'--families selects HTTP families and cannot be combined with --only process: {names}')
+        if only == 'http' and any(kind == 'process' for kind in known.values()):
+            names = ', '.join(name for name, kind in known.items() if kind == 'process')
+            raise SweepError(f'--only http cannot run process harnesses: {names}')
+        return sorted((kind, name) for name, kind in known.items())
+    jobs = []
     if only in (None, 'http'):
-        found = sorted(path.name[:-len('_http.json')].replace('_', '-') for path in (root / 'TESTS/fixtures').glob('*_http.json'))
+        found = http_families(root)
         if not found:
             raise SweepError('no HTTP families found')
-        if families is not None:
-            wanted = sorted(set(families))
-            unknown = [name for name in wanted if name not in found]
-            if not wanted or unknown:
-                raise SweepError('unknown or empty family selection: ' + ', '.join(unknown or ['<none>']))
-            found = wanted
         jobs += [('http', name) for name in found]
     if only in (None, 'process'):
-        found = sorted(path.stem for path in (root / 'TESTS/adapters/go').glob('*_process.py')
-                       if not path.name.startswith('test_') and '__main__' in path.read_text())
+        found = process_harnesses(root)
         if not found:
             raise SweepError('no process harnesses found')
         jobs += [('process', name) for name in found]
@@ -130,7 +147,7 @@ def main(argv=None):
     parser.add_argument('--label')
     parser.add_argument('--jobs', type=int, default=2)
     parser.add_argument('--only', choices=('http', 'process'))
-    parser.add_argument('--families', help='comma-separated HTTP families')
+    parser.add_argument('--families', help='comma-separated HTTP families and process harnesses')
     parser.add_argument('--shard', help='I/N')
     parser.add_argument('--resume', action='store_true', help='keep passed results of an earlier run with this label')
     parser.add_argument('--timeout', type=int, default=3600, help='seconds per job')

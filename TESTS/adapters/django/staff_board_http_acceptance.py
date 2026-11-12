@@ -14,7 +14,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import tempfile
+import time
 import traceback
 from unittest.mock import patch
 
@@ -41,13 +43,27 @@ def source_hashes(family='staff-board'):
     return {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in names}
 
 
-def execute(report, tools, private, log):
+def execute(report, tools, private, log, shared=None):
+    """Run the family and record wall-clock seconds for each measured phase."""
+    started = time.monotonic()
+    seconds = report.setdefault('phase_seconds', {})
+    try:
+        run_family(report, tools, private, log, shared)
+    finally:
+        seconds['total'] = round(time.monotonic() - started, 1)
+
+
+def run_family(report, tools, private, log, shared):
     from TESTS.adapters.django import message_reads_runtime as reuse
+    from TESTS.adapters.django import shared_postgres
     from TESTS.adapters.django.message_read_scopes_runtime import go_service, caddy_liveness_guard, LIFECYCLE_GUARD
     from TESTS.adapters.django.message_mutations_acceptance import _owned, configure_database_bounds, PG_BOUNDS
     runner = family_runner(report['family'])
     versioned = report['versioned']
-    with _owned(reuse.owned_message_database(private, report)) as (work, port, _services):
+    seconds = report.setdefault('phase_seconds', {})
+    entering = time.monotonic()
+    with _owned(reuse.owned_message_database(private, report, shared=shared)) as (work, port, _services):
+        seconds['database'] = round(time.monotonic() - entering, 1)
         env, _ = reuse.private_environment(work, port, tools)
         env.update(PG_BOUNDS)
         reuse.apply_private_environment(env)
@@ -61,14 +77,26 @@ def execute(report, tools, private, log):
             configure_database_bounds(connections)
             override = override_settings(CACHES=reuse.cache_override(port))
             override.enable()
+            migrating = time.monotonic()
             report['schema'] = reuse.migrate_full_schema(log)
+            seconds['migrate'] = round(time.monotonic() - migrating, 1)
             # Production processes start on a migrated database, so ready() registers
             # every audit resolver; this process started before the schema existed.
             from application.audit_resolvers import SPORT_ASSOCIATION_RESOLVERS, setup_audit_resolvers
             setup_audit_resolvers()
             assert 'application.sportassociation' in SPORT_ASSOCIATION_RESOLVERS, 'audit.resolvers'
             from TESTS.adapters.go import go_operational_migrations
+            go_migrating = time.monotonic()
             report['go_operational_schema'] = go_operational_migrations.apply(work, {**env, **tools}, log)
+            if shared is not None and report['shared_postgres']['from_template'] is False:
+                # A database that started empty is fully migrated now, so it can seed
+                # the template for later runs; nothing may hold it open meanwhile.
+                from TESTS.adapters.django.historical_read_routes import database_target
+                connections.close_all()
+                _host, name = database_target(work)
+                report['shared_postgres']['template_published'] = shared_postgres.publish_template(
+                    shared[0], name, shared[1])
+            seconds['go_migrate'] = round(time.monotonic() - go_migrating, 1)
             raw = redis.Redis(host='127.0.0.1', port=port, db=1, password=env['REDIS_PASSWORD'],
                               decode_responses=False, socket_timeout=5, socket_connect_timeout=5)
             poll(raw.ping, bool, timeout=15)
@@ -78,6 +106,7 @@ def execute(report, tools, private, log):
             # An optional family asgi_application() (for example Channels WebSocket
             # routing) replaces Django's HTTP-only application once they are entered.
             services = getattr(runner, 'service_context', None)
+            serving = time.monotonic()
             with _owned(services(report, log) if services else contextlib.nullcontext()), \
                     _owned(reuse.django_application(report, versioned, None, liveness_observer=guards.append,
                                                     application=getattr(runner, 'asgi_application', lambda: None)())) as (url, observer, http_port):
@@ -93,6 +122,7 @@ def execute(report, tools, private, log):
                                  ('go-native', 'go', native['base_url'], native[LIFECYCLE_GUARD])]
 
                     def run(selected):
+                        working = time.monotonic()
                         for index, (label, backend, base_url, guard) in enumerate(selected):
                             cleanup = {}
                             report['fixture_cleanup'].append(cleanup)
@@ -100,6 +130,8 @@ def execute(report, tools, private, log):
                                 workload = runner.run_workload(label, backend, base_url, fixture, apps, raw, observer)
                                 guard()
                                 report['workloads'].append(workload)
+                        seconds['workloads'] = round(
+                            seconds.get('workloads', 0) + time.monotonic() - working, 1)
 
                     if versioned:
                         upstream = f'host.docker.internal:{http_port}'
@@ -110,8 +142,10 @@ def execute(report, tools, private, log):
                             endpoints += [
                                 ('caddy-v1', 'django', gateway + '/api/v1', caddy_liveness_guard(guards[0], container['container_id'])),
                                 ('caddy-v2', 'go', gateway + '/api/v2', caddy_liveness_guard(native[LIFECYCLE_GUARD], container['container_id']))]
+                            seconds['services'] = round(time.monotonic() - serving, 1)
                             run(endpoints)
                     else:
+                        seconds['services'] = round(time.monotonic() - serving, 1)
                         run(endpoints)
             report['runtime_executed'] = True
         finally:
@@ -133,6 +167,7 @@ def main(argv=None):
     parser.add_argument('--family', required=True)
     args = parser.parse_args(argv)
     from TESTS.adapters.django import message_reads_runtime as reuse
+    from TESTS.adapters.django import shared_postgres
     output = reuse.prepare_output_directory(args.output)
     report = {'success': False, 'scope': args.family + ' authored HTTP sequence', 'versioned': args.versioned, 'family': args.family,
               'complete_family_parity': False, 'workloads': [], 'fixture_cleanup': [], 'resource_cleanup': {},
@@ -148,12 +183,22 @@ def main(argv=None):
         # wide margins so any host offset below them yields the same result.
         tools.update({'LC_ALL': 'C', 'LANG': 'C', 'GOPROXY': 'off', 'GOTOOLCHAIN': 'local',
                       'GOSUMDB': 'off', 'GOFLAGS': '-mod=readonly'})
+        # Resolve the server before the tool environment replaces every variable.
+        settings = shared_postgres.resolve(os.environ)
+        shared_postgres.activate(settings)
+        report['postgres_mode'] = 'shared' if settings.postgres else 'private'
+        shared = None
+        if settings.postgres:
+            import django
+            key = shared_postgres.template_key(
+                ROOT, extra=f'django={django.get_version()};python={platform.python_version()}')
+            shared = (settings.postgres, key)
         with patch.dict(os.environ, tools, clear=True):
             with tempfile.TemporaryDirectory(prefix='az-staff-board-http-', dir='/tmp') as directory:
                 private = Path(directory)
                 with (private / 'private.log').open('w') as log:
                     try:
-                        execute(report, tools, private, log)
+                        execute(report, tools, private, log, shared=shared)
                     except BaseException as error:
                         # Diagnostics stay private; publish only the fixed failure location.
                         traceback.print_exc(file=log)
@@ -174,7 +219,8 @@ def main(argv=None):
         expected = 4 if args.versioned else 2
         report['success'] = bool(not report['errors'] and report['runtime_executed'] and report['source_stable']
                                  and report['fixture_cleanup_verified'] and len(report['workloads']) == expected
-                                 and all(w['success'] for w in report['workloads']) and report.get('private_output_removed'))
+                                 and all(w['success'] for w in report['workloads']) and report.get('private_output_removed')
+                                 and report.get('shared_postgres', {}).get('database_dropped', True) is True)
         (output / 'results.json').write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + '\n')
     print(json.dumps({'success': report['success'], 'workloads': [w['label'] for w in report['workloads']],
                       'errors': report['errors']}))

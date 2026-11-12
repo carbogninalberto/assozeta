@@ -1,5 +1,6 @@
 """Isolated, fixed-purpose probes. Never return exception text or connection details."""
 import json
+import os
 import sys
 import time
 from email.utils import formataddr
@@ -34,7 +35,9 @@ def probe(name, payload):
             assert cursor.fetchone()[0] == 1
         return result('passed', 'Il database risponde a una query di lettura. Nessun dato è stato modificato.')
     if name in ('public_url', 'api'):
-        url = settings.APP_URL if name == 'public_url' else 'http://127.0.0.1:8000'
+        # The API probe address is configurable so parallel runs keep separate stubs.
+        url = settings.APP_URL if name == 'public_url' else (
+            os.environ.get('ASSOZETA_DIAGNOSTICS_API_URL') or 'http://127.0.0.1:8000')
         parsed = urlsplit(url)
         if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password:
             return result('failed', 'Configura un URL pubblico valido in APP_URL.', 'configuration')

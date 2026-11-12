@@ -16,10 +16,10 @@ host or provider credentials), WHITELABEL_NAME 'A.S.D. Polisportiva "Città"
 (Aurora)' and EMAIL_HOST_USER 'segreteria@polisportiva.example' (the
 environment sender is parseaddr of DEFAULT_FROM_EMAIL). The diagnostics runs
 at the end script the services the probes reach (see the adapter): the
-public URL through an HTTPS proxy, the API on 127.0.0.1:8000 (Go's API probe
-target is set to the same stub), the renderer and S3 stubs, a pidbox worker
-on the broker and the scheduler heartbeat in Django's cache. Run with
-``python3 -I``.
+public URL through an HTTPS proxy, the API stub (its own loopback address is
+published to both backends as ASSOZETA_DIAGNOSTICS_API_URL), the renderer and
+S3 stubs, a pidbox worker on the broker and the scheduler heartbeat in
+Django's cache. Run with ``python3 -I``.
 """
 import base64
 import copy
