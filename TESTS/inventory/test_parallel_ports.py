@@ -4,6 +4,7 @@ Everything runs with mocks: no server, subprocess or socket is started. The
 diagnostics probe address, the private Redis start and the Go server port race
 are the three places where concurrent runs used to share an address.
 """
+import ast
 import io
 from pathlib import Path
 import sys
@@ -28,36 +29,50 @@ from TESTS.adapters.django import historical_read_routes as adapter
 def probe_settings(monkeypatch):
     """The settings the probes read, cached on Django's lazy object.
 
-    Writing into ``__dict__`` supplies the two values the probe reads without
+    Writing into ``__dict__`` supplies the values the probe reads without
     configuring Django globally (which would leak into the rest of the suite).
     """
     from django.conf import settings
     monkeypatch.setitem(settings.__dict__, 'APP_URL', 'https://app.example.test')
     monkeypatch.setitem(settings.__dict__, 'RUNNING_VERSION', 'v-test')
+    monkeypatch.setitem(settings.__dict__, 'DIAGNOSTICS_API_URL', 'http://127.0.0.1:41234')
+    return settings
 
 
-@pytest.mark.parametrize('configured', ['http://127.0.0.1:41234', '', None])
-def test_api_probe_address_follows_the_environment(monkeypatch, probe_settings, configured):
+@pytest.mark.parametrize('configured', ['http://127.0.0.1:41234', 'http://127.0.0.1:8000'])
+def test_api_probe_address_follows_the_setting(monkeypatch, probe_settings, configured):
     seen = []
     monkeypatch.setattr(diagnostic_probe, 'health_response',
                         lambda url, version=None: seen.append((url, version)) or True)
-    if configured is None:
-        monkeypatch.delenv('ASSOZETA_DIAGNOSTICS_API_URL', raising=False)
-    else:
-        monkeypatch.setenv('ASSOZETA_DIAGNOSTICS_API_URL', configured)
+    monkeypatch.setitem(probe_settings.__dict__, 'DIAGNOSTICS_API_URL', configured)
 
     outcome = diagnostic_probe.probe('api', {})
 
-    expected = configured or 'http://127.0.0.1:8000'
     assert outcome['status'] == 'passed'
-    assert seen == [(expected + '/healthz', 'v-test')]
+    assert seen == [(configured + '/healthz', 'v-test')]
+
+
+def test_settings_read_the_probe_address_from_the_environment():
+    """The setting is the environment variable, defaulted to the local API."""
+    source = (ROOT / 'BE' / 'core' / 'settings.py').read_text(encoding='utf-8')
+    assignment = next(
+        node for node in ast.parse(source).body
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == 'DIAGNOSTICS_API_URL'
+            for target in node.targets))
+
+    text = ast.get_source_segment(source, assignment)
+
+    assert "'ASSOZETA_DIAGNOSTICS_API_URL'" in text
+    assert 'http://127.0.0.1:8000' in text
 
 
 def test_public_url_probe_still_uses_app_url(monkeypatch, probe_settings):
     seen = []
     monkeypatch.setattr(diagnostic_probe, 'health_response',
                         lambda url, version=None: seen.append((url, version)) or True)
-    monkeypatch.setenv('ASSOZETA_DIAGNOSTICS_API_URL', 'http://127.0.0.1:41234')
+    # The local API address is never the public URL, however it is configured.
+    monkeypatch.setitem(probe_settings.__dict__, 'DIAGNOSTICS_API_URL', 'http://127.0.0.1:59999')
 
     outcome = diagnostic_probe.probe('public_url', {})
 

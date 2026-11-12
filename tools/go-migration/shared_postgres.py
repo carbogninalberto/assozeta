@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Manage the shared PostgreSQL server used by parity test runs.
 
+Family runs use the shared server by default; ASSOZETA_TEST_PRIVATE_POSTGRES=1
+opts out and starts a private server per run.
+
   python3 tools/go-migration/shared_postgres.py [--directory DIR] start|stop|status|cleanup
                                                 [--hours N] [--templates]
 

@@ -67,6 +67,13 @@ def test_resolve_is_private_when_shared_is_off_by_default(monkeypatch, tmp_path)
     assert sp.resolve(environment) == sp.Settings(None, None)
 
 
+def test_shared_is_the_default_mode(tmp_path):
+    assert sp.SHARED_BY_DEFAULT is True
+    environment = {'HOME': str(tmp_path / 'home')}
+    assert sp.resolve(environment) == sp.Settings(
+        sp.default_directory(environment), sp.default_binary_cache(environment))
+
+
 def test_resolve_uses_default_directory_when_shared_is_on(monkeypatch, tmp_path):
     monkeypatch.setattr(sp, 'SHARED_BY_DEFAULT', True)
     environment = {'HOME': str(tmp_path / 'home')}

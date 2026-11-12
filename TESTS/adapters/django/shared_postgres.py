@@ -24,7 +24,7 @@ import sys
 import time
 from typing import Iterator
 
-SHARED_BY_DEFAULT = False
+SHARED_BY_DEFAULT = True
 DATABASE_USER = 'contracts'
 SOCKET_LIMIT = 100
 COMMAND_TIMEOUT = 120
