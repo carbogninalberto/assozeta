@@ -259,6 +259,12 @@ def seed_rows(source, created):
             group_id=ids[row['group']] if row['group'] else None, deleted=row['deleted'], payment_category_id=row['category'],
             creation_date=moment(row['created']), payment_date=moment(row['payment_date']), description=row['description'],
             meta_payment_categories=row.get('meta_categories'), meta=row.get('meta'), type=row['type']))
+    if 'mp_two_own' in payments and 'mp_two_plain' in payments:
+        # The multiple-pay view takes the association of the first row that an unordered payment_id__in read returns;
+        # the seeded physical order must make mp_two_own that row.
+        own_id, plain_id = str(payments['mp_two_own']['id']), str(payments['mp_two_plain']['id'])
+        order = [str(value) for value in Payment._base_manager.filter(payment_id__in=[own_id, plain_id]).values_list('payment_id', flat=True)]
+        contract.require(order == [own_id, plain_id], 'fixture.multiple-pay-row-order')
     for label, row in source['supplier_invoices'].items():
         insert(InvoiceSuppliers, InvoiceSuppliers(invoice_supplier_id=row['id'], invoice_identifier=row['identifier'],
                                                   amount=Decimal(row['amount']), sport_association_id=payments[label]['association'],
@@ -375,6 +381,14 @@ def default_category():
 
 @contextmanager
 def fixture_context(apps, private_work, raw, *, cleanup_receipt=None):
+    # The multiple-pay view takes the association of the first row that an unordered payment_id__in read returns, so the
+    # answer follows the table's physical order. Rows deleted by the previous transport leave reusable space; compacting
+    # the table first makes the next inserts land in insertion order on every transport.
+    from django.db import connection
+    from application.models import Payment
+    contract.require(not connection.in_atomic_block, 'fixture.vacuum-outside-transaction')
+    with connection.cursor() as cursor:
+        cursor.execute('VACUUM FULL ' + connection.ops.quote_name(Payment._meta.db_table))
     with base_fixture_context(apps, private_work, raw, cleanup_receipt=cleanup_receipt) as fixture:
         fixture['default_category'] = default_category()
         STATE['fixture'] = fixture
