@@ -47,13 +47,25 @@ execution owner; nothing here switches traffic.
   promotion/demotion, `Q(**kwargs)` sorted keys, `Q.__or__` squashing for
   `or_filters`, `exclude()` with Django's `IS NOT NULL` for nullable or
   outer-joined columns.
+- `exclude()` across a many-valued relation: `MultiJoin`/`split_exclude`
+  build `NOT (EXISTS(SELECT 1 AS "a" FROM … WHERE (<condition> AND <join> =
+  (<outer>.<col>)) LIMIT 1))` with `trim_start`'s trimmed prefix, the
+  subquery's own `U0`/`U1` aliases and the `or_null_condition` of an outer
+  trimmed prefix; each many-valued key of one `exclude` becomes its own
+  subquery inside the same `NOT (…)`.
 - Paths over forward FK/O2O, reverse FK/O2O and M2M (both directions), `pk`,
   attnames; transforms `year` (BETWEEN bounds), `month`, `day`, `week`,
   `week_day`, `quarter`, `hour`, `date`, JSON key transforms (one key);
   lookups exact, iexact, (i)contains, (i)startswith, (i)endswith, gt/gte/lt/
-  lte, in (None dropped, deduplicated, empty: no rows), range, isnull,
-  has_key; `_coerce_filter_values` (strptime formats, `int()`, `float()`)
-  then each field's `get_prep_value`.
+  lte, in (Python iteration, None dropped, deduplicated, empty: no rows),
+  range, isnull, has_key; out-of-range integer comparisons map to
+  EmptyResultSet/FullResultSet per `WhereNode.as_sql` (an empty OR branch is
+  dropped, an empty AND empties, a negated empty is full);
+  `_coerce_filter_values` (strptime formats, `int()`, `float()`) then each
+  field's `get_prep_value` (integer/float truncation and rounding, decimal
+  non-finite and container errors, UUID from int/bool and `int(hex, 16)`
+  spellings, `parse_date`/`parse_datetime` with the full `fromisoformat`
+  grammar, `str()` of containers for text).
 - Exact exception texts: `Model 'X' is not whitelisted`, FieldError
   `Cannot resolve keyword … Choices are: …` and `… Join on 'f' not
   permitted.`, `Cannot parse keyword query ''`, UUID/date/datetime/boolean/
@@ -64,11 +76,28 @@ execution owner; nothing here switches traffic.
 - `values()`/`count()`/`aggregate()`/grouped annotate SQL keeps Django's
   shape (DISTINCT, select list, joins, ORDER BY columns added to the select,
   `__colN` subquery for flat aggregates), so unordered results come back in
-  the same order; text rendering happens in an outer projection.
+  the same order; text rendering happens in an outer projection. A repeated
+  name in `fields`/`group_by` keeps one column in first-appearance order, as
+  `values()` does.
+- `limit`/`offset` follow Python's slicing: bools count as ints, float bounds
+  are truncated by `int()`, a limit above the maximum is capped, an
+  out-of-range offset stays in the SQL for PostgreSQL, and the type errors of
+  `min()`/`+`/`<` keep Django's text. `joins` runs `_split_joins` and the
+  `select_related`/`prefetch_related` checks; `values()` then drops both, so
+  only a non-string item (`lookup.split`) or a non-iterable value raises.
 - Serialisation (`_serialize_value`): UUID text, `isoformat()`, Decimal and
   averages as floats, integers from Extract/Sum, JSON values, `html.unescape`
-  of strings with `&`, Italian choice labels (`ITALIAN_CHOICE_OVERRIDES`,
-  otherwise Django's translated choices).
+  (`internal/pyhtml`) of strings with `&`, Italian choice labels
+  (`ITALIAN_CHOICE_OVERRIDES`, otherwise Django's translated choices).
+- Every `__` segment of a caller path is checked against the model's readable
+  fields and relations (`REPORT_ALLOWLIST` in
+  `BE/application/mcp_server/security.py`, generated into `mcp_models.json`; Go
+  `mcpPathAllowed`). A path outside the list is answered like a blocked name: a
+  `fields` item is skipped, a `filters`/`exclude` key is dropped, an
+  `or_filters` key is dropped from its dict, an `order_by`/`joins` item is
+  dropped, a `group_by` item and its aggregation are skipped, and
+  `get_field_values` answers the error; `get_schema` lists only those fields
+  and relations (cases `run-*-unlisted-relation-*`).
 
 ## Files
 
@@ -93,18 +122,10 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
   `export`, `multi_sheet`, `filename` or course/date argument of a type the save_info
   would write back differently.
 - ORM inputs whose Django text includes SQL or parts Go does not reproduce:
-  JSON containment and multi-key lookups, nested or integer JSON keys,
-  `exclude()` across many-valued relations (split_exclude subquery), `?`
-  ordering, ordering by a relation whose model has Meta.ordering,
-  SUM/AVG/MIN/MAX of non-numeric/unsupported types (database errors; the
-  saved-report route answers its generic 500 for them, as Django does),
-  integer list items outside the 64-bit parameter range, non-integral floats
-  for limits, non-canonical UUID spellings `int()` could accept, ISO datetime
-  forms only `fromisoformat` accepts (compact date-only and ISO-week date
-  forms are ported), non-ASCII digits, HTML references other than the common
-  named ones, CSV cells holding JSON containers or ISO-looking text other
-  than the engine's own datetimes, attendance names whose `str.lower()`
-  differs from Go's.
+  `?` ordering, ordering by a relation whose model has Meta.ordering, integer
+  list items outside the 64-bit parameter range, CSV cells holding JSON
+  containers or ISO-looking text other than the engine's own datetimes,
+  attendance names whose `str.lower()` differs from Go's.
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.

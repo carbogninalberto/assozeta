@@ -3194,6 +3194,1164 @@
     "ui": {},
     "created": "2026-10-01T08:00:00+00:00",
     "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930225",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title",
+      "sport_association__user__email"
+     ],
+     "filters": {
+      "title": "Tennis"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_filter_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930226",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_filter_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis",
+      "sport_association__user__password__startswith": "zzz"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_exclude_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930227",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_exclude_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis"
+     },
+     "exclude": {
+      "sport_association__user__is_superuser": false
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_or_filter_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930228",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_or_filter_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis"
+     },
+     "or_filters": [
+      {
+       "title": "Tennis"
+      },
+      {
+       "sport_association__user__username": "x"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_order_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930229",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_order_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title__in": [
+       "Tennis",
+       "Nuoto",
+       "Calcio a 5"
+      ]
+     },
+     "order_by": [
+      "sport_association__user__email",
+      "-title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_unlisted_relation_join_dropped": {
+    "id": "a1000000-0000-4000-8000-000000930230",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_unlisted_relation_join_dropped",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "title": "Tennis"
+     },
+     "joins": [
+      "sport_association__user"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_course_listed_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930231",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_course_listed_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title",
+      "group__name"
+     ],
+     "filters": {
+      "title": "Ginnastica dolce per gli ad (2)"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnet_unlisted_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930232",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnet_unlisted_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "user_id"
+     ],
+     "filters": {
+      "lessons_number": 10
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_unlisted_relation_field": {
+    "id": "a1000000-0000-4000-8000-000000930233",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_unlisted_relation_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "sport_association__user_id"
+     ],
+     "filters": {
+      "tag_name": "Nuoto"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "values_course_unlisted_relation_error": {
+    "id": "a1000000-0000-4000-8000-000000930234",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report values_course_unlisted_relation_error",
+    "description": "",
+    "tool": "get_field_values",
+    "params": {
+     "model_name": "Course",
+     "field_name": "sport_association__user__email"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_course_unlisted_relation_field_error": {
+    "id": "a1000000-0000-4000-8000-000000930235",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_course_unlisted_relation_field_error",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Course",
+     "aggregations": [
+      {
+       "function": "max",
+       "field": "sport_association__user__last_login"
+      }
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_course_unlisted_relation_group_by_error": {
+    "id": "a1000000-0000-4000-8000-000000930236",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_course_unlisted_relation_group_by_error",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Course",
+     "aggregations": [
+      {
+       "function": "count",
+       "field": "*"
+      }
+     ],
+     "group_by": [
+      "sport_association__user__email"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_regex": {
+    "id": "a1000000-0000-4000-8000-000000930237",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_regex",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "tag_name__regex": "^Nuoto$"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_iregex": {
+    "id": "a1000000-0000-4000-8000-000000930238",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_iregex",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "tag_name__iregex": "^nuoto"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_fee_contains": {
+    "id": "a1000000-0000-4000-8000-000000930239",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_fee_contains",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "fee"
+     ],
+     "filters": {
+      "fee__contains": "45.5"
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_fee_startswith": {
+    "id": "a1000000-0000-4000-8000-000000930240",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_fee_startswith",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "fee"
+     ],
+     "filters": {
+      "fee__startswith": "45.5"
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_lessons_contains": {
+    "id": "a1000000-0000-4000-8000-000000930241",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_lessons_contains",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "lessons_number"
+     ],
+     "filters": {
+      "lessons_number__contains": "0"
+     },
+     "order_by": [
+      "lessons_number"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_uuid_gt_nil": {
+    "id": "a1000000-0000-4000-8000-000000930242",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_uuid_gt_nil",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "tag_id__gt": "00000000-0000-0000-0000-000000000000"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_categories_unsupported_lookup_error": {
+    "id": "a1000000-0000-4000-8000-000000930243",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_categories_unsupported_lookup_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "PaymentCategory",
+     "filters": {
+      "name__nope": "x"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_malformed_regex_error": {
+    "id": "a1000000-0000-4000-8000-000000930244",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_malformed_regex_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "filters": {
+      "tag_name__regex": "("
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_minute_transform": {
+    "id": "a1000000-0000-4000-8000-000000930245",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_minute_transform",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__minute": 0
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_time_transform": {
+    "id": "a1000000-0000-4000-8000-000000930246",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_time_transform",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__time": "10:00:00"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_iso_week_day_transform": {
+    "id": "a1000000-0000-4000-8000-000000930247",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_iso_week_day_transform",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__iso_week_day": 4
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_date_year_transform": {
+    "id": "a1000000-0000-4000-8000-000000930248",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_date_year_transform",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__date__year": 2026
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_time_field": {
+    "id": "a1000000-0000-4000-8000-000000930249",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_time_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "creation_date__time"
+     ],
+     "filters": {
+      "tag_name__startswith": "Calcio"
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "aggregate_tags_group_minute": {
+    "id": "a1000000-0000-4000-8000-000000930250",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report aggregate_tags_group_minute",
+    "description": "",
+    "tool": "aggregate_data",
+    "params": {
+     "model_name": "Tags",
+     "aggregations": [
+      {
+       "function": "count",
+       "field": "*"
+      }
+     ],
+     "group_by": [
+      "creation_date__minute"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_year_zero_error": {
+    "id": "a1000000-0000-4000-8000-000000930251",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_year_zero_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date__year": 0
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_in_string": {
+    "id": "a1000000-0000-4000-8000-000000930252",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_in_string",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "tag_name__in": "Nuoto"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_range_one_item_error": {
+    "id": "a1000000-0000-4000-8000-000000930253",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_range_one_item_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "lessons_number__range": [
+       5
+      ]
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_huge_integer_empty": {
+    "id": "a1000000-0000-4000-8000-000000930254",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_huge_integer_empty",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "lessons_number": 99999999999999999999
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_float_for_integer": {
+    "id": "a1000000-0000-4000-8000-000000930255",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_float_for_integer",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "lessons_number": 5.9
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_non_ascii_digits": {
+    "id": "a1000000-0000-4000-8000-000000930256",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_non_ascii_digits",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "lessons_number": "٥"
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_uuid_from_integer": {
+    "id": "a1000000-0000-4000-8000-000000930257",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_uuid_from_integer",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "tag_id": 5
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_basic_date": {
+    "id": "a1000000-0000-4000-8000-000000930258",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_basic_date",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date": "20261001"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_week_date": {
+    "id": "a1000000-0000-4000-8000-000000930259",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_week_date",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "filters": {
+      "creation_date": "2026-W40-4"
+     },
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_meta_contains": {
+    "id": "a1000000-0000-4000-8000-000000930260",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_contains",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "meta"
+     ],
+     "filters": {
+      "meta__contains": {
+       "colore": "blu"
+      }
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_meta_has_keys": {
+    "id": "a1000000-0000-4000-8000-000000930261",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_has_keys",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title",
+      "meta"
+     ],
+     "filters": {
+      "meta__has_keys": [
+       "colore"
+      ]
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_meta_key_icontains": {
+    "id": "a1000000-0000-4000-8000-000000930262",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_key_icontains",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "meta__colore__icontains": "BL"
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_meta_key_isnull": {
+    "id": "a1000000-0000-4000-8000-000000930263",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_key_isnull",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "meta__colore__isnull": true
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_meta_missing_key": {
+    "id": "a1000000-0000-4000-8000-000000930264",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_missing_key",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "filters": {
+      "meta__manca__icontains": "x"
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_meta_key_field": {
+    "id": "a1000000-0000-4000-8000-000000930265",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_meta_key_field",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "meta__colore"
+     ],
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_courses_exclude_registry_status": {
+    "id": "a1000000-0000-4000-8000-000000930266",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_courses_exclude_registry_status",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "exclude": {
+      "attendanceregistry__status": 2
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_courses_exclude_registry_day": {
+    "id": "a1000000-0000-4000-8000-000000930267",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_courses_exclude_registry_day",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Course",
+     "fields": [
+      "title"
+     ],
+     "exclude": {
+      "attendanceregistry__attendanceday__title": "Lezione"
+     },
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "count_courses_exclude_paid_enrolments": {
+    "id": "a1000000-0000-4000-8000-000000930268",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report count_courses_exclude_paid_enrolments",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "Course",
+     "exclude": {
+      "coursesubscription__paid": true
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "count_courses_exclude_deleted_enrolments": {
+    "id": "a1000000-0000-4000-8000-000000930269",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report count_courses_exclude_deleted_enrolments",
+    "description": "",
+    "tool": "count_data",
+    "params": {
+     "model_name": "Course",
+     "exclude": {
+      "coursesubscription__deleted": true
+     }
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_limit_boolean": {
+    "id": "a1000000-0000-4000-8000-000000930270",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_limit_boolean",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ],
+     "limit": true
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_limit_float": {
+    "id": "a1000000-0000-4000-8000-000000930271",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_limit_float",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ],
+     "limit": 1.5
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_offset_string_error": {
+    "id": "a1000000-0000-4000-8000-000000930272",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_offset_string_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ],
+     "offset": "1"
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_fields_repeated": {
+    "id": "a1000000-0000-4000-8000-000000930273",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_fields_repeated",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name",
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_tags_joins_number_error": {
+    "id": "a1000000-0000-4000-8000-000000930274",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_tags_joins_number_error",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Tags",
+     "fields": [
+      "tag_name"
+     ],
+     "order_by": [
+      "tag_name"
+     ],
+     "joins": [
+      5
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_or_filters_huge_integer": {
+    "id": "a1000000-0000-4000-8000-000000930275",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_or_filters_huge_integer",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "or_filters": [
+      {
+       "lessons_number": 99999999999999999999
+      },
+      {
+       "title": "Cinque"
+      }
+     ],
+     "order_by": [
+      "title"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
+   },
+   "query_carnets_exclude_huge_integer": {
+    "id": "a1000000-0000-4000-8000-000000930276",
+    "association": "a1000000-0000-4000-8000-000000701001",
+    "creator": "owner",
+    "name": "Report query_carnets_exclude_huge_integer",
+    "description": "",
+    "tool": "query_data",
+    "params": {
+     "model_name": "Carnet",
+     "fields": [
+      "title"
+     ],
+     "exclude": {
+      "lessons_number": 99999999999999999999
+     },
+     "order_by": [
+      "lessons_number"
+     ]
+    },
+    "ui": {},
+    "created": "2026-10-01T08:00:00+00:00",
+    "updated": "2026-10-02T08:00:00+00:00"
    }
   },
   "people": {
@@ -8540,6 +9698,1169 @@
     "kind": "report-delete",
     "label": "remove"
    }
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930225/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-filter-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930226/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-exclude-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930227/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-or-filter-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930228/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-order-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930229/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      },
+      {
+       "title": "Nuoto"
+      },
+      {
+       "title": "Calcio a 5"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-unlisted-relation-join-dropped",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930230/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-course-listed-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930231/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Ginnastica dolce per gli ad (2)",
+       "group__name": "Palestra"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnet-unlisted-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930232/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Dieci ingressi"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-unlisted-relation-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930233/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Nuoto"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-values-course-unlisted-relation-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930234/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-course-unlisted-relation-field-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930235/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No valid aggregations"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-course-unlisted-relation-group-by-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930236/run",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "No valid group_by fields"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-regex",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930237/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Nuoto"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-iregex",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930238/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Nuoto"
+      },
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-fee-contains",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930239/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque",
+       "fee": 45.5
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-fee-startswith",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930240/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque",
+       "fee": 45.5
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-lessons-contains",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930241/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "title": null,
+       "lessons_number": 0
+      },
+      {
+       "title": "Dieci ingressi",
+       "lessons_number": 10
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-uuid-gt-nil",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930242/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      },
+      {
+       "tag_name": "Nuoto"
+      },
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-categories-unsupported-lookup-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930243/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-malformed-regex-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930244/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-minute-transform",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930245/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      },
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-time-transform",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930246/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-iso-week-day-transform",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930247/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-date-year-transform",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930248/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      },
+      {
+       "tag_name": "Nuoto"
+      },
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-time-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930249/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket",
+       "creation_date__time": "10:00:00"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-aggregate-tags-group-minute",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930250/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "data": [
+      {
+       "creation_date__minute": 0,
+       "count_*": 2
+      },
+      {
+       "creation_date__minute": 30,
+       "count_*": 1
+      }
+     ],
+     "count": 2
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-year-zero-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930251/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-in-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930252/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 0,
+     "has_more": false,
+     "data": []
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-range-one-item-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930253/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-huge-integer-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930254/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 0,
+     "has_more": false,
+     "data": []
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-float-for-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930255/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-non-ascii-digits",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930256/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-uuid-from-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930257/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 0,
+     "has_more": false,
+     "data": []
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-basic-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930258/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-week-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930259/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-meta-contains",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930260/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Dieci ingressi",
+       "meta": {
+        "colore": "blu"
+       }
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-meta-has-keys",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930261/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Dieci ingressi",
+       "meta": {
+        "colore": "blu"
+       }
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-meta-key-icontains",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930262/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Dieci ingressi"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-meta-key-isnull",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930263/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque"
+      },
+      {
+       "title": null
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-meta-missing-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930264/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 0,
+     "has_more": false,
+     "data": []
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-meta-key-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930265/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "meta__colore": null
+      },
+      {
+       "meta__colore": "blu"
+      },
+      {
+       "meta__colore": null
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-courses-exclude-registry-status",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930266/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-courses-exclude-registry-day",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930267/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 2,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Nuoto baby"
+      },
+      {
+       "title": "Tennis"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-count-courses-exclude-paid-enrolments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930268/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 8
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-count-courses-exclude-deleted-enrolments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930269/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 7
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-limit-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930270/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": true,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-limit-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930271/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": true,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-offset-string-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930272/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-fields-repeated",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930273/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "tag_name": "Calcio & Basket"
+      },
+      {
+       "tag_name": "Nuoto"
+      },
+      {
+       "tag_name": "nuoto agonistico"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-tags-joins-number-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930274/run",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Errore durante l'esecuzione del report."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-or-filters-huge-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930275/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 1,
+     "has_more": false,
+     "data": [
+      {
+       "title": "Cinque"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "templates-reports-run-query-carnets-exclude-huge-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/saved-reports/a1000000-0000-4000-8000-000000930276/run",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "count": 3,
+     "has_more": false,
+     "data": [
+      {
+       "title": null
+      },
+      {
+       "title": "Cinque"
+      },
+      {
+       "title": "Dieci ingressi"
+      }
+     ]
+    }
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
   }
  ]
 }

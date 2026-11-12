@@ -53,8 +53,9 @@ transport, identity and listing behaviour is in `module-templates.md` and
 
 ### Query engine (`BE/application/mcp_server/query_builder.py`)
 
-Ported in `BE_GO/internal/dto/report_tools.go` for the whitelisted models
-`Tags`, `PaymentCategory` and `Carnet`:
+Ported in `BE_GO/internal/dto/report_tools.go` (with `mcp_query.go`,
+`mcp_prep.go` and the generated `mcp_models.json`) for every whitelisted
+model:
 
 - `QueryBuilder.__init__` reads `effective_integration('ai')`: a self-hosted
   instance's stored `max_results`/`query_timeout`, else
@@ -83,7 +84,20 @@ Ported in `BE_GO/internal/dto/report_tools.go` for the whitelisted models
 - Values: UUIDs as text, `isoformat()` datetimes, `Decimal` and averages as
   floats, `html.unescape` of text containing `&`, Italian choice labels
   (`PaymentCategory.type`).
-- `get_schema`: the `{"error": "Model <name> not found"}` answer.
+- `get_schema` (`mcp_schema.go`): the full `{"models": [...]}` answer, or one
+  model's schema with its listed fields (`type`, `verbose_name`, choices,
+  lengths, JSON structures) and relations (`usage` prefixes); the
+  `{"error": "Model <name> not found"}` answer for an unknown name.
+
+Every `__` segment of a caller-supplied path is checked against the model's
+readable fields and relations (`REPORT_ALLOWLIST` in
+`BE/application/mcp_server/security.py`, generated into `mcp_models.json`; Go
+`mcpPathAllowed`). A path outside that list is answered like a blocked name: a
+`fields` item is skipped, a `filters`/`exclude` key is dropped, an
+`or_filters` key is dropped from its dict, an `order_by`/`joins` item is
+dropped, a `group_by` item and its aggregation are skipped, and
+`get_field_values` answers the error; `get_schema` lists only those fields and
+relations (cases `run-*-unlisted-relation-*`).
 
 ## File tools: export_data, export_multi_sheet, get_attendance_matrix
 
@@ -137,13 +151,25 @@ matrix for the MCP server as well.
   its parser raises on (`A<B` opens a tag) fails the export like any other
   exception (`v2rep3-*` receipts).
 - The report tools use the query engine described in `mcp-server.md` (every
-  whitelisted model, `get_schema`, relation paths). Still refused: filter
-  values of unusual types and spellings (non-list `in`/`range`, non-ASCII
-  digits, UUID and ISO date spellings, containers), JSON containment,
-  multi-key and nested-key lookups, `exclude` across many-valued relations,
-  boolean/float limits and offsets, repeated fields, non-string `joins`
-  items, uncommon HTML references, integers outside the column range inside
-  `or_filters`/`exclude`, and `?` ordering (not deterministic).
+  whitelisted model, `get_schema`, relation paths). Still refused: `?` ordering
+  (not deterministic), and ordering by a relation name whose related model
+  declares `Meta.ordering` (Django expands its default ordering columns; no
+  readable related model has one today). A list argument that is not iterable
+  (`fields: 5`) raises Django's `'int' object is not iterable`, a string one is
+  iterated character by character and a dict one by its keys; an aggregation
+  `field` that is not a string is written with `str()` into the default alias
+  and then raises its `AttributeError` from the path walk; an `offset` that is
+  a list or a dict raises the `+` operand text; and a slice whose stop is below
+  its start (a negative `limit` with an offset that keeps the stop
+  non-negative, or a float limit that truncates to the start) answers the empty
+  listing with Django's `count` and `has_more`. The remaining refusals are
+  defensive: a relation, relation target, relation kind or field kind the
+  generated metadata does not describe, a column value type or an
+  aggregation/output type without an expression,
+  JSON and `has_key` values outside the parsed JSON types, grouped or
+  unhashable choice maps, a method call on a value outside the parsed JSON
+  types, integers beyond 64 bits and non-finite floats as parameters, a
+  non-finite `limit`/`offset`, and a `__year` comparison without an integer.
 
 ## Group and unusual arguments (`v2rep2-*` receipts)
 
@@ -229,3 +255,38 @@ t6x3: the lookups and date/time parts above were compared call by call between
 Django's tool functions and the Go engine on the seeded private PostgreSQL (54
 authored calls plus 21 more; the calls are in CASES of
 TESTS/adapters/go/mcp_server_tools.py).
+
+t9rep: the run sequence has 40 more cases (`run-query-tags-regex`,
+`run-query-tags-iregex`, `run-query-carnets-fee-contains`,
+`run-query-carnets-fee-startswith`, `run-query-carnets-lessons-contains`,
+`run-query-tags-uuid-gt-nil`, `run-query-categories-unsupported-lookup-error`,
+`run-query-tags-malformed-regex-error`, `run-query-tags-minute-transform`,
+`run-query-tags-time-transform`, `run-query-tags-iso-week-day-transform`,
+`run-query-tags-date-year-transform`, `run-query-tags-time-field`,
+`run-aggregate-tags-group-minute`, `run-query-tags-year-zero-error`,
+`run-query-tags-in-string`, `run-query-carnets-range-one-item-error`,
+`run-query-carnets-huge-integer-empty`, `run-query-carnets-float-for-integer`,
+`run-query-carnets-non-ascii-digits`, `run-query-tags-uuid-from-integer`,
+`run-query-tags-basic-date`, `run-query-tags-week-date`,
+`run-query-carnets-meta-contains`, `run-query-carnets-meta-has-keys`,
+`run-query-carnets-meta-key-icontains`, `run-query-carnets-meta-key-isnull`,
+`run-query-carnets-meta-missing-key`, `run-query-carnets-meta-key-field`,
+`run-query-courses-exclude-registry-status`,
+`run-query-courses-exclude-registry-day`,
+`run-count-courses-exclude-paid-enrolments`,
+`run-count-courses-exclude-deleted-enrolments`, `run-query-tags-limit-boolean`,
+`run-query-tags-limit-float`, `run-query-tags-offset-string-error`,
+`run-query-tags-fields-repeated`, `run-query-tags-joins-number-error`,
+`run-query-carnets-or-filters-huge-integer`,
+`run-query-carnets-exclude-huge-integer`): regular expressions, pattern
+lookups on decimal and integer columns, a UUID against the nil UUID,
+unsupported lookups and malformed patterns, the date/time transforms and
+fields, unusual value spellings, JSON containment, keys and key fields,
+`exclude` across registries, days and enrolments, boolean/float limits,
+repeated fields, non-string `joins`, and integers outside the column range
+inside `or_filters`/`exclude`. Their Django answers were derived from the
+seeded rows and then compared with the Go engine on the same rows: the 40
+cases match (the malformed pattern is the database error that fails the
+statement in both engines, so the route answers its 500 page); the engine
+calls themselves are the R1-R5 groups of CASES in
+TESTS/adapters/go/mcp_server_tools.py.

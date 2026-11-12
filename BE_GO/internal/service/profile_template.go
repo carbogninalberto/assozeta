@@ -59,6 +59,15 @@ func (s *ProfileTemplate) Update(ctx context.Context, identity domain.ResolvedId
 
 func (s *ProfileTemplate) save(ctx context.Context, identity domain.ResolvedIdentity, owner string, data domain.RequestObject, audit domain.LoginAuditContext) error {
 	plan, err := dto.PlanProfileTemplate(data)
+	var rejected *dto.ProfileTemplateTextRejected
+	if errors.As(err, &rejected) {
+		// The view loads the association before the section texts. A missing
+		// association is the 500 page even when a text would be rejected.
+		if lookupErr := s.checkAssociation(ctx, owner, identity.ImpersonationAssociationID); lookupErr != nil {
+			return lookupErr
+		}
+		return rejected
+	}
 	if errors.Is(err, dto.ErrProfileTemplatePython) {
 		return ErrProfileTemplateServer
 	}
@@ -142,6 +151,24 @@ func (s *ProfileTemplate) save(ctx context.Context, identity domain.ResolvedIden
 		// A ValidationError or database error inside save(); the request is
 		// not atomic, so the audit entry stays.
 		return ErrProfileTemplateServer
+	}
+	return nil
+}
+
+// checkAssociation answers the view's association lookup before the sections:
+// nil when it exists, ErrProfileTemplateServer when it does not.
+func (s *ProfileTemplate) checkAssociation(ctx context.Context, owner, impersonation string) error {
+	tx, err := s.store.BeginProfileTemplate(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	stored, err := tx.Association(ctx, owner, impersonation)
+	if err != nil {
+		return err
+	}
+	if stored == nil {
+		return ErrProfileTemplateServer // SportAssociation.DoesNotExist
 	}
 	return nil
 }

@@ -3,6 +3,7 @@ package dto
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"math/big"
 	"regexp"
@@ -23,6 +24,21 @@ var ErrProfileTemplatePython = errors.New("profile template view exception")
 // ErrProfileTemplateNotPorted refuses, before any write, a value whose Python
 // conversion this port does not reproduce (see profile-template.md).
 var ErrProfileTemplateNotPorted = refusal.New("profile template input not ported")
+
+// ProfileTemplateTextRejected is the 400 the view returns for a section text
+// before save(): the body is {"<Field>": ["<Message>"]} and nothing is written.
+type ProfileTemplateTextRejected struct {
+	Field   string
+	Message string
+}
+
+func (e *ProfileTemplateTextRejected) Error() string { return e.Message }
+
+// The view's PROFILE_TEMPLATE_MAX_TEXT_LENGTH and PROFILE_TEMPLATE_MAX_HTML_DEPTH.
+const (
+	profileTemplateMaxTextLength = 500_000
+	profileTemplateMaxHTMLDepth  = 32
+)
 
 // ProfileTemplateKind is the model field type that decides str()/json.dumps()
 // for auditlog and the column conversion.
@@ -65,13 +81,16 @@ var profileTemplateKeys = []string{"additional_sections", "regulation", "demand"
 // PlanProfileTemplate follows the view from the first initial_data access to
 // the assignments before sport_association.save().
 func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error) {
-	values := map[string]any{}
-	for _, key := range profileTemplateKeys {
+	// initial_data[key] is read where the view first uses it, so a missing key
+	// raises then: additional_sections before the loop, regulation and demand
+	// before their prettify, the rest after demand. A KeyError in the loop is a
+	// 500 but a rejected text there is a 400, so the two orders differ.
+	lookup := func(key string) (any, error) {
 		value, ok := data.Lookup(key)
 		if !ok {
 			return nil, ErrProfileTemplatePython // KeyError
 		}
-		values[key] = value
+		return value, nil
 	}
 	plan := &ProfileTemplatePlan{}
 	assign := func(name string, kind ProfileTemplateKind, value any) {
@@ -83,7 +102,11 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 		}
 		plan.Fields = append(plan.Fields, ProfileTemplateField{name, kind, value})
 	}
-	if sections := values["additional_sections"]; sections != nil {
+	sections, err := lookup("additional_sections")
+	if err != nil {
+		return nil, err
+	}
+	if sections != nil {
 		items, err := profileTemplateItems(sections)
 		if err != nil {
 			return nil, err
@@ -99,7 +122,7 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 			if !hasName || !hasText || name == "" || text == "" {
 				continue
 			}
-			pretty, err := profileTemplatePrettify(text)
+			pretty, err := profileTemplatePrettify(text, "additional_sections")
 			if err != nil {
 				return nil, err
 			}
@@ -119,8 +142,12 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 		assign("additional_sections", ProfileTemplateJSON, kept)
 	}
 	for _, name := range []string{"regulation", "demand"} {
-		if value := values[name]; value != nil {
-			pretty, err := profileTemplatePrettify(value)
+		value, err := lookup(name)
+		if err != nil {
+			return nil, err
+		}
+		if value != nil {
+			pretty, err := profileTemplatePrettify(value, name)
 			if err != nil {
 				return nil, err
 			}
@@ -129,11 +156,19 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 	}
 	for _, name := range []string{"show_demand_to_athletes", "show_demand_to_members", "show_demand_to_both",
 		"show_regulation_to_athletes", "show_regulation_to_members", "show_regulation_to_both"} {
-		if value := values[name]; value != nil {
+		value, err := lookup(name)
+		if err != nil {
+			return nil, err
+		}
+		if value != nil {
 			assign(name, ProfileTemplateBoolean, value)
 		}
 	}
-	switch logo := values["logo"].(type) {
+	logo, err := lookup("logo")
+	if err != nil {
+		return nil, err
+	}
+	switch logo := logo.(type) {
 	case nil:
 	case string:
 		plan.Logo = &logo
@@ -141,7 +176,10 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 		plan.RawLogo = logo
 	}
 	for _, kind := range []string{"subscription", "membership"} {
-		fee := values[kind+"_fee"]
+		fee, err := lookup(kind + "_fee")
+		if err != nil {
+			return nil, err
+		}
 		if kind == "membership" && fee == "" {
 			assign("membership_fee", ProfileTemplateDecimal, nil)
 		} else if fee != nil {
@@ -154,10 +192,17 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 			}
 		}
 		multiple := "multiple_" + kind + "_fee"
-		if value := values[multiple]; value != nil {
+		value, err := lookup(multiple)
+		if err != nil {
+			return nil, err
+		}
+		if value != nil {
 			assign(multiple, ProfileTemplateBoolean, value)
 		}
-		plans := values[kind+"_fee_plans"]
+		plans, err := lookup(kind + "_fee_plans")
+		if err != nil {
+			return nil, err
+		}
 		if plans == nil {
 			continue
 		}
@@ -202,14 +247,24 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 		}
 		assign(kind+"_fee_plans", ProfileTemplateJSON, kept)
 	}
-	if value := values["enable_quotes_management"]; value != nil {
+	if value, err := lookup("enable_quotes_management"); err != nil {
+		return nil, err
+	} else if value != nil {
 		assign("enable_quotes_management", ProfileTemplateBoolean, value)
 	}
 	for _, name := range []string{"enabled_for", "additional_fields", "stripe_available_methods"} {
-		assign(name, ProfileTemplateJSON, values[name])
+		value, err := lookup(name)
+		if err != nil {
+			return nil, err
+		}
+		assign(name, ProfileTemplateJSON, value)
 	}
 	for _, name := range []string{"invoice_template", "subscription_template", "extra_text_invoices"} {
-		assign(name, ProfileTemplateText, values[name])
+		value, err := lookup(name)
+		if err != nil {
+			return nil, err
+		}
+		assign(name, ProfileTemplateText, value)
 	}
 	for _, field := range plan.Fields {
 		// The audit entry is the first statement of the save and cannot hold a
@@ -254,16 +309,26 @@ func profileTemplateItems(value any) ([]any, error) {
 	return nil, ErrProfileTemplatePython
 }
 
-// profileTemplatePrettify is BeautifulSoup(value, features="html.parser").prettify().
-func profileTemplatePrettify(value any) (string, error) {
+// profileTemplatePrettify is _prettify_template_text: the length check, then
+// BeautifulSoup(value, features="html.parser") with the nesting check, then
+// prettify().
+func profileTemplatePrettify(value any, field string) (string, error) {
 	markup, ok := value.(string)
 	if !ok {
 		return "", ErrProfileTemplatePython // bs4 raises TypeError for non-string markup
 	}
-	pretty, err := bs4prettify.Prettify(markup)
+	if len(pythonCodePoints(markup)) > profileTemplateMaxTextLength {
+		return "", &ProfileTemplateTextRejected{Field: field,
+			Message: fmt.Sprintf("Il testo è troppo lungo (massimo %d caratteri).", profileTemplateMaxTextLength)}
+	}
+	pretty, err := bs4prettify.PrettifyLimited(markup, profileTemplateMaxHTMLDepth)
 	if err != nil {
 		if errors.Is(err, bs4prettify.ErrPythonRaises) {
 			return "", ErrProfileTemplatePython
+		}
+		if errors.Is(err, bs4prettify.ErrTooDeep) {
+			return "", &ProfileTemplateTextRejected{Field: field,
+				Message: fmt.Sprintf("Il testo contiene troppi livelli annidati (massimo %d).", profileTemplateMaxHTMLDepth)}
 		}
 		return "", ErrProfileTemplateNotPorted
 	}

@@ -108,3 +108,14 @@ Cases: `legacy-html-regulation`, `legacy-html-demand`, `legacy-html-sections`, `
 the image is re-encoded (the new data URI has neither) and answers the 500 page when it is kept as sent; cases
 `logo-header-with-nul-*`, `logo-data-with-nul-*`, `logo-header-with-lone-surrogate-unchanged`,
 `logo-undecodable-header-with-nul`. `TESTS/fixtures/profile_template_http.json` has 71 cases.
+
+## Ported in t9rep
+
+`additional_sections` texts (in list order), `regulation` and `demand` now go through the view's
+`_prettify_template_text`: a string longer than 500,000 code points and a parsed tree nesting tags deeper than 32 are a
+`400` with the field's message and nothing written. The length check counts code points (lone surrogates included), the
+parse runs before the nesting check (`bs4prettify.PrettifyLimited`, `ErrTooDeep`), and a markup bs4 raises on keeps the
+`500` page. The association lookup still precedes the texts, so a missing association is the `500` page even with a
+rejected text; `Prettify` keeps its behaviour and the 32 MiB output bound stays as the safety net. Cases:
+`html-depth-limit-accepted`, `html-depth-over-limit`, `html-section-over-depth`, `html-demand-too-long`,
+`html-first-rejected-wins`, `html-charref-before-depth`.

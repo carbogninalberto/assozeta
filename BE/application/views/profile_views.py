@@ -11,7 +11,7 @@ import logging
 import re
 from datetime import datetime
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpResponse
@@ -220,6 +220,42 @@ def profile_update(request):
     return Response(content, status=status.HTTP_200_OK)
 
 
+PROFILE_TEMPLATE_MAX_TEXT_LENGTH = 500_000   # characters (len() of the str)
+PROFILE_TEMPLATE_MAX_HTML_DEPTH = 32         # nested tags
+
+
+class ProfileTemplateTextRejected(Exception):
+    def __init__(self, field, message):
+        super().__init__(message)
+        self.field = field
+        self.message = message
+
+
+def _html_depth(soup):
+    """Deepest tag nesting of a parsed document (a top-level tag is 1); iterative."""
+    deepest = 0
+    stack = [(soup, 0)]
+    while stack:
+        node, depth = stack.pop()
+        if depth > deepest:
+            deepest = depth
+        for child in node.contents:
+            if isinstance(child, Tag):
+                stack.append((child, depth + 1))
+    return deepest
+
+
+def _prettify_template_text(text, field):
+    if isinstance(text, str) and len(text) > PROFILE_TEMPLATE_MAX_TEXT_LENGTH:
+        raise ProfileTemplateTextRejected(
+            field, f'Il testo è troppo lungo (massimo {PROFILE_TEMPLATE_MAX_TEXT_LENGTH} caratteri).')
+    soup = BeautifulSoup(text, features="html.parser")
+    if _html_depth(soup) > PROFILE_TEMPLATE_MAX_HTML_DEPTH:
+        raise ProfileTemplateTextRejected(
+            field, f'Il testo contiene troppi livelli annidati (massimo {PROFILE_TEMPLATE_MAX_HTML_DEPTH}).')
+    return soup.prettify()
+
+
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def profile_update_subscription_template(request):
@@ -230,33 +266,35 @@ def profile_update_subscription_template(request):
     if sport_association_data.initial_data is not None:
         sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         # update additional_sections
-        if sport_association_data.initial_data['additional_sections'] is not None:
-            # loop through additional_sections and remove if json field name or text is empty or if there are different
-            # json field names with the same name
-            additional_sections = sport_association_data.initial_data['additional_sections']
+        try:
+            if sport_association_data.initial_data['additional_sections'] is not None:
+                # loop through additional_sections and remove if json field name or text is empty or if there are different
+                # json field names with the same name
+                additional_sections = sport_association_data.initial_data['additional_sections']
 
-            if len(additional_sections) > 0:
-                sport_association.additional_sections = []
-                for section in additional_sections:
-                    if 'name' in section.keys() and 'text' in section.keys():
-                        if section['name'] == '' and len(section['name']) <= 3:
-                            continue
-                        if section['text'] == '' and len(section['text']) <= 3:
-                            continue
-                        section['text'] = BeautifulSoup(section['text'], features="html.parser").prettify()
-                        section['name'] = section['name'].upper()
-                        sport_association.additional_sections.append(section)
-            else:
-                sport_association.additional_sections = []
+                if len(additional_sections) > 0:
+                    sport_association.additional_sections = []
+                    for section in additional_sections:
+                        if 'name' in section.keys() and 'text' in section.keys():
+                            if section['name'] == '' and len(section['name']) <= 3:
+                                continue
+                            if section['text'] == '' and len(section['text']) <= 3:
+                                continue
+                            section['text'] = _prettify_template_text(section['text'], 'additional_sections')
+                            section['name'] = section['name'].upper()
+                            sport_association.additional_sections.append(section)
+                else:
+                    sport_association.additional_sections = []
 
-        if sport_association_data.initial_data['regulation'] is not None:
-            sport_association.regulation = BeautifulSoup(sport_association_data.initial_data['regulation'],
-            features="html.parser").\
-                prettify()
+            if sport_association_data.initial_data['regulation'] is not None:
+                sport_association.regulation = _prettify_template_text(
+                    sport_association_data.initial_data['regulation'], 'regulation')
 
-        if sport_association_data.initial_data['demand'] is not None:
-            sport_association.demand = BeautifulSoup(sport_association_data.initial_data['demand'],
-            features="html.parser").prettify()
+            if sport_association_data.initial_data['demand'] is not None:
+                sport_association.demand = _prettify_template_text(
+                    sport_association_data.initial_data['demand'], 'demand')
+        except ProfileTemplateTextRejected as e:
+            return Response({e.field: [e.message]}, status=status.HTTP_400_BAD_REQUEST)
 
         # add the visibility settings
         if sport_association_data.initial_data['show_demand_to_athletes'] is not None:

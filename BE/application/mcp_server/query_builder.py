@@ -13,7 +13,7 @@ from application.mcp_server.security import (
     MODEL_WHITELIST,
     get_tenant_filter,
     get_soft_delete_filter,
-    is_field_allowed,
+    is_path_allowed,
     validate_filter_fields,
     ALLOWED_LOOKUPS,
 )
@@ -232,8 +232,8 @@ def _validate_group_by(model, group_by: list) -> list:
     for field_expr in group_by:
         parts = field_expr.split('__')
         root_field = parts[0]
-        if not is_field_allowed(root_field):
-            logger.warning(f"Blocked group_by on blacklisted field: {root_field}")
+        if not is_path_allowed(model, field_expr):
+            logger.warning(f"Blocked group_by on field path: {field_expr}")
             continue
         # Check that root field exists (direct or FK)
         all_field_names = {f.name for f in model._meta.get_fields()}
@@ -245,6 +245,58 @@ def _validate_group_by(model, group_by: list) -> list:
             continue
         valid.append(field_expr)
     return valid
+
+
+def _split_joins(model, joins) -> tuple[list, list]:
+    """Split joins into select_related and prefetch_related lists."""
+    select_related = []
+    prefetch_related = []
+    for join in joins:
+        if isinstance(join, str) and not is_path_allowed(model, join):
+            logger.warning(f"Blocked join on field path: {join}")
+            continue
+        # Determine if it's a FK (select_related) or M2M (prefetch_related)
+        try:
+            field = model._meta.get_field(join)
+            if field.many_to_many or field.one_to_many:
+                prefetch_related.append(join)
+            else:
+                select_related.append(join)
+        except Exception:
+            # May be a reverse relation
+            prefetch_related.append(join)
+    return select_related, prefetch_related
+
+
+def _allowed_order_by(model, order_by) -> list:
+    """Filter an order_by list down to the paths that may be read."""
+    valid_order = []
+    for field in order_by:
+        clean = field.lstrip('-')
+        if is_path_allowed(model, clean):
+            valid_order.append(field)
+    return valid_order
+
+
+def _build_aggregations(model, aggregations) -> dict:
+    """Build the aggregate()/annotate() kwargs for the given aggregation specs."""
+    agg_kwargs = {}
+    for agg in aggregations:
+        func_name = agg.get('function', '').lower()
+        field = agg.get('field', '*')
+        alias = agg.get('alias', f'{func_name}_{field}')
+        # Sanitize alias for Django (no dots or dashes)
+        alias = alias.replace('.', '_').replace('-', '_')
+
+        func = AGGREGATION_FUNCTIONS.get(func_name)
+        if not func:
+            continue
+
+        if field == '*' and func_name == 'count':
+            agg_kwargs[alias] = Count('*')
+        elif is_path_allowed(model, field):
+            agg_kwargs[alias] = func(field)
+    return agg_kwargs
 
 
 class QueryBuilder:
@@ -311,7 +363,7 @@ class QueryBuilder:
             # Return all allowed concrete field names
             return [
                 f.name for f in model._meta.get_fields()
-                if not f.is_relation and is_field_allowed(f.name)
+                if not f.is_relation and is_path_allowed(model, f.name)
             ]
 
         # Build set of valid field names including FK _id accessors
@@ -325,7 +377,7 @@ class QueryBuilder:
         valid = []
         for field in fields:
             root_field = field.split('__')[0]
-            if root_field in all_field_names and is_field_allowed(root_field):
+            if root_field in all_field_names and is_path_allowed(model, field):
                 valid.append(field)
             else:
                 logger.warning(f"Skipping invalid/blacklisted field: {field}")
@@ -366,19 +418,7 @@ class QueryBuilder:
 
         # Apply joins
         if joins:
-            select_related = []
-            prefetch_related = []
-            for join in joins:
-                # Determine if it's a FK (select_related) or M2M (prefetch_related)
-                try:
-                    field = model._meta.get_field(join)
-                    if field.many_to_many or field.one_to_many:
-                        prefetch_related.append(join)
-                    else:
-                        select_related.append(join)
-                except Exception:
-                    # May be a reverse relation
-                    prefetch_related.append(join)
+            select_related, prefetch_related = _split_joins(model, joins)
 
             if select_related:
                 qs = qs.select_related(*select_related)
@@ -390,12 +430,7 @@ class QueryBuilder:
 
         # Apply ordering
         if order_by:
-            valid_order = []
-            for field in order_by:
-                clean = field.lstrip('-')
-                root = clean.split('__')[0]
-                if is_field_allowed(root):
-                    valid_order.append(field)
+            valid_order = _allowed_order_by(model, order_by)
             if valid_order:
                 qs = qs.order_by(*valid_order)
 
@@ -462,7 +497,7 @@ class QueryBuilder:
         model, model_label = _resolve_model(model_name)
 
         root_field = field_name.split('__')[0]
-        if not is_field_allowed(root_field):
+        if not is_path_allowed(model, field_name):
             raise ValueError(f"Field '{field_name}' is not allowed")
 
         qs = self._base_queryset(model, model_label, include_archived=include_archived)
@@ -518,22 +553,7 @@ class QueryBuilder:
         if not aggregations:
             return {'error': 'No aggregations specified'}
 
-        agg_kwargs = {}
-        for agg in aggregations:
-            func_name = agg.get('function', '').lower()
-            field = agg.get('field', '*')
-            alias = agg.get('alias', f'{func_name}_{field}')
-            # Sanitize alias for Django (no dots or dashes)
-            alias = alias.replace('.', '_').replace('-', '_')
-
-            func = AGGREGATION_FUNCTIONS.get(func_name)
-            if not func:
-                continue
-
-            if field == '*' and func_name == 'count':
-                agg_kwargs[alias] = Count('*')
-            elif is_field_allowed(field.split('__')[0]):
-                agg_kwargs[alias] = func(field)
+        agg_kwargs = _build_aggregations(model, aggregations)
 
         if not agg_kwargs:
             return {'error': 'No valid aggregations'}

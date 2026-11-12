@@ -29,6 +29,11 @@ athlete view). Read from the view:
   preview_and_custom_features for every role and the avatar through
   compress_base64 (200x200); for an association owner the re-read association
   with its logo through compress_base64 at 590x130.
+- A template text longer than 500000 characters, or nested deeper than 32
+  tags, is rejected before its pretty form is used: the 400 page answers the
+  field (additional_sections, regulation or demand) with the message, and
+  nothing is written. The first rejected text in the view's order wins;
+  anything bs4 raises while parsing still becomes the 500 page.
 
 Expected HTML and images are computed here with bs4 4.13.3 and Pillow (the
 libraries the view calls), following the view's steps. Run with the production
@@ -41,7 +46,7 @@ import io
 import json
 from pathlib import Path
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from PIL import Image
 
 HERE = Path(__file__).resolve().parent
@@ -72,8 +77,39 @@ LIMIT = 1024 * 1024
 
 # --- the libraries the view calls ---------------------------------------------------------------
 
-def prettify(markup):
-    return BeautifulSoup(markup, features='html.parser').prettify()
+MAX_TEXT_LENGTH = 500_000
+MAX_HTML_DEPTH = 32
+
+
+class Rejected(Exception):
+    def __init__(self, field, message):
+        super().__init__(message)
+        self.field = field
+        self.message = message
+
+
+def html_depth(soup):
+    """Deepest tag nesting of a parsed document (a top-level tag is 1)."""
+    deepest = 0
+    stack = [(soup, 0)]
+    while stack:
+        node, depth = stack.pop()
+        if depth > deepest:
+            deepest = depth
+        for child in node.contents:
+            if isinstance(child, Tag):
+                stack.append((child, depth + 1))
+    return deepest
+
+
+def prettify(markup, field='regulation'):
+    """BeautifulSoup(html.parser).prettify() as the view calls it, limits first."""
+    if isinstance(markup, str) and len(markup) > MAX_TEXT_LENGTH:
+        raise Rejected(field, f'Il testo è troppo lungo (massimo {MAX_TEXT_LENGTH} caratteri).')
+    soup = BeautifulSoup(markup, features='html.parser')
+    if html_depth(soup) > MAX_HTML_DEPTH:
+        raise Rejected(field, f'Il testo contiene troppi livelli annidati (massimo {MAX_HTML_DEPTH}).')
+    return soup.prettify()
 
 
 def pattern(size, mode='RGB'):
@@ -190,11 +226,12 @@ def save(state, data, failing=False):
                 if 'name' in section.keys() and 'text' in section.keys():
                     if section['name'] == '' or section['text'] == '':
                         continue
-                    kept.append({**section, 'text': prettify(section['text']), 'name': section['name'].upper()})
+                    kept.append({**section, 'text': prettify(section['text'], 'additional_sections'),
+                                 'name': section['name'].upper()})
         raw['additional_sections'] = kept
     for name in ('regulation', 'demand'):
         if data[name] is not None:
-            raw[name] = prettify(data[name])
+            raw[name] = prettify(data[name], name)
     for name in FLAGS:
         if data[name] is not None:
             raw[name] = data[name]
@@ -584,6 +621,29 @@ add('html-nul-reference', 'owner', 500, SERVER,
     body={'sport_association': frontend_payload(STATE, regulation='<p>&#0;</p>')})
 add('html-surrogate-reference', 'owner', 500, SERVER,
     body={'sport_association': frontend_payload(STATE, regulation='<p>&#xD800;</p>')})
+
+# === t9rep: text size and nesting limits ========================================================
+TOO_LONG = 'Il testo è troppo lungo (massimo 500000 caratteri).'
+TOO_DEEP = 'Il testo contiene troppi livelli annidati (massimo 32).'
+# Exactly 32 nested tags is accepted and stored prettified.
+write('owner', frontend_payload(STATE, regulation='<b>' * 32 + 'x'), name='html-depth-limit-accepted')
+# One level more, one oversized text or a nested section: the 400 page answers
+# with the field and message, nothing is written.
+add('html-depth-over-limit', 'owner', 400, {'regulation': [TOO_DEEP]},
+    body={'sport_association': frontend_payload(STATE, regulation='<div>' * 33)})
+add('html-section-over-depth', 'owner', 400, {'additional_sections': [TOO_DEEP]},
+    body={'sport_association': frontend_payload(
+        STATE, additional_sections=[{'name': 'Annidata', 'text': '<b>' * 40 + 'x'}])})
+add('html-demand-too-long', 'owner', 400, {'demand': [TOO_LONG]},
+    body={'sport_association': frontend_payload(STATE, demand='a' * 500001)})
+# The sections are checked first, so only their error is returned.
+add('html-first-rejected-wins', 'owner', 400, {'additional_sections': [TOO_DEEP]},
+    body={'sport_association': frontend_payload(
+        STATE, additional_sections=[{'name': 'Annidata', 'text': '<b>' * 40 + 'x'}],
+        regulation='a' * 500001)})
+# bs4 raises while parsing the oversized reference, before the depth check.
+add('html-charref-before-depth', 'owner', 500, SERVER,
+    body={'sport_association': frontend_payload(STATE, regulation='<b>' * 40 + '&#' + '1' * 5000 + ';')})
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

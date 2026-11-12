@@ -1,8 +1,10 @@
 package dto
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"sort"
 	"strconv"
@@ -45,8 +47,11 @@ func mcpNotPorted(what string) error { return fmt.Errorf("%w: %s", ErrReportNotP
 type mcpJoin struct {
 	table, alias, parent, identity string
 	nullable, louter               bool
-	refs                           int
-	lhs, rhs                       string
+	// m2m marks a join to a many-valued relation (reverse foreign key or
+	// many-to-many), split_exclude's trimming candidate.
+	m2m      bool
+	refs     int
+	lhs, rhs string
 }
 
 type mcpQuery struct {
@@ -110,7 +115,8 @@ func (q *mcpQuery) join(parent string, hop mcpHop, reuse map[string]bool) string
 	}
 	alias := q.tableAlias(hop.table)
 	q.joins = append(q.joins, &mcpJoin{table: hop.table, alias: alias, parent: parent, identity: identity,
-		nullable: hop.nullable, louter: q.get(parent).louter || hop.nullable, refs: 1, lhs: hop.lhs, rhs: hop.rhs})
+		nullable: hop.nullable, louter: q.get(parent).louter || hop.nullable, m2m: hop.m2m, refs: 1, lhs: hop.lhs,
+		rhs: hop.rhs})
 	return alias
 }
 
@@ -208,6 +214,10 @@ type mcpHop struct {
 	table, identity, lhs, rhs string
 	direct, m2m, nullable     bool
 	local                     *mcpTarget // the target after trimming a direct hop
+	// joinName is names_to_path's join_field.foreign_related_fields[0].name:
+	// the field the hop starts from, which split_exclude's trimmed prefix
+	// names on the outer query.
+	joinName string
 }
 
 type mcpPath struct {
@@ -234,6 +244,14 @@ func mcpRelationHops(field *mcpField) ([]mcpHop, mcpTarget, error) {
 		return nil, mcpTarget{}, mcpNotPorted("relation without metadata " + field.Related)
 	}
 	id := field.model.Label + "." + field.Name
+	// joinName is the field the relation starts from (join_field's
+	// foreign_related_fields[0]): the parent model's column the hop reads.
+	joinName := func(column string) string {
+		if parent := field.model.fieldByColumn(column); parent != nil {
+			return parent.Name
+		}
+		return ""
+	}
 	switch field.Kind {
 	case "foreign_key", "one_to_one":
 		targetField := related.fieldByColumn(field.TargetColumn)
@@ -242,24 +260,33 @@ func mcpRelationHops(field *mcpField) ([]mcpHop, mcpTarget, error) {
 		}
 		local := mcpTarget{column: field.Column, field: targetField, valueType: field.TargetInternal, null: field.Null}
 		return []mcpHop{{table: related.Table, identity: related.Table + "\x00" + id + ">", lhs: field.Column, rhs: field.TargetColumn,
-			direct: true, nullable: field.Null, local: &local}}, mcpFieldTarget(targetField), nil
+			direct: true, nullable: field.Null, local: &local, joinName: targetField.Name}}, mcpFieldTarget(targetField), nil
 	case "foreign_key_reverse", "one_to_one_reverse":
 		return []mcpHop{{table: related.Table, identity: related.Table + "\x00" + id + "<", lhs: field.LocalColumn, rhs: field.RemoteColumn,
-			m2m: field.Kind == "foreign_key_reverse", nullable: true}}, mcpFieldTarget(related.pkField()), nil
+				m2m: field.Kind == "foreign_key_reverse", nullable: true, joinName: joinName(field.LocalColumn)}},
+			mcpFieldTarget(related.pkField()), nil
 	case "many_to_many", "many_to_many_reverse":
 		pk := related.pkField()
 		local := mcpTarget{column: field.TargetColumn, field: pk, valueType: pk.Internal}
 		return []mcpHop{
-			{table: field.Through, identity: field.Through + "\x00" + id + "<m2m", lhs: field.LocalColumn, rhs: field.SourceColumn, m2m: true, nullable: true},
-			{table: related.Table, identity: related.Table + "\x00" + id + ">m2m", lhs: field.TargetColumn, rhs: field.RemoteColumn, direct: true, local: &local},
+			{table: field.Through, identity: field.Through + "\x00" + id + "<m2m", lhs: field.LocalColumn, rhs: field.SourceColumn, m2m: true, nullable: true,
+				joinName: joinName(field.LocalColumn)},
+			{table: related.Table, identity: related.Table + "\x00" + id + ">m2m", lhs: field.TargetColumn, rhs: field.RemoteColumn, direct: true, local: &local,
+				joinName: pk.Name},
 		}, mcpFieldTarget(pk), nil
 	}
 	return nil, mcpTarget{}, mcpNotPorted("relation kind " + field.Kind)
 }
 
-// errMCPMultiJoin is names_to_path's MultiJoin (exclude over a many-valued
-// relation: split_exclude's subquery is not ported).
-var errMCPMultiJoin = mcpNotPorted("exclude across a many-valued relation")
+// mcpMultiJoinError is names_to_path's MultiJoin: the path crosses a
+// many-valued relation (hop) after the names of prefix, so exclude() has to
+// build the correlated subquery of split_exclude.
+type mcpMultiJoinError struct {
+	prefix []string
+	hop    mcpHop
+}
+
+func (e *mcpMultiJoinError) Error() string { return "mcp query: many-valued path" }
 
 // namesToPath is Query.names_to_path.
 func mcpNamesToPath(model *mcpModel, names []string, allowMany, failOnMissing bool) (mcpPath, error) {
@@ -290,7 +317,7 @@ func mcpNamesToPath(model *mcpModel, names []string, allowMany, failOnMissing bo
 			if !allowMany {
 				for _, hop := range hops {
 					if hop.m2m {
-						return path, errMCPMultiJoin
+						return path, &mcpMultiJoinError{prefix: append([]string(nil), names[:pos]...), hop: hop}
 					}
 				}
 			}
@@ -397,6 +424,12 @@ type mcpExpr struct {
 	column   string // the untransformed column (YearLookup bounds)
 	colKind  string
 	jsonKey  bool
+	// jsonCol and jsonKeys are the JSONField expression a key transform reads
+	// and the keys applied to it (KeyTransform.preprocess_lhs); jsonArg is the
+	// parameter holding the keys (a deeper transform reuses it).
+	jsonCol  string
+	jsonKeys []string
+	jsonArg  int
 	null     bool
 	louter   bool
 }
@@ -454,9 +487,13 @@ func (q *mcpQuery) targetExpr(info *mcpJoinInfo, target mcpTarget, alias string)
 		return mcpExpr{}, mcpNotPorted("field type " + target.valueType)
 	}
 	column := mcpColumn(alias, target.column)
-	return mcpExpr{sql: column, kind: kind, field: target.field, relation: info.path.final.Relation,
+	expr := mcpExpr{sql: column, kind: kind, field: target.field, relation: info.path.final.Relation,
 		relClass: info.path.final.Class, column: column, colKind: kind, null: target.null,
-		louter: q.get(alias).louter}, nil
+		louter: q.get(alias).louter}
+	if kind == "json" {
+		expr.jsonCol = column
+	}
+	return expr, nil
 }
 
 // mcpDateTransforms are the extract transforms DateField and DateTimeField
@@ -469,12 +506,9 @@ var mcpDateTransforms = map[string]bool{"year": true, "month": true, "day": true
 var errMCPNoTransform = errors.New("mcp query: no such transform")
 
 // tryTransform is Query.try_transform for the supported transforms.
-func (e mcpExpr) tryTransform(name string) (mcpExpr, error) {
+func (q *mcpQuery) tryTransform(e mcpExpr, name string) (mcpExpr, error) {
 	if e.relation {
 		return e, errMCPNoTransform
-	}
-	if e.jsonKey {
-		return e, mcpNotPorted("transform " + name)
 	}
 	switch e.kind {
 	case "date", "datetime":
@@ -528,13 +562,76 @@ func (e mcpExpr) tryTransform(name string) (mcpExpr, error) {
 		}
 		return e, errMCPNoTransform
 	case "json":
-		if name != "" && !strings.ContainsAny(name, "'\\") && !mcpDigits(name) {
-			return mcpExpr{sql: "(" + e.sql + " -> '" + name + "')", kind: "json", jsonKey: true, column: e.column,
-				colKind: e.kind, null: e.null, louter: e.louter, field: e.field}, nil
+		// JSONField.get_transform returns KeyTransformFactory(name) for any
+		// name, so every name after a JSON field is another key of any depth.
+		keys := append(append([]string(nil), e.jsonKeys...), name)
+		next := mcpExpr{kind: "json", jsonKey: true, jsonCol: e.jsonCol, jsonKeys: keys, column: e.column,
+			colKind: e.kind, null: e.null, louter: e.louter, field: e.field, jsonArg: e.jsonArg}
+		sql, arg, err := q.jsonKeySQL(next, false)
+		if err != nil {
+			return e, err
 		}
-		return e, mcpNotPorted("transform " + name)
+		next.sql, next.jsonArg = sql, arg
+		return next, nil
 	}
 	return e, errMCPNoTransform
+}
+
+// jsonKeySQL is KeyTransform.as_postgresql: one key uses -> (->> for the text
+// transform), several keys use #> (#>>) over the whole key list. It returns
+// the placeholder bound to the key and its position: a transform applied on
+// an existing key reuses that position, whose value the deeper key list
+// replaces (the intermediate expression is never compiled).
+func (q *mcpQuery) jsonKeySQL(e mcpExpr, text bool) (string, int, error) {
+	nested, single := "#>", "->"
+	if text {
+		nested, single = "#>>", "->>"
+	}
+	argument := func(value any) (string, int) {
+		if e.jsonArg > 0 && e.jsonArg <= len(q.args.values) {
+			q.args.values[e.jsonArg-1] = value
+			return "$" + strconv.Itoa(e.jsonArg), e.jsonArg
+		}
+		return q.args.add(value), len(q.args.values)
+	}
+	if len(e.jsonKeys) > 1 {
+		keys := append([]string(nil), e.jsonKeys...)
+		placeholder, index := argument(keys)
+		return "(" + e.jsonCol + " " + nested + " " + placeholder + "::text[])", index, nil
+	}
+	key := e.jsonKeys[0]
+	if number, ok := PythonIntText(key); ok {
+		if !number.IsInt64() {
+			// psycopg2 sends the Python int as a numeric parameter; the
+			// jsonb -> operator has no numeric form, so PostgreSQL reports it.
+			placeholder, index := argument(number.String())
+			return "(" + e.jsonCol + " " + single + " " + placeholder + "::numeric)", index, nil
+		}
+		cast := "::int"
+		if value := number.Int64(); value < math.MinInt32 || value > math.MaxInt32 {
+			cast = "::bigint"
+		}
+		placeholder, index := argument(number.Int64())
+		return "(" + e.jsonCol + " " + single + " " + placeholder + cast + ")", index, nil
+	}
+	placeholder, index := argument(key)
+	return "(" + e.jsonCol + " " + single + " " + placeholder + ")", index, nil
+}
+
+// jsonTextExpr is KeyTransformTextLookupMixin: a text lookup on a key reads
+// the key through KeyTextTransform (->> / #>>). A whole column keeps its own
+// expression; the pattern lookup casts it to text itself.
+func (q *mcpQuery) jsonTextExpr(e mcpExpr) (mcpExpr, error) {
+	text := mcpExpr{sql: e.sql, kind: "text", column: e.column, colKind: e.kind, null: e.null, louter: e.louter}
+	if !e.jsonKey {
+		return text, nil
+	}
+	sql, arg, err := q.jsonKeySQL(e, true)
+	if err != nil {
+		return e, err
+	}
+	text.sql, text.jsonArg = sql, arg
+	return text, nil
 }
 
 // fieldClass is the output field class Django names in FieldError messages.
@@ -703,19 +800,6 @@ func mcpMatchingBlocks(a, b string, alo, ahi, blo, bhi int) int {
 		mcpMatchingBlocks(a, b, besti+bestsize, ahi, bestj+bestsize, bhi)
 }
 
-func mcpDigits(text string) bool {
-	if text == "" {
-		return false
-	}
-	text = strings.TrimPrefix(text, "-")
-	for _, r := range text {
-		if r < '0' || r > '9' {
-			return false
-		}
-	}
-	return text != ""
-}
-
 // resolveField is add_fields/resolve_ref for one field expression: joins
 // (reusing any alias), trimming, transforms.
 func (q *mcpQuery) resolveField(name string) (mcpExpr, error) {
@@ -729,7 +813,7 @@ func (q *mcpQuery) resolveField(name string) (mcpExpr, error) {
 		return expr, err
 	}
 	for _, transform := range info.transforms {
-		next, err := expr.tryTransform(transform)
+		next, err := q.tryTransform(expr, transform)
 		if err != nil {
 			// setup_joins' transform function reports the names_to_path error
 			// when the final field is a Field (add_fields, ordering).
@@ -776,18 +860,24 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 			existingInner = append(existingInner, join.alias)
 		}
 	}
-	clause, _, err := q.addQInner(node, map[string]bool{}, false, false, false)
+	clause, _, result, err := q.addQInner(node, map[string]bool{}, false, false, false)
 	if err != nil {
 		return err
 	}
-	if clause != "" {
+	switch {
+	case clause != "":
 		q.where = append(q.where, clause)
+	case result == mcpResultEmpty:
+		// The whole filter matches nothing: keep the statement valid and
+		// rowless (an EmptyResultSet in Django skips the query entirely).
+		q.where = append(q.where, "FALSE")
 	}
 	q.demote(existingInner)
 	return nil
 }
 
-func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
+func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, mcpResultKind, error) {
+	argsStart := len(q.args.values)
 	currentNegated = currentNegated != node.negated
 	branchNegated = branchNegated || node.negated
 	branchOR = branchOR || node.or
@@ -798,18 +888,20 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 	votes := map[string]int{}
 	var order []string
 	var parts []string
+	var kinds []mcpResultKind
 	for _, child := range node.children {
 		var clause string
 		var needed []string
+		var result mcpResultKind
 		var err error
 		switch typed := child.(type) {
 		case mcpLeaf:
-			clause, needed, err = q.buildFilter(typed, used, branchNegated, currentNegated, branchOR)
+			clause, needed, result, err = q.buildFilter(typed, used, branchNegated, currentNegated, branchOR)
 		case *mcpNode:
-			clause, needed, err = q.addQInner(typed, used, branchNegated, currentNegated, branchOR)
+			clause, needed, result, err = q.addQInner(typed, used, branchNegated, currentNegated, branchOR)
 		}
 		if err != nil {
-			return "", nil, err
+			return "", nil, mcpResultValue, err
 		}
 		seen := map[string]bool{}
 		for _, alias := range needed {
@@ -822,9 +914,8 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 			}
 			votes[alias]++
 		}
-		if clause != "" {
-			parts = append(parts, clause)
-		}
+		parts = append(parts, clause)
+		kinds = append(kinds, result)
 	}
 	var promote, demote []string
 	for _, alias := range order {
@@ -838,29 +929,83 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 	}
 	q.promote(promote)
 	q.demote(demote)
+	// WhereNode.as_sql: an EmptyResultSet child of an OR is dropped, a
+	// FullResultSet child of an AND is dropped, and a node all of whose
+	// children are empty (OR) or full (AND) is itself empty/full. Negation
+	// swaps the two outcomes.
+	fullNeeded, emptyNeeded := len(node.children), 1
+	if node.or {
+		fullNeeded, emptyNeeded = 1, len(node.children)
+	}
+	var sqlParts []string
+	result := mcpResultValue
+	for i, kind := range kinds {
+		switch kind {
+		case mcpResultEmpty:
+			emptyNeeded--
+		case mcpResultFull:
+			fullNeeded--
+		default:
+			if parts[i] != "" {
+				sqlParts = append(sqlParts, parts[i])
+			} else {
+				fullNeeded--
+			}
+		}
+		if emptyNeeded == 0 {
+			if node.negated {
+				result = mcpResultFull
+			} else {
+				result = mcpResultEmpty
+			}
+			break
+		}
+		if fullNeeded == 0 {
+			if node.negated {
+				result = mcpResultEmpty
+			} else {
+				result = mcpResultFull
+			}
+			break
+		}
+	}
+	if result != mcpResultValue {
+		// Django drops the whole node's SQL (and its parameters) when it
+		// compiles to EmptyResultSet or FullResultSet.
+		q.args.values = q.args.values[:argsStart]
+		return "", demote, result, nil
+	}
+	if len(sqlParts) == 0 {
+		q.args.values = q.args.values[:argsStart]
+		return "", demote, mcpResultFull, nil
+	}
 	connector := " AND "
 	if node.or {
 		connector = " OR "
 	}
-	clause := strings.Join(parts, connector)
-	switch {
-	case clause == "":
-	case node.negated:
+	clause := strings.Join(sqlParts, connector)
+	if node.negated {
 		clause = "NOT (" + clause + ")"
-	case len(parts) > 1:
+	} else if len(sqlParts) > 1 {
 		clause = "(" + clause + ")"
 	}
-	return clause, demote, nil
+	return clause, demote, mcpResultValue, nil
 }
 
 // buildFilter is Query.build_filter for key=value.
-func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
+func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, mcpResultKind, error) {
 	if leaf.key == "" {
-		return "", nil, mcpRaise("Cannot parse keyword query ''")
+		return "", nil, mcpResultValue, mcpRaise("Cannot parse keyword query ''")
 	}
 	info, err := q.setupJoins(strings.Split(leaf.key, "__"), used, !branchNegated, false)
 	if err != nil {
-		return "", nil, err
+		// Query.build_filter: a many-valued path is split into a correlated
+		// EXISTS subquery instead of failing.
+		var multi *mcpMultiJoinError
+		if errors.As(err, &multi) {
+			return q.splitExclude(leaf, used, multi)
+		}
+		return "", nil, mcpResultValue, err
 	}
 	usedJoins := append([]string(nil), info.joins...)
 	target, alias, remaining := q.trimJoins(info)
@@ -869,18 +1014,16 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 	}
 	lhs, err := q.targetExpr(info, target, alias)
 	if err != nil {
-		return "", nil, err
+		return "", nil, mcpResultValue, err
 	}
 	lookup, err := q.buildLookup(info.transforms, lhs, leaf.value)
 	if err != nil {
-		return "", nil, err
+		return "", nil, mcpResultValue, err
 	}
-	// Django folds an out-of-range integer comparison into an always-true or
-	// always-false condition; the empty/full result is only reproduced for a
-	// plain AND condition of filters (an empty OR branch is dropped and a
-	// negated node matches everything), so those requests go to Django.
-	if lookup.outOfRange && (branchNegated || currentNegated || branchOR) {
-		return "", nil, mcpNotPorted("integer outside the column range in or_filters or exclude")
+	if lookup.result != mcpResultValue {
+		// IntegerFieldOverflow raises while the condition compiles; the node
+		// (including its negation) decides the outcome, not the leaf.
+		return "", usedJoins, lookup.result, nil
 	}
 	condition := lookup.sql
 	requireOuter := lookup.name == "isnull" && lookup.isnullTrue && !currentNegated
@@ -891,18 +1034,194 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 		}
 	}
 	if requireOuter {
-		return condition, nil, nil
+		return condition, nil, mcpResultValue, nil
 	}
-	return condition, usedJoins, nil
+	return condition, usedJoins, mcpResultValue, nil
 }
+
+// splitExclude is Query.split_exclude: a condition that crosses a many-valued
+// relation is answered by a correlated subquery,
+// NOT (EXISTS(SELECT 1 ... WHERE (<condition> AND <join> = (<outer>.<col>)))).
+func (q *mcpQuery) splitExclude(leaf mcpLeaf, used map[string]bool, multi *mcpMultiJoinError) (string, []string, mcpResultKind, error) {
+	inner := newMCPQuery(q.model)
+	clause, _, result, err := inner.addQInner(mcpQ([]mcpLeaf{leaf}), map[string]bool{}, false, false, false)
+	if err != nil {
+		return "", nil, mcpResultValue, err
+	}
+	if inner.compileErr != nil && q.compileErr == nil {
+		// IsNull.as_sql raises while the subquery compiles.
+		q.compileErr = inner.compileErr
+	}
+	if result == mcpResultEmpty {
+		// The condition matches nothing on the inner side: the EXISTS is false
+		// and its negation keeps every row.
+		return "FALSE", nil, mcpResultValue, nil
+	}
+	if clause != "" {
+		inner.where = append(inner.where, clause)
+	}
+	// trim_start: drop the joins before the many-valued hop, remembering
+	// whether the trimmed prefix held an outer join.
+	trimmedPaths := 0
+	containsLouter := false
+	for i := 0; i+1 < len(inner.joins); i++ {
+		join := inner.joins[i+1]
+		if join.m2m {
+			break
+		}
+		if join.louter {
+			containsLouter = true
+		}
+		inner.joins[i].refs--
+		trimmedPaths = i + 1
+	}
+	if trimmedPaths+1 >= len(inner.joins) {
+		return "", nil, mcpResultValue, mcpNotPorted("exclude across a many-valued relation")
+	}
+	many := inner.joins[trimmedPaths+1]
+	if multi.hop.joinName == "" {
+		return "", nil, mcpResultValue, mcpNotPorted("exclude across a many-valued relation")
+	}
+	prefix := append(append([]string(nil), multi.prefix...), multi.hop.joinName)
+	outerTarget, outerAlias, err := q.outerColumn(prefix)
+	if err != nil {
+		return "", nil, mcpResultValue, err
+	}
+	// The first join of the many-valued relation keeps its rows when it is an
+	// outer join; otherwise the select column starts the subquery.
+	selectAlias, selectColumn := inner.joins[trimmedPaths].alias, many.lhs
+	if !many.louter {
+		inner.joins[trimmedPaths].refs--
+		selectAlias, selectColumn = many.alias, many.rhs
+	}
+	// Subqueries use different aliases than the outer query, so the outer
+	// reference still names the outer table.
+	aliases := make(map[string]string, len(inner.joins))
+	for i, join := range inner.joins {
+		aliases[join.alias] = "U" + strconv.Itoa(i)
+	}
+	where := make([]string, 0, len(inner.where)+1)
+	for _, condition := range inner.where {
+		where = append(where, mcpRelabel(condition, aliases))
+	}
+	where = append(where, mcpBareColumn(aliases[selectAlias], selectColumn)+" = ("+mcpColumn(outerAlias, outerTarget.column)+")")
+	offset := len(q.args.values)
+	q.args.values = append(q.args.values, inner.args.values...)
+	subquery := `SELECT 1 AS "a" FROM ` + inner.subqueryFrom(aliases)
+	if len(where) == 1 {
+		subquery += " WHERE " + where[0]
+	} else {
+		subquery += " WHERE (" + strings.Join(where, " AND ") + ")"
+	}
+	subquery += " LIMIT 1"
+	condition := "EXISTS(" + mcpShiftPlaceholders(subquery, offset) + ")"
+	if containsLouter {
+		// NOT EXISTS(...) OR outercol IS NULL: a null outer column has no
+		// inner row to match.
+		orNull, _, nullResult, err := q.buildFilter(mcpLeaf{key: strings.Join(append(append([]string(nil), prefix...), "isnull"), "__"),
+			value: true}, used, true, true, false)
+		if err != nil {
+			return "", nil, mcpResultValue, err
+		}
+		if nullResult == mcpResultValue && orNull != "" {
+			condition = "(" + condition + " OR " + orNull + ")"
+		}
+	}
+	return condition, nil, mcpResultValue, nil
+}
+
+// outerColumn resolves the trimmed prefix on the outer query:
+// ResolvedOuterRef's resolve_ref.
+func (q *mcpQuery) outerColumn(names []string) (mcpTarget, string, error) {
+	info, err := q.setupJoins(names, nil, true, true)
+	if err != nil {
+		return mcpTarget{}, "", err
+	}
+	target, alias, _ := q.trimJoins(info)
+	return target, alias, nil
+}
+
+// mcpRelabel rewrites a subquery's join aliases. The new aliases are written
+// unquoted, like a table alias in a FROM clause.
+func mcpRelabel(sql string, aliases map[string]string) string {
+	for old, next := range aliases {
+		if old != next {
+			sql = strings.ReplaceAll(sql, `"`+old+`"`, next)
+		}
+	}
+	return sql
+}
+
+// mcpBareColumn is a column read through an unquoted table alias.
+func mcpBareColumn(alias, column string) string { return alias + `."` + column + `"` }
+
+// mcpShiftPlaceholders moves a subquery's $n placeholders behind the
+// parameters the outer statement already holds.
+func mcpShiftPlaceholders(sql string, offset int) string {
+	if offset == 0 {
+		return sql
+	}
+	var out strings.Builder
+	for i := 0; i < len(sql); i++ {
+		if sql[i] != '$' {
+			out.WriteByte(sql[i])
+			continue
+		}
+		j := i + 1
+		for j < len(sql) && sql[j] >= '0' && sql[j] <= '9' {
+			j++
+		}
+		if j == i+1 {
+			out.WriteByte(sql[i])
+			continue
+		}
+		number, _ := strconv.Atoi(sql[i+1 : j])
+		out.WriteString("$" + strconv.Itoa(offset+number))
+		i = j - 1
+	}
+	return out.String()
+}
+
+// subqueryFrom renders the FROM clause of the correlated subquery: the first
+// referenced join is the subquery's base table.
+func (q *mcpQuery) subqueryFrom(aliases map[string]string) string {
+	var out strings.Builder
+	started := false
+	for _, join := range q.joins {
+		if join.refs <= 0 {
+			continue
+		}
+		if !started {
+			out.WriteString(`"` + join.table + `" ` + aliases[join.alias])
+			started = true
+			continue
+		}
+		if join.louter {
+			out.WriteString(" LEFT OUTER JOIN ")
+		} else {
+			out.WriteString(" INNER JOIN ")
+		}
+		out.WriteString(`"` + join.table + `" ` + aliases[join.alias])
+		out.WriteString(" ON (" + mcpBareColumn(aliases[join.parent], join.lhs) + " = " + mcpBareColumn(aliases[join.alias], join.rhs) + ")")
+	}
+	return out.String()
+}
+
+// mcpResultKind is the outcome of compiling a condition: a value, or the
+// EmptyResultSet/FullResultSet WhereNode.as_sql raises per node.
+type mcpResultKind int
+
+const (
+	mcpResultValue mcpResultKind = iota
+	mcpResultEmpty
+	mcpResultFull
+)
 
 type mcpLookup struct {
 	name       string
 	sql        string
 	isnullTrue bool
-	// outOfRange marks an integer comparison folded to TRUE/FALSE because the
-	// value is outside the column range (IntegerFieldOverflow).
-	outOfRange bool
+	result     mcpResultKind
 }
 
 var mcpRelatedLookups = map[string]bool{"exact": true, "in": true, "isnull": true, "gt": true, "gte": true, "lt": true, "lte": true}
@@ -913,7 +1232,8 @@ var mcpFieldLookups = map[string]bool{"exact": true, "iexact": true, "gt": true,
 
 var mcpJSONLookups = map[string]bool{"exact": true, "isnull": true, "has_key": true, "has_keys": true, "has_any_keys": true,
 	"contains": true, "contained_by": true, "icontains": true, "iexact": true, "startswith": true, "istartswith": true,
-	"endswith": true, "iendswith": true, "regex": true, "iregex": true, "in": true, "lt": true, "lte": true, "gt": true, "gte": true}
+	"endswith": true, "iendswith": true, "regex": true, "iregex": true, "in": true, "range": true, "lt": true, "lte": true,
+	"gt": true, "gte": true}
 
 func (e mcpExpr) hasLookup(name string) bool {
 	switch {
@@ -931,7 +1251,7 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 	if len(lookups) > 0 {
 		name = lookups[len(lookups)-1]
 		for i, transform := range lookups[:len(lookups)-1] {
-			next, err := lhs.tryTransform(transform)
+			next, err := q.tryTransform(lhs, transform)
 			if errors.Is(err, errMCPNoTransform) {
 				return mcpLookup{}, lhs.unsupportedLookup(transform, lookups[i:])
 			}
@@ -942,7 +1262,7 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 		}
 	}
 	if !lhs.hasLookup(name) {
-		next, err := lhs.tryTransform(name)
+		next, err := q.tryTransform(lhs, name)
 		switch {
 		case errors.Is(err, errMCPNoTransform):
 			return mcpLookup{}, lhs.unsupportedLookup(name, nil)
@@ -955,15 +1275,8 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 }
 
 func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, error) {
-	switch name {
-	case "has_keys", "has_any_keys", "contained_by":
-		return mcpLookup{}, mcpNotPorted("lookup " + name)
-	}
-	if lhs.jsonKey && name != "exact" && name != "isnull" {
-		return mcpLookup{}, mcpNotPorted("JSON key lookup " + name)
-	}
-	if lhs.kind == "json" && !lhs.jsonKey && name != "has_key" && name != "isnull" {
-		return mcpLookup{}, mcpNotPorted("JSON lookup " + name)
+	if lhs.kind == "json" {
+		return q.jsonLookup(lhs, name, value)
 	}
 	if name == "isnull" {
 		flag, ok := value.(bool)
@@ -976,90 +1289,84 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 			}
 			flag = PythonTruthy(value)
 		}
-		if lhs.jsonKey {
-			return mcpLookup{}, mcpNotPorted("JSON key isnull")
-		}
 		if flag {
 			return mcpLookup{name: name, sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
 		}
 		return mcpLookup{name: name, sql: lhs.sql + " IS NOT NULL"}, nil
-	}
-	if name == "has_key" {
-		key, ok := value.(string)
-		if !ok {
-			return mcpLookup{}, mcpNotPorted("has_key value")
-		}
-		return mcpLookup{name: name, sql: lhs.sql + " ? " + q.args.add(key)}, nil
-	}
-	if lhs.jsonKey {
-		if value == nil {
-			return mcpLookup{}, mcpNotPorted("JSON key None")
-		}
-		encoded, ok := mcpJSONScalar(value)
-		if !ok {
-			return mcpLookup{}, mcpNotPorted("JSON key value")
-		}
-		return mcpLookup{name: name, sql: lhs.sql + " = " + q.args.add(encoded) + "::jsonb"}, nil
 	}
 	if value == nil {
 		if name == "exact" || name == "iexact" {
 			return mcpLookup{name: "isnull", sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
 		}
 		if name == "in" || name == "range" {
-			return mcpLookup{}, mcpNotPorted(name + " None")
+			return mcpLookup{}, mcpRaise("'NoneType' object is not iterable")
 		}
 		return mcpLookup{}, mcpRaise("Cannot use None as a query value")
 	}
 	switch name {
 	case "in", "range":
-		items, ok := value.([]any)
-		if !ok {
-			return mcpLookup{}, mcpNotPorted(name + " value")
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
 		}
-		var placeholders []string
-		seen := map[string]bool{}
+		prepared := make([]mcpPrepared, 0, len(items))
 		for _, item := range items {
-			if item == nil && name == "in" {
-				if _, err := q.prepare(lhs, item, false); err != nil {
+			value, err := q.prepare(lhs, item, false)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			prepared = append(prepared, value)
+		}
+		if name == "in" {
+			// In.process_rhs: OrderedSet(discard None), first-seen order; an
+			// empty set is an EmptyResultSet.
+			var placeholders []string
+			seen := map[string]bool{}
+			for _, value := range prepared {
+				if value.isNull {
+					continue
+				}
+				argument, err := mcpPreparedArgument(value)
+				if err != nil {
 					return mcpLookup{}, err
 				}
+				key := fmt.Sprint(argument)
+				if value.integer != nil {
+					key = "i" + value.integer.String()
+				}
+				if seen[key] {
+					continue
+				}
+				seen[key] = true
+				placeholders = append(placeholders, q.args.add(argument)+mcpPreparedCast(lhs, value))
+			}
+			if len(placeholders) == 0 {
+				return mcpLookup{name: name, result: mcpResultEmpty}, nil
+			}
+			return mcpLookup{name: name, sql: lhs.sql + " IN (" + strings.Join(placeholders, ", ") + ")"}, nil
+		}
+		// Range.get_rhs_op indexes rhs[0], rhs[1]; a third value leaves one
+		// placeholder unfilled when the driver formats the statement.
+		if len(prepared) < 2 {
+			return mcpLookup{}, mcpRaise("tuple index out of range")
+		}
+		if len(prepared) > 2 {
+			return mcpLookup{}, mcpRaise("not all arguments converted during string formatting")
+		}
+		var placeholders []string
+		for _, value := range prepared {
+			if value.isNull {
+				placeholders = append(placeholders, q.args.add(nil))
 				continue
 			}
-			prepared, err := q.prepare(lhs, item, false)
+			argument, err := mcpPreparedArgument(value)
 			if err != nil {
 				return mcpLookup{}, err
 			}
-			if prepared.isNull {
-				return mcpLookup{}, mcpNotPorted("range None")
-			}
-			argument, err := mcpPreparedArgument(prepared)
-			if err != nil {
-				return mcpLookup{}, err
-			}
-			key := fmt.Sprint(argument)
-			if prepared.integer != nil {
-				key = "i" + prepared.integer.String()
-			}
-			if name == "in" && seen[key] {
-				continue
-			}
-			seen[key] = true
-			placeholders = append(placeholders, q.args.add(argument)+prepared.cast)
+			placeholders = append(placeholders, q.args.add(argument)+mcpPreparedCast(lhs, value))
 		}
-		if name == "range" {
-			if len(items) != 2 {
-				return mcpLookup{}, mcpNotPorted("range size")
-			}
-			return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
-		}
-		if len(placeholders) == 0 {
-			return mcpLookup{name: name, sql: "FALSE"}, nil
-		}
-		return mcpLookup{name: name, sql: lhs.sql + " IN (" + strings.Join(placeholders, ", ") + ")"}, nil
+		return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
 	case "regex", "iregex":
-		if lhs.kind == "json" {
-			return mcpLookup{}, mcpNotPorted("lookup " + name)
-		}
 		argument, err := mcpRawArgument(value)
 		if err != nil {
 			return mcpLookup{}, err
@@ -1101,6 +1408,11 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		return mcpLookup{name: name, sql: column + " LIKE " + pattern}, nil
 	}
 	// exact, gt, gte, lt, lte
+	if lhs.kind == "int" && (name == "gte" || name == "lt") {
+		// IntegerGreaterThanOrEqual/IntegerLessThan round a float up before
+		// IntegerField.get_prep_value truncates it.
+		value = mcpCeilIntegerValue(value)
+	}
 	prepared, err := q.prepare(lhs, value, true)
 	if err != nil {
 		return mcpLookup{}, err
@@ -1121,9 +1433,9 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		return mcpLookup{name: name, sql: "NOT " + lhs.sql}, nil
 	}
 	if lhs.kind == "int" && prepared.integer != nil {
-		if special, argument, ok := mcpIntegerComparison(lhs, name, prepared.integer); ok {
-			if special != "" {
-				return mcpLookup{name: name, sql: special, outOfRange: true}, nil
+		if result, argument, ok := mcpIntegerComparison(lhs, name, prepared.integer); ok {
+			if result != mcpResultValue {
+				return mcpLookup{name: name, result: result}, nil
 			}
 			prepared.param = argument
 		}
@@ -1132,33 +1444,418 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 	return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(prepared.param) + prepared.cast}, nil
 }
 
+// mcpJSONValue is JSONField.get_db_prep_value's json.dumps(value) text.
+func mcpJSONValue(value any) (string, error) {
+	switch value.(type) {
+	case nil, string, bool, json.Number, []any, domain.RequestObject:
+		return string(PythonJSONDumps(value)), nil
+	}
+	return "", mcpNotPorted("JSON value")
+}
+
+// mcpJSONKeyArgument is a has_key value: Django passes it through untouched,
+// so PostgreSQL reports the operator error for the type it receives.
+func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
+	switch typed := value.(type) {
+	case string:
+		return q.args.add(typed), nil
+	case bool:
+		return q.args.add(typed) + "::boolean", nil
+	case domain.RequestObject:
+		// psycopg2 cannot adapt a dict: Django reports this before the
+		// statement is sent.
+		return "", mcpRaise("can't adapt type 'dict'")
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			number, err := strconv.ParseFloat(string(typed), 64)
+			if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
+				return "", mcpNotPorted("has_key number")
+			}
+			// psycopg2's float adapter sends a numeric parameter.
+			return q.args.add(number) + "::numeric", nil
+		}
+		number, ok := new(big.Int).SetString(string(typed), 10)
+		if !ok {
+			return "", mcpNotPorted("has_key number")
+		}
+		if !number.IsInt64() {
+			// An int outside int64 reaches PostgreSQL as numeric.
+			return q.args.add(number.String()) + "::numeric", nil
+		}
+		cast := "::int"
+		if value := number.Int64(); value < math.MinInt32 || value > math.MaxInt32 {
+			cast = "::bigint"
+		}
+		return q.args.add(number.Int64()) + cast, nil
+	case []any:
+		return q.mcpJSONKeyArray(typed)
+	}
+	return "", mcpNotPorted("has_key value")
+}
+
+// mcpJSONKeyArray adapts a has_key list the way psycopg2 sends an array: an
+// empty list is an unknown text value, other lists are arrays whose element
+// type PostgreSQL resolves from the values. Every non-empty array reaches the
+// operator error of jsonb ? because the operator only accepts text.
+func (q *mcpQuery) mcpJSONKeyArray(items []any) (string, error) {
+	if len(items) == 0 {
+		return q.args.add("{}"), nil
+	}
+	allNull := true
+	for _, item := range items {
+		if item != nil {
+			allNull = false
+			break
+		}
+	}
+	if allNull {
+		// psycopg2 writes an all-NULL list as the unknown literal {NULL,...}.
+		parts := make([]string, len(items))
+		for i := range parts {
+			parts[i] = "NULL"
+		}
+		return q.args.add("{" + strings.Join(parts, ",") + "}"), nil
+	}
+	if mcpJSONArrayHasObject(items) {
+		return "", mcpRaise("can't adapt type 'dict'")
+	}
+	allText, allBool, allInt, nested := true, true, true, false
+	anyFloat, anyWide := false, false
+	for _, item := range items {
+		switch typed := item.(type) {
+		case nil, string:
+			allBool, allInt = false, false
+		case bool:
+			allText, allInt = false, false
+		case json.Number:
+			allText, allBool = false, false
+			if strings.ContainsAny(string(typed), ".eE") {
+				allInt, anyFloat = false, true
+				continue
+			}
+			number, ok := new(big.Int).SetString(string(typed), 10)
+			if !ok {
+				return "", mcpNotPorted("has_key number")
+			}
+			if !number.IsInt64() {
+				anyWide = true
+			}
+		case []any:
+			allBool, allInt, nested = false, false, true
+		default:
+			return "", mcpNotPorted("has_key list")
+		}
+	}
+	if nested {
+		texts := make([]string, len(items))
+		for i, item := range items {
+			texts[i] = PythonStr(item)
+		}
+		return q.args.add(texts) + "::text[]", nil
+	}
+	switch {
+	case allText:
+		texts := make([]string, len(items))
+		for i, item := range items {
+			if item != nil {
+				texts[i] = item.(string)
+			}
+		}
+		return q.args.add(texts) + "::text[]", nil
+	case allBool:
+		values := make([]bool, len(items))
+		for i, item := range items {
+			values[i] = item.(bool)
+		}
+		return q.args.add(values) + "::boolean[]", nil
+	case allInt:
+		if anyWide {
+			texts := make([]string, len(items))
+			for i, item := range items {
+				texts[i] = string(item.(json.Number))
+			}
+			return q.args.add(texts) + "::numeric[]", nil
+		}
+		numbers := make([]int64, len(items))
+		wide := false
+		for i, item := range items {
+			number, _ := new(big.Int).SetString(string(item.(json.Number)), 10)
+			numbers[i] = number.Int64()
+			if numbers[i] < math.MinInt32 || numbers[i] > math.MaxInt32 {
+				wide = true
+			}
+		}
+		if wide {
+			return q.args.add(numbers) + "::bigint[]", nil
+		}
+		narrow := make([]int32, len(items))
+		for i, number := range numbers {
+			narrow[i] = int32(number)
+		}
+		return q.args.add(narrow) + "::int[]", nil
+	}
+	texts := make([]string, len(items))
+	for i, item := range items {
+		texts[i] = PythonStr(item)
+	}
+	if anyFloat || anyWide {
+		return q.args.add(texts) + "::numeric[]", nil
+	}
+	return q.args.add(texts) + "::int[]", nil
+}
+
+// mcpJSONArrayHasObject reports a dict anywhere in a has_key list value:
+// psycopg2 cannot adapt one, whatever its nesting.
+func mcpJSONArrayHasObject(items []any) bool {
+	for _, item := range items {
+		switch typed := item.(type) {
+		case domain.RequestObject:
+			return true
+		case []any:
+			if mcpJSONArrayHasObject(typed) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// jsonLookup ports django/db/models/fields/json.py on PostgreSQL: JSONField's
+// own lookups and the lookups KeyTransform and KeyTextTransform register.
+func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, error) {
+	switch name {
+	case "isnull":
+		// KeyTransformIsNull is IsNull: the key expression IS [NOT] NULL.
+		flag, ok := value.(bool)
+		if !ok {
+			if value == nil {
+				return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+			}
+			if q.compileErr == nil {
+				q.compileErr = mcpRaise("The QuerySet value for an isnull lookup must be True or False.")
+			}
+			flag = PythonTruthy(value)
+		}
+		if flag {
+			return mcpLookup{name: name, sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " IS NOT NULL"}, nil
+	case "has_key":
+		if value == nil {
+			return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+		}
+		argument, err := q.mcpJSONKeyArgument(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " ? " + argument}, nil
+	case "has_keys", "has_any_keys":
+		// HasKeys.get_prep_lookup iterates the value and stringifies each key.
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		keys := make([]string, len(items))
+		for i, item := range items {
+			if item == nil {
+				keys[i] = "None"
+				continue
+			}
+			text, err := mcpTextValue(item)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			keys[i] = text
+		}
+		operator := "?&"
+		if name == "has_any_keys" {
+			operator = "?|"
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(keys) + "::text[]"}, nil
+	case "contained_by", "contains":
+		if value == nil {
+			return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+		}
+		encoded, err := mcpJSONValue(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		operator := "@>"
+		if name == "contained_by" {
+			operator = "<@"
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(encoded) + "::jsonb"}, nil
+	case "iexact", "icontains", "startswith", "istartswith", "endswith", "iendswith", "regex", "iregex":
+		// KeyTransformTextLookupMixin reads the key through ->> / #>>.
+		text, err := q.jsonTextExpr(lhs)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		return q.lookupSQL(text, name, value)
+	case "in":
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		// In.process_rhs: OrderedSet(self.rhs) discards None and repeats; an
+		// unhashable value skips the set for the whole list. Values are rows
+		// again once adapted, so every value becomes one jsonb parameter.
+		deduplicate := true
+		for _, item := range items {
+			switch item.(type) {
+			case []any, domain.RequestObject:
+				deduplicate = false
+			}
+		}
+		var placeholders []string
+		seen := map[string]bool{}
+		for _, item := range items {
+			if item == nil {
+				continue
+			}
+			encoded, err := mcpJSONValue(item)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			if deduplicate {
+				if seen[encoded] {
+					continue
+				}
+				seen[encoded] = true
+			}
+			placeholders = append(placeholders, q.args.add(encoded)+"::jsonb")
+		}
+		if len(placeholders) == 0 {
+			return mcpLookup{name: name, result: mcpResultEmpty}, nil
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " IN (" + strings.Join(placeholders, ", ") + ")"}, nil
+	case "range":
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		if len(items) < 2 {
+			return mcpLookup{}, mcpRaise("tuple index out of range")
+		}
+		if len(items) > 2 {
+			return mcpLookup{}, mcpRaise("not all arguments converted during string formatting")
+		}
+		var placeholders []string
+		for _, item := range items {
+			encoded, err := mcpJSONValue(item)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			placeholders = append(placeholders, q.args.add(encoded)+"::jsonb")
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
+	}
+	// exact, gt, gte, lt, lte: Exact's get_prep_lookup adapts the value with
+	// json.dumps; None stays None, and JSONExact.can_use_none_as_rhs turns it
+	// into the JSON null value.
+	if value == nil && name != "exact" {
+		return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+	}
+	encoded, err := mcpJSONValue(value)
+	if err != nil {
+		return mcpLookup{}, err
+	}
+	operators := map[string]string{"exact": "=", "gt": ">", "gte": ">=", "lt": "<", "lte": "<="}
+	return mcpLookup{name: name, sql: lhs.sql + " " + operators[name] + " " + q.args.add(encoded) + "::jsonb"}, nil
+}
+
+// mcpIntegerInternal is the field type whose storage range applies to an
+// integer expression (date parts are IntegerField in Django).
+func mcpIntegerInternal(lhs mcpExpr) string {
+	if lhs.extract == "" && lhs.field != nil {
+		return lhs.field.Internal
+	}
+	return "IntegerField"
+}
+
+// mcpPreparedCast widens an integer parameter the column's type cannot hold,
+// so the driver sends a value PostgreSQL can bind (Django adapts it as int8).
+func mcpPreparedCast(lhs mcpExpr, prepared mcpPrepared) string {
+	if prepared.integer == nil {
+		return prepared.cast
+	}
+	low, high := mcpIntRange(mcpIntegerInternal(lhs))
+	if prepared.integer.Cmp(big.NewInt(low)) < 0 || prepared.integer.Cmp(big.NewInt(high)) > 0 {
+		return "::bigint"
+	}
+	return prepared.cast
+}
+
+// mcpLookupItems is Python iteration of an in/range value.
+func mcpLookupItems(value any) ([]any, error) {
+	switch typed := value.(type) {
+	case []any:
+		return typed, nil
+	case string:
+		items := make([]any, 0, len([]rune(typed)))
+		for _, r := range typed {
+			items = append(items, string(r))
+		}
+		return items, nil
+	case domain.RequestObject:
+		items := make([]any, 0, len(typed))
+		for _, field := range typed {
+			items = append(items, field.Name)
+		}
+		return items, nil
+	case nil:
+		return nil, mcpRaise("'NoneType' object is not iterable")
+	case mcpCoercedInt:
+		return nil, mcpRaise("'int' object is not iterable")
+	case mcpCoercedFloat:
+		return nil, mcpRaise("'float' object is not iterable")
+	case mcpCoercedDate:
+		return nil, mcpRaise("'date' object is not iterable")
+	case mcpCoercedDateTime:
+		return nil, mcpRaise("'datetime' object is not iterable")
+	}
+	return nil, mcpRaise("'%s' object is not iterable", pythonTypeName(value))
+}
+
+// mcpCeilIntegerValue is IntegerFieldFloatRounding: only a Python float is
+// rounded, strings are left for get_prep_value to reject.
+func mcpCeilIntegerValue(value any) any {
+	switch typed := value.(type) {
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			if number, err := strconv.ParseFloat(string(typed), 64); err == nil && !math.IsInf(number, 0) && !math.IsNaN(number) {
+				return mcpCoercedFloat{math.Ceil(number)}
+			}
+		}
+	case mcpCoercedFloat:
+		return mcpCoercedFloat{math.Ceil(typed.v)}
+	}
+	return value
+}
+
 // mcpIntegerComparison is IntegerFieldOverflow: out-of-range direct values
 // become EmptyResultSet (FALSE) or FullResultSet (TRUE).
-func mcpIntegerComparison(lhs mcpExpr, name string, number *big.Int) (string, int64, bool) {
-	internal := "IntegerField"
-	if lhs.extract == "" && lhs.field != nil {
-		internal = lhs.field.Internal
-	}
-	low, high := mcpIntRange(internal)
+func mcpIntegerComparison(lhs mcpExpr, name string, number *big.Int) (mcpResultKind, int64, bool) {
+	low, high := mcpIntRange(mcpIntegerInternal(lhs))
 	below := number.Cmp(big.NewInt(low)) < 0
 	above := number.Cmp(big.NewInt(high)) > 0
 	if below || above {
 		switch name {
 		case "exact":
-			return "FALSE", 0, true
+			return mcpResultEmpty, 0, true
 		case "gt", "gte":
 			if below {
-				return "TRUE", 0, true
+				return mcpResultFull, 0, true
 			}
-			return "FALSE", 0, true
+			return mcpResultEmpty, 0, true
 		case "lt", "lte":
 			if above {
-				return "TRUE", 0, true
+				return mcpResultFull, 0, true
 			}
-			return "FALSE", 0, true
+			return mcpResultEmpty, 0, true
 		}
 	}
-	return "", number.Int64(), true
+	return mcpResultValue, number.Int64(), true
 }
 
 // mcpISOYearStart is date.fromisocalendar(year, 1, 1): the Monday of week 1.
