@@ -2,12 +2,14 @@ package dto
 
 import (
 	"errors"
-
 	"fmt"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"math/big"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
 // The Django ORM subset QueryBuilder (application/mcp_server/query_builder.py)
@@ -390,6 +392,7 @@ type mcpExpr struct {
 	kind     string // value category, see mcpKind
 	field    *mcpField
 	relation bool   // a relation: Django's Related* lookups
+	relClass string // the relation field's class (ForeignKey, ManyToOneRel, ...)
 	extract  string // the date transform applied last, if any
 	column   string // the untransformed column (YearLookup bounds)
 	colKind  string
@@ -451,17 +454,26 @@ func (q *mcpQuery) targetExpr(info *mcpJoinInfo, target mcpTarget, alias string)
 		return mcpExpr{}, mcpNotPorted("field type " + target.valueType)
 	}
 	column := mcpColumn(alias, target.column)
-	return mcpExpr{sql: column, kind: kind, field: target.field, relation: info.path.final.Relation, column: column,
-		colKind: kind, null: target.null, louter: q.get(alias).louter}, nil
+	return mcpExpr{sql: column, kind: kind, field: target.field, relation: info.path.final.Relation,
+		relClass: info.path.final.Class, column: column, colKind: kind, null: target.null,
+		louter: q.get(alias).louter}, nil
 }
 
-var mcpDateTransforms = map[string]bool{"year": true, "month": true, "day": true, "week": true, "week_day": true, "quarter": true}
+// mcpDateTransforms are the extract transforms DateField and DateTimeField
+// register in django/db/models/functions/datetime.py.
+var mcpDateTransforms = map[string]bool{"year": true, "month": true, "day": true, "week": true, "week_day": true,
+	"iso_week_day": true, "quarter": true}
 
-// transform is try_transform for the supported transforms; anything else
-// (unknown names, iso_* parts, minute/second/time, nested JSON keys) is
-// refused because Django's error text carries difflib suggestions.
-func (e mcpExpr) transform(name string) (mcpExpr, error) {
-	if e.relation || e.extract != "" || e.jsonKey {
+// errMCPNoTransform marks a name that is not a transform of the expression
+// (Django raises FieldError and build_lookup tries the name as a lookup).
+var errMCPNoTransform = errors.New("mcp query: no such transform")
+
+// tryTransform is Query.try_transform for the supported transforms.
+func (e mcpExpr) tryTransform(name string) (mcpExpr, error) {
+	if e.relation {
+		return e, errMCPNoTransform
+	}
+	if e.jsonKey {
 		return e, mcpNotPorted("transform " + name)
 	}
 	switch e.kind {
@@ -472,22 +484,223 @@ func (e mcpExpr) transform(name string) (mcpExpr, error) {
 		}
 		switch {
 		case name == "date" && e.kind == "datetime":
-			return mcpExpr{sql: "(" + source + ")::date", kind: "date", extract: "date", column: e.column, colKind: e.kind,
+			return mcpExpr{sql: "(" + source + ")::date", kind: "date", extract: "date", column: e.sql, colKind: e.kind,
 				null: e.null, louter: e.louter}, nil
-		case name == "hour" && e.kind == "datetime", mcpDateTransforms[name]:
+		case name == "time" && e.kind == "datetime":
+			return mcpExpr{sql: "(" + source + ")::time", kind: "time", extract: "time", column: e.sql, colKind: e.kind,
+				null: e.null, louter: e.louter}, nil
+		case name == "iso_year":
+			return mcpExpr{sql: "EXTRACT(ISOYEAR FROM " + source + ")", kind: "int", extract: name, column: e.sql,
+				colKind: e.kind, null: e.null, louter: e.louter}, nil
+		case name == "year" || mcpDateTransforms[name]:
 			sql := "EXTRACT(" + strings.ToUpper(name) + " FROM " + source + ")"
-			if name == "week_day" {
+			switch name {
+			case "week_day":
 				sql = "EXTRACT(DOW FROM " + source + ") + 1"
+			case "iso_week_day":
+				sql = "EXTRACT(ISODOW FROM " + source + ")"
 			}
-			return mcpExpr{sql: sql, kind: "int", extract: name, column: e.column, colKind: e.kind, null: e.null, louter: e.louter}, nil
+			column, colKind := e.column, e.colKind
+			if name == "year" {
+				// Year lookups filter the original expression (YearExact et al.).
+				column, colKind = e.sql, e.kind
+			}
+			return mcpExpr{sql: sql, kind: "int", extract: name, column: column, colKind: colKind, null: e.null,
+				louter: e.louter}, nil
+		case (name == "hour" || name == "minute" || name == "second") && e.kind == "datetime":
+			sql := "EXTRACT(" + strings.ToUpper(name) + " FROM " + source + ")"
+			if name == "second" {
+				sql = "EXTRACT(SECOND FROM DATE_TRUNC('second', " + source + "))"
+			}
+			return mcpExpr{sql: sql, kind: "int", extract: name, column: e.column, colKind: e.colKind, null: e.null,
+				louter: e.louter}, nil
 		}
+		return e, errMCPNoTransform
+	case "time":
+		switch name {
+		case "hour", "minute", "second":
+			sql := "EXTRACT(" + strings.ToUpper(name) + " FROM " + e.sql + ")"
+			if name == "second" {
+				sql = "EXTRACT(SECOND FROM DATE_TRUNC('second', " + e.sql + "))"
+			}
+			return mcpExpr{sql: sql, kind: "int", extract: name, column: e.column, colKind: e.colKind, null: e.null,
+				louter: e.louter}, nil
+		}
+		return e, errMCPNoTransform
 	case "json":
 		if name != "" && !strings.ContainsAny(name, "'\\") && !mcpDigits(name) {
-			return mcpExpr{sql: "(" + e.sql + " -> '" + name + "')", kind: "json", jsonKey: true, column: e.column, colKind: e.kind,
-				null: e.null, louter: e.louter, field: e.field}, nil
+			return mcpExpr{sql: "(" + e.sql + " -> '" + name + "')", kind: "json", jsonKey: true, column: e.column,
+				colKind: e.kind, null: e.null, louter: e.louter, field: e.field}, nil
+		}
+		return e, mcpNotPorted("transform " + name)
+	}
+	return e, errMCPNoTransform
+}
+
+// fieldClass is the output field class Django names in FieldError messages.
+func (e mcpExpr) fieldClass() string {
+	if e.relation && e.relClass != "" {
+		return e.relClass
+	}
+	if e.extract != "" {
+		switch e.kind {
+		case "int":
+			return "IntegerField"
+		case "date":
+			return "DateField"
+		case "time":
+			return "TimeField"
 		}
 	}
-	return e, mcpNotPorted("transform " + name)
+	if e.field != nil && e.field.Class != "" {
+		return e.field.Class
+	}
+	switch e.kind {
+	case "int":
+		return "IntegerField"
+	case "text":
+		return "CharField"
+	case "uuid":
+		return "UUIDField"
+	case "bool":
+		return "BooleanField"
+	case "decimal":
+		return "DecimalField"
+	case "float":
+		return "FloatField"
+	case "date":
+		return "DateField"
+	case "datetime":
+		return "DateTimeField"
+	case "time":
+		return "TimeField"
+	case "json":
+		return "JSONField"
+	}
+	return "Field"
+}
+
+// Lookup names registered in Django, in class_lookups order: Field's own
+// lookups in django/db/models/lookups.py, then the transforms registered on
+// DateField, DateTimeField and TimeField in functions/datetime.py, the
+// ForeignObject lookups in fields/related.py, and JSONField's in fields/json.py.
+var (
+	mcpBaseLookupNames = []string{"exact", "iexact", "gt", "gte", "lt", "lte", "in", "contains", "icontains",
+		"startswith", "istartswith", "endswith", "iendswith", "range", "isnull", "regex", "iregex"}
+	mcpDateLookupNames = append(append([]string(nil), mcpBaseLookupNames...), "year", "month", "day", "week_day",
+		"iso_week_day", "week", "iso_year", "quarter")
+	mcpDateTimeLookupNames = append(append([]string(nil), mcpDateLookupNames...), "hour", "minute", "second", "date", "time")
+	mcpTimeLookupNames     = append(append([]string(nil), mcpBaseLookupNames...), "hour", "minute", "second")
+	mcpRelatedLookupNames  = []string{"in", "exact", "lt", "gt", "gte", "lte", "isnull"}
+	mcpJSONLookupNames     = append(append([]string(nil), mcpBaseLookupNames...), "contained_by", "has_key", "has_keys",
+		"has_any_keys")
+	mcpJSONKeyLookupNames = []string{"in", "exact", "iexact", "isnull", "icontains", "startswith", "istartswith",
+		"endswith", "iendswith", "regex", "iregex", "lt", "lte", "gt", "gte"}
+)
+
+func (e mcpExpr) lookupCandidates() []string {
+	switch {
+	case e.relation:
+		return mcpRelatedLookupNames
+	case e.jsonKey:
+		return mcpJSONKeyLookupNames
+	}
+	if e.extract != "" {
+		switch e.kind {
+		case "date":
+			return mcpDateLookupNames
+		case "time":
+			return mcpTimeLookupNames
+		}
+		return mcpBaseLookupNames
+	}
+	switch e.kind {
+	case "json":
+		return mcpJSONLookupNames
+	case "date":
+		return mcpDateLookupNames
+	case "datetime":
+		return mcpDateTimeLookupNames
+	case "time":
+		return mcpTimeLookupNames
+	}
+	return mcpBaseLookupNames
+}
+
+// unsupportedLookup is Query.try_transform's FieldError, with difflib's
+// suggestion among the output field's lookup names.
+func (e mcpExpr) unsupportedLookup(name string, remaining []string) error {
+	unsupported := name
+	if remaining != nil {
+		unsupported = strings.Join(remaining, "__")
+	}
+	suggestion := "."
+	if matches := mcpCloseMatches(name, e.lookupCandidates()); len(matches) > 0 {
+		suggestion = ", perhaps you meant " + strings.Join(matches, " or ") + "?"
+	}
+	return mcpRaise("Unsupported lookup '%s' for %s or join on the field not permitted%s", unsupported, e.fieldClass(),
+		suggestion)
+}
+
+// mcpCloseMatches is difflib.get_close_matches(word, possibilities) with the
+// default n=3 and cutoff=0.6 (SequenceMatcher.ratio over short names).
+func mcpCloseMatches(word string, possibilities []string) []string {
+	type scored struct {
+		ratio float64
+		word  string
+	}
+	var scoredMatches []scored
+	for _, candidate := range possibilities {
+		ratio := mcpSequenceRatio(candidate, word)
+		if ratio >= 0.6 {
+			scoredMatches = append(scoredMatches, scored{ratio, candidate})
+		}
+	}
+	sort.SliceStable(scoredMatches, func(i, j int) bool {
+		if scoredMatches[i].ratio != scoredMatches[j].ratio {
+			return scoredMatches[i].ratio > scoredMatches[j].ratio
+		}
+		return scoredMatches[i].word > scoredMatches[j].word
+	})
+	if len(scoredMatches) > 3 {
+		scoredMatches = scoredMatches[:3]
+	}
+	matches := make([]string, len(scoredMatches))
+	for i, match := range scoredMatches {
+		matches[i] = match.word
+	}
+	return matches
+}
+
+// mcpSequenceRatio is SequenceMatcher.ratio: 2 * matching blocks / total length.
+func mcpSequenceRatio(a, b string) float64 {
+	total := len(a) + len(b)
+	if total == 0 {
+		return 1
+	}
+	return 2 * float64(mcpMatchingBlocks(a, b, 0, len(a), 0, len(b))) / float64(total)
+}
+
+// mcpMatchingBlocks sums the longest matching blocks (find_longest_match with
+// no junk elements, recursing left and right of each block).
+func mcpMatchingBlocks(a, b string, alo, ahi, blo, bhi int) int {
+	besti, bestj, bestsize := alo, blo, 0
+	for i := alo; i < ahi; i++ {
+		for j := blo; j < bhi; j++ {
+			size := 0
+			for i+size < ahi && j+size < bhi && a[i+size] == b[j+size] {
+				size++
+			}
+			if size > bestsize {
+				besti, bestj, bestsize = i, j, size
+			}
+		}
+	}
+	if bestsize == 0 {
+		return 0
+	}
+	return bestsize + mcpMatchingBlocks(a, b, alo, besti, blo, bestj) +
+		mcpMatchingBlocks(a, b, besti+bestsize, ahi, bestj+bestsize, bhi)
 }
 
 func mcpDigits(text string) bool {
@@ -516,9 +729,11 @@ func (q *mcpQuery) resolveField(name string) (mcpExpr, error) {
 		return expr, err
 	}
 	for _, transform := range info.transforms {
-		next, err := expr.transform(transform)
+		next, err := expr.tryTransform(transform)
 		if err != nil {
-			if info.path.finalIsField() && info.lastErr != nil && !mcpTransformKnown(expr, transform) {
+			// setup_joins' transform function reports the names_to_path error
+			// when the final field is a Field (add_fields, ordering).
+			if errors.Is(err, errMCPNoTransform) && info.path.finalIsField() && info.lastErr != nil {
 				return expr, info.lastErr
 			}
 			return expr, err
@@ -526,22 +741,6 @@ func (q *mcpQuery) resolveField(name string) (mcpExpr, error) {
 		expr = next
 	}
 	return expr, nil
-}
-
-// mcpTransformKnown reports transforms Django has but the port refuses.
-func mcpTransformKnown(expr mcpExpr, name string) bool {
-	switch expr.kind {
-	case "date", "datetime":
-		switch name {
-		case "iso_year", "iso_week_day", "year", "month", "day", "week", "week_day", "quarter":
-			return true
-		case "hour", "minute", "second", "date", "time":
-			return expr.kind == "datetime"
-		}
-	case "json":
-		return true
-	}
-	return false
 }
 
 // ---------------------------------------------------------------------------
@@ -577,7 +776,7 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 			existingInner = append(existingInner, join.alias)
 		}
 	}
-	clause, _, err := q.addQInner(node, map[string]bool{}, false, false)
+	clause, _, err := q.addQInner(node, map[string]bool{}, false, false, false)
 	if err != nil {
 		return err
 	}
@@ -588,9 +787,10 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 	return nil
 }
 
-func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated bool) (string, []string, error) {
+func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
 	currentNegated = currentNegated != node.negated
 	branchNegated = branchNegated || node.negated
+	branchOR = branchOR || node.or
 	effectiveOR := node.or
 	if currentNegated {
 		effectiveOR = !node.or
@@ -604,9 +804,9 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 		var err error
 		switch typed := child.(type) {
 		case mcpLeaf:
-			clause, needed, err = q.buildFilter(typed, used, branchNegated, currentNegated)
+			clause, needed, err = q.buildFilter(typed, used, branchNegated, currentNegated, branchOR)
 		case *mcpNode:
-			clause, needed, err = q.addQInner(typed, used, branchNegated, currentNegated)
+			clause, needed, err = q.addQInner(typed, used, branchNegated, currentNegated, branchOR)
 		}
 		if err != nil {
 			return "", nil, err
@@ -654,7 +854,7 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 }
 
 // buildFilter is Query.build_filter for key=value.
-func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated bool) (string, []string, error) {
+func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
 	if leaf.key == "" {
 		return "", nil, mcpRaise("Cannot parse keyword query ''")
 	}
@@ -675,6 +875,13 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 	if err != nil {
 		return "", nil, err
 	}
+	// Django folds an out-of-range integer comparison into an always-true or
+	// always-false condition; the empty/full result is only reproduced for a
+	// plain AND condition of filters (an empty OR branch is dropped and a
+	// negated node matches everything), so those requests go to Django.
+	if lookup.outOfRange && (branchNegated || currentNegated || branchOR) {
+		return "", nil, mcpNotPorted("integer outside the column range in or_filters or exclude")
+	}
 	condition := lookup.sql
 	requireOuter := lookup.name == "isnull" && lookup.isnullTrue && !currentNegated
 	if currentNegated && (lookup.name != "isnull" || !lookup.isnullTrue) {
@@ -693,6 +900,9 @@ type mcpLookup struct {
 	name       string
 	sql        string
 	isnullTrue bool
+	// outOfRange marks an integer comparison folded to TRUE/FALSE because the
+	// value is outside the column range (IntegerFieldOverflow).
+	outOfRange bool
 }
 
 var mcpRelatedLookups = map[string]bool{"exact": true, "in": true, "isnull": true, "gt": true, "gte": true, "lt": true, "lte": true}
@@ -720,8 +930,11 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 	name := "exact"
 	if len(lookups) > 0 {
 		name = lookups[len(lookups)-1]
-		for _, transform := range lookups[:len(lookups)-1] {
-			next, err := lhs.transform(transform)
+		for i, transform := range lookups[:len(lookups)-1] {
+			next, err := lhs.tryTransform(transform)
+			if errors.Is(err, errMCPNoTransform) {
+				return mcpLookup{}, lhs.unsupportedLookup(transform, lookups[i:])
+			}
 			if err != nil {
 				return mcpLookup{}, err
 			}
@@ -729,8 +942,11 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 		}
 	}
 	if !lhs.hasLookup(name) {
-		next, err := lhs.transform(name)
-		if err != nil {
+		next, err := lhs.tryTransform(name)
+		switch {
+		case errors.Is(err, errMCPNoTransform):
+			return mcpLookup{}, lhs.unsupportedLookup(name, nil)
+		case err != nil:
 			return mcpLookup{}, err
 		}
 		lhs, name = next, "exact"
@@ -740,7 +956,7 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 
 func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, error) {
 	switch name {
-	case "regex", "iregex", "has_keys", "has_any_keys", "contained_by":
+	case "has_keys", "has_any_keys", "contained_by":
 		return mcpLookup{}, mcpNotPorted("lookup " + name)
 	}
 	if lhs.jsonKey && name != "exact" && name != "isnull" {
@@ -786,9 +1002,6 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		return mcpLookup{name: name, sql: lhs.sql + " = " + q.args.add(encoded) + "::jsonb"}, nil
 	}
 	if value == nil {
-		if lhs.extract != "" {
-			return mcpLookup{}, mcpNotPorted("transform with None")
-		}
 		if name == "exact" || name == "iexact" {
 			return mcpLookup{name: "isnull", sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
 		}
@@ -819,12 +1032,19 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 			if prepared.isNull {
 				return mcpLookup{}, mcpNotPorted("range None")
 			}
-			key := fmt.Sprint(prepared.param)
+			argument, err := mcpPreparedArgument(prepared)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			key := fmt.Sprint(argument)
+			if prepared.integer != nil {
+				key = "i" + prepared.integer.String()
+			}
 			if name == "in" && seen[key] {
 				continue
 			}
 			seen[key] = true
-			placeholders = append(placeholders, q.args.add(prepared.param)+prepared.cast)
+			placeholders = append(placeholders, q.args.add(argument)+prepared.cast)
 		}
 		if name == "range" {
 			if len(items) != 2 {
@@ -836,20 +1056,34 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 			return mcpLookup{name: name, sql: "FALSE"}, nil
 		}
 		return mcpLookup{name: name, sql: lhs.sql + " IN (" + strings.Join(placeholders, ", ") + ")"}, nil
-	case "iexact", "contains", "icontains", "startswith", "istartswith", "endswith", "iendswith":
-		if lhs.relation || lhs.kind != "text" || lhs.extract != "" {
-			return mcpLookup{}, mcpNotPorted("pattern lookup on " + lhs.kind)
+	case "regex", "iregex":
+		if lhs.kind == "json" {
+			return mcpLookup{}, mcpNotPorted("lookup " + name)
 		}
-		text, err := mcpTextValue(value)
+		argument, err := mcpRawArgument(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		operator := "~"
+		if name == "iregex" {
+			operator = "~*"
+		}
+		return mcpLookup{name: name, sql: lhs.sql + "::text " + operator + " " + q.args.add(argument)}, nil
+	case "iexact":
+		argument, err := mcpRawArgument(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		return mcpLookup{name: name, sql: "UPPER(" + lhs.sql + "::text) = UPPER(" + q.args.add(argument) + ")"}, nil
+	case "contains", "icontains", "startswith", "istartswith", "endswith", "iendswith":
+		text, err := mcpPatternText(value)
 		if err != nil {
 			return mcpLookup{}, err
 		}
 		column := lhs.sql + "::text"
-		if strings.HasPrefix(name, "i") {
+		insensitive := strings.HasPrefix(name, "i")
+		if insensitive {
 			column = "UPPER(" + column + ")"
-		}
-		if name == "iexact" {
-			return mcpLookup{name: name, sql: column + " = UPPER(" + q.args.add(text) + ")"}, nil
 		}
 		escaped := strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(text)
 		switch strings.TrimPrefix(name, "i") {
@@ -861,15 +1095,12 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 			escaped = "%" + escaped
 		}
 		pattern := q.args.add(escaped)
-		if strings.HasPrefix(name, "i") {
+		if insensitive {
 			pattern = "UPPER(" + pattern + ")"
 		}
 		return mcpLookup{name: name, sql: column + " LIKE " + pattern}, nil
 	}
 	// exact, gt, gte, lt, lte
-	if name != "exact" && (lhs.kind == "uuid" || lhs.kind == "bool") {
-		return mcpLookup{}, mcpNotPorted(name + " on " + lhs.kind)
-	}
 	prepared, err := q.prepare(lhs, value, true)
 	if err != nil {
 		return mcpLookup{}, err
@@ -880,7 +1111,7 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		}
 		return mcpLookup{}, mcpRaise("Cannot use None as a query value")
 	}
-	if lhs.extract == "year" {
+	if lhs.extract == "year" || lhs.extract == "iso_year" {
 		return q.yearLookup(lhs, name, prepared)
 	}
 	if name == "exact" && lhs.kind == "bool" && lhs.extract == "" && !lhs.relation {
@@ -889,23 +1120,98 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		}
 		return mcpLookup{name: name, sql: "NOT " + lhs.sql}, nil
 	}
+	if lhs.kind == "int" && prepared.integer != nil {
+		if special, argument, ok := mcpIntegerComparison(lhs, name, prepared.integer); ok {
+			if special != "" {
+				return mcpLookup{name: name, sql: special, outOfRange: true}, nil
+			}
+			prepared.param = argument
+		}
+	}
 	operator := map[string]string{"exact": "=", "gt": ">", "gte": ">=", "lt": "<", "lte": "<="}[name]
 	return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(prepared.param) + prepared.cast}, nil
 }
 
-// yearLookup is YearExact/YearGt/... : bounds on the untransformed column.
-func (q *mcpQuery) yearLookup(lhs mcpExpr, name string, prepared mcpPrepared) (mcpLookup, error) {
-	year := prepared.param.(int64)
-	if year < 1 || year > 9999 {
-		return mcpLookup{}, mcpNotPorted("year out of range")
+// mcpIntegerComparison is IntegerFieldOverflow: out-of-range direct values
+// become EmptyResultSet (FALSE) or FullResultSet (TRUE).
+func mcpIntegerComparison(lhs mcpExpr, name string, number *big.Int) (string, int64, bool) {
+	internal := "IntegerField"
+	if lhs.extract == "" && lhs.field != nil {
+		internal = lhs.field.Internal
 	}
-	first := fmt.Sprintf("%04d-01-01", year)
-	second := fmt.Sprintf("%04d-12-31", year)
+	low, high := mcpIntRange(internal)
+	below := number.Cmp(big.NewInt(low)) < 0
+	above := number.Cmp(big.NewInt(high)) > 0
+	if below || above {
+		switch name {
+		case "exact":
+			return "FALSE", 0, true
+		case "gt", "gte":
+			if below {
+				return "TRUE", 0, true
+			}
+			return "FALSE", 0, true
+		case "lt", "lte":
+			if above {
+				return "TRUE", 0, true
+			}
+			return "FALSE", 0, true
+		}
+	}
+	return "", number.Int64(), true
+}
+
+// mcpISOYearStart is date.fromisocalendar(year, 1, 1): the Monday of week 1.
+func mcpISOYearStart(year int) time.Time {
+	day := time.Date(year, time.January, 4, 0, 0, 0, 0, time.UTC)
+	weekday := int(day.Weekday())
+	if weekday == 0 {
+		weekday = 7
+	}
+	return day.AddDate(0, 0, -(weekday - 1))
+}
+
+// yearLookup is YearExact/YearGt/... : bounds on the expression the year was
+// extracted from (the untransformed column for a plain __year).
+func (q *mcpQuery) yearLookup(lhs mcpExpr, name string, prepared mcpPrepared) (mcpLookup, error) {
+	number := prepared.integer
+	if number == nil {
+		return mcpLookup{}, mcpNotPorted("year value")
+	}
+	iso := lhs.extract == "iso_year"
+	year := number.Int64()
+	if !number.IsInt64() || year < 1 || year > 9999 {
+		return mcpLookup{}, mcpRaise("year %s is out of range", number.String())
+	}
+	if iso && year == 9999 {
+		// year + 1 is outside datetime's range.
+		return mcpLookup{}, mcpRaise("year %d is out of range", year+1)
+	}
+	var first, second string
 	cast := "::date"
 	if lhs.colKind == "datetime" {
-		first += "T00:00:00+00:00"
-		second += "T23:59:59.999999+00:00"
+		var start, finish time.Time
+		if iso {
+			start = mcpISOYearStart(int(year))
+			finish = mcpISOYearStart(int(year + 1)).Add(-time.Microsecond)
+		} else {
+			start = time.Date(int(year), time.January, 1, 0, 0, 0, 0, time.UTC)
+			finish = time.Date(int(year), time.December, 31, 23, 59, 59, 999999000, time.UTC)
+		}
+		first = start.Format("2006-01-02T15:04:05.999999+00:00")
+		second = finish.Format("2006-01-02T15:04:05.999999+00:00")
 		cast = "::timestamptz"
+	} else {
+		var start, finish time.Time
+		if iso {
+			start = mcpISOYearStart(int(year))
+			finish = mcpISOYearStart(int(year+1)).AddDate(0, 0, -1)
+		} else {
+			start = time.Date(int(year), time.January, 1, 0, 0, 0, 0, time.UTC)
+			finish = time.Date(int(year), time.December, 31, 0, 0, 0, 0, time.UTC)
+		}
+		first = start.Format("2006-01-02")
+		second = finish.Format("2006-01-02")
 	}
 	switch name {
 	case "exact":
