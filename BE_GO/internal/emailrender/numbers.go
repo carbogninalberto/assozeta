@@ -125,31 +125,36 @@ func numberFormat(number string, decimalPos int, hasPos bool, separator string) 
 }
 
 // localizeDecimal is formats.localize(Decimal): number_format with
-// decimal_pos None ("{:f}" of the value).
+// decimal_pos None ("{:f}" of the value, scientific notation beyond 200
+// digits as numberformat.format avoids the large fixed text).
 func localizeDecimal(text, separator string) (string, error) {
 	value, err := parseDecimal(text)
 	if err != nil {
 		return "", err
 	}
 	if value.digits+abs(value.exponent) > 200 {
-		return "", unsupported("decimal beyond 200 digits")
+		return numberFormat(value.scientific(), 0, false, separator), nil
 	}
 	return numberFormat(value.fixed(), 0, false, separator), nil
 }
 
 // localizeFloat is formats.localize(float): str(float), through Decimal
-// when it has an exponent.
+// when it has an exponent; inf and nan stay as str(float) writes them.
 func localizeFloat(number float64, separator string) (string, error) {
+	switch {
+	case math.IsNaN(number):
+		return "nan", nil
+	case math.IsInf(number, 1):
+		return "inf", nil
+	case math.IsInf(number, -1):
+		return "-inf", nil
+	}
 	text, err := pythonFloatRepr(number)
 	if err != nil {
 		return "", err
 	}
 	if strings.Contains(text, "e") {
-		value, err := parseDecimal(text)
-		if err != nil {
-			return "", err
-		}
-		text = value.fixed()
+		return localizeDecimal(text, separator)
 	}
 	return numberFormat(text, 0, false, separator), nil
 }
@@ -173,6 +178,27 @@ func (d decimalValue) fixed() string {
 		digits = strings.Repeat("0", places-len(digits)+1) + digits
 	}
 	return sign + digits[:len(digits)-places] + "." + digits[len(digits)-places:]
+}
+
+// scientific is "{:e}".format(Decimal): every coefficient digit, then the
+// exponent of the first digit with its sign (Decimal('1.500E+250') ->
+// '1.500e+250').
+func (d decimalValue) scientific() string {
+	digits := d.coefficient.String()
+	sign := ""
+	if d.negative {
+		sign = "-"
+	}
+	coefficient := digits[:1]
+	if len(digits) > 1 {
+		coefficient += "." + digits[1:]
+	}
+	exponent := d.exponent + d.digits - 1
+	mark := "+"
+	if exponent < 0 {
+		mark, exponent = "-", -exponent
+	}
+	return sign + coefficient + "e" + mark + strconv.Itoa(exponent)
 }
 
 func abs(n int) int {

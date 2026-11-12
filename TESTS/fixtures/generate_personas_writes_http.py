@@ -45,8 +45,10 @@ association'; an owner whose association is missing or soft-deleted: 500).
   after the writes) and AssociateSerializer.
 - _handle_tutors: relations whose tutor is not listed are deleted (the
   collector posts deletes in descending key order); each listed tutor found by
-  Associate.objects (live, group-aware) is partially updated through
-  BasicAssociateSerializer, otherwise created; update_or_create of the
+  Associate.objects.get (live, group-aware, within the persona's association)
+  is partially updated through BasicAssociateSerializer, otherwise created (an
+  id of another association, or of any association when the persona has none,
+  is an unknown id); update_or_create of the
   relation with is_primary; without a primary relation the first by key is
   saved primary. Requests are not atomic: exceptions after a save keep it.
 - personas-subscriptions list: Subscription.objects (group-aware) of the
@@ -253,6 +255,12 @@ def relation_fields(row):
 
 def relations_of(ref):
     return sorted((r for r in WORLD['rel'].values() if r['associate'] == ref), key=lambda r: r['id'])
+
+
+def seed_relations_only(ref):
+    """A case may expect the deletion of a seed relation only: the runner knows the seed keys."""
+    assert all(key in RELATIONS for key, rel in WORLD['rel'].items() if rel['associate'] == ref), \
+        f'{ref} has a relation created at run time'
 
 
 def m2m_tutors(ref, group):
@@ -462,7 +470,8 @@ def handle_tutors(effect, associate, tutors_data):
         info_ = data.get('tutor')
         if not info_:
             continue
-        found = [ref for ref, row in WORLD['assoc'].items() if row['id'] == uuid_of(info_.get('associate_id')) and visible(ref, effect.group)]
+        found = [ref for ref, row in WORLD['assoc'].items() if row['id'] == uuid_of(info_.get('associate_id')) and visible(ref, effect.group)
+                 and row['association'] == WORLD['assoc'][associate]['association']]
         values = {k: v for k, v in info_.items() if k not in ('associate_id', 'creation_date', 'tutors', 'full_name')}
         values = {('association' if k == 'sport_association' else k): v for k, v in values.items()}
         if 'born_date' in values and values['born_date']:
@@ -1307,6 +1316,41 @@ effect = Effect('owner')
 effect.save('idu4')
 add('update-tutor-id-float-fails-after-save', 'owner', 'PATCH', update_path('idu4'), 500, SERVER,
     body={'tutors_data': [{'tutor': {'associate_id': 1.5, 'phone': '3330000000'}}]}, allow=ALLOW_UPDATE, effect=effect)
+
+# A tutor id of another association is an unknown id: the tutor is created from the sent fields and the other
+# association's row is left alone. For a persona without an association the same holds for any associated tutor.
+effect = Effect('owner')
+ref = effect.create(user=OWNER, first_name='Pestero')
+tutor_data = [{'tutor': {'associate_id': A['abroad'], 'first_name': 'Nuovo', 'last_name': 'Tutorestero'}, 'is_primary': True}]
+handle_tutors(effect, ref, tutor_data)
+add('add-tutor-other-association-creates-new', 'owner', 'POST', ADD, 201, info(ref),
+    body={'first_name': 'Pestero', 'tutors_data': tutor_data}, allow=ALLOW_ADD, effect=effect)
+
+effect = Effect('owner')
+seed_relations_only('idu4')
+effect.save('idu4')
+tutor_data = [{'tutor': {'associate_id': A['abroad'], 'first_name': 'Altro'}, 'is_primary': True}]
+handle_tutors(effect, 'idu4', tutor_data)
+add('update-tutor-other-association-creates-new', 'owner', 'PATCH', update_path('idu4'), 200, info('idu4'),
+    body={'tutors_data': tutor_data}, allow=ALLOW_UPDATE, effect=effect)
+
+# A deleted tutor of another association was already not found before the scope: kept as a regression pin.
+effect = Effect('owner')
+seed_relations_only('gone_collab')
+effect.save('gone_collab')
+tutor_data = [{'tutor': {'associate_id': A['gone_abroad'], 'first_name': 'Altro'}, 'is_primary': True}]
+handle_tutors(effect, 'gone_collab', tutor_data)
+add('update-tutor-deleted-other-association-creates-new', 'owner', 'PATCH', update_path('gone_collab'), 200, info('gone_collab'),
+    body={'tutors_data': tutor_data}, allow=ALLOW_UPDATE, effect=effect)
+
+# An own live associate is still found and updated: the scope does not hide the persona's own rows.
+effect = Effect('owner')
+seed_relations_only('gone_admin')
+effect.save('gone_admin')
+tutor_data = [{'tutor': {'associate_id': A['tutor_a'], 'phone': '3339998888'}, 'is_primary': True}]
+handle_tutors(effect, 'gone_admin', tutor_data)
+add('update-tutor-same-association-updated', 'owner', 'PATCH', update_path('gone_admin'), 200, info('gone_admin'),
+    body={'tutors_data': tutor_data}, allow=ALLOW_UPDATE, effect=effect)
 
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({

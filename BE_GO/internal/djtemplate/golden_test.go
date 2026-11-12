@@ -5,8 +5,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -76,9 +78,18 @@ func TaggedValue(raw json.RawMessage) (any, error) {
 		var number int64
 		err := json.Unmarshal(tagged.V, &number)
 		return number, err
+	case "bigint":
+		number, ok := new(big.Int).SetString(text(), 10)
+		if !ok {
+			return nil, errors.New("bigint " + text())
+		}
+		return number, nil
 	case "float":
 		var number float64
 		err := json.Unmarshal(tagged.V, &number)
+		return number, err
+	case "float_text":
+		number, err := strconv.ParseFloat(text(), 64)
 		return number, err
 	case "decimal":
 		return Decimal(text()), nil

@@ -43,12 +43,20 @@ type PreviewRenderer interface {
 type DocumentViews struct {
 	store       domain.DocumentViewStore
 	renderer    PreviewRenderer
+	signatures  domain.DocumentViewObjects
 	bypassToken string
 	now         func() time.Time
 }
 
 func NewDocumentViews(store domain.DocumentViewStore, renderer PreviewRenderer, bypassToken string, now func() time.Time) *DocumentViews {
 	return &DocumentViews{store: store, renderer: renderer, bypassToken: bypassToken, now: now}
+}
+
+// WithSignatureObjects configures default_storage for get_signature_base64.
+// Without it a subscription that names a stored signature stays refused.
+func (s *DocumentViews) WithSignatureObjects(objects domain.DocumentViewObjects) *DocumentViews {
+	s.signatures = objects
+	return s
 }
 
 // DocumentViewRequest is one call of an HTML view.
@@ -130,6 +138,11 @@ func (s *DocumentViews) Render(ctx context.Context, identity domain.ResolvedIden
 	if err != nil {
 		if errors.Is(err, djtemplate.ErrUnsupported) || errors.Is(err, mentions.ErrUnsupported) || errors.Is(err, domain.ErrViewTutorWrite) {
 			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
+		}
+		if errors.Is(err, djtemplate.ErrPython) {
+			// An exception Django raises for a value the database can hold:
+			// the 500 page, not a request for Django.
+			return nil, fmt.Errorf("%w: %v", ErrDocumentViewServer, err)
 		}
 		var input *PaymentInfoUUIDError
 		if errors.As(err, &input) {
@@ -713,8 +726,22 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 		"type": subscription.Type, "role": subscription.Role, "associate": associate, "additional_fields": additional,
 		"has_signature": hasSignature,
 		"get_signature_base64": djtemplate.Lazy(func() (any, error) {
-			// Reads the private storage object or the legacy URL.
-			return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
+			// Subscription.get_signature_base64: the stored object as a PNG
+			// data URI, then the legacy URL, then None.
+			if key := renderOptionalEmpty(subscription.SignatureStorageKey); key != "" {
+				if s.signatures == nil {
+					return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
+				}
+				if content, err := s.signatures.Read(ctx, key); err == nil {
+					return "data:image/png;base64," + base64.StdEncoding.EncodeToString(content), nil
+				}
+				// Every read error is logged and falls through to the legacy URL.
+			}
+			if renderOptionalEmpty(subscription.SignatureURL) != "" {
+				// The legacy URL is fetched from another server.
+				return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
+			}
+			return nil, nil
 		}),
 	})
 	html, err := djtemplate.Render(subscriptionTemplate(association), map[string]any{

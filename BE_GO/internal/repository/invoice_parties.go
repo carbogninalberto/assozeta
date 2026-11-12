@@ -260,11 +260,12 @@ func (r *InvoiceParties) CustomerInvoiceTaken(ctx context.Context, prefix string
 	return exists, err
 }
 
-// CustomerNumberTaken is filter(number=..., fiscal_year=...).exists(): None is IS NULL.
-func (r *InvoiceParties) CustomerNumberTaken(ctx context.Context, number, fiscalYear *int64) (bool, error) {
+// CustomerNumberTaken is filter(number=..., fiscal_year=..., sport_association=...).exists(): None is IS NULL.
+func (r *InvoiceParties) CustomerNumberTaken(ctx context.Context, number, fiscalYear *int64, association string) (bool, error) {
 	var exists bool
 	err := r.db.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_customerinvoice
- WHERE number IS NOT DISTINCT FROM $1::integer AND fiscal_year IS NOT DISTINCT FROM $2::integer)`, number, fiscalYear)
+ WHERE number IS NOT DISTINCT FROM $1::integer AND fiscal_year IS NOT DISTINCT FROM $2::integer
+ AND sport_association_id=$3)`, number, fiscalYear, association)
 	return exists, err
 }
 

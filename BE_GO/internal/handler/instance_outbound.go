@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
 	"github.com/labstack/echo/v4"
 )
@@ -89,7 +90,7 @@ func (h *InstanceOutboundHandler) EmailTest(c echo.Context) error {
 	case http.MethodOptions:
 		return supplierOptions(c, "Email Test", "")
 	case http.MethodPost:
-		return h.body(c, func(data any) error {
+		return h.body(c, dto.InstanceAdminEmailTestForm, func(data any) error {
 			body, err := h.outbound.EmailTest(c.Request().Context(), data)
 			return h.answer(c, body, err)
 		})
@@ -114,7 +115,7 @@ func (h *InstanceOutboundHandler) IntegrationTest(c echo.Context) error {
 	if err := h.admin.CheckProvider(provider); err != nil {
 		return h.fail(c, err)
 	}
-	return h.body(c, func(data any) error {
+	return h.body(c, dto.InstanceAdminRevisionForm, func(data any) error {
 		body, err := h.outbound.IntegrationTest(c.Request().Context(), provider, data)
 		return h.answer(c, body, err)
 	})

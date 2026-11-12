@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -237,16 +238,53 @@ type Response struct {
 // decoded like urllib3 (gzip and deflate; other codings left as sent).
 // Every failure is an error (the probe's generic failure).
 func (c *Client) Get(ctx context.Context, target string, headers map[string]string, limit int) (*Response, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
+	if err != nil {
+		return nil, err
+	}
+	return c.doGet(ctx, request, headers, limit)
+}
+
+// GetTarget is Get for a request prepared from an AI base URL: the target
+// path and query go on the wire as computed (net/url would re-encode Path)
+// and the Host header is the one requests would send.
+func (c *Client) GetTarget(ctx context.Context, target *AIRequest, headers map[string]string, limit int) (*Response, error) {
+	request, err := target.httpRequest(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return c.doGet(ctx, request, headers, limit)
+}
+
+// httpRequest builds the request line and Host header prepared by
+// prepareAIRequest.
+func (target *AIRequest) httpRequest(ctx context.Context) (*http.Request, error) {
+	path, query := target.Target, ""
+	if i := strings.IndexByte(path, '?'); i >= 0 {
+		path, query = path[:i], path[i+1:]
+	}
+	decoded, err := url.PathUnescape(path)
+	if err != nil {
+		return nil, err
+	}
+	address := net.JoinHostPort(target.ConnectHost, strconv.Itoa(target.Port))
+	request := &http.Request{
+		Method: http.MethodGet,
+		URL:    &url.URL{Scheme: target.Scheme, Host: address, Path: decoded, RawPath: path, RawQuery: query},
+		// net/http writes the Host header from Request.Host, not Header.
+		Host:   target.HostHeader,
+		Header: make(http.Header),
+	}
+	return request.WithContext(ctx), nil
+}
+
+func (c *Client) doGet(ctx context.Context, request *http.Request, headers map[string]string, limit int) (*Response, error) {
 	// requests keeps the connection alive (Connection: keep-alive); the pool
 	// ends with the probe.
 	transport := c.transport(3*time.Second, 4*time.Second, true)
 	defer transport.CloseIdleConnections()
 	client := &http.Client{Transport: transport,
 		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
-	if err != nil {
-		return nil, err
-	}
 	request.Header.Set("User-Agent", "python-requests/"+RequestsVersion)
 	request.Header.Set("Accept-Encoding", "gzip, deflate")
 	request.Header.Set("Accept", "*/*")

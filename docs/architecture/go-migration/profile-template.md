@@ -26,25 +26,19 @@
 
 ## Shared pieces
 
-- `BE_GO/internal/bs4prettify` ports beautifulsoup4 4.13.3 `prettify()` (html.parser builder, minimal formatter) for a declared subset:
-  - text; allow-listed tags; attributes with quoted or no values;
-  - `;`-terminated allow-listed named references and printable numeric references.
+- `BE_GO/internal/bs4prettify` ports `BeautifulSoup(markup, features="html.parser").prettify()` of beautifulsoup4 4.13.3 on CPython 3.13.16 in full:
+  - `htmlparser.go` is the html.parser tokenizer of CPython 3.13.16 (tags and attributes in every quoting shape, comments, doctypes, CDATA and bogus declarations, processing instructions, raw-text and rcdata elements, character and entity references, the recovery of unclosed and misnested markup), driven the way bs4's `_htmlparser.py` builder drives it;
+  - `treebuilder.go` builds the bs4 tree (`__init__.py`, `builder/__init__.py`, `element.py`), including the `already_closed_empty_element` state, `<pre>` literal mode, the meta charset rewrite and the comment/declaration join rules;
+  - `render.go` is `Tag.decode(indent_level=0, formatter="minimal")`: attribute sorting and quoting, cdata-list attributes re-joined with single spaces, `str.strip()` whitespace.
 
-  It also reproduces these bs4 behaviours:
-  - void elements, and the `already_closed_empty_element` state that leaves an XHTML-style void tag open after an earlier HTML-style one;
-  - `<pre>` literal mode;
-  - cdata-list attributes re-joined with single spaces;
-  - attribute sorting and quoting;
-  - `str.strip()` whitespace.
-
-  Everything else returns `ErrUnsupported`, including comments, doctypes, script/style and other raw-text elements, unquoted values, stray `<` or `&`, control characters and lone surrogates.
+  Comments, doctypes, script/style and other raw-text elements, unquoted or duplicate attributes, stray `<` or `&`, control characters and lone surrogates all follow bs4. When bs4 itself raises (the integer digit limit for a character reference, or the constructor's surrogate check) `Prettify` returns `ErrPythonRaises`, which the view answers with the 500 page. The one refusal that stays is `ErrUnsupported` when the result would exceed 32 MiB: the indentation grows with the square of the nesting depth, so no streaming can hold it.
 
   Evidence: `TESTS/adapters/django/bs4_prettify_corpus.py` runs the real bs4 on:
   - editor documents (TipTap output shapes) and the model's default sections, plus their once- and twice-prettified stored forms;
-  - 6,000 generated subset documents per seed;
-  - random markup and one-character mutations of generated documents.
+  - 6,000 generated documents per seed;
+  - random markup, malformed token soup, nested documents drawing from every tag kind and one- to three-character mutations of generated documents.
 
-  Every subset input matches byte for byte. Other inputs are refused or match. The default run checks 14,701 cases, and three extra seeds at five times the scale were also clean. `testdata/editor.json` is the committed golden for `go test`.
+  `--write-full` writes `testdata/full.json`: 4,231 cases (74 of them where bs4 raises) with the html.parser callback stream, the bs4 tree and `prettify()`'s output or the exception. `go test ./internal/bs4prettify` checks the trees and the output of every case; the wide run of the script's default mode checked 18,932 cases (6,701 of them editor/generated documents), all matching or raising where bs4 raises. `testdata/editor.json` is the committed golden for the editor shapes.
 - `pkg/storage/loginimage` bounds are now width x height (`sizeBound`; `decideSize` takes `min(w_max / w, h_max / h)`). The 200 and 512 square callers are unchanged, and `CompressTemplateLogo` uses 590x130. Evidence: `TESTS/adapters/django/template_logo_images.py` covers 50 vectors with the actual `compress_base64` and Pillow 13:
   - both limiting axes, truncation, enlargement above 1 MiB, unchanged-size passthrough, zero dimension;
   - RGBA, PNG/BMP/WEBP/JPEG/GIF, generation loss, malformed input.
@@ -54,9 +48,8 @@
 
 ## Not ported (refused with the 500 page before any write)
 
-- HTML outside the prettify subset in `regulation`, `demand` or a section `text`.
+- A prettified result above 32 MiB in `regulation`, `demand` or a section `text`. The indentation grows with the square of the nesting depth, so the output is refused rather than held.
 - Section names with characters outside the upper-case subset, for example `ß` or ligatures.
-- A logo string holding a NUL or a lone surrogate before its first comma, or a NUL in its data.
 - A logo or avatar the image processor cannot decode (for example TIFF or AVIF). The request logo and its response re-compression are both checked before writing.
 
 ## Evidence
@@ -94,3 +87,24 @@ Cases: `float-spellings-and-containers`, `logo-object`, `logo-boolean`, `fee-*-p
 `json-with-nul`, `json-key-with-lone-surrogate`, `text-container-with-nul`, `fee-double-underscore`, `fee-inner-space`,
 `*-with-nul`, `*-with-lone-surrogate`, `multipart-*` (65 cases in all). Mutation control: dropping the non-string logo fails
 `float-spellings-and-containers` on Go.
+
+## Ported in t6x3
+
+- `html.parser` recovery and bs4's tree builder and `prettify()` cover every input, not a subset. The committed golden is
+  `BE_GO/internal/bs4prettify/testdata/full.json` (4,231 cases with the parser events, the bs4 tree and the output or exception,
+  written by `TESTS/adapters/django/bs4_prettify_corpus.py --write-full`); the script's default mode checked 18,932 cases in the
+  wide run, all accepted.
+- What bs4 raises (a character reference past the integer digit limit, or a lone surrogate in a short document without `<`) is
+  `ErrPythonRaises`: the 500 page and nothing written. A U+0000 or lone surrogate the audit entry cannot hold after prettifying
+  is the same 500 page and nothing written.
+- The bound that stays: an output above 32 MiB is `ErrUnsupported`, before any write.
+
+Cases: `legacy-html-regulation`, `legacy-html-demand`, `legacy-html-sections`, `html-resave`, `html-control-characters`,
+`html-charref-too-long`, `html-short-surrogate`, `html-nul-reference`, `html-surrogate-reference` (74 cases in all).
+
+## t6x2
+
+**Ported in t6x2**: a logo with a NUL or a lone surrogate before its first comma, or a NUL in its data, is saved when
+the image is re-encoded (the new data URI has neither) and answers the 500 page when it is kept as sent; cases
+`logo-header-with-nul-*`, `logo-data-with-nul-*`, `logo-header-with-lone-surrogate-unchanged`,
+`logo-undecodable-header-with-nul`. `TESTS/fixtures/profile_template_http.json` has 71 cases.

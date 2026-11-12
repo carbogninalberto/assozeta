@@ -51,6 +51,9 @@ type ProfileTemplatePlan struct {
 	// RawLogo is a logo that is not a string: compress_base64 returns it
 	// unchanged and the TextField stores its str().
 	RawLogo any
+	// LogoUnstorable is a logo holding a character the audit entry cannot
+	// hold: it can only be saved if compress_base64 re-encodes it.
+	LogoUnstorable bool
 }
 
 var profileTemplateKeys = []string{"additional_sections", "regulation", "demand", "show_demand_to_athletes", "show_demand_to_members",
@@ -218,12 +221,13 @@ func PlanProfileTemplate(data domain.RequestObject) (*ProfileTemplatePlan, error
 	}
 	if plan.Logo != nil && !profileTemplateValidText(*plan.Logo) {
 		// compress_base64 returns a value without a comma, or with a lone
-		// surrogate in its data, unchanged. Other spellings are not ported.
+		// surrogate in its data, unchanged (the 500 page). A logo it may
+		// re-encode is saved only if it does; the save refuses it otherwise.
 		_, data, found := strings.Cut(*plan.Logo, ",")
 		if !found || profileTemplateHasSurrogate(data) {
 			return nil, ErrProfileTemplatePython
 		}
-		return nil, ErrProfileTemplateNotPorted
+		plan.LogoUnstorable = true
 	}
 	return plan, nil
 }
@@ -258,6 +262,9 @@ func profileTemplatePrettify(value any) (string, error) {
 	}
 	pretty, err := bs4prettify.Prettify(markup)
 	if err != nil {
+		if errors.Is(err, bs4prettify.ErrPythonRaises) {
+			return "", ErrProfileTemplatePython
+		}
 		return "", ErrProfileTemplateNotPorted
 	}
 	return pretty, nil

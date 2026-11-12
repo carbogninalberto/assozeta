@@ -151,6 +151,13 @@ type DocumentViewStore interface {
 	Appointment(ctx context.Context, id string) (*ViewAppointment, error)
 }
 
+// DocumentViewObjects is default_storage.open(name, 'rb').read() for the
+// subscription page's stored signature: the storage name is resolved like
+// django-storages does and the object's bytes are returned.
+type DocumentViewObjects interface {
+	Read(ctx context.Context, name string) ([]byte, error)
+}
+
 // ViewTutorPromotion is the audit context of get_main_tutor's saved relation.
 type ViewTutorPromotion struct {
 	Context LoginAuditContext

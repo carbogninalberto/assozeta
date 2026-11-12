@@ -39,6 +39,9 @@ var ErrInstanceAdminUnhashable = errors.New("unhashable request data")
 // InstanceAdminKeysEqual is `set(request.data) == {key}`.
 func InstanceAdminKeysEqual(body any, key string) (bool, error) {
 	switch v := body.(type) {
+	case InstanceAdminFormInput:
+		// set(request.data) is the form's keys, not the normalised fields.
+		return InstanceAdminKeysEqual(v.Raw, key)
 	case domain.RequestObject:
 		seen := false
 		for _, field := range v {
@@ -80,6 +83,9 @@ func InstanceAdminKeysWithin(body any, allowed ...string) (bool, error) {
 		return false
 	}
 	switch v := body.(type) {
+	case InstanceAdminFormInput:
+		// keys = set(request.data): the form's keys, not the normalised fields.
+		return InstanceAdminKeysWithin(v.Raw, allowed...)
 	case domain.RequestObject:
 		for _, field := range v {
 			if !member(field.Name) {
@@ -259,11 +265,14 @@ func drfUUIDField(value any) (string, []string) {
 }
 
 func instanceAdminObject(body any) (domain.RequestObject, error) {
-	object, ok := body.(domain.RequestObject)
-	if !ok {
-		return nil, &InstanceAdminInvalid{Body: map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(body)}}}
+	switch v := body.(type) {
+	case InstanceAdminFormInput:
+		// The normalised fields of a form body.
+		return v.Value, nil
+	case domain.RequestObject:
+		return v, nil
 	}
-	return object, nil
+	return nil, &InstanceAdminInvalid{Body: map[string]any{"non_field_errors": []string{"dictionary:" + pythonTypeName(body)}}}
 }
 
 var instanceAdminColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)

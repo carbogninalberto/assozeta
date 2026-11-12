@@ -241,7 +241,7 @@ type InvoicePartyStore interface {
 	// PaymentAssociation is the live, group-visible payment's association.
 	PaymentAssociation(ctx context.Context, id string, group *string) (found bool, association *string, err error)
 	CustomerInvoiceTaken(ctx context.Context, prefix string, number, fiscalYear int64, association string) (bool, error)
-	CustomerNumberTaken(ctx context.Context, number, fiscalYear *int64) (bool, error)
+	CustomerNumberTaken(ctx context.Context, number, fiscalYear *int64, association string) (bool, error)
 	BankAccount(ctx context.Context, association string, id *string) (*string, error)
 	LiveSupplier(ctx context.Context, id, association string, group *string) (*Supplier, error)
 	SupplierPaymentCategory(ctx context.Context, association string) (*string, error)

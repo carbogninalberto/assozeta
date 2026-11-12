@@ -141,16 +141,17 @@ def add(name, actor, status, response, *, method='POST', body=None, raw=None, bi
 
 
 def upload(name, actor, filename, content, *, status=200, columns=None, kind='text/csv', content_type='text/csv', headers=None,
-           session=None, keep=None, association='own_association', expired=()):
+           session=None, keep=None, association='own_association', expired=(), texts=None):
     """A stored upload: the Document (audited) and its object in the association's import folder, then the columns or the 500 page.
-    expired: the seeded uploads past their retention that this upload removes once stored."""
+    expired: the seeded uploads past their retention that this upload removes once stored.
+    texts: str() of each column where a label is not text (auto_map_columns maps the text)."""
     effect = {'actor': actor, 'session': session, 'filename': filename, 'body_b64': base64.b64encode(content).decode(),
               'content_type': content_type, 'association': association, 'expired': list(expired)}
     if keep:
         # The object stays for the imports that name '$document:<keep>'; the case that lists it in 'release' removes it.
         effect['keep'] = keep
     if status == 200:
-        response = {'columns': columns, 'map': auto_map(columns), 'document_id': '$new'}
+        response = {'columns': columns, 'map': auto_map(texts or columns), 'document_id': '$new'}
     else:
         response = SERVER
     try:
@@ -272,7 +273,7 @@ def archive(parts):
 def workbook(rows):
     """A one-sheet .xlsx. A cell is None (absent), a str (shared string), an int or float (number) or
     ('date', serial): a number with the date style (days since 1899-12-30), ('time', fraction): a number with the
-    h:mm:ss style, True/False (a boolean cell)."""
+    h:mm:ss style, True/False (a boolean cell), ('error', text): an error cell."""
     strings, body = [], []
     for number, row in enumerate(rows, 1):
         cells = ''
@@ -286,6 +287,8 @@ def workbook(rows):
                 cells += f'<c r="{reference}" t="s"><v>{strings.index(value)}</v></c>'
             elif isinstance(value, bool):
                 cells += f'<c r="{reference}" t="b"><v>{int(value)}</v></c>'
+            elif isinstance(value, tuple) and value[0] == 'error':
+                cells += f'<c r="{reference}" t="e"><v>{value[1]}</v></c>'
             elif isinstance(value, tuple):
                 cells += f'<c r="{reference}" s="{2 if value[0] == "time" else 1}"><v>{value[1]}</v></c>'
             else:
@@ -397,17 +400,25 @@ EXPIRED = {
 FAILED = {'msg': 'Importazione non riuscita. Controlla i dati e riprova.'}
 
 
-def imported(name, actor, document, body, *, columns, steps=(), drafts=(), headers=None, session=None, form=False, failed=False):
+def imported(name, actor, document, body, *, columns, steps=(), drafts=(), headers=None, session=None, form=False, failed=False,
+             unpadded=None, unrendered=False):
     """An import: the association's IMPORTING statuses go, one is created and deleted around the rows.
     steps: the certificates in order, ('kept', label, 'YYYY-MM-DD') or ('deleted',). drafts: [(data, valid)] with
     '$mc:<label>' for a kept certificate's id. A 200 removes the upload it read (the Document and its object).
-    failed: the rows raise: 400, no certificate and no draft, and the upload stays."""
+    failed: the rows raise: 400, no certificate and no draft, and the upload stays.
+    unpadded: (steps, drafts) where the C library writes a year below 1000 without padding (glibc).
+    unrendered: the import completes and the answer cannot be rendered: the 500 page."""
     assert not (failed and (steps or drafts))
     effect = {'kind': 'import', 'actor': actor, 'session': session, 'statuses': list(pending_statuses), 'steps': [list(step) for step in steps],
               'drafts': [{'data': data, 'valid': valid} for data, valid in drafts], 'document': document, 'failed': failed}
+    if unpadded:
+        effect['unpadded'] = {'steps': [list(step) for step in unpadded[0]],
+                              'drafts': [{'data': data, 'valid': valid} for data, valid in unpadded[1]]}
     pending_statuses.clear()
     status = 400 if failed else 200
     response = FAILED if failed else {'columns': columns, 'map': dict(MAP)}  # no upload in this request: every key None
+    if unrendered:
+        status, response = 500, SERVER
     if form:
         add(name, actor, status, response, raw=multipart(fields=[('document_id', f'$document:{document}'), *body]), headers=headers,
             effect=effect)
@@ -571,6 +582,100 @@ imported('xlsx-time-of-day-column-left-out', 'owner', 'times', {'map': {'nome': 
          columns=KINDS_COLUMNS,
          drafts=[({'associate': {'first_name': 'Mario', 'address': True}, 'associate_tutor': {}}, False),
                  ({'associate': {'first_name': 'Anna', 'address': False}, 'associate_tutor': {}}, False)])
+# t6x2: column labels that are not text. The answer lists them as the renderer writes them (numbers, booleans, a date
+# as its ISO text); auto_map_columns maps their str(). The import looks the map's values up in the row's Index: a
+# number finds the label equal to it (True is 1), text only a text label.
+def simple(rows):
+    return [({'associate': row, 'associate_tutor': {}}, False) for row in rows]
+
+
+MIXED_LABELS = ['Nome', 5, True, '2026-01-02T00:00:00', 0.5]
+upload('xlsx-mixed-labels', 'owner', 'etichette.xlsx', workbook([
+    ['Nome', 5, True, ('date', 46024), 0.5], ['Ada', 'Rossi', 'Via Po 1', 'x', 'Roma'], ['Bea', None, 7, None, None]]),
+    columns=MIXED_LABELS, texts=['Nome', '5', 'True', '2026-01-02 00:00:00', '0.5'], kind=XLSX, content_type=XLSX, keep='mixed_labels')
+imported('mixed-labels', 'owner', 'mixed_labels', {'map': {
+    'nome': 'Nome', 'cognome': 5, 'indirizzo': True, 'città di residenza': 0.5, 'email': '5', 'telefono': 1, 'città di nascita': 5.0,
+    'cap': '2026-01-02T00:00:00', 'numero tessera': 2}}, columns=MIXED_LABELS,
+    drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi', 'address': 'Via Po 1', 'address_city': 'Roma', 'phone': 'Via Po 1',
+                    'born_city': 'Rossi'},
+                   {'first_name': 'Bea', 'address': 7, 'phone': 7}]))
+# Whole numbers only: an int64 Index takes numbers without a fraction, never a boolean or text.
+upload('xlsx-number-labels', 'owner', 'numeri-colonna.xlsx', workbook([[1, 2, 3], ['Ada', 'Rossi', 'F'], ['Bea', 'Verdi', 'M']]),
+       columns=[1, 2, 3], texts=['1', '2', '3'], kind=XLSX, content_type=XLSX, keep='number_labels')
+imported('number-labels', 'owner', 'number_labels', {'map': {'nome': 1, 'cognome': 2.0, 'sesso': 3, 'indirizzo': True, 'email': '3',
+                                                             'telefono': 4}}, columns=[1, 2, 3],
+         drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi', 'sex': 'F'}, {'first_name': 'Bea', 'last_name': 'Verdi', 'sex': 'M'}]))
+# A number with a decimal makes a float64 Index.
+upload('xlsx-decimal-labels', 'owner', 'decimali-colonna.xlsx', workbook([[0.5, 2], ['Ada', 'Rossi']]), columns=[0.5, 2.0],
+       texts=['0.5', '2.0'], kind=XLSX, content_type=XLSX, keep='decimal_labels')
+imported('decimal-labels', 'owner', 'decimal_labels', {'map': {'nome': 0.5, 'cognome': 2, 'email': True, 'indirizzo': '2.0'}},
+         columns=[0.5, 2.0], drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi'}]))
+# Booleans only: a bool Index takes booleans, not the numbers equal to them.
+upload('xlsx-boolean-labels', 'owner', 'booleani-colonna.xlsx', workbook([[True, False], ['Ada', 'Rossi'], ['Bea', 'Verdi']]),
+       columns=[True, False], texts=['True', 'False'], kind=XLSX, content_type=XLSX, keep='boolean_labels')
+imported('boolean-labels', 'owner', 'boolean_labels', {'map': {'nome': True, 'cognome': False, 'indirizzo': 1, 'email': 0,
+                                                               'telefono': 'True'}}, columns=[True, False],
+         drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi'}, {'first_name': 'Bea', 'last_name': 'Verdi'}]))
+# Text and booleans without a whole number: a whole number equal to a label is read as a position.
+upload('xlsx-text-boolean-labels', 'owner', 'misti-colonna.xlsx', workbook([
+    ['x', False, True], ['Ada', 'Rossi', 'Roma'], ['Bea', 'Verdi', 'Pisa']]), columns=['x', False, True], texts=['x', 'False', 'True'],
+    kind=XLSX, content_type=XLSX, keep='text_boolean_labels')
+imported('text-boolean-labels', 'owner', 'text_boolean_labels', {'map': {
+    'nome': 0, 'cognome': 1, 'città di residenza': True, 'email': 0.0, 'indirizzo': 'x', 'telefono': 2}}, columns=['x', False, True],
+    drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi', 'address_city': 'Roma', 'email': 'Rossi', 'address': 'Ada'},
+                   {'first_name': 'Bea', 'last_name': 'Verdi', 'address_city': 'Pisa', 'email': 'Verdi', 'address': 'Bea'}]))
+# Dates only make a DatetimeIndex: a number is no label of it.
+DATE_LABELS = ['2026-01-02T00:00:00', '2026-03-04T00:00:00']
+upload('xlsx-date-labels', 'owner', 'date-colonna.xlsx', workbook([[('date', 46024), ('date', 46085)], ['Ada', 'Rossi']]),
+       columns=DATE_LABELS, texts=['2026-01-02 00:00:00', '2026-03-04 00:00:00'], kind=XLSX, content_type=XLSX, keep='date_labels')
+imported('date-labels', 'owner', 'date_labels', {'map': {'nome': 46024, 'cognome': True}}, columns=DATE_LABELS, drafts=simple([{}]))
+# A time of day as a label is written as its ISO text.
+upload('xlsx-time-label', 'owner', 'orario-colonna.xlsx', workbook([['Nome', ('time', 0.4375)], ['Ada', 'x']]),
+       columns=['Nome', '10:30:00'], kind=XLSX, content_type=XLSX)
+# An error cell as a label is not a number the renderer writes: the 500 page, after the upload is stored and after
+# the import is complete.
+upload('xlsx-error-label-server-error', 'owner', 'errore-colonna.xlsx', workbook([['Nome', ('error', '#N/A')], ['Ada', 'x']]),
+       status=500, kind=XLSX, content_type=XLSX, keep='error_label')
+imported('error-label-server-error', 'owner', 'error_label', {'map': {'nome': 'Nome'}}, columns=None, unrendered=True,
+         drafts=simple([{'first_name': 'Ada'}]))
+# t6x2: dates with a year below 1000, as text and as date cells. strftime writes the year as the C library does: four
+# digits where it pads (the first expectation), the digits alone on glibc ('unpadded'), where strptime then refuses the
+# certificate's date and the certificate is deleted.
+import datetime as _datetime  # noqa: E402
+
+
+def serial(year, month, day):
+    return (_datetime.date(year, month, day) - _datetime.date(1899, 12, 30)).days
+
+
+EARLY_COLUMNS = ['Nome', 'Nascita', 'Tesseramento', 'Certificato', 'Indirizzo']
+upload('xlsx-early-years', 'owner', 'anni.xlsx', workbook([
+    EARLY_COLUMNS,
+    ['Ada', '02/01/0999', ('date', serial(999, 3, 5)), '05/03/0999', ('date', serial(850, 12, 25))],
+    ['Bea', '0999-03-05', None, ('date', serial(999, 3, 5)), None],
+]), columns=EARLY_COLUMNS, kind=XLSX, content_type=XLSX, keep='early_years')
+EARLY_MAP = {'nome': 'Nome', 'data di nascita': 'Nascita', 'data tesseramento': 'Tesseramento',
+             'scadenza certificato medico': 'Certificato', 'indirizzo': 'Indirizzo'}
+
+
+def early(year, address, certificates):
+    ada = {'associate': {'first_name': 'Ada', 'born_date': f'02/01/{year}', 'membership_start_date': f'05/03/{year}',
+                         'certificate_expiring_date': '05/03/0999', 'address': f'25/12/{address}'}, 'associate_tutor': {}}
+    bea = {'associate': {'first_name': 'Bea', 'born_date': f'05/03/{year}', 'certificate_expiring_date': f'05/03/{year}'},
+           'associate_tutor': {}}
+    if certificates:
+        for label, draft in (('ada', ada), ('bea', bea)):
+            draft['medical_certificate'] = {'medical_id': f'$mc:{label}', 'filename': None, 'certificate_expring_date': f'05/03/{year}'}
+    return [(ada, False), (bea, False)]
+
+
+imported('early-years', 'owner', 'early_years', {'map': EARLY_MAP}, columns=EARLY_COLUMNS,
+         steps=[('kept', 'ada', '0999-03-05'), ('kept', 'bea', '0999-03-05')], drafts=early('0999', '0850', True),
+         unpadded=([('deleted',), ('deleted',)], early('999', '850', False)))
+# A file sent as document_id in a request above the in-memory upload size is the temporary upload class ('$pad:<n>' is
+# n characters of content).
+add('large-file-document-id', 'owner', 400, ["'TemporaryUploadedFile' object has no attribute 'replace'"],
+    raw=multipart(fields=[('map', '{}')], files=[('document_id', 'soci.csv', b'Nome\n$pad:2700000\n', 'text/csv')]))
 # The import reads the association's own import uploads: another association's upload and a Document stored outside
 # the import folder answer like an unknown document, before any write.
 add('upload-of-another-association-server-error', 'owner', 500, SERVER,
