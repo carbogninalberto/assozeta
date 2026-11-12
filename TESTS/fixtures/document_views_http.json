@@ -639,6 +639,32 @@
    "signature_url": null,
    "group": null
   },
+  "signaturestored": {
+   "id": "a1000000-0000-4000-8000-000000985046",
+   "association": "alpha",
+   "associate": "mario",
+   "type": 2,
+   "role": 5,
+   "created": "2026-10-10T10:10:10+00:00",
+   "payment": null,
+   "additional_fields": null,
+   "signature_url": null,
+   "signature_key": "signatures/t6x2-stored.png",
+   "group": null
+  },
+  "signaturemissing": {
+   "id": "a1000000-0000-4000-8000-000000985047",
+   "association": "alpha",
+   "associate": "mario",
+   "type": 2,
+   "role": 5,
+   "created": "2026-10-11T11:11:11+00:00",
+   "payment": null,
+   "additional_fields": null,
+   "signature_url": null,
+   "signature_key": "signatures/t6x2-missing.png",
+   "group": null
+  },
   "own": {
    "id": "a1000000-0000-4000-8000-000000985050",
    "association": "own",
@@ -745,6 +771,12 @@
    "signature": "data:image/png;base64,U0lH"
   }
  },
+ "signature_objects": [
+  {
+   "name": "signatures/t6x2-stored.png",
+   "body_b64": "c2lnbmF0dXJlIGZpeHR1cmUgYnl0ZXM="
+  }
+ ],
  "compensations": {
   "hours": {
    "id": "a1000000-0000-4000-8000-000000985080",
@@ -6555,6 +6587,873 @@
      "footer": {
       "t": "str",
       "v": "<p>Grazie</p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-signature-stored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985046/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [],
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985046"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "01234567890"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Roma 1"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10100"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "str",
+            "v": "FIDAL"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "str",
+            "v": "ab-12"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "str",
+            "v": "<p>Regolamento <b>interno</b></p>"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "list",
+            "v": [
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Privacy & dati"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "<p>Testo privacy</p>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ],
+               [
+                "show_to_athletes",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 1
+                  },
+                  {
+                   "t": "int",
+                   "v": 3
+                  }
+                 ]
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": []
+                }
+               ],
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Foto"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "Consenso <i>foto</i>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Vuota"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "none"
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "int",
+                 "v": 1
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 2
+                  }
+                 ]
+                }
+               ]
+              ]
+             }
+            ]
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-10-10T10:10:10+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 5
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Mario"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Rossi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "RSSMRA80A01L219X"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "M"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1980-01-01"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Po 2"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10123"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "+39 333 0000000"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "mario@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Mario Rossi"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Mario Rossi"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": false
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "none"
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": true
+        }
+       ],
+       [
+        "get_signature_base64",
+        {
+         "t": "str",
+         "v": "data:image/png;base64,c2lnbmF0dXJlIGZpeHR1cmUgYnl0ZXM="
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 2
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto alfa@example.test, iscritto </p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Grazie da @Denominazione — </p>\n<p> </p>"
+     }
+    }
+   }
+  },
+  {
+   "name": "document-views-subscription-signature-missing",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000985047/view/",
+   "headers": {},
+   "status": 200,
+   "response": "<html>",
+   "renders": [],
+   "content_language": "en",
+   "promoted": [],
+   "html": {
+    "template": "document/application/subscription.html",
+    "language": "en",
+    "context": {
+     "uid": {
+      "t": "str",
+      "v": "a1000000-0000-4000-8000-000000985047"
+     },
+     "subscription": {
+      "t": "obj",
+      "v": [
+       [
+        "sport_association",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "logo",
+           {
+            "t": "str",
+            "v": "data:image/png;base64,QUJD"
+           }
+          ],
+          [
+           "denomination",
+           {
+            "t": "str",
+            "v": "ASD Alfa & Figli"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "01234567890"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Roma 1"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10100"
+           }
+          ],
+          [
+           "federation",
+           {
+            "t": "str",
+            "v": "FIDAL"
+           }
+          ],
+          [
+           "enroll_number",
+           {
+            "t": "str",
+            "v": "ab-12"
+           }
+          ],
+          [
+           "regulation",
+           {
+            "t": "str",
+            "v": "<p>Regolamento <b>interno</b></p>"
+           }
+          ],
+          [
+           "demand",
+           {
+            "t": "none"
+           }
+          ],
+          [
+           "additional_sections",
+           {
+            "t": "list",
+            "v": [
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Privacy & dati"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "<p>Testo privacy</p>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ],
+               [
+                "show_to_athletes",
+                {
+                 "t": "bool",
+                 "v": true
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 1
+                  },
+                  {
+                   "t": "int",
+                   "v": 3
+                  }
+                 ]
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": []
+                }
+               ],
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Foto"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "str",
+                 "v": "Consenso <i>foto</i>"
+                }
+               ],
+               [
+                "show_to_members",
+                {
+                 "t": "bool",
+                 "v": false
+                }
+               ]
+              ]
+             },
+             {
+              "t": "dict",
+              "v": [
+               [
+                "name",
+                {
+                 "t": "str",
+                 "v": "Vuota"
+                }
+               ],
+               [
+                "text",
+                {
+                 "t": "none"
+                }
+               ],
+               [
+                "show_to_both",
+                {
+                 "t": "int",
+                 "v": 1
+                }
+               ],
+               [
+                "show_to",
+                {
+                 "t": "list",
+                 "v": [
+                  {
+                   "t": "int",
+                   "v": 2
+                  }
+                 ]
+                }
+               ]
+              ]
+             }
+            ]
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "creation_date",
+        {
+         "t": "datetime",
+         "v": "2026-10-11T11:11:11+00:00"
+        }
+       ],
+       [
+        "type",
+        {
+         "t": "int",
+         "v": 2
+        }
+       ],
+       [
+        "role",
+        {
+         "t": "int",
+         "v": 5
+        }
+       ],
+       [
+        "associate",
+        {
+         "t": "obj",
+         "v": [
+          [
+           "first_name",
+           {
+            "t": "str",
+            "v": "Mario"
+           }
+          ],
+          [
+           "last_name",
+           {
+            "t": "str",
+            "v": "Rossi"
+           }
+          ],
+          [
+           "tax_code",
+           {
+            "t": "str",
+            "v": "RSSMRA80A01L219X"
+           }
+          ],
+          [
+           "sex",
+           {
+            "t": "str",
+            "v": "M"
+           }
+          ],
+          [
+           "born_date",
+           {
+            "t": "date",
+            "v": "1980-01-01"
+           }
+          ],
+          [
+           "born_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address",
+           {
+            "t": "str",
+            "v": "Via Po 2"
+           }
+          ],
+          [
+           "address_city",
+           {
+            "t": "str",
+            "v": "Torino"
+           }
+          ],
+          [
+           "address_cap",
+           {
+            "t": "str",
+            "v": "10123"
+           }
+          ],
+          [
+           "phone",
+           {
+            "t": "str",
+            "v": "+39 333 0000000"
+           }
+          ],
+          [
+           "email",
+           {
+            "t": "str",
+            "v": "mario@example.test"
+           }
+          ],
+          [
+           "get_full_name",
+           {
+            "t": "call",
+            "v": {
+             "t": "str",
+             "v": "Mario Rossi"
+            }
+           }
+          ],
+          [
+           "full_name",
+           {
+            "t": "str",
+            "v": "Mario Rossi"
+           }
+          ],
+          [
+           "is_minor_now",
+           {
+            "t": "bool",
+            "v": false
+           }
+          ],
+          [
+           "main_tutor",
+           {
+            "t": "call",
+            "v": {
+             "t": "none"
+            }
+           }
+          ]
+         ]
+        }
+       ],
+       [
+        "additional_fields",
+        {
+         "t": "none"
+        }
+       ],
+       [
+        "has_signature",
+        {
+         "t": "bool",
+         "v": true
+        }
+       ],
+       [
+        "get_signature_base64",
+        {
+         "t": "none"
+        }
+       ]
+      ]
+     },
+     "payment_data": {
+      "t": "none"
+     },
+     "show_regulation_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 1
+       },
+       {
+        "t": "int",
+        "v": 3
+       }
+      ]
+     },
+     "show_demand_to": {
+      "t": "list",
+      "v": [
+       {
+        "t": "int",
+        "v": 2
+       }
+      ]
+     },
+     "is_preview": {
+      "t": "bool",
+      "v": false
+     },
+     "header": {
+      "t": "str",
+      "v": "<p class=\"intestazione\">Spett.le ASD Alfa &amp; Figli &amp; soci - CF 01234567890<br/>Data: $today, contatto alfa@example.test, iscritto </p>"
+     },
+     "footer": {
+      "t": "str",
+      "v": "<p>Grazie da @Denominazione — </p>\n<p> </p>"
      }
     }
    }
