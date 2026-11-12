@@ -125,6 +125,8 @@ type mcpPrepared struct {
 	param  any
 	cast   string
 	isNull bool
+	// integer is the Python int of an integer-kind value (comparison ranges).
+	integer *big.Int
 }
 
 // prepare is the lookup's get_prep_value for the lhs output field (the
@@ -147,15 +149,7 @@ func (q *mcpQuery) prepare(lhs mcpExpr, value any, top bool) (mcpPrepared, error
 		if err != nil {
 			return mcpPrepared{}, err
 		}
-		if lhs.extract == "" && lhs.field != nil {
-			low, high := mcpIntRange(lhs.field.Internal)
-			if !number.IsInt64() || number.Int64() < low || number.Int64() > high {
-				return mcpPrepared{}, mcpNotPorted("integer outside the column range")
-			}
-		} else if !number.IsInt64() || number.Int64() > 1<<40 || number.Int64() < -(1<<40) {
-			return mcpPrepared{}, mcpNotPorted("date part outside the supported range")
-		}
-		return mcpPrepared{param: number.Int64()}, nil
+		return mcpPrepared{integer: number}, nil
 	case "uuid":
 		text, ok := value.(string)
 		if !ok {
@@ -194,8 +188,112 @@ func (q *mcpQuery) prepare(lhs mcpExpr, value any, top bool) (mcpPrepared, error
 			return mcpPrepared{}, err
 		}
 		return mcpPrepared{param: moment, cast: "::timestamptz"}, nil
+	case "time":
+		moment, err := mcpTimeValue(value)
+		if err != nil {
+			return mcpPrepared{}, err
+		}
+		return mcpPrepared{param: moment, cast: "::time"}, nil
 	}
 	return mcpPrepared{}, mcpNotPorted("values for " + kind)
+}
+
+// mcpPreparedArgument is the value handed to the driver (integers fit int64).
+func mcpPreparedArgument(prepared mcpPrepared) (any, error) {
+	if prepared.integer != nil {
+		if !prepared.integer.IsInt64() {
+			return nil, mcpNotPorted("integer parameter outside 64 bits")
+		}
+		return prepared.integer.Int64(), nil
+	}
+	return prepared.param, nil
+}
+
+// mcpSmallInt is a Python int parameter the way psycopg adapts it: int2/int4
+// when it fits, int8 otherwise.
+func mcpSmallInt(number *big.Int) (any, error) {
+	if !number.IsInt64() {
+		return nil, mcpNotPorted("integer parameter outside 64 bits")
+	}
+	value := number.Int64()
+	if value >= math.MinInt32 && value <= math.MaxInt32 {
+		return int32(value), nil
+	}
+	return value, nil
+}
+
+// mcpRawArgument is a value Django passes through (Regex, IExact) without
+// string conversion.
+func mcpRawArgument(value any) (any, error) {
+	switch typed := value.(type) {
+	case string:
+		return typed, nil
+	case bool:
+		return typed, nil
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			number, err := strconv.ParseFloat(string(typed), 64)
+			if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
+				return nil, mcpNotPorted("float parameter")
+			}
+			return number, nil
+		}
+		if number, ok := new(big.Int).SetString(string(typed), 10); ok {
+			return mcpSmallInt(number)
+		}
+		return nil, mcpNotPorted("integer parameter")
+	case mcpCoercedInt:
+		return mcpSmallInt(typed.v)
+	case mcpCoercedFloat:
+		if math.IsNaN(typed.v) || math.IsInf(typed.v, 0) {
+			return nil, mcpNotPorted("non-finite float parameter")
+		}
+		return typed.v, nil
+	case mcpCoercedDate:
+		return typed.t, nil
+	case mcpCoercedDateTime:
+		return typed.t, nil
+	case mcpUncertain:
+		return nil, mcpNotPorted("non-ASCII digits")
+	}
+	return nil, mcpNotPorted(fmt.Sprintf("parameter %T", value))
+}
+
+// mcpPatternText is str(value) for PatternLookup's prep_for_like_query.
+func mcpPatternText(value any) (string, error) {
+	switch typed := value.(type) {
+	case string:
+		return typed, nil
+	case bool:
+		return PythonStr(typed), nil
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			number, err := strconv.ParseFloat(string(typed), 64)
+			if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
+				return "", mcpNotPorted("float parameter")
+			}
+			return PythonFloatStr(number), nil
+		}
+		return string(typed), nil
+	case mcpCoercedInt:
+		return typed.v.String(), nil
+	case mcpCoercedFloat:
+		if math.IsNaN(typed.v) || math.IsInf(typed.v, 0) {
+			return "", mcpNotPorted("non-finite float parameter")
+		}
+		return PythonFloatStr(typed.v), nil
+	case mcpCoercedDate:
+		return typed.t.Format("2006-01-02"), nil
+	case mcpCoercedDateTime:
+		text := typed.t.Format("2006-01-02 15:04:05")
+		if micro := typed.t.Nanosecond() / 1000; micro != 0 {
+			text += fmt.Sprintf(".%06d", micro)
+		}
+		return text, nil
+	case mcpUncertain:
+		return "", mcpNotPorted("non-ASCII digits")
+	}
+	return "", mcpNotPorted(fmt.Sprintf("pattern value %T", value))
 }
 
 // mcpUUID is UUIDField.to_python on a string: uuid.UUID(hex=...).
@@ -263,10 +361,17 @@ func mcpIntValue(value any, name string) (*big.Int, error) {
 			}
 		}
 		number, err := strconv.ParseFloat(string(typed), 64)
-		if err != nil || math.Trunc(number) != number || math.Abs(number) > 1<<52 {
-			return nil, mcpNotPorted("non-integral float for an integer")
+		if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
+			return nil, mcpNotPorted("float literal for an integer")
 		}
-		return big.NewInt(int64(number)), nil
+		integer, _ := new(big.Float).SetFloat64(math.Trunc(number)).Int(nil)
+		return integer, nil
+	case mcpCoercedFloat:
+		if math.IsNaN(typed.v) || math.IsInf(typed.v, 0) {
+			return nil, mcpNotPorted("non-finite float for an integer")
+		}
+		integer, _ := new(big.Float).SetFloat64(math.Trunc(typed.v)).Int(nil)
+		return integer, nil
 	case string:
 		if number, ok := PythonIntText(typed); ok {
 			return number, nil
@@ -388,28 +493,87 @@ var (
 )
 
 // mcpDateValue is DateField.to_python (parse_date for strings).
+var (
+	mcpCompactDateRe = regexp.MustCompile(`^([0-9]{4})([0-9]{2})([0-9]{2})$`)
+	mcpISOWeekDateRe = regexp.MustCompile(`^([0-9]{4})-?W([0-9]{1,2})(?:-?([0-9]))?$`)
+)
+
 func mcpDateValue(value any) (string, error) {
 	switch typed := value.(type) {
 	case mcpCoercedDate:
 		return typed.t.Format("2006-01-02"), nil
 	case mcpCoercedDateTime:
 		return typed.t.Format("2006-01-02"), nil
-	case string:
-		if match := mcpDateRe.FindStringSubmatch(typed); match != nil {
-			year, _ := strconv.Atoi(match[1])
-			month, _ := strconv.Atoi(match[2])
-			day, _ := strconv.Atoi(match[3])
-			if !mcpValidDate(year, month, day) {
-				return "", mcpValidationError(mcpMeta.Messages["DateField.invalid_date"], typed)
-			}
-			return fmt.Sprintf("%04d-%02d-%02d", year, month, day), nil
-		}
-		if mcpISOChars.MatchString(typed) {
-			return "", mcpNotPorted("ISO date form")
-		}
-		return "", mcpValidationError(mcpMeta.Messages["DateField.invalid"], typed)
 	}
-	return "", mcpNotPorted(fmt.Sprintf("date value %T", value))
+	text, ok := value.(string)
+	if !ok {
+		return "", mcpRaise("fromisoformat: argument must be str")
+	}
+	if match := mcpDateRe.FindStringSubmatch(text); match != nil {
+		year, _ := strconv.Atoi(match[1])
+		month, _ := strconv.Atoi(match[2])
+		day, _ := strconv.Atoi(match[3])
+		if !mcpValidDate(year, month, day) {
+			return "", mcpValidationError(mcpMeta.Messages["DateField.invalid_date"], text)
+		}
+		return fmt.Sprintf("%04d-%02d-%02d", year, month, day), nil
+	}
+	if match := mcpCompactDateRe.FindStringSubmatch(text); match != nil {
+		year, _ := strconv.Atoi(match[1])
+		month, _ := strconv.Atoi(match[2])
+		day, _ := strconv.Atoi(match[3])
+		if !mcpValidDate(year, month, day) {
+			return "", mcpValidationError(mcpMeta.Messages["DateField.invalid"], text)
+		}
+		return fmt.Sprintf("%04d-%02d-%02d", year, month, day), nil
+	}
+	if match := mcpISOWeekDateRe.FindStringSubmatch(text); match != nil {
+		year, _ := strconv.Atoi(match[1])
+		week, _ := strconv.Atoi(match[2])
+		day := 1
+		if match[3] != "" {
+			day, _ = strconv.Atoi(match[3])
+		}
+		if year >= 1 && year <= 9999 && week >= 1 && week <= 53 && day >= 1 && day <= 7 {
+			parsed := mcpISOYearStart(year).AddDate(0, 0, (week-1)*7+day-1)
+			if parsedYear, parsedWeek := parsed.ISOWeek(); parsedYear == year && parsedWeek == week {
+				return parsed.Format("2006-01-02"), nil
+			}
+		}
+		return "", mcpValidationError(mcpMeta.Messages["DateField.invalid"], text)
+	}
+	return "", mcpValidationError(mcpMeta.Messages["DateField.invalid"], text)
+}
+
+var mcpTimeRe = regexp.MustCompile(`^([0-9]{1,2}):([0-9]{2})(?::([0-9]{2})(?:[.,]([0-9]{1,6}))?)?$`)
+
+// mcpTimeValue is TimeField.to_python (datetime.time.fromisoformat).
+func mcpTimeValue(value any) (string, error) {
+	text, ok := value.(string)
+	if !ok {
+		return "", mcpNotPorted(fmt.Sprintf("time value %T", value))
+	}
+	match := mcpTimeRe.FindStringSubmatch(text)
+	if match == nil {
+		if mcpISOChars.MatchString(text) {
+			return "", mcpNotPorted("ISO time form")
+		}
+		return "", mcpValidationError(mcpMeta.Messages["TimeField.invalid"], text)
+	}
+	hour, _ := strconv.Atoi(match[1])
+	minute, _ := strconv.Atoi(match[2])
+	second := 0
+	if match[3] != "" {
+		second, _ = strconv.Atoi(match[3])
+	}
+	if hour > 23 || minute > 59 || second > 59 {
+		return "", mcpValidationError(mcpMeta.Messages["TimeField.invalid_time"], text)
+	}
+	out := fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
+	if match[4] != "" {
+		out += "." + (match[4] + "000000")[:6]
+	}
+	return out, nil
 }
 
 // mcpDateTimeValue is DateTimeField.get_prep_value: naive values are made
@@ -464,7 +628,7 @@ func mcpDateTimeValue(value any) (string, error) {
 		}
 		return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid"], typed)
 	}
-	return "", mcpNotPorted(fmt.Sprintf("datetime value %T", value))
+	return "", mcpRaise("fromisoformat: argument must be str")
 }
 
 // mcpJSONScalar is JSONField.get_prep_value (json.dumps) for scalars.

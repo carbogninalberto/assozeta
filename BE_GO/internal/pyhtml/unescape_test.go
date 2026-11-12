@@ -44,3 +44,19 @@ func TestUnescapeMatchesPython(t *testing.T) {
 		}
 	}
 }
+
+// TestUnescapeKeepsLoneSurrogates checks that the three-byte UTF-8 form this
+// code base uses for a lone surrogate passes through html.unescape unchanged:
+// Python neither replaces nor decodes such a code point.
+func TestUnescapeKeepsLoneSurrogates(t *testing.T) {
+	for _, item := range [][2]string{
+		{"\xed\xa0\x80", "\xed\xa0\x80"},
+		{"a&#65;\xed\xbf\xbfb", "aA\xed\xbf\xbfb"},
+		{"\xed\xa0\x80&amp;", "\xed\xa0\x80&"},
+		{"&\xed\xa0\x80;", "&\xed\xa0\x80;"},
+	} {
+		if got := Unescape(item[0]); got != item[1] {
+			t.Errorf("Unescape(%q) = %q, want %q", item[0], got, item[1])
+		}
+	}
+}
