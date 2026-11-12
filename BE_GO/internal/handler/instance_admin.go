@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/paymentcategorylifecycle"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/service"
@@ -56,18 +55,22 @@ func (h *InstanceAdminHandler) begin(c echo.Context, allow, operation string, no
 // instanceAdminActorKey holds the authenticated actor's id (actor_of(request)).
 const instanceAdminActorKey = "instance_admin_actor"
 
-// body reads request.data for a write; form and multipart bodies are refused.
-func (h *InstanceAdminHandler) body(c echo.Context, run func(any) error) error {
+// body reads request.data for a write. A form or multipart body is normalised
+// as DRF reads an HTML form; form is the view's serializer description.
+func (h *InstanceAdminHandler) body(c echo.Context, form func(any) (any, error), run func(any) error) error {
 	write, release, err := admitRESTWrite(c, h.operations, h.audit)
 	if write == nil {
 		return err
 	}
 	defer release()
+	data := write.Body
 	if write.Form {
-		return h.fail(c, domain.ErrInstanceAdminRefused)
+		if data, err = form(data); err != nil {
+			return h.fail(c, err)
+		}
 	}
 	c.SetRequest(c.Request().WithContext(write.Context))
-	return run(write.Body)
+	return run(data)
 }
 
 func (h *InstanceAdminHandler) notAllowed(c echo.Context) error {
@@ -123,12 +126,15 @@ func (h *InstanceAdminHandler) Admin(c echo.Context) error {
 			return err
 		}
 		defer release()
+		data := write.Body
 		if write.Form {
-			return h.fail(c, domain.ErrInstanceAdminRefused)
+			if data, err = dto.InstanceAdminBrandingForm(data); err != nil {
+				return h.fail(c, err)
+			}
 		}
 		c.SetRequest(c.Request().WithContext(write.Context))
 		actor, _ := c.Get(instanceAdminActorKey).(string)
-		body, err := h.admin.Branding(c.Request().Context(), write.Body, actor, write.Audit)
+		body, err := h.admin.Branding(c.Request().Context(), data, actor, write.Audit)
 		return h.answer(c, body, err)
 	}
 	return h.notAllowed(c)
@@ -147,12 +153,12 @@ func (h *InstanceAdminHandler) Email(c echo.Context) error {
 		body, err := h.admin.Email(request.Context())
 		return h.answer(c, body, err)
 	case request.Method == http.MethodPut:
-		return h.body(c, func(data any) error {
+		return h.body(c, dto.InstanceAdminEmailForm, func(data any) error {
 			body, err := h.admin.PutEmail(c.Request().Context(), data)
 			return h.answer(c, body, err)
 		})
 	case request.Method == http.MethodDelete:
-		return h.body(c, func(data any) error {
+		return h.body(c, dto.InstanceAdminRevisionForm, func(data any) error {
 			body, err := h.admin.DeleteEmail(c.Request().Context(), data)
 			return h.answer(c, body, err)
 		})
@@ -178,12 +184,13 @@ func (h *InstanceAdminHandler) Integration(c echo.Context) error {
 	}
 	switch request.Method {
 	case http.MethodPut:
-		return h.body(c, func(data any) error {
+		form := func(data any) (any, error) { return dto.InstanceAdminIntegrationForm(provider, data) }
+		return h.body(c, form, func(data any) error {
 			body, err := h.admin.PutIntegration(c.Request().Context(), provider, data)
 			return h.answer(c, body, err)
 		})
 	case http.MethodDelete:
-		return h.body(c, func(data any) error {
+		return h.body(c, dto.InstanceAdminRevisionForm, func(data any) error {
 			body, err := h.admin.DeleteIntegration(c.Request().Context(), provider, data)
 			return h.answer(c, body, err)
 		})
@@ -206,7 +213,9 @@ func (h *InstanceAdminHandler) Updates(c echo.Context) error {
 		return h.answer(c, body, err)
 	case request.Method == http.MethodPost:
 		actor, _ := c.Get(instanceAdminActorKey).(string)
-		return h.body(c, func(data any) error { return h.fail(c, h.admin.RequestUpdateFor(c.Request().Context(), actor, data)) })
+		return h.body(c, dto.InstanceAdminUpdateForm, func(data any) error {
+			return h.fail(c, h.admin.RequestUpdateFor(c.Request().Context(), actor, data))
+		})
 	}
 	return h.notAllowed(c)
 }
@@ -222,7 +231,9 @@ func (h *InstanceAdminHandler) Restarts(c echo.Context) error {
 		return supplierOptions(c, "Instance Restarts", "")
 	case http.MethodPost:
 		actor, _ := c.Get(instanceAdminActorKey).(string)
-		return h.body(c, func(data any) error { return h.fail(c, h.admin.RequestRestartFor(c.Request().Context(), actor, data)) })
+		return h.body(c, dto.InstanceAdminRestartForm, func(data any) error {
+			return h.fail(c, h.admin.RequestRestartFor(c.Request().Context(), actor, data))
+		})
 	}
 	return h.notAllowed(c)
 }

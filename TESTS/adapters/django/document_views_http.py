@@ -18,16 +18,20 @@ tagged values as TESTS/adapters/go/document_template_golden.py does; '$today'
 in strings is the UTC date as dd/mm/YYYY, and DEFAULT_ADDITIONAL_SECTIONS
 (the base association's sections) get show_to [1, 2, 3].
 """
+from contextlib import contextmanager
 from datetime import date, datetime, timezone
 from decimal import Decimal
+import base64
 import types
 
 from TESTS.contracts import test_document_views_http as base_contract
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django import document_render_http as renderer_runner
+from TESTS.adapters.django import documents_writes_http as uploads
 
 SOURCES = ('TESTS/fixtures/document_views_http.json', 'TESTS/contracts/test_document_views_http.py',
            'TESTS/adapters/django/document_views_http.py', 'TESTS/adapters/django/document_render_http.py',
+           'TESTS/adapters/django/documents_writes_http.py', 'TESTS/adapters/django/instance_logo.py',
            'TESTS/adapters/go/document_template_golden.py', 'TESTS/adapters/go/payment_category_server.py',
            'BE/docmanager/views/printing_views.py', 'BE/docmanager/access.py', 'BE/instance/permissions.py', 'BE/docmanager/views/utils.py', 'BE/application/utils/printing.py',
            'BE/application/models/utils.py', 'BE/application/models/subscriptions_models.py',
@@ -40,7 +44,36 @@ SOURCES = ('TESTS/fixtures/document_views_http.json', 'TESTS/contracts/test_docu
            'BE/application/impersonation_scope.py', 'BE/application/impersonation.py', 'BE/application/mixin.py',
            'BE/application/permissions_registry.py', 'BE/core/settings.py', 'BE/core/middleware.py',
            'BE/core/authentication.py') + harness.SOURCES
-service_context = renderer_runner.renderer_context
+# The stored signatures of the seeded subscriptions: name -> bucket key, removed before the storage context checks its bucket.
+SIGNATURE_OBJECTS = {}
+
+
+@contextmanager
+def service_context(report, log):
+    """The document-render stub plus documents-writes' private MinIO (the bucket the stored signatures live in)."""
+    with renderer_runner.renderer_context(report, log), uploads.service_context(report, log):
+        try:
+            yield
+        finally:
+            remove_signature_objects()
+
+
+def signature_key(name):
+    """django-storages' key of a stored object: AWS_LOCATION joined with the cleaned name."""
+    from storages.utils import clean_name, safe_join
+    return safe_join(uploads.STORAGE['location'], clean_name(name))
+
+
+def remove_signature_objects():
+    """Remove the signatures the run seeded (documents-writes requires only its sentinel object at exit)."""
+    client = uploads.STORAGE.get('client')
+    if client is None:
+        return
+    for key in SIGNATURE_OBJECTS.values():
+        client.delete_object(Bucket=uploads.BUCKET, Key=key)
+    SIGNATURE_OBJECTS.clear()
+
+
 STUB = renderer_runner.STUB
 
 
@@ -182,8 +215,15 @@ def seed_rows(source, created):
             subscription_id=row['id'], sport_association_id=associations[row['association']], user_id=user,
             associate_id=associate_ids[row['associate']] if row['associate'] else None, type=row['type'], role=row['role'],
             creation_date=moment(row['created']), additional_fields=row['additional_fields'], signature_url=row['signature_url'],
+            signature_storage_key=row.get('signature_key'),
             payment_id=source['payments'][row['payment']]['id'] if row['payment'] else None,
             group_id=ids[row['group']] if row['group'] else None, status_flag=Subscription.ACCEPTED))
+    # The stored signatures the subscription page reads through default_storage.
+    SIGNATURE_OBJECTS.clear()
+    for spec in source.get('signature_objects', ()):
+        SIGNATURE_OBJECTS[spec['name']] = signature_key(spec['name'])
+        uploads.STORAGE['client'].put_object(Bucket=uploads.BUCKET, Key=SIGNATURE_OBJECTS[spec['name']],
+                                             Body=base64.b64decode(spec['body_b64']), ContentType='image/png')
     for label, row in source['courses'].items():
         insert(Course, Course(course_id=row['id'], sport_association_id=associations['alpha'], title=row['title'], creation_date=seeded))
     for key, course, subscription, deleted in source['course_subscriptions']:

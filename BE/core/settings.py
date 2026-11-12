@@ -46,6 +46,9 @@ JWT_PUBLIC_KEY = env_key('JWT_PUBLIC_KEY')
 
 APP_HOST = env.str('APP_HOST')
 APP_URL = env.str('APP_URL', f'https://{APP_HOST}').rstrip('/')
+# Address the diagnostics "api" check calls; production keeps the default.
+DIAGNOSTICS_API_URL = env.str(
+    'ASSOZETA_DIAGNOSTICS_API_URL', default='http://127.0.0.1:8000') or 'http://127.0.0.1:8000'
 # Trusted deployment configuration; never chosen by a handoff request.
 BAKNEY_SSO_API_BASE = env.str('BAKNEY_SSO_API_BASE', 'https://app.bakney.com/api').rstrip('/')
 BAKNEY_SSO_UI_ORIGIN = env.str('BAKNEY_SSO_UI_ORIGIN', 'https://app.bakney.com').rstrip('/')

@@ -160,6 +160,9 @@ def assert_import(case, before, after, source, context, added, indexes):
     ids, fixture, effect = source['ids'], context['fixture'], case['effect']
     own, owner, actor = ids['own_association'], ids['owner'], ids[effect['actor']]
     window = (context['prepared']['started'], datetime.now(timezone.utc) + timedelta(seconds=1))
+    if 'unpadded' in effect and date(999, 1, 1).strftime('%Y') == '999':
+        # The C library writes a year below 1000 without padding: the fixture's second expectation.
+        effect = {**effect, **effect['unpadded']}
     upload, failed = effect['document'], effect['failed']
     old_documents, new_documents = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
     document_id = contract.DOCUMENTS[upload]

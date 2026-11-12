@@ -87,6 +87,10 @@ func (s *ProfileTemplate) save(ctx context.Context, identity domain.ResolvedIden
 		if err != nil {
 			return err
 		}
+		// compress_base64 returned the logo unchanged; the audit entry refuses the character.
+		if plan.LogoUnstorable && compressed == *plan.Logo {
+			return ErrProfileTemplateServer
+		}
 		// The response compresses the stored logo again: an image the processor
 		// cannot handle is refused before any write.
 		if _, err := s.images.CompressTemplateLogo(ctx, compressed); err != nil {

@@ -5585,6 +5585,224 @@
    }
   },
   {
+   "name": "oauth-accounts-signup-social-names-float",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "1.5",
+     "last_name": "1e+16",
+     "username": "PERSONA-42",
+     "email": "persona42@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": 1.5,
+          "last_name": 1e+16,
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "persona42@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": 1.5,
+          "last_name": 1e+16,
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": 1.5,
+    "last_name": 1e+16,
+    "email": "persona42@example.test",
+    "username": "persona-42",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona42@example.test",
+       "email_verified": true
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
+   "name": "oauth-accounts-signup-social-names-float-from-claims",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/oauth2/signup",
+   "headers": {},
+   "status": 200,
+   "response": "$signup",
+   "effect": {
+    "kind": "signup",
+    "social": true,
+    "user": {
+     "first_name": "2.0",
+     "last_name": "-2.5e-07",
+     "username": "PERSONA-43",
+     "email": "persona43@example.test",
+     "phone": null,
+     "role": 2,
+     "connected_user_id": null,
+     "collaborator_role": 1,
+     "collaborator_permissions": null
+    },
+    "password": null,
+    "actor": null,
+    "index": null,
+    "partial": null,
+    "invite": null,
+    "response": true,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Benvenuto"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": 2.0,
+          "last_name": -2.5e-07,
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "persona43@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_message.html",
+         "language": "en",
+         "context": {
+          "first_name": 2.0,
+          "last_name": -2.5e-07,
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ]
+      ]
+     }
+    ]
+   },
+   "provider": [
+    "google-certs"
+   ],
+   "body": {
+    "sport_association": false,
+    "first_name": "Nome",
+    "last_name": "Cognome",
+    "email": "persona43@example.test",
+    "username": "persona-43",
+    "token": {
+     "$social": {
+      "provider": "google",
+      "claims": {
+       "email": "persona43@example.test",
+       "email_verified": true,
+       "given_name": 2.0,
+       "family_name": -2.5e-07
+      }
+     }
+    },
+    "backend": "google-oauth2"
+   }
+  },
+  {
    "name": "oauth-accounts-signup-social-google-athlete",
    "actor": "anonymous",
    "method": "POST",

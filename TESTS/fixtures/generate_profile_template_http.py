@@ -537,6 +537,27 @@ add('multipart-body', 'owner', 500, SERVER, content_type='multipart/form-data; b
 add('multipart-file-as-association', 'owner', 500, SERVER, content_type='multipart/form-data; boundary=fixture',
     raw_body='--fixture\r\nContent-Disposition: form-data; name="sport_association"; filename="a.json"\r\n\r\n{}\r\n--fixture--\r\n')
 
+# === t6x2: a logo with a NUL or a lone surrogate before its comma, or a NUL in its data ============
+# compress_base64 reads the data whatever the header says and b64decode drops a NUL. An image it re-encodes is stored
+# as a new JPEG data URI (the header is gone); one it returns unchanged keeps the character, which the audit entry
+# cannot hold: the 500 page, nothing written.
+def spoiled(uri, header='', data=''):
+    head, encoded = uri.split(',', 1)
+    return f'{head}{header},{encoded[:8]}{data}{encoded[8:]}'
+
+
+for name, logo in (
+        ('logo-header-with-nul-unchanged', spoiled(LOGO_AT_BOUND, header='\x00')),
+        ('logo-data-with-nul-unchanged', spoiled(LOGO_AT_BOUND, data='\x00')),
+        ('logo-undecodable-header-with-nul', spoiled(LOGO_UNDECODABLE, header='\x00')),
+):
+    add(name, 'owner', 500, SERVER, body={'sport_association': frontend_payload(STATE, logo=logo)})
+add('logo-header-with-lone-surrogate-unchanged', 'owner', 500, SERVER, content_type='application/json',
+    raw_body=json.dumps({'sport_association': frontend_payload(STATE, logo='@value@')}).replace(
+        '"@value@"', json.dumps(spoiled(LOGO_AT_BOUND, header='@s@')).replace('@s@', '\\ud800')))
+write('owner', frontend_payload(STATE, logo=spoiled(LOGO_SMALL, header='\x00')), name='logo-header-with-nul-recompressed')
+write('owner', frontend_payload(STATE, logo=spoiled(LOGO_WIDE, data='\x00\x00')), name='logo-data-with-nul-recompressed')
+
 # An administrator session saves for the owner (wide logo re-encoded at its size).
 write('admin', frontend_payload(STATE, logo=LOGO_WIDE, demand='<pre><code>riga 1\n  riga 2</code></pre>'), name='admin-session-save',
       headers=ADMIN_OWNER, impersonation='admin_owner')

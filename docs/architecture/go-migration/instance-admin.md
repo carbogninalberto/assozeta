@@ -239,3 +239,20 @@ queue is left.
   Redis answered `celery.Inspect` (`TestInspectPingLive`) with `{"verify@diag": {"ok": "pong"}}` after the
   2 s collection, the reply queue removed; Django's `app.control.inspect(timeout=2).ping()` returned the
   same.
+
+## t6x2
+
+Instance administration writes sent as `application/x-www-form-urlencoded` or `multipart/form-data` are
+ported in `dto/instance_admin_form.go`. Each serializer's fields describe how DRF reads an HTML form: an
+absent BooleanField is false, a blank value of a field that is not required is skipped (or keeps its
+default), a repeated key keeps its last value, a `ListField` keeps every value (`getlist`) or its indexed
+keys ordered by the integer index, and an uploaded file reads as its name where the field calls `str()`
+on it (a text field still answers `Not a valid string.`, a UUID field `Must be a valid UUID.`). The key
+checks `set(request.data)` and `request.data.get('revision')` read the raw form. Kept refused: a list key
+with text after its index (`clear_secrets[0]x`), whose error message is the repr of a nested
+MultiValueDict.
+
+The HTTP fixtures add form and multipart cases in `instance_admin_http.json` (`branding-form-*`,
+`email-put-form*`, `email-delete-form*`, `integration-ai-put-form*`, `integration-google-delete-form`,
+`updates-post-form*`, `restarts-post-form*`) and in `instance_outbound_http.json`
+(`email-test-form-*`, `integration-test-form-*`).

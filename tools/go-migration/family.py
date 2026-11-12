@@ -12,6 +12,8 @@ Runs use the parent-only acceptance driver (TESTS.adapters.django.staff_board_ht
 with the migration interpreter (GO_MIGRATION_PYTHON, default
 quality-reports/go-migration/python31316/bin/python) and the pinned Go toolchain on PATH
 (GO_MIGRATION_GO_BIN). Reports go to quality-reports/go-migration/<family>-http-<label>/.
+Runs share one PostgreSQL server and its template database by default (see
+docs/architecture/go-migration/sweep.md); ASSOZETA_TEST_PRIVATE_POSTGRES=1 opts out.
 """
 import argparse
 import collections

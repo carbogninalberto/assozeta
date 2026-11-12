@@ -302,7 +302,8 @@ func run() (runErr error) {
 	// document/<kind>/<uid>/view/ HTML views (the pages the renderer prints) and the subscription preview.
 	documentViews := service.NewDocumentViews(repository.NewDocumentViews(db),
 		pdfrender.New(os.Getenv("PUPPETEER_HOST"), os.Getenv("PUPPETEER_PORT"), os.Getenv("CURRENT_HOST_PUPPETEER")),
-		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now)
+		os.Getenv("DOCUMENT_BYPASS_TOKEN"), time.Now).
+		WithSignatureObjects(documentViewObjects{S3: composeDocumentObjects(cfg)})
 	documentViewsHandler := handler.NewDocumentViewsHandler(documentViews, service.NewActorAuthentication(accounts, tokens), identities).
 		WithTutorPromotion(middleware.SessionAuditContext, paymentCategoryOperations)
 	// document/invoice/<uid>/view/ and document/einvoice/<uid>/view/ (the FatturaPA page of internal/fatturapa).

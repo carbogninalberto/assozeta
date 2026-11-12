@@ -663,12 +663,14 @@ func (s *InstanceAdmin) PutEmail(ctx context.Context, body any) (map[string]any,
 }
 
 // requestRevision is IntegerField(min_value=0).run_validation(request.data.get('revision')).
+// A form body reads the key's last value; an uploaded file reads as its name.
 func requestRevision(body any) (*big.Int, error) {
-	object, ok := body.(domain.RequestObject)
-	if !ok {
+	switch body.(type) {
+	case domain.RequestObject, dto.InstanceAdminFormInput:
+	default:
 		return nil, refused("request data has no get()")
 	}
-	value, _ := object.Lookup("revision")
+	value, _ := dto.InstanceAdminFormGet(body, "revision")
 	return dto.InstanceAdminRevision(value)
 }
 

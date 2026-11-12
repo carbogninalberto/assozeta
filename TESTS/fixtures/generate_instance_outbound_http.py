@@ -300,6 +300,35 @@ add('email-test-types', 'owner', EMAIL_TEST, 400, {'revision': [INTEGER], 'actio
     method='POST', body={'revision': 'zero', 'action': None, 'recipient': ''})
 add('email-test-send-without-recipient', 'owner', EMAIL_TEST, 400, {'recipient': ['Inserisci il destinatario del messaggio di prova.']},
     method='POST', body={'revision': 0, 'action': 'send'})
+# === t6x2: form and multipart bodies read as HTML input =============================================
+# Field.get_value: an absent field that is not required is skipped, a blank
+# value of a field that is not required is skipped too, and an uploaded file
+# reads as its name where the field calls str() on it (never as a string for an
+# EmailField).
+FORM = 'application/x-www-form-urlencoded'
+MULTIPART = 'multipart/form-data; boundary=fixture'
+
+
+def parts(*fields):
+    """fields: (name, value) for a plain field, (name, file name, content) for a file."""
+    body = ''
+    for field in fields:
+        head = f'--fixture\r\nContent-Disposition: form-data; name="{field[0]}"'
+        if len(field) == 3:
+            head += f'; filename="{field[1]}"\r\nContent-Type: text/plain'
+        body += head + '\r\n\r\n' + field[-1] + '\r\n'
+    return body + '--fixture--\r\n'
+
+
+add('email-test-form-required', 'owner', EMAIL_TEST, 400, {'revision': [REQUIRED], 'action': [REQUIRED]}, method='POST',
+    raw_body='', content_type=FORM)
+add('email-test-form-send-without-recipient', 'owner', EMAIL_TEST, 400,
+    {'recipient': ['Inserisci il destinatario del messaggio di prova.']}, method='POST',
+    raw_body='revision=0&action=send&recipient=', content_type=FORM)
+add('email-test-form-invalid-action', 'owner', EMAIL_TEST, 400, {'action': ['"probe" is not a valid choice.']}, method='POST',
+    raw_body='revision=0&action=probe', content_type=FORM)
+add('email-test-form-recipient-file', 'owner', EMAIL_TEST, 400, {'recipient': ['Enter a valid email address.']}, method='POST',
+    raw_body=parts(('action', 'send'), ('recipient', 'a@example.com', 'x'), ('revision', '3', 'x')), content_type=MULTIPART)
 add('email-test-stale', 'owner', EMAIL_TEST, 409, {'error': 'La configurazione è cambiata. Ricarica prima di eseguire il test.'},
     method='POST', body={'revision': 1, 'action': 'connect'})
 # The environment has no SMTP host.
@@ -436,6 +465,32 @@ add('integration-test-revision-missing', 'owner', test_path('stripe'), 400, [NUL
 add('integration-test-revision-invalid', 'owner', test_path('stripe'), 400, [INTEGER], method='POST', body={'revision': 'x'})
 add('integration-test-revision-negative', 'owner', test_path('google'), 400, ['Ensure this value is greater than or equal to 0.'],
     method='POST', body={'revision': -1})
+# A form body reads request.data.get('revision'): the last value of the key,
+# None when absent, an uploaded file as its name.
+FORM = 'application/x-www-form-urlencoded'
+MULTIPART = 'multipart/form-data; boundary=fixture'
+
+
+def parts(*fields):
+    """fields: (name, value) for a plain field, (name, file name, content) for a file."""
+    body = ''
+    for field in fields:
+        head = f'--fixture\r\nContent-Disposition: form-data; name="{field[0]}"'
+        if len(field) == 3:
+            head += f'; filename="{field[1]}"\r\nContent-Type: text/plain'
+        body += head + '\r\n\r\n' + field[-1] + '\r\n'
+    return body + '--fixture--\r\n'
+
+
+add('integration-test-form-revision-missing', 'owner', test_path('stripe'), 400, [NULL], method='POST',
+    raw_body='', content_type=FORM)
+add('integration-test-form-revision-invalid', 'owner', test_path('stripe'), 400, [INTEGER], method='POST',
+    raw_body='revision=x', content_type=FORM)
+add('integration-test-form-revision-file', 'owner', test_path('stripe'), 409,
+    {'error': 'Configurazione cambiata. Ricarica prima di verificare.'}, method='POST',
+    raw_body=parts(('revision', '9', 'x')), content_type=MULTIPART)
+add('integration-test-form-revision-file-text', 'owner', test_path('stripe'), 400, [INTEGER], method='POST',
+    raw_body=parts(('revision', 'r.txt', 'x')), content_type=MULTIPART)
 add('integration-test-list-body', 'owner', test_path('google'), 500, SERVER, method='POST', body=[1])
 add('integration-test-stale', 'owner', test_path('stripe'), 409, {'error': 'Configurazione cambiata. Ricarica prima di verificare.'},
     method='POST', body={'revision': 1})

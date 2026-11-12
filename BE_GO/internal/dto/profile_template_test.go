@@ -396,7 +396,7 @@ func TestPlanProfileTemplate(t *testing.T) {
 		{domain.RequestField{Name: "enabled_for", Value: []any{"\xed\xa0\x80"}}, nil},
 		{domain.RequestField{Name: "invoice_template", Value: "\xed\xa0\x80"}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "logo", Value: "a,\xed\xa0\x80"}, ErrProfileTemplatePython},
-		{domain.RequestField{Name: "logo", Value: "\xed\xa0\x80,AA"}, ErrProfileTemplateNotPorted},
+		{domain.RequestField{Name: "logo", Value: "\xed\xa0\x80,AA"}, nil},
 	} {
 		if _, err := PlanProfileTemplate(profileTemplateTestPayload(tc.field)); !errors.Is(err, tc.err) {
 			t.Errorf("%s=%#v: %v", tc.field.Name, tc.field.Value, err)
@@ -414,5 +414,31 @@ func TestPlanProfileTemplate(t *testing.T) {
 	}
 	if _, err := PlanProfileTemplate(domain.RequestObject{}); !errors.Is(err, ErrProfileTemplatePython) {
 		t.Error("missing keys accepted")
+	}
+}
+
+func TestProfileTemplateLogoUnstorable(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		logo string
+		want bool
+		err  error
+	}{
+		{name: "nul in header", logo: "data:image/png\x00;base64,AAAA", want: true},
+		{name: "nul in data", logo: "data:image/png;base64,AA\x00AA", want: true},
+		{name: "lone surrogate in header", logo: "\xed\xa0\x80,AA", want: true},
+		{name: "no comma", logo: "a\x00b", err: ErrProfileTemplatePython},
+	} {
+		plan, err := PlanProfileTemplate(profileTemplateTestPayload(domain.RequestField{Name: "logo", Value: tc.logo}))
+		if !errors.Is(err, tc.err) {
+			t.Errorf("%s: %v", tc.name, err)
+			continue
+		}
+		if err != nil {
+			continue
+		}
+		if plan.LogoUnstorable != tc.want || plan.Logo == nil || *plan.Logo != tc.logo {
+			t.Errorf("%s: %v %v", tc.name, plan.LogoUnstorable, plan.Logo)
+		}
 	}
 }

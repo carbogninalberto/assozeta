@@ -20,6 +20,30 @@ INSTANCE_ADMIN_ENVIRONMENT = (
     'MCP_AGENT_WS_TIMEOUT', 'MCP_AGENT_HISTORY_CAP')
 DOCUMENT_RENDER_ENVIRONMENT = ('PUPPETEER_HOST', 'PUPPETEER_PORT', 'CURRENT_HOST_PUPPETEER', 'DOCUMENT_BYPASS_TOKEN', 'EMAIL_HOST_SUPPORT')
 GOOGLE_ENVIRONMENT = ('GOOGLE_CLIENT_SECRET_FILE', 'GOOGLE_CALENDAR_REDIRECT_URL', 'GOOGLE_OAUTH2_BASE', 'GOOGLE_API_BASE')
+# A loopback port is chosen by binding port 0 and releasing it, so a concurrent
+# run can claim it before the server binds; such a start is retried on a new port.
+PORT_ATTEMPTS = 3
+PORT_IN_USE = 'address already in use'
+
+
+def free_http_port():
+    """Return a loopback port that is free right now (it is not reserved)."""
+    with socket.socket() as listener:
+        listener.bind(('127.0.0.1', 0))
+        return listener.getsockname()[1]
+
+
+def log_since(log, offset):
+    """Return the text one attempt appended to the service log after ``offset``."""
+    name = getattr(log, 'name', None)
+    if not isinstance(name, (str, os.PathLike)):
+        return ''
+    try:
+        with open(name, 'r', errors='replace') as stream:
+            stream.seek(offset)
+            return stream.read()
+    except OSError:
+        return ''
 
 
 @contextmanager
@@ -28,9 +52,6 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
 
     executable = work / 'payment-categories-server'
     build_server(executable, log, tool_env)
-    with socket.socket() as listener:
-        listener.bind(('127.0.0.1', 0))
-        http_port = listener.getsockname()[1]
     host, port = address.rsplit(':', 1)
     database = settings.DATABASES['default']
     environment = {
@@ -40,7 +61,6 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
         'DBPORT': str(database['PORT']),
         'REDIS_HOST': host, 'REDIS_PORT': port, 'REDIS_USERNAME': 'default',
         'REDIS_PASSWORD': 'synthetic-identity-only',
-        'GO_LISTEN_ADDR': f'{"0.0.0.0" if versioned else "127.0.0.1"}:{http_port}',
         'DEBUG': 'False', 'RATELIMIT_ENABLE': 'False',
         'DATA_RESTORE_LOCK_PATH': settings.DATA_RESTORE_LOCK_PATH,
         **{name: getattr(settings, name) for name in (
@@ -72,10 +92,27 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
     observation_path = work / "query-observations.jsonl" if query_observation else None
     if observation_path is not None:
         command.extend(["--query-observation-file", str(observation_path)])
-    process = subprocess.Popen(command, cwd=work, env=environment,
-                               stdout=log, stderr=subprocess.STDOUT)
-    base = f'http://127.0.0.1:{http_port}'
-    try:
+
+    def stop(process):
+        """Terminate the attempt's server; an already exited process is left alone."""
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+
+    process = base = None
+    for attempt in range(PORT_ATTEMPTS):
+        http_port = free_http_port()
+        listen_address = f'{"0.0.0.0" if versioned else "127.0.0.1"}:{http_port}'
+        log.flush()
+        offset = log.tell()
+        process = subprocess.Popen(command, cwd=work, env={**environment, 'GO_LISTEN_ADDR': listen_address},
+                                   stdout=log, stderr=subprocess.STDOUT)
+        base = f'http://127.0.0.1:{http_port}'
+
         def ready():
             if process.poll() is not None:
                 raise RuntimeError('Go payment-category server exited')
@@ -84,7 +121,20 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
             except OSError:
                 return False
 
-        poll(ready, bool, timeout=30)
+        try:
+            poll(ready, bool, timeout=30)
+        except RuntimeError:
+            # Only a lost port race is retried; any other early exit is fatal.
+            stop(process)
+            if attempt + 1 >= PORT_ATTEMPTS or PORT_IN_USE not in log_since(log, offset):
+                raise
+            continue
+        except BaseException:
+            # A readiness timeout or an interrupt must not leak the server.
+            stop(process)
+            raise
+        break
+    try:
         if process_observer is not None:
             process_observer(process)
         runtime = {'base_url': base, 'proxy_upstream': f'host.docker.internal:{http_port}',
@@ -93,12 +143,6 @@ def native_server(work, log, tool_env, address, *, versioned=False, process_obse
             runtime['query_observation_path'] = observation_path
         yield runtime
     finally:
-        if process.poll() is None:
-            process.terminate()
-            try:
-                process.wait(timeout=20)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait(timeout=5)
+        stop(process)
         if observation_path is not None and process.returncode != 0:
             raise RuntimeError('Go query observation server did not finalize successfully')

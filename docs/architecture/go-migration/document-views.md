@@ -83,7 +83,7 @@ unknown-paths family covers them).
 ## Not ported (refused with the 500 page; the views write nothing)
 
 - `get_main_tutor()` promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
-- `get_signature_base64()` (a subscription with a signature): it reads private storage or fetches the legacy URL.
+- `get_signature_base64()`'s legacy `signature_url` fetch (the reply of another server): the stored object is ported (t6x2).
 - Markup outside the `filter_mentions` subset, and mention paths that name an attribute the port declares but does not read
   (for example the model's methods and relations).
 - Template inputs outside `djtemplate`'s subset: the eight templates are fixed files, so their syntax is fully ported. The JSON columns
@@ -204,3 +204,22 @@ owner and a member account get the page; the four print cases check the renderer
 156/156; Go 200 on `document-views-preview-anonymous`. GREEN (`imphard-versioned-r1`): 156/156 on native Django, native Go,
 Caddy `/api/v1` and `/api/v2`. Mutation (`imphard-mutation-r1`): rendering the PDF without the header fails Go on
 `document-views-preview-print` (`renderer.body:0`).
+
+## t6x2
+
+`Subscription.get_signature_base64()` reads its `signature_storage_key` through `default_storage` as django-storages
+does (the storage name is joined with `AWS_LOCATION` into the S3 key) and writes
+`"data:image/png;base64," + base64(bytes)`; a read that raises (a missing object, a storage error) falls through
+like Django's logged exception. Without a legacy `signature_url` the method returns `None`, and the template writes
+the text `None` (`<img src="None" .../>`). A record whose legacy `signature_url` is set stays the 500 page (refused):
+the URL is fetched from another server. `service.DocumentViews` takes the reader as an optional
+`domain.DocumentViewObjects` (`WithSignatureObjects`, wired in `cmd/server` to `composeDocumentObjects` with
+`documentkey.S3Key` and a bounded read); without a configured reader a stored signature keeps the previous refusal.
+`BE_GO/internal/service/document_views_signature_test.go` covers the four outcomes (data URI, `None`, both legacy-URL
+refusals) and the missing reader.
+
+The fixture has 168 cases (2 new): `document-views-subscription-signature-stored` (the seeded
+`signature_objects` bytes as the data URI) and `document-views-subscription-signature-missing` (a name without an
+object, no legacy URL: `None`). The document-views adapter composes the renderer stub with documents-writes'
+`service_context` (its private MinIO bucket, `AWS_LOCATION` and the same `AWS_*` settings for Go), seeds the
+signature objects in `seed_rows` and removes them before that context checks its bucket at exit.
