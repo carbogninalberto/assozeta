@@ -84,12 +84,11 @@ func TestReportPathAllowed(t *testing.T) {
 }
 
 func TestReportPathAllowedNonStringPath(t *testing.T) {
-	// is_path_allowed(model, None) is an AttributeError; the tool input type
-	// check refuses a non-string path before the walk.
+	// get_field_values calls field_name.split('__') before the path walk.
 	_, err := PlanMCPTool("get_field_values", reportParams(t, `{"model_name":"Associate","field_name":5}`),
 		reportTestAssociation, reportTestSettings)
-	if !errors.Is(err, ErrReportNotPorted) {
-		t.Errorf("non-string path: got %v, want ErrReportNotPorted", err)
+	if err == nil || err.Error() != "'int' object has no attribute 'split'" {
+		t.Errorf("non-string path: got %v, want the AttributeError text", err)
 	}
 }
 

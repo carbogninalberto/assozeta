@@ -33,11 +33,11 @@ func TestReportToolOutcomes(t *testing.T) {
 		{"query_data", `{"model_name": "Tags", "filters": {"tag_id": "nope"}}`, ErrReportFailed},
 		{"query_data", `{"model_name": "Tags", "order_by": ["?"]}`, ErrReportNotPorted},
 		{"query_data", `{"model_name": "Tags", "filters": {"creation_date__minute": 1}}`, nil},
-		{"query_data", `{"model_name": "Tags", "limit": true}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Tags", "limit": true}`, nil},
 		{"query_data", `{"model_name": "Tags", "limit": "5"}`, ErrReportFailed},
 		{"query_data", `{"model_name": "Carnet", "filters": {"meta__colore__icontains": "blu"}}`, ErrReportNotPorted},
 		{"get_field_values", `{"model_name": "Tags", "field_name": "password"}`, ErrReportFailed},
-		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "sum", "field": "tag_name"}]}`, ErrReportFailed},
+		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "sum", "field": "tag_name"}]}`, nil},
 		{"export_data", `{"model_name": "Tags"}`, ErrReportNotPorted},
 	} {
 		_, err := PlanReportTool(tc.tool, reportParams(t, tc.params), "a1000000-0000-4000-8000-000000701001", settings)
@@ -231,16 +231,151 @@ func TestReportToolLookupFamilies(t *testing.T) {
 	}
 }
 
+func TestReportToolLimitsAndOffsets(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	plan := func(t *testing.T, params string) ReportPlan {
+		t.Helper()
+		planned, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err != nil {
+			t.Fatalf("%s: %v", params, err)
+		}
+		return planned
+	}
+	for _, tc := range []struct {
+		params string
+		sql    []string
+	}{
+		{`{"model_name":"Course","fields":["title"],"limit":true}`, []string{"LIMIT 1"}},
+		{`{"model_name":"Course","fields":["title"],"limit":1.5}`, []string{"LIMIT 1"}},
+		{`{"model_name":"Course","fields":["title"],"limit":1000000000000000000000000000000}`, []string{"LIMIT 5000"}},
+		{`{"model_name":"Course","fields":["title"],"offset":true}`, []string{"LIMIT 5000", "OFFSET 1"}},
+		{`{"model_name":"Course","fields":["title"],"offset":1.5}`, []string{"LIMIT 5000", "OFFSET 1"}},
+		{`{"model_name":"Course","fields":["title"],"offset":1000000000000000000000000000000}`,
+			[]string{"LIMIT 5000", "OFFSET 1000000000000000000000000000000"}},
+	} {
+		planned := plan(t, tc.params)
+		query := planned.Statements[1].SQL
+		for _, part := range tc.sql {
+			if !strings.Contains(query, part) {
+				t.Errorf("%s: query %q lacks %q", tc.params, query, part)
+			}
+		}
+	}
+	for params, want := range map[string]string{
+		`{"model_name":"Course","fields":["title"],"offset":"1"}`:  `can only concatenate str (not "int") to str`,
+		`{"model_name":"Course","fields":["title"],"offset":null}`: `unsupported operand type(s) for +: 'NoneType' and 'int'`,
+	} {
+		_, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err == nil || err.Error() != want {
+			t.Errorf("%s: got %v, want %q", params, err, want)
+		}
+	}
+	fieldPlan, err := PlanReportTool("get_field_values", reportParams(t,
+		`{"model_name":"Course","field_name":"title","limit":true}`), "a1000000-0000-4000-8000-000000701001", settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if query := fieldPlan.Statements[1].SQL; !strings.Contains(query, "LIMIT 1") {
+		t.Errorf("field values limit: query %q lacks LIMIT 1", query)
+	}
+	if _, err := PlanReportTool("get_field_values", reportParams(t,
+		`{"model_name":"Course","field_name":"title","limit":"1"}`), "a1000000-0000-4000-8000-000000701001", settings); err == nil ||
+		err.Error() != "'<' not supported between instances of 'str' and 'int'" {
+		t.Errorf("field values string limit: got %v", err)
+	}
+}
+
+func TestReportToolRepeatedFields(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	plan, err := PlanReportTool("query_data", reportParams(t,
+		`{"model_name":"Course","fields":["title","fee","title"],"order_by":["title"]}`),
+		"a1000000-0000-4000-8000-000000701001", settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	query := plan.Statements[1].SQL
+	if count := strings.Count(query, `"application_course"."title" AS "c`); count != 1 {
+		t.Errorf("query %q selects title %d times, want 1", query, count)
+	}
+	if count := strings.Count(query, `"application_course"."fee" AS "c`); count != 1 {
+		t.Errorf("query %q selects fee %d times, want 1", query, count)
+	}
+	grouped, err := PlanReportTool("aggregate_data", reportParams(t,
+		`{"model_name":"Payment","aggregations":[{"function":"sum","field":"amount"}],"group_by":["type","type"]}`),
+		"a1000000-0000-4000-8000-000000701001", settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	query = grouped.Statements[0].SQL
+	if count := strings.Count(query, `"application_payment"."type" ASC`); count != 1 {
+		t.Errorf("query %q orders by type %d times, want 1", query, count)
+	}
+}
+
+func TestReportToolFieldNameTypes(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	for params, want := range map[string]string{
+		`{"model_name":"Course","field_name":5}`:         "'int' object has no attribute 'split'",
+		`{"model_name":"Course","field_name":null}`:      "'NoneType' object has no attribute 'split'",
+		`{"model_name":"Course","field_name":["title"]}`: "'list' object has no attribute 'split'",
+	} {
+		_, err := PlanReportTool("get_field_values", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err == nil || err.Error() != want {
+			t.Errorf("%s: got %v, want %q", params, err, want)
+		}
+	}
+}
+
+func TestReportToolJoins(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	for params, want := range map[string]string{
+		`{"model_name":"Course","fields":["title"],"joins":[5]}`:           "'int' object has no attribute 'split'",
+		`{"model_name":"Course","fields":["title"],"joins":[[1]]}`:         "'list' object has no attribute 'split'",
+		`{"model_name":"Course","fields":["title"],"joins":[{"a":1}]}`:     "'dict' object has no attribute 'split'",
+		`{"model_name":"Course","fields":["title"],"joins":[true]}`:        "'bool' object has no attribute 'split'",
+		`{"model_name":"Course","fields":["title"],"joins":5}`:             "'int' object is not iterable",
+		`{"model_name":"Course","fields":["title"],"joins":true}`:          "'bool' object is not iterable",
+		`{"model_name":"Course","fields":["title"],"joins":[null,5]}`:      "'NoneType' object has no attribute 'split'",
+		`{"model_name":"Course","fields":["title"],"joins":[null,"tags"]}`: "'NoneType' object has no attribute 'split'",
+	} {
+		_, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err == nil || err.Error() != want {
+			t.Errorf("%s: got %v, want %q", params, err, want)
+		}
+	}
+	for _, params := range []string{
+		`{"model_name":"Course","fields":["title"],"joins":[null]}`,
+		`{"model_name":"Course","fields":["title"],"joins":["title"]}`,
+		`{"model_name":"Course","fields":["title"],"joins":"tags"}`,
+		`{"model_name":"Course","fields":["title"],"joins":{"sport_association":1}}`,
+		`{"model_name":"Course","fields":["title"],"joins":[null,"sport_association"]}`,
+	} {
+		if _, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings); err != nil {
+			t.Errorf("%s: %v", params, err)
+		}
+	}
+}
+
 func TestReportUnescape(t *testing.T) {
-	for input, want := range map[string]string{"Calcio &amp; Basket": "Calcio & Basket", "a & b": "a & b", "x&": "x&", "&lt;p&gt;": "<p>"} {
+	// Expected values are Python 3.13 html.unescape outputs.
+	for input, want := range map[string]string{
+		"Calcio &amp; Basket": "Calcio & Basket",
+		"a & b":               "a & b",
+		"x&":                  "x&",
+		"&lt;p&gt;":           "<p>",
+		"&#39;":               "'",
+		"&notit":              "¬it",
+		"&copy;":              "©",
+		"&#233;":              "é",
+		"&#x1F600;":           "😀",
+		"&NotEqualTilde;":     "≂̸",
+		"&amp":                "&",
+		"&#0;":                "\uFFFD",
+		"&#xD800;":            "\uFFFD",
+	} {
 		got, err := reportUnescape(input)
 		if err != nil || got != want {
 			t.Errorf("%q: got %v %v", input, got, err)
-		}
-	}
-	for _, input := range []string{"&#39;", "&notit", "&copy;"} {
-		if _, err := reportUnescape(input); !errors.Is(err, ErrReportNotPorted) {
-			t.Errorf("%q: want refusal, got %v", input, err)
 		}
 	}
 }

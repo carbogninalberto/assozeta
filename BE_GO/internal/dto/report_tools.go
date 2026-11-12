@@ -3,13 +3,13 @@ package dto
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	"strconv"
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pyhtml"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -113,7 +113,7 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		value, _ := params.Lookup("field_name")
 		name, ok := value.(string)
 		if !ok {
-			return ReportPlan{}, mcpNotPorted("field_name type")
+			return ReportPlan{}, mcpAttributeError(value, "split")
 		}
 		if !mcpPathAllowed(model, name) {
 			return ReportPlan{}, mcpRaise("Field '%s' is not allowed", name)
@@ -451,62 +451,179 @@ func (q *mcpQuery) orderExpr(order mcpOrder) (mcpExpr, error) {
 	return expr, nil
 }
 
-// mcpInteger is a limit/offset value (Python ints; integral floats behave
-// like ints in slicing).
-func mcpInteger(value any) (int64, error) {
-	switch v := value.(type) {
-	case json.Number:
-		if strings.ContainsAny(string(v), ".eE") {
-			number, err := strconv.ParseFloat(string(v), 64)
-			if err != nil || math.Trunc(number) != number || math.Abs(number) > 1<<40 {
-				return 0, mcpNotPorted("non-integral limit or offset")
-			}
-			return int64(number), nil
-		}
-		number, err := strconv.ParseInt(string(v), 10, 64)
-		if err != nil || number > 1<<40 || number < -(1<<40) {
-			return 0, mcpNotPorted("limit or offset out of range")
-		}
-		return number, nil
-	}
-	return 0, mcpNotPorted(fmt.Sprintf("limit or offset %T", value))
+// mcpPyNumber is a Python int or float (bool counts as int) for the
+// limit/offset arithmetic. Integers keep their full precision.
+type mcpPyNumber struct {
+	isFloat bool
+	isBool  bool
+	integer *big.Int
+	float   float64
 }
 
-// slice is effective_limit = min(limit or MAX, MAX) and qs[offset:offset+limit].
-func mcpSlice(params domain.RequestObject, maximum int64) (int64, int64, error) {
-	limit := maximum
+func mcpPyInt(number int64) mcpPyNumber { return mcpPyNumber{integer: big.NewInt(number)} }
+
+func (n mcpPyNumber) typeName() string {
+	switch {
+	case n.isFloat:
+		return "float"
+	case n.isBool:
+		return "bool"
+	}
+	return "int"
+}
+
+func (n mcpPyNumber) asFloat() float64 {
+	if n.isFloat {
+		return n.float
+	}
+	value, _ := new(big.Float).SetInt(n.integer).Float64()
+	return value
+}
+
+func (n mcpPyNumber) isNegative() bool {
+	if n.isFloat {
+		return n.float < 0
+	}
+	return n.integer.Sign() < 0
+}
+
+// intValue is int(n): truncation toward zero.
+func (n mcpPyNumber) intValue() (*big.Int, error) {
+	if !n.isFloat {
+		return new(big.Int).Set(n.integer), nil
+	}
+	if math.IsNaN(n.float) || math.IsInf(n.float, 0) {
+		return nil, mcpNotPorted("non-finite limit or offset")
+	}
+	value, _ := new(big.Float).SetFloat64(n.float).Int(nil)
+	return value, nil
+}
+
+// mcpPyNumberValue is a parsed JSON int, float or bool as a Python number.
+func mcpPyNumberValue(value any) (mcpPyNumber, bool) {
+	switch typed := value.(type) {
+	case bool:
+		integer := big.NewInt(0)
+		if typed {
+			integer = big.NewInt(1)
+		}
+		return mcpPyNumber{isBool: true, integer: integer}, true
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			number, err := strconv.ParseFloat(string(typed), 64)
+			if err != nil {
+				return mcpPyNumber{}, false
+			}
+			return mcpPyNumber{isFloat: true, float: number}, true
+		}
+		number, ok := new(big.Int).SetString(string(typed), 10)
+		if !ok {
+			return mcpPyNumber{}, false
+		}
+		return mcpPyNumber{integer: number}, true
+	}
+	return mcpPyNumber{}, false
+}
+
+// mcpEffectiveLimit is min(limit or MAX, MAX).
+func mcpEffectiveLimit(value any, maximum int64) (mcpPyNumber, error) {
+	limit := mcpPyInt(maximum)
+	if !PythonTruthy(value) {
+		return limit, nil
+	}
+	number, ok := mcpPyNumberValue(value)
+	if !ok {
+		// min compares MAX < limit.
+		return mcpPyNumber{}, mcpRaise("'<' not supported between instances of 'int' and '%s'", pythonTypeName(value))
+	}
+	if number.isFloat {
+		if number.float < float64(maximum) {
+			return number, nil
+		}
+		return limit, nil
+	}
+	if number.integer.Cmp(limit.integer) < 0 {
+		return number, nil
+	}
+	return limit, nil
+}
+
+// mcpPyAdd is Python's offset + effective_limit.
+func mcpPyAdd(left any, right mcpPyNumber) (mcpPyNumber, error) {
+	number, ok := mcpPyNumberValue(left)
+	if ok {
+		if number.isFloat || right.isFloat {
+			return mcpPyNumber{isFloat: true, float: number.asFloat() + right.asFloat()}, nil
+		}
+		return mcpPyNumber{integer: new(big.Int).Add(number.integer, right.integer)}, nil
+	}
+	switch left.(type) {
+	case nil:
+		return mcpPyNumber{}, mcpRaise("unsupported operand type(s) for +: 'NoneType' and '%s'", right.typeName())
+	case string:
+		return mcpPyNumber{}, mcpRaise("can only concatenate str (not \"%s\") to str", right.typeName())
+	}
+	return mcpPyNumber{}, mcpNotPorted("limit or offset type")
+}
+
+// mcpPyNumberLess is (offset + effective_limit) < total_count.
+func mcpPyNumberLess(number mcpPyNumber, total int64) bool {
+	if number.isFloat {
+		if value := new(big.Rat).SetFloat64(number.float); value != nil {
+			return value.Cmp(new(big.Rat).SetInt64(total)) < 0
+		}
+		return number.float < float64(total)
+	}
+	return number.integer.Cmp(big.NewInt(total)) < 0
+}
+
+// mcpSliceBounds is the effective slice of execute_query.
+type mcpSliceBounds struct {
+	limit  *big.Int // SQL LIMIT (high_mark - low_mark)
+	offset *big.Int // SQL OFFSET (low_mark)
+	// end is offset + effective_limit before int() (has_more).
+	end mcpPyNumber
+}
+
+// mcpSlice is effective_limit = min(limit or MAX, MAX) and
+// qs[offset:offset+effective_limit] (Django's QuerySet.__getitem__ calls
+// int() on both bounds).
+func mcpSlice(params domain.RequestObject, maximum int64) (mcpSliceBounds, error) {
+	effective := mcpPyInt(maximum)
 	if value, _ := params.Lookup("limit"); PythonTruthy(value) {
-		switch value.(type) {
-		case string, []any, domain.RequestObject:
-			// min(limit, MAX) compares MAX < limit.
-			return 0, 0, mcpRaise("'<' not supported between instances of 'int' and '%s'", pythonTypeName(value))
-		}
-		number, err := mcpInteger(value)
+		number, err := mcpEffectiveLimit(value, maximum)
 		if err != nil {
-			return 0, 0, err
+			return mcpSliceBounds{}, err
 		}
-		if number < limit {
-			limit = number
-		}
+		effective = number
 	}
-	var offset int64
-	if value, present := params.Lookup("offset"); present {
-		if value == nil {
-			return 0, 0, mcpRaise("unsupported operand type(s) for +: 'NoneType' and 'int'")
-		}
-		number, err := mcpInteger(value)
-		if err != nil {
-			return 0, 0, err
-		}
-		offset = number
+	offsetValue, present := params.Lookup("offset")
+	if !present {
+		offsetValue = json.Number("0")
 	}
-	if offset < 0 || offset+limit < 0 {
-		return 0, 0, mcpRaise("Negative indexing is not supported.")
+	end, err := mcpPyAdd(offsetValue, effective)
+	if err != nil {
+		return mcpSliceBounds{}, err
 	}
-	if limit < 0 {
-		return 0, 0, mcpNotPorted("negative limit")
+	offset, ok := mcpPyNumberValue(offsetValue)
+	if !ok {
+		return mcpSliceBounds{}, mcpNotPorted("limit or offset type")
 	}
-	return limit, offset, nil
+	if offset.isNegative() || end.isNegative() {
+		return mcpSliceBounds{}, mcpRaise("Negative indexing is not supported.")
+	}
+	if effective.isNegative() {
+		return mcpSliceBounds{}, mcpNotPorted("negative limit")
+	}
+	start, err := offset.intValue()
+	if err != nil {
+		return mcpSliceBounds{}, err
+	}
+	stop, err := end.intValue()
+	if err != nil {
+		return mcpSliceBounds{}, err
+	}
+	return mcpSliceBounds{limit: new(big.Int).Sub(stop, start), offset: start, end: end}, nil
 }
 
 // queryFields is _validate_fields_for_model: the value keys, and whether
@@ -533,7 +650,8 @@ func (q *mcpQuery) queryFields(value any) ([]string, bool, error) {
 			continue
 		}
 		if seen[item] {
-			return nil, false, mcpNotPorted("duplicate field")
+			// values() keeps one column per name in first-appearance order.
+			continue
 		}
 		seen[item] = true
 		names = append(names, item)
@@ -550,11 +668,66 @@ func (q *mcpQuery) queryFields(value any) ([]string, bool, error) {
 	return names, true, nil
 }
 
+// validateJoins is _split_joins and execute_query's
+// select_related/prefetch_related calls: values() drops both, but an item
+// that is not a string reaches prefetch_related's lookup.split() (except a
+// lone None, which clears the prefetch lookups), and a value that is not
+// iterable fails the for loop.
+func (q *mcpQuery) validateJoins(joins any) error {
+	if !PythonTruthy(joins) {
+		return nil
+	}
+	var items []any
+	switch typed := joins.(type) {
+	case []any:
+		items = typed
+	case string:
+		for _, r := range typed {
+			items = append(items, string(r))
+		}
+	case domain.RequestObject:
+		for _, field := range typed {
+			items = append(items, field.Name)
+		}
+	default:
+		return mcpRaise("'%s' object is not iterable", pythonTypeName(joins))
+	}
+	var prefetch []any
+	for _, item := range items {
+		name, ok := item.(string)
+		if !ok {
+			prefetch = append(prefetch, item)
+			continue
+		}
+		// _split_joins skips a path that may not be read and routes a
+		// readable name to one of the two calls; values() ignores both, but a
+		// many-valued lookup still joins prefetch_related's lookup list.
+		if !mcpPathAllowed(q.model, name) {
+			continue
+		}
+		field := q.model.getField(name)
+		if field == nil || field.Kind == "foreign_key_reverse" || field.Kind == "many_to_many" ||
+			field.Kind == "many_to_many_reverse" {
+			prefetch = append(prefetch, name)
+		}
+	}
+	if len(prefetch) == 1 && prefetch[0] == nil {
+		// prefetch_related(None) clears the lookups.
+		return nil
+	}
+	for _, item := range prefetch {
+		if _, ok := item.(string); ok {
+			continue
+		}
+		return mcpAttributeError(item, "split")
+	}
+	return nil
+}
+
 // planQuery is QueryBuilder.execute_query after the filters.
 func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings) (ReportPlan, error) {
 	if joins, _ := params.Lookup("joins"); PythonTruthy(joins) {
-		// select_related/prefetch_related: values() ignores both.
-		if _, err := pythonIter(joins); err != nil {
+		if err := q.validateJoins(joins); err != nil {
 			return ReportPlan{}, err
 		}
 	}
@@ -576,7 +749,7 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if explicit {
 		labels = mcpChoiceMap(q.model, names)
 	}
-	limit, offset, err := mcpSlice(params, config.MaxResults)
+	bounds, err := mcpSlice(params, config.MaxResults)
 	if err != nil {
 		return ReportPlan{}, err
 	}
@@ -624,9 +797,9 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 	if len(keys) > 0 {
 		inner += ` ORDER BY ` + strings.Join(keys, ", ")
 	}
-	inner += ` LIMIT ` + strconv.FormatInt(limit, 10)
-	if offset > 0 {
-		inner += ` OFFSET ` + strconv.FormatInt(offset, 10)
+	inner += ` LIMIT ` + bounds.limit.String()
+	if bounds.offset.Sign() > 0 {
+		inner += ` OFFSET ` + bounds.offset.String()
 	}
 	statement := mcpWrap(inner, columns, q.args.values)
 	return ReportPlan{Statements: []domain.ReportStatement{count, statement},
@@ -648,7 +821,7 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 				data = append(data, row)
 			}
 			return domain.RequestObject{{Name: "count", Value: json.Number(strconv.FormatInt(total, 10))},
-				{Name: "has_more", Value: offset+limit < total}, {Name: "data", Value: data}}, nil
+				{Name: "has_more", Value: mcpPyNumberLess(bounds.end, total)}, {Name: "data", Value: data}}, nil
 		}}, nil
 }
 
@@ -684,14 +857,20 @@ func (q *mcpQuery) planFieldValues(name string, params domain.RequestObject) (Re
 		limit = " LIMIT 100"
 	case value == nil:
 	default:
-		number, err := mcpInteger(value)
+		// values_list(...)[:limit]: __getitem__ compares stop < 0 before
+		// calling int() on it.
+		number, ok := mcpPyNumberValue(value)
+		if !ok {
+			return ReportPlan{}, mcpRaise("'<' not supported between instances of '%s' and 'int'", pythonTypeName(value))
+		}
+		if number.isNegative() {
+			return ReportPlan{}, mcpRaise("Negative indexing is not supported.")
+		}
+		stop, err := number.intValue()
 		if err != nil {
 			return ReportPlan{}, err
 		}
-		if number < 0 {
-			return ReportPlan{}, mcpRaise("Negative indexing is not supported.")
-		}
-		limit = " LIMIT " + strconv.FormatInt(number, 10)
+		limit = " LIMIT " + stop.String()
 	}
 	selects := expr.sql + ` AS "c0"`
 	if order.sql != expr.sql {
@@ -737,19 +916,8 @@ func (a mcpAggregate) sql(argument string) (string, error) {
 	if a.field == "" {
 		return "COUNT(*)", nil
 	}
-	switch a.function {
-	case "count":
-	case "sum", "avg":
-		if a.expr.kind != "int" && a.expr.kind != "decimal" && a.expr.kind != "float" {
-			return "", fmt.Errorf("%w: PostgreSQL has no SUM/AVG of %s", ErrReportFailed, a.expr.kind) // a database error
-		}
-	default:
-		switch a.expr.kind {
-		case "int", "decimal", "float", "text", "date", "datetime":
-		default:
-			return "", fmt.Errorf("%w: PostgreSQL has no MIN/MAX of %s", ErrReportFailed, a.expr.kind) // a database error
-		}
-	}
+	// Unsupported argument types are left to PostgreSQL, which answers the
+	// same database error Django's statement raises.
 	return strings.ToUpper(a.function) + "(" + argument + ")", nil
 }
 
@@ -858,7 +1026,8 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error
 			continue
 		}
 		if mcpContains(groups, name) {
-			return ReportPlan{}, mcpNotPorted("duplicate group_by")
+			// values() keeps one column per name in first-appearance order.
+			continue
 		}
 		groups = append(groups, name)
 	}
@@ -1060,40 +1229,12 @@ func reportFloat(text string) (any, error) {
 	return json.Number(PythonFloatStr(number)), nil
 }
 
-var reportEntities = map[string]string{"amp;": "&", "AMP;": "&", "lt;": "<", "LT;": "<", "gt;": ">", "GT;": ">", "quot;": `"`,
-	"QUOT;": `"`, "apos;": "'", "nbsp;": " "}
-
-// reportUnescape is html.unescape for text with '&' (the common named
-// references); numeric and other references are refused.
+// reportUnescape is _serialize_value's html.unescape for a string with '&'.
 func reportUnescape(text string) (any, error) {
 	if !strings.Contains(text, "&") {
 		return text, nil
 	}
-	var out strings.Builder
-	for i := 0; i < len(text); {
-		if text[i] != '&' {
-			out.WriteByte(text[i])
-			i++
-			continue
-		}
-		rest := text[i+1:]
-		if rest == "" || strings.ContainsRune("\t\n\f <&;", rune(rest[0])) {
-			out.WriteByte('&')
-			i++
-			continue
-		}
-		end := strings.IndexAny(rest, "\t\n\f <&#;")
-		if end < 0 || rest[end] != ';' {
-			return nil, ErrReportNotPorted
-		}
-		replacement, ok := reportEntities[rest[:end+1]]
-		if !ok {
-			return nil, ErrReportNotPorted
-		}
-		out.WriteString(replacement)
-		i += end + 2
-	}
-	return out.String(), nil
+	return pyhtml.Unescape(text), nil
 }
 
 // ---------------------------------------------------------------------------

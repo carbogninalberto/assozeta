@@ -64,11 +64,19 @@ execution owner; nothing here switches traffic.
 - `values()`/`count()`/`aggregate()`/grouped annotate SQL keeps Django's
   shape (DISTINCT, select list, joins, ORDER BY columns added to the select,
   `__colN` subquery for flat aggregates), so unordered results come back in
-  the same order; text rendering happens in an outer projection.
+  the same order; text rendering happens in an outer projection. A repeated
+  name in `fields`/`group_by` keeps one column in first-appearance order, as
+  `values()` does.
+- `limit`/`offset` follow Python's slicing: bools count as ints, float bounds
+  are truncated by `int()`, a limit above the maximum is capped, an
+  out-of-range offset stays in the SQL for PostgreSQL, and the type errors of
+  `min()`/`+`/`<` keep Django's text. `joins` runs `_split_joins` and the
+  `select_related`/`prefetch_related` checks; `values()` then drops both, so
+  only a non-string item (`lookup.split`) or a non-iterable value raises.
 - Serialisation (`_serialize_value`): UUID text, `isoformat()`, Decimal and
   averages as floats, integers from Extract/Sum, JSON values, `html.unescape`
-  of strings with `&`, Italian choice labels (`ITALIAN_CHOICE_OVERRIDES`,
-  otherwise Django's translated choices).
+  (`internal/pyhtml`) of strings with `&`, Italian choice labels
+  (`ITALIAN_CHOICE_OVERRIDES`, otherwise Django's translated choices).
 
 ## Files
 
@@ -95,16 +103,13 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
 - ORM inputs whose Django text includes SQL or parts Go does not reproduce:
   JSON containment and multi-key lookups, nested or integer JSON keys,
   `exclude()` across many-valued relations (split_exclude subquery), `?`
-  ordering, ordering by a relation whose model has Meta.ordering,
-  SUM/AVG/MIN/MAX of non-numeric/unsupported types (database errors; the
-  saved-report route answers its generic 500 for them, as Django does),
-  integer list items outside the 64-bit parameter range, non-integral floats
-  for limits, non-canonical UUID spellings `int()` could accept, ISO datetime
-  forms only `fromisoformat` accepts (compact date-only and ISO-week date
-  forms are ported), non-ASCII digits, HTML references other than the common
-  named ones, CSV cells holding JSON containers or ISO-looking text other
-  than the engine's own datetimes, attendance names whose `str.lower()`
-  differs from Go's.
+  ordering, ordering by a relation whose model has Meta.ordering, integer list
+  items outside the 64-bit parameter range, non-canonical UUID spellings
+  `int()` could accept, ISO datetime forms only `fromisoformat` accepts
+  (compact date-only and ISO-week date forms are ported), non-ASCII digits,
+  CSV cells holding JSON containers or ISO-looking text other than the
+  engine's own datetimes, attendance names whose `str.lower()` differs from
+  Go's.
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.

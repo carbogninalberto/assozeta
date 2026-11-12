@@ -259,6 +259,43 @@ CASES = [
     ('aggregate_data', {'model_name': 'Instructor', 'aggregations': [{'function': 'count', 'field': '*'}], 'group_by': ['user__email']}, None),
     ('query_data', {'model_name': 'Subscription', 'filters': {'associate__user__email__startswith': 'a'}, 'fields': ['subscription_id']}, None),
     ('count_data', {'model_name': 'Payment', 'exclude': {'user__is_staff': True}}, None),
+
+    # R5: limit/offset as Python numbers, repeated fields/group_by names, field_name types.
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'limit': True}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'limit': 1.5}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'],
+                    'limit': 1000000000000000000000000000000}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'offset': True}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'offset': 1.5}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'offset': '1'}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title', 'title']}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title', 'fee', 'title']}, None),
+    ('aggregate_data', {'model_name': 'Payment', 'aggregations': [{'function': 'sum', 'field': 'amount'}],
+                        'group_by': ['type', 'type']}, None),
+    ('get_field_values', {'model_name': 'Course', 'field_name': 5}, None),
+    ('get_field_values', {'model_name': 'Course', 'field_name': None}, None),
+    ('get_field_values', {'model_name': 'Course', 'field_name': ['title']}, None),
+    ('get_field_values', {'model_name': 'Course', 'field_name': 'title', 'limit': True}, None),
+    ('get_field_values', {'model_name': 'Course', 'field_name': 'title', 'limit': '1'}, None),
+
+    # R5: joins are validated and then dropped by values(); HTML references.
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': [5]}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': [None]}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': [[1]]}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': [{'a': 1}]}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': [True]}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': 5}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': 'tags'}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'],
+                    'joins': {'sport_association': 1}}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'], 'joins': True}, None),
+    ('query_data', {'model_name': 'Course', 'order_by': ['title'], 'fields': ['title'],
+                    'filters': {'title__contains': '&'}}, None),
+    ('query_data', {'model_name': 'Associate', 'order_by': ['last_name'], 'fields': ['last_name'],
+                    'filters': {'last_name__contains': 'Angelo'}}, None),
+    ('query_data', {'model_name': 'Payment', 'order_by': ['amount'], 'fields': ['description'],
+                    'filters': {'description__contains': 'Quota'}}, None),
+    ('query_data', {'model_name': 'SportAssociation', 'fields': ['denomination']}, None),
 ]
 
 # JSON-lines sessions for the stdio comparison: (label, association, lines).
