@@ -51,9 +51,15 @@ execution owner; nothing here switches traffic.
   attnames; transforms `year` (BETWEEN bounds), `month`, `day`, `week`,
   `week_day`, `quarter`, `hour`, `date`, JSON key transforms (one key);
   lookups exact, iexact, (i)contains, (i)startswith, (i)endswith, gt/gte/lt/
-  lte, in (None dropped, deduplicated, empty: no rows), range, isnull,
-  has_key; `_coerce_filter_values` (strptime formats, `int()`, `float()`)
-  then each field's `get_prep_value`.
+  lte, in (Python iteration, None dropped, deduplicated, empty: no rows),
+  range, isnull, has_key; out-of-range integer comparisons map to
+  EmptyResultSet/FullResultSet per `WhereNode.as_sql` (an empty OR branch is
+  dropped, an empty AND empties, a negated empty is full);
+  `_coerce_filter_values` (strptime formats, `int()`, `float()`) then each
+  field's `get_prep_value` (integer/float truncation and rounding, decimal
+  non-finite and container errors, UUID from int/bool and `int(hex, 16)`
+  spellings, `parse_date`/`parse_datetime` with the full `fromisoformat`
+  grammar, `str()` of containers for text).
 - Exact exception texts: `Model 'X' is not whitelisted`, FieldError
   `Cannot resolve keyword … Choices are: …` and `… Join on 'f' not
   permitted.`, `Cannot parse keyword query ''`, UUID/date/datetime/boolean/
@@ -104,12 +110,9 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
   JSON containment and multi-key lookups, nested or integer JSON keys,
   `exclude()` across many-valued relations (split_exclude subquery), `?`
   ordering, ordering by a relation whose model has Meta.ordering, integer list
-  items outside the 64-bit parameter range, non-canonical UUID spellings
-  `int()` could accept, ISO datetime forms only `fromisoformat` accepts
-  (compact date-only and ISO-week date forms are ported), non-ASCII digits,
-  CSV cells holding JSON containers or ISO-looking text other than the
-  engine's own datetimes, attendance names whose `str.lower()` differs from
-  Go's.
+  items outside the 64-bit parameter range, CSV cells holding JSON containers
+  or ISO-looking text other than the engine's own datetimes, attendance names
+  whose `str.lower()` differs from Go's.
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
 - argparse usage/errors and Django's global command options.

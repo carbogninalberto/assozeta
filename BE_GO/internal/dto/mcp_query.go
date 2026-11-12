@@ -1,8 +1,10 @@
 package dto
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"sort"
 	"strconv"
@@ -776,18 +778,24 @@ func (q *mcpQuery) addQ(node *mcpNode) error {
 			existingInner = append(existingInner, join.alias)
 		}
 	}
-	clause, _, err := q.addQInner(node, map[string]bool{}, false, false, false)
+	clause, _, result, err := q.addQInner(node, map[string]bool{}, false, false, false)
 	if err != nil {
 		return err
 	}
-	if clause != "" {
+	switch {
+	case clause != "":
 		q.where = append(q.where, clause)
+	case result == mcpResultEmpty:
+		// The whole filter matches nothing: keep the statement valid and
+		// rowless (an EmptyResultSet in Django skips the query entirely).
+		q.where = append(q.where, "FALSE")
 	}
 	q.demote(existingInner)
 	return nil
 }
 
-func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
+func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, mcpResultKind, error) {
+	argsStart := len(q.args.values)
 	currentNegated = currentNegated != node.negated
 	branchNegated = branchNegated || node.negated
 	branchOR = branchOR || node.or
@@ -798,18 +806,20 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 	votes := map[string]int{}
 	var order []string
 	var parts []string
+	var kinds []mcpResultKind
 	for _, child := range node.children {
 		var clause string
 		var needed []string
+		var result mcpResultKind
 		var err error
 		switch typed := child.(type) {
 		case mcpLeaf:
-			clause, needed, err = q.buildFilter(typed, used, branchNegated, currentNegated, branchOR)
+			clause, needed, result, err = q.buildFilter(typed, used, branchNegated, currentNegated, branchOR)
 		case *mcpNode:
-			clause, needed, err = q.addQInner(typed, used, branchNegated, currentNegated, branchOR)
+			clause, needed, result, err = q.addQInner(typed, used, branchNegated, currentNegated, branchOR)
 		}
 		if err != nil {
-			return "", nil, err
+			return "", nil, mcpResultValue, err
 		}
 		seen := map[string]bool{}
 		for _, alias := range needed {
@@ -822,9 +832,8 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 			}
 			votes[alias]++
 		}
-		if clause != "" {
-			parts = append(parts, clause)
-		}
+		parts = append(parts, clause)
+		kinds = append(kinds, result)
 	}
 	var promote, demote []string
 	for _, alias := range order {
@@ -838,29 +847,77 @@ func (q *mcpQuery) addQInner(node *mcpNode, used map[string]bool, branchNegated,
 	}
 	q.promote(promote)
 	q.demote(demote)
+	// WhereNode.as_sql: an EmptyResultSet child of an OR is dropped, a
+	// FullResultSet child of an AND is dropped, and a node all of whose
+	// children are empty (OR) or full (AND) is itself empty/full. Negation
+	// swaps the two outcomes.
+	fullNeeded, emptyNeeded := len(node.children), 1
+	if node.or {
+		fullNeeded, emptyNeeded = 1, len(node.children)
+	}
+	var sqlParts []string
+	result := mcpResultValue
+	for i, kind := range kinds {
+		switch kind {
+		case mcpResultEmpty:
+			emptyNeeded--
+		case mcpResultFull:
+			fullNeeded--
+		default:
+			if parts[i] != "" {
+				sqlParts = append(sqlParts, parts[i])
+			} else {
+				fullNeeded--
+			}
+		}
+		if emptyNeeded == 0 {
+			if node.negated {
+				result = mcpResultFull
+			} else {
+				result = mcpResultEmpty
+			}
+			break
+		}
+		if fullNeeded == 0 {
+			if node.negated {
+				result = mcpResultEmpty
+			} else {
+				result = mcpResultFull
+			}
+			break
+		}
+	}
+	if result != mcpResultValue {
+		// Django drops the whole node's SQL (and its parameters) when it
+		// compiles to EmptyResultSet or FullResultSet.
+		q.args.values = q.args.values[:argsStart]
+		return "", demote, result, nil
+	}
+	if len(sqlParts) == 0 {
+		q.args.values = q.args.values[:argsStart]
+		return "", demote, mcpResultFull, nil
+	}
 	connector := " AND "
 	if node.or {
 		connector = " OR "
 	}
-	clause := strings.Join(parts, connector)
-	switch {
-	case clause == "":
-	case node.negated:
+	clause := strings.Join(sqlParts, connector)
+	if node.negated {
 		clause = "NOT (" + clause + ")"
-	case len(parts) > 1:
+	} else if len(sqlParts) > 1 {
 		clause = "(" + clause + ")"
 	}
-	return clause, demote, nil
+	return clause, demote, mcpResultValue, nil
 }
 
 // buildFilter is Query.build_filter for key=value.
-func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, error) {
+func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated, currentNegated, branchOR bool) (string, []string, mcpResultKind, error) {
 	if leaf.key == "" {
-		return "", nil, mcpRaise("Cannot parse keyword query ''")
+		return "", nil, mcpResultValue, mcpRaise("Cannot parse keyword query ''")
 	}
 	info, err := q.setupJoins(strings.Split(leaf.key, "__"), used, !branchNegated, false)
 	if err != nil {
-		return "", nil, err
+		return "", nil, mcpResultValue, err
 	}
 	usedJoins := append([]string(nil), info.joins...)
 	target, alias, remaining := q.trimJoins(info)
@@ -869,18 +926,16 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 	}
 	lhs, err := q.targetExpr(info, target, alias)
 	if err != nil {
-		return "", nil, err
+		return "", nil, mcpResultValue, err
 	}
 	lookup, err := q.buildLookup(info.transforms, lhs, leaf.value)
 	if err != nil {
-		return "", nil, err
+		return "", nil, mcpResultValue, err
 	}
-	// Django folds an out-of-range integer comparison into an always-true or
-	// always-false condition; the empty/full result is only reproduced for a
-	// plain AND condition of filters (an empty OR branch is dropped and a
-	// negated node matches everything), so those requests go to Django.
-	if lookup.outOfRange && (branchNegated || currentNegated || branchOR) {
-		return "", nil, mcpNotPorted("integer outside the column range in or_filters or exclude")
+	if lookup.result != mcpResultValue {
+		// IntegerFieldOverflow raises while the condition compiles; the node
+		// (including its negation) decides the outcome, not the leaf.
+		return "", usedJoins, lookup.result, nil
 	}
 	condition := lookup.sql
 	requireOuter := lookup.name == "isnull" && lookup.isnullTrue && !currentNegated
@@ -891,18 +946,26 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 		}
 	}
 	if requireOuter {
-		return condition, nil, nil
+		return condition, nil, mcpResultValue, nil
 	}
-	return condition, usedJoins, nil
+	return condition, usedJoins, mcpResultValue, nil
 }
+
+// mcpResultKind is the outcome of compiling a condition: a value, or the
+// EmptyResultSet/FullResultSet WhereNode.as_sql raises per node.
+type mcpResultKind int
+
+const (
+	mcpResultValue mcpResultKind = iota
+	mcpResultEmpty
+	mcpResultFull
+)
 
 type mcpLookup struct {
 	name       string
 	sql        string
 	isnullTrue bool
-	// outOfRange marks an integer comparison folded to TRUE/FALSE because the
-	// value is outside the column range (IntegerFieldOverflow).
-	outOfRange bool
+	result     mcpResultKind
 }
 
 var mcpRelatedLookups = map[string]bool{"exact": true, "in": true, "isnull": true, "gt": true, "gte": true, "lt": true, "lte": true}
@@ -1006,56 +1069,73 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 			return mcpLookup{name: "isnull", sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
 		}
 		if name == "in" || name == "range" {
-			return mcpLookup{}, mcpNotPorted(name + " None")
+			return mcpLookup{}, mcpRaise("'NoneType' object is not iterable")
 		}
 		return mcpLookup{}, mcpRaise("Cannot use None as a query value")
 	}
 	switch name {
 	case "in", "range":
-		items, ok := value.([]any)
-		if !ok {
-			return mcpLookup{}, mcpNotPorted(name + " value")
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
 		}
-		var placeholders []string
-		seen := map[string]bool{}
+		prepared := make([]mcpPrepared, 0, len(items))
 		for _, item := range items {
-			if item == nil && name == "in" {
-				if _, err := q.prepare(lhs, item, false); err != nil {
+			value, err := q.prepare(lhs, item, false)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			prepared = append(prepared, value)
+		}
+		if name == "in" {
+			// In.process_rhs: OrderedSet(discard None), first-seen order; an
+			// empty set is an EmptyResultSet.
+			var placeholders []string
+			seen := map[string]bool{}
+			for _, value := range prepared {
+				if value.isNull {
+					continue
+				}
+				argument, err := mcpPreparedArgument(value)
+				if err != nil {
 					return mcpLookup{}, err
 				}
+				key := fmt.Sprint(argument)
+				if value.integer != nil {
+					key = "i" + value.integer.String()
+				}
+				if seen[key] {
+					continue
+				}
+				seen[key] = true
+				placeholders = append(placeholders, q.args.add(argument)+mcpPreparedCast(lhs, value))
+			}
+			if len(placeholders) == 0 {
+				return mcpLookup{name: name, result: mcpResultEmpty}, nil
+			}
+			return mcpLookup{name: name, sql: lhs.sql + " IN (" + strings.Join(placeholders, ", ") + ")"}, nil
+		}
+		// Range.get_rhs_op indexes rhs[0], rhs[1]; a third value leaves one
+		// placeholder unfilled when the driver formats the statement.
+		if len(prepared) < 2 {
+			return mcpLookup{}, mcpRaise("tuple index out of range")
+		}
+		if len(prepared) > 2 {
+			return mcpLookup{}, mcpRaise("not all arguments converted during string formatting")
+		}
+		var placeholders []string
+		for _, value := range prepared {
+			if value.isNull {
+				placeholders = append(placeholders, q.args.add(nil))
 				continue
 			}
-			prepared, err := q.prepare(lhs, item, false)
+			argument, err := mcpPreparedArgument(value)
 			if err != nil {
 				return mcpLookup{}, err
 			}
-			if prepared.isNull {
-				return mcpLookup{}, mcpNotPorted("range None")
-			}
-			argument, err := mcpPreparedArgument(prepared)
-			if err != nil {
-				return mcpLookup{}, err
-			}
-			key := fmt.Sprint(argument)
-			if prepared.integer != nil {
-				key = "i" + prepared.integer.String()
-			}
-			if name == "in" && seen[key] {
-				continue
-			}
-			seen[key] = true
-			placeholders = append(placeholders, q.args.add(argument)+prepared.cast)
+			placeholders = append(placeholders, q.args.add(argument)+mcpPreparedCast(lhs, value))
 		}
-		if name == "range" {
-			if len(items) != 2 {
-				return mcpLookup{}, mcpNotPorted("range size")
-			}
-			return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
-		}
-		if len(placeholders) == 0 {
-			return mcpLookup{name: name, sql: "FALSE"}, nil
-		}
-		return mcpLookup{name: name, sql: lhs.sql + " IN (" + strings.Join(placeholders, ", ") + ")"}, nil
+		return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
 	case "regex", "iregex":
 		if lhs.kind == "json" {
 			return mcpLookup{}, mcpNotPorted("lookup " + name)
@@ -1101,6 +1181,11 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		return mcpLookup{name: name, sql: column + " LIKE " + pattern}, nil
 	}
 	// exact, gt, gte, lt, lte
+	if lhs.kind == "int" && (name == "gte" || name == "lt") {
+		// IntegerGreaterThanOrEqual/IntegerLessThan round a float up before
+		// IntegerField.get_prep_value truncates it.
+		value = mcpCeilIntegerValue(value)
+	}
 	prepared, err := q.prepare(lhs, value, true)
 	if err != nil {
 		return mcpLookup{}, err
@@ -1121,9 +1206,9 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 		return mcpLookup{name: name, sql: "NOT " + lhs.sql}, nil
 	}
 	if lhs.kind == "int" && prepared.integer != nil {
-		if special, argument, ok := mcpIntegerComparison(lhs, name, prepared.integer); ok {
-			if special != "" {
-				return mcpLookup{name: name, sql: special, outOfRange: true}, nil
+		if result, argument, ok := mcpIntegerComparison(lhs, name, prepared.integer); ok {
+			if result != mcpResultValue {
+				return mcpLookup{name: name, result: result}, nil
 			}
 			prepared.param = argument
 		}
@@ -1132,33 +1217,98 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 	return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(prepared.param) + prepared.cast}, nil
 }
 
+// mcpIntegerInternal is the field type whose storage range applies to an
+// integer expression (date parts are IntegerField in Django).
+func mcpIntegerInternal(lhs mcpExpr) string {
+	if lhs.extract == "" && lhs.field != nil {
+		return lhs.field.Internal
+	}
+	return "IntegerField"
+}
+
+// mcpPreparedCast widens an integer parameter the column's type cannot hold,
+// so the driver sends a value PostgreSQL can bind (Django adapts it as int8).
+func mcpPreparedCast(lhs mcpExpr, prepared mcpPrepared) string {
+	if prepared.integer == nil {
+		return prepared.cast
+	}
+	low, high := mcpIntRange(mcpIntegerInternal(lhs))
+	if prepared.integer.Cmp(big.NewInt(low)) < 0 || prepared.integer.Cmp(big.NewInt(high)) > 0 {
+		return "::bigint"
+	}
+	return prepared.cast
+}
+
+// mcpLookupItems is Python iteration of an in/range value.
+func mcpLookupItems(value any) ([]any, error) {
+	switch typed := value.(type) {
+	case []any:
+		return typed, nil
+	case string:
+		items := make([]any, 0, len([]rune(typed)))
+		for _, r := range typed {
+			items = append(items, string(r))
+		}
+		return items, nil
+	case domain.RequestObject:
+		items := make([]any, 0, len(typed))
+		for _, field := range typed {
+			items = append(items, field.Name)
+		}
+		return items, nil
+	case nil:
+		return nil, mcpRaise("'NoneType' object is not iterable")
+	case mcpCoercedInt:
+		return nil, mcpRaise("'int' object is not iterable")
+	case mcpCoercedFloat:
+		return nil, mcpRaise("'float' object is not iterable")
+	case mcpCoercedDate:
+		return nil, mcpRaise("'date' object is not iterable")
+	case mcpCoercedDateTime:
+		return nil, mcpRaise("'datetime' object is not iterable")
+	}
+	return nil, mcpRaise("'%s' object is not iterable", pythonTypeName(value))
+}
+
+// mcpCeilIntegerValue is IntegerFieldFloatRounding: only a Python float is
+// rounded, strings are left for get_prep_value to reject.
+func mcpCeilIntegerValue(value any) any {
+	switch typed := value.(type) {
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			if number, err := strconv.ParseFloat(string(typed), 64); err == nil && !math.IsInf(number, 0) && !math.IsNaN(number) {
+				return mcpCoercedFloat{math.Ceil(number)}
+			}
+		}
+	case mcpCoercedFloat:
+		return mcpCoercedFloat{math.Ceil(typed.v)}
+	}
+	return value
+}
+
 // mcpIntegerComparison is IntegerFieldOverflow: out-of-range direct values
 // become EmptyResultSet (FALSE) or FullResultSet (TRUE).
-func mcpIntegerComparison(lhs mcpExpr, name string, number *big.Int) (string, int64, bool) {
-	internal := "IntegerField"
-	if lhs.extract == "" && lhs.field != nil {
-		internal = lhs.field.Internal
-	}
-	low, high := mcpIntRange(internal)
+func mcpIntegerComparison(lhs mcpExpr, name string, number *big.Int) (mcpResultKind, int64, bool) {
+	low, high := mcpIntRange(mcpIntegerInternal(lhs))
 	below := number.Cmp(big.NewInt(low)) < 0
 	above := number.Cmp(big.NewInt(high)) > 0
 	if below || above {
 		switch name {
 		case "exact":
-			return "FALSE", 0, true
+			return mcpResultEmpty, 0, true
 		case "gt", "gte":
 			if below {
-				return "TRUE", 0, true
+				return mcpResultFull, 0, true
 			}
-			return "FALSE", 0, true
+			return mcpResultEmpty, 0, true
 		case "lt", "lte":
 			if above {
-				return "TRUE", 0, true
+				return mcpResultFull, 0, true
 			}
-			return "FALSE", 0, true
+			return mcpResultEmpty, 0, true
 		}
 	}
-	return "", number.Int64(), true
+	return mcpResultValue, number.Int64(), true
 }
 
 // mcpISOYearStart is date.fromisocalendar(year, 1, 1): the Monday of week 1.

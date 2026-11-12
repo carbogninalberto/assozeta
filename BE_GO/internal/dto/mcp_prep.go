@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 )
 
 // Values after _coerce_filter_values: Python date, naive datetime, int and
@@ -39,9 +41,6 @@ func mcpCoerce(model *mcpModel, key string, value any) any {
 	text, ok := value.(string)
 	if !ok {
 		return value
-	}
-	if mcpNonASCIIDigits(text) {
-		return mcpUncertain{}
 	}
 	current := model
 	var target *mcpField
@@ -151,11 +150,7 @@ func (q *mcpQuery) prepare(lhs mcpExpr, value any, top bool) (mcpPrepared, error
 		}
 		return mcpPrepared{integer: number}, nil
 	case "uuid":
-		text, ok := value.(string)
-		if !ok {
-			return mcpPrepared{}, mcpNotPorted("non-string UUID")
-		}
-		canonical, err := mcpUUID(text)
+		canonical, err := mcpUUIDValue(value)
 		if err != nil {
 			return mcpPrepared{}, err
 		}
@@ -292,32 +287,26 @@ func mcpPatternText(value any) (string, error) {
 		return text, nil
 	case mcpUncertain:
 		return "", mcpNotPorted("non-ASCII digits")
+	case []any, domain.RequestObject:
+		return PythonStr(typed), nil
 	}
 	return "", mcpNotPorted(fmt.Sprintf("pattern value %T", value))
 }
 
-// mcpUUID is UUIDField.to_python on a string: uuid.UUID(hex=...).
-func mcpUUID(text string) (string, error) {
-	hex := strings.ReplaceAll(strings.ReplaceAll(text, "urn:", ""), "uuid:", "")
-	hex = strings.ReplaceAll(strings.Trim(hex, "{}"), "-", "")
-	invalid := mcpValidationError(mcpMeta.Messages["UUIDField.invalid"], text)
-	if len(hex) != 32 {
-		return "", invalid
+// mcpUUIDValue is UUIDField.to_python: integers (and booleans) are
+// uuid.UUID(int=value), strings uuid.UUID(hex=value); other values fail.
+func mcpUUIDValue(value any) (string, error) {
+	canonical, ok := AuditIndexUUIDValue(value)
+	if !ok {
+		return "", mcpValidationError(mcpMeta.Messages["UUIDField.invalid"], PythonStr(value))
 	}
-	for _, r := range hex {
-		switch {
-		case strings.ContainsRune("0123456789abcdefABCDEF", r):
-		case r == '_' || r == '+' || r == ' ' || r > 127 || PythonIsSpace(r):
-			return "", mcpNotPorted("UUID spelling int() could accept")
-		default:
-			return "", invalid
-		}
-	}
-	lower := strings.ToLower(hex)
-	return lower[:8] + "-" + lower[8:12] + "-" + lower[12:16] + "-" + lower[16:20] + "-" + lower[20:], nil
+	return canonical, nil
 }
 
-// mcpTextValue is CharField.to_python: str(value) for scalars.
+// mcpUUID is UUIDField.to_python on a string: uuid.UUID(hex=...).
+func mcpUUID(text string) (string, error) { return mcpUUIDValue(text) }
+
+// mcpTextValue is CharField.to_python: str(value) for scalars and containers.
 func mcpTextValue(value any) (string, error) {
 	switch typed := value.(type) {
 	case string:
@@ -332,6 +321,8 @@ func mcpTextValue(value any) (string, error) {
 			}
 			return PythonFloatStr(number), nil
 		}
+		return PythonStr(typed), nil
+	case []any, domain.RequestObject:
 		return PythonStr(typed), nil
 	}
 	return "", mcpNotPorted(fmt.Sprintf("text value %T", value))
@@ -376,6 +367,9 @@ func mcpIntValue(value any, name string) (*big.Int, error) {
 		if number, ok := PythonIntText(typed); ok {
 			return number, nil
 		}
+		return nil, mcpRaise("Field '%s' expected a number but got %s.", name, PythonRepr(typed))
+	case []any, domain.RequestObject:
+		// int(list) / int(dict) are TypeErrors Django reports the same way.
 		return nil, mcpRaise("Field '%s' expected a number but got %s.", name, PythonRepr(typed))
 	}
 	return nil, mcpNotPorted(fmt.Sprintf("integer value %T", value))
@@ -441,6 +435,8 @@ func mcpBoolValue(lhs mcpExpr, value any) (mcpPrepared, error) {
 			}
 		}
 		return mcpPrepared{}, invalid(typed)
+	case []any, domain.RequestObject:
+		return mcpPrepared{}, invalid(PythonStr(typed))
 	}
 	return mcpPrepared{}, mcpNotPorted(fmt.Sprintf("boolean value %T", value))
 }
@@ -453,14 +449,30 @@ func mcpDecimalValue(lhs mcpExpr, value any) (mcpPrepared, error) {
 		digits = lhs.field.MaxDigits
 	}
 	fromFloat := func(number float64) (mcpPrepared, error) {
-		if math.IsNaN(number) || math.IsInf(number, 0) || digits <= 0 {
-			return mcpPrepared{}, mcpNotPorted("decimal from a non-finite float")
+		if math.IsNaN(number) {
+			return mcpPrepared{}, mcpValidationError(mcpMeta.Messages["DecimalField.invalid"], "nan")
+		}
+		if math.IsInf(number, 0) {
+			text := "inf"
+			if number < 0 {
+				text = "-inf"
+			}
+			return mcpPrepared{}, mcpValidationError(mcpMeta.Messages["DecimalField.invalid"], text)
+		}
+		if digits <= 0 {
+			return mcpPrepared{}, mcpNotPorted("decimal from a float")
 		}
 		return mcpPrepared{param: new(big.Float).SetFloat64(number).Text('g', digits), cast: "::numeric"}, nil
 	}
 	switch typed := value.(type) {
 	case mcpCoercedFloat:
 		return fromFloat(typed.v)
+	case bool:
+		// decimal.Decimal(True) is Decimal("1").
+		if typed {
+			return mcpPrepared{param: "1", cast: "::numeric"}, nil
+		}
+		return mcpPrepared{param: "0", cast: "::numeric"}, nil
 	case json.Number:
 		if !strings.ContainsAny(string(typed), ".eE") {
 			return mcpPrepared{param: string(typed), cast: "::numeric"}, nil
@@ -478,6 +490,8 @@ func mcpDecimalValue(lhs mcpExpr, value any) (mcpPrepared, error) {
 			return mcpPrepared{}, mcpValidationError(mcpMeta.Messages["DecimalField.invalid"], typed)
 		}
 		return mcpPrepared{}, mcpNotPorted("decimal string")
+	case []any, domain.RequestObject:
+		return mcpPrepared{}, mcpValidationError(mcpMeta.Messages["DecimalField.invalid"], PythonStr(typed))
 	}
 	return mcpPrepared{}, mcpNotPorted(fmt.Sprintf("decimal value %T", value))
 }
@@ -509,38 +523,13 @@ func mcpDateValue(value any) (string, error) {
 	if !ok {
 		return "", mcpRaise("fromisoformat: argument must be str")
 	}
-	if match := mcpDateRe.FindStringSubmatch(text); match != nil {
-		year, _ := strconv.Atoi(match[1])
-		month, _ := strconv.Atoi(match[2])
-		day, _ := strconv.Atoi(match[3])
-		if !mcpValidDate(year, month, day) {
-			return "", mcpValidationError(mcpMeta.Messages["DateField.invalid_date"], text)
-		}
-		return fmt.Sprintf("%04d-%02d-%02d", year, month, day), nil
+	if parsed, ok := PythonParseDate(text); ok {
+		return parsed, nil
 	}
-	if match := mcpCompactDateRe.FindStringSubmatch(text); match != nil {
-		year, _ := strconv.Atoi(match[1])
-		month, _ := strconv.Atoi(match[2])
-		day, _ := strconv.Atoi(match[3])
-		if !mcpValidDate(year, month, day) {
-			return "", mcpValidationError(mcpMeta.Messages["DateField.invalid"], text)
-		}
-		return fmt.Sprintf("%04d-%02d-%02d", year, month, day), nil
-	}
-	if match := mcpISOWeekDateRe.FindStringSubmatch(text); match != nil {
-		year, _ := strconv.Atoi(match[1])
-		week, _ := strconv.Atoi(match[2])
-		day := 1
-		if match[3] != "" {
-			day, _ = strconv.Atoi(match[3])
-		}
-		if year >= 1 && year <= 9999 && week >= 1 && week <= 53 && day >= 1 && day <= 7 {
-			parsed := mcpISOYearStart(year).AddDate(0, 0, (week-1)*7+day-1)
-			if parsedYear, parsedWeek := parsed.ISOWeek(); parsedYear == year && parsedWeek == week {
-				return parsed.Format("2006-01-02"), nil
-			}
-		}
-		return "", mcpValidationError(mcpMeta.Messages["DateField.invalid"], text)
+	// parse_date raises ValueError only where its date_re matches; otherwise
+	// it returns None and the field reports the generic format error.
+	if mcpDateRe.MatchString(strings.TrimSuffix(text, "\n")) {
+		return "", mcpValidationError(mcpMeta.Messages["DateField.invalid_date"], text)
 	}
 	return "", mcpValidationError(mcpMeta.Messages["DateField.invalid"], text)
 }
@@ -584,51 +573,29 @@ func mcpDateTimeValue(value any) (string, error) {
 		return typed.t.Format("2006-01-02T15:04:05Z07:00"), nil
 	case mcpCoercedDateTime:
 		return typed.t.Format("2006-01-02T15:04:05Z07:00"), nil
-	case string:
-		if match := mcpDateTimeRe.FindStringSubmatch(typed); match != nil {
-			number := func(i int) int {
-				parsed, _ := strconv.Atoi(match[i])
-				return parsed
-			}
-			year, month, day, hour, minute, second := number(1), number(2), number(3), number(4), number(5), number(6)
-			if !mcpValidDate(year, month, day) || hour > 23 || minute > 59 || second > 59 {
-				return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid_datetime"], typed)
-			}
-			micro := 0
-			if match[7] != "" {
-				micro, _ = strconv.Atoi((match[7] + "000000")[:6])
-			}
-			zone := time.UTC
-			if tz := match[8]; tz != "" && tz != "Z" {
-				minutes := 0
-				if len(tz) > 3 {
-					minutes, _ = strconv.Atoi(tz[len(tz)-2:])
-				}
-				hours, _ := strconv.Atoi(tz[1:3])
-				offset := (hours*60 + minutes) * 60
-				if tz[0] == '-' {
-					offset = -offset
-				}
-				zone = time.FixedZone("", offset)
-			}
-			moment := time.Date(year, time.Month(month), day, hour, minute, second, micro*1000, zone)
-			return moment.UTC().Format("2006-01-02T15:04:05.999999Z07:00"), nil
-		}
-		if match := mcpDateRe.FindStringSubmatch(typed); match != nil {
-			year, _ := strconv.Atoi(match[1])
-			month, _ := strconv.Atoi(match[2])
-			day, _ := strconv.Atoi(match[3])
-			if !mcpValidDate(year, month, day) {
-				return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid_date"], typed)
-			}
-			return fmt.Sprintf("%04d-%02d-%02dT00:00:00Z", year, month, day), nil
-		}
-		if mcpISOChars.MatchString(typed) {
-			return "", mcpNotPorted("ISO datetime form")
-		}
-		return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid"], typed)
 	}
-	return "", mcpRaise("fromisoformat: argument must be str")
+	text, ok := value.(string)
+	if !ok {
+		return "", mcpRaise("fromisoformat: argument must be str")
+	}
+	moment, _, outcome := DjangoParseDateTime(text)
+	switch outcome {
+	case DjangoDateTimeParsed:
+		return moment.UTC().Format("2006-01-02T15:04:05.999999Z07:00"), nil
+	case DjangoDateTimeValueError:
+		return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid_datetime"], text)
+	case DjangoDateTimeNotPorted:
+		return "", mcpNotPorted("datetime instant outside years 1..9999")
+	}
+	// parse_datetime returned None: DateTimeField.to_python then tries
+	// parse_date, whose date_re distinguishes the two format errors.
+	if parsed, ok := PythonParseDate(text); ok {
+		return parsed + "T00:00:00Z", nil
+	}
+	if mcpDateRe.MatchString(strings.TrimSuffix(text, "\n")) {
+		return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid_date"], text)
+	}
+	return "", mcpValidationError(mcpMeta.Messages["DateTimeField.invalid"], text)
 }
 
 // mcpJSONScalar is JSONField.get_prep_value (json.dumps) for scalars.

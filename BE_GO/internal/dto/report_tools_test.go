@@ -78,15 +78,41 @@ func TestReportToolIntegerOverflowOrigins(t *testing.T) {
 		_, err := PlanMCPTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
 		return err
 	}
-	// Inside or_filters or exclude the folded TRUE/FALSE does not mean the
-	// same as in Django, so the request is handed to Django.
-	for _, params := range []string{
-		`{"model_name":"Course","fields":["title"],"or_filters":[{"start_date__month":99999999999999999999},{"title":"Nuoto Adulti"}]}`,
-		`{"model_name":"Course","fields":["title"],"exclude":{"start_date__month":99999999999999999999}}`,
+	// EmptyResultSet/FullResultSet are handled per WhereNode: an empty OR
+	// branch is dropped, an empty exclude node becomes full (no clause), and
+	// a full child of a negated node empties it.
+	for _, tc := range []struct {
+		params string
+		sql    []string
+		absent []string
+	}{
+		{`{"model_name":"Course","fields":["title"],"or_filters":[{"start_date__month":99999999999999999999},{"title":"Nuoto Adulti"}],"order_by":["title"]}`,
+			[]string{`"application_course"."title" = $`}, []string{"FALSE"}},
+		{`{"model_name":"Course","fields":["title"],"exclude":{"start_date__month":99999999999999999999}}`,
+			nil, []string{"FALSE", `EXTRACT(MONTH`}},
+		{`{"model_name":"Course","fields":["title"],"exclude":{"status_flag__gt":-99999999999}}`,
+			[]string{"FALSE"}, nil},
+		{`{"model_name":"Course","fields":["title"],"or_filters":[{"start_date__month":99999999999999999999},{"start_date__month":-99999999999999999999}]}`,
+			[]string{"FALSE"}, nil},
 	} {
-		if err := plan(t, params); !errors.Is(err, ErrReportNotPorted) {
-			t.Errorf("%s: got %v, want ErrReportNotPorted", params, err)
+		planned, err := PlanMCPTool("query_data", reportParams(t, tc.params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err != nil {
+			t.Fatalf("%s: %v", tc.params, err)
 		}
+		query := planned.Statements[len(planned.Statements)-1].SQL
+		for _, part := range tc.sql {
+			if !strings.Contains(query, part) {
+				t.Errorf("%s: query %q lacks %q", tc.params, query, part)
+			}
+		}
+		for _, part := range tc.absent {
+			if strings.Contains(query, part) {
+				t.Errorf("%s: query %q contains %q", tc.params, query, part)
+			}
+		}
+	}
+	if err := plan(t, `{"model_name":"Course","fields":["title"],"or_filters":[{"title":"Nuoto Adulti"}]}`); err != nil {
+		t.Fatalf("plain or_filters: %v", err)
 	}
 	// A plain AND condition of filters folds to an always-false WHERE clause and
 	// runs normally: Django answers with no rows instead of raising.
@@ -123,6 +149,93 @@ func TestReportToolEmptyInList(t *testing.T) {
 				t.Errorf("%s: statement SQL %q lacks FALSE", tool, statement.SQL)
 			}
 		}
+	}
+}
+
+func TestReportToolValuePreparation(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	plan := func(t *testing.T, params string) (ReportPlan, error) {
+		t.Helper()
+		return PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+	}
+	for params, want := range map[string]string{
+		`{"model_name":"Course","filters":{"status_flag__in":null}}`:       "'NoneType' object is not iterable",
+		`{"model_name":"Course","filters":{"status_flag__range":null}}`:    "'NoneType' object is not iterable",
+		`{"model_name":"Course","filters":{"status_flag__range":[1]}}`:     "tuple index out of range",
+		`{"model_name":"Course","filters":{"status_flag__range":[1,2,3]}}`: "not all arguments converted during string formatting",
+		`{"model_name":"Course","filters":{"status_flag__in":"abc"}}`:      "Field 'status_flag' expected a number but got 'a'.",
+		`{"model_name":"Course","filters":{"status_flag__in":"12"}}`:       "'int' object is not iterable",
+		`{"model_name":"Course","filters":{"status_flag__in":2}}`:          "'int' object is not iterable",
+		`{"model_name":"Course","filters":{"status_flag__range":"12"}}`:    "'int' object is not iterable",
+		`{"model_name":"Course","filters":{"status_flag":[2]}}`:            "Field 'status_flag' expected a number but got [2].",
+		`{"model_name":"Course","filters":{"status_flag":{"a":1}}}`:        "Field 'status_flag' expected a number but got {'a': 1}.",
+		`{"model_name":"Course","filters":{"fee":"inf"}}`:                  `['Il valore "inf" deve essere un numero decimale.']`,
+		`{"model_name":"Course","filters":{"fee":"nan"}}`:                  `['Il valore "nan" deve essere un numero decimale.']`,
+		`{"model_name":"Course","filters":{"fee":[1]}}`:                    `['Il valore "[1]" deve essere un numero decimale.']`,
+		`{"model_name":"Course","filters":{"pinned":[]}}`:                  `['Il valore "[]" deve essere True oppure False.']`,
+		`{"model_name":"Course","filters":{"course_id":[1]}}`:              `['"[1]" non è uno UUID valido.']`,
+		`{"model_name":"Course","filters":{"course_id":1.5}}`:              `['"1.5" non è uno UUID valido.']`,
+		`{"model_name":"Course","filters":{"start_date":5}}`:               "fromisoformat: argument must be str",
+		`{"model_name":"Course","filters":{"start_date":true}}`:            "fromisoformat: argument must be str",
+		`{"model_name":"Course","filters":{"start_date":[1]}}`:             "fromisoformat: argument must be str",
+		`{"model_name":"Course","filters":{"start_date":" 2025-09-01"}}`:   `['Il valore " 2025-09-01" ha un formato non valido. Deve essere nel formato AAAA-MM-GG HH:MM[:ss[.uuuuuu]][TZ].']`,
+	} {
+		_, err := plan(t, params)
+		if err == nil || err.Error() != want {
+			t.Errorf("%s: got %v, want %q", params, err, want)
+		}
+	}
+	for _, tc := range []struct {
+		params string
+		sql    string
+		args   []any
+	}{
+		{`{"model_name":"Course","filters":{"status_flag__in":{"1":2}}}`, ` IN ($`, []any{int64(1)}},
+		{`{"model_name":"Course","filters":{"status_flag__in":[2,99999999999]}}`, ` IN ($`, []any{int64(2), int64(99999999999)}},
+		{`{"model_name":"Course","filters":{"title__in":"Nuoto Adulti"}}`, ` IN ($`, []any{"N", "u", "o", "t", " ", "A", "d", "l", "i"}},
+		{`{"model_name":"Course","filters":{"status_flag":2.5}}`, ` = $`, []any{int64(2)}},
+		{`{"model_name":"Course","filters":{"status_flag__gte":2.5}}`, ` >= $`, []any{int64(3)}},
+		{`{"model_name":"Course","filters":{"status_flag__lt":2.5}}`, ` < $`, []any{int64(3)}},
+		{`{"model_name":"Course","filters":{"status_flag":"٢"}}`, ` = $`, []any{int64(2)}},
+		{`{"model_name":"Course","filters":{"fee":"٤٥.٥٠"}}`, ` = $`, []any{"45.5"}},
+		{`{"model_name":"Course","filters":{"fee":true}}`, ` = $`, []any{"1"}},
+		{`{"model_name":"Course","filters":{"course_id":5}}`, ` = $`, []any{"00000000-0000-0000-0000-000000000005"}},
+		{`{"model_name":"Course","filters":{"course_id":true}}`, ` = $`, []any{"00000000-0000-0000-0000-000000000001"}},
+		{`{"model_name":"Course","filters":{"course_id":"+0000000000000000000000000000000"}}`, ` = $`, []any{"00000000-0000-0000-0000-000000000000"}},
+		{`{"model_name":"Course","filters":{"start_date":"20250901"}}`, ` = $`, []any{"2025-09-01T00:00:00Z"}},
+		{`{"model_name":"Course","filters":{"start_date":"2025-W36-1"}}`, ` = $`, []any{"2025-09-01T00:00:00Z"}},
+		{`{"model_name":"Course","filters":{"start_date__gt":"2025-09-01T08"}}`, ` > $`, []any{"2025-09-01T08:00:00Z"}},
+		{`{"model_name":"Course","filters":{"title":[1]}}`, ` = $`, []any{"[1]"}},
+		{`{"model_name":"Course","filters":{"title":{"a":1}}}`, ` = $`, []any{"{'a': 1}"}},
+		{`{"model_name":"Course","filters":{"title__contains":[1]}}`, ` LIKE $`, []any{"%[1]%"}},
+	} {
+		planned, err := plan(t, tc.params)
+		if err != nil {
+			t.Fatalf("%s: %v", tc.params, err)
+		}
+		statement := planned.Statements[len(planned.Statements)-1]
+		if !strings.Contains(statement.SQL, tc.sql) {
+			t.Errorf("%s: query %q lacks %q", tc.params, statement.SQL, tc.sql)
+		}
+		for _, want := range tc.args {
+			found := false
+			for _, argument := range statement.Args {
+				if argument == want {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("%s: args %#v lack %#v", tc.params, statement.Args, want)
+			}
+		}
+	}
+	planned, err := plan(t, `{"model_name":"Course","filters":{"status_flag__range":[null,2]}}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	statement := planned.Statements[len(planned.Statements)-1]
+	if !strings.Contains(statement.SQL, " BETWEEN $") || len(statement.Args) != 3 || statement.Args[1] != nil || statement.Args[2] != int64(2) {
+		t.Errorf("range with None: SQL %q args %#v", statement.SQL, statement.Args)
 	}
 }
 
