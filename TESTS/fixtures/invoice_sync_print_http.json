@@ -4930,6 +4930,2025 @@
    }
   },
   {
+   "name": "invoice-sync-print-add-multipart-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 601,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": "$xml",
+      "pdf": null,
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 601,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "601"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "False"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ],
+       "xml": [
+        "None",
+        "$xml"
+       ],
+       "json": [
+        "null",
+        "$json_audit"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/$customer",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 601
+   },
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n601\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
+   "name": "invoice-sync-print-add-multipart-empty-values",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "error": "Errore durante la generazione del file XML."
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": null,
+      "number": 603,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": null,
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": null,
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": null,
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": {
+       "k": [
+        1,
+        2.5
+       ]
+      },
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": true
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": null,
+      "number": 603,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": null,
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": null,
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": null,
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": {
+       "k": [
+        1,
+        2.5
+       ]
+      },
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": true
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "number": [
+        "None",
+        "603"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        ""
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "True"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "{\"k\": [1, 2.5]}"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": null,
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": null,
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": null,
+    "payment_modality": "MP05",
+    "number": 603,
+    "prefix": null,
+    "transmitted": true,
+    "id_transmitter": null,
+    "json": {
+     "k": [
+      1,
+      2.5
+     ]
+    }
+   },
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n603\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"prefix\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"e_invoice\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transmitted\"\r\n\r\ntrue\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_total_amount\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"creation_date\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"xml\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"pdf\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"customer_invoice_id\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"json\"\r\n\r\n{\"k\": [1, 2.5]}\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_country\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"id_transmitter\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
+   "name": "invoice-sync-print-add-multipart-dates-and-booleans",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 605,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-03-04",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "2026-04-30",
+      "xml": "$xml",
+      "pdf": null,
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": true,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 605,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": true,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "2026-03-04",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "2026-04-30",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": true,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "605"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "True"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "2026-03-04"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "2026-04-30"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "True"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ],
+       "xml": [
+        "None",
+        "$xml"
+       ],
+       "json": [
+        "null",
+        "$json_audit"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/$customer",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 605,
+    "transmitting_date": "2026-03-04",
+    "payment_expiry_date": "2026-04-30",
+    "paid": true,
+    "e_invoice": true
+   },
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n605\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transmitting_date\"\r\n\r\n2026-03-04\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_expiry_date\"\r\n\r\n2026-04-30\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\non\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"e_invoice\"\r\n\r\ntrue\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
+   "name": "invoice-sync-print-add-multipart-repeated-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Invoice created"
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 607,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": "$xml",
+      "pdf": null,
+      "json": "$json",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 607,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "mario.pec@example.test",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "607"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        "mario.pec@example.test"
+       ],
+       "e_invoice": [
+        "None",
+        "False"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ],
+       "xml": [
+        "None",
+        "$xml"
+       ],
+       "json": [
+        "null",
+        "$json_audit"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [
+    {
+     "path": "/document/einvoice/$customer",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "transferor_contact_email": "mario.pec@example.test",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 607
+   },
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n1\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n607\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
+   "name": "invoice-sync-print-add-multipart-blank-transferor-email-xml-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "error": "Errore durante la generazione del file XML."
+   },
+   "effect": {
+    "actor": "owner",
+    "invoices": {},
+    "payments": {},
+    "customer": {
+     "stored": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 608,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": "0.00",
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     },
+     "memory": {
+      "customer_invoice_id": "$customer",
+      "prefix": "FPR",
+      "number": 608,
+      "fiscal_year": 2031,
+      "assignor_prefix_vat_number": "IT",
+      "assignor_vat_number": "01234567890",
+      "assignor_tax_code": "01234567890",
+      "assignor_denomination": "ASD Alfa & Figli",
+      "assignor_fiscal_regime": "RF01",
+      "assignor_address": "Via Roma 1",
+      "assignor_postal_code": "10100",
+      "assignor_city": "Torino",
+      "assignor_province": "TO",
+      "assignor_country": "IT",
+      "assignor_contact_email": "alfa@example.test",
+      "assignor_contact_phone": "0111234567",
+      "assignor_fax": null,
+      "transferor_prefix_vat_number": "IT",
+      "transferor_vat_number": null,
+      "transferor_tax_code": "RSSMRA80A01L219X",
+      "transferor_denomination": "Mario Rossi <Ditta>",
+      "transferor_fiscal_regime": "RF01",
+      "transferor_address": "Via Po 2",
+      "transferor_postal_code": "10123",
+      "transferor_city": "Torino",
+      "transferor_province": "TO",
+      "transferor_country": "IT",
+      "transferor_contact_email": "",
+      "transferor_contact_phone": null,
+      "transferor_fax": null,
+      "e_invoice": false,
+      "country_transmitter_prefix": "IT",
+      "id_transmitter": null,
+      "transmitting_format": "FPR12",
+      "document_type": "TD01",
+      "currency": "EUR",
+      "transmitting_date": "$today",
+      "causal": "Quota & servizi",
+      "lines": [
+       {
+        "description": "Quota annuale",
+        "quantity": 1,
+        "unit_of_measure": "unita",
+        "unit_price": 100.0,
+        "vat": 22.0
+       }
+      ],
+      "payment_condition": "TP02",
+      "payment_modality": "MP05",
+      "payment_total_amount": 0,
+      "payment_expiry_date": "$today",
+      "xml": null,
+      "pdf": null,
+      "json": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "payment": null,
+      "creation_date": "$now",
+      "paid": false,
+      "transmitted": false
+     }
+    },
+    "audit": [
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 0,
+      "changes": {
+       "customer_invoice_id": [
+        "None",
+        "$customer"
+       ],
+       "prefix": [
+        "None",
+        "FPR"
+       ],
+       "number": [
+        "None",
+        "608"
+       ],
+       "fiscal_year": [
+        "None",
+        "2031"
+       ],
+       "assignor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "assignor_vat_number": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_tax_code": [
+        "None",
+        "01234567890"
+       ],
+       "assignor_denomination": [
+        "None",
+        "ASD Alfa & Figli"
+       ],
+       "assignor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "assignor_address": [
+        "None",
+        "Via Roma 1"
+       ],
+       "assignor_postal_code": [
+        "None",
+        "10100"
+       ],
+       "assignor_city": [
+        "None",
+        "Torino"
+       ],
+       "assignor_province": [
+        "None",
+        "TO"
+       ],
+       "assignor_country": [
+        "None",
+        "IT"
+       ],
+       "assignor_contact_email": [
+        "None",
+        "alfa@example.test"
+       ],
+       "assignor_contact_phone": [
+        "None",
+        "0111234567"
+       ],
+       "transferor_prefix_vat_number": [
+        "None",
+        "IT"
+       ],
+       "transferor_tax_code": [
+        "None",
+        "RSSMRA80A01L219X"
+       ],
+       "transferor_denomination": [
+        "None",
+        "Mario Rossi <Ditta>"
+       ],
+       "transferor_fiscal_regime": [
+        "None",
+        "RF01"
+       ],
+       "transferor_address": [
+        "None",
+        "Via Po 2"
+       ],
+       "transferor_postal_code": [
+        "None",
+        "10123"
+       ],
+       "transferor_city": [
+        "None",
+        "Torino"
+       ],
+       "transferor_province": [
+        "None",
+        "TO"
+       ],
+       "transferor_country": [
+        "None",
+        "IT"
+       ],
+       "transferor_contact_email": [
+        "None",
+        ""
+       ],
+       "e_invoice": [
+        "None",
+        "False"
+       ],
+       "country_transmitter_prefix": [
+        "None",
+        "IT"
+       ],
+       "transmitting_format": [
+        "None",
+        "FPR12"
+       ],
+       "document_type": [
+        "None",
+        "TD01"
+       ],
+       "currency": [
+        "None",
+        "EUR"
+       ],
+       "transmitting_date": [
+        "None",
+        "$today"
+       ],
+       "causal": [
+        "None",
+        "Quota & servizi"
+       ],
+       "lines": [
+        "None",
+        "[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]"
+       ],
+       "payment_condition": [
+        "None",
+        "TP02"
+       ],
+       "payment_modality": [
+        "None",
+        "MP05"
+       ],
+       "payment_total_amount": [
+        "None",
+        "0"
+       ],
+       "payment_expiry_date": [
+        "None",
+        "$today"
+       ],
+       "pdf": [
+        "None",
+        "None"
+       ],
+       "json": [
+        "None",
+        "null"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "payment": [
+        "None",
+        "None"
+       ],
+       "creation_date": [
+        "None",
+        "$now"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "transmitted": [
+        "None",
+        "False"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "customerinvoice",
+      "key": "$customer",
+      "action": 1,
+      "changes": {
+       "payment_total_amount": [
+        "0.00",
+        "0"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "prints": [],
+   "restore": null,
+   "body": {
+    "fiscal_year": 2031,
+    "assignor_vat_number": "01234567890",
+    "assignor_tax_code": "01234567890",
+    "assignor_denomination": "ASD Alfa & Figli",
+    "assignor_address": "Via Roma 1",
+    "assignor_postal_code": "10100",
+    "assignor_city": "Torino",
+    "assignor_province": "TO",
+    "assignor_contact_email": "alfa@example.test",
+    "assignor_contact_phone": "0111234567",
+    "transferor_tax_code": "RSSMRA80A01L219X",
+    "transferor_denomination": "Mario Rossi <Ditta>",
+    "transferor_address": "Via Po 2",
+    "transferor_postal_code": "10123",
+    "transferor_city": "Torino",
+    "transferor_province": "TO",
+    "causal": "Quota & servizi",
+    "lines": [
+     {
+      "description": "Quota annuale",
+      "quantity": 1,
+      "unit_of_measure": "unita",
+      "unit_price": 100.0,
+      "vat": 22.0
+     }
+    ],
+    "payment_condition": "TP02",
+    "payment_modality": "MP05",
+    "number": 608,
+    "transferor_contact_email": ""
+   },
+   "raw_body": "--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n608\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\n\r\n--invoicesyncboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicesyncboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicesyncboundary"
+  },
+  {
    "name": "invoice-sync-print-add-number-of-other-association-accepted",
    "actor": "owner",
    "method": "POST",

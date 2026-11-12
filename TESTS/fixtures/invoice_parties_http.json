@@ -5138,6 +5138,130 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "invoice-parties-customer-add-multipart-without-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n602\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-customer-add-multipart-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "customer_invoice_id": [
+     "Must be a valid UUID."
+    ],
+    "number": [
+     "A valid integer is required."
+    ],
+    "fiscal_year": [
+     "Ensure this value is less than or equal to 2147483647."
+    ],
+    "e_invoice": [
+     "Must be a valid boolean."
+    ],
+    "lines": [
+     "Value must be valid JSON."
+    ],
+    "payment_modality": [
+     "\"MP99\" is not a valid choice."
+    ],
+    "payment_total_amount": [
+     "A valid number is required."
+    ],
+    "json": [
+     "Value must be valid JSON."
+    ],
+    "creation_date": [
+     "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"json\"\r\n\r\n{bad\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"e_invoice\"\r\n\r\nmaybe\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\n\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n99999999999\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_total_amount\"\r\n\r\nabc\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP99\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"creation_date\"\r\n\r\nieri\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"customer_invoice_id\"\r\n\r\nzz\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-customer-add-multipart-blank-transmitting-date-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n604\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transmitting_date\"\r\n\r\n\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-customer-add-multipart-file-parts-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "number": [
+     "A valid integer is required."
+    ],
+    "causal": [
+     "Not a valid string."
+    ],
+    "lines": [
+     "Value must be valid JSON."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_contact_email\"\r\n\r\nmario.pec@example.test\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n606\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"causal\"; filename=\"c.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"number\"; filename=\"n.txt\"\r\nContent-Type: text/plain\r\n\r\n7\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"lines\"; filename=\"l.txt\"\r\nContent-Type: text/plain\r\n\r\n[]\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-customer-add-multipart-contact-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Either transferor_contact_email or id_transmitter must be provided!"
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"fiscal_year\"\r\n\r\n2031\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_vat_number\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_tax_code\"\r\n\r\n01234567890\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_denomination\"\r\n\r\nASD Alfa & Figli\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_address\"\r\n\r\nVia Roma 1\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_postal_code\"\r\n\r\n10100\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_email\"\r\n\r\nalfa@example.test\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"assignor_contact_phone\"\r\n\r\n0111234567\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_tax_code\"\r\n\r\nRSSMRA80A01L219X\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_denomination\"\r\n\r\nMario Rossi <Ditta>\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_address\"\r\n\r\nVia Po 2\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_postal_code\"\r\n\r\n10123\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_city\"\r\n\r\nTorino\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"transferor_province\"\r\n\r\nTO\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"causal\"\r\n\r\nQuota & servizi\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"lines\"\r\n\r\n[{\"description\": \"Quota annuale\", \"quantity\": 1, \"unit_of_measure\": \"unita\", \"unit_price\": 100.0, \"vat\": 22.0}]\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_condition\"\r\n\r\nTP02\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_modality\"\r\n\r\nMP05\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"number\"\r\n\r\n609\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-customer-add-multipart-file-only",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-customers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Either transferor_contact_email or id_transmitter must be provided!"
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
    "name": "invoice-parties-customer-add-bad-transmitting-date-server-error",
    "actor": "owner",
    "method": "POST",
@@ -8067,6 +8191,1079 @@
    }
   },
   {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "Must be a valid UUID."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": "abc"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-blank",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "Must be a valid UUID."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": ""
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "This field may not be null."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": null
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-existing-own",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "supplier and customers with this supplier id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": "a1000000-0000-4000-8000-000000846110"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-existing-other-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "supplier and customers with this supplier id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": "a1000000-0000-4000-8000-000000846113"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-deleted-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": "a1000000-0000-4000-8000-000000846112"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-unused-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": "a1000000-0000-4000-8000-000000846990"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-integer-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "name": "N",
+     "supplier_id": 5
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-supplier-id-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "Must be a valid UUID."
+     ],
+     "name": [
+      "This field is required."
+     ],
+     "email": [
+      "Enter a valid email address."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "supplier": {
+     "supplier_id": "abc",
+     "email": "x"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-multipart-nested-supplier-name-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "7.25",
+      "creation_date": "2026-10-21T10:00:00Z",
+      "payment_date": "2026-10-21T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"custom_accounts\"\r\n\r\na1000000-0000-4000-8000-000000846114\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier_id\"\r\n\r\na1000000-0000-4000-8000-000000846110\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_date\"\r\n\r\n2026-10-21T10:00:00Z\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\ntrue\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"amount\"\r\n\r\n7.25\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"invoice_identifier\"\r\n\r\nFM-300\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier.name\"\r\n\r\nN\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-supplier-add-multipart-nested-supplier-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "Must be a valid UUID."
+     ],
+     "name": [
+      "This field may not be blank."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"custom_accounts\"\r\n\r\na1000000-0000-4000-8000-000000846114\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier_id\"\r\n\r\na1000000-0000-4000-8000-000000846110\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_date\"\r\n\r\n2026-10-21T10:00:00Z\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\ntrue\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"amount\"\r\n\r\n7.25\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"invoice_identifier\"\r\n\r\nFM-300\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier.name\"\r\n\r\n\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier.supplier_id\"\r\n\r\nabc\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier.deleted\"\r\n\r\n\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-supplier-add-multipart-nested-supplier-existing-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "supplier and customers with this supplier id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"custom_accounts\"\r\n\r\na1000000-0000-4000-8000-000000846114\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier_id\"\r\n\r\na1000000-0000-4000-8000-000000846110\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_date\"\r\n\r\n2026-10-21T10:00:00Z\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\ntrue\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"amount\"\r\n\r\n7.25\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"invoice_identifier\"\r\n\r\nFM-300\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier.name\"\r\n\r\nN\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier.supplier_id\"\r\n\r\na1000000-0000-4000-8000-000000846110\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-supplier-add-multipart-nested-supplier-name-as-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "name": [
+      "Not a valid string."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"custom_accounts\"\r\n\r\na1000000-0000-4000-8000-000000846114\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier_id\"\r\n\r\na1000000-0000-4000-8000-000000846110\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_date\"\r\n\r\n2026-10-21T10:00:00Z\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\ntrue\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"amount\"\r\n\r\n7.25\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"invoice_identifier\"\r\n\r\nFM-300\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier.name\"; filename=\"n.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-payment-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "user": [
+      "This field is required."
+     ],
+     "associate": [
+      "This field is required."
+     ],
+     "instructor": [
+      "This field is required."
+     ],
+     "supplier": [
+      "This field is required."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "payment": {}
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-payment-valid-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "payment": {
+     "user": {},
+     "associate": {},
+     "instructor": {
+      "first_name": "a",
+      "last_name": "b",
+      "user": "a1000000-0000-4000-8000-000000700001"
+     },
+     "supplier": {
+      "name": "s"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-payment-null-nested",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "user": [
+      "This field may not be null."
+     ],
+     "associate": [
+      "This field may not be null."
+     ],
+     "instructor": [
+      "This field may not be null."
+     ],
+     "supplier": [
+      "This field may not be null."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "payment": {
+     "user": null,
+     "associate": null,
+     "instructor": null,
+     "supplier": null,
+     "invoice": null
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-payment-invoice-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "invoice": {
+      "membership_fee": [
+       "This field is required."
+      ],
+      "activity_fee": [
+       "This field is required."
+      ],
+      "sport_association": [
+       "This field is required."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "payment": {
+     "user": {},
+     "associate": {},
+     "instructor": {
+      "first_name": "a",
+      "last_name": "b",
+      "user": "a1000000-0000-4000-8000-000000700001"
+     },
+     "supplier": {
+      "name": "s"
+     },
+     "invoice": {}
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-payment-nested-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "instructor": {
+      "first_name": [
+       "This field is required."
+      ],
+      "last_name": [
+       "This field is required."
+      ],
+      "user": [
+       "This field is required."
+      ]
+     },
+     "supplier": {
+      "name": [
+       "This field is required."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "payment": {
+     "user": {},
+     "associate": {},
+     "instructor": {},
+     "supplier": {}
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-nested-payment-own-references-keeps-payment-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "new": {
+     "payment": {
+      "type": "default",
+      "subject": 0,
+      "amount": "50.50",
+      "creation_date": "2026-10-20T10:00:00Z",
+      "payment_date": "2026-10-20T10:00:00Z",
+      "paid": true,
+      "expense": true,
+      "description": "$description:Fornitore Uno",
+      "payment_category_id": "a1000000-0000-4000-8000-000000846117",
+      "meta_payment_categories": null,
+      "invoice_id": null,
+      "user_id": "a1000000-0000-4000-8000-000000700001",
+      "associate_id": null,
+      "supplier_id": "a1000000-0000-4000-8000-000000846110",
+      "instructor_id": null,
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "custom_accounts_id": "a1000000-0000-4000-8000-000000846114",
+      "signature_id": null,
+      "deleted": false,
+      "group_id": null,
+      "course": null
+     }
+    },
+    "audits": [
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 0,
+      "changes": {
+       "$created": [
+        "user",
+        "sport_association",
+        "supplier"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "payment",
+      "key": "$payment",
+      "action": 1,
+      "changes": {
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "supplier": [
+        "None",
+        "a1000000-0000-4000-8000-000000846110"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "prints": [],
+   "body": {
+    "custom_accounts": null,
+    "supplier_id": "a1000000-0000-4000-8000-000000846110",
+    "payment_date": "2026-10-20T10:00:00Z",
+    "paid": true,
+    "amount": "50.5",
+    "invoice_identifier": "FN-100",
+    "expire_date": "2026-12-31T00:00:00Z",
+    "notes": "nuova",
+    "payment": {
+     "payment_id": "a1000000-0000-4000-8000-0000009aaaa1",
+     "user": {
+      "role": 1
+     },
+     "associate": {
+      "first_name": "x",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "instructor": {
+      "first_name": "a",
+      "last_name": "b",
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "documents": [
+       "a1000000-0000-4000-8000-000000846100"
+      ]
+     },
+     "supplier": {
+      "name": "s",
+      "supplier_id": "a1000000-0000-4000-8000-0000009aaaa2"
+     },
+     "invoice": {
+      "membership_fee": "1",
+      "activity_fee": "2",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     "amount": "3",
+     "payment_category": "a1000000-0000-4000-8000-000000846117"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-add-multipart-nested-payment-amount-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "user": [
+      "This field is required."
+     ],
+     "associate": [
+      "This field is required."
+     ],
+     "instructor": [
+      "This field is required."
+     ],
+     "supplier": [
+      "This field is required."
+     ],
+     "amount": [
+      "A valid number is required."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"custom_accounts\"\r\n\r\na1000000-0000-4000-8000-000000846114\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier_id\"\r\n\r\na1000000-0000-4000-8000-000000846110\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_date\"\r\n\r\n2026-10-21T10:00:00Z\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\ntrue\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"amount\"\r\n\r\n7.25\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"invoice_identifier\"\r\n\r\nFM-300\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment.amount\"\r\n\r\nx\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
+   "name": "invoice-parties-supplier-add-multipart-nested-payment-user-email-field-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "associate": [
+      "This field is required."
+     ],
+     "instructor": [
+      "This field is required."
+     ],
+     "supplier": [
+      "This field is required."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"custom_accounts\"\r\n\r\na1000000-0000-4000-8000-000000846114\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"supplier_id\"\r\n\r\na1000000-0000-4000-8000-000000846110\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment_date\"\r\n\r\n2026-10-21T10:00:00Z\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"paid\"\r\n\r\ntrue\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"amount\"\r\n\r\n7.25\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"invoice_identifier\"\r\n\r\nFM-300\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"fattura.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--invoicepartiesboundary\r\nContent-Disposition: form-data; name=\"payment.user.email\"\r\n\r\n\r\n--invoicepartiesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=invoicepartiesboundary"
+  },
+  {
    "name": "invoice-parties-supplier-update-anonymous",
    "actor": "anonymous",
    "method": "PATCH",
@@ -10059,6 +11256,1553 @@
      "vat_number": 5
     }
    }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "Must be a valid UUID."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": "abc"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-blank",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "Must be a valid UUID."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": ""
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "This field may not be null."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": null
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-existing-own",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "supplier and customers with this supplier id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": "a1000000-0000-4000-8000-000000846110"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-existing-other-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "supplier and customers with this supplier id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": "a1000000-0000-4000-8000-000000846113"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-deleted-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": "a1000000-0000-4000-8000-000000846112"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-unused-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": "a1000000-0000-4000-8000-000000846990"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-supplier-id-integer-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "supplier": {
+     "supplier_id": 5
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-supplier-blank-name-invalid-email",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "name": [
+      "This field may not be blank."
+     ],
+     "email": [
+      "Enter a valid email address."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "supplier.name=&supplier.email=x&notes=n",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-supplier-name-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "supplier.name=Z",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-supplier-malformed-id",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "supplier": {
+     "supplier_id": [
+      "Must be a valid UUID."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "supplier.supplier_id=abc&supplier.name=Q",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-supplier-blank-deleted-and-email-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "supplier.deleted=&supplier.email=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-empty-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {}
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "payment_id": [
+      "Must be a valid UUID."
+     ],
+     "user": [
+      "This field may not be null."
+     ],
+     "associate": {
+      "non_field_errors": [
+       "Invalid data. Expected a dictionary, but got list."
+      ]
+     },
+     "instructor": {
+      "non_field_errors": [
+       "Invalid data. Expected a dictionary, but got int."
+      ]
+     },
+     "supplier": {
+      "name": [
+       "This field may not be blank."
+      ]
+     },
+     "invoice": {
+      "membership_fee": [
+       "A valid number is required."
+      ]
+     },
+     "type": [
+      "\"zzz\" is not a valid choice."
+     ],
+     "subject": [
+      "\"9\" is not a valid choice."
+     ],
+     "amount": [
+      "A valid number is required."
+     ],
+     "creation_date": [
+      "This field may not be null."
+     ],
+     "payment_date": [
+      "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+     ],
+     "paid": [
+      "Must be a valid boolean."
+     ],
+     "expense": [
+      "Must be a valid boolean."
+     ],
+     "description": [
+      "This field may not be blank."
+     ],
+     "payment_intent_id": [
+      "Ensure this field has no more than 125 characters."
+     ],
+     "archived": [
+      "This field may not be null."
+     ],
+     "payment_category": [
+      "“abc” is not a valid UUID."
+     ],
+     "sport_association": [
+      "Invalid pk \"a1000000-0000-4000-8000-0000009fffff\" - object does not exist."
+     ],
+     "custom_accounts": [
+      "Invalid pk \"a1000000-0000-4000-8000-0000009fffff\" - object does not exist."
+     ],
+     "signature": [
+      "“abc” is not a valid UUID."
+     ],
+     "group": [
+      "Invalid pk \"a1000000-0000-4000-8000-0000009fffff\" - object does not exist."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "amount": "x",
+     "type": "zzz",
+     "subject": 9,
+     "paid": "maybe",
+     "description": "",
+     "payment_date": "y",
+     "meta": {
+      "a": 1
+     },
+     "payment_category": "abc",
+     "custom_accounts": "a1000000-0000-4000-8000-0000009fffff",
+     "payment_id": "abc",
+     "user": null,
+     "associate": [],
+     "instructor": 5,
+     "supplier": {
+      "name": ""
+     },
+     "invoice": {
+      "membership_fee": "x"
+     },
+     "notes": 5,
+     "creation_date": null,
+     "course": "x",
+     "group": "a1000000-0000-4000-8000-0000009fffff",
+     "signature": "abc",
+     "sport_association": "a1000000-0000-4000-8000-0000009fffff",
+     "archived": null,
+     "expense": "si",
+     "payment_intent_id": "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-id-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "payment_id": [
+      "payment with this payment id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "payment_id": "a1000000-0000-4000-8000-000000846120"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-user-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "user": {
+      "first_name": [
+       "Ensure this field has no more than 150 characters."
+      ],
+      "last_name": [
+       "This field may not be null."
+      ],
+      "email": [
+       "Enter a valid email address."
+      ],
+      "username": [
+       "This field may not be null."
+      ],
+      "role": [
+       "\"9\" is not a valid choice."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "user": {
+      "email": "x",
+      "role": 9,
+      "first_name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "phone": null,
+      "username": null,
+      "last_name": null
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-associate-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "associate": {
+      "associate_id": [
+       "This field may not be null."
+      ],
+      "address_cap": [
+       "Enter exactly 5 digits"
+      ],
+      "born_date": [
+       "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+      ],
+      "email": [
+       "Enter a valid email address."
+      ],
+      "sex": [
+       "\"Z\" is not a valid choice."
+      ],
+      "is_minor": [
+       "Must be a valid boolean."
+      ],
+      "sport_association": [
+       "“abc” is not a valid UUID."
+      ],
+      "tax_code": [
+       "Ensure this field has no more than 25 characters."
+      ],
+      "family": [
+       "Invalid pk \"a1000000-0000-4000-8000-0000009fffff\" - object does not exist."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "associate": {
+      "address_cap": "abc",
+      "born_date": "x",
+      "sex": "Z",
+      "is_minor": "maybe",
+      "sport_association": "abc",
+      "family": "a1000000-0000-4000-8000-0000009fffff",
+      "email": "bad",
+      "associate_id": null,
+      "first_name": null,
+      "tax_code": "tttttttttttttttttttttttttt"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-instructor-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "instructor": {
+      "instructor_id": [
+       "Must be a valid UUID."
+      ],
+      "first_name": [
+       "This field may not be blank."
+      ],
+      "draft": [
+       "Must be a valid boolean."
+      ],
+      "associated_user_id": [
+       "Must be a valid UUID."
+      ],
+      "stipulated_contract_in": [
+       "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+      ],
+      "default_hourly_billing": [
+       "A valid number is required."
+      ],
+      "default_percentage_billing": [
+       "Ensure that there are no more than 2 digits before the decimal point."
+      ],
+      "user": [
+       "Invalid pk \"a1000000-0000-4000-8000-0000009fffff\" - object does not exist."
+      ],
+      "documents": [
+       "Expected a list of items but got type \"str\"."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "first_name": "",
+      "user": "a1000000-0000-4000-8000-0000009fffff",
+      "default_hourly_billing": "x",
+      "documents": "abc",
+      "instructor_id": "abc",
+      "draft": "maybe",
+      "stipulated_contract_in": "x",
+      "default_percentage_billing": "123.4",
+      "associated_user_id": "z"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-invoice-field-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "invoice": {
+      "invoice_id": [
+       "Must be a valid UUID."
+      ],
+      "membership_fee": [
+       "A valid number is required."
+      ],
+      "number": [
+       "A valid integer is required."
+      ],
+      "sport_association": [
+       "This field may not be null."
+      ],
+      "selected_tutor": [
+       "“abc” is not a valid UUID."
+      ],
+      "attached_documents": [
+       "Invalid pk \"a1000000-0000-4000-8000-0000009fffff\" - object does not exist."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "invoice": {
+      "membership_fee": "x",
+      "number": "y",
+      "sport_association": null,
+      "invoice_id": "abc",
+      "attached_documents": [
+       "a1000000-0000-4000-8000-0000009fffff"
+      ],
+      "selected_tutor": "abc",
+      "imported_from_associami": null,
+      "meta": "x"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-payment-category",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "payment_category": "a1000000-0000-4000-8000-000000846119"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-custom-account",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "custom_accounts": "a1000000-0000-4000-8000-000000846116",
+     "amount": "x"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-own-references-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "payment_category": "a1000000-0000-4000-8000-000000846117",
+     "custom_accounts": "a1000000-0000-4000-8000-000000846114",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-null-invoice-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "invoice": null,
+     "amount": "1"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-amount-joins-invoice-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "amount": [
+      "A valid number is required."
+     ]
+    },
+    "amount": [
+     "A valid number is required."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "amount": "x"
+    },
+    "amount": "y"
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-empty-documents-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "documents": []
+     },
+     "invoice": {
+      "attached_documents": []
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-document-uuids",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "instructor": {
+      "documents": [
+       "“abc” is not a valid UUID."
+      ]
+     },
+     "invoice": {
+      "attached_documents": [
+       "“x” is not a valid UUID."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "documents": [
+       "abc",
+       "a1000000-0000-4000-8000-0000009fffff"
+      ]
+     },
+     "invoice": {
+      "attached_documents": [
+       "a1000000-0000-4000-8000-000000846100",
+       "x"
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-existing-documents-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "documents": [
+       "a1000000-0000-4000-8000-000000846100"
+      ]
+     },
+     "invoice": {
+      "attached_documents": [
+       "a1000000-0000-4000-8000-000000846100"
+      ],
+      "document_pdf": "a1000000-0000-4000-8000-000000846100"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-instructor-user",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "user": "a1000000-0000-4000-8000-000000700007"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-athlete-instructor-user-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "user": "a1000000-0000-4000-8000-000000700004"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-unlinked-instructor-user-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "user": "a1000000-0000-4000-8000-000000700005"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-owner-instructor-user-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "user": "a1000000-0000-4000-8000-000000700001"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-deleted-association-instructor-user-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "user": "a1000000-0000-4000-8000-000000700006"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "sport_association": "a1000000-0000-4000-8000-000000701002"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-deleted-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "sport_association": "a1000000-0000-4000-8000-000000701003"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-associate-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "associate": {
+      "sport_association": "a1000000-0000-4000-8000-000000701002"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-invoice-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "invoice": {
+      "sport_association": "a1000000-0000-4000-8000-000000701002"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-selected-tutor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "invoice": {
+      "selected_tutor": "a1000000-0000-4000-8000-000000846700"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-own-group-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "group": "a1000000-0000-4000-8000-000000714001"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-group",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "group": "a1000000-0000-4000-8000-000000714002"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-deleted-payment-id-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "payment_id": "a1000000-0000-4000-8000-000000846705"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-other-association-payment-id",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "payment_id": [
+      "payment with this payment id already exists."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "payment_id": "a1000000-0000-4000-8000-000000846122"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-fresh-payment-id-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "payment_id": "a1000000-0000-4000-8000-0000009aaaa1"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-instructor-id-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "instructor": {
+      "instructor_id": [
+       "instructor with this instructor id already exists."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "instructor_id": "a1000000-0000-4000-8000-000000846701"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-invoice-id-taken",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "invoice": {
+      "invoice_id": [
+       "invoice with this invoice id already exists."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "invoice": {
+      "invoice_id": "a1000000-0000-4000-8000-000000846702"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-user-list",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "user": {
+      "non_field_errors": [
+       "Invalid data. Expected a dictionary, but got list."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "user": []
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-user-text-role-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "user": {
+      "role": "1",
+      "email": "",
+      "first_name": ""
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-user-float-role",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "user": {
+      "role": [
+       "\"2.0\" is not a valid choice."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "user": {
+      "role": 2.0
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-valid-associate-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "associate": {
+      "sex": "",
+      "born_date": "10/05/1990",
+      "address_cap": "12345",
+      "is_minor": "true",
+      "associate_id": 5
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-associate-nulls",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "associate": {
+      "address_cap": [
+       "Enter exactly 5 digits"
+      ],
+      "born_date": [
+       "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+      ],
+      "sex": [
+       "This field may not be null."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "associate": {
+      "sex": null,
+      "born_date": "1990-05-10",
+      "address_cap": "1234",
+      "email": "",
+      "tax_code": null
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-empty-invoice-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "invoice": {}
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-foreign-group-amount",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "amount": "x",
+     "group": "a1000000-0000-4000-8000-000000714002"
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-subject-cash-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "subject": "2",
+     "type": "cash",
+     "amount": 5,
+     "description": null
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-instructor-nulls",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "instructor": {
+      "first_name": [
+       "This field may not be null."
+      ],
+      "last_name": [
+       "Ensure this field has no more than 150 characters."
+      ],
+      "email": [
+       "Enter a valid email address."
+      ],
+      "born_date": [
+       "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+      ],
+      "role": [
+       "This field may not be blank."
+      ],
+      "phone": [
+       "Ensure this field has no more than 20 characters."
+      ],
+      "default_hourly_billing": [
+       "This field may not be null."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "instructor": {
+      "first_name": null,
+      "last_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "email": "a@b",
+      "role": "",
+      "phone": "111111111111111111111",
+      "born_date": "31/02/2020",
+      "default_hourly_billing": null,
+      "is_volunteer": 1
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-nested-payment-invoice-decimals",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "invoice": {
+      "creation_date": [
+       "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+      ],
+      "membership_fee": [
+       "Ensure that there are no more than 2 decimal places."
+      ],
+      "activity_fee": [
+       "This field may not be null."
+      ],
+      "description": [
+       "This field may not be blank."
+      ],
+      "number": [
+       "Ensure this value is less than or equal to 2147483647."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "payment": {
+     "invoice": {
+      "membership_fee": "1.234",
+      "activity_fee": null,
+      "creation_date": "x",
+      "description": "",
+      "number": "2147483648",
+      "archived": "t",
+      "meta": null,
+      "deleted": "no"
+     }
+    }
+   }
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-amount-user-email",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "user": {
+      "email": [
+       "Enter a valid email address."
+      ]
+     },
+     "amount": [
+      "A valid number is required."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.amount=x&payment.user.email=y",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-amount-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.amount=3",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-blank-booleans-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.paid=&payment.archived=&payment.amount=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-invalid-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "meta": [
+      "Value must be valid JSON."
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.meta=x&payment.course={\"a\":1}",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-blank-text-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.description=&payment.payment_date=&payment.payment_category=&payment.notes=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-repeated-documents",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "instructor": {
+      "documents": [
+       "“abc” is not a valid UUID."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.instructor.documents=abc&payment.instructor.documents=a1000000-0000-4000-8000-0000009fffff",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-blank-user-text-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.user.role=&payment.user.phone=&payment.user.username=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-invoice-blanks",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": {
+     "invoice": {
+      "membership_fee": [
+       "A valid number is required."
+      ],
+      "sport_association": [
+       "This field may not be null."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.invoice.number=&payment.invoice.membership_fee=&payment.invoice.sport_association=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-blank-associate-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.associate.sex=&payment.associate.born_date=&payment.associate.associate_id=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "invoice-parties-supplier-update-form-nested-payment-blank-ids-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/invoice-suppliers/a1000000-0000-4000-8000-000000846127/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "payment.payment_id=&payment.subject=",
+   "content_type": "application/x-www-form-urlencoded"
   }
  ]
 }

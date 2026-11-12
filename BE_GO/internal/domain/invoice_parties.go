@@ -242,6 +242,15 @@ type InvoicePartyStore interface {
 	PaymentAssociation(ctx context.Context, id string, group *string) (found bool, association *string, err error)
 	CustomerInvoiceTaken(ctx context.Context, prefix string, number, fiscalYear int64, association string) (bool, error)
 	CustomerNumberTaken(ctx context.Context, number, fiscalYear *int64, association string) (bool, error)
+	// SupplierIDTaken is the nested supplier_id's UniqueValidator:
+	// SupplierAndCustomers.objects.filter(supplier_id=id).exists().
+	SupplierIDTaken(ctx context.Context, id string, group *string) (bool, error)
+	// NestedPaymentRelated is a nested payment reference's queryset lookup:
+	// found tells whether id is in the field's (group-narrowed) queryset, owner
+	// the row's association (nil when the model has none).
+	NestedPaymentRelated(ctx context.Context, model, id string, group *string) (found bool, owner *string, err error)
+	// NestedPaymentTaken is a nested payment primary key's UniqueValidator.
+	NestedPaymentTaken(ctx context.Context, model, id string, group *string) (bool, error)
 	BankAccount(ctx context.Context, association string, id *string) (*string, error)
 	LiveSupplier(ctx context.Context, id, association string, group *string) (*Supplier, error)
 	SupplierPaymentCategory(ctx context.Context, association string) (*string, error)

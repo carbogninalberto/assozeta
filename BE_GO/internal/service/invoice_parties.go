@@ -180,12 +180,13 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 		return err
 	}
 	if request.Form {
-		// A multipart body with file parts: the form reading of the customer
-		// invoice's fields is not ported.
-		return domain.ErrInvoicePartyNotPorted
+		// A multipart body with file parts is a mutable QueryDict: data[key] is
+		// the last value of a repeated key.
+		object = invoicePartyLast(object)
 	}
 	// Missing or null dates default to today; both go through
-	// strptime('%Y-%m-%d') (TypeError/ValueError: 500).
+	// strptime('%Y-%m-%d') (TypeError/ValueError: 500). The form's raw text is
+	// checked before the serializer's HTML-form reading.
 	for _, name := range []string{"transmitting_date", "payment_expiry_date"} {
 		value, present := object.Lookup(name)
 		if !present || value == nil {
@@ -199,7 +200,25 @@ func (s *InvoiceParties) CustomerAdd(ctx context.Context, request InvoicePartyRe
 			return domain.ErrInvoicePartyServer
 		}
 	}
-	input, errors := dto.ParseCustomerInvoiceAdd(object)
+	var input dto.CustomerInvoiceAdd
+	var errors dto.InvoicePartyErrors
+	if request.Form {
+		converted, formErrors, notPorted := dto.CustomerInvoiceFormData(object)
+		if notPorted {
+			return domain.ErrInvoicePartyNotPorted
+		}
+		object = converted
+		input, errors = dto.ParseCustomerInvoiceAdd(converted)
+		// The form reading's JSON errors join the serializer's field errors in
+		// the same 400.
+		for field, value := range formErrors {
+			codes, _ := value.([]string)
+			existing, _ := errors[field].([]string)
+			errors[field] = append(existing, codes...)
+		}
+	} else {
+		input, errors = dto.ParseCustomerInvoiceAdd(object)
+	}
 	group := invoicePartyGroup(request.Group)
 	if err = s.unique(ctx, errors, "customer_invoice_id", "application_customerinvoice", "customer_invoice_id",
 		"customer invoice:customer invoice id", input.ID, ""); err != nil {
@@ -441,14 +460,15 @@ func (s *InvoiceParties) supplierPaymentLink(ctx context.Context, input dto.Supp
 }
 
 // nestedSupplier validates a nested supplier object with SupplierSerializer's
-// field rules (partial on update) and the shared reference checks; another
+// field rules (partial on update, form rules for an HTML form) plus its
+// supplier_id primary key, and the shared reference checks; another
 // association's reference is the invoice 403, errors join the invoice errors.
 func (s *InvoiceParties) nestedSupplier(ctx context.Context, input dto.SupplierInvoiceInput, fieldErrors dto.InvoicePartyErrors,
 	association string, partial bool, group *string) error {
 	if !input.NestedSupplierSet {
 		return nil
 	}
-	write, invalid, err := dto.ParseSupplierWrite(input.NestedSupplier, partial, false)
+	write, invalid, err := dto.ParseSupplierWrite(input.NestedSupplier, partial, input.NestedSupplierForm)
 	if err != nil {
 		return err
 	}
@@ -459,14 +479,71 @@ func (s *InvoiceParties) nestedSupplier(ctx context.Context, input dto.SupplierI
 	if err != nil {
 		return err
 	}
-	if invalid == nil {
+	nested := map[string]any{}
+	if invalid != nil {
+		for _, field := range invalid.Fields {
+			nested[field.Name] = field.Codes
+		}
+	}
+	codes := input.NestedSupplierIDCodes
+	if input.NestedSupplierID != nil {
+		// UniqueValidator(queryset=SupplierAndCustomers.objects).
+		taken, err := s.store.SupplierIDTaken(ctx, *input.NestedSupplierID, group)
+		if err != nil {
+			return err
+		}
+		if taken {
+			codes = append(codes, dto.InvoicePartyUniqueSupplierID)
+		}
+	}
+	if len(codes) > 0 {
+		nested["supplier_id"] = codes
+	}
+	if len(nested) == 0 {
 		return nil
 	}
-	nested := make(map[string]any, len(invalid.Fields))
-	for _, field := range invalid.Fields {
-		nested[field.Name] = field.Codes
-	}
 	fieldErrors["supplier"] = nested
+	return nil
+}
+
+// nestedPayment validates a nested payment object with PaymentSerializer's
+// field rules (partial on update, form rules for an HTML form) and its
+// references: another association's reference is the invoice 403, field
+// errors join the invoice errors.
+func (s *InvoiceParties) nestedPayment(ctx context.Context, input dto.SupplierInvoiceInput, fieldErrors dto.InvoicePartyErrors,
+	association string, partial bool, group *string) error {
+	if !input.NestedPaymentSet {
+		return nil
+	}
+	errs, notPorted, err := dto.ValidateNestedPayment(input.NestedPayment, partial, input.NestedPaymentForm, dto.NestedPaymentLookups{
+		Related: func(model, id string) (bool, error) {
+			found, owner, err := s.store.NestedPaymentRelated(ctx, model, id, group)
+			if err != nil {
+				return false, err
+			}
+			if !found {
+				return false, nil
+			}
+			if owner != nil && *owner != association {
+				// DRF raises PermissionDenied from inside the field's validity
+				// check, so every other reference error is dropped.
+				return false, domain.ErrInvoicePartyForeignReference
+			}
+			return true, nil
+		},
+		Taken: func(model, id string) (bool, error) {
+			return s.store.NestedPaymentTaken(ctx, model, id, group)
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if notPorted {
+		return domain.ErrInvoicePartyNotPorted
+	}
+	if errs != nil {
+		fieldErrors["payment"] = errs
+	}
 	return nil
 }
 
@@ -581,6 +658,9 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	if err = s.nestedSupplier(ctx, input, errors, association, false, invoicePartyGroup(request.Group)); err != nil {
 		return err
 	}
+	if err = s.nestedPayment(ctx, input, errors, association, false, invoicePartyGroup(request.Group)); err != nil {
+		return err
+	}
 	if err = s.supplierPaymentLink(ctx, input, errors, association, nil, invoicePartyGroup(request.Group)); err != nil {
 		return err
 	}
@@ -625,9 +705,9 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	if err = s.store.CreateSupplierPayment(ctx, payment, created, saved, owner, association, supplier.ID, auditContext, now); err != nil {
 		return err
 	}
-	if input.NestedSupplierSet {
-		// A valid nested supplier object: the payment is kept, then
-		// InvoiceSuppliers.objects.create(supplier=<dict>) raises.
+	if input.NestedSupplierSet || input.NestedPaymentSet {
+		// A valid nested supplier or payment object: the payment is kept, then
+		// InvoiceSuppliers.objects.create(<dict>) raises.
 		return domain.ErrInvoicePartyServer
 	}
 	invoice := domain.NewSupplierInvoice{ID: s.ids(), Identifier: input.Identifier, Amount: input.Amount, AssociationID: association,
@@ -680,6 +760,9 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		if err = s.nestedSupplier(ctx, input, errors, association, true, invoicePartyGroup(request.Group)); err != nil {
 			return err
 		}
+		if err = s.nestedPayment(ctx, input, errors, association, true, invoicePartyGroup(request.Group)); err != nil {
+			return err
+		}
 		if err = s.supplierPaymentLink(ctx, input, errors, association, row.PaymentID, invoicePartyGroup(request.Group)); err != nil {
 			return err
 		}
@@ -688,12 +771,13 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		return &dto.InvoicePartyValidationError{Errors: errors}
 	}
 	if input.NotPorted {
-		// A nested payment object and nested form fields are not ported.
+		// An input this port refuses: kept as a guard, nothing sets the flag.
 		return domain.ErrInvoicePartyNotPorted
 	}
-	if input.NestedSupplierSet {
-		// A valid nested supplier object on update: DRF's nested-write
-		// assertion, raised by save() before the invoice is written.
+	if input.NestedSupplierSet || input.NestedPaymentSet {
+		// A valid nested supplier or payment object on update: DRF's
+		// nested-write assertion, raised by save() before the invoice is
+		// written.
 		return domain.ErrInvoicePartyServer
 	}
 	updated := *row

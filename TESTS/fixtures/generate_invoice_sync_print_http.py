@@ -328,6 +328,24 @@ def multipart(*parts, boundary='invoicesyncboundary'):
     return ''.join(chunks) + f'--{boundary}--\r\n', f'multipart/form-data; boundary={boundary}'
 
 
+def multipart_value(value):
+    """The HTML form text of a value the converted body holds (JSON for a list or a dict)."""
+    if isinstance(value, (list, dict)):
+        return json.dumps(value)
+    if value is True:
+        return 'true'
+    if value is False:
+        return 'false'
+    if value is None:
+        return ''
+    return str(value)
+
+
+def multipart_body(fields, files=()):
+    """A multipart body from a dict's items in order, followed by (name, filename, content type, text) file parts."""
+    return multipart(*[(name, None, None, multipart_value(value)) for name, value in fields.items()], *files)
+
+
 # --- invoice/<uid>/update: guards -----------------------------------------------------------
 
 PATH = UPDATE('i_plain')
@@ -483,10 +501,13 @@ def audit_text(field, value):
     return str(value)
 
 
-def added(name, body, *, actor='owner', memory=None, stored=None, second=None, xml_error=False, prints=None, restore=None, headers=None):
+def added(name, body, *, actor='owner', memory=None, stored=None, second=None, xml_error=False, prints=None, restore=None, headers=None,
+          raw_body=None, content_type=None):
     """A valid invoice-customers/add. memory: in-memory values besides the body (DRF
     conversions); stored: stored values that differ from them; second: the second save's
-    audited changes; the third save's xml/json entry is added unless xml_error."""
+    audited changes; the third save's xml/json entry is added unless xml_error. raw_body
+    and content_type are the request when the body is not JSON (the body remains the
+    converted values used to compute the expectations)."""
     values = dict(MODEL_DEFAULTS)
     values.update({key: body[key] for key in body if key in values})
     values.update({'transmitting_date': body.get('transmitting_date') or '$today',
@@ -516,11 +537,48 @@ def added(name, body, *, actor='owner', memory=None, stored=None, second=None, x
     response = {'error': 'Errore durante la generazione del file XML.'} if xml_error else {'message': 'Invoice created'}
     if prints is None:
         prints = [] if xml_error else [print_customer()]
-    add(name, actor, ADD, 200, response, method='POST', body=body, headers=headers, effect=effect, prints=prints, restore=restore)
+    add(name, actor, ADD, 200, response, method='POST', body=body, headers=headers, effect=effect, prints=prints, restore=restore,
+        raw_body=raw_body, content_type=content_type)
 
 
 AMOUNT_DEFAULT = {'payment_total_amount': ['0.00', '0']}
 added('add-defaults', {**BASE, 'number': 501}, memory={}, stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT)
+
+# A multipart body with a file part is a mutable QueryDict: data[key] is the last value,
+# absent booleans are False, JSON fields are json.loads of their text (a file's name), and
+# an empty input follows the field's allow_null/allow_blank options.
+MULTIPART_FILE = ('allegato', 'fattura.txt', 'text/plain', 'x')
+mp, ct = multipart_body({**BASE, 'number': 601}, [MULTIPART_FILE])
+added('add-multipart-body', {**BASE, 'number': 601}, raw_body=mp, content_type=ct,
+      memory={'e_invoice': False}, stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT)
+MULTIPART_EMPTY = {**BASE, 'number': 603, 'assignor_vat_number': '', 'assignor_address': '', 'prefix': '', 'e_invoice': '',
+                   'transmitted': 'true', 'payment_total_amount': '', 'creation_date': '', 'xml': '', 'pdf': '', 'payment': '',
+                   'customer_invoice_id': '', 'payment_condition': '', 'json': {'k': [1, 2.5]}, 'assignor_country': '',
+                   'id_transmitter': '', 'causal': ''}
+converted = {**BASE, 'number': 603, 'assignor_vat_number': None, 'prefix': None, 'transmitted': True,
+             'payment_condition': None, 'id_transmitter': None, 'causal': None, 'json': {'k': [1, 2.5]}}
+for _field in ('assignor_address', 'assignor_country', 'xml', 'pdf', 'payment', 'customer_invoice_id',
+               'payment_total_amount', 'creation_date'):
+    converted.pop(_field, None)
+mp, ct = multipart_body(MULTIPART_EMPTY, [MULTIPART_FILE])
+added('add-multipart-empty-values', converted, raw_body=mp, content_type=ct,
+      stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT, xml_error=True)
+mp, ct = multipart_body({**BASE, 'number': 605, 'transmitting_date': '2026-03-04', 'payment_expiry_date': '2026-04-30',
+                         'paid': 'on', 'e_invoice': 'true'}, [MULTIPART_FILE])
+added('add-multipart-dates-and-booleans',
+      {**BASE, 'number': 605, 'transmitting_date': '2026-03-04', 'payment_expiry_date': '2026-04-30', 'paid': True,
+       'e_invoice': True}, raw_body=mp, content_type=ct, stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT)
+mp, ct = multipart(*[(name, None, None, multipart_value(value)) for name, value in BASE.items()],
+                   ('number', None, None, '1'), ('number', None, None, '607'), MULTIPART_FILE)
+added('add-multipart-repeated-number', {**BASE, 'number': 607}, raw_body=mp, content_type=ct,
+      memory={'e_invoice': False}, stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT)
+MULTIPART_WITHOUT_PEC = {key: value for key, value in BASE.items() if key != 'transferor_contact_email'}
+MULTIPART_WITHOUT_PEC.update(number=608, transferor_contact_email='')
+mp, ct = multipart_body(MULTIPART_WITHOUT_PEC, [MULTIPART_FILE])
+added('add-multipart-blank-transferor-email-xml-error',
+      {**{key: value for key, value in BASE.items() if key != 'transferor_contact_email'}, 'number': 608,
+       'transferor_contact_email': ''}, raw_body=mp, content_type=ct, memory={'e_invoice': False},
+      stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT, xml_error=True)
 added('add-number-of-other-association-accepted', {**BASE, 'number': 520}, memory={},
       stored={'payment_total_amount': '0.00'}, second=AMOUNT_DEFAULT)
 MIXED = [LINE('Corso <nuoto> & "acqua"', 2, 'ore', 19.99, 22), LINE('Libro', 3, 'pz', '0.125', '4'),

@@ -32,6 +32,9 @@ const (
 	InvoicePartyMaxValue       = "max-value:"
 	InvoicePartyText           = "text:"
 	InvoicePartyUniqueTogether = "unique-together:customer-invoice"
+	// InvoicePartyUniqueSupplierID is the nested supplier_id field's
+	// UniqueValidator code: unique:<model verbose name>:<field verbose name>.
+	InvoicePartyUniqueSupplierID = "unique:supplier and customers:supplier id"
 )
 
 // InvoicePartyRelated is one present PrimaryKeyRelatedField value before its
@@ -393,10 +396,22 @@ type SupplierInvoiceInput struct {
 	Association, Document                         InvoicePartyRelated
 	// NestedSupplier is a nested supplier object's raw value; the service
 	// validates it with SupplierSerializer's field rules and references.
-	NestedSupplier    domain.RequestObject
-	NestedSupplierSet bool
-	// NotPorted: a nested payment object or a form body's nested fields
-	// (validated and written by DRF's nested serializers).
+	NestedSupplier     domain.RequestObject
+	NestedSupplierSet  bool
+	NestedSupplierForm bool
+	// NestedSupplierID is the nested supplier's primary key once it parsed
+	// (UUIDField.to_internal_value); NestedSupplierIDCodes are its field
+	// errors. The uniqueness check runs in the service.
+	NestedSupplierID      *string
+	NestedSupplierIDCodes []string
+	// NestedPayment is a nested payment object's raw value (a JSON object, or
+	// the payment.<key> form fields); the service validates it with
+	// PaymentSerializer's field rules and references.
+	NestedPayment     any
+	NestedPaymentSet  bool
+	NestedPaymentForm bool
+	// NotPorted marks an input this port refuses. The supplier views still
+	// check it, but nothing sets it any more: the nested payment is validated.
 	NotPorted bool
 }
 
@@ -419,12 +434,32 @@ func ParseSupplierInvoice(body any, partial, form bool) (SupplierInvoiceInput, I
 	}
 	nested := func(name string, null bool) {
 		if form {
-			// parse_html_dict: only "<name>.<key>" fields form the nested value.
-			for _, field := range object {
-				if strings.HasPrefix(field.Name, name+".") {
-					input.NotPorted = true
+			// parse_html_dict(prefix): the "<name>.<key>" fields form the
+			// nested value; a repeated key keeps its last value.
+			if name == "payment" {
+				// The payment serializer's own HTML-form extraction keeps every
+				// field, with the prefix removed and its repeated values.
+				payment := nestedPaymentForm(object, name)
+				if len(payment) == 0 {
+					return
+				}
+				input.NestedPayment, input.NestedPaymentForm = payment, true
+				input.NestedPaymentSet = true
+				return
+			}
+			input.NestedSupplier, input.NestedSupplierForm = supplierNestedForm(object, name), true
+			if len(input.NestedSupplier) == 0 {
+				input.NestedSupplier, input.NestedSupplierForm = nil, false
+				return
+			}
+			input.NestedSupplierSet = true
+			if !partial {
+				// BooleanField.default_empty_html in a full nested form.
+				if _, present := input.NestedSupplier.Lookup("deleted"); !present {
+					input.NestedSupplier = append(input.NestedSupplier, domain.RequestField{Name: "deleted", Value: false})
 				}
 			}
+			input.nestedSupplierID(true)
 			return
 		}
 		value, present := object.Lookup(name)
@@ -437,12 +472,9 @@ func ParseSupplierInvoice(body any, partial, form bool) (SupplierInvoiceInput, I
 			errors[name] = problem
 		case isObject && name == "supplier":
 			input.NestedSupplier, input.NestedSupplierSet = value.(domain.RequestObject), true
-			if _, keyed := input.NestedSupplier.Lookup("supplier_id"); keyed {
-				// A nested serializer still validates the key it is given: not ported.
-				input.NotPorted = true
-			}
+			input.nestedSupplierID(false)
 		case isObject:
-			input.NotPorted = true
+			input.NestedPayment, input.NestedPaymentSet = value, true
 		case isNull && name == "payment":
 			input.PaymentNull = true
 		}
@@ -527,6 +559,66 @@ func ParseSupplierInvoice(body any, partial, form bool) (SupplierInvoiceInput, I
 		}
 	}
 	return input, errors
+}
+
+// supplierNestedForm is parse_html_dict(prefix) for a nested serializer: the
+// keys of the "<prefix>.<key>" fields (a non-empty key), a repeated key
+// keeping its last value. An empty result is the absent nested value.
+func supplierNestedForm(object domain.RequestObject, prefix string) domain.RequestObject {
+	var nested domain.RequestObject
+	for _, field := range object {
+		key, ok := strings.CutPrefix(field.Name, prefix+".")
+		if !ok || key == "" {
+			continue
+		}
+		if key == "deleted" {
+			// Field.get_value: a non-required, non-nullable empty input is
+			// absent (the model's deleted BooleanField); the text fields keep it.
+			if value, ok := field.Value.(string); ok && value == "" {
+				continue
+			}
+		}
+		replaced := false
+		for index := range nested {
+			if nested[index].Name == key {
+				nested[index].Value, replaced = field.Value, true
+			}
+		}
+		if !replaced {
+			nested = append(nested, domain.RequestField{Name: key, Value: field.Value})
+		}
+	}
+	return nested
+}
+
+// nestedPaymentForm is the nested payment serializer's parse_html_dict: every
+// "<prefix>.<key>" field with the prefix removed (an empty key included),
+// keeping the last value and its repeated values (QueryDict.getlist).
+func nestedPaymentForm(object domain.RequestObject, prefix string) domain.RequestObject {
+	var nested domain.RequestObject
+	for _, field := range object {
+		key, ok := strings.CutPrefix(field.Name, prefix+".")
+		if !ok {
+			continue
+		}
+		nested = append(nested, domain.RequestField{Name: key, Value: field.Value, All: field.All})
+	}
+	return nested
+}
+
+// nestedSupplierID reads the nested supplier object's supplier_id with
+// UUIDField(required=False): an HTML form's empty input is absent (get_value),
+// any other value goes through to_internal_value.
+func (input *SupplierInvoiceInput) nestedSupplierID(form bool) {
+	raw, present := input.NestedSupplier.Lookup("supplier_id")
+	if !present || form && raw == "" {
+		return
+	}
+	id, codes := drfUUIDField(raw)
+	input.NestedSupplierIDCodes = codes
+	if len(codes) == 0 {
+		input.NestedSupplierID = &id
+	}
 }
 
 // SupplierPaymentEntry is PaymentEntrySerializer(data=payment_data) of the

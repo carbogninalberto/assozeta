@@ -269,6 +269,88 @@ func (r *InvoiceParties) CustomerNumberTaken(ctx context.Context, number, fiscal
 	return exists, err
 }
 
+// SupplierIDTaken is the nested supplier_id's UniqueValidator:
+// SupplierAndCustomers.objects (live, group-aware) .filter(supplier_id=id).
+func (r *InvoiceParties) SupplierIDTaken(ctx context.Context, id string, group *string) (bool, error) {
+	var exists bool
+	err := r.db.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_supplierandcustomers
+ WHERE supplier_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid))`, id, group)
+	return exists, err
+}
+
+// nestedPaymentRelatedSQL maps a nested payment's relation model to its
+// queryset lookup. The selected column is the row's association
+// (application_sportassociation's own key is the id itself); signature, family
+// and document have none (NULL::uuid). Only associate takes the group header.
+var nestedPaymentRelatedSQL = map[string]struct {
+	query   string
+	grouped bool
+}{
+	"payment_category": {query: `SELECT sport_association_id FROM application_paymentcategory
+ WHERE payment_category_id=$1`},
+	"sport_association": {query: `SELECT sport_association_id FROM application_sportassociation
+ WHERE sport_association_id=$1`},
+	"custom_accounts": {query: `SELECT sport_association_id FROM application_customaccounts
+ WHERE custom_account_id=$1`},
+	"signature": {query: `SELECT NULL::uuid FROM application_signature WHERE signature_id=$1`},
+	"group":     {query: `SELECT sport_association_id FROM application_group WHERE group_id=$1`},
+	"family":    {query: `SELECT NULL::uuid FROM application_family WHERE family_id=$1`},
+	"user": {query: `SELECT (SELECT sport_association_id FROM application_sportassociation
+ WHERE user_id=$1 AND NOT deleted ORDER BY sport_association_id LIMIT 1) FROM bakney_user WHERE user_id=$1`},
+	"document": {query: `SELECT NULL::uuid FROM docmanager_document WHERE document_id=$1`},
+	"associate": {query: `SELECT sport_association_id FROM application_associate
+ WHERE associate_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid)`, grouped: true},
+}
+
+// NestedPaymentRelated is a nested payment reference's queryset lookup; the
+// owner is what the service compares with the caller's association.
+func (r *InvoiceParties) NestedPaymentRelated(ctx context.Context, model, id string, group *string) (bool, *string, error) {
+	lookup, ok := nestedPaymentRelatedSQL[model]
+	if !ok {
+		return false, nil, errors.New("nested payment relation lookup not allowed")
+	}
+	var owner *string
+	args := []any{id}
+	if lookup.grouped {
+		args = append(args, group)
+	}
+	err := r.db.GetContext(ctx, &owner, lookup.query, args...)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil, nil
+	}
+	return err == nil, owner, err
+}
+
+// nestedPaymentTakenSQL maps a nested payment primary key's model to its
+// UniqueValidator query; the supplier reuses SupplierIDTaken's query.
+var nestedPaymentTakenSQL = map[string]struct {
+	query   string
+	grouped bool
+}{
+	"payment": {query: `SELECT EXISTS(SELECT 1 FROM application_payment
+ WHERE payment_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid))`, grouped: true},
+	"instructor": {query: `SELECT EXISTS(SELECT 1 FROM application_instructor WHERE instructor_id=$1)`},
+	"invoice": {query: `SELECT EXISTS(SELECT 1 FROM application_invoice
+ WHERE invoice_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid))`, grouped: true},
+	"supplier": {query: `SELECT EXISTS(SELECT 1 FROM application_supplierandcustomers
+ WHERE supplier_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid))`, grouped: true},
+}
+
+// NestedPaymentTaken is a nested payment primary key's UniqueValidator.
+func (r *InvoiceParties) NestedPaymentTaken(ctx context.Context, model, id string, group *string) (bool, error) {
+	lookup, ok := nestedPaymentTakenSQL[model]
+	if !ok {
+		return false, errors.New("nested payment uniqueness lookup not allowed")
+	}
+	var exists bool
+	args := []any{id}
+	if lookup.grouped {
+		args = append(args, group)
+	}
+	err := r.db.GetContext(ctx, &exists, lookup.query, args...)
+	return exists, err
+}
+
 // BankAccount is the view's CustomAccounts lookup: the association's default
 // bank account (unordered first(): ordered by the primary key) or the named one.
 func (r *InvoiceParties) BankAccount(ctx context.Context, association string, id *string) (*string, error) {
