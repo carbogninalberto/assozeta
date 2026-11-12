@@ -3,12 +3,15 @@ package smtpsend
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"math/rand/v2"
 	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/idna2003"
 )
 
 // Backend is django.core.mail.backends.smtp.EmailBackend(host, port,
@@ -72,6 +75,42 @@ func (b *Backend) SendMail(from string, to []string, message []byte) error {
 	return b.c.sendmailBytes(from, to, message)
 }
 
+// SendDjangoTestMail is the SMTP backend's _send for the admin test message:
+// from is the formataddr value the probe passes to EmailMessage and recipient
+// is an EmailField value. Django's SMTP backend runs both through
+// sanitize_address and then smtplib.quoteaddr.
+func (b *Backend) SendDjangoTestMail(from, recipient string, message []byte) error {
+	sender, envelope, err := djangoTestAddresses(from, recipient)
+	if err != nil {
+		return err
+	}
+	b.c.anyAddress = true
+	return b.c.sendmailFrom(sender, sender, []string{envelope}, message)
+}
+
+// djangoTestAddresses is the SMTP backend's sanitize_address for the
+// formataddr sender and the recipient. The sender is the formataddr value
+// itself: for the ASCII values that reach a send, Django's sanitize_address
+// keeps the display name and address, and smtplib.quoteaddr reads the address
+// part (or the whole value when a domain literal stops its parse).
+func djangoTestAddresses(from, recipient string) (sender, envelope string, err error) {
+	if envelope, err = SanitizeAddress(recipient); err != nil {
+		return "", "", err
+	}
+	return from, envelope, nil
+}
+
+// DjangoTestEnvelope returns the text after "mail from:" and "rcpt to:":
+// smtplib.quoteaddr of the formataddr sender and of
+// sanitize_address(recipient).
+func DjangoTestEnvelope(from, recipient string) (mailFrom, rcptTo string, err error) {
+	sender, envelope, err := djangoTestAddresses(from, recipient)
+	if err != nil {
+		return "", "", err
+	}
+	return QuoteAddr(sender), QuoteAddr(envelope), nil
+}
+
 // DjangoText is an EmailMessage(subject, body, from_email, [to]) with a
 // text/plain utf-8 body, as Django 5.2 renders message().as_bytes(
 // linesep='\r\n') under the compat32 policy.
@@ -94,15 +133,21 @@ func MessageID(now time.Time, domain string) string {
 
 var headerLine = regexp.MustCompile(`[\r\n]`)
 
-// RenderDjangoText renders the message; ErrUnsupported outside the subset
-// (non-ASCII addresses, line breaks in a header, a body line over 998
-// bytes, which Django sends quoted-printable).
+// RenderDjangoText renders the message; ErrFormatAddr when formataddr raises
+// (a non-ASCII from address), ErrUnsupported for a line break in a header or
+// a body line over 998 bytes (which Django sends quoted-printable).
 func RenderDjangoText(m DjangoText) ([]byte, error) {
 	from, err := FormatAddr(m.SenderName, m.FromEmail)
 	if err != nil {
 		return nil, err
 	}
-	for _, value := range []string{m.EncodedSubject, from, m.To, m.MessageID} {
+	to := m.To
+	if !isASCII(to) {
+		if to, err = sanitizeHeaderAddress(to); err != nil {
+			return nil, err
+		}
+	}
+	for _, value := range []string{m.EncodedSubject, from, to, m.MessageID} {
 		if !isASCII(value) || headerLine.MatchString(value) {
 			return nil, ErrUnsupported
 		}
@@ -124,7 +169,7 @@ func RenderDjangoText(m DjangoText) ([]byte, error) {
 	header("Content-Transfer-Encoding", "8bit")
 	header("Subject", m.EncodedSubject)
 	header("From", from)
-	header("To", m.To)
+	header("To", to)
 	header("Date", m.Date.UTC().Format("Mon, 02 Jan 2006 15:04:05 -0000"))
 	header("Message-ID", m.MessageID)
 	out.WriteString("\r\n")
@@ -137,12 +182,17 @@ var (
 	addressEscapes    = regexp.MustCompile(`[\\"]`)
 )
 
+// ErrFormatAddr is the UnicodeEncodeError email.utils.formataddr raises: it
+// encodes the address, not the display name, as ASCII.
+var ErrFormatAddr = errors.New("smtpsend: formataddr raises UnicodeEncodeError")
+
 // FormatAddr is email.utils.formataddr((name, address)) with charset
 // utf-8: a non-ASCII name becomes one encoded word (the shorter of base64
-// and Q, Q on a tie), an ASCII name with specials is quoted.
+// and Q, Q on a tie), an ASCII name with specials is quoted. A non-ASCII
+// address makes formataddr raise (ErrFormatAddr).
 func FormatAddr(name, address string) (string, error) {
 	if !isASCII(address) {
-		return "", ErrUnsupported
+		return "", ErrFormatAddr
 	}
 	if name == "" {
 		return address, nil
@@ -156,6 +206,79 @@ func FormatAddr(name, address string) (string, error) {
 	}
 	name = addressEscapes.ReplaceAllString(name, `\$0`)
 	return quotes + name + quotes + " <" + address + ">", nil
+}
+
+// SanitizeAddress is Django's sanitize_address(address, encoding) for one
+// address string (the SMTP envelope): the parser removes the quoting of a
+// quoted local part, a non-ASCII local part becomes one RFC 2047 word and the
+// domain goes through str.encode('idna') (IDNA 2003). Address's addr_spec
+// re-quotes the local part.
+func SanitizeAddress(address string) (string, error) {
+	local, domain, ok := cutAddress(address)
+	if !ok {
+		return "", ErrUnsupported
+	}
+	if len(local) >= 2 && local[0] == '"' && local[len(local)-1] == '"' {
+		local = unquoteLocal(local[1 : len(local)-1])
+	}
+	return sanitizeAddressParts(local, domain)
+}
+
+// sanitizeHeaderAddress is the tuple branch of sanitize_address that
+// forbid_multi_line_headers uses for a non-ASCII To value: getaddresses keeps
+// the address as written, so the local part is not unquoted.
+func sanitizeHeaderAddress(address string) (string, error) {
+	local, domain, ok := cutAddress(address)
+	if !ok {
+		return "", ErrUnsupported
+	}
+	return sanitizeAddressParts(local, domain)
+}
+
+func cutAddress(address string) (local, domain string, ok bool) {
+	at := strings.LastIndexByte(address, '@')
+	if at < 0 || at == len(address)-1 {
+		return "", "", false
+	}
+	return address[:at], address[at+1:], true
+}
+
+func sanitizeAddressParts(local, domain string) (string, error) {
+	if !isASCII(local) {
+		local = HeaderEncode(local)
+		// Header(local, 'utf-8').encode() folds past 78 characters; Address
+		// then rejects the line break, as Django's sanitize_address does.
+		if len(local) > 78 {
+			return "", ErrUnsupported
+		}
+	}
+	encoded, err := idna2003.ToASCII(domain)
+	if err != nil {
+		return "", ErrUnsupported
+	}
+	return addressSpec(local, encoded), nil
+}
+
+// addressSpec is headerregistry.Address(username=local, domain=domain)
+// .addr_spec: the local part is quoted when it contains a DOT_ATOM_ENDS
+// character.
+func addressSpec(local, domain string) string {
+	if strings.ContainsAny(local, "()<>@,:;\"[] \\\t") {
+		local = `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(local) + `"`
+	}
+	return local + "@" + domain
+}
+
+// unquoteLocal removes the quoted-pair escapes of a quoted local part.
+func unquoteLocal(local string) string {
+	var out strings.Builder
+	for i := 0; i < len(local); i++ {
+		if local[i] == '\\' && i+1 < len(local) {
+			i++
+		}
+		out.WriteByte(local[i])
+	}
+	return out.String()
 }
 
 // HeaderEncode is Charset('utf-8').header_encode(text).

@@ -1,5 +1,10 @@
 package djtemplate
 
+import (
+	"math"
+	"math/big"
+)
+
 // A port of django.template.smartif (the {% if %} expression parser): a
 // Pratt parser with Django's binding powers. Operators evaluate like
 // Python; an exception inside an operator makes it False, as in Django
@@ -210,7 +215,9 @@ func isText(value any) (string, bool) {
 	return "", false
 }
 
-// pythonEqual is x == y for the supported types.
+// pythonEqual is x == y for the supported types: numbers exactly (bool is a
+// number), strings by text, lists/tuples/dicts structurally, and a value of
+// another type never equals one of these.
 func pythonEqual(left, right any) (bool, error) {
 	if left == nil || right == nil {
 		return left == nil && right == nil, nil
@@ -220,6 +227,13 @@ func pythonEqual(left, right any) (bool, error) {
 		return ok && a == b, nil
 	}
 	if _, ok := isText(right); ok {
+		return false, nil
+	}
+	if a, ok := nonFiniteFloat(left); ok {
+		b, ok := nonFiniteFloat(right)
+		return ok && a == b, nil
+	}
+	if _, ok := nonFiniteFloat(right); ok {
 		return false, nil
 	}
 	a, leftNumber, err := numeric(left)
@@ -234,15 +248,73 @@ func pythonEqual(left, right any) (bool, error) {
 		return a.Cmp(b) == 0, nil
 	}
 	if leftNumber || rightNumber {
-		switch other := right; {
-		case leftNumber:
-			if _, ok := other.(*Object); ok {
-				return false, unsupported("== of a number and an object")
-			}
+		other := right
+		if rightNumber {
+			other = left
+		}
+		if _, ok := other.(*Object); ok {
+			return false, unsupported("== of a number and an object")
 		}
 		return false, nil
 	}
+	switch a := left.(type) {
+	case List:
+		b, ok := right.(List)
+		if !ok {
+			return false, nil
+		}
+		if len(a) != len(b) {
+			return false, nil
+		}
+		for i := range a {
+			equal, err := pythonEqual(a[i], b[i])
+			if err != nil {
+				return false, err
+			}
+			if !equal {
+				return false, nil
+			}
+		}
+		return true, nil
+	case Tuple:
+		b, ok := right.(Tuple)
+		if !ok {
+			return false, nil
+		}
+		return pythonEqual(List(a), List(b))
+	case *Dict:
+		b, ok := right.(*Dict)
+		if !ok {
+			return false, nil
+		}
+		if a.Len() != b.Len() {
+			return false, nil
+		}
+		for _, key := range a.Keys() {
+			leftItem, _ := a.Get(key)
+			rightItem, present := b.Get(key)
+			if !present {
+				return false, nil
+			}
+			equal, err := pythonEqual(leftItem, rightItem)
+			if err != nil {
+				return false, err
+			}
+			if !equal {
+				return false, nil
+			}
+		}
+		return true, nil
+	}
 	return false, unsupported("== of %T and %T", left, right)
+}
+
+// nonFiniteFloat is a float Django's number comparisons accept as NaN or ±Inf.
+func nonFiniteFloat(value any) (float64, bool) {
+	if number, ok := value.(float64); ok && (math.IsInf(number, 0) || math.IsNaN(number)) {
+		return number, true
+	}
+	return 0, false
 }
 
 // pythonCompare is x < y (and the others): numbers with numbers, str with
@@ -305,7 +377,7 @@ func compareCodePoints(a, b string) int {
 // pythonIn is x in y.
 func pythonIn(left, right any) (bool, error) {
 	switch container := right.(type) {
-	case nil, bool, int64, float64, Decimal, Date, DateTime:
+	case nil, bool, int64, *big.Int, float64, Decimal, Date, DateTime:
 		return false, errorTypeMismatch{}
 	case string, Safe:
 		text, _ := isText(container)

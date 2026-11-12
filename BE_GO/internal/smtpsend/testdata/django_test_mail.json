@@ -1,0 +1,1230 @@
+{
+"django": "5.2.18",
+"python": "3.13.16",
+"subject": "Assozeta \u2014 verifica email",
+"body": "Questo messaggio \u00e8 stato richiesto dal proprietario dell\u2019istanza per verificare la configurazione email.",
+"rejected_by_email_field": [
+[
+"from",
+"\"no reply\"@example.com"
+],
+[
+"from",
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.example.com"
+],
+[
+"to",
+"\"a b\"@example.com"
+],
+[
+"to",
+"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc@dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd.example.org"
+],
+[
+"to",
+"x@[IPv6:::1]"
+],
+[
+"to",
+"\"w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w\"@example.com"
+],
+[
+"to",
+"\u00f6@example.com"
+],
+[
+"to",
+"\"\u00f6\"@example.com"
+]
+],
+"cases": [
+{
+"sender_name": "",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "noreply@example.com",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: noreply@example.com\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "noreply@example.com",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?q?Societ=C3=A0_Sportiva?= <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Societ=C3=A0_Sportiva?= <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Societ=C3=A0_Sportiva?= <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "A \"quoted\" name",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"A \\\"quoted\\\" name\" <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"A \\\"quoted\\\" name\" <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"A \\\"quoted\\\" name\" <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Doe, John",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"Doe, John\" <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Doe, John\" <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"Doe, John\" <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "back\\slash",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"back\\\\slash\" <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"back\\\\slash\" <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"back\\\\slash\" <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "ASD (Roma)",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"ASD (Roma)\" <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"ASD (Roma)\" <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"ASD (Roma)\" <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": " spazi  doppi ",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": " spazi  doppi  <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom:  spazi  doppi  <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "spazi doppi <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "tab\there",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "tab\there <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: tab\there <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "tab here <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "a@b",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"a@b\" <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"a@b\" <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"a@b\" <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "punto.e:virgola;",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"punto.e:virgola;\" <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"punto.e:virgola;\" <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"punto.e:virgola;\" <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "<angolari>",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"<angolari>\" <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"<angolari>\" <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"<angolari>\" <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "\u00e8",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?b?w6g=?= <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?b?w6g=?= <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w6g=?= <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "noreply@example.com",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: noreply@example.com\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "noreply@example.com",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?q?Societ=C3=A0_Sportiva?= <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Societ=C3=A0_Sportiva?= <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Societ=C3=A0_Sportiva?= <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Club",
+"from_email": "INFO@Example.COM",
+"recipient": "a@example.com",
+"formataddr": "Club <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <INFO@Example.COM>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <INFO@Example.COM>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "",
+"from_email": "INFO@Example.COM",
+"recipient": "a@example.com",
+"formataddr": "INFO@Example.COM",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: INFO@Example.COM\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "INFO@Example.COM",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "INFO@Example.COM",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?q?Societ=C3=A0_Sportiva?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Societ=C3=A0_Sportiva?= <INFO@Example.COM>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Societ=C3=A0_Sportiva?= <INFO@Example.COM>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "\"a,b\"@example.com",
+"recipient": "a@example.com",
+"formataddr": "Club <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <\"a,b\"@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <\"a,b\"@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "",
+"from_email": "\"a,b\"@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"a,b\"@example.com",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"a,b\"@example.com\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"a,b\"@example.com",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "\"a,b\"@example.com",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?q?Societ=C3=A0_Sportiva?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Societ=C3=A0_Sportiva?= <\"a,b\"@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Societ=C3=A0_Sportiva?= <\"a,b\"@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "\u017fender@example.com",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "",
+"from_email": "\u017fender@example.com",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "\u017fender@example.com",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Club",
+"from_email": "\"quo\\\"ted\"@example.com",
+"recipient": "a@example.com",
+"formataddr": "Club <\"quo\\\"ted\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <\"quo\\\"ted\"@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <\"quo\\\"ted\"@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<\"quo\\\"ted\"@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "",
+"from_email": "\"quo\\\"ted\"@example.com",
+"recipient": "a@example.com",
+"formataddr": "\"quo\\\"ted\"@example.com",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"quo\\\"ted\"@example.com\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"quo\\\"ted\"@example.com",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<\"quo\\\"ted\"@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "\"quo\\\"ted\"@example.com",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?q?Societ=C3=A0_Sportiva?= <\"quo\\\"ted\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Societ=C3=A0_Sportiva?= <\"quo\\\"ted\"@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Societ=C3=A0_Sportiva?= <\"quo\\\"ted\"@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<\"quo\\\"ted\"@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "x@[127.0.0.1]",
+"recipient": "a@example.com",
+"formataddr": "Club <x@[127.0.0.1]>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <x@[127.0.0.1]>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <x@[127.0.0.1]>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<Club <x@[127.0.0.1]>>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "",
+"from_email": "x@[127.0.0.1]",
+"recipient": "a@example.com",
+"formataddr": "x@[127.0.0.1]",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: x@[127.0.0.1]\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "x@[127.0.0.1]",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<x@[127.0.0.1]>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "x@[127.0.0.1]",
+"recipient": "a@example.com",
+"formataddr": "=?utf-8?q?Societ=C3=A0_Sportiva?= <x@[127.0.0.1]>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: =?utf-8?q?Societ=C3=A0_Sportiva?= <x@[127.0.0.1]>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Societ=C3=A0_Sportiva?= <x@[127.0.0.1]>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<=?utf-8?q?Societ=C3=A0_Sportiva?= <x@[127.0.0.1]>>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "a+b@sub.m\u00fcnchen.example",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xfc' in position 9: ordinal not in range(128)"
+},
+{
+"sender_name": "",
+"from_email": "a+b@sub.m\u00fcnchen.example",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xfc' in position 9: ordinal not in range(128)"
+},
+{
+"sender_name": "Societ\u00e0 Sportiva",
+"from_email": "a+b@sub.m\u00fcnchen.example",
+"recipient": "a@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xfc' in position 9: ordinal not in range(128)"
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "a@example.com",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: a@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"a@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "x@b\u00fccher.example",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: x@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"x@xn--bcher-kva.example"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<x@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "A.B@Example.COM",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: A.B@Example.COM\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"A.B@Example.COM"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<A.B@Example.COM>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "\"a,b\"@example.com",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: \"a,b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"\"a,b\"@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<\"a,b\"@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "\"a@b\"@example.com",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: \"a@b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"\"a@b\"@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<\"a@b\"@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "\u212aelvin@example.com",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: =?utf-8?b?4oSqZWx2aW4=?=@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"=?utf-8?b?4oSqZWx2aW4=?=@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<=?utf-8?b?4oSqZWx2aW4=?=@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "\"semi;colon\"@example.com",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: \"semi;colon\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"\"semi;colon\"@example.com"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<\"semi;colon\"@example.com>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "a@xn--bcher-kva.example",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: a@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"a@xn--bcher-kva.example"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "Club",
+"from_email": "noreply@example.com",
+"recipient": "a@\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9.example",
+"formataddr": "Club <noreply@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Club <noreply@example.com>\r\nTo: a@xn--9caaaaaaaaaaaaaaaaaaaa.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Club <noreply@example.com>",
+"envelope_to": [
+"a@xn--9caaaaaaaaaaaaaaaaaaaa.example"
+],
+"mail_from": "<noreply@example.com>",
+"rcpt_to": [
+"<a@xn--9caaaaaaaaaaaaaaaaaaaa.example>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "x@b\u00fccher.example",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "A.B@Example.COM",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "\"a,b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "\"a@b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "INFO@Example.COM",
+"recipient": "x@b\u00fccher.example",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <INFO@Example.COM>\r\nTo: x@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <INFO@Example.COM>",
+"envelope_to": [
+"x@xn--bcher-kva.example"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<x@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "INFO@Example.COM",
+"recipient": "A.B@Example.COM",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <INFO@Example.COM>\r\nTo: A.B@Example.COM\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <INFO@Example.COM>",
+"envelope_to": [
+"A.B@Example.COM"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<A.B@Example.COM>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "INFO@Example.COM",
+"recipient": "\"a,b\"@example.com",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <INFO@Example.COM>\r\nTo: \"a,b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <INFO@Example.COM>",
+"envelope_to": [
+"\"a,b\"@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<\"a,b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "INFO@Example.COM",
+"recipient": "\"a@b\"@example.com",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <INFO@Example.COM>\r\nTo: \"a@b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <INFO@Example.COM>",
+"envelope_to": [
+"\"a@b\"@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<\"a@b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\"a,b\"@example.com",
+"recipient": "x@b\u00fccher.example",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>\r\nTo: x@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <\"a,b\"@example.com>",
+"envelope_to": [
+"x@xn--bcher-kva.example"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<x@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\"a,b\"@example.com",
+"recipient": "A.B@Example.COM",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>\r\nTo: A.B@Example.COM\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <\"a,b\"@example.com>",
+"envelope_to": [
+"A.B@Example.COM"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<A.B@Example.COM>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\"a,b\"@example.com",
+"recipient": "\"a,b\"@example.com",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>\r\nTo: \"a,b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <\"a,b\"@example.com>",
+"envelope_to": [
+"\"a,b\"@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<\"a,b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\"a,b\"@example.com",
+"recipient": "\"a@b\"@example.com",
+"formataddr": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni AA <\"a,b\"@example.com>\r\nTo: \"a@b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni AA <\"a,b\"@example.com>",
+"envelope_to": [
+"\"a@b\"@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<\"a@b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\u017fender@example.com",
+"recipient": "x@b\u00fccher.example",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\u017fender@example.com",
+"recipient": "A.B@Example.COM",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\u017fender@example.com",
+"recipient": "\"a,b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni AA",
+"from_email": "\u017fender@example.com",
+"recipient": "\"a@b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "x@b\u00fccher.example",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "A.B@Example.COM",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "\"a,b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "\"a@b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "INFO@Example.COM",
+"recipient": "x@b\u00fccher.example",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <INFO@Example.COM>\r\nTo: x@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"envelope_to": [
+"x@xn--bcher-kva.example"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<x@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "INFO@Example.COM",
+"recipient": "A.B@Example.COM",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <INFO@Example.COM>\r\nTo: A.B@Example.COM\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"envelope_to": [
+"A.B@Example.COM"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<A.B@Example.COM>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "INFO@Example.COM",
+"recipient": "\"a,b\"@example.com",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <INFO@Example.COM>\r\nTo: \"a,b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"envelope_to": [
+"\"a,b\"@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<\"a,b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "INFO@Example.COM",
+"recipient": "\"a@b\"@example.com",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <INFO@Example.COM>\r\nTo: \"a@b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <INFO@Example.COM>",
+"envelope_to": [
+"\"a@b\"@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<\"a@b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\"a,b\"@example.com",
+"recipient": "x@b\u00fccher.example",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <\"a,b\"@example.com>\r\nTo: x@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"envelope_to": [
+"x@xn--bcher-kva.example"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<x@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\"a,b\"@example.com",
+"recipient": "A.B@Example.COM",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <\"a,b\"@example.com>\r\nTo: A.B@Example.COM\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"envelope_to": [
+"A.B@Example.COM"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<A.B@Example.COM>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\"a,b\"@example.com",
+"recipient": "\"a,b\"@example.com",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <\"a,b\"@example.com>\r\nTo: \"a,b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"envelope_to": [
+"\"a,b\"@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<\"a,b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\"a,b\"@example.com",
+"recipient": "\"a@b\"@example.com",
+"formataddr": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_San_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?=\r\n <\"a,b\"@example.com>\r\nTo: \"a@b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?q?Associazione_Sportiva_Dilettantistica_Polisportiva_Citt=C3=A0_di_S?=\n =?utf-8?q?an_Giovanni_in_Persiceto_e_dintorni_=C3=80=C3=88?= <\"a,b\"@example.com>",
+"envelope_to": [
+"\"a@b\"@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<\"a@b\"@example.com>"
+]
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\u017fender@example.com",
+"recipient": "x@b\u00fccher.example",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\u017fender@example.com",
+"recipient": "A.B@Example.COM",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\u017fender@example.com",
+"recipient": "\"a,b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Citt\u00e0 di San Giovanni in Persiceto e dintorni \u00c0\u00c8",
+"from_email": "\u017fender@example.com",
+"recipient": "\"a@b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "x@b\u00fccher.example",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "A.B@Example.COM",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "\"a,b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "info@ex\u00e4mple.com",
+"recipient": "\"a@b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\xe4' in position 7: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "INFO@Example.COM",
+"recipient": "x@b\u00fccher.example",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <INFO@Example.COM>\r\nTo: x@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <INFO@Example.COM>",
+"envelope_to": [
+"x@xn--bcher-kva.example"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<x@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "INFO@Example.COM",
+"recipient": "A.B@Example.COM",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <INFO@Example.COM>\r\nTo: A.B@Example.COM\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <INFO@Example.COM>",
+"envelope_to": [
+"A.B@Example.COM"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<A.B@Example.COM>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "INFO@Example.COM",
+"recipient": "\"a,b\"@example.com",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <INFO@Example.COM>\r\nTo: \"a,b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <INFO@Example.COM>",
+"envelope_to": [
+"\"a,b\"@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<\"a,b\"@example.com>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "INFO@Example.COM",
+"recipient": "\"a@b\"@example.com",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <INFO@Example.COM>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <INFO@Example.COM>\r\nTo: \"a@b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <INFO@Example.COM>",
+"envelope_to": [
+"\"a@b\"@example.com"
+],
+"mail_from": "<INFO@Example.COM>",
+"rcpt_to": [
+"<\"a@b\"@example.com>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\"a,b\"@example.com",
+"recipient": "x@b\u00fccher.example",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <\"a,b\"@example.com>\r\nTo: x@xn--bcher-kva.example\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <\"a,b\"@example.com>",
+"envelope_to": [
+"x@xn--bcher-kva.example"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<x@xn--bcher-kva.example>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\"a,b\"@example.com",
+"recipient": "A.B@Example.COM",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <\"a,b\"@example.com>\r\nTo: A.B@Example.COM\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <\"a,b\"@example.com>",
+"envelope_to": [
+"A.B@Example.COM"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<A.B@Example.COM>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\"a,b\"@example.com",
+"recipient": "\"a,b\"@example.com",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <\"a,b\"@example.com>\r\nTo: \"a,b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <\"a,b\"@example.com>",
+"envelope_to": [
+"\"a,b\"@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<\"a,b\"@example.com>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\"a,b\"@example.com",
+"recipient": "\"a@b\"@example.com",
+"formataddr": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?= <\"a,b\"@example.com>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \r\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\r\n <\"a,b\"@example.com>\r\nTo: \"a@b\"@example.com\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "=?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOMw4DDiMOM?=\n =?utf-8?b?w4DDiMOM?= <\"a,b\"@example.com>",
+"envelope_to": [
+"\"a@b\"@example.com"
+],
+"mail_from": "<\"a,b\"@example.com>",
+"rcpt_to": [
+"<\"a@b\"@example.com>"
+]
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\u017fender@example.com",
+"recipient": "x@b\u00fccher.example",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\u017fender@example.com",
+"recipient": "A.B@Example.COM",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\u017fender@example.com",
+"recipient": "\"a,b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc\u00c0\u00c8\u00cc",
+"from_email": "\u017fender@example.com",
+"recipient": "\"a@b\"@example.com",
+"error": "UnicodeEncodeError: 'ascii' codec can't encode character '\\u017f' in position 0: ordinal not in range(128)"
+},
+{
+"sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni.",
+"from_email": "mittente@example.test",
+"recipient": "destinatario@example.test",
+"formataddr": "\"Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni.\" <mittente@example.test>",
+"message": "Content-Type: text/plain; charset=\"utf-8\"\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: 8bit\r\nSubject: =?utf-8?q?Assozeta_=E2=80=94_verifica_email?=\r\nFrom: \"Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n Giovanni in Persiceto e dintorni.\" <mittente@example.test>\r\nTo: destinatario@example.test\r\nDate: Wed, 11 Nov 2026 10:00:00 -0000\r\nMessage-ID: <177000000000.1.2@host.example>\r\n\r\nQuesto messaggio \u00c3\u00a8 stato richiesto dal proprietario dell\u00e2\u0080\u0099istanza per verificare la configurazione email.",
+"envelope_from": "\"Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in\n Persiceto e dintorni.\" <mittente@example.test>",
+"envelope_to": [
+"destinatario@example.test"
+],
+"mail_from": "<mittente@example.test>",
+"rcpt_to": [
+"<destinatario@example.test>"
+]
+}
+]
+}

@@ -6,7 +6,10 @@
 // the filters safe, default, upper, lower, date, yesno, linebreaksbr, add,
 // length, floatformat and format, autoescaping and the active language's
 // number localization. Any other tag, filter, lookup or value type is
-// refused with ErrUnsupported instead of being approximated.
+// refused with ErrUnsupported instead of being approximated; an exception
+// Django raises while rendering a value the database can hold (iterating a
+// number, formatting a non-number) is ErrPython, which the document views
+// answer with the 500 page.
 //
 // The template files under templates/ are copies of BE/templates; the golden
 // test requires them to stay byte-identical and compares renders with
@@ -15,7 +18,9 @@ package djtemplate
 
 import (
 	"embed"
+	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	"sync"
@@ -32,6 +37,15 @@ var ErrUnsupported = refusal.New("djtemplate: unsupported template input")
 
 func unsupported(format string, args ...any) error {
 	return fmt.Errorf("%w: %s", ErrUnsupported, fmt.Sprintf(format, args...))
+}
+
+// ErrPython marks an exception Django raises while rendering with a value the
+// database can hold (a TypeError of an iteration or an attribute, a ValueError
+// or OverflowError of a conversion): the view answers with the 500 page.
+var ErrPython = errors.New("djtemplate: python exception")
+
+func pythonError(format string, args ...any) error {
+	return fmt.Errorf("%w: %s", ErrPython, fmt.Sprintf(format, args...))
 }
 
 // Templates of the document views.
@@ -168,6 +182,17 @@ func (r *renderer) loop(out *strings.Builder, n *forNode) error {
 		for _, key := range v.Keys() {
 			items = append(items, key)
 		}
+	case string:
+		for _, r := range v {
+			items = append(items, string(r))
+		}
+	case Safe:
+		for _, r := range string(v) {
+			items = append(items, string(r))
+		}
+	case bool, int64, *big.Int, float64:
+		// list() of a number or a bool: TypeError, the 500 page.
+		return pythonError("for over %T", sequence)
 	default:
 		return unsupported("for over %T", sequence)
 	}
@@ -288,7 +313,7 @@ func call(value any) (any, error) {
 
 func checkValue(value any) error {
 	switch value.(type) {
-	case nil, string, Safe, bool, int64, float64, Decimal, Date, DateTime, *Dict, List, Tuple, *Object, missing:
+	case nil, string, Safe, bool, int64, *big.Int, float64, Decimal, Date, DateTime, *Dict, List, Tuple, *Object, missing:
 		return nil
 	}
 	return unsupported("context value %T", value)
@@ -304,6 +329,10 @@ var (
 		"removeprefix", "removesuffix", "replace", "rfind", "rindex", "rjust", "rpartition", "rsplit", "rstrip", "split",
 		"splitlines", "startswith", "strip", "swapcase", "title", "translate", "upper", "zfill")
 	listAttributes = setOf("append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort")
+	// Attributes of Python's numbers: a lookup that names one reaches the
+	// attribute (the port does not implement it), any other name is missing.
+	numberAttributes = setOf("as_integer_ratio", "bit_count", "bit_length", "conjugate", "denominator", "from_bytes", "fromhex",
+		"hex", "imag", "is_integer", "numerator", "real", "to_bytes")
 )
 
 func setOf(names ...string) map[string]bool {
@@ -376,6 +405,11 @@ func lookup(current any, bit string) (any, error) {
 			return nil, unsupported("str attribute %q", bit)
 		}
 		return Missing, nil
+	case bool, int64, *big.Int, float64:
+		if numberAttributes[bit] {
+			return nil, unsupported("number attribute %q", bit)
+		}
+		return Missing, nil
 	case nil:
 		return Missing, nil
 	}
@@ -398,13 +432,61 @@ func (r *renderer) renderValue(value any) (string, error) {
 		return "False", nil
 	case int64:
 		return strconv.FormatInt(v, 10), nil
+	case *big.Int:
+		return v.String(), nil
 	case Decimal:
 		if _, err := decimalRat(v); err != nil {
 			return "", err
 		}
 		return emailrender.Localize(emailrender.Decimal(v), r.language)
 	case float64:
-		return emailrender.Localize(v, r.language)
+		return r.localizeFloat(v)
+	case List, Tuple, *Dict:
+		// localize leaves a container alone; str() is its Python repr, which
+		// conditional_escape escapes.
+		text, err := pythonRepr(value)
+		if err != nil {
+			return "", err
+		}
+		return emailrender.Escape(text), nil
 	}
 	return "", unsupported("rendering %T", value)
+}
+
+// localizeFloat is formats.localize(float) through numberformat.format: str()
+// of the float, or the Decimal path when str() uses an exponent (plain
+// notation, but scientific again beyond 200 digits as Django does). inf, -inf
+// and nan print as str() gives them.
+func (r *renderer) localizeFloat(value float64) (string, error) {
+	text, err := pythonFloatRepr(value)
+	if err != nil {
+		return "", err
+	}
+	switch text {
+	case "inf", "-inf", "nan":
+		return text, nil
+	}
+	if strings.Contains(text, "e") {
+		coefficient, exponent, _ := strings.Cut(text, "e")
+		exponentValue, err := strconv.Atoi(exponent)
+		if err != nil {
+			return "", unsupported("float %q", text)
+		}
+		digits := len(strings.ReplaceAll(strings.TrimPrefix(coefficient, "-"), ".", ""))
+		if digits+absInt(exponentValue) > 200 {
+			localized, err := emailrender.Localize(emailrender.Decimal(coefficient), r.language)
+			if err != nil {
+				return "", err
+			}
+			return localized + "e" + exponent, nil
+		}
+	}
+	return emailrender.Localize(value, r.language)
+}
+
+func absInt(value int) int {
+	if value < 0 {
+		return -value
+	}
+	return value
 }

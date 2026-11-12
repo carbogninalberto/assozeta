@@ -163,7 +163,7 @@ func add(value, arg any, hasArg bool) (any, error) {
 		return v + argText, nil
 	case string:
 		return v + string(argText), nil
-	case nil, bool, int64, float64, Decimal, Date, DateTime, *Object, *Dict, List, Tuple:
+	case nil, bool, int64, *big.Int, float64, Decimal, Date, DateTime, *Object, *Dict, List, Tuple:
 		// int(arg) fails; value + str is a TypeError (list + str too).
 		return "", nil
 	}
@@ -183,7 +183,7 @@ func length(value any) (any, error) {
 		return int64(len(v)), nil
 	case *Dict:
 		return int64(v.Len()), nil
-	case nil, bool, int64, float64, Decimal, Date, DateTime:
+	case nil, bool, int64, *big.Int, float64, Decimal, Date, DateTime:
 		return int64(0), nil
 	}
 	return nil, unsupported("length of %T", value)
@@ -207,9 +207,22 @@ func formatFilter(value, arg any, hasArg bool) (any, error) {
 		}
 	case int64:
 		text = strconv.FormatFloat(float64(v), 'f', 2, 64)
+	case *big.Int:
+		// int.__format__ with a float presentation converts to double first,
+		// raising OverflowError beyond float64's range.
+		number, _ := new(big.Float).SetInt(v).Float64()
+		if math.IsInf(number, 0) {
+			return nil, pythonError("format of an integer beyond float64")
+		}
+		text = strconv.FormatFloat(number, 'f', 2, 64)
 	case float64:
 		if math.IsInf(v, 0) || math.IsNaN(v) {
-			return nil, unsupported("format of a non-finite float")
+			repr, err := pythonFloatRepr(v)
+			if err != nil {
+				return nil, err
+			}
+			text = repr
+			break
 		}
 		text = strconv.FormatFloat(v, 'f', 2, 64)
 	case Decimal:
@@ -219,8 +232,9 @@ func formatFilter(value, arg any, hasArg bool) (any, error) {
 		}
 		text = decimalFixedHalfEven(r, 2, strings.HasPrefix(string(v), "-"))
 	default:
-		// str.format of a str/None/container with ".2f" raises.
-		return nil, unsupported("format of %T", value)
+		// str.format of a str/None/list/dict with ".2f" raises: Django
+		// answers the 500 page.
+		return nil, pythonError("format of %T", value)
 	}
 	// .replace(',', '-').replace('.', ',').replace('-', '.') maps ',' and '-'
 	// to '.' and '.' to ',': the same as one simultaneous replacement.
