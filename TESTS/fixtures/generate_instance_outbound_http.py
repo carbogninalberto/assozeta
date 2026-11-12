@@ -398,6 +398,32 @@ email_case('email-test-send-quoted-sender', smtp_settings('ssl', 'ssl', sender='
 email_case('email-test-send-recipient-refused', smtp_settings('starttls', 'tls'), SMTP_PASSWORD, 13, 'send', GENERIC,
            {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<rifiutato@example.test>\r\n', 'rset\r\n', 'quit\r\n', '<quit>']},
            recipient='rifiutato@example.test')
+# The fixture's 100-character sender name; its From header folds like the
+# golden row in BE_GO/internal/smtpsend/testdata/django_test_mail.json.
+LONG_SENDER_NAME = 'Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni.'
+LONG_SENDER_HEADER = ('"Associazione Sportiva Dilettantistica Polisportiva Comunale di San\r\n'
+                      ' Giovanni in Persiceto e dintorni." <mittente@example.test>')
+email_case('email-test-send-quoted-recipient', smtp_settings('starttls', 'tls'), SMTP_PASSWORD, 14, 'send', SENT,
+           {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<"a,b"@example.test>\r\n', 'data\r\n',
+                                                                message('Prova <mittente@example.test>', '"a,b"@example.test'),
+                                                                'quit\r\n', '<quit>']},
+           recipient='"a,b"@example.test')
+email_case('email-test-send-idn-recipient', smtp_settings('starttls', 'tls'), SMTP_PASSWORD, 15, 'send', SENT,
+           {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<x@xn--bcher-kva.example>\r\n', 'data\r\n',
+                                                                message('Prova <mittente@example.test>', 'x@xn--bcher-kva.example'),
+                                                                'quit\r\n', '<quit>']},
+           recipient='x@bücher.example')
+# formataddr raises after the connection and authentication: no mail from.
+email_case('email-test-send-non-ascii-sender-address',
+           {**smtp_settings('starttls', 'tls'), 'from_email': 'info@exämple.test'}, SMTP_PASSWORD, 16, 'send', GENERIC,
+           {'server': 'starttls', 'transcript': ['ehlo <local>\r\n', 'STARTTLS\r\n', '<tls>', 'ehlo <local>\r\n', PLAIN_AUTH,
+                                                  'quit\r\n', '<quit>']},
+           recipient='destinatario@example.test')
+email_case('email-test-send-long-sender-name', smtp_settings('starttls', 'tls', sender=LONG_SENDER_NAME), SMTP_PASSWORD, 17, 'send', SENT,
+           {'server': 'starttls', 'transcript': SEND_PREFIX + ['rcpt to:<destinatario@example.test>\r\n', 'data\r\n',
+                                                                message(LONG_SENDER_HEADER, 'destinatario@example.test'),
+                                                                'quit\r\n', '<quit>']},
+           recipient='destinatario@example.test')
 # A request for an older revision.
 fields = release_lease()
 add('email-test-stale-revision-send', 'owner', EMAIL_TEST, 409, {'error': 'La configurazione è cambiata. Ricarica prima di eseguire il test.'},
