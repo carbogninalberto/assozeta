@@ -290,7 +290,7 @@ SUBSCRIPTIONS = {
                 'payment': None, 'additional_fields': None, 'signature_url': None, 'group': None},
     # JSON values in additional_fields (big int, float, list, dict, non-ASCII
     # string) and a number in additional_fields (iterating it raises).
-    'jsonvalues': {'id': uid(46), 'association': 'jsonvalues', 'associate': 'greek', 'type': 2, 'role': 1,
+    'jsonvalues': {'id': uid(48), 'association': 'jsonvalues', 'associate': 'greek', 'type': 2, 'role': 1,
                    'created': '2026-10-10T10:10:10+00:00', 'payment': None,
                    'additional_fields': [
                        {'props': {'label': 'Numero grande', 'value': 12345678901234567890123}},
@@ -299,7 +299,7 @@ SUBSCRIPTIONS = {
                        {'props': {'label': 'Mappa', 'value': {'chiave': 'valore'}}},
                        {'props': {'label': 'Città', 'value': 'Ǻthos ŉ ǰ ß'}}],
                    'signature_url': None, 'group': None},
-    'fieldsnumber': {'id': uid(47), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 1,
+    'fieldsnumber': {'id': uid(49), 'association': 'alpha', 'associate': 'mario', 'type': 2, 'role': 1,
                      'created': '2026-10-11T10:10:10+00:00', 'payment': None,
                      'additional_fields': 12345678901234567890123, 'signature_url': None, 'group': None},
 }
@@ -795,6 +795,38 @@ add('medical-invalid-uuid-digits', 'anonymous', '/document/medical-appointment/'
     ["invalid literal for int() with base 16: '" + 'g' * 32 + "'"], headers=BYPASS)
 add('medical-scoped-athlete-denied', 'owner', MED('agonistica'), 403, SCOPED_DENIED, headers=SCOPED)
 
+# Every synthetic id the fixture seeds must be unique: two labels taking the
+# same uid(...) number make the adapter's insert() refuse the fixture. Only the
+# id each row is inserted under is compared (the primary id of every collection
+# plus the account of each association); a reference (a payment's association,
+# a subscription's associate) may legitimately repeat one of them.
+def seeded_ids():
+    rows = [(row['id'], f'association:{label}') for label, row in ASSOCIATIONS.items()]
+    rows += [(row['user'], f'association-user:{label}') for label, row in ASSOCIATIONS.items()]
+    rows += [(row['id'], f'associate:{label}') for label, row in ASSOCIATES.items()]
+    rows += [(row['id'], f'payment:{label}') for label, row in PAYMENTS.items()]
+    rows += [(row['id'], f'subscription:{label}') for label, row in SUBSCRIPTIONS.items()]
+    rows += [(row['id'], f'extra-user:{label}') for label, row in EXTRA_USERS.items()]
+    rows += [(row['id'], f'course:{label}') for label, row in COURSES.items()]
+    rows += [(row[0], f'course-subscription:{row[1]}/{row[2]}') for row in COURSE_SUBSCRIPTIONS]
+    rows += [(row['id'], f'instructor:{label}') for label, row in INSTRUCTORS.items()]
+    rows += [(row['id'], f'signature:{label}') for label, row in SIGNATURES.items()]
+    rows += [(row['id'], f'compensation:{label}') for label, row in COMPENSATIONS.items()]
+    rows += [(row[0], f'hour:{row[1]}') for row in HOURS]
+    rows += [(row['id'], f'template:{label}') for label, row in TEMPLATES.items()]
+    rows += [(row['id'], f'medical:{label}') for label, row in MEDICAL.items()]
+    return rows
+
+
+def check_unique_ids():
+    seen = {}
+    for value, label in seeded_ids():
+        if value in seen:
+            raise SystemExit(f'fixture.duplicate-id: {value} is the primary id of both {seen[value]} and {label}')
+        seen[value] = label
+
+
+check_unique_ids()
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'document HTML views',

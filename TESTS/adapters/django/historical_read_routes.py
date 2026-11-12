@@ -668,7 +668,7 @@ def private_redis_owner(process, port):
         time.sleep(REDIS_READY_INTERVAL)
 
 
-def start_private_redis(redis_binary, work, log):
+def start_private_redis(redis_binary, work, log, *, register=None):
     """Start redis-server and prove the server on its port is that process.
 
     A free port is taken by binding port 0 and releasing it, so another run can
@@ -676,6 +676,10 @@ def start_private_redis(redis_binary, work, log):
     answering with another process id, is stopped and retried on a new port. A
     live process whose port nothing answers on is returned as is: no other run
     holds that port, and the caller's readiness check reports the server.
+
+    ``register`` receives each started process inside the interruption-deferring
+    block and ``None`` once that process has been stopped, so the owner can stop
+    it in its own finally; without it, a failing probe stops the process here.
     """
     from TESTS.adapters.go.message_image_execution import defer_interruption
     for _ in range(REDIS_ATTEMPTS):
@@ -685,15 +689,21 @@ def start_private_redis(redis_binary, work, log):
                 '--port', str(port), '--save', '', '--appendonly', 'no',
                 '--requirepass', 'synthetic-identity-only', '--dir', str(work)],
                 stdout=log, stderr=subprocess.STDOUT)
+            if register is not None:
+                register(process)
         try:
             owner = private_redis_owner(process, port)
         except BaseException:
-            stop_process(process)
+            # A registered process stays owned by the caller's finally.
+            if register is None:
+                stop_process(process)
             raise
         if owner != 'lost':
             return process, port
         # A lost port is stopped and reaped before the next port is tried.
         stop_process(process)
+        if register is not None:
+            register(None)
     raise AssertionError('Private Redis could not start')
 
 
@@ -750,6 +760,11 @@ def owned_database(output, report, *, shared=None):
     work = None
     started = False
     redis_process = None
+
+    def register_redis(process):
+        nonlocal redis_process
+        redis_process = process
+
     try:
         # Allocation precedes startup/yield. Keep recovery discoverable even if
         # startup and its stop attempt both fail, or cancellation arrives here.
@@ -785,7 +800,8 @@ def owned_database(output, report, *, shared=None):
                             raise
                         service_state(report, 'postgres', 'running')
                         command([binaries / 'createdb', '-h', work, '-U', 'contracts', DB_NAME])
-                    redis_process, redis_port = start_private_redis(redis_binary, work, log)
+                    redis_process, redis_port = start_private_redis(
+                        redis_binary, work, log, register=register_redis)
                     service_state(report, 'redis', 'running')
                     yield work, redis_port, log
                 finally:
