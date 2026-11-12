@@ -2,7 +2,7 @@
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
-  "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+  "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "UI/src/utils/Functions.js": "c9ed79a8214d4e2ceb9d91e2cd3d52f42a32706f96e2890082ba5584c6787147",
   "UI/src/routes/association/course/campsAndRetreats/CampsAndRetreatsList.svelte": "22150f2bff9e259b3c9ac25e30f3727d3bfa41fb70d5cacf2cfca4ec3bc626f6",
@@ -20,9 +20,9 @@ const reviewed = {
   "UI/src/routes/association/course/campsAndRetreats/overview/modals/components/PeriodAndServiceSelector.svelte": "045c64688e145e887b0d6025067c6162c87100607cc66d497cbd4c92ac53ef97",
   "UI/src/routes/forms/CampsAndRetreatsForm.svelte": "967c5b4bbc5ac737350f4e9ad281249aaed8b8f060a118ad6fed60c16da2254d",
   "BE/application/views/camp_and_retreats_views.py": "9cceb73c7d4587564b990fb95ac8c038ac32a828527e9b6c3479903e9fff10f2",
-  "BE/application/serializers/camps_and_retreats_serializers.py": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2",
+  "BE/application/serializers/camps_and_retreats_serializers.py": "43b1860dbf0edbeb0ff3463a35ad4e07ee99e2bbde6d72694d34b3659c24a273",
   "BE/application/utils/camps_and_retreats_utils.py": "2e1cbaf150b0fcf4a87c60ff8b41e0bf43f999f2159960d6c4e8eb6e6391db61",
-  "BE/application/models/courses_models.py": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6",
+  "BE/application/models/courses_models.py": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/routes/calendar/Calendar.svelte": "4ba491bb4384adef00abe3c50996f8eac3302a43e64ad07df8d3c3977ebba63e",
   "UI/src/routes/calendar/modals/AddCalendarEvent.svelte": "764483c367969b378edbbf2b0348e6d6fe5626d53de98782fbfd79a1b9b5db6f",

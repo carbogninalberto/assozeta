@@ -14,7 +14,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "BE/communications/models.py": "32530538f7a66f9cf0a6e0c94f7846ef142bce13e5a1cae67663126927ebc591",
     "BE/communications/views.py": "dd9b9feae532e57b67d3d89a137543293b17efc387f407f02f207b7a9efebd7c",
     "BE/application/views/statistic_views.py": "ef067ca1027ba67f32d04e20df927ae5b3c5bf85a48b2f4fa4dae5f12b40783f",
-    "BE/communications/serializers.py": "8fcc36f71d436a2cf821604a24dcb7325cbd70dfde2dbf557c8702e48d195f0d",
+    "BE/communications/serializers.py": "2f53cb68ea3804b35cffea81315f2c17b5c55c2f4ba8129b42f77ccc62dcf354",
     "UI/src/routes/association/communication/settings/sections/EmailSMTP.svelte": "878c6421a023d8e0135b8c0e871c20cbc7391aee8268478b22327efabd9128bb",
     "UI/src/routes/association/communication/settings/Menu.svelte": "2a152a0eeaf3196dd1b569e4bd656da561f93836a84049fed6cbb41186f9e610",
     "UI/src/routes/association/communication/settings/sections/Stats.svelte": "f595cb94d796d748b44c26c321702fdd387118b039909ad6c6f89a76949d2a65",
@@ -28,7 +28,7 @@ export const communicationAuthReviewedSources = Object.freeze({
     "BE/application/views/two_fa_views.py": "51b94979b66fae4afc9f65386b0f619258c061fc608b1dd29d3dc59a071cfdf3",
     "BE/application/views/auth_views.py": "f2c585dd36d636ab89cfcd49fb3af048bf61036e93e9924b5808d87be7bf6eb3",
     "UI/src/routes/login/Login.svelte": "8c5e4b3552f09734d9ca60d256ee6e6a6e008e0f6792e519faac770c106889a1",
-    "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+    "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
     "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
     "UI/src/components/inputs/email-builder/emailbuilder.js": "1e96505ab77517ff72f491223a91992d80d33ad8b79a42d13868c844ab331f07"
 });
@@ -227,7 +227,7 @@ export const communicationAuthSourceContracts = Object.freeze([
     ],
     [
         "BE/communications/serializers.py",
-        "class AutomationWorkflowSerializer(serializers.ModelSerializer):",
+        "class AutomationWorkflowSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):",
         19
     ],
     [

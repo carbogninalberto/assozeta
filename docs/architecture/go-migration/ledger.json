@@ -2411,13 +2411,13 @@
         "file": "BE/application/models/courses_models.py",
         "line": 140,
         "symbol": "Course.save",
-        "sha256": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6"
+        "sha256": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/course_writes.go",
         "BE_GO/internal/dto/course_writes.go",
@@ -2471,13 +2471,13 @@
         "file": "BE/application/models/courses_models.py",
         "line": 247,
         "symbol": "CourseSubscription.delete",
-        "sha256": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6"
+        "sha256": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, *args, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/course_subscriptions.go",
         "BE_GO/internal/dto/course_subscriptions.go",
@@ -39500,15 +39500,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/balance_sheet.py",
-        "line": 114,
+        "line": 115,
         "symbol": "CustomAccountSerializer.save",
-        "sha256": "89f27c6541c882a4e1cc0181ecbd4a3622b2dcf1cf12d773a117fb1bc2d6b4e7"
+        "sha256": "a24d31da2347f0b3252bacb96482595e2cd877a2576e6e698019b4fe09b8e3e0"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -39563,15 +39563,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/balance_sheet.py",
-        "line": 181,
+        "line": 182,
         "symbol": "CustomAccountTransferSerializer.save",
-        "sha256": "89f27c6541c882a4e1cc0181ecbd4a3622b2dcf1cf12d773a117fb1bc2d6b4e7"
+        "sha256": "a24d31da2347f0b3252bacb96482595e2cd877a2576e6e698019b4fe09b8e3e0"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/dto/balance_account_write.go",
         "BE_GO/internal/domain/balance_accounts.go",
@@ -39626,15 +39626,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 29,
+        "line": 30,
         "symbol": "CampsAndRetreatsPeriodSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+        "sha256": "43b1860dbf0edbeb0ff3463a35ad4e07ee99e2bbde6d72694d34b3659c24a273"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/camps_periods.go",
         "BE_GO/internal/dto/camps_period_write.go",
@@ -39686,15 +39686,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 84,
+        "line": 85,
         "symbol": "CampsAndRetreatsPeriodsServiceSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+        "sha256": "43b1860dbf0edbeb0ff3463a35ad4e07ee99e2bbde6d72694d34b3659c24a273"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "deprecated",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -39721,15 +39721,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 15,
+        "line": 16,
         "symbol": "CampsAndRetreatsSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+        "sha256": "43b1860dbf0edbeb0ff3463a35ad4e07ee99e2bbde6d72694d34b3659c24a273"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/camps_core.go",
         "BE_GO/internal/dto/camps_core_write.go",
@@ -39780,15 +39780,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 207,
+        "line": 208,
         "symbol": "CampsAndRetreatsSubscriptionInfoSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+        "sha256": "43b1860dbf0edbeb0ff3463a35ad4e07ee99e2bbde6d72694d34b3659c24a273"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/camps_subscriptions.go",
         "BE_GO/internal/dto/camps_subscriptions.go",
@@ -39839,15 +39839,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 98,
+        "line": 99,
         "symbol": "CampsAndRetreatsSubscriptionPeriodSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+        "sha256": "43b1860dbf0edbeb0ff3463a35ad4e07ee99e2bbde6d72694d34b3659c24a273"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "deprecated",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -39874,15 +39874,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/camps_and_retreats_serializers.py",
-        "line": 112,
+        "line": 113,
         "symbol": "CampsAndRetreatsSubscriptionSerializer.save",
-        "sha256": "1376005299ec37442d6599ab272ebf1fb649274c994ee4330ce64f0bb5d1b3c2"
+        "sha256": "43b1860dbf0edbeb0ff3463a35ad4e07ee99e2bbde6d72694d34b3659c24a273"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "deprecated",
+      "status": "needs_review",
       "go": [],
       "dependencies": [],
       "contract": {
@@ -40004,15 +40004,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/courses_serializers.py",
-        "line": 459,
+        "line": 460,
         "symbol": "CourseAddSerializer.save",
-        "sha256": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632"
+        "sha256": "6b5ed962bb1aaf588e04ecffba1f6bcedd26f8a5d55c8e9a0d97430c893a1481"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/course_writes.go",
         "BE_GO/internal/dto/course_writes.go",
@@ -40064,15 +40064,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/invoice_serializers.py",
-        "line": 42,
+        "line": 44,
         "symbol": "InvoiceSuppliersSerializer.save",
-        "sha256": "3a52147b36fe7977661358f629cfc45101aa59d15aae06f5f7078c1662ff3fb9"
+        "sha256": "ad677c34483dfa07b2bbe9b8f17c3283600b0ab58620f0d784dde4051da52aed"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/invoice_parties.go",
         "BE_GO/internal/dto/invoice_parties.go",
@@ -40124,15 +40124,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/payment_serializers.py",
-        "line": 62,
+        "line": 63,
         "symbol": "PaymentEntrySerializer.save",
-        "sha256": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa"
+        "sha256": "7381f90ea6fdec4ac99e8198deb8fe107cd0ad54fbce3625932a13035f2d179b"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/domain/payment_writes.go",
         "BE_GO/internal/dto/payment_writes.go",
@@ -40183,15 +40183,15 @@
       "kind": "serializer_hook",
       "django": {
         "file": "BE/application/serializers/payment_serializers.py",
-        "line": 28,
+        "line": 29,
         "symbol": "SupplierSerializer.save",
-        "sha256": "6e6fab314f1e391ada81ed3c983bb146aad5bbc1bc2ec71750078dd10f76f2fa"
+        "sha256": "7381f90ea6fdec4ac99e8198deb8fe107cd0ad54fbce3625932a13035f2d179b"
       },
       "source_present": true,
       "declaration": {
         "arguments": "self, **kwargs"
       },
-      "status": "verified",
+      "status": "needs_review",
       "go": [
         "BE_GO/internal/dto/supplier_write.go",
         "BE_GO/internal/domain/supplier_writes.go",
