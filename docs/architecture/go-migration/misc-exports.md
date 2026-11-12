@@ -83,3 +83,5 @@ Celery message on the run's private broker).
 - XLSX (13 more cases, 70 in all; workbooks compared with `TESTS/contracts/xlsx.py`): RED `xlsx-red-r1` (Django 70/70, Go 500 on
   `misc-exports-subs-xls-full`), GREEN `xlsx-versioned-r1` on all four transports, mutation `xlsx-mutation-r2`
   (`len(col) + 2` widths fail `misc-exports-subs-xls-full`, CAUGHT).
+- t11camps: the `strange` member carries `=SEQUENCE(2)` (a dynamic array formula: `cm="1"` cell and `xl/metadata.xml`,
+  compared part by part). 70 cases; CI `t11camps-1` (run 43196596071) green on four transports.

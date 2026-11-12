@@ -60,8 +60,9 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
 
 - HTML form input carrying the many-to-many services key (QueryDict.getlist) or file parts.
 - Payment walks whose outcome this port does not reproduce: a soft-deleted payment or one outside the request's
-  `X-Group-Id` that has no association (the index row is not characterized), a failure with more than one subscription period in the walk
-  (Django's order is the database's), `Payment.save()` description failures, and amounts or notes PostgreSQL would
+  `X-Group-Id` that has no association (the index row is not characterized), a failure with more than one subscription
+  period in the walk unless every period fails before its first save with the same message (Django's order is the
+  database's), a `Payment.save()` description failure whose text is not known, and amounts or notes PostgreSQL would
   reject (numeric overflow, the non-negative amount constraint, notes over 5120 characters).
 
 ## Primary key in the body (t5pk)
@@ -91,3 +92,11 @@ tailcourses: in the service update walk a recomputed amount past numeric(9,2) (o
 ## Round t3courses
 
 Multipart bodies with file parts and the repeated form key for the services list (`QueryDict.getlist`, kept by the form parsers as `RequestField.All`). 136 cases GREEN on four transports (run 43085954222). Mutation (last value instead of the list) CAUGHT.
+
+## Round t11camps
+
+`Payment.save()` description failures in the service update walk answer the exception text as the 500 (the service
+update stays, the failing save writes nothing). A walk whose subscription periods all fail before saving, with the same
+message, answers that 500 whatever the database's order. Cases `services-update-null-metas-two-payments-server-error`,
+`services-update-description-failure-server-error`, `services-update-transfer-description-two-payments-server-error`
+(139 cases). Local sweep `t11camps-local` and CI `t11camps-1` (run 43196596071) green on four transports.
