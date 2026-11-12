@@ -125,18 +125,33 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
   errors join the invoice errors, another association's reference is the generic 403, and a valid object is the 500 page
   (on add the payment is kept).
 
+## t11inv
+
+- Supplier add/update: a nested `supplier` object carrying a `supplier_id` key is validated as DRF does (`UUIDField` plus
+  `UniqueValidator` over the live suppliers, group header aware): a malformed value is `Must be a valid UUID.`, null is
+  `may not be null`, and an existing id of any association is
+  `supplier and customers with this supplier id already exists.`. A valid object is the 500 page (on add the payment is
+  kept). Nested `supplier.<key>` form fields (urlencoded update, multipart add) are read with DRF's HTML-form rules.
+- Supplier add/update: a nested `payment` object (JSON) and `payment.<key>` form fields follow `PaymentSerializer`'s nested
+  rules (the user, associate, instructor, supplier and invoice serializers, primary-key uniqueness, relation existence;
+  another association's row is the generic 403). A valid object is the 500 page: the payment is kept on add, and an update
+  writes nothing. Code: `dto/invoice_party_payment.go`, `service/invoice_parties.go` (`nestedPayment`).
+- Customer add with a multipart body that carries file parts: every field is read with DRF's HTML-form rules (absent
+  booleans False, `''` to null or absent per field, JSON fields parsed from text) (`dto/customer_invoice_form.go`). Other
+  form bodies stay the 500 page in both. Success cases live in the invoice-sync-print fixture, error cases here.
+- Still refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and form JSON nested deeper than the
+  ported depth.
+- Fixture: 277 cases (was 186); invoice-sync-print 82 (was 77). Local sweep `t11inv-local`: both green (CI: t11inv-1).
+
 ## Not ported (refused with a 500 before any write)
 
 - Customer-list invoices without a PDF whose FatturaPA inputs are outside `internal/fatturapa`'s subset (`ErrUnsupported`,
   checked for all of them before the first save).
 - A valid customer add was refused here; it is ported in
   [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
-- Nested `payment` objects (DRF's nested serializer validation and writes: its validation nests the account, associate,
-  instructor, supplier and invoice serializers).
+- Two sub-cases stay refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and form JSON nested
+  deeper than the ported depth.
 - `?` ordering (a random order has no answer to reproduce). Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`.
-- Multipart bodies with file parts on the customer add (Django merges files into
-  a mutable copy; every other form body is a 500 in both). The supplier add
-  reads the merged form.
 
 ## Evidence (TDD)
 
