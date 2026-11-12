@@ -128,10 +128,6 @@ func subscriptionCreateGroup(header string) (stored *string, sent string) {
 // Add follows subscription_add: owners and collaborators, the public form
 // (anonymous) and a logged-in athlete naming an association.
 func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedIdentity, request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
-	// Form bodies are not ported.
-	if request.Form {
-		return nil, domain.ErrSubscriptionCreateNotPorted
-	}
 	group, _ := subscriptionCreateGroup(request.Group)
 	// A malformed header leaves the manager queries unfiltered but still fails
 	// the first create: the query group is nil, the flag marks the failure point.
@@ -157,6 +153,13 @@ func (s *SubscriptionCreates) Add(ctx context.Context, identity domain.ResolvedI
 	user := identity.ScopeUser
 	quick := request.Mode != nil && *request.Mode == "only_associate"
 	request.AthleteRequest = user.Role != domain.RoleAssociation && objectHas(data, "sport_association")
+	// _prepare_subscription_request then assigns data['sport_association'] for an
+	// association account in quick mode. A form body is an immutable QueryDict
+	// unless a multipart body carried a file part (DRF hands the view a mutable
+	// copy): the assignment raises, the 500 page, before any key is read.
+	if quick && user.Role == domain.RoleAssociation && request.Form && !data.HasUpload() {
+		return nil, domain.ErrSubscriptionCreateServer
+	}
 	if quick {
 		if user.Role != domain.RoleAssociation && objectHas(data, "sport_association") && objectHas(data, "associate") {
 			return nil, s.quickMember(ctx, identity, data, queryGroup)
@@ -496,6 +499,11 @@ func (s *SubscriptionCreates) createSubscription(ctx context.Context, tx domain.
 	associateValue, present := data.Lookup("associate_data")
 	if !present {
 		return nil, pythonKeyError("associate_data")
+	}
+	if upload, isUpload := associateValue.(domain.RequestUpload); isUpload {
+		// data['associate_data']['born_date'] on a multipart file part: the TypeError
+		// names Django's upload class. Nothing has been written yet.
+		return nil, renewUploadSubscriptError(upload)
 	}
 	associate, ok := associateValue.(domain.RequestObject)
 	if !ok {

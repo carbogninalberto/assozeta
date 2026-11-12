@@ -126,11 +126,10 @@ The certificate named by `medical_certificate.medical_id` follows
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- an association whose
-  user is not an owner account; form bodies and a non-empty `X-Group-Id` on both routes;
+- a collaborator whose connected account owns exactly one association;
 - `str(e)` bodies of the Python exceptions not listed above (non-dict tutors and similar; dateutil's own messages are ported with `internal/pydateutil`);
-- the inputs `subscription-create.md` refuses: preregistration, new member accounts, signature uploads, `type_of_associate`, and the
-  rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` it stays refused): the renewed subscription's person, certificate, custom data, role and number, the request's type; an unknown or foreign one is the 400 `Iscrizione da rinnovare non trovata.`). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
+- the inputs `subscription-create.md` refuses: new member accounts, signature uploads, `type_of_associate`, and the
+  rest. A renewal with `preregistration: true` and no `subscription_id` is ported (tailsubs, `renew-preregistration`; with a `subscription_id` in t8subs, cases `renew-preregistration-*`): the renewed subscription's person, certificate, custom data, role and number, the request's type; an unknown or foreign one is the 400 `Iscrizione da rinnovare non trovata.`). A typed certificate expiration date without an upload is ported (tailsubs): the placeholder image, its document and the
   association account's certificate are created like in `subscription/add`.
   In approve, a draft hitting one of them refuses the whole request.
 
@@ -200,3 +199,16 @@ answered (`User not allowed.` unless the member has a subscription there; cases 
 integer id is `uuid.UUID(int=...)`: the association it names is found (`renew-athlete-association-integer-id`,
 `-integer-id-duplicate`), while a float, a negative or a value past 128 bits fails the lookup, the 500 page
 (`-integer-unknown`, `-negative-id`, `-float-id`, `-oversized-id`). 112 cases.
+
+## t8subs
+
+- A non-empty `X-Group-Id` follows the same rule (the clean-up of unpaid payments and the course lookup are group-filtered). An unknown
+  uuid answers 400 with the database's foreign-key text, a malformed header 400 with Django's invalid-uuid message or the 409 when the
+  duplicate check answers first; in approvals each failing draft is skipped (cases `group-renew-*`, `group-approve-*`).
+- A form renewal answers 400 with the Python error text (`string indices must be integers, not 'str'`, `'associate_data'`,
+  `'InMemoryUploadedFile' object is not subscriptable`), a member's form renewal the 500 page; approve answers 400 without
+  `associate_import_draft_ids`, else the 500 page (cases `renew-form-*`, `approve-form-*`).
+- A member renewal's association whose user is not an association account: an athlete 403 `User is not a sport association`, a
+  collaborator without a connected account owning an association 400 `SportAssociation matching query does not exist.`.
+- Preregistration with a `subscription_id` in renewals and approvals is ported (`renew-preregistration-*`,
+  `approve-draft-preregistration-renews-subscription`), and the subscription/create ports above apply to every draft.

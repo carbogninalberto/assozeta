@@ -311,6 +311,16 @@
    "born": "1980-01-01",
    "user": null,
    "email": null
+  },
+  "quick_form": {
+   "id": "a1000000-0000-4000-8000-000000970001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Quirino",
+   "last": "Modulo",
+   "tax_code": "MDLFRM80A01H501Z",
+   "born": "1980-01-01",
+   "user": "owner",
+   "email": null
   }
  },
  "certificates": {
@@ -22955,6 +22965,197 @@
     }
    },
    "setup": null
+  },
+  {
+   "name": "subscription-create-form-all-keys-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": null,
+   "setup": null,
+   "raw_body": "new_user_account=a&associate_data=b&associate_tutor_data=c&signature=d",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-create-form-empty-validation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": null,
+   "setup": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-create-form-missing-keys-validation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "validation errors."
+   },
+   "effect": null,
+   "body": null,
+   "setup": null,
+   "raw_body": "new_user_account=a&signature=d",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-create-form-quick-owner-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": null,
+   "setup": null,
+   "raw_body": "associate=a1000000-0000-4000-8000-000000930017",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-create-form-quick-owner-multipart-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "quick_form",
+     "columns": {}
+    },
+    "payment": {
+     "match": "new",
+     "columns": {
+      "payment_date": null,
+      "meta_payment_categories": null,
+      "meta": null,
+      "amount": "25.00"
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null
+     },
+     "subscription_number": "0",
+     "subscription_type": null,
+     "start_date": "$season_start",
+     "end_date": "$season_end"
+    },
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Quirino Modulo.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "associate": "a1000000-0000-4000-8000-000000970001"
+   },
+   "setup": {
+    "association": {
+     "multiple_subscription_fee": false,
+     "subscription_fee": "25.00",
+     "enable_quotes_management": false
+    },
+    "owner": {
+     "subscription_duration": 2
+    }
+   },
+   "raw_body": "--subscription-create-form-boundary\r\nContent-Disposition: form-data; name=\"associate\"\r\n\r\na1000000-0000-4000-8000-000000970001\r\n--subscription-create-form-boundary\r\nContent-Disposition: form-data; name=\"attachment\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nallegato\r\n--subscription-create-form-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=subscription-create-form-boundary"
+  },
+  {
+   "name": "subscription-create-form-anonymous-unknown-association-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": null,
+   "setup": null,
+   "raw_body": "sport_association=nessuno&new_user_account=a&associate_data=b&associate_tutor_data=c&signature=d",
+   "content_type": "application/x-www-form-urlencoded"
   },
   {
    "name": "subscription-create-anonymous-over-the-rate",

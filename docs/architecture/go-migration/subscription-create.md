@@ -255,25 +255,22 @@ A request without an account that declares a body above `PUBLIC_UPLOAD_MAX_BYTES
 ## Not ported
 
 Refused with the 500 page before anything is committed:
-- form bodies, a non-empty `X-Group-Id` (the managers' group filter and stored group); an athlete request from an account that
+- an athlete request from an account that
   is neither an athlete nor an association; the quick mode from a member account with an id that is a number or a boolean; a `sport_association` that is a list or an object;
-- in the family wizard's entries every input refused for a single registration, and with `type: grouped_subscriptions` two
-  matching earlier subscriptions with the same newest creation date; in the quick subscription an
-  owner with several associations, plan ids or fees of other shapes (booleans, containers, more than two decimals) and a
+- in the family wizard's entries every input refused for a single registration; in the quick subscription an
+  owner with several associations, plan ids of other shapes (booleans, containers) and a
   certificate choice that depends on the unordered subscriptions;
 - in a preregistration that renews a subscription: an account name matching several
-  associations, a renewed subscription without an associate; preregistration in renewals and draft approvals;
+  associations, a renewed subscription without an associate;
 - new member info with a non-string e-mail, a numeric
   `new_member` flag; a signature upload whose generated key already exists;
 - the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
   control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
   `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; 
 - an unknown non-canonical `associate_id` spelling or one whose save would hit the unique tax-code index (the `associate_id` branch
-  itself is ported, see [subscription-renew](subscription-renew.md)), a born date that is a float or a container, a year before 1000 or a text
-  `internal/pydateutil` refuses (over 64 KiB), a tutor without
-  `born_date`, an associate that already has tutors when a tutor is added, a tutor that matches the associate itself;
-- plan fees whose `float()` text is not a plain decimal, float plan ids, a non-string membership plan name used as membership type,
-  amounts whose third decimal is not zero, two reusable payments with the same newest creation date.
+  itself is ported, see [subscription-renew](subscription-renew.md)), a year before 1000 or a text
+  `internal/pydateutil` refuses (over 64 KiB), an associate that already has tutors when a tutor is added, a tutor sent with an
+  `associate_id` naming the minor's own row.
 
 Routes (not routed in Go): `subscription/<uid>/transfer`, `subscription/sign` (signature upload) and `subscription/import/upload` (spreadsheet
 parsing). The workers' tasks (`print_document_subscription`, `check_workflows_trigger`) stay in Django.
@@ -415,3 +412,16 @@ Re-run green natively (`famwiz-rerun-r1`): `subscription-renew` 75/75, `subscrip
   GREEN (`v2subs3-versioned-r1`, after merging the base): 163/163 on native Django, native Go, Caddy `/api/v1` and
   `/api/v2`. Mutation (`v2subs3-mutation-r1`): drawing the placeholder for today's date too fails Go on
   `subscription-create-wizard-certificate-date-today-skipped` (CAUGHT).
+
+## t8subs
+
+- A non-empty `X-Group-Id` filters every group-aware lookup; rows created through `<Model>.objects.create` (Payment, Subscription, an
+  Associate without tax code) store it and their create entries show the header as sent, while a later save logs the stored uuid
+  against it. `get_or_create` stores none and an associate the manager cannot see is audited like a create; another spelling is
+  canonicalised; a malformed header fails at the first grouped insert (500), an unknown uuid at the deferred foreign key.
+- Form and multipart bodies read with QueryDict semantics; an owner's quick mode on an immutable QueryDict is the 500 page.
+- Born dates of any JSON type go through `str()` and dateutil; newest-first lookups run the same `ORDER BY creation_date DESC LIMIT 1`;
+  a tutor may omit `born_date`, send null, or carry the minor's tax code.
+- Plan ids compare as `str()`, fees read Python `float()` spellings (a rejected text and inf are 500s, nan no payment), a third decimal
+  is rounded in the column and audited as the float, and a membership plan name is `str()`.
+- Cases `group-*`, `form-*`, `born-date-*`, `tutor-*`, `plan-*`, `fee-*` and the two ties.

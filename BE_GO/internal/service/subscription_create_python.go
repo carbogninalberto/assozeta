@@ -122,7 +122,8 @@ func subscriptionNamedMember(ctx context.Context, tx domain.SubscriptionCreateTr
 	switch value.(type) {
 	case nil:
 		return nil, domain.ErrSubscriptionCreateServer
-	case string, json.Number, bool:
+	case string, json.Number, bool, domain.RequestUpload:
+		// A multipart file part is compared by its name (str() of the upload).
 	default:
 		// Containers as a lookup value are not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted

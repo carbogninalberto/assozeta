@@ -122,12 +122,14 @@ CATEGORY_TITLE = 'Quota tesseramento'
 
 
 def add(name, actor, status, response, *, body=None, method='POST', query='', headers=None, effect=None, setup=None, throttle=None,
-        retry_after=None):
-    """throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age."""
+        retry_after=None, raw_body=None, content_type=None):
+    """throttle: {'preload': n, 'age': seconds}: the address's request history for the route holds n entries of that age.
+    raw_body/content_type: a body sent byte for byte (a form or multipart body) instead of the JSON `body`."""
     cases.append({'name': f'subscription-create-{name}', 'actor': actor, 'method': method, 'path': '/subscription/add' + query,
                   'headers': headers or {}, 'status': status, 'response': response, 'effect': effect, 'body': body,
                   'setup': setup, **({'throttle': throttle} if throttle is not None else {}),
-                  **({'retry_after': retry_after} if retry_after is not None else {})})
+                  **({'retry_after': retry_after} if retry_after is not None else {}),
+                  **({'raw_body': raw_body, 'content_type': content_type} if raw_body is not None else {})})
 
 
 def person(first, last, tax_code, born='15/03/1990', **extra):
@@ -598,15 +600,16 @@ QUICK_SETUP = {'association': {'multiple_subscription_fee': False, 'subscription
                'owner': {'subscription_duration': 2}}
 
 
-def quick(actor, label, full_name, *, payment, subscription, headers=None, setup=None, plan=None):
+def quick(actor, label, full_name, *, payment, subscription, headers=None, setup=None, plan=None, name=None, raw_body=None,
+          content_type=None):
     body = {'associate': ASSOCIATES[label]['id']}
     if plan is not None:
         body['plan_id'] = plan
     audit = [{'model': 'payment', 'action': 0, 'ref': 'payment', 'changes': {'amount': ['None', payment.pop('$audit')]}, 'index': [OWN, 'direct']},
              {'model': 'subscription', 'action': 0, 'ref': 'subscription', 'changes': {}, 'index': [OWN, 'direct']}]
     columns = {'payment_date': None, 'meta_payment_categories': None, 'meta': None, **payment}
-    add('quick-' + label.replace('_', '-'), actor, 200, {'status': 'success', 'payment_id': '$new'}, query='?m=only_associate', body=body,
-        headers=headers, setup=setup,
+    add(name or 'quick-' + label.replace('_', '-'), actor, 200, {'status': 'success', 'payment_id': '$new'}, query='?m=only_associate',
+        body=body, headers=headers, setup=setup, raw_body=raw_body, content_type=content_type,
         effect={'actor': actor, 'associate': {'match': label, 'columns': {}}, 'payment': {'match': 'new', 'columns': columns},
                 'subscription': {'type': 2, 'role': 1, 'status_flag': 1, 'meta': {'plan_id': plan}, 'subscription_number': '0',
                                  'subscription_type': None, **SEASON, **subscription},
@@ -1626,6 +1629,46 @@ same_tax_effect['audit'] = [
      'index': [OWN, 'direct']},
 ] + same_tax_effect['audit']
 add('tutor-same-tax-code-as-minor', 'owner', 200, SUCCESS(25.0), body=request(same_tax_minor, tutor=same_tax_tutor), effect=same_tax_effect)
+
+# --- Form bodies ---------------------------------------------------------------------------------------------
+# DRF hands the view a QueryDict: every value is a string (the last value of a repeated key) or an uploaded
+# file. It is immutable for a urlencoded body and for a multipart body without file parts, and a mutable copy
+# when a multipart body carries a file part. _prepare_subscription_request assigns data['sport_association']
+# for an association account in quick mode: on the immutable dict the assignment is the 500 page (nothing is
+# written); on the mutable copy the quick re-subscription runs as for JSON. Without every required key the
+# view answers the 400 validation body; with all of them create_subscription reads
+# data['associate_data']['born_date'] on a string (a TypeError, the 500 page).
+FORM = 'application/x-www-form-urlencoded'
+BOUNDARY = 'subscription-create-form-boundary'
+form_ids = iter(f'a1000000-0000-4000-8000-{970001 + n:012d}' for n in range(10))
+ASSOCIATES['quick_form'] = {'id': next(form_ids), 'association': OWN, 'first': 'Quirino', 'last': 'Modulo', 'tax_code': 'MDLFRM80A01H501Z',
+                            'born': '1980-01-01', 'user': 'owner', 'email': None}
+
+
+def multipart(*parts):
+    """A multipart body of (name, filename, content) parts: a filename makes the part a file upload."""
+    lines = []
+    for name, filename, content in parts:
+        disposition = f'Content-Disposition: form-data; name="{name}"'
+        if filename:
+            disposition += f'; filename="{filename}"\r\nContent-Type: text/plain'
+        lines.append(f'--{BOUNDARY}\r\n{disposition}\r\n\r\n{content}\r\n')
+    lines.append(f'--{BOUNDARY}--\r\n')
+    return ''.join(lines)
+
+
+add('form-all-keys-server-error', 'owner', 500, SERVER,
+    raw_body='new_user_account=a&associate_data=b&associate_tutor_data=c&signature=d', content_type=FORM)
+add('form-empty-validation', 'owner', 400, VALIDATION, raw_body='', content_type=FORM)
+add('form-missing-keys-validation', 'owner', 400, VALIDATION, raw_body='new_user_account=a&signature=d', content_type=FORM)
+add('form-quick-owner-server-error', 'owner', 500, SERVER, query='?m=only_associate',
+    raw_body=f"associate={ASSOCIATES['quick']['id']}", content_type=FORM)
+quick('owner', 'quick_form', 'Quirino Modulo', name='form-quick-owner-multipart-file', setup=QUICK_SETUP,
+      payment={'amount': '25.00', '$audit': '25.00'}, subscription={},
+      raw_body=multipart(('associate', None, ASSOCIATES['quick_form']['id']), ('attachment', 'nota.txt', 'allegato')),
+      content_type=f'multipart/form-data; boundary={BOUNDARY}')
+add('form-anonymous-unknown-association-server-error', 'anonymous', 500, SERVER,
+    raw_body='sport_association=nessuno&new_user_account=a&associate_data=b&associate_tutor_data=c&signature=d', content_type=FORM)
 
 # --- Limits of requests without an account --------------------------------------------------------------------
 # Requests without an account are counted per address (30 in 600 seconds): the next one is asked to wait before the body
