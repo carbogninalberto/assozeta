@@ -214,7 +214,7 @@ func (t *campsTransaction) WalkRows(ctx context.Context, period string) ([]domai
  pay.payment_id, COALESCE(pay.sport_association_id::text, '') AS sport_association_id, pay.sport_association_id IS NULL AS association_null,
  pay.subject, pay.archived, pay.payment_category_id, cat.name AS payment_category_name, pay.description, pay.meta::text AS meta,
  pay.course::text AS course, pay.amount::text AS amount, pay.notes, pay.meta_payment_categories::text AS meta_payment_categories,
- pay.deleted, pay.group_id::text AS group_id
+ pay.deleted, pay.group_id::text AS group_id, pay.custom_accounts_id IS NOT NULL AS custom_accounts_set
  FROM application_campsandretreatssubscriptionperiod sp
  JOIN application_payment pay ON pay.payment_id=sp.payment_id
  JOIN application_campsandretreatsperiod p ON p.camps_and_retreats_period_id=sp.camps_and_retreats_period_id

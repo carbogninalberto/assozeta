@@ -147,6 +147,8 @@ func subscriptionImportLabels(labels []pandasxlsx.Value) []any {
 			rendered = append(rendered, label.S)
 		case pandasxlsx.Int, pandasxlsx.Int64:
 			rendered = append(rendered, json.Number(strconv.FormatInt(label.I, 10)))
+		case pandasxlsx.BigInt, pandasxlsx.Uint64:
+			rendered = append(rendered, json.Number(label.Str()))
 		case pandasxlsx.Float:
 			if math.IsNaN(label.F) || math.IsInf(label.F, 0) {
 				return nil

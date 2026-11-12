@@ -75,7 +75,8 @@ def seed_rows(source, created):
     for row in source['payments'].values():
         insert(Payment, Payment(payment_id=row['id'], amount=Decimal(row['amount']), paid=row['paid'], subject=row['subject'],
                                 description=row['description'], payment_category_id=categories[row['category']]['id'],
-                                notes=row['notes'], meta_payment_categories=row['meta'], creation_date=when(row['created']),
+                                notes=row['notes'], meta_payment_categories=row['meta'], meta=row.get('payment_meta'),
+                                creation_date=when(row['created']),
                                 deleted=row.get('deleted', False),
                                 sport_association_id=source['ids']['own_association']))
     services, payments = source['services'], source['payments']

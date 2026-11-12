@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 // ResolvePaymentDescription computes the value persisted by Payment.save's
@@ -38,13 +39,21 @@ func ResolvePaymentDescription(ctx context.Context, input domain.PaymentDescript
 		case 3:
 			// The Django branch dereferences destination_account_name, which is not
 			// a CustomAccounts field. Do not invent a destination or silently save.
-			return nil, domain.ErrPaymentDescription
+			message := ""
+			if input.CustomAccounts != nil {
+				if *input.CustomAccounts {
+					message = "'CustomAccounts' object has no attribute 'destination_account_name'"
+				} else {
+					message = "'NoneType' object has no attribute 'name'"
+				}
+			}
+			return nil, &domain.PaymentDescriptionError{Message: message}
 		}
 	}
 	if truthyReference(value) {
 		text, ok := value.(string)
 		if !ok {
-			return nil, domain.ErrPaymentDescription
+			return nil, &domain.PaymentDescriptionError{Message: "'" + dto.PaymentMiscTypeName(value) + "' object has no attribute 'lower'"}
 		}
 		if strings.ToLower(text) == "quota corso" {
 			replacement, exists, err := paymentJSONMember(ctx, input.Meta, "description")
@@ -66,7 +75,7 @@ func ResolvePaymentDescription(ctx context.Context, input domain.PaymentDescript
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
-		return nil, domain.ErrPaymentDescription
+		return nil, &domain.PaymentDescriptionError{}
 	}
 	return &text, nil
 }
@@ -84,7 +93,7 @@ func paymentCourseDescription(ctx context.Context, input domain.PaymentDescripti
 			return value, nil
 		}
 		if relation.MissingCarnet {
-			return nil, domain.ErrPaymentDescription
+			return nil, &domain.PaymentDescriptionError{Message: "'NoneType' object has no attribute 'title'"}
 		}
 		if relation.Title == nil {
 			return nil, nil
@@ -98,7 +107,7 @@ func paymentCourseDescription(ctx context.Context, input domain.PaymentDescripti
 	if exists {
 		label, ok := value.(string)
 		if !ok {
-			return nil, domain.ErrPaymentDescription
+			return nil, &domain.PaymentDescriptionError{Message: "sequence item 0: expected str instance, " + dto.PaymentMiscTypeName(value) + " found"}
 		}
 		// This path only runs when the existing description is NULL. The trailing
 		// separator is observable legacy behavior, including for an empty label.
@@ -132,15 +141,15 @@ func paymentJSONMember(ctx context.Context, value any, key string) (any, bool, e
 				return nil, false, err
 			}
 			if s, ok := item.(string); ok && s == key {
-				return nil, false, domain.ErrPaymentDescription
+				return nil, false, &domain.PaymentDescriptionError{Message: "list indices must be integers or slices, not str"}
 			}
 		}
 	case string:
 		if strings.Contains(v, key) {
-			return nil, false, domain.ErrPaymentDescription
+			return nil, false, &domain.PaymentDescriptionError{Message: "string indices must be integers, not 'str'"}
 		}
 	default:
-		return nil, false, domain.ErrPaymentDescription
+		return nil, false, &domain.PaymentDescriptionError{Message: "argument of type '" + dto.PaymentMiscTypeName(value) + "' is not iterable"}
 	}
 	return nil, false, nil
 }

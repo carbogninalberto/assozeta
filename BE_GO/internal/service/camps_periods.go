@@ -713,6 +713,13 @@ type campsPaymentSave struct {
 	rejected *dto.CampsPythonError
 }
 
+// campsPaymentRowPlan is one subscription period's saves before its failure (if
+// any).
+type campsPaymentRowPlan struct {
+	saves   []campsPaymentSave
+	failure *dto.CampsPythonError
+}
+
 // campsWalk plans the view's payment loop before any write: every save with
 // its row and audit entry, then the exception that stops the request.
 func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, group *string) ([]campsPaymentSave, error) {
@@ -723,104 +730,169 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 	update := dto.CampsServiceMeta{ServiceID: row.ID, Title: row.Title, Category: campsText(row.CategoryID)}
 	update.Amount, _ = strconv.ParseFloat(row.Fee, 64)
 	state := map[string]*domain.CampsPayment{}
-	var saves []campsPaymentSave
+	plans := make([]campsPaymentRowPlan, 0, len(rows))
+	failureSeen := false
 	for _, walkRow := range rows {
-		payment := walkRow.Payment
-		if current, ok := state[payment.ID]; ok {
-			payment = *current
-		}
-		// auditlog reads the stored payment through its soft-delete,
-		// group-aware manager: a payment that manager does not return is
-		// saved all the same and each save is audited as an update of every
-		// field against None, indexed through the entry's own association.
-		hidden := payment.Deleted || (group != nil && (payment.GroupID == nil || *payment.GroupID != *group))
-		if hidden && payment.AssociationNull {
-			return nil, ErrCampsPaymentNotPorted
-		}
-		var metas any
-		if payment.Metas != nil {
-			if metas, err = dto.ParseReferenceJSON([]byte(*payment.Metas)); err != nil {
-				return nil, err
-			}
-		}
-		walk := dto.CampsWalkPayment(metas, update, walkRow.PeriodTitle, walkRow.PeriodFee, walkRow.CampTitle, walkRow.CampDescription)
-		var association *string
-		if !payment.AssociationNull {
-			value := payment.AssociationID
-			association = &value
-		}
-		for _, step := range walk.Steps {
-			var rejected *dto.CampsPythonError
-			changes := map[string][2]string{}
-			if err = paymentSaveDefaults(ctx, campsPaymentAdapter{tx: r.tx}, &payment.PaymentSaveRow, changes); err != nil {
-				if errors.Is(err, ErrPaymentSaveFailed) {
-					return nil, ErrCampsPaymentNotPorted
-				}
-				return nil, err
-			}
-			if step.Final {
-				_, stored, ok := dto.CampsStoredAmount(step.Amount)
-				switch {
-				case !ok && dto.CampsAmountOverflows(step.Amount):
-					rejected = &dto.CampsPythonError{Message: campsNumericOverflow}
-				case !ok:
-					// A negative amount fails the check constraint, whose message dumps the row (generated ids).
-					return nil, ErrCampsPaymentNotPorted
-				case utf8.RuneCountInString(step.Notes) > 5120:
-					rejected = &dto.CampsPythonError{Message: campsNotesTooLong}
-				}
-				if repr := dto.CampsFloat(step.Amount); repr != payment.Amount {
-					changes["amount"] = [2]string{payment.Amount, repr}
-				}
-				if campsText(payment.Notes) != step.Notes {
-					changes["notes"] = [2]string{campsText(payment.Notes), step.Notes}
-				}
-				notes := step.Notes
-				payment.Amount, payment.Notes = stored, &notes
-			} else {
-				var old any
-				if payment.Metas != nil {
-					old, _ = dto.ParseReferenceJSON([]byte(*payment.Metas))
-				}
-				before, after := dto.CampsJSONAudit(old), dto.CampsJSONAudit(step.Meta)
-				if before != after {
-					changes["meta_payment_categories"] = [2]string{before, after}
-				}
-				text := dto.CampsJSONText(step.Meta)
-				payment.Metas = &text
-			}
-			save := campsPaymentSave{row: payment, rejected: rejected}
-			if hidden {
-				// The instance holds the float amount after the final step; every other field renders as stored.
-				full := map[string][2]string{}
-				if step.Final {
-					full["amount"] = [2]string{"None", dto.CampsFloat(step.Amount)}
-				}
-				save.event = &domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: full, AssociationID: association,
-					Path: "changes_json.sport_association", Full: true}
-			} else if len(changes) > 0 {
-				event := domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: changes, AssociationID: association, Path: "direct"}
-				save.event = &event
-			}
-			saves = append(saves, save)
-			if rejected != nil {
-				return saves, nil
-			}
-		}
-		copied := payment
-		state[payment.ID] = &copied
-		if walk.Failure != nil {
-			// The loop's order is the database's: a failure with other
-			// subscription periods in the walk is not reproduced.
-			var python *dto.CampsPythonError
-			if len(rows) > 1 || !errors.As(walk.Failure, &python) {
+		saves, failure, rejected, err := r.campsWalkRow(ctx, walkRow, update, state, group)
+		if err != nil {
+			if failureSeen {
 				return nil, ErrCampsPaymentNotPorted
 			}
-			saves = append(saves, campsPaymentSave{failure: python})
-			return saves, nil
+			return nil, err
+		}
+		if rejected {
+			// A save the database refuses stops the walk immediately.
+			if failureSeen {
+				return nil, ErrCampsPaymentNotPorted
+			}
+			plans = append(plans, campsPaymentRowPlan{saves: saves})
+			var all []campsPaymentSave
+			for _, plan := range plans {
+				all = append(all, plan.saves...)
+			}
+			return all, nil
+		}
+		plans = append(plans, campsPaymentRowPlan{saves: saves, failure: failure})
+		if failure != nil {
+			failureSeen = true
 		}
 	}
-	return saves, nil
+	failed := 0
+	for _, plan := range plans {
+		if plan.failure != nil {
+			failed++
+		}
+	}
+	if failed == 0 {
+		var all []campsPaymentSave
+		for _, plan := range plans {
+			all = append(all, plan.saves...)
+		}
+		return all, nil
+	}
+	if len(plans) == 1 {
+		return append(plans[0].saves, campsPaymentSave{failure: plans[0].failure}), nil
+	}
+	// Django's loop has no ORDER BY, so only an outcome that every order gives
+	// is answered: every walked row fails before its first save, with the same
+	// message.
+	if failed != len(plans) {
+		return nil, ErrCampsPaymentNotPorted
+	}
+	message := plans[0].failure.Message
+	for _, plan := range plans {
+		if plan.failure == nil || len(plan.saves) != 0 || plan.failure.Message != message {
+			return nil, ErrCampsPaymentNotPorted
+		}
+	}
+	return []campsPaymentSave{{failure: plans[0].failure}}, nil
+}
+
+// campsWalkRow plans one subscription period's saves. It returns the saves made
+// before the row's failure (nil when the row completes) and whether a save the
+// database refuses stops the whole walk immediately.
+func (r *campsRequest) campsWalkRow(ctx context.Context, walkRow domain.CampsWalkRow, update dto.CampsServiceMeta,
+	state map[string]*domain.CampsPayment, group *string) ([]campsPaymentSave, *dto.CampsPythonError, bool, error) {
+	payment := walkRow.Payment
+	if current, ok := state[payment.ID]; ok {
+		payment = *current
+	}
+	// auditlog reads the stored payment through its soft-delete,
+	// group-aware manager: a payment that manager does not return is
+	// saved all the same and each save is audited as an update of every
+	// field against None, indexed through the entry's own association.
+	hidden := payment.Deleted || (group != nil && (payment.GroupID == nil || *payment.GroupID != *group))
+	if hidden && payment.AssociationNull {
+		return nil, nil, false, ErrCampsPaymentNotPorted
+	}
+	var metas any
+	var err error
+	if payment.Metas != nil {
+		if metas, err = dto.ParseReferenceJSON([]byte(*payment.Metas)); err != nil {
+			return nil, nil, false, err
+		}
+	}
+	walk := dto.CampsWalkPayment(metas, update, walkRow.PeriodTitle, walkRow.PeriodFee, walkRow.CampTitle, walkRow.CampDescription)
+	var association *string
+	if !payment.AssociationNull {
+		value := payment.AssociationID
+		association = &value
+	}
+	var saves []campsPaymentSave
+	for _, step := range walk.Steps {
+		var rejected *dto.CampsPythonError
+		changes := map[string][2]string{}
+		if err = paymentSaveDefaults(ctx, campsPaymentAdapter{tx: r.tx}, &payment.PaymentSaveRow, changes); err != nil {
+			if errors.Is(err, ErrPaymentSaveFailed) {
+				var description *domain.PaymentDescriptionError
+				if errors.As(err, &description) && description.Message != "" {
+					// Payment.save() raised before writing this step: the row stops
+					// here and later steps do not run.
+					return saves, &dto.CampsPythonError{Message: description.Message}, false, nil
+				}
+				return nil, nil, false, ErrCampsPaymentNotPorted
+			}
+			return nil, nil, false, err
+		}
+		if step.Final {
+			_, stored, ok := dto.CampsStoredAmount(step.Amount)
+			switch {
+			case !ok && dto.CampsAmountOverflows(step.Amount):
+				rejected = &dto.CampsPythonError{Message: campsNumericOverflow}
+			case !ok:
+				// A negative amount fails the check constraint, whose message dumps the row (generated ids).
+				return nil, nil, false, ErrCampsPaymentNotPorted
+			case utf8.RuneCountInString(step.Notes) > 5120:
+				rejected = &dto.CampsPythonError{Message: campsNotesTooLong}
+			}
+			if repr := dto.CampsFloat(step.Amount); repr != payment.Amount {
+				changes["amount"] = [2]string{payment.Amount, repr}
+			}
+			if campsText(payment.Notes) != step.Notes {
+				changes["notes"] = [2]string{campsText(payment.Notes), step.Notes}
+			}
+			notes := step.Notes
+			payment.Amount, payment.Notes = stored, &notes
+		} else {
+			var old any
+			if payment.Metas != nil {
+				old, _ = dto.ParseReferenceJSON([]byte(*payment.Metas))
+			}
+			before, after := dto.CampsJSONAudit(old), dto.CampsJSONAudit(step.Meta)
+			if before != after {
+				changes["meta_payment_categories"] = [2]string{before, after}
+			}
+			text := dto.CampsJSONText(step.Meta)
+			payment.Metas = &text
+		}
+		save := campsPaymentSave{row: payment, rejected: rejected}
+		if hidden {
+			// The instance holds the float amount after the final step; every other field renders as stored.
+			full := map[string][2]string{}
+			if step.Final {
+				full["amount"] = [2]string{"None", dto.CampsFloat(step.Amount)}
+			}
+			save.event = &domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: full, AssociationID: association,
+				Path: "changes_json.sport_association", Full: true}
+		} else if len(changes) > 0 {
+			event := domain.CampsAudit{Model: "Payment", Key: payment.ID, Action: 1, Changes: changes, AssociationID: association, Path: "direct"}
+			save.event = &event
+		}
+		saves = append(saves, save)
+		if rejected != nil {
+			return saves, nil, true, nil
+		}
+	}
+	copied := payment
+	state[payment.ID] = &copied
+	if walk.Failure != nil {
+		var python *dto.CampsPythonError
+		if !errors.As(walk.Failure, &python) {
+			return nil, nil, false, ErrCampsPaymentNotPorted
+		}
+		return saves, python, false, nil
+	}
+	return saves, nil, false, nil
 }
 
 // UpdateService follows camps_and_retreats_periods_services_update.
