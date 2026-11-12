@@ -132,9 +132,6 @@ func PlanMCPToolGroup(tool string, params domain.RequestObject, association stri
 		if q.compileErr != nil {
 			return ReportPlan{}, q.compileErr
 		}
-		if q.empty {
-			return ReportPlan{}, mcpRaise("")
-		}
 		return ReportPlan{Statements: []domain.ReportStatement{q.countStatement()},
 			Render: func(results [][][]*string) (any, error) {
 				return domain.RequestObject{{Name: "count", Value: json.Number(*results[0][0][0])}}, nil
@@ -612,9 +609,6 @@ func (q *mcpQuery) planQuery(params domain.RequestObject, config ReportSettings)
 		}
 		keys = append(keys, reference)
 	}
-	if q.empty {
-		return ReportPlan{}, mcpRaise("")
-	}
 	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL()
 	if len(keys) > 0 {
 		inner += ` ORDER BY ` + strings.Join(keys, ", ")
@@ -913,9 +907,6 @@ func (q *mcpQuery) planAggregate(params domain.RequestObject) (ReportPlan, error
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
 	}
-	if q.empty {
-		return ReportPlan{}, mcpRaise("")
-	}
 	inner := `SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() + q.whereSQL() + ` GROUP BY ` +
 		strings.Join(groupBy, ", ") + ` ORDER BY ` + strings.Join(keys, ", ")
 	return ReportPlan{Statements: []domain.ReportStatement{mcpWrap(inner, columns, q.args.values)},
@@ -974,9 +965,6 @@ func (q *mcpQuery) planFlatAggregate(aggregates []mcpAggregate) (ReportPlan, err
 	}
 	if q.compileErr != nil {
 		return ReportPlan{}, q.compileErr
-	}
-	if q.empty {
-		return ReportPlan{}, mcpRaise("")
 	}
 	inner := `SELECT ` + strings.Join(outer, ", ") + ` FROM (SELECT DISTINCT ` + strings.Join(selects, ", ") + ` FROM ` + q.from() +
 		q.whereSQL() + `) subquery`

@@ -88,11 +88,41 @@ func TestReportToolIntegerOverflowOrigins(t *testing.T) {
 			t.Errorf("%s: got %v, want ErrReportNotPorted", params, err)
 		}
 	}
-	// A plain AND condition of filters keeps Django's empty exception.
-	err := plan(t, `{"model_name":"Course","fields":["title"],"filters":{"start_date__month":99999999999999999999}}`)
-	var raised *MCPToolException
-	if !errors.As(err, &raised) || raised.Message != "" {
-		t.Errorf("plain filters: got %v, want the empty MCPToolException", err)
+	// A plain AND condition of filters folds to an always-false WHERE clause and
+	// runs normally: Django answers with no rows instead of raising.
+	planned, err := PlanMCPTool("query_data", reportParams(t,
+		`{"model_name":"Course","fields":["title"],"filters":{"start_date__month":99999999999999999999}}`),
+		"a1000000-0000-4000-8000-000000701001", settings)
+	if err != nil {
+		t.Fatalf("plain filters: %v", err)
+	}
+	if len(planned.Statements) == 0 || !strings.Contains(planned.Statements[len(planned.Statements)-1].SQL, "FALSE") {
+		t.Errorf("plain filters: got %+v, want a plan whose statement contains FALSE", planned.Statements)
+	}
+}
+
+func TestReportToolEmptyInList(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	// An empty __in list folds to FALSE: the query runs normally and matches no
+	// row, exactly like Django (no exception with an empty message).
+	for _, tool := range []string{"query_data", "count_data", "get_field_values"} {
+		params := map[string]string{
+			"query_data":       `{"model_name":"Tags","fields":["tag_name"],"filters":{"tag_id__in":[]}}`,
+			"count_data":       `{"model_name":"Tags","filters":{"tag_id__in":[]}}`,
+			"get_field_values": `{"model_name":"Tags","field_name":"tag_name","filters":{"tag_id__in":[]}}`,
+		}[tool]
+		planned, err := PlanReportTool(tool, reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err != nil {
+			t.Fatalf("%s: %v", tool, err)
+		}
+		if len(planned.Statements) == 0 {
+			t.Fatalf("%s: no statements", tool)
+		}
+		for _, statement := range planned.Statements {
+			if !strings.Contains(statement.SQL, "FALSE") {
+				t.Errorf("%s: statement SQL %q lacks FALSE", tool, statement.SQL)
+			}
+		}
 	}
 }
 
@@ -180,7 +210,6 @@ func TestReportToolLookupFamilies(t *testing.T) {
 		`{"model_name":"Course","filters":{"start_date__year":0}}`:                       "year 0 is out of range",
 		`{"model_name":"Course","filters":{"start_date__year":10000}}`:                   "year 10000 is out of range",
 		`{"model_name":"Course","filters":{"start_date__year__lt":20000}}`:               "year 20000 is out of range",
-		`{"model_name":"Course","filters":{"start_date__month":99999999999999999999}}`:   "",
 		`{"model_name":"Associate","filters":{"born_date":"1990-05-01T10:00:00+02:00"}}`: `['Il valore "1990-05-01T10:00:00+02:00" ha un formato di data non valido. Deve essere nel formato AAAA-MM-GG.']`,
 		`{"model_name":"Associate","filters":{"born_date":5}}`:                           "fromisoformat: argument must be str",
 	} {
@@ -188,6 +217,17 @@ func TestReportToolLookupFamilies(t *testing.T) {
 		if err == nil || err.Error() != want {
 			t.Errorf("%s: got %v, want %q", params, err, want)
 		}
+	}
+	// An out-of-range integer folds to an always-false WHERE clause: the query
+	// runs normally and simply matches no row.
+	planned, err := PlanReportTool("query_data", reportParams(t,
+		`{"model_name":"Course","filters":{"start_date__month":99999999999999999999}}`),
+		"a1000000-0000-4000-8000-000000701001", settings)
+	if err != nil {
+		t.Fatalf("out-of-range month: %v", err)
+	}
+	if len(planned.Statements) == 0 || !strings.Contains(planned.Statements[len(planned.Statements)-1].SQL, "FALSE") {
+		t.Errorf("out-of-range month: got %+v, want a statement containing FALSE", planned.Statements)
 	}
 }
 

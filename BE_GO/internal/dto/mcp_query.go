@@ -56,9 +56,6 @@ type mcpQuery struct {
 	args  *reportArgs
 	// compileErr is raised when the SQL is compiled (IsNull.as_sql).
 	compileErr error
-	// empty marks a filter that matches no row (Django's EmptyResultSet): the
-	// query tools raise its empty exception text, get_field_values returns [].
-	empty bool
 }
 
 func newMCPQuery(model *mcpModel) *mcpQuery {
@@ -67,7 +64,7 @@ func newMCPQuery(model *mcpModel) *mcpQuery {
 
 func (q *mcpQuery) clone() *mcpQuery {
 	copyQuery := &mcpQuery{model: q.model, where: append([]string(nil), q.where...), compileErr: q.compileErr,
-		empty: q.empty, args: &reportArgs{values: append([]any(nil), q.args.values...)}}
+		args: &reportArgs{values: append([]any(nil), q.args.values...)}}
 	for _, join := range q.joins {
 		duplicate := *join
 		copyQuery.joins = append(copyQuery.joins, &duplicate)
@@ -884,9 +881,6 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 	// negated node matches everything), so those requests go to Django.
 	if lookup.outOfRange && (branchNegated || currentNegated || branchOR) {
 		return "", nil, mcpNotPorted("integer outside the column range in or_filters or exclude")
-	}
-	if lookup.sql == "FALSE" && !branchNegated && !currentNegated {
-		q.empty = true
 	}
 	condition := lookup.sql
 	requireOuter := lookup.name == "isnull" && lookup.isnullTrue && !currentNegated
