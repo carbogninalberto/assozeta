@@ -13,7 +13,7 @@ import (
 // entry of multiple_entry_form_data; the answer serializes the entries'
 // payments with PaymentSerializer after the commit.
 func (s *SubscriptionCreates) family(ctx context.Context, identity domain.ResolvedIdentity, data domain.RequestObject,
-	request SubscriptionCreateRequest) (*SubscriptionCreateResult, error) {
+	request SubscriptionCreateRequest, group *string) (*SubscriptionCreateResult, error) {
 	server := domain.ErrSubscriptionCreateServer
 	// data.get('type', 'family'): a value that is not a known type is 'family'.
 	kind := "family"
@@ -44,6 +44,7 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 	if err != nil {
 		return nil, err
 	}
+	tx.SetGroup(group)
 	defer tx.Rollback()
 	keys := []string{}
 	request.StorageKeys = &keys
@@ -65,6 +66,7 @@ func (s *SubscriptionCreates) family(ctx context.Context, identity domain.Resolv
 		return nil, err
 	}
 	today := subscriptionCreateToday(s.now())
+	request.GroupID = group
 	created := []*subscriptionCreated{}
 	for _, item := range entries {
 		entry, isObject := item.(domain.RequestObject)

@@ -74,6 +74,15 @@ func (t *subscriptionRenewTransaction) RenewAssociationOwner(ctx context.Context
 	return &owner, nil
 }
 
+// ConnectedAssociationCount is SportAssociation.objects.filter(user=connected_user).count()
+// of the account: a missing connected account matches no row.
+func (t *subscriptionRenewTransaction) ConnectedAssociationCount(ctx context.Context, user string) (int, error) {
+	var count int
+	err := t.tx.GetContext(ctx, &count, `SELECT COUNT(*) FROM application_sportassociation a
+ WHERE NOT a.deleted AND a.user_id=(SELECT connected_user_id FROM bakney_user WHERE user_id=$1)`, user)
+	return count, err
+}
+
 func (t *subscriptionRenewTransaction) MemberRenewable(ctx context.Context, requester, association string, associate, taxCode *string) (bool, error) {
 	const own = ` FROM application_subscription s2 INNER JOIN application_associate a2 ON a2.associate_id=s2.associate_id WHERE s2.user_id=$1`
 	var found bool
@@ -106,7 +115,14 @@ func (r *SubscriptionRenewals) BeginSubscriptionRenew(ctx context.Context) (doma
 }
 
 func (t *subscriptionRenewTransaction) RenewalPayments(ctx context.Context, association string, first, last, tax *string, start, end time.Time,
-	except, scope *string) ([]string, bool, error) {
+	except, scope, group *string) ([]string, bool, error) {
+	// A malformed header is not a filter: the group-aware manager's get_queryset
+	// keeps the query unfiltered when its UUID lookup raises.
+	if group != nil {
+		if _, err := uuid.Parse(*group); err != nil {
+			group = nil
+		}
+	}
 	rows := []struct {
 		ID       string `db:"payment_id"`
 		Invoiced bool   `db:"invoiced"`
@@ -116,7 +132,8 @@ func (t *subscriptionRenewTransaction) RenewalPayments(ctx context.Context, asso
  WHERE a.first_name IS NOT DISTINCT FROM $2 AND a.last_name IS NOT DISTINCT FROM $3 AND `+iexact("a.tax_code", 4)+`
  AND p.sport_association_id=$1 AND p.subject=1 AND p.creation_date >= $5 AND p.creation_date <= $6 AND NOT p.paid AND NOT p.deleted
  AND ($7::uuid IS NULL OR p.payment_id<>$7::uuid) AND ($8::uuid IS NULL OR p.sport_association_id=$8::uuid)
- ORDER BY p.payment_id FOR UPDATE OF p`, association, first, last, tax, start, end, except, scope); err != nil {
+ AND ($9::uuid IS NULL OR p.group_id=$9::uuid)
+ ORDER BY p.payment_id FOR UPDATE OF p`, association, first, last, tax, start, end, except, scope, group); err != nil {
 		return nil, false, err
 	}
 	ids, invoiced := make([]string, 0, len(rows)), false

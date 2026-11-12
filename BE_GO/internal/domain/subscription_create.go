@@ -165,6 +165,9 @@ type SubscriptionCreateAudit struct {
 type SubscriptionCreateTransaction interface {
 	SubscriptionEditTransaction
 	SubscriptionRenewAssociateStore
+	// SetGroup is the canonical X-Group-Id of the request (nil: no header). The
+	// group-aware manager filters and created rows follow it.
+	SetGroup(group *string)
 	// Settings is user.sport_association (exactly one live association, else
 	// nil) with its owner's settings, the association row locked.
 	Settings(ctx context.Context, user string) (*SubscriptionCreateSettings, int, error)
@@ -185,6 +188,8 @@ type SubscriptionCreateTransaction interface {
 	Category(ctx context.Context, id *string, association string) (*string, error)
 	DefaultBankAccount(ctx context.Context, association string) (*string, error)
 	ReusablePayments(ctx context.Context, associate, association, amount string, day time.Time) ([]string, bool, error)
+	// NewestReusablePayment is the newest of those rows as order_by('-creation_date').first() reads it, the database breaking a tie.
+	NewestReusablePayment(ctx context.Context, associate, association, amount string, day time.Time) (*string, error)
 	PaymentAmount(ctx context.Context, id string) (string, error)
 	InsertPayment(ctx context.Context, row SubscriptionCreatePayment) error
 	LatestNumber(ctx context.Context, association string) (*string, error)
@@ -219,6 +224,9 @@ type SubscriptionCreateTransaction interface {
 	// GroupedCustomData are the two latest subscriptions of the user whose custom data text contains
 	// 'asd-o-ssd' or 'scuola-asc' in any case, newest first.
 	GroupedCustomData(ctx context.Context, user string) ([]SubscriptionGroupedCustomData, error)
+	// NewestGroupedCustomData is the newest of those subscriptions as order_by('-creation_date').first()
+	// reads it, the database breaking a tie.
+	NewestGroupedCustomData(ctx context.Context, user string) (*SubscriptionGroupedCustomData, error)
 	// RenewalSource is Subscription.objects.filter(subscription_id=id, sport_association=association).first().
 	RenewalSource(ctx context.Context, id, association string) (*SubscriptionRenewalSource, error)
 	// InsertNewUser writes the account with its create entry (TokenUsername) and the username update entry.

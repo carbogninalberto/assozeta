@@ -2,9 +2,8 @@ package dto
 
 import (
 	"encoding/json"
+	"math"
 	"math/big"
-	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -23,15 +22,45 @@ const (
 func PythonFloatText(value float64) string { return pythonFloatRepr(value) }
 
 // SubscriptionCreateDecimal is a float stored in a DecimalField(max_digits=9,
-// decimal_places=2): Django's context (9 significant digits, half even), then
-// the column's two places. ok is false when the second rounding would change
-// the value (the rounding modes of the two paths are not ported).
+// decimal_places=2) whose decimal (nine significant digits, halves even) is
+// already exact at two places. ok is false otherwise, for callers that want
+// only amounts the column stores unchanged.
 func SubscriptionCreateDecimal(value float64) (string, bool) {
-	rational, ok := new(big.Rat).SetString(strconv.FormatFloat(value, 'e', 8, 64))
+	text, ok := SubscriptionCreateDecimalValue(value)
+	if !ok {
+		return "", false
+	}
+	rational, ok := new(big.Rat).SetString(text)
 	if !ok {
 		return "", false
 	}
 	if !new(big.Rat).Mul(rational, big.NewRat(100, 1)).IsInt() {
+		return "", false
+	}
+	return rational.FloatString(2), true
+}
+
+// SubscriptionCreateDecimalValue is DecimalField(max_digits=9,
+// decimal_places=2).to_python of a float: the decimal Django sends for the
+// column, Context(prec=9).create_decimal_from_float (nine significant digits,
+// halves even). ok is false when that conversion raises, for inf and nan.
+func SubscriptionCreateDecimalValue(value float64) (string, bool) {
+	if math.IsInf(value, 0) || math.IsNaN(value) {
+		return "", false
+	}
+	return DecimalFromFloat9(value), true
+}
+
+// SubscriptionCreateDecimalStored is the numeric(9,2) value of that decimal:
+// PostgreSQL rounds the decimal it receives to two places, halves away from
+// zero (the stored column value auditlog later reads back).
+func SubscriptionCreateDecimalStored(value float64) (string, bool) {
+	text, ok := SubscriptionCreateDecimalValue(value)
+	if !ok {
+		return "", false
+	}
+	rational, ok := new(big.Rat).SetString(text)
+	if !ok {
 		return "", false
 	}
 	return rational.FloatString(2), true
@@ -115,31 +144,18 @@ func SubscriptionCreateText(value any) (*string, bool) {
 	return nil, false
 }
 
-// SubscriptionCreateFloat is float(value) for a parsed JSON value. server
-// reports Python's TypeError/ValueError; ok false refuses text whose float()
-// is not ported (inf, nan, underscores, other spellings).
+// SubscriptionCreateFloat is float(value) for a parsed JSON value: bool, a
+// number and text (Python's float(), with surrounding whitespace, exponents,
+// underscores, other-script digits, inf and nan) are accepted. server reports
+// the TypeError/ValueError/OverflowError Django's view does not handle.
 func SubscriptionCreateFloat(value any) (number float64, ok bool, server bool) {
-	switch v := value.(type) {
-	case bool:
-		if v {
-			return 1, true, false
-		}
-		return 0, true, false
-	case json.Number:
-		parsed, err := strconv.ParseFloat(string(v), 64)
-		return parsed, err == nil, false
-	case string:
-		text := PythonStrip(v)
-		if !subscriptionCreateFloatText.MatchString(text) {
-			return 0, false, false
-		}
-		parsed, err := strconv.ParseFloat(text, 64)
-		return parsed, err == nil, false
+	switch value.(type) {
+	case bool, string, json.Number:
+		number, ok = PythonFloatOf(value)
+		return number, ok, false
 	}
 	return 0, true, true
 }
-
-var subscriptionCreateFloatText = regexp.MustCompile(`^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]+)?$`)
 
 // SubscriptionCreateInt is int(str(value).strip()); ok is false when it raises.
 func SubscriptionCreateInt(value any) (*big.Int, bool) {

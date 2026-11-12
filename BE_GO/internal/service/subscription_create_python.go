@@ -122,7 +122,8 @@ func subscriptionNamedMember(ctx context.Context, tx domain.SubscriptionCreateTr
 	switch value.(type) {
 	case nil:
 		return nil, domain.ErrSubscriptionCreateServer
-	case string, json.Number, bool:
+	case string, json.Number, bool, domain.RequestUpload:
+		// A multipart file part is compared by its name (str() of the upload).
 	default:
 		// Containers as a lookup value are not ported.
 		return nil, domain.ErrSubscriptionCreateNotPorted
@@ -191,7 +192,7 @@ func (s *SubscriptionCreates) associateUpdateIndex(ctx context.Context, tx domai
 // same tax code (iexact, the first by key), which is saved instead; an
 // unknown key is created with it.
 func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.SubscriptionCreateTransaction, audit subscriptionAudit,
-	write dto.AssociateTutorWrite, association string, minorOf *string) (*domain.SubscriptionEditAssociate, error) {
+	write dto.AssociateTutorWrite, association string, minorOf *string, group *string) (*domain.SubscriptionEditAssociate, error) {
 	text := *write.AssociateID
 	parsed, err := paymentInfoParseUUID(text)
 	if err != nil {
@@ -214,13 +215,16 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 				return nil, notPortedOr(err)
 			}
 		}
-		row := domain.SubscriptionEditAssociate{ID: id, Sex: "A", CreationDate: s.now().UTC()}
+		row := domain.SubscriptionEditAssociate{ID: id, Sex: "A", CreationDate: s.now().UTC(), GroupID: group}
 		applyAssociateTutorWrite(&row, write)
 		if err = tx.InsertAssociate(ctx, row); err != nil {
 			return nil, err
 		}
+		if row.GroupID != nil {
+			audit.inserted[row.ID] = true
+		}
 		own := association
-		if err = audit.associate(ctx, row.ID, 0, true, nil, &own, "direct"); err != nil {
+		if err = audit.associate(ctx, row.ID, 0, true, &row, nil, &own, "direct"); err != nil {
 			return nil, err
 		}
 		return &row, nil
@@ -261,7 +265,7 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 		if err != nil {
 			return nil, err
 		}
-		if err = audit.associate(ctx, row.ID, 1, true, nil, index, path); err != nil {
+		if err = audit.associate(ctx, row.ID, 1, true, &row, nil, index, path); err != nil {
 			return nil, err
 		}
 		return &row, nil
@@ -271,7 +275,7 @@ func (s *SubscriptionCreates) saveAssociateByID(ctx context.Context, tx domain.S
 	if err != nil {
 		return nil, err
 	}
-	if err = audit.associate(ctx, row.ID, 1, false, changes, index, path); err != nil {
+	if err = audit.associate(ctx, row.ID, 1, false, &old, changes, index, path); err != nil {
 		return nil, err
 	}
 	return &row, nil

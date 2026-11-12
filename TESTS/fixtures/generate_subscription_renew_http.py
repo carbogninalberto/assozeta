@@ -16,7 +16,13 @@ APIException (serializer errors, 409) propagates; any other exception is
 400 {"status": "error", "msg": str(e)} with everything rolled back.
 Response {"status": "success", "payment_id": ...}. The create_subscription
 on_commit work (check_workflows_trigger, print_document_subscription, the
-notification) runs after the outer commit.
+notification) runs after the outer commit. data['preregistration'] is True with a
+subscription_id: fill_data_preregisration replaces the request's person, certificate,
+custom data, role and number with the renewed subscription's, create_subscription
+re-checks the filled inputs and everything after it reads the filled subscription
+(the clean-up's person and the new subscription's dates) while data['tags'] and
+data['courses'] stay the request's; a subscription_id that names no subscription of
+the association is the APIException 'Iscrizione da rinnovare non trovata.' (400).
 
 subscription_associates_draft_approve (@api_view(['POST']), IsAuthenticated, not
 atomic): athletes get an empty 401; without associate_import_draft_ids 400;
@@ -218,10 +224,14 @@ NO_PLANS = {'plan_id': None, 'plan_name': None, 'membership_plan_id': None, 'mem
 ACTOR_ASSOCIATION = {'owner': OWN, 'admin': IDS['admin_association']}
 
 
-def add(name, route, actor, status, response, *, body=None, method='POST', headers=None, effect=None, setup=None):
+def add(name, route, actor, status, response, *, body=None, raw_body=None, content_type=None, method='POST', headers=None,
+        effect=None, setup=None):
     path = {'renew': '/subscription/renew', 'approve': '/subscription/associates-draft/list/approve'}[route]
-    cases.append({'name': f'subscription-renew-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
-                  'status': status, 'response': response, 'effect': effect, 'body': body, 'setup': setup})
+    case = {'name': f'subscription-renew-{name}', 'actor': actor, 'method': method, 'path': path, 'headers': headers or {},
+            'status': status, 'response': response, 'effect': effect, 'body': body, 'setup': setup}
+    if raw_body is not None:
+        case['raw_body'], case['content_type'] = raw_body, content_type
+    cases.append(case)
 
 
 def person(first, last, tax_code, born='15/03/1990', **extra):
@@ -253,7 +263,8 @@ def notification_entries(actor):
             for model in ('notificationsbroadcast', 'usernotificationsbroadcast')]
 
 
-def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medical=None, number=None, renewal_form=True, season=None):
+def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medical=None, number=None, renewal_form=True, season=None,
+                      group=None):
     """The new subscription (and membership for types 2 and 3) of one create_subscription call."""
     if number is None:
         NUMBER[0] += 1
@@ -261,7 +272,8 @@ def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medi
     rows = [{'label': 'subscription', 'bind': bind, 'match': {'associate_id': associate_ref},
              'columns': {'sport_association_id': OWN, 'user_id': user, 'payment_id': payment, 'type': kind, 'role': 1, 'status_flag': 1,
                          'meta': NO_PLANS, 'subscription_type': '', 'subscription_number': number, 'medical_id': medical,
-                         'custom_data': {} if renewal_form else None, 'additional_fields': {} if renewal_form else None, **(season or SEASON)}}]
+                         'custom_data': {} if renewal_form else None, 'additional_fields': {} if renewal_form else None, **(season or SEASON),
+                         **({'group_id': group} if group else {})}}]
     if kind in (2, 3):
         rows.append({'label': 'membership', 'bind': bind + '_membership', 'match': {'subscription_id': bind},
                      'columns': {'sport_association_id': OWN, 'associate_id': associate_ref, 'payment_id': payment,
@@ -270,11 +282,11 @@ def subscription_rows(bind, associate_ref, *, kind, payment, user='$owner', medi
     return rows
 
 
-def new_payment(bind, associate_ref, amount='25.00'):
+def new_payment(bind, associate_ref, amount='25.00', *, group=None):
     return {'label': 'payment', 'bind': bind, 'match': {'associate_id': associate_ref, 'amount': amount},
             'columns': {'subject': 1, 'description': 'Iscrizione', 'payment_category_id': '$category', 'user_id': '$owner',
                         'sport_association_id': OWN, 'custom_accounts_id': ACCOUNT, 'amount': amount, 'payment_date': '$today_midnight',
-                        'meta_payment_categories': None, 'meta': None}}
+                        'meta_payment_categories': None, 'meta': None, **({'group_id': group} if group else {})}}
 
 
 def tasks(bind):
@@ -614,6 +626,21 @@ add('approve-all', 'approve', 'full_collaborator', 200, {'msg': '2 su 7 atleti a
                   audit=[*status_entries(create=True, delete_new=False), *first[1], *medical[1],
                          *status_entries(create=False)],
                   celery=first[2] + medical[2], notifications=first[3] + medical[3]))
+
+# --- associates-draft approve with an X-Group-Id ---------------------------------------------------------
+# The group-aware managers make every lookup of the drafts' create_subscription miss the rows created
+# without a group: the duplicate draft reaches the associate's tax code insert (swallowed), the bad
+# date still fails. A malformed header is ignored by the queries; each draft's insert rejects it.
+# These run before the crash case below, which leaves the APPROVING status row it creates.
+GROUP = IDS['own_group']
+group_ids = iter(f'a1000000-0000-4000-8000-{955001 + n:012d}' for n in range(20))
+UNKNOWN_GROUP = next(group_ids)
+group_draft_ids = [DRAFTS['ok_first']['id'], DRAFTS['invalid']['id'], DRAFTS['duplicate']['id'], DRAFTS['bad_born']['id']]
+for name, header in (('group-approve-own', GROUP), ('group-approve-not-a-uuid', 'zzz')):
+    add(name, 'approve', 'owner', 200, {'msg': '0 su 3 atleti approvati.', 'approved': 0},
+        headers={'X-Group-Id': header},
+        body={'associate_import_draft_ids': group_draft_ids, 'subscription_details': {'type': 1}},
+        effect=effect('owner', audit=status_entries()))
 
 # A valid draft without 'associate' raises before the try: the earlier draft stays approved and the new status row stays.
 details = {'type': 1, 'plan_id': None, 'membership_plan_id': None, 'role': 1}
@@ -991,11 +1018,244 @@ add('renew-preregistration', 'renew', 'owner', 200, {'status': 'success', 'payme
                   celery=tasks('$early_subscription'),
                   notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pietro Prenotato.', 'association': OWN}]))
 
+# --- form bodies and an association whose owner account has another role ---------------------------------
+# A form body reaches the view as a QueryDict: every value is a string (the last value of a repeated key) or an
+# uploaded file. create_subscription's first read is data['associate_data']['born_date']; a member account's
+# data['sport_association']['sport_association_id'] runs outside the try block.
+FORM = 'application/x-www-form-urlencoded'
+BOUNDARY = 'renew-form-boundary'
+
+
+def multipart(*parts):
+    """A multipart body of (name, filename, content) parts: a filename makes the part a file upload."""
+    lines = []
+    for name, filename, content in parts:
+        disposition = f'Content-Disposition: form-data; name="{name}"'
+        if filename:
+            disposition += f'; filename="{filename}"\r\nContent-Type: application/json'
+        lines.append(f'--{BOUNDARY}\r\n{disposition}\r\n\r\n{content}\r\n')
+    lines.append(f'--{BOUNDARY}--\r\n')
+    return ''.join(lines)
+
+
+add('renew-form-strings', 'renew', 'owner', 400, error("string indices must be integers, not 'str'"),
+    raw_body='associate_data=x&new_user_account=y&signature=z', content_type=FORM)
+add('renew-form-empty', 'renew', 'owner', 400, error("'associate_data'"), raw_body='', content_type=FORM)
+add('renew-form-file-associate-data', 'renew', 'owner', 400, error("'InMemoryUploadedFile' object is not subscriptable"),
+    raw_body=multipart(('associate_data', 'associate.json', '{"born_date": "1980-01-01"}')),
+    content_type=f'multipart/form-data; boundary={BOUNDARY}')
+add('renew-form-member-server-error', 'renew', 'athlete', 500, SERVER, raw_body='sport_association=y&associate_data=x', content_type=FORM)
+add('approve-form-empty', 'approve', 'owner', 400, {'msg': 'bad request, missing drafts to approve.'}, raw_body='', content_type=FORM)
+add('approve-form-server-error', 'approve', 'owner', 500, SERVER, raw_body='associate_import_draft_ids=x&subscription_details=y',
+    content_type=FORM)
+
+# An association whose user is not an association-role account: the member renewal names it, its owner is
+# resolved outside the try, then User.sport_association runs inside it (athlete: 403; collaborator without a
+# connected account owning a live association: 400). The owning accounts are new ones (no session of their own).
+# New rows from their own id range.
+form_ids = iter(f'a1000000-0000-4000-8000-{953001 + n:012d}' for n in range(40))
+# The member renewal runs as an athlete account of its own (a token is issued for it): the rows of the family's
+# athlete account stay exactly as the association-scoped session cases need them.
+EXTRA_USERS = {'form_athlete': {'id': next(form_ids), 'username': 'renew-form-athlete', 'email': 'renew-form-athlete@example.test'}}
+USERS = {
+    'athlete_without_relation': {'id': next(form_ids), 'username': 'renew-athlete-without-relation',
+                                 'email': 'renew-athlete-without-relation@example.test', 'role': 2, 'connected': None},
+    'collaborator_without_relation': {'id': next(form_ids), 'username': 'renew-collaborator-without-relation',
+                                      'email': 'renew-collaborator-without-relation@example.test', 'role': 3, 'connected': None},
+}
+ASSOCIATIONS = {
+    'athlete_owner': {'id': next(form_ids), 'user': 'athlete_without_relation', 'denomination': 'Associazione atleta',
+                      'tax_code': '71000000011'},
+    'collaborator_owner': {'id': next(form_ids), 'user': 'collaborator_without_relation',
+                           'denomination': 'Associazione collaboratore', 'tax_code': '71000000012'},
+}
+ASSOCIATES['athlete_owned'] = {'id': next(form_ids), 'association': ASSOCIATIONS['athlete_owner']['id'], 'first': 'Aldo', 'last': 'Atleta',
+                               'tax_code': 'TLTDLD80A01H501A', 'born': '1980-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+ASSOCIATES['collaborator_owned'] = {'id': next(form_ids), 'association': ASSOCIATIONS['collaborator_owner']['id'], 'first': 'Carla',
+                                    'last': 'Collaboratrice', 'tax_code': 'CLLCRL80A41H501B', 'born': '1980-01-01', 'user': 'owner',
+                                    'email': None, 'deleted': False}
+for label, associate, number in (('athlete_owned_previous', 'athlete_owned', '61'), ('collaborator_owned_previous', 'collaborator_owned', '62')):
+    SUBSCRIPTIONS[label] = {'id': next(form_ids), 'associate': associate, 'start': '$last_season_start', 'end': '$last_season_end',
+                            'archived': False, 'number': number, 'payment': None, 'user': 'form_athlete'}
+add('renew-association-owned-by-athlete', 'renew', 'form_athlete', 403, {'detail': 'User is not a sport association'},
+    body=renewal(member_body('athlete_owned'), sport_association={'sport_association_id': ASSOCIATIONS['athlete_owner']['id']}))
+add('renew-association-owned-by-collaborator-without-association', 'renew', 'form_athlete', 400,
+    error('SportAssociation matching query does not exist.'),
+    body=renewal(member_body('collaborator_owned'), sport_association={'sport_association_id': ASSOCIATIONS['collaborator_owner']['id']}))
+
+# --- subscription/renew with an X-Group-Id ----------------------------------------------------------------
+# The group-aware managers filter the renewal's lookups by the header. A valid group hides every row stored
+# without it: the duplicate check finds no subscription, the associate is still found through all_objects
+# (its audit entry renders like a create, the manager's old-row lookup finds nothing), the new payment and
+# subscription carry the group and the clean-up query finds no payment to delete. A group that is no Group
+# row passes the type check and fails the deferred payment foreign key when the transaction ends. A header
+# that is not a UUID is ignored by the manager's queries (their filter raises and is caught); the first
+# created row still carries the raw text, which the UUID field rejects.
+group_renew_body = renewal(renewing, sport_association={'sport_association_id': OWN, 'denomination': 'Associazione'}, user=OWNER,
+                           tags=[{'tag_id': TAGS['tag_a']['id']}, {'tag_id': TAGS['tag_other']['id']}])
+group_audit = [entry('associate', 1, 'renewing', created_style=True, index=(OWN, 'changes_json.sport_association')),
+               entry('associate', 1, 'renewing', created_style=True, index=(OWN, 'changes_json.sport_association'))]
+rows = [new_payment('$group_renew_payment', ASSOCIATES['renewing']['id'], group=GROUP),
+        *subscription_rows('$group_renew_subscription', ASSOCIATES['renewing']['id'], kind=1, payment='$group_renew_payment',
+                           number='1', group=GROUP)]
+add('group-renew-own', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'}, headers={'X-Group-Id': GROUP},
+    body=group_renew_body,
+    effect=effect('owner', new=rows, tags=[('$group_renew_subscription', 'tag_a')],
+                  audit=[*group_audit, entry('payment', 0, '$group_renew_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$group_renew_subscription')],
+                  celery=tasks('$group_renew_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Rino Rinnovo.', 'association': OWN}]))
+rows = [new_payment('$group_athlete_payment', ASSOCIATES['athlete_member']['id'], group=GROUP),
+        *subscription_rows('$group_athlete_subscription', ASSOCIATES['athlete_member']['id'], kind=1, payment='$group_athlete_payment',
+                           number='2', group=GROUP)]
+add('group-renew-athlete', 'renew', 'athlete', 200, {'status': 'success', 'payment_id': '$new'}, headers={'X-Group-Id': GROUP},
+    body=renewal(athlete_member, sport_association={'sport_association_id': OWN, 'denomination': 'Associazione'}, user=IDS['athlete']),
+    effect=effect('athlete', new=rows,
+                  audit=[entry('associate', 1, 'athlete_member', created_style=True, index=(OWN, 'changes_json.sport_association')),
+                         entry('associate', 1, 'athlete_member', created_style=True, index=(OWN, 'changes_json.sport_association')),
+                         entry('payment', 0, '$group_athlete_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$group_athlete_subscription')],
+                  celery=tasks('$group_athlete_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Aurora Atleta.', 'association': OWN}]))
+add('group-renew-unknown-group', 'renew', 'owner', 400,
+    error('insert or update on table "application_payment" violates foreign key constraint '
+          '"application_payment_group_id_565bdde4_fk_applicati"\nDETAIL:  Key (group_id)=(' + UNKNOWN_GROUP + ') is not '
+          'present in table "application_group".\n'),
+    headers={'X-Group-Id': UNKNOWN_GROUP}, body=group_renew_body)
+group_fresh = {'associate_id': next(group_ids), 'first_name': 'Gioia', 'last_name': 'Gruppo', 'born_date': '03/03/1993', 'sex': 'F', 'type': 1}
+add('group-renew-not-a-uuid', 'renew', 'owner', 400, error("['“zzz” is not a valid UUID.']"), headers={'X-Group-Id': 'zzz'},
+    body=renewal(group_fresh))
+add('group-renew-not-a-uuid-duplicate', 'renew', 'owner', 409,
+    {'msg': 'Questa iscrizione esiste già.', 'code': '409', 'ref': 'subscription_duplicate'}, headers={'X-Group-Id': 'zzz'},
+    body=group_renew_body)
+
+# --- A preregistration that renews a subscription (renewal and draft approval) ----------------------------
+# data['preregistration'] is True with the subscription_id of a live subscription of the association:
+# fill_data_preregisration replaces the request's person, certificate, custom data, role and number by the
+# renewed subscription's (the type stays the request's) and create_subscription re-checks the filled inputs.
+# The view keeps its own data: everything after create_subscription reads the filled subscription (the
+# clean-up's person and the new subscription's dates) while data['tags'] and data['courses'] stay the
+# request's. A subscription_id that names no subscription of the association is the APIException
+# 'Iscrizione da rinnovare non trovata.' (400 with that msg and code), not the view's error body.
+prereg_ids = iter(f'a1000000-0000-4000-8000-{956001 + n:012d}' for n in range(40))
+ASSOCIATES['prereg_member'] = {'id': next(prereg_ids), 'association': OWN, 'first': 'Pietro', 'last': 'Prenotato',
+                               'tax_code': 'PRTPTN80A01H501A', 'born': '1980-01-01', 'user': 'owner', 'email': None, 'deleted': False}
+# A number below the seeded ones: the renewed number is kept and the next default number does not move.
+SUBSCRIPTIONS['prereg_source'] = {'id': next(prereg_ids), 'associate': 'prereg_member', 'start': '$season_start', 'end': '$season_end',
+                                  'archived': False, 'number': '4', 'payment': None, 'user': 'owner'}
+# The renewed member's unpaid subscription payment created in the new subscription's period (the next
+# season) is deleted by the clean-up; a paid one and a course one of the same days stay.
+PAYMENTS['prereg_stale'] = {'id': next(prereg_ids), 'associate': 'prereg_member', 'amount': '30.00', 'paid': False, 'subject': 1,
+                            'date': '$today', 'created': '$next_season_start'}
+PAYMENTS['prereg_kept_paid'] = {'id': next(prereg_ids), 'associate': 'prereg_member', 'amount': '30.00', 'paid': True, 'subject': 1,
+                                'date': '$today', 'created': '$next_season_start'}
+PAYMENTS['prereg_kept_course'] = {'id': next(prereg_ids), 'associate': 'prereg_member', 'amount': '30.00', 'paid': False, 'subject': 2,
+                                  'date': '$today', 'created': '$next_season_start'}
+# The request's own person is the one the fill replaces: its keys are never read (the form's type is kept).
+prereg_form = {'associate_id': 'a1000000-0000-4000-8000-000000948004', 'first_name': 'Pietro', 'last_name': 'Prenotato',
+               'born_date': '08/08/1994', 'sex': 'M', 'type': 1}
+rows = [new_payment('$prereg_payment', ASSOCIATES['prereg_member']['id']),
+        *subscription_rows('$prereg_subscription', ASSOCIATES['prereg_member']['id'], kind=1, payment='$prereg_payment', number='4',
+                           renewal_form=False, season=NEXT)]
+extra_rows, extra_audit = enrolled('prereg', 'fee', ASSOCIATES['prereg_member']['id'], '$prereg_subscription')
+add('renew-preregistration-renews-subscription', 'renew', 'owner', 200, {'status': 'success', 'payment_id': '$new'},
+    body=renewal(prereg_form, preregistration=True, subscription_id=SUBSCRIPTIONS['prereg_source']['id'],
+                 tags=[{'tag_id': TAGS['tag_a']['id']}, {'tag_id': TAGS['tag_other']['id']}], courses=[course_item('fee')]),
+    effect=effect('owner', new=rows + extra_rows, deleted={'payment': ['prereg_stale']},
+                  tags=[('$prereg_subscription', 'tag_a')],
+                  audit=[entry('payment', 0, '$prereg_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$prereg_subscription',
+                               {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']}),
+                         entry('payment', 2, 'prereg_stale', index=(OWN, 'changes_json.sport_association'), deleted=True),
+                         *extra_audit, *notification_entries('owner')],
+                  celery=tasks('$prereg_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pietro Prenotato.', 'association': OWN}]))
+# A subscription_id that names no subscription of the association, and one that is no UUID: both answer the
+# fill's APIException and write nothing.
+add('renew-preregistration-unknown-subscription', 'renew', 'owner', 400,
+    {'msg': 'Iscrizione da rinnovare non trovata.', 'code': '400'},
+    body=renewal(prereg_form, preregistration=True, subscription_id=next(prereg_ids)))
+add('renew-preregistration-malformed-subscription-id', 'renew', 'owner', 400,
+    {'msg': 'Iscrizione da rinnovare non trovata.', 'code': '400'},
+    body=renewal(prereg_form, preregistration=True, subscription_id='zzz'))
+
+# The same fill inside the draft approval: the draft's data renews a subscription, so the approved member is
+# the renewed one and the draft's data is rendered after the fill (its own 'associate' and 'associate_tutor'
+# keys and the renewed member's 'associate_data'). The APPROVING rows an earlier case's crash left are
+# cleared by the setup above the case.
+ASSOCIATES['prereg_draft_member'] = {'id': next(prereg_ids), 'association': OWN, 'first': 'Pia', 'last': 'Prenotata',
+                                     'tax_code': 'PRTPIA85A41H501B', 'born': '1985-01-01', 'user': 'owner', 'email': None,
+                                     'deleted': False}
+SUBSCRIPTIONS['prereg_draft_source'] = {'id': next(prereg_ids), 'associate': 'prereg_draft_member', 'start': '$season_start',
+                                        'end': '$season_end', 'archived': False, 'number': '5', 'payment': None, 'user': 'owner'}
+# Seeded by the case's setup ('late'): the drafts table of the earlier cases keeps its order.
+DRAFTS['prereg'] = {'id': next(prereg_ids), 'association': OWN, 'valid': True, 'late': True,
+                    'data': {**draft_data(draft_person('Pia', 'Prenotata', 'PRTPIA85A41H501B')), 'preregistration': True,
+                             'subscription_id': SUBSCRIPTIONS['prereg_draft_source']['id']}}
+
+
+def renewed_person(subscription, kind):
+    """AssociateSerializer(associate).data + type/role/subscription_number, as fill_data_preregisration sets them.
+
+    sex is the seeded associate's stored default ('A') and role the subscription's (the model's 1)."""
+    row = ASSOCIATES[subscription['associate']]
+    return {'associate_id': row['id'], 'address': None, 'address_cap': None, 'address_city': None, 'born_city': None,
+            'born_date': '/'.join(reversed(row['born'].split('-'))), 'email': row['email'], 'sex': 'A',
+            'first_name': row['first'], 'last_name': row['last'], 'is_minor': False, 'sport_association': uuid.UUID(OWN),
+            'tax_code': row['tax_code'], 'user': uuid.UUID(OWNER), 'phone': None, 'family': None, 'family_role': None,
+            'type': kind, 'role': 1, 'subscription_number': subscription['number']}
+
+
+def renewed_draft_data(label, details, subscription):
+    """str() of a draft's data after the view's renaming and fill_data_preregisration (the delete entry's data).
+
+    A key already in the draft keeps its position when the renaming or the fill replaces its value; the new keys
+    are appended in the order Django sets them."""
+    data = jsonb_order(DRAFTS[label]['data'])
+    associate = data['associate']
+    data['associate_data'] = associate
+    data['associate_tutor_data'] = data['associate_tutor']
+    data['new_user_account'] = {'new_member': False}
+    data['signature'] = {'there_is_signature': False, 'data': ''}
+    associate['type'] = details['type']
+    associate['role'] = details['role']
+    data['membership_plan_id'] = details['membership_plan_id']
+    data['plan_id'] = details['plan_id']
+    data['associate_data'] = renewed_person(subscription, details['type'])
+    data['medical_certificate'] = {'medical_id': None, 'certificate_expring_date': None}
+    data['additional_fields'] = None
+    data['custom_data'] = None
+    data['subscription_membership'] = {'membership_number': subscription['number'], 'membership_type': None}
+    data['signature'] = {'data': None, 'signature': None, 'there_is_signature': False}
+    data['new_user_account'] = {'new_member': False}
+    return str(data)
+
+
+details = {'type': 1, 'plan_id': None, 'membership_plan_id': None, 'role': 1}
+rows = [new_payment('$prereg_draft_payment', ASSOCIATES['prereg_draft_member']['id']),
+        *subscription_rows('$prereg_draft_subscription', ASSOCIATES['prereg_draft_member']['id'], kind=1,
+                           payment='$prereg_draft_payment', number='5', renewal_form=False, season=NEXT)]
+add('approve-draft-preregistration-renews-subscription', 'approve', 'owner', 200, {'msg': '1 su 1 atleti approvati.', 'approved': 1},
+    setup={'drafts_insert': ['prereg'], 'approving_cleared': True},
+    body={'associate_import_draft_ids': [DRAFTS['prereg']['id']], 'subscription_details': {'type': 1}},
+    effect=effect('owner', new=rows, deleted={'draft': ['prereg']},
+                  audit=[*status_entries(create=True, delete_new=False),
+                         entry('payment', 0, '$prereg_draft_payment', {'amount': ['None', '25.0']}),
+                         entry('subscription', 0, '$prereg_draft_subscription',
+                               {'start_date': ['None', '$next_season_start_text'], 'end_date': ['None', '$next_season_end_text']}),
+                         entry('associateimportdraft', 2, 'prereg',
+                               {'data': [renewed_draft_data('prereg', details, SUBSCRIPTIONS['prereg_draft_source']), 'None']},
+                               index=(OWN, 'changes_json.sport_association'), deleted=True),
+                         *status_entries(create=False)],
+                  celery=tasks('$prereg_draft_subscription'),
+                  notifications=[{'msg': 'Nuova Iscrizione aggiunta per Pia Prenotata.', 'association': OWN}]))
+
 assert len({c['name'] for c in cases}) == len(cases)
 OUTPUT.write_text(json.dumps({
     'matrix_version': 1, 'scope': 'subscription/renew and associates-draft approve authored sequence with row, audit, Celery and '
                                   'notification effects',
     'ids': IDS, 'associates': ASSOCIATES, 'subscriptions': SUBSCRIPTIONS, 'payments': PAYMENTS, 'tags': TAGS,
     'family': FAMILY, 'courses': COURSES, 'certificates': CERTIFICATES, 'invoices': INVOICES, 'target_user': TARGET_USER, 'account': ACCOUNT, 'drafts': DRAFTS, 'statuses': STATUSES,
+    'extra_users': EXTRA_USERS, 'users': USERS, 'associations': ASSOCIATIONS,
     'settings': BASE_SETTINGS, 'cases': cases}, ensure_ascii=False, indent=1) + '\n')
 print(len(cases), 'cases')

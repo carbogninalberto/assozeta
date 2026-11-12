@@ -42,8 +42,9 @@ type SubscriptionRenewTransaction interface {
 	// RenewalPayments are the live unpaid subscription payments of the
 	// association whose associate matches (first and last name exact, tax
 	// code iexact; nil is NULL) created in [start, end] (midnight UTC), except
-	// one, limited to scope when set. invoiced reports one with an invoice.
-	RenewalPayments(ctx context.Context, association string, first, last, tax *string, start, end time.Time, except, scope *string) (ids []string, invoiced bool, err error)
+	// one, limited to scope and to group when set. invoiced reports one with an
+	// invoice.
+	RenewalPayments(ctx context.Context, association string, first, last, tax *string, start, end time.Time, except, scope, group *string) (ids []string, invoiced bool, err error)
 	// DeletePayments is the payments' QuerySet.delete() (signals and audit).
 	DeletePayments(ctx context.Context, ids []string, audit CourseSubscriptionAudit) error
 	// AddTags links the existing tags among ids to the subscription.
@@ -51,6 +52,9 @@ type SubscriptionRenewTransaction interface {
 	// RenewAssociationOwner is SportAssociation.objects.get(sport_association_id=id).user
 	// (nil when no live association has the id).
 	RenewAssociationOwner(ctx context.Context, id string) (*Account, error)
+	// ConnectedAssociationCount counts the live associations of the account's
+	// connected account (User.sport_association of a collaborator), 0 when it has none.
+	ConnectedAssociationCount(ctx context.Context, user string) (int, error)
 	// MemberRenewable is _member_renewal_association's check: the association has a
 	// subscription of the requester, or of a person sharing a tax code or a family with one
 	// of the requester's subscriptions, for the associate (by key, or by tax code iexact

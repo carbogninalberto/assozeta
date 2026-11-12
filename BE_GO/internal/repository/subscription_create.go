@@ -17,14 +17,23 @@ type SubscriptionCreates struct{ db *sqlx.DB }
 
 func NewSubscriptionCreates(db *sqlx.DB) *SubscriptionCreates { return &SubscriptionCreates{db: db} }
 
-type subscriptionCreateTransaction struct{ *subscriptionEditTransaction }
+type subscriptionCreateTransaction struct {
+	*subscriptionEditTransaction
+}
 
 func (r *SubscriptionCreates) BeginSubscriptionCreate(ctx context.Context) (domain.SubscriptionCreateTransaction, error) {
 	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return nil, err
 	}
-	return &subscriptionCreateTransaction{&subscriptionEditTransaction{ownedTransaction: tx}}, nil
+	return &subscriptionCreateTransaction{subscriptionEditTransaction: &subscriptionEditTransaction{ownedTransaction: tx}}, nil
+}
+
+func (t *subscriptionCreateTransaction) SetGroup(group *string) { t.group = group }
+
+// groupFilter is Django's GroupAwareManager.get_queryset filter on alias.
+func groupFilter(alias, column string, position int) string {
+	return fmt.Sprintf(`($%[2]d::uuid IS NULL OR %[1]s.%[3]s=$%[2]d::uuid)`, alias, position, column)
 }
 
 func createDateText(value domain.CalendarDate) string {
@@ -72,8 +81,9 @@ func (t *subscriptionCreateTransaction) Existing(ctx context.Context, associatio
  FROM application_subscription s INNER JOIN application_associate a ON a.associate_id=s.associate_id
  WHERE s.sport_association_id=$1 AND `+iexact("a.first_name", 2)+` AND `+iexact("a.last_name", 3)+` AND `+iexact("a.tax_code", 4)+`
  AND s.end_date >= $5::date AND s.start_date <= $6::date AND NOT s.archived
- AND ($7::text IS NULL OR UPPER(s.custom_data::text) LIKE UPPER($7::text)) ORDER BY s.subscription_id LIMIT 1`,
-		association, first, last, tax, createDateText(start), createDateText(end), pattern)
+ AND ($7::text IS NULL OR UPPER(s.custom_data::text) LIKE UPPER($7::text)) AND `+groupFilter("s", "group_id", 8)+`
+ ORDER BY s.subscription_id LIMIT 1`,
+		association, first, last, tax, createDateText(start), createDateText(end), pattern, t.group)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -85,7 +95,8 @@ func (t *subscriptionCreateTransaction) Existing(ctx context.Context, associatio
 
 func (t *subscriptionCreateTransaction) FutureRenewal(ctx context.Context, association string, end domain.CalendarDate, tax *string) (bool, error) {
 	return t.exists(ctx, `SELECT 1 FROM application_subscription s INNER JOIN application_associate a ON a.associate_id=s.associate_id
- WHERE s.sport_association_id=$1 AND s.start_date >= $2::date AND NOT s.archived AND `+iexact("a.tax_code", 3), association, createDateText(end), tax)
+ WHERE s.sport_association_id=$1 AND s.start_date >= $2::date AND NOT s.archived AND `+iexact("a.tax_code", 3)+`
+ AND `+groupFilter("s", "group_id", 4), association, createDateText(end), tax, t.group)
 }
 
 func (t *subscriptionCreateTransaction) Certificate(ctx context.Context, id string) (bool, *string, error) {
@@ -176,7 +187,8 @@ func (t *subscriptionCreateTransaction) ReusablePayments(ctx context.Context, as
 	}{}
 	if err := t.tx.SelectContext(ctx, &rows, `SELECT payment_id, creation_date FROM application_payment
  WHERE associate_id=$1 AND sport_association_id=$2 AND subject=1 AND NOT paid AND amount=$3::numeric AND payment_date=$4 AND NOT deleted
- ORDER BY creation_date DESC LIMIT 2 FOR UPDATE`, associate, association, amount, day); err != nil {
+ AND `+groupFilter("application_payment", "group_id", 5)+`
+ ORDER BY creation_date DESC LIMIT 2 FOR UPDATE`, associate, association, amount, day, t.group); err != nil {
 		return nil, false, err
 	}
 	ids := make([]string, 0, len(rows))
@@ -186,9 +198,29 @@ func (t *subscriptionCreateTransaction) ReusablePayments(ctx context.Context, as
 	return ids, len(rows) == 2 && rows[0].Created.Equal(rows[1].Created), nil
 }
 
+// NewestReusablePayment is the query Django runs when several rows are newest:
+// Payment.objects.filter(...).order_by('-creation_date').first(), the same
+// conditions as ReusablePayments without the lock and with the database
+// breaking the tie.
+func (t *subscriptionCreateTransaction) NewestReusablePayment(ctx context.Context, associate, association, amount string, day time.Time) (*string, error) {
+	var id string
+	err := t.tx.GetContext(ctx, &id, `SELECT payment_id FROM application_payment
+ WHERE associate_id=$1 AND sport_association_id=$2 AND subject=1 AND NOT paid AND amount=$3::numeric AND payment_date=$4 AND NOT deleted
+ AND `+groupFilter("application_payment", "group_id", 5)+`
+ ORDER BY creation_date DESC LIMIT 1`, associate, association, amount, day, t.group)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &id, nil
+}
+
 func (t *subscriptionCreateTransaction) PaymentAmount(ctx context.Context, id string) (string, error) {
 	var amount string
-	err := t.tx.GetContext(ctx, &amount, `SELECT amount::text FROM application_payment WHERE payment_id=$1`, id)
+	err := t.tx.GetContext(ctx, &amount, `SELECT amount::text FROM application_payment WHERE payment_id=$1
+ AND `+groupFilter("application_payment", "group_id", 2), id, t.group)
 	return amount, err
 }
 
@@ -197,8 +229,8 @@ func (t *subscriptionCreateTransaction) InsertPayment(ctx context.Context, row d
  expense, description, payment_category_id, meta_payment_categories, invoice_id, user_id, associate_id, supplier_id, instructor_id,
  sport_association_id, payment_intent_id, archived, invoice_fiscal_code, meta, notes, custom_accounts_id, signature_id, deleted, group_id,
  course) VALUES ($1,'default',1,$2::numeric,$3,$4,false,false,'Iscrizione',$5,$6::jsonb,NULL,$7,$8,NULL,NULL,$9,NULL,false,NULL,$10::jsonb,NULL,
- $11,NULL,false,NULL,NULL)`, row.ID, row.Amount, row.Created, subscriptionCreatePaymentDate(row.PaymentDate), row.CategoryID, row.MetaCategories, row.UserID, row.AssociateID,
-		row.AssociationID, row.Meta, row.AccountID)
+ $11,NULL,false,$12,NULL)`, row.ID, row.Amount, row.Created, subscriptionCreatePaymentDate(row.PaymentDate), row.CategoryID, row.MetaCategories, row.UserID, row.AssociateID,
+		row.AssociationID, row.Meta, row.AccountID, t.group)
 	return err
 }
 
@@ -211,7 +243,7 @@ func subscriptionCreatePaymentDate(value time.Time) any {
 }
 
 func (t *subscriptionCreateTransaction) QuickAssociate(ctx context.Context, id string) (*domain.SubscriptionEditAssociate, error) {
-	return t.oneAssociate(ctx, `associate_id=$1 AND NOT deleted`, id)
+	return t.oneAssociate(ctx, `associate_id=$1 AND NOT deleted AND ($2::uuid IS NULL OR group_id=$2::uuid)`, id, t.group)
 }
 
 func (t *subscriptionCreateTransaction) QuickAssociationExists(ctx context.Context, id string) (bool, error) {
@@ -221,7 +253,8 @@ func (t *subscriptionCreateTransaction) QuickAssociationExists(ctx context.Conte
 func (t *subscriptionCreateTransaction) QuickCertificates(ctx context.Context, associate string) ([]domain.SubscriptionQuickCertificate, error) {
 	rows := []domain.SubscriptionQuickCertificate{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT m.medical_id, m.expiration_date FROM application_subscription s
- JOIN application_medicalcertificate m ON m.medical_id=s.medical_id WHERE s.associate_id=$1`, associate)
+ JOIN application_medicalcertificate m ON m.medical_id=s.medical_id WHERE s.associate_id=$1
+ AND `+groupFilter("s", "group_id", 2), associate, t.group)
 	return rows, err
 }
 
@@ -229,7 +262,8 @@ func (t *subscriptionCreateTransaction) LatestNumber(ctx context.Context, associ
 	var number string
 	err := t.tx.GetContext(ctx, &number, `SELECT subscription_number FROM application_subscription
  WHERE sport_association_id=$1 AND subscription_number IS NOT NULL AND subscription_number::text ~ '^\d+$'
- ORDER BY (subscription_number)::bigint DESC LIMIT 1`, association)
+ AND `+groupFilter("application_subscription", "group_id", 2)+`
+ ORDER BY (subscription_number)::bigint DESC LIMIT 1`, association, t.group)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -243,8 +277,27 @@ func (t *subscriptionCreateTransaction) GroupedCustomData(ctx context.Context, u
 	rows := []domain.SubscriptionGroupedCustomData{}
 	err := t.tx.SelectContext(ctx, &rows, `SELECT custom_data::text AS custom_data, creation_date FROM application_subscription
  WHERE user_id=$1 AND (UPPER(custom_data::text) LIKE UPPER('%asd-o-ssd%') OR UPPER(custom_data::text) LIKE UPPER('%scuola-asc%'))
- ORDER BY creation_date DESC LIMIT 2`, user)
+ AND `+groupFilter("application_subscription", "group_id", 2)+`
+	ORDER BY creation_date DESC LIMIT 2`, user, t.group)
 	return rows, err
+}
+
+// NewestGroupedCustomData is the query Django runs when several rows are newest:
+// Subscription.objects.filter(user=user).filter(Q(custom_data__icontains=...)).order_by('-creation_date').first(),
+// the same conditions as GroupedCustomData with a single row and the database breaking the tie.
+func (t *subscriptionCreateTransaction) NewestGroupedCustomData(ctx context.Context, user string) (*domain.SubscriptionGroupedCustomData, error) {
+	var row domain.SubscriptionGroupedCustomData
+	err := t.tx.GetContext(ctx, &row, `SELECT custom_data::text AS custom_data, creation_date FROM application_subscription
+ WHERE user_id=$1 AND (UPPER(custom_data::text) LIKE UPPER('%asd-o-ssd%') OR UPPER(custom_data::text) LIKE UPPER('%scuola-asc%'))
+ AND `+groupFilter("application_subscription", "group_id", 2)+`
+ ORDER BY creation_date DESC LIMIT 1`, user, t.group)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &row, nil
 }
 
 func (t *subscriptionCreateTransaction) RenewalSource(ctx context.Context, id, association string) (*domain.SubscriptionRenewalSource, error) {
@@ -252,7 +305,7 @@ func (t *subscriptionCreateTransaction) RenewalSource(ctx context.Context, id, a
 	if err := t.tx.SelectContext(ctx, &rows, `SELECT s.user_id, a.user_id AS owner_id, s.associate_id, s.medical_id, s.role, s.subscription_number,
  s.subscription_type, s.custom_data::text AS custom_data, s.additional_fields::text AS additional_fields
  FROM application_subscription s JOIN application_sportassociation a ON a.sport_association_id=s.sport_association_id
- WHERE s.subscription_id=$1 AND s.sport_association_id=$2`, id, association); err != nil || len(rows) == 0 {
+ WHERE s.subscription_id=$1 AND s.sport_association_id=$2 AND `+groupFilter("s", "group_id", 3), id, association, t.group); err != nil || len(rows) == 0 {
 		return nil, err
 	}
 	return &rows[0], nil
@@ -268,9 +321,9 @@ func (t *subscriptionCreateTransaction) InsertSubscription(ctx context.Context, 
  start_date, end_date, signature_url, signature_storage_key, document_pdf_id, payment_id, deleted, archived, draft, trial, meta,
  subscription_number, subscription_type, group_id, competitive, notes)
  VALUES ($1,$2,$3,NULL,NULL,$4::jsonb,$5::jsonb,$6,$7,$8,NULL,NULL,$9,$10,$11,$12::date,$13::date,NULL,NULL,NULL,$14,false,false,true,false,
- $15::jsonb,$16,$17,NULL,false,NULL)`, row.ID, row.AssociationID, row.AssociateID, row.CustomData, row.AdditionalFields, user, row.Type,
+ $15::jsonb,$16,$17,$18,false,NULL)`, row.ID, row.AssociationID, row.AssociateID, row.CustomData, row.AdditionalFields, user, row.Type,
 		row.Role, row.MedicalID, row.Status, row.Created, calendarValue(row.Start), calendarValue(row.End), row.PaymentID, row.Meta,
-		row.Number, row.SubscriptionType)
+		row.Number, row.SubscriptionType, t.group)
 	return err
 }
 

@@ -15,7 +15,12 @@ type SubscriptionEdits struct{ db *sqlx.DB }
 
 func NewSubscriptionEdits(db *sqlx.DB) *SubscriptionEdits { return &SubscriptionEdits{db: db} }
 
-type subscriptionEditTransaction struct{ *ownedTransaction }
+type subscriptionEditTransaction struct {
+	*ownedTransaction
+	// group is the canonical X-Group-Id of a subscription-create request (nil:
+	// no header); other routes leave it nil.
+	group *string
+}
 
 func (r *SubscriptionEdits) BeginSubscriptionEdit(ctx context.Context) (domain.SubscriptionEditTransaction, error) {
 	tx, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
@@ -217,6 +222,9 @@ func (t *subscriptionEditTransaction) Audit(ctx context.Context, entry domain.Su
 		}
 		for name, manager := range associateReverse {
 			changes[name] = [2]string{"None", manager}
+		}
+		for name, pair := range entry.Overrides {
+			changes[name] = pair
 		}
 	}
 	name := "Associate"
