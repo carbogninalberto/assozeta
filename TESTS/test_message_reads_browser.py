@@ -195,6 +195,16 @@ class MessageBrowserControls(unittest.TestCase):
                 self.verify()
             self.receipt['blocked_fixture_dependencies'] = before
 
+    def test_stripe_script_is_not_a_known_dependency_of_non_payment_pages(self):
+        for resource in browser.BLOCKED_EXTERNAL_RESOURCES:
+            with self.subTest(url=resource['url']):
+                self.assertNotIn('stripe', resource['url'])
+        self.receipt['blocked_fixture_dependencies'].append(dict(
+            url='https://js.stripe.com/v3/', method='GET', resource_type='script',
+            actor='owner', action='login', blocked=True))
+        with self.assertRaises(AssertionError):
+            self.verify()
+
     def test_loopback_connect_reset_signature_and_actual_dispatcher_failure_stay_private(self):
         program = r'''
 import assert from 'node:assert/strict';

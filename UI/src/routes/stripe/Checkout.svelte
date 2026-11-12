@@ -8,6 +8,7 @@
     import * as easing from 'svelte/easing';
     import {params} from 'svelte-spa-router';
     import {apiFetch, replaceUID} from 'utils/ApiMiddleware';
+    import {getStripe} from 'utils/stripeLoader.js';
     import {replace} from 'svelte-spa-router';
     import {fade} from 'svelte/transition';
     import {Circle} from 'svelte-loading-spinners';
@@ -118,7 +119,7 @@
         // key applied at runtime by applyRuntimeConfig is not visible through `__bakney` here.
         const publicKey = get(stripeConfig)?.publicKey;
         if (!publicKey) return console.warn('[STRIPE] Cannot load Stripe Component because of missing public key');
-        return Stripe(publicKey);
+        return getStripe(publicKey);
     }
 
     async function loadStripeComponent() {
