@@ -6,7 +6,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     LANG=it_IT.UTF-8 \
     LC_ALL=it_IT.UTF-8 \
-    PATH=/opt/venv/bin:$PATH
+    PATH=/opt/venv/bin:$PATH \
+    BOTO_EXPERIMENTAL__NO_EMPTY_CONTINUE=true
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
@@ -17,6 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && sed -i 's/# it_IT.UTF-8 UTF-8/it_IT.UTF-8 UTF-8/' /etc/locale.gen \
     && locale-gen \
     && rm -rf /var/lib/apt/lists/*
+
+# Content types: the same table the parity tests were recorded with (TESTS/fixtures/mime.types).
+COPY mime.types /etc/mime.types
 
 WORKDIR /app
 

@@ -35,6 +35,8 @@ ARG REQUIRE_MANUAL=false
 ARG MANUAL_CARRIED_FROM=""
 RUN apk add --no-cache ca-certificates tzdata && \
     addgroup -S -g 10001 assozeta && adduser -S -D -H -u 10001 -G assozeta assozeta
+# Content types: the same table the parity tests were recorded with (TESTS/fixtures/mime.types).
+COPY mime.types /etc/mime.types
 WORKDIR /app
 RUN mkdir -p /app/manuale && chown 10001:10001 /app/manuale && chmod 0750 /app/manuale
 # Compose mounts transient logo preparation storage here. Keep image metadata
