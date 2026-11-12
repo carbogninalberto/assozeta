@@ -2,6 +2,8 @@ package dto
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -15,6 +17,42 @@ func reportParams(t *testing.T, text string) domain.RequestObject {
 		t.Fatal(err)
 	}
 	return parsed.(domain.RequestObject)
+}
+
+// reportBindings checks that a statement's placeholders are contiguous from $1
+// and that every argument is referenced (a discarded intermediate key
+// transform must not leave an unbound parameter behind).
+func reportBindings(t *testing.T, label, sql string, args []any) {
+	t.Helper()
+	seen := map[int]bool{}
+	for i := 0; i < len(sql); i++ {
+		if sql[i] != '$' {
+			continue
+		}
+		j := i + 1
+		for j < len(sql) && sql[j] >= '0' && sql[j] <= '9' {
+			j++
+		}
+		if j == i+1 {
+			continue
+		}
+		index, err := strconv.Atoi(sql[i+1 : j])
+		if err != nil {
+			continue
+		}
+		seen[index] = true
+		i = j - 1
+	}
+	for index := 1; index <= len(args); index++ {
+		if !seen[index] {
+			t.Errorf("%s: placeholder $%d is not used (args %#v)", label, index, args)
+		}
+	}
+	for index := range seen {
+		if index > len(args) {
+			t.Errorf("%s: placeholder $%d has no argument (args %#v)", label, index, args)
+		}
+	}
 }
 
 func TestReportToolOutcomes(t *testing.T) {
@@ -35,7 +73,7 @@ func TestReportToolOutcomes(t *testing.T) {
 		{"query_data", `{"model_name": "Tags", "filters": {"creation_date__minute": 1}}`, nil},
 		{"query_data", `{"model_name": "Tags", "limit": true}`, nil},
 		{"query_data", `{"model_name": "Tags", "limit": "5"}`, ErrReportFailed},
-		{"query_data", `{"model_name": "Carnet", "filters": {"meta__colore__icontains": "blu"}}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Carnet", "filters": {"meta__colore__icontains": "blu"}}`, nil},
 		{"get_field_values", `{"model_name": "Tags", "field_name": "password"}`, ErrReportFailed},
 		{"aggregate_data", `{"model_name": "Tags", "aggregations": [{"function": "sum", "field": "tag_name"}]}`, nil},
 		{"export_data", `{"model_name": "Tags"}`, ErrReportNotPorted},
@@ -149,6 +187,168 @@ func TestReportToolEmptyInList(t *testing.T) {
 				t.Errorf("%s: statement SQL %q lacks FALSE", tool, statement.SQL)
 			}
 		}
+	}
+}
+
+func TestReportToolJSONLookups(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	plan := func(t *testing.T, params string) ReportPlan {
+		t.Helper()
+		planned, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err != nil {
+			t.Fatalf("%s: %v", params, err)
+		}
+		return planned
+	}
+	meta := `"application_payment"."meta"`
+	for _, tc := range []struct {
+		params string
+		sql    []string
+		args   []any
+	}{
+		// Whole-column lookups: JSONField's own lookups.
+		{`{"model_name":"Payment","filters":{"meta__contains":{"b":1}}}`,
+			[]string{meta + ` @> $`}, []any{`{"b": 1}`}},
+		{`{"model_name":"Payment","filters":{"meta__contained_by":{"b":1,"a":[1.0,"x & y"]}}}`,
+			[]string{meta + ` <@ $`}, []any{`{"b": 1, "a": [1.0, "x & y"]}`}},
+		{`{"model_name":"Payment","filters":{"meta__has_keys":["a","b"]}}`,
+			[]string{meta + ` ?& $`}, []any{[]string{"a", "b"}}},
+		{`{"model_name":"Payment","filters":{"meta__has_any_keys":["zz","b"]}}`,
+			[]string{meta + ` ?| $`}, []any{[]string{"zz", "b"}}},
+		{`{"model_name":"Payment","filters":{"meta__has_keys":"ab"}}`,
+			[]string{meta + ` ?& $`}, []any{[]string{"a", "b"}}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":"b"}}`,
+			[]string{meta + ` ? $`}, []any{"b"}},
+		// A value of another type reaches PostgreSQL, which reports the
+		// operator error; the parameter carries the type it had.
+		{`{"model_name":"Payment","filters":{"meta__has_key":5}}`,
+			[]string{meta + ` ? $`, `::int`}, []any{int64(5)}},
+		{`{"model_name":"Payment","filters":{"meta__has_key":["a"]}}`,
+			[]string{meta + ` ? $`, `::text[]`}, []any{[]string{"a"}}},
+		{`{"model_name":"Payment","filters":{"meta":{"b":1}}}`,
+			[]string{meta + ` = $`}, []any{`{"b": 1}`}},
+		{`{"model_name":"Payment","filters":{"meta":"x"}}`,
+			[]string{meta + ` = $`}, []any{`"x"`}},
+		{`{"model_name":"Payment","filters":{"meta__exact":null}}`,
+			[]string{meta + ` = $`}, []any{"null"}},
+		{`{"model_name":"Payment","filters":{"meta__gt":1}}`,
+			[]string{meta + ` > $`}, []any{"1"}},
+		{`{"model_name":"Payment","filters":{"meta__in":[{"b":1}]}}`,
+			[]string{meta + ` IN ($`}, []any{`{"b": 1}`}},
+		{`{"model_name":"Payment","filters":{"meta__icontains":"OK"}}`,
+			[]string{`UPPER(` + meta + `::text) LIKE UPPER($`}, []any{"%OK%"}},
+		{`{"model_name":"Payment","filters":{"meta__startswith":"{"}}`,
+			[]string{meta + `::text LIKE $`}, []any{"{%"}},
+		// Key transforms, at any depth.
+		{`{"model_name":"Payment","filters":{"meta__a__0":1.0}}`,
+			[]string{`(` + meta + ` #> $`, `::text[]`}, []any{[]string{"a", "0"}, "1.0"}},
+		{`{"model_name":"Payment","filters":{"meta__0":1}}`,
+			[]string{`(` + meta + ` -> $`, `::int`}, []any{int64(0), "1"}},
+		{`{"model_name":"Payment","filters":{"meta__-1":1}}`,
+			[]string{`(` + meta + ` -> $`, `::int`}, []any{int64(-1)}},
+		{`{"model_name":"Payment","filters":{"meta__b":null}}`,
+			[]string{`(` + meta + ` -> $`, `) = $`}, []any{"b", "null"}},
+		{`{"model_name":"Payment","filters":{"meta__b__isnull":true}}`,
+			[]string{`(` + meta + ` -> $`, `) IS NULL`}, nil},
+		{`{"model_name":"Payment","filters":{"meta__b__isnull":false}}`,
+			[]string{`(` + meta + ` -> $`, `) IS NOT NULL`}, nil},
+		{`{"model_name":"Payment","filters":{"meta__b__in":[1,2]}}`,
+			[]string{`(` + meta + ` -> $`, `) IN ($`}, []any{"1", "2"}},
+		{`{"model_name":"Payment","filters":{"meta__b__range":[0,2]}}`,
+			[]string{`(` + meta + ` -> $`, `) BETWEEN $`}, []any{"0", "2"}},
+		{`{"model_name":"Payment","filters":{"meta__b__gt":0}}`,
+			[]string{`(` + meta + ` -> $`, `) > $`}, []any{"0"}},
+		{`{"model_name":"Payment","filters":{"meta__a__contains":[1.0]}}`,
+			[]string{`(` + meta + ` -> $`, `) @> $`}, []any{"[1.0]"}},
+		{`{"model_name":"Payment","filters":{"meta__a__has_key":"x"}}`,
+			[]string{`(` + meta + ` -> $`, `) ? $`}, []any{"x"}},
+		{`{"model_name":"Payment","filters":{"meta__note__year":1}}`,
+			[]string{`(` + meta + ` #> $`, `) = $`}, []any{[]string{"note", "year"}, "1"}},
+		{`{"model_name":"Payment","filters":{"meta__note__len":2}}`,
+			[]string{`(` + meta + ` #> $`, `) = $`}, []any{[]string{"note", "len"}}},
+		{`{"model_name":"Payment","filters":{"meta__note__icontains":"O"}}`,
+			[]string{`UPPER((` + meta + ` ->> $`, `)::text) LIKE UPPER($`}, []any{"note", "%O%"}},
+		{`{"model_name":"Payment","filters":{"meta__note__startswith":"o"}}`,
+			[]string{`(` + meta + ` ->> $`, `)::text LIKE $`}, []any{"o%"}},
+		{`{"model_name":"Payment","filters":{"meta__note__iexact":"OK"}}`,
+			[]string{`UPPER((` + meta + ` ->> $`, `)::text) = UPPER($`}, []any{"note"}},
+		{`{"model_name":"Payment","filters":{"meta__note__regex":"^o"}}`,
+			[]string{`(` + meta + ` ->> $`, `)::text ~ $`}, []any{"^o"}},
+		{`{"model_name":"Payment","filters":{"meta__note__in":["ok",1]}}`,
+			[]string{`(` + meta + ` -> $`, `) IN ($`}, []any{`"ok"`, "1"}},
+		{`{"model_name":"Payment","filters":{"meta__it's":1}}`,
+			[]string{`(` + meta + ` -> $`, `) = $`}, []any{"it's"}},
+		{`{"model_name":"Payment","filters":{"meta__a\\b":1}}`,
+			[]string{`(` + meta + ` -> $`, `) = $`}, []any{`a\b`}},
+		// Key paths in values(), ordering, grouping and get_field_values.
+		{`{"model_name":"Payment","fields":["amount","meta__a__0","meta__note"],"order_by":["amount"]}`,
+			[]string{`(` + meta + ` #> $`, `) AS "c1"`, `(` + meta + ` -> $`, `) AS "c2"`}, nil},
+		{`{"model_name":"Payment","fields":["amount"],"order_by":["meta__a__0","amount"]}`,
+			[]string{`ORDER BY (` + meta + ` #> $`, `) ASC`}, nil},
+	} {
+		planned := plan(t, tc.params)
+		query := planned.Statements[1].SQL
+		for _, statement := range planned.Statements {
+			reportBindings(t, tc.params, statement.SQL, statement.Args)
+		}
+		for _, part := range tc.sql {
+			if !strings.Contains(query, part) {
+				t.Errorf("%s: query %q lacks %q", tc.params, query, part)
+			}
+		}
+		for _, want := range tc.args {
+			found := false
+			for _, argument := range planned.Statements[1].Args {
+				if fmt.Sprint(argument) == fmt.Sprint(want) {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("%s: args %#v lack %#v", tc.params, planned.Statements[1].Args, want)
+			}
+		}
+	}
+	// Grouping by a key path groups by the extracted value.
+	grouped, err := PlanReportTool("aggregate_data", reportParams(t,
+		`{"model_name":"Payment","aggregations":[{"function":"count","field":"*"}],"group_by":["meta__note"]}`),
+		"a1000000-0000-4000-8000-000000701001", settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if query := grouped.Statements[0].SQL; !strings.Contains(query, `GROUP BY (`+meta+` -> $`) {
+		t.Errorf("group_by key: query %q lacks a key transform", query)
+	}
+	for _, statement := range grouped.Statements {
+		reportBindings(t, "group_by meta__note", statement.SQL, statement.Args)
+	}
+	// get_field_values reads the key value and orders by it.
+	values, err := PlanReportTool("get_field_values", reportParams(t,
+		`{"model_name":"Payment","field_name":"meta__note"}`), "a1000000-0000-4000-8000-000000701001", settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if query := values.Statements[1].SQL; !strings.Contains(query, `(`+meta+` -> $`) {
+		t.Errorf("get_field_values key: query %q lacks a key transform", query)
+	}
+	for _, statement := range values.Statements {
+		reportBindings(t, "get_field_values meta__note", statement.SQL, statement.Args)
+	}
+	// Lookups the expression does not offer stay refused.
+	for _, params := range []string{
+		`{"model_name":"Payment","filters":{"meta__range":[0,2]}}`,
+		`{"model_name":"Payment","filters":{"meta__a__has_keys":["x"]}}`,
+		`{"model_name":"Payment","filters":{"meta__a__contained_by":{}}}`,
+	} {
+		if _, err := PlanReportTool("query_data", reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings); !errors.Is(err, ErrReportNotPorted) {
+			t.Errorf("%s: got %v, want a refusal", params, err)
+		}
+	}
+	// A has_key value the operator cannot take reaches PostgreSQL; None is
+	// rejected before the statement is built.
+	if _, err := PlanReportTool("query_data", reportParams(t,
+		`{"model_name":"Payment","filters":{"meta__has_key":null}}`), "a1000000-0000-4000-8000-000000701001", settings); err == nil ||
+		err.Error() != "Cannot use None as a query value" {
+		t.Errorf("has_key None: got %v", err)
 	}
 }
 

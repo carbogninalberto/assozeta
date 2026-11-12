@@ -107,7 +107,7 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
   `export`, `multi_sheet`, `filename` or course/date argument of a type the save_info
   would write back differently.
 - ORM inputs whose Django text includes SQL or parts Go does not reproduce:
-  JSON containment and multi-key lookups, nested or integer JSON keys,
+  JSON `range` on a whole column, JSON multi-key lookups on a key value,
   `exclude()` across many-valued relations (split_exclude subquery), `?`
   ordering, ordering by a relation whose model has Meta.ordering, integer list
   items outside the 64-bit parameter range, CSV cells holding JSON containers

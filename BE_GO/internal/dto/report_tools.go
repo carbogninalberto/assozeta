@@ -437,7 +437,7 @@ func (q *mcpQuery) orderExpr(order mcpOrder) (mcpExpr, error) {
 		return expr, err
 	}
 	for _, transform := range info.transforms {
-		next, err := expr.tryTransform(transform)
+		next, err := q.tryTransform(expr, transform)
 		if err != nil {
 			// setup_joins' transform function reports the names_to_path error
 			// when the final field is a Field (find_ordering_name).

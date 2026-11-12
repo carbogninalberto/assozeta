@@ -399,6 +399,12 @@ type mcpExpr struct {
 	column   string // the untransformed column (YearLookup bounds)
 	colKind  string
 	jsonKey  bool
+	// jsonCol and jsonKeys are the JSONField expression a key transform reads
+	// and the keys applied to it (KeyTransform.preprocess_lhs); jsonArg is the
+	// parameter holding the keys (a deeper transform reuses it).
+	jsonCol  string
+	jsonKeys []string
+	jsonArg  int
 	null     bool
 	louter   bool
 }
@@ -456,9 +462,13 @@ func (q *mcpQuery) targetExpr(info *mcpJoinInfo, target mcpTarget, alias string)
 		return mcpExpr{}, mcpNotPorted("field type " + target.valueType)
 	}
 	column := mcpColumn(alias, target.column)
-	return mcpExpr{sql: column, kind: kind, field: target.field, relation: info.path.final.Relation,
+	expr := mcpExpr{sql: column, kind: kind, field: target.field, relation: info.path.final.Relation,
 		relClass: info.path.final.Class, column: column, colKind: kind, null: target.null,
-		louter: q.get(alias).louter}, nil
+		louter: q.get(alias).louter}
+	if kind == "json" {
+		expr.jsonCol = column
+	}
+	return expr, nil
 }
 
 // mcpDateTransforms are the extract transforms DateField and DateTimeField
@@ -471,12 +481,9 @@ var mcpDateTransforms = map[string]bool{"year": true, "month": true, "day": true
 var errMCPNoTransform = errors.New("mcp query: no such transform")
 
 // tryTransform is Query.try_transform for the supported transforms.
-func (e mcpExpr) tryTransform(name string) (mcpExpr, error) {
+func (q *mcpQuery) tryTransform(e mcpExpr, name string) (mcpExpr, error) {
 	if e.relation {
 		return e, errMCPNoTransform
-	}
-	if e.jsonKey {
-		return e, mcpNotPorted("transform " + name)
 	}
 	switch e.kind {
 	case "date", "datetime":
@@ -530,13 +537,73 @@ func (e mcpExpr) tryTransform(name string) (mcpExpr, error) {
 		}
 		return e, errMCPNoTransform
 	case "json":
-		if name != "" && !strings.ContainsAny(name, "'\\") && !mcpDigits(name) {
-			return mcpExpr{sql: "(" + e.sql + " -> '" + name + "')", kind: "json", jsonKey: true, column: e.column,
-				colKind: e.kind, null: e.null, louter: e.louter, field: e.field}, nil
+		// JSONField.get_transform returns KeyTransformFactory(name) for any
+		// name, so every name after a JSON field is another key of any depth.
+		keys := append(append([]string(nil), e.jsonKeys...), name)
+		next := mcpExpr{kind: "json", jsonKey: true, jsonCol: e.jsonCol, jsonKeys: keys, column: e.column,
+			colKind: e.kind, null: e.null, louter: e.louter, field: e.field, jsonArg: e.jsonArg}
+		sql, arg, err := q.jsonKeySQL(next, false)
+		if err != nil {
+			return e, err
 		}
-		return e, mcpNotPorted("transform " + name)
+		next.sql, next.jsonArg = sql, arg
+		return next, nil
 	}
 	return e, errMCPNoTransform
+}
+
+// jsonKeySQL is KeyTransform.as_postgresql: one key uses -> (->> for the text
+// transform), several keys use #> (#>>) over the whole key list. It returns
+// the placeholder bound to the key and its position: a transform applied on
+// an existing key reuses that position, whose value the deeper key list
+// replaces (the intermediate expression is never compiled).
+func (q *mcpQuery) jsonKeySQL(e mcpExpr, text bool) (string, int, error) {
+	nested, single := "#>", "->"
+	if text {
+		nested, single = "#>>", "->>"
+	}
+	argument := func(value any) (string, int) {
+		if e.jsonArg > 0 && e.jsonArg <= len(q.args.values) {
+			q.args.values[e.jsonArg-1] = value
+			return "$" + strconv.Itoa(e.jsonArg), e.jsonArg
+		}
+		return q.args.add(value), len(q.args.values)
+	}
+	if len(e.jsonKeys) > 1 {
+		keys := append([]string(nil), e.jsonKeys...)
+		placeholder, index := argument(keys)
+		return "(" + e.jsonCol + " " + nested + " " + placeholder + "::text[])", index, nil
+	}
+	key := e.jsonKeys[0]
+	if number, ok := PythonIntText(key); ok {
+		if !number.IsInt64() {
+			return "", 0, mcpNotPorted("JSON key index outside 64 bits")
+		}
+		cast := "::int"
+		if value := number.Int64(); value < math.MinInt32 || value > math.MaxInt32 {
+			cast = "::bigint"
+		}
+		placeholder, index := argument(number.Int64())
+		return "(" + e.jsonCol + " " + single + " " + placeholder + cast + ")", index, nil
+	}
+	placeholder, index := argument(key)
+	return "(" + e.jsonCol + " " + single + " " + placeholder + ")", index, nil
+}
+
+// jsonTextExpr is KeyTransformTextLookupMixin: a text lookup on a key reads
+// the key through KeyTextTransform (->> / #>>). A whole column keeps its own
+// expression; the pattern lookup casts it to text itself.
+func (q *mcpQuery) jsonTextExpr(e mcpExpr) (mcpExpr, error) {
+	text := mcpExpr{sql: e.sql, kind: "text", column: e.column, colKind: e.kind, null: e.null, louter: e.louter}
+	if !e.jsonKey {
+		return text, nil
+	}
+	sql, arg, err := q.jsonKeySQL(e, true)
+	if err != nil {
+		return e, err
+	}
+	text.sql, text.jsonArg = sql, arg
+	return text, nil
 }
 
 // fieldClass is the output field class Django names in FieldError messages.
@@ -731,7 +798,7 @@ func (q *mcpQuery) resolveField(name string) (mcpExpr, error) {
 		return expr, err
 	}
 	for _, transform := range info.transforms {
-		next, err := expr.tryTransform(transform)
+		next, err := q.tryTransform(expr, transform)
 		if err != nil {
 			// setup_joins' transform function reports the names_to_path error
 			// when the final field is a Field (add_fields, ordering).
@@ -976,7 +1043,8 @@ var mcpFieldLookups = map[string]bool{"exact": true, "iexact": true, "gt": true,
 
 var mcpJSONLookups = map[string]bool{"exact": true, "isnull": true, "has_key": true, "has_keys": true, "has_any_keys": true,
 	"contains": true, "contained_by": true, "icontains": true, "iexact": true, "startswith": true, "istartswith": true,
-	"endswith": true, "iendswith": true, "regex": true, "iregex": true, "in": true, "lt": true, "lte": true, "gt": true, "gte": true}
+	"endswith": true, "iendswith": true, "regex": true, "iregex": true, "in": true, "range": true, "lt": true, "lte": true,
+	"gt": true, "gte": true}
 
 func (e mcpExpr) hasLookup(name string) bool {
 	switch {
@@ -994,7 +1062,7 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 	if len(lookups) > 0 {
 		name = lookups[len(lookups)-1]
 		for i, transform := range lookups[:len(lookups)-1] {
-			next, err := lhs.tryTransform(transform)
+			next, err := q.tryTransform(lhs, transform)
 			if errors.Is(err, errMCPNoTransform) {
 				return mcpLookup{}, lhs.unsupportedLookup(transform, lookups[i:])
 			}
@@ -1005,7 +1073,7 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 		}
 	}
 	if !lhs.hasLookup(name) {
-		next, err := lhs.tryTransform(name)
+		next, err := q.tryTransform(lhs, name)
 		switch {
 		case errors.Is(err, errMCPNoTransform):
 			return mcpLookup{}, lhs.unsupportedLookup(name, nil)
@@ -1018,15 +1086,8 @@ func (q *mcpQuery) buildLookup(lookups []string, lhs mcpExpr, value any) (mcpLoo
 }
 
 func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, error) {
-	switch name {
-	case "has_keys", "has_any_keys", "contained_by":
-		return mcpLookup{}, mcpNotPorted("lookup " + name)
-	}
-	if lhs.jsonKey && name != "exact" && name != "isnull" {
-		return mcpLookup{}, mcpNotPorted("JSON key lookup " + name)
-	}
-	if lhs.kind == "json" && !lhs.jsonKey && name != "has_key" && name != "isnull" {
-		return mcpLookup{}, mcpNotPorted("JSON lookup " + name)
+	if lhs.kind == "json" {
+		return q.jsonLookup(lhs, name, value)
 	}
 	if name == "isnull" {
 		flag, ok := value.(bool)
@@ -1215,6 +1276,218 @@ func (q *mcpQuery) lookupSQL(lhs mcpExpr, name string, value any) (mcpLookup, er
 	}
 	operator := map[string]string{"exact": "=", "gt": ">", "gte": ">=", "lt": "<", "lte": "<="}[name]
 	return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(prepared.param) + prepared.cast}, nil
+}
+
+// mcpJSONValue is JSONField.get_db_prep_value's json.dumps(value) text.
+func mcpJSONValue(value any) (string, error) {
+	switch value.(type) {
+	case nil, string, bool, json.Number, []any, domain.RequestObject:
+		return string(PythonJSONDumps(value)), nil
+	}
+	return "", mcpNotPorted("JSON value")
+}
+
+// mcpJSONKeyArgument is a has_key value: Django passes it through untouched,
+// so PostgreSQL reports the operator error for the type it receives.
+func (q *mcpQuery) mcpJSONKeyArgument(value any) (string, error) {
+	switch typed := value.(type) {
+	case string:
+		return q.args.add(typed), nil
+	case bool:
+		return q.args.add(typed) + "::boolean", nil
+	case json.Number:
+		if strings.ContainsAny(string(typed), ".eE") {
+			number, err := strconv.ParseFloat(string(typed), 64)
+			if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
+				return "", mcpNotPorted("has_key number")
+			}
+			return q.args.add(number) + "::double precision", nil
+		}
+		number, ok := new(big.Int).SetString(string(typed), 10)
+		if !ok || !number.IsInt64() {
+			return "", mcpNotPorted("has_key number")
+		}
+		cast := "::int"
+		if value := number.Int64(); value < math.MinInt32 || value > math.MaxInt32 {
+			cast = "::bigint"
+		}
+		return q.args.add(number.Int64()) + cast, nil
+	case []any:
+		items := make([]string, len(typed))
+		allText := true
+		for i, item := range typed {
+			text, ok := item.(string)
+			if !ok {
+				allText = false
+				break
+			}
+			items[i] = text
+		}
+		if !allText {
+			return "", mcpNotPorted("has_key list")
+		}
+		return q.args.add(items) + "::text[]", nil
+	}
+	return "", mcpNotPorted("has_key value")
+}
+
+// jsonLookup ports django/db/models/fields/json.py on PostgreSQL: JSONField's
+// own lookups and the lookups KeyTransform and KeyTextTransform register.
+func (q *mcpQuery) jsonLookup(lhs mcpExpr, name string, value any) (mcpLookup, error) {
+	// Names the expression's lookups do not offer stay refused.
+	switch name {
+	case "range":
+		if !lhs.jsonKey {
+			return mcpLookup{}, mcpNotPorted("JSON lookup " + name)
+		}
+	case "contained_by", "has_keys", "has_any_keys":
+		if lhs.jsonKey {
+			return mcpLookup{}, mcpNotPorted("JSON key lookup " + name)
+		}
+	}
+	switch name {
+	case "isnull":
+		// KeyTransformIsNull is IsNull: the key expression IS [NOT] NULL.
+		flag, ok := value.(bool)
+		if !ok {
+			if value == nil {
+				return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+			}
+			if q.compileErr == nil {
+				q.compileErr = mcpRaise("The QuerySet value for an isnull lookup must be True or False.")
+			}
+			flag = PythonTruthy(value)
+		}
+		if flag {
+			return mcpLookup{name: name, sql: lhs.sql + " IS NULL", isnullTrue: true}, nil
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " IS NOT NULL"}, nil
+	case "has_key":
+		if value == nil {
+			return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+		}
+		argument, err := q.mcpJSONKeyArgument(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " ? " + argument}, nil
+	case "has_keys", "has_any_keys":
+		// HasKeys.get_prep_lookup iterates the value and stringifies each key.
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		keys := make([]string, len(items))
+		for i, item := range items {
+			if item == nil {
+				keys[i] = "None"
+				continue
+			}
+			text, err := mcpTextValue(item)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			keys[i] = text
+		}
+		operator := "?&"
+		if name == "has_any_keys" {
+			operator = "?|"
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(keys) + "::text[]"}, nil
+	case "contained_by", "contains":
+		if value == nil {
+			return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+		}
+		encoded, err := mcpJSONValue(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		operator := "@>"
+		if name == "contained_by" {
+			operator = "<@"
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " " + operator + " " + q.args.add(encoded) + "::jsonb"}, nil
+	case "iexact", "icontains", "startswith", "istartswith", "endswith", "iendswith", "regex", "iregex":
+		// KeyTransformTextLookupMixin reads the key through ->> / #>>.
+		text, err := q.jsonTextExpr(lhs)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		return q.lookupSQL(text, name, value)
+	case "in":
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		// In.process_rhs: OrderedSet(self.rhs) discards None and repeats; an
+		// unhashable value skips the set for the whole list. Values are rows
+		// again once adapted, so every value becomes one jsonb parameter.
+		deduplicate := true
+		for _, item := range items {
+			switch item.(type) {
+			case []any, domain.RequestObject:
+				deduplicate = false
+			}
+		}
+		var placeholders []string
+		seen := map[string]bool{}
+		for _, item := range items {
+			if item == nil {
+				continue
+			}
+			encoded, err := mcpJSONValue(item)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			if deduplicate {
+				if seen[encoded] {
+					continue
+				}
+				seen[encoded] = true
+			}
+			placeholders = append(placeholders, q.args.add(encoded)+"::jsonb")
+		}
+		if len(placeholders) == 0 {
+			return mcpLookup{name: name, result: mcpResultEmpty}, nil
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " IN (" + strings.Join(placeholders, ", ") + ")"}, nil
+	case "range":
+		items, err := mcpLookupItems(value)
+		if err != nil {
+			return mcpLookup{}, err
+		}
+		if len(items) < 2 {
+			return mcpLookup{}, mcpRaise("tuple index out of range")
+		}
+		if len(items) > 2 {
+			return mcpLookup{}, mcpRaise("not all arguments converted during string formatting")
+		}
+		var placeholders []string
+		for _, item := range items {
+			if item == nil {
+				placeholders = append(placeholders, q.args.add(nil))
+				continue
+			}
+			encoded, err := mcpJSONValue(item)
+			if err != nil {
+				return mcpLookup{}, err
+			}
+			placeholders = append(placeholders, q.args.add(encoded)+"::jsonb")
+		}
+		return mcpLookup{name: name, sql: lhs.sql + " BETWEEN " + placeholders[0] + " AND " + placeholders[1]}, nil
+	}
+	// exact, gt, gte, lt, lte: Exact's get_prep_lookup adapts the value with
+	// json.dumps; None stays None, and JSONExact.can_use_none_as_rhs turns it
+	// into the JSON null value.
+	if value == nil && name != "exact" {
+		return mcpLookup{}, mcpRaise("Cannot use None as a query value")
+	}
+	encoded, err := mcpJSONValue(value)
+	if err != nil {
+		return mcpLookup{}, err
+	}
+	operators := map[string]string{"exact": "=", "gt": ">", "gte": ">=", "lt": "<", "lte": "<="}
+	return mcpLookup{name: name, sql: lhs.sql + " " + operators[name] + " " + q.args.add(encoded) + "::jsonb"}, nil
 }
 
 // mcpIntegerInternal is the field type whose storage range applies to an
