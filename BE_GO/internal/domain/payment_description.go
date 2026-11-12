@@ -6,6 +6,13 @@ import "errors"
 // resolve a description (invalid historical JSON or an incomplete relation).
 var ErrPaymentDescription = errors.New("invalid payment description")
 
+// PaymentDescriptionError is ErrPaymentDescription with the text of the exception Payment.save() raises
+// (str(e)); Message is empty where that text is not known.
+type PaymentDescriptionError struct{ Message string }
+
+func (e *PaymentDescriptionError) Error() string        { return ErrPaymentDescription.Error() }
+func (e *PaymentDescriptionError) Is(target error) bool { return target == ErrPaymentDescription }
+
 // PaymentDescriptionRelation is the first row by primary key for ONE relation
 // kind, including soft-deleted course subscriptions/installments. The caller
 // must obtain this from an authorized, consistent, bounded database read.
@@ -24,4 +31,7 @@ type PaymentDescriptionInput struct {
 	Description, CategoryName *string
 	Meta, Course              any
 	Related                   [3]*PaymentDescriptionRelation
+	// CustomAccounts is whether custom_accounts is set; nil when the caller did
+	// not read it.
+	CustomAccounts *bool
 }

@@ -638,6 +638,32 @@ upload('xlsx-error-label-server-error', 'owner', 'errore-colonna.xlsx', workbook
        status=500, kind=XLSX, content_type=XLSX, keep='error_label')
 imported('error-label-server-error', 'owner', 'error_label', {'map': {'nome': 'Nome'}}, columns=None, unrendered=True,
          drafts=simple([{'first_name': 'Ada'}]))
+# t11camps: whole-number labels outside int64. An integral float cell is an int label too; beyond uint64 the
+# Index holds Python objects, within it a uint64 Index; with a float label the Index is float64 only when every
+# int fits int64 or uint64, otherwise objects, and then an int key is read as a position.
+BIG = 10 ** 20
+upload('xlsx-big-number-labels', 'owner', 'grandi-colonna.xlsx', workbook([[1e20, 2], ['Ada', 'Rossi'], ['Bea', 'Verdi']]),
+       columns=[BIG, 2], texts=['100000000000000000000', '2'], kind=XLSX, content_type=XLSX, keep='big_number_labels')
+imported('big-number-labels', 'owner', 'big_number_labels', {'map': {
+    'nome': BIG, 'cognome': 2.0, 'città di nascita': 1e20, 'indirizzo': True, 'telefono': '2', 'sesso': -BIG}},
+    columns=[BIG, 2], drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi', 'born_city': 'Ada'},
+                                    {'first_name': 'Bea', 'last_name': 'Verdi', 'born_city': 'Bea'}]))
+UINT = 2 ** 63 + 5
+upload('xlsx-uint-labels', 'owner', 'uint-colonna.xlsx', workbook([[UINT, 2], ['Ada', 'Rossi']]), columns=[UINT, 2],
+       texts=[str(UINT), '2'], kind=XLSX, content_type=XLSX, keep='uint_labels')
+imported('uint-labels', 'owner', 'uint_labels', {'map': {'nome': UINT, 'cognome': 2.0, 'città di nascita': float(2 ** 63),
+                                                         'indirizzo': True, 'telefono': 1}},
+         columns=[UINT, 2], drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi'}]))
+upload('xlsx-big-float-labels', 'owner', 'grandi-decimali.xlsx', workbook([[BIG, 2, 2.5], ['Ada', 'Rossi', 'Roma']]),
+       columns=[BIG, 2, 2.5], texts=['100000000000000000000', '2', '2.5'], kind=XLSX, content_type=XLSX, keep='big_float_labels')
+imported('big-float-labels-position-fails', 'owner', 'big_float_labels', {'map': {'nome': BIG}}, columns=[BIG, 2, 2.5], failed=True)
+imported('big-float-labels', 'owner', 'big_float_labels', {'map': {'nome': 2, 'cognome': 2.0, 'città di nascita': 2.5,
+                                                                   'indirizzo': 1e20}},
+         columns=[BIG, 2, 2.5], drafts=simple([{'first_name': 'Roma', 'last_name': 'Rossi', 'born_city': 'Roma', 'address': 'Ada'}]))
+upload('xlsx-uint-float-labels', 'owner', 'uint-decimali.xlsx', workbook([[UINT, 2.5], ['Ada', 'Rossi']]),
+       columns=[float(UINT), 2.5], texts=['9.223372036854776e+18', '2.5'], kind=XLSX, content_type=XLSX, keep='uint_float_labels')
+imported('uint-float-labels', 'owner', 'uint_float_labels', {'map': {'nome': UINT, 'cognome': 2.5, 'città di nascita': 2 ** 63}},
+         columns=[float(UINT), 2.5], drafts=simple([{'first_name': 'Ada', 'last_name': 'Rossi', 'born_city': 'Ada'}]))
 # t6x2: dates with a year below 1000, as text and as date cells. strftime writes the year as the C library does: four
 # digits where it pads (the first expectation), the digits alone on glibc ('unpadded'), where strptime then refuses the
 # certificate's date and the certificate is deleted.

@@ -65,8 +65,10 @@ ASSOCIATES = {
                        address_city='Torino', address='Corso Francia 10', address_cap='10100', email='bruno@example.test',
                        phone_label='Cellulare', phone='3470000001', phone_3_label='Ufficio', phone_3='0110000000'),
     'anna': associate('Anna', 'Rossi', sex='F'),
-    # Text the xlsxwriter workbook treats specially: a formula, a link with an anchor, a rich string and an array formula.
-    'strange': associate('=SUM(1,2)', 'http://example.test/p#a', sex='F', email='<r>x</r>', address='{=A1}', born_city='internal:Sheet1!A1'),
+    # Text the xlsxwriter workbook treats specially: a formula, a link with an anchor, a rich string, an array formula and a
+    # dynamic array formula.
+    'strange': associate('=SUM(1,2)', 'http://example.test/p#a', sex='F', email='<r>x</r>', address='{=A1}', born_city='internal:Sheet1!A1',
+                         phone='=SEQUENCE(2)'),
     'hans': associate('Hans', 'Muller', FOREIGN, sex='M'),
     'greta': associate('Greta', 'Muller', FOREIGN, sex='F'),
 }

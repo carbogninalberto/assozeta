@@ -4329,6 +4329,560 @@
    }
   },
   {
+   "name": "subscription-import-upload-xlsx-big-number-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     100000000000000000000,
+     2
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "grandi-colonna.xlsx",
+    "body_b64": "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",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "association": "own_association",
+    "expired": [],
+    "keep": "big_number_labels"
+   },
+   "raw_b64": "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",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-big-number-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     100000000000000000000,
+     2
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    }
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [
+     {
+      "data": {
+       "associate": {
+        "first_name": "Ada",
+        "last_name": "Rossi",
+        "born_city": "Ada"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     },
+     {
+      "data": {
+       "associate": {
+        "first_name": "Bea",
+        "last_name": "Verdi",
+        "born_city": "Bea"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     }
+    ],
+    "document": "big_number_labels",
+    "failed": false
+   },
+   "body": {
+    "document_id": "$document:big_number_labels",
+    "map": {
+     "nome": 100000000000000000000,
+     "cognome": 2.0,
+     "città di nascita": 1e+20,
+     "indirizzo": true,
+     "telefono": "2",
+     "sesso": -100000000000000000000
+    }
+   }
+  },
+  {
+   "name": "subscription-import-upload-xlsx-uint-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     9223372036854775813,
+     2
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "uint-colonna.xlsx",
+    "body_b64": "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",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "association": "own_association",
+    "expired": [],
+    "keep": "uint_labels"
+   },
+   "raw_b64": "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",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-uint-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     9223372036854775813,
+     2
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    }
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [
+     {
+      "data": {
+       "associate": {
+        "first_name": "Ada",
+        "last_name": "Rossi"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     }
+    ],
+    "document": "uint_labels",
+    "failed": false
+   },
+   "body": {
+    "document_id": "$document:uint_labels",
+    "map": {
+     "nome": 9223372036854775813,
+     "cognome": 2.0,
+     "città di nascita": 9.223372036854776e+18,
+     "indirizzo": true,
+     "telefono": 1
+    }
+   }
+  },
+  {
+   "name": "subscription-import-upload-xlsx-big-float-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     100000000000000000000,
+     2,
+     2.5
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "grandi-decimali.xlsx",
+    "body_b64": "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",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "association": "own_association",
+    "expired": [],
+    "keep": "big_float_labels"
+   },
+   "raw_b64": "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",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-big-float-labels-position-fails",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Importazione non riuscita. Controlla i dati e riprova."
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [],
+    "document": "big_float_labels",
+    "failed": true
+   },
+   "body": {
+    "document_id": "$document:big_float_labels",
+    "map": {
+     "nome": 100000000000000000000
+    }
+   }
+  },
+  {
+   "name": "subscription-import-upload-big-float-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     100000000000000000000,
+     2,
+     2.5
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    }
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [
+     {
+      "data": {
+       "associate": {
+        "first_name": "Roma",
+        "last_name": "Rossi",
+        "born_city": "Roma",
+        "address": "Ada"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     }
+    ],
+    "document": "big_float_labels",
+    "failed": false
+   },
+   "body": {
+    "document_id": "$document:big_float_labels",
+    "map": {
+     "nome": 2,
+     "cognome": 2.0,
+     "città di nascita": 2.5,
+     "indirizzo": 1e+20
+    }
+   }
+  },
+  {
+   "name": "subscription-import-upload-xlsx-uint-float-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     9.223372036854776e+18,
+     2.5
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    },
+    "document_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "session": null,
+    "filename": "uint-decimali.xlsx",
+    "body_b64": "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",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "association": "own_association",
+    "expired": [],
+    "keep": "uint_float_labels"
+   },
+   "raw_b64": "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",
+   "content_type": "multipart/form-data; boundary=ImportBoundary7d1f"
+  },
+  {
+   "name": "subscription-import-upload-uint-float-labels",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "columns": [
+     9.223372036854776e+18,
+     2.5
+    ],
+    "map": {
+     "nome": null,
+     "cognome": null,
+     "sesso": null,
+     "codice fiscale": null,
+     "data di nascita": null,
+     "città di nascita": null,
+     "indirizzo": null,
+     "città di residenza": null,
+     "cap": null,
+     "email": null,
+     "telefono": null,
+     "nome tutore": null,
+     "cognome tutore": null,
+     "sesso tutore": null,
+     "codice fiscale tutore": null,
+     "data di nascita tutore": null,
+     "città di nascita tutore": null,
+     "città di residenza tutore": null,
+     "indirizzo tutore": null,
+     "cap tutore": null,
+     "email tutore": null,
+     "telefono tutore": null,
+     "scadenza certificato medico": null,
+     "data tesseramento": null,
+     "data scadenza tesseramento": null,
+     "numero tessera": null
+    }
+   },
+   "effect": {
+    "kind": "import",
+    "actor": "owner",
+    "session": null,
+    "statuses": [],
+    "steps": [],
+    "drafts": [
+     {
+      "data": {
+       "associate": {
+        "first_name": "Ada",
+        "last_name": "Rossi",
+        "born_city": "Ada"
+       },
+       "associate_tutor": {}
+      },
+      "valid": false
+     }
+    ],
+    "document": "uint_float_labels",
+    "failed": false
+   },
+   "body": {
+    "document_id": "$document:uint_float_labels",
+    "map": {
+     "nome": 9223372036854775813,
+     "cognome": 2.5,
+     "città di nascita": 9223372036854775808
+    }
+   }
+  },
+  {
    "name": "subscription-import-upload-xlsx-early-years",
    "actor": "owner",
    "method": "POST",

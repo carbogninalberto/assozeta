@@ -582,6 +582,9 @@ func labelKey(value cell) string {
 	case cellString:
 		return "s" + value.s
 	case cellInt:
+		if value.n != nil {
+			return "n" + value.n.String()
+		}
 		return "n" + strconv.FormatInt(value.i, 10)
 	case cellBool:
 		if value.b {
@@ -606,19 +609,18 @@ func labelKey(value cell) string {
 // columnLabels is the parser's header naming and the Index the DataFrame
 // builds from it: an empty name is 'Unnamed: <i>'; duplicates get '.<n>'
 // after their str(), named columns first; then numbers only are one numeric
-// Index (float64 when one is a float or nan), booleans only a bool one,
-// datetimes (or timedeltas) and nan only a DatetimeIndex (TimedeltaIndex)
-// with NaT, anything else keeps its objects.
+// Index (int64 for whole numbers in int64, uint64 for those in [0, 2**64),
+// float64 when one is a float or nan and every whole number is one of the two,
+// objects otherwise), booleans only a bool one, datetimes (or timedeltas) and
+// nan only a DatetimeIndex (TimedeltaIndex) with NaT, anything else keeps its
+// objects.
 func columnLabels(header []cell) ([]Value, IndexClass, error) {
 	columns := append([]cell(nil), header...)
 	unnamed := map[int]bool{}
 	for index, name := range columns {
-		switch {
-		case name.blank():
+		if name.blank() {
 			columns[index] = cell{kind: cellString, s: "Unnamed: " + strconv.Itoa(index)}
 			unnamed[index] = true
-		case name.kind == cellInt && name.n != nil:
-			return nil, ObjectIndex, ErrUnsupported // a label outside int64
 		}
 	}
 	order := make([]int, 0, len(columns))
@@ -660,26 +662,46 @@ func columnLabels(header []cell) ([]Value, IndexClass, error) {
 	labels := make([]Value, len(columns))
 	numbers, booleans, fractional := true, true, false
 	datetimes, timedeltas, present, anyBoolean := true, true, 0, false
+	intsInt64, intsUint64 := true, true
 	for index, column := range columns {
 		anyBoolean = anyBoolean || column.kind == cellBool
 		labels[index] = column.value()
 		numbers = numbers && (column.kind == cellInt || column.kind == cellFloat || column.kind == cellBool || column.kind == cellNaN)
 		booleans = booleans && column.kind == cellBool
 		fractional = fractional || column.kind == cellFloat || column.kind == cellNaN
+		if column.kind == cellInt {
+			whole := new(big.Int).SetInt64(column.i)
+			if column.n != nil {
+				whole = column.n
+			}
+			intsInt64 = intsInt64 && whole.IsInt64()
+			intsUint64 = intsUint64 && whole.Sign() >= 0 && whole.Cmp(maxUint64) <= 0
+		}
 		if column.kind != cellNaN {
 			present++
 			datetimes = datetimes && column.kind == cellTime && inTimestampBounds(column.t)
 			timedeltas = timedeltas && column.kind == cellDelta
 		}
 	}
+	class := ObjectIndex
+	switch {
+	case booleans:
+		class = BoolIndex
+	case numbers && !anyBoolean:
+		class = numberIndex(fractional, intsInt64, intsUint64)
+	case present > 0 && datetimes:
+		class = DatetimeIndex
+	case present > 0 && timedeltas:
+		class = TimedeltaIndex
+	}
 	for index, column := range columns {
 		switch {
-		case numbers && !booleans && fractional && column.kind == cellInt:
-			anyBool := false
-			for _, other := range columns {
-				anyBool = anyBool || other.kind == cellBool
-			}
-			if !anyBool {
+		case class == FloatIndex && column.kind == cellInt:
+			// The Index holds doubles: float(int), the nearest double.
+			if column.n != nil {
+				value, _ := new(big.Float).SetInt(column.n).Float64()
+				labels[index] = Value{Kind: Float, F: value}
+			} else {
 				labels[index] = Value{Kind: Float, F: float64(column.i)}
 			}
 		case present > 0 && (datetimes || timedeltas) && column.kind == cellNaN:
@@ -698,18 +720,23 @@ func columnLabels(header []cell) ([]Value, IndexClass, error) {
 			floats[label.F] = true
 		}
 	}
-	class := ObjectIndex
-	switch {
-	case booleans:
-		class = BoolIndex
-	case numbers && !anyBoolean && fractional:
-		class = FloatIndex
-	case numbers && !anyBoolean:
-		class = IntIndex
-	case present > 0 && datetimes:
-		class = DatetimeIndex
-	case present > 0 && timedeltas:
-		class = TimedeltaIndex
-	}
 	return labels, class, nil
+}
+
+// numberIndex is the Index numbers only make: int64 when every whole number
+// fits int64, uint64 when every one of them is in [0, 2**64), float64 when one
+// label is a float or nan and every whole number fits one of the two, objects
+// otherwise.
+func numberIndex(fractional, intsInt64, intsUint64 bool) IndexClass {
+	switch {
+	case fractional && (intsInt64 || intsUint64):
+		return FloatIndex
+	case fractional:
+		return ObjectIndex
+	case intsInt64:
+		return IntIndex
+	case intsUint64:
+		return Uint64Index
+	}
+	return ObjectIndex
 }

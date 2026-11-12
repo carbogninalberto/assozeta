@@ -115,6 +115,47 @@ PAYMENTS['gone'] = {'id': next(ids), 'amount': '48.00', 'paid': False, 'subject'
 SUBSCRIPTION_PERIODS['october'] = {'id': next(ids), 'period': 'october', 'subscription': 'camp', 'payment': 'gone', 'services': ['canoe']}
 PERIOD_LINKS = {'july': ['kayak', 'umbrella'], 'june': ['tent'], 'august': ['snack']}
 
+# Payment.save() failures in the update walk: periods of the own association
+# with their own services and subscription periods. Their ids come from a
+# separate sequence so the existing rows above keep theirs.
+extra_ids = iter(f'a1000000-0000-4000-8000-{985201 + n:012d}' for n in range(30))
+PERIODS['november'] = {'id': next(extra_ids), 'camp': 'camp', 'start': '2026-11-01T08:00:00Z', 'end': '2026-11-05T18:00:00Z',
+                       'title': 'Novembre', 'description': 'Autunno', 'fee': '20.00', 'max': None, 'created': '2026-06-14T09:00:00Z'}
+PERIODS['december'] = {'id': next(extra_ids), 'camp': 'camp', 'start': '2026-12-01T08:00:00Z', 'end': '2026-12-05T18:00:00Z',
+                       'title': 'Dicembre', 'description': None, 'fee': '25.00', 'max': None, 'created': '2026-06-14T10:00:00Z'}
+PERIODS['winter'] = {'id': next(extra_ids), 'camp': 'plain', 'start': '2027-01-01T08:00:00Z', 'end': '2027-01-05T18:00:00Z',
+                     'title': 'Inverno', 'description': None, 'fee': '30.00', 'max': None, 'created': '2026-06-14T11:00:00Z'}
+SERVICES['sled'] = {'id': next(extra_ids), 'period': 'november', 'title': 'Slitta', 'description': None, 'fee': '5.00', 'category': 'own',
+                    'created': '2026-06-14T12:00:00Z'}
+SERVICES['skates'] = {'id': next(extra_ids), 'period': 'december', 'title': 'Pattini', 'description': None, 'fee': '6.00', 'category': 'own',
+                      'created': '2026-06-14T12:00:01Z'}
+SERVICES['boots'] = {'id': next(extra_ids), 'period': 'winter', 'title': 'Scarponi', 'description': None, 'fee': '7.00', 'category': 'own',
+                     'created': '2026-06-14T12:00:02Z'}
+PAYMENTS['november_1'] = {'id': next(extra_ids), 'amount': '25.00', 'paid': False, 'subject': 1, 'description': 'Novembre', 'category': 'own',
+                          'notes': None, 'meta': None, 'created': '2026-06-14T13:00:00Z'}
+PAYMENTS['november_2'] = {'id': next(extra_ids), 'amount': '25.00', 'paid': False, 'subject': 1, 'description': 'Novembre', 'category': 'own',
+                          'notes': None, 'meta': None, 'created': '2026-06-14T13:00:01Z'}
+PAYMENTS['december'] = {'id': next(extra_ids), 'amount': '31.00', 'paid': False, 'subject': 1, 'description': 'Quota Corso', 'category': 'own',
+                        'notes': None, 'meta': [meta('skates', 6.0, 'own')], 'payment_meta': ['description'],
+                        'created': '2026-06-14T13:00:02Z'}
+PAYMENTS['winter_1'] = {'id': next(extra_ids), 'amount': '37.00', 'paid': False, 'subject': 3, 'description': None, 'category': 'own',
+                        'notes': None, 'meta': [meta('boots', 7.0, 'own')], 'created': '2026-06-14T13:00:03Z'}
+PAYMENTS['winter_2'] = {'id': next(extra_ids), 'amount': '37.00', 'paid': False, 'subject': 3, 'description': None, 'category': 'own',
+                        'notes': None, 'meta': [meta('boots', 7.0, 'own')], 'created': '2026-06-14T13:00:04Z'}
+SUBSCRIPTION_PERIODS['november_1'] = {'id': next(extra_ids), 'period': 'november', 'subscription': 'camp', 'payment': 'november_1',
+                                      'services': ['sled']}
+SUBSCRIPTION_PERIODS['november_2'] = {'id': next(extra_ids), 'period': 'november', 'subscription': 'camp', 'payment': 'november_2',
+                                      'services': ['sled']}
+SUBSCRIPTION_PERIODS['december'] = {'id': next(extra_ids), 'period': 'december', 'subscription': 'camp', 'payment': 'december',
+                                    'services': ['skates']}
+SUBSCRIPTION_PERIODS['winter_1'] = {'id': next(extra_ids), 'period': 'winter', 'subscription': 'plain', 'payment': 'winter_1',
+                                    'services': ['boots']}
+SUBSCRIPTION_PERIODS['winter_2'] = {'id': next(extra_ids), 'period': 'winter', 'subscription': 'plain', 'payment': 'winter_2',
+                                    'services': ['boots']}
+PERIOD_LINKS['november'] = ['sled']
+PERIOD_LINKS['december'] = ['skates']
+PERIOD_LINKS['winter'] = ['boots']
+
 PERIOD, SERVICE, SUBPERIOD, PAYMENT = ('application.CampsAndRetreatsPeriod', 'application.CampsAndRetreatsPeriodsService',
                                        'application.CampsAndRetreatsSubscriptionPeriod', 'application.Payment')
 PERIOD_LINK = 'application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services'
@@ -755,6 +796,27 @@ add('services-update-null-metas-server-error', 'owner', service_path('guide', 'u
     effect={'actor': 'owner', 'rows': {SERVICE: {guide['id']: service_row(guide)}},
             'audit': [audit('CampsAndRetreatsPeriodsService', guide['id'], 1, stored_changes(guide_before, service_audit_view(guide), SERVICE_FIELDS),
                             OWN, SERVICE_PATH)]})
+
+
+# Payment.save() failures in the walk: the service row and its audit entry are
+# kept, and no payment is written.
+def description_failure(name, label, title, message):
+    row = STATE['services'][label]
+    before = service_audit_view(row)
+    row['title'] = title
+    add(name, 'owner', service_path(label, 'update'), 500, {'error': message},
+        method='PATCH', body={'title': title},
+        effect={'actor': 'owner', 'rows': {SERVICE: {row['id']: service_row(row)}},
+                'audit': [audit('CampsAndRetreatsPeriodsService', row['id'], 1,
+                                stored_changes(before, service_audit_view(row), SERVICE_FIELDS), OWN, SERVICE_PATH)]})
+
+
+description_failure('services-update-null-metas-two-payments-server-error', 'sled', 'Slitta nuova',
+                    "'NoneType' object is not iterable")
+description_failure('services-update-description-failure-server-error', 'skates', 'Pattini nuovi',
+                    'list indices must be integers or slices, not str')
+description_failure('services-update-transfer-description-two-payments-server-error', 'boots', 'Scarponi nuovi',
+                    "'NoneType' object has no attribute 'name'")
 
 # ---------------------------------------------------------------------------
 # periods/services/<uid>/delete

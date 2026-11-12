@@ -66,7 +66,8 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 	if err != nil {
 		return ErrPaymentSaveFailed
 	}
-	input := domain.PaymentDescriptionInput{Subject: row.Subject, Description: row.Description, CategoryName: row.CategoryName, Meta: meta, Course: course}
+	input := domain.PaymentDescriptionInput{Subject: row.Subject, Description: row.Description, CategoryName: row.CategoryName, Meta: meta, Course: course,
+		CustomAccounts: row.CustomAccounts}
 	if row.Subject == 2 && row.Description == nil {
 		linked, err := tx.PaymentLinkedName(ctx, row.ID)
 		if err != nil {
@@ -78,7 +79,7 @@ func secCategorySaveDefaults(ctx context.Context, tx domain.PaymentArchiveTransa
 	}
 	description, err := ResolvePaymentDescription(ctx, input)
 	if errors.Is(err, domain.ErrPaymentDescription) {
-		return ErrPaymentSaveFailed
+		return errors.Join(ErrPaymentSaveFailed, err)
 	}
 	if err != nil {
 		return err
