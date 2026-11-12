@@ -300,20 +300,29 @@ class SourceAndOrderingControls(unittest.TestCase):
             return mock.Mock(returncode=3 if args[-1] == "status" else 0)
 
         process = mock.Mock()
-        process.poll.return_value = 0
+        process.pid = 43210
+        process.poll.return_value = None
+        process.wait.side_effect = lambda **kwargs: setattr(process.poll, "return_value", 0)
         reservation = mock.MagicMock()
         reservation.__enter__.return_value.getsockname.return_value = ("127.0.0.1", 16379)
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
             helper.shutil, "which", side_effect=lambda name: "/fake/bin/" + name
         ), mock.patch.object(helper.subprocess, "run", side_effect=command), mock.patch.object(
             helper.subprocess, "Popen", return_value=process
+        ) as launch, mock.patch.object(
+            helper, "redis_server_owner", return_value=process.pid
         ), mock.patch.object(helper.socket, "socket", return_value=reservation), mock.patch.object(
             runtime, "read_tracked_environment", return_value={}
         ), mock.patch.object(runtime, "signing_key_pair", return_value=("private", "public")):
             with helper.owned_database(Path(directory), {}) as (work, port, log):
+                self.assertEqual(port, 16379)
                 environment, _ = runtime.private_environment(work, port, {})
                 query_log = runtime.PostgresQueryLog(work, log)
                 query_log.command(["SELECT", "1"], "--command")
+        # The one process started by Popen is the private redis-server.
+        self.assertEqual(launch.call_count, 1)
+        self.assertEqual(launch.call_args.args[0][0], "/fake/bin/redis-server")
+        self.assertEqual(launch.call_args.args[0][launch.call_args.args[0].index("--port") + 1], "16379")
         alterations = [args[-1] for args in commands if args[0].endswith("/psql") and args[-1].startswith("ALTER SYSTEM")]
         self.assertIn("ALTER SYSTEM SET log_destination = 'jsonlog'", alterations)
         self.assertIn("ALTER SYSTEM SET log_parameter_max_length = '-1'", alterations)
@@ -2046,8 +2055,9 @@ class SafetyAndCleanupControls(unittest.TestCase):
         from TESTS.adapters.django import historical_read_routes as helper
 
         @contextmanager
-        def failed_service(output, report):
+        def failed_service(output, report, *, shared=None):
             del output
+            self.assertIsNone(shared)
             try:
                 yield work, 16379, io.StringIO()
             finally:

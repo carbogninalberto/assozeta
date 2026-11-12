@@ -4,6 +4,7 @@ Tests for Module views - module CRUD, responses, and configuration.
 Self-host port: adapted from SaaS test_modules_views.py.
 """
 import base64
+import hashlib
 import uuid
 from datetime import date, timedelta
 
@@ -45,6 +46,11 @@ def create_test_module_response(module, **kwargs):
     }
     defaults.update(kwargs)
     return ModuleResponses.objects.create(**defaults)
+
+
+def token_hash(token):
+    """The stored hash that lets an anonymous caller read a response's attachments."""
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 class ModulesListTests(BaseAPITestCase):
@@ -388,10 +394,18 @@ class ModulesCustomLinkInfoPublicFieldsTests(BaseAPITestCase):
     def test_response_data_fields(self):
         from docmanager.models import Document
         module = create_test_module(sport_association=self.sport_association, custom_link='public-response')
-        mod_response = create_test_module_response(module)
+        mod_response = create_test_module_response(module, attachment_token_hash=token_hash('attach-token'))
         document = Document.objects.create(filename='allegato.pdf')
         mod_response.attachments.add(document)
+        # Without the token an anonymous caller gets no attachment list.
         response = self.client.get(f'/modules/public-response/info?response_id={mod_response.module_response_id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data['response_data'])
+        # The respondent's token unlocks the attachments of its own response.
+        response = self.client.get(
+            f'/modules/public-response/info?response_id={mod_response.module_response_id}'
+            '&attachment_token=attach-token'
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['response_data'], {
             'attachments_docs': [{'document_id': document.document_id, 'filename': 'allegato.pdf'}],
@@ -408,13 +422,20 @@ class ModulesCustomLinkInfoPublicFieldsTests(BaseAPITestCase):
         from docmanager.models import Document
         create_test_module(sport_association=self.sport_association, custom_link='public-own-module')
         other = create_test_module(sport_association=self.sport_association, custom_link='public-other-module')
-        other_response = create_test_module_response(other)
+        other_response = create_test_module_response(other, attachment_token_hash=token_hash('attach-token'))
         other_response.attachments.add(Document.objects.create(filename='altro.pdf'))
-        response = self.client.get(f'/modules/public-own-module/info?response_id={other_response.module_response_id}')
+        # Even with the right token the answer belongs to its own module only.
+        response = self.client.get(
+            f'/modules/public-own-module/info?response_id={other_response.module_response_id}'
+            '&attachment_token=attach-token'
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.data['response_data'])
         # The same id on its own module's page is read.
-        response = self.client.get(f'/modules/public-other-module/info?response_id={other_response.module_response_id}')
+        response = self.client.get(
+            f'/modules/public-other-module/info?response_id={other_response.module_response_id}'
+            '&attachment_token=attach-token'
+        )
         self.assertEqual(response.data['response_data']['attachments_docs'][0]['filename'], 'altro.pdf')
 
 
