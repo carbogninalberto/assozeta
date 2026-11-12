@@ -644,6 +644,133 @@ integration_persist('ai', 2, {'enabled': False, 'model': 'fixture-model', 'cheap
 add('integration-ai-disable-clear', 'owner', integration('ai'), 200, public_integration('ai'), method='PUT', body={
     **AI, 'revision': 1, 'enabled': False, 'base_url': 'http://[::1]:8080/v1', 'max_iterations': 1, 'max_results': 1,
     'query_timeout': 1, 'ws_rate_limit': 1000, 'ws_timeout': 1, 'history_cap': 1000, 'clear_secrets': ['api_key']}, effect=write())
+
+# === t6x2: form and multipart bodies read as HTML input =============================================
+# Field.get_value: an absent BooleanField is false, a blank value of a field
+# that is not required is skipped (or keeps its default), a repeated key keeps
+# its last value and a ListField keeps every value (getlist) or its indexed
+# keys. An uploaded file reads as its name where the field calls str() on it.
+# The state model is the one of the preceding cases: branding v1 and
+# 'Istanza v1', email revision 5 on the relay settings, Google enabled at
+# revision 1, AI disabled at revision 2 (empty API key).
+FORM = 'application/x-www-form-urlencoded'
+MULTIPART = 'multipart/form-data; boundary=fixture'
+
+
+def parts(*fields):
+    """fields: (name, value) for a plain field, (name, file name, content) for a file."""
+    body = ''
+    for field in fields:
+        head = f'--fixture\r\nContent-Disposition: form-data; name="{field[0]}"'
+        if len(field) == 3:
+            head += f'; filename="{field[1]}"\r\nContent-Type: text/plain'
+        body += head + '\r\n\r\n' + field[-1] + '\r\n'
+    return body + '--fixture--\r\n'
+
+
+add('branding-form-empty', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', raw_body='', content_type=FORM)
+add('branding-form-dotted-oem', 'owner', ADMIN, 400, ONLY_BRANDING, method='PUT', raw_body='oem.name=x', content_type=FORM)
+add('branding-form-plain-oem', 'owner', ADMIN, 200, {'config': config_body()}, method='PUT', raw_body='oem=x',
+    content_type=FORM, effect=write())
+add('branding-form-blank-version', 'owner', ADMIN, 200, {'config': config_body()}, method='PUT', raw_body='uiApiVersion=',
+    content_type=FORM, effect=write())
+add('branding-form-repeated-version', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('v9')]}, method='PUT',
+    raw_body='uiApiVersion=v1&uiApiVersion=v9', content_type=FORM)
+state.update(ui_api_version='v2')
+add('branding-form-version', 'owner', ADMIN, 200, {'config': config_body()}, method='PUT', raw_body='uiApiVersion=v2',
+    content_type=FORM, effect=write(),
+    audit={'actor': 'owner', 'association': 'own_association', 'changes': {'ui_api_version': ['v1', 'v2']}})
+add('branding-form-version-file', 'owner', ADMIN, 200, {'config': config_body()}, method='PUT',
+    raw_body=parts(('uiApiVersion', 'v2')), content_type=MULTIPART, effect=write())
+add('branding-form-version-image', 'owner', ADMIN, 400, {'uiApiVersion': [CHOICE.format('a.png')]}, method='PUT',
+    raw_body=parts(('uiApiVersion', 'a.png')), content_type=MULTIPART)
+
+add('email-put-form-empty', 'owner', EMAIL, 400, {key: [REQUIRED] for key in (
+    'revision', 'host', 'port', 'security', 'username', 'from_email', 'sender_name')}, method='PUT',
+    raw_body='', content_type=FORM)
+add('email-put-form-blank', 'owner', EMAIL, 400, {
+    'revision': [INTEGER], 'host': [BLANK], 'port': [INTEGER], 'security': ['"" is not a valid choice.'],
+    'from_email': [BLANK]}, method='PUT',
+    raw_body='revision=&host=&port=&security=&username=&password=&clear_password=&from_email=&sender_name=',
+    content_type=FORM)
+add('email-put-form-password-file', 'owner', EMAIL, 400, {'password': ['Not a valid string.']}, method='PUT',
+    raw_body=parts(('revision', '0'), ('host', 'smtp.example.test'), ('port', '587'), ('security', 'tls'),
+                   ('username', ''), ('from_email', 'a@example.com'), ('sender_name', ''),
+                   ('password', 'p.txt', 'x')), content_type=MULTIPART)
+# revision and clear_password are plain multipart fields here: the submit is
+# valid and clears the stored (already empty) password.
+email_persist({'host': 'smtp.example.test', 'port': 587, 'security': 'tls', 'username': '',
+               'from_email': 'a@example.com', 'sender_name': ''}, '')
+add('email-put-form-revision-and-clear-plain', 'owner', EMAIL, 200, public_email(), method='PUT',
+    raw_body=parts(('host', 'smtp.example.test'), ('port', '587'), ('security', 'tls'), ('username', ''),
+                   ('from_email', 'a@example.com'), ('sender_name', ''), ('revision', '5'),
+                   ('clear_password', 'true')), content_type=MULTIPART, effect=write())
+# A plain host part is a valid CharField; the revision is the stale one.
+add('email-put-form-plain-host-stale-revision', 'owner', EMAIL, 409,
+    {'error': 'Configurazione modificata in un’altra sessione. Ricarica prima di salvare.'}, method='PUT',
+    raw_body=parts(('revision', '0'), ('port', '25'), ('username', ''), ('from_email', 'a@example.com'),
+                   ('sender_name', ''), ('host', 'h.txt'), ('security', 'ssl')), content_type=MULTIPART)
+FORM_EMAIL = {'host': 'smtp.form.example.test', 'port': 587, 'security': 'tls', 'username': '',
+              'from_email': 'form@example.test', 'sender_name': ''}
+email_persist(FORM_EMAIL, '')
+add('email-put-form', 'owner', EMAIL, 200, public_email(), method='PUT',
+    raw_body='revision=6&host=+smtp.form.example.test+&port=587&security=tls&username=&from_email=form%40example.test&sender_name=',
+    content_type=FORM, effect=write())
+add('email-delete-form-missing-revision', 'owner', EMAIL, 400, [NULL], method='DELETE', raw_body='', content_type=FORM)
+state['email_settings'] = {}
+email_persist({}, '')
+add('email-delete-form', 'owner', EMAIL, 200, public_email(), method='DELETE', raw_body='revision=7',
+    content_type=FORM, effect=write())
+# An uploaded file read through QueryDict semantics is str(file): its name.
+email_persist({}, '')
+add('email-delete-form-revision-file', 'owner', EMAIL, 200, public_email(), method='DELETE',
+    raw_body=parts(('revision', '8')), content_type=MULTIPART, effect=write())
+
+AI_FORM = ('revision=2&model=fixture-model&cheap_model=fixture-cheap&base_url=&max_iterations=5&max_results=10'
+           '&query_timeout=5&ws_rate_limit=5&ws_timeout=5&history_cap=5')
+add('integration-ai-put-form-list-positions', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'1': ['"x" is not a valid choice.']}}, method='PUT',
+    raw_body=AI_FORM + '&clear_secrets%5B0%5D=api_key&clear_secrets%5B2%5D=x', content_type=FORM)
+add('integration-ai-put-form-blank-list', 'owner', integration('ai'), 400,
+    {'clear_secrets': {'0': ['"" is not a valid choice.']}}, method='PUT', raw_body=AI_FORM + '&clear_secrets=',
+    content_type=FORM)
+add('integration-ai-put-form-enabled-file', 'owner', integration('ai'), 400, {'enabled': ['Must be a valid boolean.']},
+    method='PUT', content_type=MULTIPART, raw_body=parts(
+        ('revision', '2'), ('model', 'fixture-model'), ('cheap_model', 'fixture-cheap'), ('base_url', ''),
+        ('max_iterations', '5'), ('max_results', '10'), ('query_timeout', '5'), ('ws_rate_limit', '5'),
+        ('ws_timeout', '5'), ('history_cap', '5'), ('enabled', ''), ('clear_secrets', 'api_key', 'x')))
+FORM_AI = {'enabled': False, 'api_key': {'$secret': ''}, 'model': 'fixture-model', 'cheap_model': 'fixture-cheap',
+           'base_url': '', 'max_iterations': 5, 'max_results': 10, 'query_timeout': 5, 'ws_rate_limit': 5,
+           'ws_timeout': 5, 'history_cap': 5}
+integration_persist('ai', 3, FORM_AI)
+add('integration-ai-put-form', 'owner', integration('ai'), 200, public_integration('ai'), method='PUT',
+    raw_body=AI_FORM + '&clear_secrets=api_key&clear_secrets=api_key', content_type=FORM, effect=write())
+integration_persist('google', 2, None)
+add('integration-google-delete-form', 'owner', integration('google'), 200, public_integration('google'), method='DELETE',
+    raw_body='revision=1', content_type=FORM, effect=write())
+# The same QueryDict semantics on an integration DELETE: the file name is the revision.
+integration_persist('stripe', 7, None)
+add('integration-stripe-delete-form-revision-file', 'owner', integration('stripe'), 200, public_integration('stripe'),
+    method='DELETE', raw_body=parts(('revision', '6')), content_type=MULTIPART, effect=write())
+
+add('updates-post-form', 'owner', UPDATES, 409, {'error': 'Gli aggiornamenti reali sono disabilitati in sviluppo.'},
+    method='POST', raw_body=f'release_id=7&tag=v9.9.9&request_id={REQUEST_ID}', content_type=FORM)
+add('updates-post-form-blank', 'owner', UPDATES, 400, {'release_id': [INTEGER], 'tag': [BLANK],
+                                                       'request_id': ['Must be a valid UUID.']}, method='POST',
+    raw_body='release_id=&tag=&request_id=', content_type=FORM)
+add('updates-post-form-request-plain', 'owner', UPDATES, 409,
+    {'error': 'Gli aggiornamenti reali sono disabilitati in sviluppo.'}, method='POST',
+    raw_body=parts(('tag', 't'), ('release_id', '7'), ('request_id', REQUEST_ID)), content_type=MULTIPART)
+add('restarts-post-form', 'owner', RESTARTS, 409, {'error': 'Il riavvio dei container è disabilitato in sviluppo.'},
+    method='POST', raw_body=f'request_id={REQUEST_ID}', content_type=FORM)
+add('restarts-post-form-blank', 'owner', RESTARTS, 400, {'request_id': ['Must be a valid UUID.']}, method='POST',
+    raw_body='request_id=', content_type=FORM)
+add('restarts-post-form-extra-key', 'owner', RESTARTS, 400, ONLY_REQUEST, method='POST',
+    raw_body=f'request_id={REQUEST_ID}&force=1', content_type=FORM)
+add('restarts-post-form-request-plain', 'owner', RESTARTS, 409,
+    {'error': 'Il riavvio dei container è disabilitato in sviluppo.'}, method='POST',
+    raw_body=parts(('request_id', REQUEST_ID)), content_type=MULTIPART)
+
 add('admin-final', 'admin', ADMIN, 200, admin_body())
 add('diagnostics-final', 'owner', DIAGNOSTICS, 200, diagnostics_body(), cache='no-store')
 

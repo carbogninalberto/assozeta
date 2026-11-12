@@ -607,6 +607,7 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 	}
 	// Values Python would convert differently are refused before any write.
 	names := [2]string{}
+	mailNames := [2]any{}
 	namesStorable := true
 	for index, pair := range [2][2]any{{social.FirstName, "first_name"}, {social.LastName, "last_name"}} {
 		value := pair[0]
@@ -626,12 +627,16 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 		case nil:
 			namesStorable = false // NOT NULL: create_user raises IntegrityError
 		case json.Number:
-			if strings.ContainsAny(string(v), ".eE") {
-				return nil, ErrOAuthNotPorted // the welcome mail writes a float in the locale's number format
-			}
 			text = dto.PythonStr(v)
+			if strings.ContainsAny(string(v), ".eE") {
+				// str(float) goes to the column and the response; the mail
+				// localises the float itself (input beyond the range is inf).
+				number, _ := strconv.ParseFloat(string(v), 64)
+				mailNames[index] = number
+			}
 		case float64:
-			return nil, ErrOAuthNotPorted
+			text = dto.PythonStr(v)
+			mailNames[index] = v
 		default:
 			// The column stores str(value); the mail and the response write the same text.
 			text = dto.PythonStr(value)
@@ -661,8 +666,9 @@ func (s *OAuthAccounts) socialSignup(ctx context.Context, identity domain.Resolv
 		return nil, err
 	}
 	user := domain.OAuthNewUser{ID: uuid.NewString(), Username: djangoauth.PythonUpper(username), Email: normalizeEmail(email),
-		PasswordHash: hash, FirstName: names[0], LastName: names[1], Role: membership.role, CollaboratorRole: membership.collaboratorRole,
-		ConnectedUserID: membership.connected, Permissions: membership.permissions, Joined: s.now().UTC()}
+		PasswordHash: hash, FirstName: names[0], LastName: names[1], MailFirstName: mailNames[0], MailLastName: mailNames[1],
+		Role: membership.role, CollaboratorRole: membership.collaboratorRole, ConnectedUserID: membership.connected,
+		Permissions: membership.permissions, Joined: s.now().UTC()}
 	if err = s.store.CreateUser(ctx, user, audit); errors.Is(err, domain.ErrOAuthUsernameConflict) {
 		return nil, ErrOAuthServer // IntegrityError
 	} else if err != nil {
@@ -716,8 +722,15 @@ func (s *OAuthAccounts) welcomeNewUser(ctx context.Context, user domain.OAuthNew
 	if err != nil {
 		return nil, err
 	}
-	message, err := s.render(ctx, emailrender.AccountWelcome, s.brandContext(map[string]any{"first_name": user.FirstName,
-		"last_name": user.LastName}), language)
+	firstName, lastName := any(user.FirstName), any(user.LastName)
+	if user.MailFirstName != nil {
+		firstName = user.MailFirstName
+	}
+	if user.MailLastName != nil {
+		lastName = user.MailLastName
+	}
+	message, err := s.render(ctx, emailrender.AccountWelcome, s.brandContext(map[string]any{"first_name": firstName,
+		"last_name": lastName}), language)
 	if err != nil {
 		return nil, err
 	}

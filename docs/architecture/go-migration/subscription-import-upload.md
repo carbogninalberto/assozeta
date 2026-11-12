@@ -124,17 +124,16 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 
 ## Not ported (refused with the 500 page before any write)
 
-- Workbooks outside `pandasxlsx`'s subset (`ReadAll`): a first sheet that is not a worksheet, a column label that is not
-  text (a number or a date in the header row), ISO date cells openpyxl raises on, an infinite number cell, numbers beyond
-  a float, number-like text whose reading depends on how pandas was compiled, XML that is not UTF-8, a part above
-  256 MiB, a stored file above 64 MiB. In the golden corpus 6,128 of the 6,246 workbooks pandas reads are accepted.
+- Workbooks outside `pandasxlsx`'s subset (`ReadAll`): a first sheet that is not a worksheet, text looked up in a header
+  made only of dates or only of durations, a label that is a whole number outside 64 bits, ISO date cells openpyxl
+  raises on, an infinite number cell, numbers beyond a float, number-like text whose reading depends on how pandas was
+  compiled, XML that is not UTF-8, a part above 256 MiB, a stored file above 64 MiB. In the golden corpus 6,128 of the
+  6,246 workbooks pandas reads are accepted.
 - CSV files outside `pandascsv`'s subset (`Read`, `ReadText`): a line that starts with whitespace after a bare carriage
   return, and decimal text whose value depends on how pandas was compiled (1,904 of 97,442 corpus outcomes).
-- A date cell with a year below 1000 in a mapped column (strftime's year width).
-- Import values: date text or a number in a date column that dateutil reads as a year below 1000, or over 64 KiB (date
-  text and numbers are otherwise read by the whole dateutil parser, `internal/pydateutil`, day first unless the text starts
-  with the year); a tax code beyond ASCII in a complete row or outside the transliteration subset; a
-  `default` that is not an object when a value is missing.
+- Import values: date text or a number in a date column over 64 KiB (date text and numbers are otherwise read by the whole
+  dateutil parser, `internal/pydateutil`, day first unless the text starts with the year); a tax code beyond ASCII in a
+  complete row or outside the transliteration subset; a `default` that is not an object when a value is missing.
 
 ## Evidence (TDD)
 
@@ -197,3 +196,24 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 Column names with `İ` or `Σ` are lower-cased as `str.lower()` does (`dto.PythonLower`: `i` with a combining dot, the final sigma)
 before the distance to each key is measured (case `csv-dotted-i-and-sigma-columns`), and a file sent as `document_id` is answered
 (`file-document-id`). 71 cases.
+
+## t6x2
+
+Workbook column labels that are not text (numbers, booleans, dates, a time of day) are answered: the answer lists them as the
+JSON renderer writes them (numbers and booleans as they are, a date as its ISO text, a duration as its seconds) and
+`auto_map_columns` maps `str()` of each label. The import looks each value of the request's `map` up in the row's Index as
+pandas does (`pandasxlsx.Frame.Lookup`): an int64 Index takes whole numbers (also `2.0`), never a boolean or text; a float64
+Index takes numbers; a bool Index takes booleans only; an object Index finds the label equal to the key (True is 1) and reads
+a whole number as a position when no label is a whole number. An error cell as a label cannot be rendered: the 500 page after
+the upload is stored / after the import is complete.
+
+A date cell or date text with a year below 1000 is written by `strftime('%d/%m/%Y')` as the C library does (four digits on
+macOS, the digits alone on glibc: `dto.LibcYear`); where the year is not padded `strptime` refuses the certificate's date and
+the certificate is deleted.
+
+A file sent as `document_id` in a request above the in-memory upload size answers the 400 with
+`'TemporaryUploadedFile' object has no attribute 'replace'` (the contract expands `$pad:<n>` to n characters so the fixture
+stays small).
+
+89 cases. Local: `t6x2-a1` 89/89 on native Django and native Go; mutation `t6x2-mut-a` CAUGHT
+(`subscription-import-upload-mixed-labels`).

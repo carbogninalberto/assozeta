@@ -7617,6 +7617,101 @@
    }
   },
   {
+   "name": "instance-outbound-email-test-form-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "revision": [
+     "This field is required."
+    ],
+    "action": [
+     "This field is required."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-email-test-form-send-without-recipient",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "recipient": [
+     "Inserisci il destinatario del messaggio di prova."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "revision=0&action=send&recipient=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-email-test-form-invalid-action",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "action": [
+     "\"probe\" is not a valid choice."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "revision=0&action=probe",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-email-test-form-recipient-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/email/test",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "recipient": [
+     "Enter a valid email address."
+    ]
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"action\"\r\n\r\nsend\r\n--fixture\r\nContent-Disposition: form-data; name=\"recipient\"; filename=\"a@example.com\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture\r\nContent-Disposition: form-data; name=\"revision\"; filename=\"3\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
    "name": "instance-outbound-email-test-stale",
    "actor": "owner",
    "method": "POST",
@@ -9130,6 +9225,90 @@
    "body": {
     "revision": -1
    }
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "This field may not be null."
+   ],
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "A valid integer is required."
+   ],
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "revision=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Configurazione cambiata. Ricarica prima di verificare."
+   },
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"; filename=\"9\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
+  },
+  {
+   "name": "instance-outbound-integration-test-form-revision-file-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/stripe/test",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "A valid integer is required."
+   ],
+   "setup": null,
+   "effect": null,
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "raw_body": "--fixture\r\nContent-Disposition: form-data; name=\"revision\"; filename=\"r.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--fixture--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture"
   },
   {
    "name": "instance-outbound-integration-test-list-body",

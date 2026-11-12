@@ -50,7 +50,6 @@
 
 - A prettified result above 32 MiB in `regulation`, `demand` or a section `text`. The indentation grows with the square of the nesting depth, so the output is refused rather than held.
 - Section names with characters outside the upper-case subset, for example `ß` or ligatures.
-- A logo string holding a NUL or a lone surrogate before its first comma, or a NUL in its data.
 - A logo or avatar the image processor cannot decode (for example TIFF or AVIF). The request logo and its response re-compression are both checked before writing.
 
 ## Evidence
@@ -102,3 +101,10 @@ Cases: `float-spellings-and-containers`, `logo-object`, `logo-boolean`, `fee-*-p
 
 Cases: `legacy-html-regulation`, `legacy-html-demand`, `legacy-html-sections`, `html-resave`, `html-control-characters`,
 `html-charref-too-long`, `html-short-surrogate`, `html-nul-reference`, `html-surrogate-reference` (74 cases in all).
+
+## t6x2
+
+**Ported in t6x2**: a logo with a NUL or a lone surrogate before its first comma, or a NUL in its data, is saved when
+the image is re-encoded (the new data URI has neither) and answers the 500 page when it is kept as sent; cases
+`logo-header-with-nul-*`, `logo-data-with-nul-*`, `logo-header-with-lone-surrogate-unchanged`,
+`logo-undecodable-header-with-nul`. `TESTS/fixtures/profile_template_http.json` has 71 cases.

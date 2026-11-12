@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -130,6 +132,39 @@ func subscriptionImportAutoMap(columns []string) domain.RequestObject {
 		}
 	}
 	return subscriptionImportRendered(mapped)
+}
+
+// subscriptionImportLabels is columns.tolist() as the JSON renderer writes
+// it: text, numbers and booleans as they are, a datetime, a date and a time
+// of day as isoformat(), a duration as str() of its seconds, NaT as 'NaT'.
+// nil: a label that is not a number (an error cell), which the renderer
+// refuses (ValueError).
+func subscriptionImportLabels(labels []pandasxlsx.Value) []any {
+	rendered := make([]any, 0, len(labels))
+	for _, label := range labels {
+		switch label.Kind {
+		case pandasxlsx.String:
+			rendered = append(rendered, label.S)
+		case pandasxlsx.Int, pandasxlsx.Int64:
+			rendered = append(rendered, json.Number(strconv.FormatInt(label.I, 10)))
+		case pandasxlsx.Float:
+			if math.IsNaN(label.F) || math.IsInf(label.F, 0) {
+				return nil
+			}
+			rendered = append(rendered, label.F)
+		case pandasxlsx.Bool, pandasxlsx.NumpyBool:
+			rendered = append(rendered, label.B)
+		case pandasxlsx.Time:
+			rendered = append(rendered, strings.Replace(label.TimeText(), " ", "T", 1))
+		case pandasxlsx.Timedelta, pandasxlsx.PyTimedelta:
+			rendered = append(rendered, dto.PythonFloatText(float64(label.D/time.Microsecond)/1e6))
+		case pandasxlsx.NaT, pandasxlsx.Date, pandasxlsx.TimeOfDay:
+			rendered = append(rendered, label.Str())
+		default:
+			return nil
+		}
+	}
+	return rendered
 }
 
 // subscriptionImportRendered is the request's map as the response renders
@@ -361,8 +396,9 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	mapping, _ := data.Lookup("map")
 	text := subscriptionImportTextColumns(mapping)
 	textual := func(column string) bool { return text[column] }
-	var names []string
+	var names []any
 	var rows [][]any
+	var lookup func(column any) (int, bool, bool, error)
 	if csv {
 		frame, err := pandascsv.ReadText(content, textual)
 		switch {
@@ -371,7 +407,17 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 		case err != nil:
 			return nil, errors.Join(ErrSubscriptionImportServerError, err) // EmptyDataError, ParserError, UnicodeDecodeError
 		}
-		names = frame.Columns
+		// read_csv's labels are text: any other key is no column.
+		positions := make(map[string]int, len(frame.Columns))
+		for index, column := range frame.Columns {
+			names = append(names, column)
+			positions[column] = index
+		}
+		lookup = func(column any) (int, bool, bool, error) {
+			text, isText := column.(string)
+			index, found := positions[text]
+			return index, isText && found, false, nil
+		}
 		for _, cells := range frame.Rows {
 			row := make([]any, len(cells))
 			for index, cell := range cells {
@@ -386,10 +432,8 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 			return nil, ErrSubscriptionImportServerError
 		case err != nil:
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, err)
-		case !frame.TextLabels():
-			return nil, ErrSubscriptionImportNotPorted // labels that are numbers or dates
 		}
-		names = frame.Columns
+		names, lookup = subscriptionImportLabels(frame.Labels), frame.Lookup
 		for _, cells := range frame.Rows {
 			row := make([]any, len(cells))
 			for index, cell := range cells {
@@ -398,7 +442,7 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 			rows = append(rows, row)
 		}
 	}
-	effects, err := s.subscriptionImportPlan(names, rows, data)
+	effects, err := s.subscriptionImportPlan(lookup, rows, data)
 	if err != nil {
 		return nil, err
 	}
@@ -415,11 +459,13 @@ func (s *SubscriptionImportUpload) importDocument(ctx context.Context, identity 
 	}
 	// remove_upload's default_storage.delete: a failure is logged by the view and the import stands.
 	_ = s.objects.Delete(ctx, key)
-	list := make([]any, len(names))
-	for i, column := range names {
-		list[i] = column
+	if names == nil && !csv {
+		return nil, ErrSubscriptionImportServerError // a label the renderer cannot write, after the import
 	}
-	return domain.RequestObject{{Name: "columns", Value: list}, {Name: "map", Value: subscriptionImportRendered(nil)}}, nil
+	if names == nil {
+		names = []any{}
+	}
+	return domain.RequestObject{{Name: "columns", Value: names}, {Name: "map", Value: subscriptionImportRendered(nil)}}, nil
 }
 
 func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.ResolvedIdentity, association string, file domain.RequestFile,
@@ -428,6 +474,7 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 	csv := strings.HasSuffix(lower, ".csv")
 	excel := !csv && subscriptionImportExcel(lower)
 	var columns []string
+	labels := []any{}
 	var parseErr error
 	switch {
 	case csv:
@@ -438,17 +485,21 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 		}
 		if parseErr == nil {
 			columns = frame.Columns
+			for _, column := range columns {
+				labels = append(labels, column)
+			}
 		}
 	case excel:
 		// read_excel reads the bytes whatever the suffix; a failure (then the
 		// xlrd fallback's ImportError) is the 500 page after the writes.
 		var frame *pandasxlsx.Frame
 		frame, parseErr = pandasxlsx.ReadAll(file.Content, nil)
-		if errors.Is(parseErr, pandasxlsx.ErrUnsupported) || parseErr == nil && !frame.TextLabels() {
+		if errors.Is(parseErr, pandasxlsx.ErrUnsupported) {
 			return nil, errors.Join(ErrSubscriptionImportNotPorted, parseErr)
 		}
 		if parseErr == nil {
-			columns = frame.Columns
+			// auto_map_columns maps str() of each label.
+			columns, labels = frame.Columns, subscriptionImportLabels(frame.Labels)
 		}
 	}
 	document, err := s.uploads.storeImportFile(ctx, identity, association, file, audit)
@@ -457,13 +508,10 @@ func (s *SubscriptionImportUpload) upload(ctx context.Context, identity domain.R
 	}
 	// The view logs a failed cleanup and goes on.
 	_ = s.removeExpired(ctx, identity, association, audit)
-	if !csv && !excel || parseErr != nil {
-		return nil, ErrSubscriptionImportServerError // TypeError, EmptyDataError or ParserError after the writes
+	if !csv && !excel || parseErr != nil || labels == nil {
+		// TypeError, EmptyDataError or ParserError after the writes, or a label the renderer cannot write.
+		return nil, ErrSubscriptionImportServerError
 	}
-	list := make([]any, len(columns))
-	for i, column := range columns {
-		list[i] = column
-	}
-	return domain.RequestObject{{Name: "columns", Value: list}, {Name: "map", Value: subscriptionImportAutoMap(columns)},
+	return domain.RequestObject{{Name: "columns", Value: labels}, {Name: "map", Value: subscriptionImportAutoMap(columns)},
 		{Name: "document_id", Value: document.ID}}, nil
 }
