@@ -66,7 +66,7 @@ func TestReportToolOutcomes(t *testing.T) {
 		{"query_data", `{"model_name": "User"}`, ErrReportFailed},
 		{"query_data", `{"model_name": "Payment", "filters": {"type__regex": "x"}}`, nil},
 		{"query_data", `{"model_name": "Tags", "filters": {"colour": "x"}}`, ErrReportFailed},
-		{"query_data", `{"model_name": "Tags", "exclude": {"subscription__status_flag": 1}}`, ErrReportNotPorted},
+		{"query_data", `{"model_name": "Tags", "exclude": {"subscription__status_flag": 1}}`, nil},
 		{"query_data", `{"model_name": "Tags", "filters": {"tag_name__regex": "x"}}`, nil},
 		{"query_data", `{"model_name": "Tags", "filters": {"tag_id": "nope"}}`, ErrReportFailed},
 		{"query_data", `{"model_name": "Tags", "order_by": ["?"]}`, ErrReportNotPorted},
@@ -636,6 +636,114 @@ func TestReportToolFieldNameTypes(t *testing.T) {
 		if err == nil || err.Error() != want {
 			t.Errorf("%s: got %v, want %q", params, err, want)
 		}
+	}
+}
+
+func TestReportToolSplitExclude(t *testing.T) {
+	settings := func() (ReportSettings, error) { return ReportSettings{MaxResults: 5000, QueryTimeout: 10}, nil }
+	plan := func(t *testing.T, tool, params string) ReportPlan {
+		t.Helper()
+		planned, err := PlanReportTool(tool, reportParams(t, params), "a1000000-0000-4000-8000-000000701001", settings)
+		if err != nil {
+			t.Fatalf("%s: %v", params, err)
+		}
+		for _, statement := range planned.Statements {
+			reportBindings(t, params, statement.SQL, statement.Args)
+		}
+		return planned
+	}
+	for _, tc := range []struct {
+		params string
+		sql    []string
+		args   []any
+	}{
+		// A many-to-many relation: the subquery starts at the through table
+		// and selects its join column.
+		{`{"model_name":"Subscription","fields":["subscription_number"],"exclude":{"tags__tag_name":"Agonista"}}`,
+			[]string{`NOT (EXISTS(SELECT 1 AS "a" FROM "application_subscription_tags" U1`,
+				`INNER JOIN "application_tags" U2 ON (U1."tags_id" = U2."tag_id")`,
+				`WHERE (U2."tag_name" = $2 AND U1."subscription_id" = ("application_subscription"."subscription_id")) LIMIT 1))`},
+			[]any{"Agonista"}},
+		// A reverse foreign key selects the related model's foreign key.
+		{`{"model_name":"Course","fields":["title"],"exclude":{"coursesubscription__paid":true}}`,
+			[]string{`NOT (EXISTS(SELECT 1 AS "a" FROM "application_coursesubscription" U1 WHERE (U1."paid" AND ` +
+				`U1."course_id" = ("application_course"."course_id")) LIMIT 1))`}, nil},
+		// Several keys of one exclude are ANDed inside one NOT.
+		{`{"model_name":"Subscription","fields":["subscription_number"],"exclude":{"tags__tag_name__startswith":"Under","status_flag":1}}`,
+			[]string{`NOT ("application_subscription"."status_flag" = $2 AND EXISTS(SELECT 1 AS "a" FROM ` +
+				`"application_subscription_tags" U1 INNER JOIN "application_tags" U2`, `U2."tag_name"::text LIKE $3`},
+			[]any{int64(1), "Under%"}},
+		// A condition that reads the relation with IS NULL keeps the outer
+		// joins, so the subquery starts at the model table.
+		{`{"model_name":"Subscription","fields":["subscription_number"],"exclude":{"tags":null}}`,
+			[]string{`NOT (EXISTS(SELECT 1 AS "a" FROM "application_subscription" U0 LEFT OUTER JOIN ` +
+				`"application_subscription_tags" U1 ON (U0."subscription_id" = U1."subscription_id") WHERE (` +
+				`U1."tags_id" IS NULL AND U0."subscription_id" = ("application_subscription"."subscription_id")) LIMIT 1))`},
+			nil},
+		// A path that continues after the many-valued hop joins the rest of
+		// the path inside the subquery.
+		{`{"model_name":"Course","fields":["title"],"exclude":{"coursesubscription__subscription__tags__tag_name":"Under_14"}}`,
+			[]string{`FROM "application_coursesubscription" U1 INNER JOIN "application_subscription" U2 ON (` +
+				`U1."subscription_id" = U2."subscription_id") INNER JOIN "application_subscription_tags" U3 ON (` +
+				`U2."subscription_id" = U3."subscription_id") INNER JOIN "application_tags" U4 ON (` +
+				`U3."tags_id" = U4."tag_id") WHERE (U4."tag_name" = $2`},
+			[]any{"Under_14"}},
+		// The reverse direction of a many-to-many relation.
+		{`{"model_name":"Tags","fields":["tag_name"],"exclude":{"subscription__status_flag":1}}`,
+			[]string{`FROM "application_subscription_tags" U1 INNER JOIN "application_subscription" U2 ON (` +
+				`U1."subscription_id" = U2."subscription_id")`, `U1."tags_id" = ("application_tags"."tag_id")`},
+			[]any{int64(1)}},
+		// An empty __in list inside the subquery matches nothing, so the
+		// negation drops no row.
+		{`{"model_name":"Subscription","fields":["subscription_number"],"exclude":{"tags__tag_id__in":[]}}`,
+			[]string{`NOT (FALSE)`}, nil},
+		// A nullable forward relation before the many-valued hop keeps its
+		// outer join and adds the null check of the trimmed prefix.
+		{`{"model_name":"Subscription","fields":["subscription_number"],"exclude":{"associate__subscription__tags__isnull":true}}`,
+			[]string{`NOT ((EXISTS(SELECT 1 AS "a" FROM "application_associate" U1 LEFT OUTER JOIN ` +
+				`"application_subscription" U2 ON (U1."associate_id" = U2."associate_id")`,
+				`OR "application_subscription"."associate_id" IS NULL))`}, nil},
+	} {
+		planned := plan(t, "query_data", tc.params)
+		query := planned.Statements[len(planned.Statements)-1].SQL
+		for _, part := range tc.sql {
+			if !strings.Contains(query, part) {
+				t.Errorf("%s: query %q lacks %q", tc.params, query, part)
+			}
+		}
+		for _, want := range tc.args {
+			found := false
+			for _, argument := range planned.Statements[len(planned.Statements)-1].Args {
+				if fmt.Sprint(argument) == fmt.Sprint(want) {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("%s: args %#v lack %#v", tc.params, planned.Statements[len(planned.Statements)-1].Args, want)
+			}
+		}
+	}
+	// count_data, aggregate_data and get_field_values use the same clause.
+	for _, tool := range []string{"count_data", "get_field_values", "aggregate_data"} {
+		params := map[string]string{
+			"count_data":       `{"model_name":"Subscription","exclude":{"tags__tag_name":"Agonista"}}`,
+			"get_field_values": `{"model_name":"Subscription","field_name":"subscription_number","exclude":{"tags__tag_name":"Agonista"}}`,
+			"aggregate_data": `{"model_name":"Subscription","exclude":{"tags__tag_name":"Agonista"},` +
+				`"aggregations":[{"function":"count","field":"*"}]}`,
+		}[tool]
+		planned := plan(t, tool, params)
+		for _, statement := range planned.Statements {
+			if !strings.Contains(statement.SQL, `EXISTS(SELECT 1 AS "a" FROM "application_subscription_tags"`) {
+				t.Errorf("%s %s: statement %q lacks the subquery", tool, params, statement.SQL)
+			}
+		}
+	}
+	// The filters of the same relation still join the outer query.
+	planned := plan(t, "query_data", `{"model_name":"Subscription","fields":["subscription_number","tags__tag_name"],
+		"filters":{"tags__tag_name":"Under_14"},"exclude":{"tags__tag_name":"Agonista"},"order_by":["subscription_number"]}`)
+	query := planned.Statements[len(planned.Statements)-1].SQL
+	if !strings.Contains(query, `INNER JOIN "application_tags" ON`) || !strings.Contains(query, `"application_tags"."tag_name" = $2`) {
+		t.Errorf("filters beside exclude: query %q lacks the outer join", query)
 	}
 }
 

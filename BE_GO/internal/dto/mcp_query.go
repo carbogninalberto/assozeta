@@ -47,8 +47,11 @@ func mcpNotPorted(what string) error { return fmt.Errorf("%w: %s", ErrReportNotP
 type mcpJoin struct {
 	table, alias, parent, identity string
 	nullable, louter               bool
-	refs                           int
-	lhs, rhs                       string
+	// m2m marks a join to a many-valued relation (reverse foreign key or
+	// many-to-many), split_exclude's trimming candidate.
+	m2m      bool
+	refs     int
+	lhs, rhs string
 }
 
 type mcpQuery struct {
@@ -112,7 +115,8 @@ func (q *mcpQuery) join(parent string, hop mcpHop, reuse map[string]bool) string
 	}
 	alias := q.tableAlias(hop.table)
 	q.joins = append(q.joins, &mcpJoin{table: hop.table, alias: alias, parent: parent, identity: identity,
-		nullable: hop.nullable, louter: q.get(parent).louter || hop.nullable, refs: 1, lhs: hop.lhs, rhs: hop.rhs})
+		nullable: hop.nullable, louter: q.get(parent).louter || hop.nullable, m2m: hop.m2m, refs: 1, lhs: hop.lhs,
+		rhs: hop.rhs})
 	return alias
 }
 
@@ -210,6 +214,10 @@ type mcpHop struct {
 	table, identity, lhs, rhs string
 	direct, m2m, nullable     bool
 	local                     *mcpTarget // the target after trimming a direct hop
+	// joinName is names_to_path's join_field.foreign_related_fields[0].name:
+	// the field the hop starts from, which split_exclude's trimmed prefix
+	// names on the outer query.
+	joinName string
 }
 
 type mcpPath struct {
@@ -236,6 +244,14 @@ func mcpRelationHops(field *mcpField) ([]mcpHop, mcpTarget, error) {
 		return nil, mcpTarget{}, mcpNotPorted("relation without metadata " + field.Related)
 	}
 	id := field.model.Label + "." + field.Name
+	// joinName is the field the relation starts from (join_field's
+	// foreign_related_fields[0]): the parent model's column the hop reads.
+	joinName := func(column string) string {
+		if parent := field.model.fieldByColumn(column); parent != nil {
+			return parent.Name
+		}
+		return ""
+	}
 	switch field.Kind {
 	case "foreign_key", "one_to_one":
 		targetField := related.fieldByColumn(field.TargetColumn)
@@ -244,24 +260,33 @@ func mcpRelationHops(field *mcpField) ([]mcpHop, mcpTarget, error) {
 		}
 		local := mcpTarget{column: field.Column, field: targetField, valueType: field.TargetInternal, null: field.Null}
 		return []mcpHop{{table: related.Table, identity: related.Table + "\x00" + id + ">", lhs: field.Column, rhs: field.TargetColumn,
-			direct: true, nullable: field.Null, local: &local}}, mcpFieldTarget(targetField), nil
+			direct: true, nullable: field.Null, local: &local, joinName: targetField.Name}}, mcpFieldTarget(targetField), nil
 	case "foreign_key_reverse", "one_to_one_reverse":
 		return []mcpHop{{table: related.Table, identity: related.Table + "\x00" + id + "<", lhs: field.LocalColumn, rhs: field.RemoteColumn,
-			m2m: field.Kind == "foreign_key_reverse", nullable: true}}, mcpFieldTarget(related.pkField()), nil
+				m2m: field.Kind == "foreign_key_reverse", nullable: true, joinName: joinName(field.LocalColumn)}},
+			mcpFieldTarget(related.pkField()), nil
 	case "many_to_many", "many_to_many_reverse":
 		pk := related.pkField()
 		local := mcpTarget{column: field.TargetColumn, field: pk, valueType: pk.Internal}
 		return []mcpHop{
-			{table: field.Through, identity: field.Through + "\x00" + id + "<m2m", lhs: field.LocalColumn, rhs: field.SourceColumn, m2m: true, nullable: true},
-			{table: related.Table, identity: related.Table + "\x00" + id + ">m2m", lhs: field.TargetColumn, rhs: field.RemoteColumn, direct: true, local: &local},
+			{table: field.Through, identity: field.Through + "\x00" + id + "<m2m", lhs: field.LocalColumn, rhs: field.SourceColumn, m2m: true, nullable: true,
+				joinName: joinName(field.LocalColumn)},
+			{table: related.Table, identity: related.Table + "\x00" + id + ">m2m", lhs: field.TargetColumn, rhs: field.RemoteColumn, direct: true, local: &local,
+				joinName: pk.Name},
 		}, mcpFieldTarget(pk), nil
 	}
 	return nil, mcpTarget{}, mcpNotPorted("relation kind " + field.Kind)
 }
 
-// errMCPMultiJoin is names_to_path's MultiJoin (exclude over a many-valued
-// relation: split_exclude's subquery is not ported).
-var errMCPMultiJoin = mcpNotPorted("exclude across a many-valued relation")
+// mcpMultiJoinError is names_to_path's MultiJoin: the path crosses a
+// many-valued relation (hop) after the names of prefix, so exclude() has to
+// build the correlated subquery of split_exclude.
+type mcpMultiJoinError struct {
+	prefix []string
+	hop    mcpHop
+}
+
+func (e *mcpMultiJoinError) Error() string { return "mcp query: many-valued path" }
 
 // namesToPath is Query.names_to_path.
 func mcpNamesToPath(model *mcpModel, names []string, allowMany, failOnMissing bool) (mcpPath, error) {
@@ -292,7 +317,7 @@ func mcpNamesToPath(model *mcpModel, names []string, allowMany, failOnMissing bo
 			if !allowMany {
 				for _, hop := range hops {
 					if hop.m2m {
-						return path, errMCPMultiJoin
+						return path, &mcpMultiJoinError{prefix: append([]string(nil), names[:pos]...), hop: hop}
 					}
 				}
 			}
@@ -984,6 +1009,12 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 	}
 	info, err := q.setupJoins(strings.Split(leaf.key, "__"), used, !branchNegated, false)
 	if err != nil {
+		// Query.build_filter: a many-valued path is split into a correlated
+		// EXISTS subquery instead of failing.
+		var multi *mcpMultiJoinError
+		if errors.As(err, &multi) {
+			return q.splitExclude(leaf, used, multi)
+		}
 		return "", nil, mcpResultValue, err
 	}
 	usedJoins := append([]string(nil), info.joins...)
@@ -1016,6 +1047,174 @@ func (q *mcpQuery) buildFilter(leaf mcpLeaf, used map[string]bool, branchNegated
 		return condition, nil, mcpResultValue, nil
 	}
 	return condition, usedJoins, mcpResultValue, nil
+}
+
+// splitExclude is Query.split_exclude: a condition that crosses a many-valued
+// relation is answered by a correlated subquery,
+// NOT (EXISTS(SELECT 1 ... WHERE (<condition> AND <join> = (<outer>.<col>)))).
+func (q *mcpQuery) splitExclude(leaf mcpLeaf, used map[string]bool, multi *mcpMultiJoinError) (string, []string, mcpResultKind, error) {
+	inner := newMCPQuery(q.model)
+	clause, _, result, err := inner.addQInner(mcpQ([]mcpLeaf{leaf}), map[string]bool{}, false, false, false)
+	if err != nil {
+		return "", nil, mcpResultValue, err
+	}
+	if inner.compileErr != nil && q.compileErr == nil {
+		// IsNull.as_sql raises while the subquery compiles.
+		q.compileErr = inner.compileErr
+	}
+	if result == mcpResultEmpty {
+		// The condition matches nothing on the inner side: the EXISTS is false
+		// and its negation keeps every row.
+		return "FALSE", nil, mcpResultValue, nil
+	}
+	if clause != "" {
+		inner.where = append(inner.where, clause)
+	}
+	// trim_start: drop the joins before the many-valued hop, remembering
+	// whether the trimmed prefix held an outer join.
+	trimmedPaths := 0
+	containsLouter := false
+	for i := 0; i+1 < len(inner.joins); i++ {
+		join := inner.joins[i+1]
+		if join.m2m {
+			break
+		}
+		if join.louter {
+			containsLouter = true
+		}
+		inner.joins[i].refs--
+		trimmedPaths = i + 1
+	}
+	if trimmedPaths+1 >= len(inner.joins) {
+		return "", nil, mcpResultValue, mcpNotPorted("exclude across a many-valued relation")
+	}
+	many := inner.joins[trimmedPaths+1]
+	if multi.hop.joinName == "" {
+		return "", nil, mcpResultValue, mcpNotPorted("exclude across a many-valued relation")
+	}
+	prefix := append(append([]string(nil), multi.prefix...), multi.hop.joinName)
+	outerTarget, outerAlias, err := q.outerColumn(prefix)
+	if err != nil {
+		return "", nil, mcpResultValue, err
+	}
+	// The first join of the many-valued relation keeps its rows when it is an
+	// outer join; otherwise the select column starts the subquery.
+	selectAlias, selectColumn := inner.joins[trimmedPaths].alias, many.lhs
+	if !many.louter {
+		inner.joins[trimmedPaths].refs--
+		selectAlias, selectColumn = many.alias, many.rhs
+	}
+	// Subqueries use different aliases than the outer query, so the outer
+	// reference still names the outer table.
+	aliases := make(map[string]string, len(inner.joins))
+	for i, join := range inner.joins {
+		aliases[join.alias] = "U" + strconv.Itoa(i)
+	}
+	where := make([]string, 0, len(inner.where)+1)
+	for _, condition := range inner.where {
+		where = append(where, mcpRelabel(condition, aliases))
+	}
+	where = append(where, mcpBareColumn(aliases[selectAlias], selectColumn)+" = ("+mcpColumn(outerAlias, outerTarget.column)+")")
+	offset := len(q.args.values)
+	q.args.values = append(q.args.values, inner.args.values...)
+	subquery := `SELECT 1 AS "a" FROM ` + inner.subqueryFrom(aliases)
+	if len(where) == 1 {
+		subquery += " WHERE " + where[0]
+	} else {
+		subquery += " WHERE (" + strings.Join(where, " AND ") + ")"
+	}
+	subquery += " LIMIT 1"
+	condition := "EXISTS(" + mcpShiftPlaceholders(subquery, offset) + ")"
+	if containsLouter {
+		// NOT EXISTS(...) OR outercol IS NULL: a null outer column has no
+		// inner row to match.
+		orNull, _, nullResult, err := q.buildFilter(mcpLeaf{key: strings.Join(append(append([]string(nil), prefix...), "isnull"), "__"),
+			value: true}, used, true, true, false)
+		if err != nil {
+			return "", nil, mcpResultValue, err
+		}
+		if nullResult == mcpResultValue && orNull != "" {
+			condition = "(" + condition + " OR " + orNull + ")"
+		}
+	}
+	return condition, nil, mcpResultValue, nil
+}
+
+// outerColumn resolves the trimmed prefix on the outer query:
+// ResolvedOuterRef's resolve_ref.
+func (q *mcpQuery) outerColumn(names []string) (mcpTarget, string, error) {
+	info, err := q.setupJoins(names, nil, true, true)
+	if err != nil {
+		return mcpTarget{}, "", err
+	}
+	target, alias, _ := q.trimJoins(info)
+	return target, alias, nil
+}
+
+// mcpRelabel rewrites a subquery's join aliases. The new aliases are written
+// unquoted, like a table alias in a FROM clause.
+func mcpRelabel(sql string, aliases map[string]string) string {
+	for old, next := range aliases {
+		if old != next {
+			sql = strings.ReplaceAll(sql, `"`+old+`"`, next)
+		}
+	}
+	return sql
+}
+
+// mcpBareColumn is a column read through an unquoted table alias.
+func mcpBareColumn(alias, column string) string { return alias + `."` + column + `"` }
+
+// mcpShiftPlaceholders moves a subquery's $n placeholders behind the
+// parameters the outer statement already holds.
+func mcpShiftPlaceholders(sql string, offset int) string {
+	if offset == 0 {
+		return sql
+	}
+	var out strings.Builder
+	for i := 0; i < len(sql); i++ {
+		if sql[i] != '$' {
+			out.WriteByte(sql[i])
+			continue
+		}
+		j := i + 1
+		for j < len(sql) && sql[j] >= '0' && sql[j] <= '9' {
+			j++
+		}
+		if j == i+1 {
+			out.WriteByte(sql[i])
+			continue
+		}
+		number, _ := strconv.Atoi(sql[i+1 : j])
+		out.WriteString("$" + strconv.Itoa(offset+number))
+		i = j - 1
+	}
+	return out.String()
+}
+
+// subqueryFrom renders the FROM clause of the correlated subquery: the first
+// referenced join is the subquery's base table.
+func (q *mcpQuery) subqueryFrom(aliases map[string]string) string {
+	var out strings.Builder
+	started := false
+	for _, join := range q.joins {
+		if join.refs <= 0 {
+			continue
+		}
+		if !started {
+			out.WriteString(`"` + join.table + `" ` + aliases[join.alias])
+			started = true
+			continue
+		}
+		if join.louter {
+			out.WriteString(" LEFT OUTER JOIN ")
+		} else {
+			out.WriteString(" INNER JOIN ")
+		}
+		out.WriteString(`"` + join.table + `" ` + aliases[join.alias])
+		out.WriteString(" ON (" + mcpBareColumn(aliases[join.parent], join.lhs) + " = " + mcpBareColumn(aliases[join.alias], join.rhs) + ")")
+	}
+	return out.String()
 }
 
 // mcpResultKind is the outcome of compiling a condition: a value, or the

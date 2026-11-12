@@ -47,6 +47,12 @@ execution owner; nothing here switches traffic.
   promotion/demotion, `Q(**kwargs)` sorted keys, `Q.__or__` squashing for
   `or_filters`, `exclude()` with Django's `IS NOT NULL` for nullable or
   outer-joined columns.
+- `exclude()` across a many-valued relation: `MultiJoin`/`split_exclude`
+  build `NOT (EXISTS(SELECT 1 AS "a" FROM … WHERE (<condition> AND <join> =
+  (<outer>.<col>)) LIMIT 1))` with `trim_start`'s trimmed prefix, the
+  subquery's own `U0`/`U1` aliases and the `or_null_condition` of an outer
+  trimmed prefix; each many-valued key of one `exclude` becomes its own
+  subquery inside the same `NOT (…)`.
 - Paths over forward FK/O2O, reverse FK/O2O and M2M (both directions), `pk`,
   attnames; transforms `year` (BETWEEN bounds), `month`, `day`, `week`,
   `week_day`, `quarter`, `hour`, `date`, JSON key transforms (one key);
@@ -107,8 +113,7 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
   `export`, `multi_sheet`, `filename` or course/date argument of a type the save_info
   would write back differently.
 - ORM inputs whose Django text includes SQL or parts Go does not reproduce:
-  JSON `range` on a whole column, JSON multi-key lookups on a key value,
-  `exclude()` across many-valued relations (split_exclude subquery), `?`
+  JSON `range` on a whole column, JSON multi-key lookups on a key value, `?`
   ordering, ordering by a relation whose model has Meta.ordering, integer list
   items outside the 64-bit parameter range, CSV cells holding JSON containers
   or ISO-looking text other than the engine's own datetimes, attendance names
