@@ -5,7 +5,6 @@ import (
 	"errors"
 	"math"
 	"math/big"
-	"regexp"
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
@@ -28,7 +27,8 @@ var Generic = Result{Status: "failed", Level: "connectivity",
 var errProbe = errors.New("instanceprobe: probe raised")
 
 // ErrProbeNotPorted marks an integration probe input this port does not
-// send (an AI base URL requests would rewrite).
+// send (an empty user information pair, which the settings endpoint cannot
+// store).
 var ErrProbeNotPorted = refusal.New("instanceprobe: integration probe input not ported")
 
 const maxProbeBody = 262144
@@ -42,6 +42,11 @@ func (c *Client) getJSON(ctx context.Context, target string, headers map[string]
 		}
 		return nil, nil, errProbe
 	}
+	return probeJSON(response)
+}
+
+// probeJSON is get_json after requests.get returned.
+func probeJSON(response *Response) (any, *Result, error) {
 	switch {
 	case response.Status == 401 || response.Status == 403:
 		return nil, result("failed", "Credenziale rifiutata o permessi insufficienti. Verifica la chiave e le autorizzazioni del provider.", "connectivity"), nil
@@ -61,6 +66,19 @@ func (c *Client) getJSON(ctx context.Context, target string, headers map[string]
 		return nil, nil, errProbe
 	}
 	return value, nil, nil
+}
+
+// getJSONRequest is getJSON for the prepared AI request: the exact target
+// bytes and Host header go on the wire.
+func (c *Client) getJSONRequest(ctx context.Context, target *AIRequest, headers map[string]string) (any, *Result, error) {
+	response, err := c.GetTarget(ctx, target, headers, maxProbeBody)
+	if err != nil {
+		if ctx.Err() != nil {
+			return nil, nil, ctx.Err()
+		}
+		return nil, nil, errProbe
+	}
+	return probeJSON(response)
 }
 
 // authorization is 'Bearer ' + secret as http.client sends it: latin-1
@@ -88,62 +106,24 @@ func text(value any) (string, bool) {
 
 // IntegrationTarget is the request verify_integration would send for the
 // effective settings, "" when it answers without one (invalid is then the
-// probe's "URL del provider non valido." answer), or ErrProbeNotPorted for
-// an AI base URL requests would rewrite or this port does not split
-// (non-ASCII, upper case hosts, user info, characters requests quotes),
-// checked before the lease is claimed.
+// probe's "URL del provider non valido." answer, and no request with invalid
+// false is an input requests raises on: the generic failure), or
+// ErrProbeNotPorted for an input this port does not send (an empty user
+// information pair, which the settings endpoint cannot store), checked
+// before the lease is claimed.
 func IntegrationTarget(provider string, value map[string]any) (target string, invalid bool, err error) {
-	if provider != "ai" || !Truthy(value["api_key"]) {
+	request, invalid, err := integrationRequest(provider, value)
+	if err != nil {
+		return "", false, err
+	}
+	if invalid {
+		return "", true, nil
+	}
+	if request == nil {
 		return "", false, nil
 	}
-	base := value["base_url"]
-	if !Truthy(base) {
-		return "https://api.openai.com/v1/models", false, nil
-	}
-	url, ok := base.(string)
-	if !ok {
-		return "", false, nil // urlsplit of a non-string raises
-	}
-	if !printableASCII.MatchString(url) {
-		return "", false, ErrProbeNotPorted
-	}
-	scheme, _, found := strings.Cut(url, ":")
-	if !found || !validScheme(scheme) {
-		scheme = ""
-	}
-	scheme = strings.ToLower(scheme)
-	_, fragment, _ := strings.Cut(url, "#")
-	beforeFragment, _, _ := strings.Cut(url, "#")
-	_, query, _ := strings.Cut(beforeFragment, "?")
-	if scheme != "http" && scheme != "https" || fragment != "" || query != "" {
-		if strings.Contains(url, "[") != strings.Contains(url, "]") {
-			return "", false, ErrProbeNotPorted // urlsplit may raise ValueError
-		}
-		return "", true, nil
-	}
-	match := aiBaseURL.FindStringSubmatch(url)
-	if match == nil {
-		return "", false, ErrProbeNotPorted
-	}
-	if strings.Contains(match[2], "@") {
-		// urlsplit's username or password: the probe answers 'invalid'. An
-		// empty pair passes it and is rewritten by requests (not ported).
-		if strings.Trim(match[2], ":@") == "" {
-			return "", false, ErrProbeNotPorted
-		}
-		return "", true, nil
-	}
-	// requests sends the scheme and the host in lower case.
-	url = strings.ToLower(match[1]) + "://" + strings.ToLower(match[3]) + match[4] + match[5]
-	return strings.TrimRight(url, "/") + "/models", false, nil
+	return request.URL, false, nil
 }
-
-// aiBaseURL is the subset of base URLs urlsplit accepts and requests sends
-// unchanged but for the case of the scheme and the host: scheme, user
-// information, host, port and path.
-var aiBaseURL = regexp.MustCompile(`^([Hh][Tt][Tt][Pp][Ss]?)://((?:[A-Za-z0-9._~!$&'()*+,;=:-]|%[0-9A-Fa-f]{2})*@)?([A-Za-z0-9.-]+|\[[0-9A-Fa-f:.]+\])(:[0-9]{1,5})?((?:/(?:[A-Za-z0-9._~!$&'()*+,;=:@/-]|%[0-9A-Fa-f]{2})*)?)$`)
-
-var printableASCII = regexp.MustCompile(`^[!-~]*$`)
 
 // VerifyIntegration is integration_probe.verify_integration after its
 // revision and enabled checks, for the decrypted effective settings.
@@ -238,20 +218,20 @@ func (c *Client) verifyIntegration(ctx context.Context, provider string, value m
 		if !Truthy(value["api_key"]) {
 			return result("not_configured", "Chiave API mancante.", "configuration"), nil
 		}
-		target, invalid, err := IntegrationTarget(provider, value)
+		target, invalid, err := integrationRequest(provider, value)
 		switch {
 		case err != nil:
 			return nil, err
 		case invalid:
 			return result("failed", "URL del provider non valido.", "configuration"), nil
-		case target == "":
+		case target == nil:
 			return nil, errProbe
 		}
 		header, err := authorization(value["api_key"])
 		if err != nil {
 			return nil, err
 		}
-		data, failure, err := c.getJSON(ctx, target, map[string]string{"Authorization": header})
+		data, failure, err := c.getJSONRequest(ctx, target, map[string]string{"Authorization": header})
 		if err != nil || failure != nil {
 			return failure, err
 		}

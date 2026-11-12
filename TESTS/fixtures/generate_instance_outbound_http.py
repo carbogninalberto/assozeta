@@ -577,6 +577,23 @@ for number, address in ((10, 'https://user:pw@llm.example.test/v1'), (11, 'https
                         (12, 'https://:pw@llm.example.test')):
     integration_case(f'integration-test-ai-user-info-{number}', 'ai', {**AI, 'base_url': address}, number,
                      {'status': 'failed', 'level': 'configuration', 'message': 'URL del provider non valido.'})
+AI_PASSED = {'status': 'passed', 'level': 'connectivity',
+             'message': 'Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.'}
+# requests rewrites the URL with urllib3 before sending: dot segments,
+# quoted characters, escape case and the exact request line path. The fake
+# provider's host is ASCII (its certificate only covers the fixed hosts), so
+# an invalid IDNA label stands in for a valid non-ASCII host it cannot reach:
+# requests raises before sending and the probe answers the generic failure.
+integration_case('integration-test-ai-dot-segments', 'ai', {**AI, 'base_url': 'https://llm.example.test/a/../v1/'}, 13,
+                 AI_PASSED, ai('/v1/models', reply(200, MODELS)))
+integration_case('integration-test-ai-quoted-path', 'ai', {**AI, 'base_url': 'https://llm.example.test/q"x{}'}, 14,
+                 AI_PASSED, ai('/q%22x%7B%7D/models', reply(200, MODELS)))
+integration_case('integration-test-ai-escape-case', 'ai', {**AI, 'base_url': 'https://llm.example.test/%7euser/%2f'}, 15,
+                 AI_PASSED, ai('/~user/%2F/models', reply(200, MODELS)))
+integration_case('integration-test-ai-port-out-of-range', 'ai', {**AI, 'base_url': 'https://llm.example.test:65536/v1'}, 16,
+                 GENERIC)
+integration_case('integration-test-ai-invalid-idn-host', 'ai', {**AI, 'base_url': 'https://\u0301example.example/v1'}, 17,
+                 GENERIC)
 # The request revision is compared with Python equality.
 integration_case('integration-test-ai-revision-string', 'ai', AI, 9,
                  {'status': 'passed', 'level': 'connectivity',

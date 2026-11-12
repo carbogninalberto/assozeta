@@ -13982,6 +13982,899 @@
    }
   },
   {
+   "name": "instance-outbound-integration-test-ai-dot-segments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "connectivity",
+    "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 13,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/a/../v1/",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "passed",
+       "level": "connectivity",
+       "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+       "checked_at": "$isonow",
+       "revision": 13
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 13,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/a/../v1/",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "llm.example.test:443",
+     "method": "GET",
+     "path": "/v1/models",
+     "headers": {
+      "host": "llm.example.test",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive",
+      "authorization": "Bearer placeholder-ai-key"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJvYmplY3QiOiAibGlzdCIsICJkYXRhIjogW3siaWQiOiAib3RoZXItbW9kZWwifSwgIm5vdC1hbi1vYmplY3QiLCB7ImlkIjogImZpeHR1cmUtbW9kZWwiLCAib3duZWRfYnkiOiAiZml4dHVyZSJ9XX0="
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 13
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-quoted-path",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "connectivity",
+    "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/q\"x{}",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "passed",
+       "level": "connectivity",
+       "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+       "checked_at": "$isonow",
+       "revision": 14
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/q\"x{}",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "llm.example.test:443",
+     "method": "GET",
+     "path": "/q%22x%7B%7D/models",
+     "headers": {
+      "host": "llm.example.test",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive",
+      "authorization": "Bearer placeholder-ai-key"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJvYmplY3QiOiAibGlzdCIsICJkYXRhIjogW3siaWQiOiAib3RoZXItbW9kZWwifSwgIm5vdC1hbi1vYmplY3QiLCB7ImlkIjogImZpeHR1cmUtbW9kZWwiLCAib3duZWRfYnkiOiAiZml4dHVyZSJ9XX0="
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 14
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-escape-case",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "passed",
+    "level": "connectivity",
+    "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 15,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/%7euser/%2f",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "passed",
+       "level": "connectivity",
+       "message": "Elenco modelli accessibile con la chiave salvata e modello principale presente. Nessun messaggio generato; capacità del modello e strumenti non provati.",
+       "checked_at": "$isonow",
+       "revision": 15
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 15,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test/%7euser/%2f",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [
+    {
+     "connect": "llm.example.test:443",
+     "method": "GET",
+     "path": "/~user/%2F/models",
+     "headers": {
+      "host": "llm.example.test",
+      "user-agent": "python-requests/2.34.2",
+      "accept-encoding": "gzip, deflate",
+      "accept": "*/*",
+      "connection": "keep-alive",
+      "authorization": "Bearer placeholder-ai-key"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJvYmplY3QiOiAibGlzdCIsICJkYXRhIjogW3siaWQiOiAib3RoZXItbW9kZWwifSwgIm5vdC1hbi1vYmplY3QiLCB7ImlkIjogImZpeHR1cmUtbW9kZWwiLCAib3duZWRfYnkiOiAiZml4dHVyZSJ9XX0="
+     }
+    }
+   ],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 15
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-port-out-of-range",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "connectivity",
+    "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 16,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test:65536/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+       "checked_at": "$isonow",
+       "revision": 16
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 16,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://llm.example.test:65536/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 16
+   }
+  },
+  {
+   "name": "instance-outbound-integration-test-ai-invalid-idn-host",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/integrations/ai/test",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "failed",
+    "level": "connectivity",
+    "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+    "checked_at": "$isonow"
+   },
+   "setup": {
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 17,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://́example.example/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    },
+    "leases": null
+   },
+   "effect": {
+    "email_settings": {
+     "host": "127.0.0.1",
+     "port": "$port:starttls",
+     "security": "tls",
+     "username": "mailer",
+     "from_email": "mittente@example.test",
+     "sender_name": "Associazione Sportiva Dilettantistica Polisportiva Comunale di San Giovanni in Persiceto e dintorni."
+    },
+    "email_password": {
+     "$secret": "placeholder-smtp-password"
+    },
+    "email_revision": 17,
+    "diagnostic_results": {
+     "checked_at": "2026-01-02T03:04:06+00:00",
+     "email_test": {
+      "status": "passed",
+      "level": "functional",
+      "message": "Il server SMTP ha accettato il messaggio. Verifica la casella del destinatario e lo spam; la consegna non è garantita.",
+      "checked_at": "$isonow",
+      "revision": 17,
+      "action": "send"
+     },
+     "integration_tests": {
+      "google": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Client ID mancante.",
+       "checked_at": "$isonow",
+       "revision": 14
+      },
+      "apple": {
+       "status": "warning",
+       "level": "connectivity",
+       "message": "Provider raggiungibile e chiavi pubbliche disponibili. Validità del client ID, origini autorizzate e accesso utente richiedono una prova di login. Il pulsante Apple sul web non è disponibile in questa versione.",
+       "checked_at": "$isonow",
+       "revision": 1
+      },
+      "stripe": {
+       "status": "not_configured",
+       "level": "configuration",
+       "message": "Completa le chiavi Stripe e la firma webhook.",
+       "checked_at": "$isonow",
+       "revision": 7
+      },
+      "ai": {
+       "status": "failed",
+       "level": "connectivity",
+       "message": "Verifica non riuscita. Controlla configurazione e disponibilità del servizio e riprova.",
+       "checked_at": "$isonow",
+       "revision": 17
+      }
+     },
+     "operation_leases": {
+      "integration_ai": "$lease"
+     }
+    },
+    "integration_settings": {
+     "google": {
+      "revision": 14,
+      "settings": {
+       "enabled": true,
+       "client_id": ""
+      }
+     },
+     "apple": {
+      "revision": 2,
+      "settings": {
+       "enabled": false,
+       "client_id": "org.example.fixture"
+      }
+     },
+     "stripe": {
+      "revision": 7,
+      "settings": {
+       "enabled": true,
+       "public_key": "pk_test_placeholder",
+       "secret_key": "$fernet-integration:sk_test_placeholder",
+       "webhook_secret": ""
+      }
+     },
+     "ai": {
+      "revision": 17,
+      "settings": {
+       "enabled": true,
+       "api_key": "$fernet-integration:placeholder-ai-key",
+       "model": "fixture-model",
+       "cheap_model": "fixture-cheap",
+       "base_url": "https://́example.example/v1",
+       "max_iterations": 15,
+       "max_results": 5000,
+       "query_timeout": 10,
+       "ws_rate_limit": 10,
+       "ws_timeout": 240,
+       "history_cap": 50
+      }
+     }
+    }
+   },
+   "cache_control": "no-store",
+   "retry_after": null,
+   "outbound": [],
+   "smtp": null,
+   "cache": null,
+   "cache_after": null,
+   "body": {
+    "revision": 17
+   }
+  },
+  {
    "name": "instance-outbound-integration-test-ai-revision-string",
    "actor": "owner",
    "method": "POST",
