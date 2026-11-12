@@ -129,6 +129,56 @@ func TestProfileTemplateBooleanAndStr(t *testing.T) {
 	}
 }
 
+// The input of profile-template-legacy-html-regulation and the value the
+// generator stored (bs4 4.13.3 prettify()).
+const legacyRegulation = `<!-- saved by an older editor --><!DOCTYPE html><![CDATA[legacy & data]]><?xml-stylesheet type="text/xsl" href="style.xsl"?><![if gte mso 9]><p>Word document</p><![endif]><P CLASS=legacy data-role=note hidden>Regolamento&nbsp del socio</P><p class="a" class="b" data-x=1>Quota &#150; annuale & socio &foo; &copy</p><a href="https://example.test/x?a=1&copy=1" title>statuto</a><p>a < b</p><p>senza chiusura<ul><li>uno<li>due</ul><b><i>x</b>y</i><br></br><table><tr><td>cella<td>altra</table><o:p>paragrafo office</o:p><my-widget data-kind="legacy">widget</my-widget>`
+
+const legacyRegulationStored = "<!-- saved by an older editor -->\n<!DOCTYPE html>\n<![CDATA[legacy & data]]>\n<?xml-stylesheet type" +
+	"=\"text/xsl\" href=\"style.xsl\"?>\n<!--[if gte mso 9]-->\n<p>\n Word document\n</p>\n<!--[endif]-->" +
+	"\n<p class=\"legacy\" data-role=\"note\" hidden=\"\">\n Regolamento\u00a0 del socio\n</p>\n<p class=" +
+	"\"b\" data-x=\"1\">\n Quota – annuale &amp; socio &amp;foo ©\n</p>\n<a href=\"https://example.test/x" +
+	"?a=1&amp;copy=1\" title=\"\">\n statuto\n</a>\n<p>\n a &lt; b\n</p>\n<p>\n senza chiusura\n <ul>\n  " +
+	"<li>\n   uno\n   <li>\n    due\n   </li>\n  </li>\n </ul>\n <b>\n  <i>\n   x\n  </i>\n </b>\n y\n <b" +
+	"r/>\n <table>\n  <tr>\n   <td>\n    cella\n    <td>\n     altra\n    </td>\n   </td>\n  </tr>\n </ta" +
+	"ble>\n <o:p>\n  paragrafo office\n </o:p>\n <my-widget data-kind=\"legacy\">\n  widget\n </my-widget" +
+	">\n</p>\n"
+
+// The input of profile-template-legacy-html-demand and its stored value.
+const legacyDemand = `<script>if (a < b && c > d) { document.write("</p>"); }</script><style>p > a { content: "<&>"; } /* </p> */</style><textarea>Testo &amp; <b>grassetto</b> &lt;test&gt;</textarea><title>Domanda &amp; <i>socio</i> &copy;</title><pre>  prima riga
+    seconda riga
+	tabulata</pre><meta charset="iso-8859-1"><meta http-equiv="Content-Type" content="text/html; charset=latin1"><p>Il sottoscritto chiede di essere ammesso come <em>socio</em>.</p>`
+
+const legacyDemandStored = "<script>\n if (a < b && c > d) { document.write(\"</p>\"); }\n</script>\n<style>\n p > a { content: " +
+	"\"<&>\"; } /* </p> */\n</style>\n<textarea>Testo &amp; &lt;b&gt;grassetto&lt;/b&gt; &lt;test&gt;</te" +
+	"xtarea>\n<title>\n Domanda &amp; &lt;i&gt;socio&lt;/i&gt; ©\n</title>\n<pre>  prima riga\n    second" +
+	"a riga\n\ttabulata</pre>\n<meta charset=\"utf-8\"/>\n<meta content=\"text/html; charset=utf-8\" http" +
+	"-equiv=\"Content-Type\"/>\n<p>\n Il sottoscritto chiede di essere ammesso come\n <em>\n  socio\n </e" +
+	"m>\n .\n</p>\n"
+
+// Documents of any shape follow bs4's html.parser recovery; the inputs bs4 (or
+// the audit entry after it) raises on are ErrProfileTemplatePython.
+func TestProfileTemplateLegacyHTML(t *testing.T) {
+	for _, tc := range []struct {
+		name, markup, want string
+	}{
+		{"legacy-html-regulation", legacyRegulation, legacyRegulationStored},
+		{"legacy-html-demand", legacyDemand, legacyDemandStored},
+	} {
+		got, err := profileTemplatePrettify(tc.markup)
+		if err != nil || got != tc.want {
+			t.Errorf("%s: %q, %v", tc.name, got, err)
+		}
+	}
+	for _, markup := range []string{
+		"<p>&#" + strings.Repeat("1", 5000) + ";</p>",
+		strings.Repeat("x", 200) + "\xed\xa0\x80",
+	} {
+		if _, err := profileTemplatePrettify(markup); !errors.Is(err, ErrProfileTemplatePython) {
+			t.Errorf("%q: %v", markup, err)
+		}
+	}
+}
+
 func profileTemplateTestPayload(changes ...domain.RequestField) domain.RequestObject {
 	data := domain.RequestObject{}
 	for _, key := range profileTemplateKeys {
@@ -189,7 +239,7 @@ func TestPlanProfileTemplate(t *testing.T) {
 		{domain.RequestField{Name: "additional_sections", Value: []any{domain.RequestObject{{Name: "name", Value: json.Number("5")},
 			{Name: "text", Value: "<p>x</p>"}}}}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "regulation", Value: json.Number("5")}, ErrProfileTemplatePython},
-		{domain.RequestField{Name: "regulation", Value: "<!-- c -->"}, ErrProfileTemplateNotPorted},
+		{domain.RequestField{Name: "regulation", Value: "<!-- c -->"}, nil},
 		{domain.RequestField{Name: "subscription_fee_plans", Value: []any{"x"}}, ErrProfileTemplatePython},
 		{domain.RequestField{Name: "membership_fee_plans", Value: []any{domain.RequestObject{{Name: "membership_fee", Value: json.Number("1")}}}},
 			ErrProfileTemplatePython},
@@ -202,6 +252,16 @@ func TestPlanProfileTemplate(t *testing.T) {
 	} {
 		if _, err := PlanProfileTemplate(profileTemplateTestPayload(tc.field)); !errors.Is(err, tc.err) {
 			t.Errorf("%s=%#v: %v", tc.field.Name, tc.field.Value, err)
+		}
+	}
+	commentPlan, err := PlanProfileTemplate(profileTemplateTestPayload(
+		domain.RequestField{Name: "regulation", Value: "<!-- c -->"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, field := range commentPlan.Fields {
+		if field.Name == "regulation" && field.Value != "<!-- c -->\n" {
+			t.Errorf("regulation comment: %#v", field.Value)
 		}
 	}
 	if _, err := PlanProfileTemplate(domain.RequestObject{}); !errors.Is(err, ErrProfileTemplatePython) {

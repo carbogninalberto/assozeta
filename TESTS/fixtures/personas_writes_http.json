@@ -30914,6 +30914,1123 @@
      }
     ]
    }
+  },
+  {
+   "name": "personas-writes-add-tutor-other-association-creates-new",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/personas/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "associate_id": "$a123",
+    "full_name": "Pestero None",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [
+     {
+      "tutor": {
+       "associate_id": "$a124",
+       "full_name": "Nuovo Tutorestero",
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Nuovo",
+       "last_name": "Tutorestero",
+       "sex": "A",
+       "tax_code": null,
+       "born_date": null,
+       "born_city": null,
+       "address_city": null,
+       "address": null,
+       "address_cap": null,
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": null,
+       "id_number": null,
+       "migrated": false,
+       "notes": null,
+       "creation_date": "$now124",
+       "user": null,
+       "sport_association": null,
+       "group": null,
+       "family": null
+      },
+      "is_primary": true
+     }
+    ],
+    "picture_path": null,
+    "first_name": "Pestero",
+    "last_name": null,
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "$now123",
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "POST"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a123",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a123"
+       ],
+       "user": [
+        "None",
+        "a1000000-0000-4000-8000-000000700001"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Pestero"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now123"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "ref": "$a124",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a124"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Nuovo"
+       ],
+       "last_name": [
+        "None",
+        "Tutorestero"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now124"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "ref": "$r125",
+      "action": 0,
+      "changes": {
+       "id": [
+        "None",
+        "$r125"
+       ],
+       "associate": [
+        "None",
+        "$a123"
+       ],
+       "tutor": [
+        "None",
+        "$a124"
+       ],
+       "is_primary": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": null,
+      "first_name": "Pestero",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": "a1000000-0000-4000-8000-000000700001",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "group": null,
+      "family": null,
+      "id": "$a123",
+      "created": "$now123"
+     },
+     {
+      "picture_path": null,
+      "first_name": "Nuovo",
+      "last_name": "Tutorestero",
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": null,
+      "association": null,
+      "group": null,
+      "family": null,
+      "id": "$a124",
+      "created": "$now124"
+     }
+    ],
+    "changed": {},
+    "relations_created": [
+     {
+      "id": "$r125",
+      "associate": "$a123",
+      "tutor": "$a124",
+      "primary": true
+     }
+    ],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "first_name": "Pestero",
+    "tutors_data": [
+     {
+      "tutor": {
+       "associate_id": "a1000000-0000-4000-8000-000000677010",
+       "first_name": "Nuovo",
+       "last_name": "Tutorestero"
+      },
+      "is_primary": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "personas-writes-update-tutor-other-association-creates-new",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677067/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associate_id": "a1000000-0000-4000-8000-000000677067",
+    "full_name": "Irma Intera",
+    "is_minor_now": {
+     "$minor": "2011-04-01"
+    },
+    "is_tutor": false,
+    "age": {
+     "$age": "2011-04-01"
+    },
+    "family_members": [],
+    "tutors": [
+     {
+      "tutor": {
+       "associate_id": "$a126",
+       "full_name": "Altro None",
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Altro",
+       "last_name": null,
+       "sex": "A",
+       "tax_code": null,
+       "born_date": null,
+       "born_city": null,
+       "address_city": null,
+       "address": null,
+       "address_cap": null,
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": null,
+       "id_number": null,
+       "migrated": false,
+       "notes": null,
+       "creation_date": "$now126",
+       "user": null,
+       "sport_association": null,
+       "group": null,
+       "family": null
+      },
+      "is_primary": true
+     }
+    ],
+    "picture_path": null,
+    "first_name": "Irma",
+    "last_name": "Intera",
+    "sex": "A",
+    "tax_code": null,
+    "born_date": "2011-04-01",
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "2024-03-10T07:00:00Z",
+    "user": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a126",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a126"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Altro"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now126"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "ref": "$r127",
+      "action": 0,
+      "changes": {
+       "id": [
+        "None",
+        "$r127"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000677067"
+       ],
+       "tutor": [
+        "None",
+        "$a126"
+       ],
+       "is_primary": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": null,
+      "first_name": "Altro",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": null,
+      "association": null,
+      "group": null,
+      "family": null,
+      "id": "$a126",
+      "created": "$now126"
+     }
+    ],
+    "changed": {
+     "idu4": {}
+    },
+    "relations_created": [
+     {
+      "id": "$r127",
+      "associate": "idu4",
+      "tutor": "$a126",
+      "primary": true
+     }
+    ],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "tutors_data": [
+     {
+      "tutor": {
+       "associate_id": "a1000000-0000-4000-8000-000000677010",
+       "first_name": "Altro"
+      },
+      "is_primary": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "personas-writes-update-tutor-deleted-other-association-creates-new",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677016/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associate_id": "a1000000-0000-4000-8000-000000677016",
+    "full_name": "Carlo Ripreso",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [
+     {
+      "tutor": {
+       "associate_id": "$a128",
+       "full_name": "Altro None",
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Altro",
+       "last_name": null,
+       "sex": "A",
+       "tax_code": null,
+       "born_date": null,
+       "born_city": null,
+       "address_city": null,
+       "address": null,
+       "address_cap": null,
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": null,
+       "id_number": null,
+       "migrated": false,
+       "notes": null,
+       "creation_date": "$now128",
+       "user": null,
+       "sport_association": null,
+       "group": null,
+       "family": null
+      },
+      "is_primary": true
+     }
+    ],
+    "picture_path": null,
+    "first_name": "Carlo",
+    "last_name": "Ripreso",
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "2024-01-15T07:00:00Z",
+    "user": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "$a128",
+      "action": 0,
+      "changes": {
+       "associate_id": [
+        "None",
+        "$a128"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "sport_association": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "family": [
+        "None",
+        "None"
+       ],
+       "first_name": [
+        "None",
+        "Altro"
+       ],
+       "sex": [
+        "None",
+        "A"
+       ],
+       "nationality": [
+        "None",
+        "Italiana"
+       ],
+       "nationality_residence": [
+        "None",
+        "Italia"
+       ],
+       "is_minor": [
+        "None",
+        "False"
+       ],
+       "disabled": [
+        "None",
+        "False"
+       ],
+       "draft": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "migrated": [
+        "None",
+        "False"
+       ],
+       "creation_date": [
+        "None",
+        "$now128"
+       ],
+       "tutor_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ],
+       "tutored_relations": [
+        "None",
+        "application.AssociateTutorRelation.None"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "ref": "$r129",
+      "action": 0,
+      "changes": {
+       "id": [
+        "None",
+        "$r129"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000677016"
+       ],
+       "tutor": [
+        "None",
+        "$a128"
+       ],
+       "is_primary": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     }
+    ],
+    "created": [
+     {
+      "picture_path": null,
+      "first_name": "Altro",
+      "last_name": null,
+      "sex": "A",
+      "tax_code": null,
+      "born_date": null,
+      "born_city": null,
+      "address_city": null,
+      "address": null,
+      "address_cap": null,
+      "nationality": "Italiana",
+      "nationality_residence": "Italia",
+      "email": null,
+      "phone": null,
+      "phone_2": null,
+      "phone_3": null,
+      "phone_4": null,
+      "phone_label": null,
+      "phone_2_label": null,
+      "phone_3_label": null,
+      "phone_4_label": null,
+      "is_minor": false,
+      "disabled": false,
+      "draft": false,
+      "deleted": false,
+      "family_role": null,
+      "id_number": null,
+      "migrated": false,
+      "notes": null,
+      "user": null,
+      "association": null,
+      "group": null,
+      "family": null,
+      "id": "$a128",
+      "created": "$now128"
+     }
+    ],
+    "changed": {
+     "gone_collab": {}
+    },
+    "relations_created": [
+     {
+      "id": "$r129",
+      "associate": "gone_collab",
+      "tutor": "$a128",
+      "primary": true
+     }
+    ],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "tutors_data": [
+     {
+      "tutor": {
+       "associate_id": "a1000000-0000-4000-8000-000000677015",
+       "first_name": "Altro"
+      },
+      "is_primary": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "personas-writes-update-tutor-same-association-updated",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/personas/a1000000-0000-4000-8000-000000677017/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "associate_id": "a1000000-0000-4000-8000-000000677017",
+    "full_name": "Adele Ripresa",
+    "is_minor_now": true,
+    "is_tutor": false,
+    "age": 0,
+    "family_members": [],
+    "tutors": [
+     {
+      "tutor": {
+       "associate_id": "a1000000-0000-4000-8000-000000677026",
+       "full_name": "Teresa Tutrice",
+       "tutors": [],
+       "picture_path": null,
+       "first_name": "Teresa",
+       "last_name": "Tutrice",
+       "sex": "F",
+       "tax_code": "TTRTRS70B41H501T",
+       "born_date": "1970-02-01",
+       "born_city": null,
+       "address_city": null,
+       "address": null,
+       "address_cap": null,
+       "nationality": "Italiana",
+       "nationality_residence": "Italia",
+       "email": null,
+       "phone": "3339998888",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "is_minor": false,
+       "disabled": false,
+       "draft": false,
+       "deleted": false,
+       "family_role": null,
+       "id_number": null,
+       "migrated": false,
+       "notes": null,
+       "creation_date": "2024-01-25T07:00:00Z",
+       "user": null,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "group": null,
+       "family": null
+      },
+      "is_primary": true
+     }
+    ],
+    "picture_path": null,
+    "first_name": "Adele",
+    "last_name": "Ripresa",
+    "sex": "A",
+    "tax_code": null,
+    "born_date": null,
+    "born_city": null,
+    "address_city": null,
+    "address": null,
+    "address_cap": null,
+    "nationality": "Italiana",
+    "nationality_residence": "Italia",
+    "email": null,
+    "phone": null,
+    "phone_2": null,
+    "phone_3": null,
+    "phone_4": null,
+    "phone_label": null,
+    "phone_2_label": null,
+    "phone_3_label": null,
+    "phone_4_label": null,
+    "is_minor": false,
+    "disabled": false,
+    "draft": false,
+    "deleted": false,
+    "family_role": null,
+    "id_number": null,
+    "migrated": false,
+    "notes": null,
+    "creation_date": "2024-01-16T07:00:00Z",
+    "user": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "group": null,
+    "family": null
+   },
+   "allow": [
+    "DELETE",
+    "OPTIONS",
+    "PATCH"
+   ],
+   "effect": {
+    "actor": "owner",
+    "audit": [
+     {
+      "model": "associate",
+      "ref": "tutor_a",
+      "action": 1,
+      "changes": {
+       "phone": [
+        "3339990000",
+        "3339998888"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "ref": "$r130",
+      "action": 0,
+      "changes": {
+       "id": [
+        "None",
+        "$r130"
+       ],
+       "associate": [
+        "None",
+        "a1000000-0000-4000-8000-000000677017"
+       ],
+       "tutor": [
+        "None",
+        "a1000000-0000-4000-8000-000000677026"
+       ],
+       "is_primary": [
+        "None",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     }
+    ],
+    "created": [],
+    "changed": {
+     "gone_admin": {},
+     "tutor_a": {
+      "phone": "3339998888"
+     }
+    },
+    "relations_created": [
+     {
+      "id": "$r130",
+      "associate": "gone_admin",
+      "tutor": "tutor_a",
+      "primary": true
+     }
+    ],
+    "relations_deleted": [],
+    "relations_changed": {}
+   },
+   "body": {
+    "tutors_data": [
+     {
+      "tutor": {
+       "associate_id": "a1000000-0000-4000-8000-000000677026",
+       "phone": "3339998888"
+      },
+      "is_primary": true
+     }
+    ]
+   }
   }
  ]
 }

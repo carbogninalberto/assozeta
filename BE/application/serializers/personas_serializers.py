@@ -180,7 +180,8 @@ class AssociateSerializer(serializers.ModelSerializer):
 
             # Try to get existing tutor or create a new one
             try:
-                tutor = Associate.objects.get(associate_id=tutor_id)
+                tutor = Associate.objects.get(associate_id=tutor_id,
+                                              sport_association_id=associate.sport_association_id)
                 # Update tutor with new info using the BasicAssociateSerializer
                 tutor_serializer = BasicAssociateSerializer(instance=tutor, data=tutor_info, partial=True)
                 tutor_serializer.is_valid(raise_exception=True)

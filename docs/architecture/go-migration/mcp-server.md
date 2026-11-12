@@ -92,19 +92,18 @@ answers `isError: true` "Tool execution failed". Nothing is written before.
   sheet without columns and the other exceptions of the exporters), and a `format`,
   `export`, `multi_sheet`, `filename` or course/date argument of a type the save_info
   would write back differently.
-- ORM inputs whose Django text includes difflib suggestions or SQL: unknown
-  lookups/transforms on fields (`Unsupported lookup …`), regex/iregex,
+- ORM inputs whose Django text includes SQL or parts Go does not reproduce:
   JSON containment and multi-key lookups, nested or integer JSON keys,
-  iso_year/iso_week_day/minute/second/time transforms, `exclude()` across
-  many-valued relations (split_exclude subquery), `?` ordering, ordering by
-  a relation whose model has Meta.ordering, SUM/AVG/MIN/MAX of
-  non-numeric/unsupported types (database errors; the saved-report route
-  answers its generic 500 for them, as Django does), integers outside the
-  column range, non-integral floats for integers/limits, non-canonical UUID
-  spellings `int()` could accept, ISO date/datetime forms only
-  `fromisoformat` accepts, non-ASCII digits, HTML references other than the
-  common named ones, CSV cells holding JSON containers or ISO-looking text
-  other than the engine's own datetimes, attendance names whose `str.lower()`
+  `exclude()` across many-valued relations (split_exclude subquery), `?`
+  ordering, ordering by a relation whose model has Meta.ordering,
+  SUM/AVG/MIN/MAX of non-numeric/unsupported types (database errors; the
+  saved-report route answers its generic 500 for them, as Django does),
+  integer list items outside the 64-bit parameter range, non-integral floats
+  for limits, non-canonical UUID spellings `int()` could accept, ISO datetime
+  forms only `fromisoformat` accepts (compact date-only and ISO-week date
+  forms are ported), non-ASCII digits, HTML references other than the common
+  named ones, CSV cells holding JSON containers or ISO-looking text other
+  than the engine's own datetimes, attendance names whose `str.lower()`
   differs from Go's.
 - Manual tools in the Go command run `service.ManualTools` (parity is the
   manual family's, semantic); their text keeps Go key order.
