@@ -34,7 +34,7 @@ def probe(name, payload):
             assert cursor.fetchone()[0] == 1
         return result('passed', 'Il database risponde a una query di lettura. Nessun dato è stato modificato.')
     if name in ('public_url', 'api'):
-        url = settings.APP_URL if name == 'public_url' else 'http://127.0.0.1:8000'
+        url = settings.APP_URL if name == 'public_url' else settings.DIAGNOSTICS_API_URL
         parsed = urlsplit(url)
         if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password:
             return result('failed', 'Configura un URL pubblico valido in APP_URL.', 'configuration')

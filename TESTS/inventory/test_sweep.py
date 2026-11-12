@@ -26,6 +26,18 @@ def shard_summary(index, count, results=None, head='abc'):
     return sweep.summary(head, 'L', expected, {name: PASS for name in expected} if results is None else results, (index, count))
 
 
+def fake_tree(directory):
+    """A minimal repository tree: two HTTP families and one process harness with a __main__ entry."""
+    root = Path(directory)
+    (root / 'TESTS/fixtures').mkdir(parents=True)
+    (root / 'TESTS/adapters/go').mkdir(parents=True)
+    for family in ('audit_log_summary', 'association_list'):
+        (root / f'TESTS/fixtures/{family}_http.json').write_text('{}')
+    (root / 'TESTS/adapters/go/beat_process.py').write_text("if __name__ == '__main__':\n    pass\n")
+    (root / 'TESTS/adapters/go/quiet_process.py').write_text('pass\n')
+    return root
+
+
 class SweepTest(unittest.TestCase):
     def test_shards_are_disjoint_complete_and_stable(self):
         for count in (1, 2, 5, 12, 16):
@@ -69,6 +81,48 @@ class SweepTest(unittest.TestCase):
                     sweep.discover(root, families=families)
             with self.assertRaises(sweep.SweepError):
                 sweep.discover(root, only='process', families=['audit-log-summary'])
+
+    def test_selection_mixes_http_families_and_process_harnesses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = fake_tree(directory)
+            self.assertEqual(sweep.discover(root, families=['beat_process', 'audit-log-summary']),
+                             [('http', 'audit-log-summary'), ('process', 'beat_process')])
+            self.assertEqual(sweep.discover(root, families=['association-list', 'beat_process', 'association-list']),
+                             [('http', 'association-list'), ('process', 'beat_process')])
+            self.assertEqual(sweep.discover(root, families=['association-list', 'audit-log-summary']),
+                             [('http', 'association-list'), ('http', 'audit-log-summary')])
+
+    def test_selection_may_hold_process_harnesses_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = fake_tree(directory)
+            self.assertEqual(sweep.discover(root, families=['beat_process']), [('process', 'beat_process')])
+            self.assertEqual(sweep.discover(root, only='process', families=['beat_process']),
+                             [('process', 'beat_process')])
+
+    def test_selection_names_unknown_families_and_harnesses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = fake_tree(directory)
+            # quiet_process has no __main__ entry, so it is neither a harness nor an HTTP family.
+            for families, unknown in ((['absent'], 'absent'), (['audit-log-summary', 'absent'], 'absent'),
+                                      (['quiet_process'], 'quiet_process')):
+                with self.assertRaises(sweep.SweepError) as caught:
+                    sweep.discover(root, families=families)
+                self.assertIn('unknown or empty family selection', str(caught.exception))
+                self.assertIn(unknown, str(caught.exception))
+
+    def test_only_combinations_follow_the_selection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = fake_tree(directory)
+            self.assertEqual(sweep.discover(root, only='http', families=['audit-log-summary']),
+                             [('http', 'audit-log-summary')])
+            for families in (['audit-log-summary'], ['beat_process', 'audit-log-summary']):
+                with self.assertRaises(sweep.SweepError) as caught:
+                    sweep.discover(root, only='process', families=families)
+                self.assertIn('cannot be combined with --only process', str(caught.exception))
+            for families in (['beat_process'], ['audit-log-summary', 'beat_process']):
+                with self.assertRaises(sweep.SweepError) as caught:
+                    sweep.discover(root, only='http', families=families)
+                self.assertIn('--only http', str(caught.exception))
 
     def test_merge_joins_complete_passing_shards(self):
         merged, problems = merge_sweeps.merge([shard_summary(index, 3) for index in (2, 3, 1)])

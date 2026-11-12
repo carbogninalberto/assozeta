@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       families:
-        description: Comma-separated HTTP families; empty runs every family and process harness
+        description: Comma-separated HTTP families and/or process harnesses; empty runs them all
         required: false
         default: ''
       shards:
@@ -65,7 +65,7 @@ jobs:
           printf '%s' "$label" | grep -Eqx '[A-Za-z0-9][A-Za-z0-9._-]*' || { echo "Invalid label: $label" >&2; exit 1; }
           printf '%s' "$shards" | grep -Eqx '[1-9][0-9]?' || { echo "Shards must be 1..99: $shards" >&2; exit 1; }
           if [ -n "$families" ]; then
-            printf '%s' "$families" | grep -Eqx '[a-z0-9-]+(,[a-z0-9-]+)*' || { echo "Invalid family list: $families" >&2; exit 1; }
+            printf '%s' "$families" | grep -Eqx '[a-z0-9_-]+(,[a-z0-9_-]+)*' || { echo "Invalid family list: $families" >&2; exit 1; }
             plan="$(python3 tools/go-migration/sweep.py --plan "$shards" --families "$families")"
           else
             plan="$(python3 tools/go-migration/sweep.py --plan "$shards")"

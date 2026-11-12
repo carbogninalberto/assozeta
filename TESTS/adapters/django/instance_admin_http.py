@@ -15,10 +15,12 @@ every service the diagnostics probes reach (both backends see the same ones):
 - instance-outbound's HTTPS proxy and private authority, whose leaf also
   covers example.org (APP_URL): the public URL probe's request is recorded
   and answered with the case's 'outbound' script;
-- scripted HTTP stubs recording every request: the API on 127.0.0.1:8000
-  (Django's fixed API probe address; Go's ASSOZETA_DIAGNOSTICS_API_URL points
-  at it), the renderer (PUPPETEER_HOST/PORT) and S3 (AWS_S3_ENDPOINT_URL);
-  a reply may 'reset' the connection or 'trickle' its body one byte a second;
+- scripted HTTP stubs recording every request: the API (its address is published
+  to both backends: Django reads ASSOZETA_DIAGNOSTICS_API_URL in its probe child
+  process, Go reads it from its environment), the renderer
+  (PUPPETEER_HOST/PORT) and S3 (AWS_S3_ENDPOINT_URL); each stub binds its own
+  ephemeral loopback port, so concurrent runs never share one; a reply may
+  'reset' the connection or 'trickle' its body one byte a second;
 - a pidbox worker on the broker (DB 0): it records each raw broadcast on
   '/0.celery.pidbox' and answers through kombu's own Node.handle_message /
   Mailbox._publish_reply (mode 'pong' with Celery's ping handler, 'pang', or
@@ -151,7 +153,6 @@ def assert_effect(case, before, after, source, context):
 STUBS = {}
 WHITELABEL = 'A.S.D. Polisportiva "Città" (Aurora)'
 EMAIL_USER = 'segreteria@polisportiva.example'
-API_PORT = 8000
 TRICKLE_SECONDS = 20
 
 
@@ -295,16 +296,18 @@ def service_context(report, log):
     from django.test.utils import override_settings
     from TESTS.adapters.django import instance_outbound_http as outbound
     servers, threads, worker = {}, [], None
-    names = ('WHITELABEL_NAME', 'EMAIL_HOST_USER', 'PUPPETEER_HOST', 'PUPPETEER_PORT', 'AWS_S3_ENDPOINT_URL', 'GO_FIXTURE_ENVIRONMENT')
+    names = ('WHITELABEL_NAME', 'EMAIL_HOST_USER', 'PUPPETEER_HOST', 'PUPPETEER_PORT', 'AWS_S3_ENDPOINT_URL',
+             'ASSOZETA_DIAGNOSTICS_API_URL', 'GO_FIXTURE_ENVIRONMENT')
     saved = {name: os.environ.get(name) for name in names}
     hosts = outbound.HOSTS
     report['service_cleanup']['diagnostics_stubs'] = 'running'
     try:
         STUBS.update(lock=threading.Lock(), hook=None)
-        for role, port in (('api', API_PORT), ('renderer', 0), ('s3', 0)):
+        for role in ('api', 'renderer', 's3'):
             handler = type('_Stub', (_ScriptedHandler,), {'role': role})
-            # The API stub must own 127.0.0.1:8000 (Django's fixed probe address): a busy port fails the run.
-            servers[role] = ThreadingHTTPServer(('127.0.0.1', port), handler)
+            # Every stub owns an ephemeral loopback port: the API stub's real
+            # address is published below instead of being reserved up front.
+            servers[role] = ThreadingHTTPServer(('127.0.0.1', 0), handler)
             STUBS[role] = {'port': servers[role].server_address[1], 'log': [], 'replies': []}
             thread = threading.Thread(target=servers[role].serve_forever, daemon=True)
             thread.start()
@@ -314,10 +317,12 @@ def service_context(report, log):
         worker = PidboxWorker(redis_url)
         STUBS['worker'] = worker
         s3 = f'http://127.0.0.1:{STUBS["s3"]["port"]}'
+        api = f'http://127.0.0.1:{STUBS["api"]["port"]}'
         os.environ.update(WHITELABEL_NAME=WHITELABEL, EMAIL_HOST_USER=EMAIL_USER, PUPPETEER_HOST='127.0.0.1',
                           PUPPETEER_PORT=str(STUBS['renderer']['port']), AWS_S3_ENDPOINT_URL=s3,
+                          ASSOZETA_DIAGNOSTICS_API_URL=api,
                           GO_FIXTURE_ENVIRONMENT=json.dumps({**json.loads(saved['GO_FIXTURE_ENVIRONMENT'] or '{}'),
-                                                             'ASSOZETA_DIAGNOSTICS_API_URL': f'http://127.0.0.1:{API_PORT}',
+                                                             'ASSOZETA_DIAGNOSTICS_API_URL': api,
                                                              'AWS_S3_ENDPOINT_URL': s3}))
         outbound.HOSTS = hosts + ('example.org',)
         with outbound.service_context(report, log), \

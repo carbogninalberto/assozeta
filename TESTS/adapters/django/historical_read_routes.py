@@ -8,7 +8,7 @@ logins through the shipped Caddy /api/v1 and /api/v2 routes.
 import argparse
 import base64
 import binascii
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import copy
 from datetime import datetime, timezone
 import hashlib
@@ -25,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import traceback
 import unittest
 from types import MappingProxyType
@@ -38,6 +39,9 @@ from TESTS.adapters.django import historical_read_cache, historical_read_populat
 
 MODEL_COUNT = 128
 DB_NAME = 'assozeta_contract_historical'
+# A run that uses the shared server registers its private work directory here so
+# the settings path can point Django and Go at that run's own database.
+SHARED_TARGETS = {}
 USER = 'application.User'
 CARD = 'application.SportAssociationMembershipCardConfiguration'
 AUDIT = 'auditlog.LogEntry'
@@ -615,6 +619,84 @@ def stop_owned_process(process, report, name):
     service_state(report, name, 'not_started' if process is None else 'stopped')
 
 
+REDIS_ATTEMPTS = 5
+REDIS_READY_TIMEOUT = 15
+REDIS_READY_INTERVAL = 0.05
+
+
+def available_loopback_port():
+    """Return a loopback port that is free right now (it is not reserved)."""
+    with socket.socket() as reservation:
+        reservation.bind(('127.0.0.1', 0))
+        return reservation.getsockname()[1]
+
+
+def redis_server_owner(port):
+    """Return the process id of the Redis answering on ``port``, or None.
+
+    The private server of a run accepts its own password only, so any answer
+    to this connection proves who holds the port.
+    """
+    import redis
+    client = redis.Redis(host='127.0.0.1', port=port, password='synthetic-identity-only',
+                         socket_timeout=2, socket_connect_timeout=2)
+    try:
+        return client.info('server').get('process_id')
+    except redis.RedisError:
+        return None
+    finally:
+        client.close()
+
+
+def private_redis_owner(process, port):
+    """Classify what holds ``port`` after waiting for the started process.
+
+    ``'owned'``: this process answers with its own process id.
+    ``'lost'``: the process exited, or another server answers on the port.
+    ``'unreachable'``: nothing answered within the window and the process is
+    still running, so no other run's Redis holds the port.
+    """
+    deadline = time.monotonic() + REDIS_READY_TIMEOUT
+    while True:
+        if process.poll() is not None:
+            return 'lost'
+        owner = redis_server_owner(port)
+        if owner is not None:
+            return 'owned' if owner == process.pid else 'lost'
+        if time.monotonic() >= deadline:
+            return 'unreachable'
+        time.sleep(REDIS_READY_INTERVAL)
+
+
+def start_private_redis(redis_binary, work, log):
+    """Start redis-server and prove the server on its port is that process.
+
+    A free port is taken by binding port 0 and releasing it, so another run can
+    claim it before redis-server binds. A process that exited, or a server
+    answering with another process id, is stopped and retried on a new port. A
+    live process whose port nothing answers on is returned as is: no other run
+    holds that port, and the caller's readiness check reports the server.
+    """
+    from TESTS.adapters.go.message_image_execution import defer_interruption
+    for _ in range(REDIS_ATTEMPTS):
+        port = available_loopback_port()
+        with defer_interruption():
+            process = subprocess.Popen([redis_binary, '--bind', '127.0.0.1',
+                '--port', str(port), '--save', '', '--appendonly', 'no',
+                '--requirepass', 'synthetic-identity-only', '--dir', str(work)],
+                stdout=log, stderr=subprocess.STDOUT)
+        try:
+            owner = private_redis_owner(process, port)
+        except BaseException:
+            stop_process(process)
+            raise
+        if owner != 'lost':
+            return process, port
+        # A lost port is stopped and reaped before the next port is tried.
+        stop_process(process)
+    raise AssertionError('Private Redis could not start')
+
+
 @contextmanager
 def owned_caddy_proxy(report, django, golang, log, *, network=None, container_observer=None):
     """Use the existing disposable proxy helper and only claim verified removal."""
@@ -644,9 +726,19 @@ def preserve_startup_diagnostics(work, output, report):
         }
 
 
+def database_target(work):
+    """The (host, name) that this run's settings must use for ``work``."""
+    return SHARED_TARGETS.get(str(Path(work).resolve()), (str(work), DB_NAME))
+
+
 @contextmanager
-def owned_database(output, report):
-    """Own every process and directory; never connect to a developer database."""
+def owned_database(output, report, *, shared=None):
+    """Own every process and directory; never connect to a developer database.
+
+    ``shared`` is ``None`` for a private server. A ``(directory, key)`` tuple
+    instead uses the already running shared server and owns only this run's
+    database on it; Redis and the work directory stay private either way.
+    """
     from TESTS.adapters.go.message_image_execution import defer_interruption
     postgres = shutil.which('postgres')
     if not postgres:
@@ -668,47 +760,56 @@ def owned_database(output, report):
             def command(args, **kwargs):
                 return subprocess.run([str(arg) for arg in args], check=True, timeout=120,
                                       stdout=log, stderr=subprocess.STDOUT, **kwargs)
-            try:
-                command([binaries / 'initdb', '-D', work / 'postgres', '-A', 'trust',
-                         '-U', 'contracts', '--no-sync', '--no-locale', '-E', 'UTF8'])
-                # Mark before start: pg_ctl failure can leave its server alive.
-                started = True
-                service_state(report, 'postgres', 'start_attempted')
+            if shared is None:
+                database_context = nullcontext()
+            else:
+                from TESTS.adapters.django import shared_postgres
+                database_context = shared_postgres.run_database(shared[0], shared[1], report=report)
+            # The run database (when shared) is dropped by the context manager
+            # after Redis has stopped and before the work directory is removed.
+            with database_context as database:
+                if database is not None:
+                    SHARED_TARGETS[str(work)] = (database.host, database.name)
                 try:
-                    command([binaries / 'pg_ctl', '-D', work / 'postgres', '-l', work / 'postgres.log',
-                             '-o', f"-k {work} -h '' -F", '-w', 'start'])
-                except BaseException:
-                    preserve_startup_diagnostics(work, output, report)
-                    raise
-                service_state(report, 'postgres', 'running')
-                command([binaries / 'createdb', '-h', work, '-U', 'contracts', DB_NAME])
-                with socket.socket() as reservation:
-                    reservation.bind(('127.0.0.1', 0))
-                    redis_port = reservation.getsockname()[1]
-                with defer_interruption():
-                    redis_process = subprocess.Popen([redis_binary, '--bind', '127.0.0.1',
-                        '--port', str(redis_port), '--save', '', '--appendonly', 'no',
-                        '--requirepass', 'synthetic-identity-only', '--dir', str(work)],
-                        stdout=log, stderr=subprocess.STDOUT)
-                service_state(report, 'redis', 'running')
-                yield work, redis_port, log
-            finally:
-                try:
-                    stop_owned_process(redis_process, report, 'redis')
+                    if shared is None:
+                        command([binaries / 'initdb', '-D', work / 'postgres', '-A', 'trust',
+                                 '-U', 'contracts', '--no-sync', '--no-locale', '-E', 'UTF8'])
+                        # Mark before start: pg_ctl failure can leave its server alive.
+                        started = True
+                        service_state(report, 'postgres', 'start_attempted')
+                        try:
+                            command([binaries / 'pg_ctl', '-D', work / 'postgres', '-l', work / 'postgres.log',
+                                     '-o', f"-k {work} -h '' -F", '-w', 'start'])
+                        except BaseException:
+                            preserve_startup_diagnostics(work, output, report)
+                            raise
+                        service_state(report, 'postgres', 'running')
+                        command([binaries / 'createdb', '-h', work, '-U', 'contracts', DB_NAME])
+                    redis_process, redis_port = start_private_redis(redis_binary, work, log)
+                    service_state(report, 'redis', 'running')
+                    yield work, redis_port, log
                 finally:
                     try:
-                        if started:
-                            status = subprocess.run([str(binaries / 'pg_ctl'), '-D', str(work / 'postgres'),
-                                                     'status'], stdout=log, stderr=subprocess.STDOUT, timeout=15)
-                            if status.returncode == 0:
-                                command([binaries / 'pg_ctl', '-D', work / 'postgres', '-m', 'immediate', '-w', 'stop'])
-                            check = subprocess.run([str(binaries / 'pg_ctl'), '-D', str(work / 'postgres'),
-                                                    'status'], stdout=log, stderr=subprocess.STDOUT, timeout=15)
-                            assert check.returncode == 3, 'Owned PostgreSQL did not stop'
-                    except BaseException:
-                        service_state(report, 'postgres', 'cleanup_failed')
-                        raise
-                    service_state(report, 'postgres', 'stopped' if started else 'not_started')
+                        stop_owned_process(redis_process, report, 'redis')
+                    finally:
+                        try:
+                            try:
+                                if shared is None and started:
+                                    status = subprocess.run([str(binaries / 'pg_ctl'), '-D', str(work / 'postgres'),
+                                                             'status'], stdout=log, stderr=subprocess.STDOUT, timeout=15)
+                                    if status.returncode == 0:
+                                        command([binaries / 'pg_ctl', '-D', work / 'postgres', '-m', 'immediate', '-w', 'stop'])
+                                    check = subprocess.run([str(binaries / 'pg_ctl'), '-D', str(work / 'postgres'),
+                                                            'status'], stdout=log, stderr=subprocess.STDOUT, timeout=15)
+                                    assert check.returncode == 3, 'Owned PostgreSQL did not stop'
+                            except BaseException:
+                                if shared is None:
+                                    service_state(report, 'postgres', 'cleanup_failed')
+                                raise
+                            if shared is None:
+                                service_state(report, 'postgres', 'stopped' if started else 'not_started')
+                        finally:
+                            SHARED_TARGETS.pop(str(work), None)
     finally:
         states = report.get('service_cleanup', {})
         if work is not None and all(states.get(name) in ('not_started', 'stopped') for name in ('postgres', 'redis')):
