@@ -2,8 +2,9 @@ from rest_framework import serializers
 from application.models import Module, ModuleResponses
 from application.serializers.auth_serializers import SportAssociationSerializer
 from docmanager.models import Document
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
-class ModulesAddSerializer(serializers.ModelSerializer):
+class ModulesAddSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     enabled = serializers.SerializerMethodField()
 
@@ -18,7 +19,7 @@ class ModulesAddSerializer(serializers.ModelSerializer):
         model = Module
         fields = '__all__'
 
-class ModulesSerializer(serializers.ModelSerializer):
+class ModulesSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     enabled = serializers.SerializerMethodField()
     sport_association = SportAssociationSerializer()

@@ -94,7 +94,6 @@ type InstructorWritesTransaction interface {
 	Associations(ctx context.Context, user string) ([]string, error)
 	// OwnedInstructor is Instructor.objects.filter(instructor_id=id, user=owner).first(), locked.
 	OwnedInstructor(ctx context.Context, id, owner string) (*InstructorRecord, error)
-	InstructorIDTaken(ctx context.Context, id string, exclude *string) (bool, error)
 	DocumentExists(ctx context.Context, id string) (bool, error)
 	InsertInstructor(ctx context.Context, row InstructorRecord) error
 	UpdateInstructor(ctx context.Context, row InstructorRecord) error

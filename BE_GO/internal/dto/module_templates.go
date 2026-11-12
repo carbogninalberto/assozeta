@@ -17,12 +17,10 @@ var ErrModuleTemplateServer = errors.New("module template request raised")
 // ErrModuleTemplatesNoInstances is the bulk view's {"exception": "No instances provided"}.
 var ErrModuleTemplatesNoInstances = errors.New("No instances provided")
 
-const ModuleTemplateUniqueID = "unique:sport association module templates:sport association module templates id"
-
 // ModuleTemplateWrite ports SportAssociationModuleTemplatesSerializer
-// (fields='__all__') for creation; Errors holds DRF validation codes.
+// (fields='__all__') for creation; Errors holds DRF validation codes. The
+// primary key is read-only: a key in the body is ignored.
 type ModuleTemplateWrite struct {
-	ID     *string
 	Row    domain.ModuleTemplate
 	Errors map[string]any
 }
@@ -37,15 +35,6 @@ func ParseModuleTemplateWrite(body any, form bool, association string) (ModuleTe
 	result := ModuleTemplateWrite{Errors: map[string]any{},
 		Row: domain.ModuleTemplate{AssociationID: association, Footer: true, Header: true}}
 	fail := func(field string, codes ...string) { result.Errors[field] = codes }
-	if value, present := object.Lookup("sport_association_module_templates_id"); present {
-		if value == nil {
-			fail("sport_association_module_templates_id", PaymentCategoryValidationNull)
-		} else if id, err := parsePaymentCategoryUUID(value); err != nil {
-			fail("sport_association_module_templates_id", PaymentCategoryValidationUUID)
-		} else {
-			result.ID = &id
-		}
-	}
 	if value, present := object.Lookup("name"); !present {
 		fail("name", PaymentCategoryValidationRequired)
 	} else if text, codes := parsePaymentCategoryString(value, 150); len(codes) > 0 {
@@ -92,9 +81,9 @@ func ParseModuleTemplateWrite(body any, form bool, association string) (ModuleTe
 
 // ModuleTemplateUpdate is SportAssociationModuleTemplatesSerializer(partial=True)
 // validated data: only present fields are set. Association is the related
-// sport_association pk (AssociationRaw: the submitted value for messages).
+// sport_association pk (AssociationRaw: the submitted value for messages). The
+// primary key is read-only: a key in the body is ignored.
 type ModuleTemplateUpdate struct {
-	ID             *string
 	Text           map[string]*string
 	Flags          map[string]bool
 	Association    *string
@@ -114,15 +103,6 @@ func ParseModuleTemplateUpdate(body any, form bool) ModuleTemplateUpdate {
 	if !ok {
 		result.Errors["non_field_errors"] = []string{"dictionary:" + pythonTypeName(body)}
 		return result
-	}
-	if value, present := object.Lookup("sport_association_module_templates_id"); present {
-		if value == nil {
-			result.Errors["sport_association_module_templates_id"] = []string{PaymentCategoryValidationNull}
-		} else if id, err := parsePaymentCategoryUUID(value); err != nil {
-			result.Errors["sport_association_module_templates_id"] = []string{PaymentCategoryValidationUUID}
-		} else {
-			result.ID = &id
-		}
 	}
 	for _, field := range moduleTemplateTextFields {
 		value, present := object.Lookup(field.Name)
@@ -163,9 +143,6 @@ func ParseModuleTemplateUpdate(body any, form bool) ModuleTemplateUpdate {
 
 // Apply returns the row with the validated values assigned.
 func (u ModuleTemplateUpdate) Apply(row domain.ModuleTemplate) domain.ModuleTemplate {
-	if u.ID != nil {
-		row.ID = *u.ID
-	}
 	if u.Association != nil {
 		row.AssociationID = *u.Association
 	}

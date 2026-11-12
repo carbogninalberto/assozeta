@@ -172,7 +172,8 @@ tags, an entity and a soft hyphen on the second association, and an address
 with an unclosed tag on a third one: `pdf-logo-address-markup`,
 `pdf-logo-address-markup-group-header`, `deleted-association-owner-creates-sheet`
 and `pdf-unclosed-markup-server-error`. RED: the documented refusal
-(v2-refusals.md, "Still refused in the balance-sheet PDF"); the third
+(v2-refusals.md, "Still refused in the balance-sheet PDF"; the seeded profile of the second association now also has `u`,
+`sup`, `font` and `a` in its denomination, city and address); the third
 association also showed that Go read the profile of the response by owner
 among the active associations, where Django's reverse accessor resolves the
 row by its owner alone (`sheetRun.profile` now reads the association the run

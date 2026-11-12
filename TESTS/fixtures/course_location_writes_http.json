@@ -182,7 +182,7 @@
       "course_location_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Course location id"
       },
       "documents": {
@@ -304,9 +304,6 @@
    "headers": {},
    "status": 400,
    "response": {
-    "course_location_id": [
-     "Must be a valid UUID."
-    ],
     "title": [
      "This field may not be blank."
     ],
@@ -343,18 +340,30 @@
    }
   },
   {
-   "name": "course-location-writes-add-existing-id",
+   "name": "course-location-writes-add-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/course/locations/add",
    "headers": {},
-   "status": 400,
+   "status": 201,
    "response": {
-    "course_location_id": [
-     "course location with this course location id already exists."
-    ]
+    "course_location_id": "$new",
+    "documents": [],
+    "title": null,
+    "description": null,
+    "address": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
    },
-   "effect": null,
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "title": null,
+     "description": null,
+     "address": null
+    }
+   },
    "body": {
     "course_location_id": "a1000000-0000-4000-8000-000000980006"
    }
@@ -546,14 +555,14 @@
    "body": {}
   },
   {
-   "name": "course-location-writes-add-explicit-id-and-own-association",
+   "name": "course-location-writes-add-explicit-id-ignored-and-own-association",
    "actor": "owner",
    "method": "POST",
    "path": "/course/locations/add",
    "headers": {},
    "status": 201,
    "response": {
-    "course_location_id": "a1000000-0000-4000-8000-000000989001",
+    "course_location_id": "$new",
     "documents": [],
     "title": "5",
     "description": null,
@@ -563,7 +572,7 @@
    "effect": {
     "kind": "add",
     "actor": "owner",
-    "id": "a1000000-0000-4000-8000-000000989001",
+    "id": "$new",
     "stored": {
      "title": "5",
      "description": null,
@@ -1067,24 +1076,47 @@
    }
   },
   {
-   "name": "course-location-writes-update-primary-key-change-inserts-copy",
+   "name": "course-location-writes-update-primary-key-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
    "headers": {},
    "status": 200,
    "response": {
-    "course_location_id": "a1000000-0000-4000-8000-000000989002",
-    "documents": [],
+    "course_location_id": "a1000000-0000-4000-8000-000000980005",
+    "documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/mappa.pdf",
+      "filename": "mappa è.pdf",
+      "file_size_bytes": 2048,
+      "token": "a1000000-0000-4000-8000-000000980002"
+     },
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "orari.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000980004"
+     }
+    ],
     "title": "Copia",
     "description": "Vasca",
     "address": "",
     "sport_association": "a1000000-0000-4000-8000-000000701001"
    },
    "effect": {
-    "kind": "copy",
+    "kind": "update",
     "actor": "owner",
-    "id": "a1000000-0000-4000-8000-000000989002",
+    "label": "pool",
+    "changes": {
+     "title": [
+      "None",
+      "Copia"
+     ]
+    },
     "stored": {
      "title": "Copia",
      "description": "Vasca",
@@ -1097,35 +1129,95 @@
    }
   },
   {
-   "name": "course-location-writes-update-primary-key-taken",
+   "name": "course-location-writes-update-primary-key-of-other-row-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "course_location_id": [
-     "course location with this course location id already exists."
-    ]
+    "course_location_id": "a1000000-0000-4000-8000-000000980005",
+    "documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/mappa.pdf",
+      "filename": "mappa è.pdf",
+      "file_size_bytes": 2048,
+      "token": "a1000000-0000-4000-8000-000000980002"
+     },
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "orari.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000980004"
+     }
+    ],
+    "title": "Copia",
+    "description": "Vasca",
+    "address": "",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
    },
-   "effect": null,
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "pool",
+    "changes": {},
+    "stored": {
+     "title": "Copia",
+     "description": "Vasca",
+     "address": ""
+    }
+   },
    "body": {
     "course_location_id": "a1000000-0000-4000-8000-000000980006"
    }
   },
   {
-   "name": "course-location-writes-update-primary-key-malformed",
+   "name": "course-location-writes-update-primary-key-malformed-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "course_location_id": [
-     "Must be a valid UUID."
-    ]
+    "course_location_id": "a1000000-0000-4000-8000-000000980005",
+    "documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/mappa.pdf",
+      "filename": "mappa è.pdf",
+      "file_size_bytes": 2048,
+      "token": "a1000000-0000-4000-8000-000000980002"
+     },
+     {
+      "document_id": "a1000000-0000-4000-8000-000000980003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "orari.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000980004"
+     }
+    ],
+    "title": "Copia",
+    "description": "Vasca",
+    "address": "",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
    },
-   "effect": null,
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "pool",
+    "changes": {},
+    "stored": {
+     "title": "Copia",
+     "description": "Vasca",
+     "address": ""
+    }
+   },
    "body": {
     "course_location_id": "abc"
    }
@@ -1228,7 +1320,7 @@
     "label": "pool",
     "changes": {},
     "stored": {
-     "title": null,
+     "title": "Copia",
      "description": "Vasca",
      "address": ""
     },

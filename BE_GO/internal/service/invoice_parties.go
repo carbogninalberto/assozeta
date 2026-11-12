@@ -396,14 +396,10 @@ func (s *InvoiceParties) SupplierList(ctx context.Context, request InvoicePartyR
 }
 
 // supplierRelations checks InvoiceSuppliersSerializer's relations: the
-// invoice id's UniqueValidator, the tenant-scoped association (another
-// tenant's is the generic 403, escaping the field errors) and the document.
+// tenant-scoped association (another tenant's is the generic 403, escaping the
+// field errors) and the document.
 func (s *InvoiceParties) supplierRelations(ctx context.Context, input dto.SupplierInvoiceInput, errors dto.InvoicePartyErrors,
-	association, exclude string) error {
-	if err := s.unique(ctx, errors, "invoice_supplier_id", "application_invoicesuppliers", "invoice_supplier_id",
-		"invoice suppliers:invoice supplier id", input.ID, exclude); err != nil {
-		return err
-	}
+	association string) error {
 	if input.Association.ID != nil {
 		exists, err := s.store.Exists(ctx, "application_sportassociation", "sport_association_id", *input.Association.ID)
 		if err != nil {
@@ -422,7 +418,7 @@ func (s *InvoiceParties) supplierRelations(ctx context.Context, input dto.Suppli
 // field rules (partial on update) and the shared reference checks; another
 // association's reference is the invoice 403, errors join the invoice errors.
 func (s *InvoiceParties) nestedSupplier(ctx context.Context, input dto.SupplierInvoiceInput, fieldErrors dto.InvoicePartyErrors,
-	association string, partial bool, group *string, exclude *string) error {
+	association string, partial bool, group *string) error {
 	if !input.NestedSupplierSet {
 		return nil
 	}
@@ -430,7 +426,7 @@ func (s *InvoiceParties) nestedSupplier(ctx context.Context, input dto.SupplierI
 	if err != nil {
 		return err
 	}
-	invalid, err = validateSupplierReferences(ctx, s.store, write, invalid, association, group, exclude)
+	invalid, err = validateSupplierReferences(ctx, s.store, write, invalid, association, group)
 	if errors.Is(err, domain.ErrSupplierForeignReference) {
 		return domain.ErrInvoicePartyForeignReference
 	}
@@ -553,10 +549,10 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	}
 	data = append(data, domain.RequestField{Name: "sport_association", Value: association})
 	input, errors := dto.ParseSupplierInvoice(data, false, request.Form)
-	if err = s.supplierRelations(ctx, input, errors, association, ""); err != nil {
+	if err = s.supplierRelations(ctx, input, errors, association); err != nil {
 		return err
 	}
-	if err = s.nestedSupplier(ctx, input, errors, association, false, invoicePartyGroup(request.Group), nil); err != nil {
+	if err = s.nestedSupplier(ctx, input, errors, association, false, invoicePartyGroup(request.Group)); err != nil {
 		return err
 	}
 	if len(errors) > 0 {
@@ -607,9 +603,6 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	}
 	invoice := domain.NewSupplierInvoice{ID: s.ids(), Identifier: input.Identifier, Amount: input.Amount, AssociationID: association,
 		PaymentDate: input.PaymentDate, ExpireDate: input.ExpireDate, Paid: input.Paid, Notes: input.Notes}
-	if input.ID != nil {
-		invoice.ID = *input.ID
-	}
 	invoice.DocumentID = input.Document.ID
 	stored := "None"
 	if input.PaymentID != nil {
@@ -653,10 +646,10 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	}
 	input, errors := dto.ParseSupplierInvoice(request.Body, true, request.Form)
 	if _, isObject := request.Body.(domain.RequestObject); isObject {
-		if err = s.supplierRelations(ctx, input, errors, association, row.ID); err != nil {
+		if err = s.supplierRelations(ctx, input, errors, association); err != nil {
 			return err
 		}
-		if err = s.nestedSupplier(ctx, input, errors, association, true, invoicePartyGroup(request.Group), nil); err != nil {
+		if err = s.nestedSupplier(ctx, input, errors, association, true, invoicePartyGroup(request.Group)); err != nil {
 			return err
 		}
 	}
@@ -668,9 +661,8 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 		// assertion, raised by save() before the invoice is written.
 		return domain.ErrInvoicePartyServer
 	}
-	if input.NotPorted || input.ID != nil && *input.ID != row.ID {
-		// Nested writes are not ported; a new primary key stays refused pending
-		// the read-only key change.
+	if input.NotPorted {
+		// A nested payment object and nested form fields are not ported.
 		return domain.ErrInvoicePartyNotPorted
 	}
 	updated := *row

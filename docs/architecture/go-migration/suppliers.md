@@ -83,8 +83,8 @@ group-header case.
 (`BE_GO/internal/dto/supplier_write.go`): the model's text fields with their
 null/blank/length options, the email field through a port of Django 5.2's
 `EmailValidator` (pinned against Django's verdicts in
-`supplier_write_test.go`), a writable `supplier_id` with its UniqueValidator
-over the live, group-aware manager, `deleted`, and the tenant-scoped
+`supplier_write_test.go`), a read-only `supplier_id` (a key in the body is
+ignored), `deleted`, and the tenant-scoped
 `sport_association` and `group` relations (another association's row is DRF's
 generic 403, which escapes before the other field errors).
 
@@ -103,14 +103,11 @@ generic 403, which escapes before the other field errors).
   association, is a 500), another association's supplier is `403 User not
   allowed.`, invalid input is `400 {"msg": "validation errors."}`; changed
   fields only are audited (indexed directly) and the serialized supplier is
-  returned. A new `supplier_id` makes `Model.save()` insert a copy under the new
-  key with the validated values, and the row the path names stays as it was;
-  auditlog writes two entries for the copy: the pre-save update against nothing
-  (indexed from its changes) and the create (indexed directly). A key another row
-  has is the serializer's unique error (400). Ported in v2-rest-b. A body that also
-  clears `sport_association` inserts the copy without an association; its two
-  entries are then indexed through the actor's own association (an owner) or not
-  at all (a collaborator). Ported in rest-b1.
+  returned. t5pk: a `supplier_id` in the body (new, another supplier's, a
+  soft-deleted one's) is ignored and the supplier the path names is updated in
+  place (`update-new-id-ignored`, `update-other-row-id-ignored`,
+  `update-soft-deleted-row-id-ignored`); the add ignores it as well
+  (`add-existing-id-ignored`).
 
 `TESTS/fixtures/supplier_writes_http.json` authors 34 cases. v2-rest-b: RED is the documented refusal (v2-refusals.md,
 suppliers row); GREEN `v2restb-green-r3` 34/34 on the four transports; mutation `v2restb-mutation-r1` (the create entry

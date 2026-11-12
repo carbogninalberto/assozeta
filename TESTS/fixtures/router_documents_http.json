@@ -288,7 +288,7 @@
       "sport_association_documents_archive_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Sport association documents archive id"
       },
       "sport_association": {
@@ -456,21 +456,31 @@
    }
   },
   {
-   "name": "router-documents-create-existing-id",
+   "name": "router-documents-create-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/documents/",
    "headers": {},
-   "status": 400,
-   "response": {
-    "sport_association_documents_archive_id": [
-     "sport association documents archive with this sport association documents archive id already exists."
-    ]
-   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
    "effect": null,
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001"
+   }
+  },
+  {
+   "name": "router-documents-create-malformed-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "sport_association_documents_archive_id": "abc"
    }
   },
   {
@@ -684,7 +694,7 @@
       "sport_association_documents_archive_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Sport association documents archive id"
       },
       "sport_association": {
@@ -877,6 +887,32 @@
    },
    "body": {
     "date": "05/10/2026"
+   }
+  },
+  {
+   "name": "router-documents-update-primary-key-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "archive": "a1000000-0000-4000-8000-000000840004",
+    "stored": {
+     "date": "2026-10-06"
+    },
+    "changes": {
+     "date": [
+      "2026-10-05",
+      "2026-10-06"
+     ]
+    }
+   },
+   "body": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001",
+    "date": "06/10/2026"
    }
   },
   {
@@ -1141,7 +1177,7 @@
        "None"
       ],
       "date": [
-       "2026-10-05",
+       "2026-10-06",
        "None"
       ],
       "folder": [

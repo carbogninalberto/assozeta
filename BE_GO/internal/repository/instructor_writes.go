@@ -124,13 +124,6 @@ func (t *instructorWritesTransaction) OwnedInstructor(ctx context.Context, id, o
 	return &row, nil
 }
 
-func (t *instructorWritesTransaction) InstructorIDTaken(ctx context.Context, id string, exclude *string) (bool, error) {
-	var taken bool
-	err := t.tx.GetContext(ctx, &taken, `SELECT EXISTS(SELECT 1 FROM application_instructor
- WHERE instructor_id=$1 AND ($2::uuid IS NULL OR instructor_id<>$2::uuid))`, id, exclude)
-	return taken, err
-}
-
 func (t *instructorWritesTransaction) DocumentExists(ctx context.Context, id string) (bool, error) {
 	var found bool
 	err := t.tx.GetContext(ctx, &found, `SELECT EXISTS(SELECT 1 FROM docmanager_document WHERE document_id=$1)`, id)

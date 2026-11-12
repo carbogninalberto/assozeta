@@ -79,14 +79,6 @@ func (t *campsTransaction) exists(ctx context.Context, query, id string) (bool, 
 	return found, err
 }
 
-func (t *campsTransaction) PeriodIDTaken(ctx context.Context, id string) (bool, error) {
-	return t.exists(ctx, `SELECT EXISTS(SELECT 1 FROM application_campsandretreatsperiod WHERE camps_and_retreats_period_id=$1)`, id)
-}
-
-func (t *campsTransaction) ServiceIDTaken(ctx context.Context, id string) (bool, error) {
-	return t.exists(ctx, `SELECT EXISTS(SELECT 1 FROM application_campsandretreatsperiodsservice WHERE camps_and_retreats_period_service_id=$1)`, id)
-}
-
 func (t *campsTransaction) related(ctx context.Context, query, id string) (domain.CampsRelated, error) {
 	var rows []struct {
 		Association *string `db:"association"`

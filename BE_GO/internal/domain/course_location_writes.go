@@ -31,10 +31,8 @@ type CourseLocationWriteTransaction interface {
 	OwnerAssociation(ctx context.Context, owner string) (string, error)
 	// Location is the association's location, locked for the write.
 	Location(ctx context.Context, id, association string) (*CourseLocation, error)
-	LocationIDTaken(ctx context.Context, id string, exclude *string) (bool, error)
 	AssociationExists(ctx context.Context, id string) (bool, error)
 	CreateLocation(ctx context.Context, row CourseLocation, audit LoginAuditContext, at time.Time) error
-	CopyLocation(ctx context.Context, row CourseLocation, audit LoginAuditContext, at time.Time) error
 	SaveLocation(ctx context.Context, row CourseLocation, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
 	DeleteLocation(ctx context.Context, id string, audit LoginAuditContext, at time.Time) error
 	// LocationDocuments is the nested documents JSON of CourseLocationSerializer.

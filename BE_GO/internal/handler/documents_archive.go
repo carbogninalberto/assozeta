@@ -195,7 +195,7 @@ func archiveFields() map[string]any {
 	child := map[string]any{"type": "nested object", "required": false, "read_only": true, "children": document}
 	nested := info("field", "Document", false, true, "child", child)
 	return map[string]any{
-		"sport_association_documents_archive_id": info("string", "Sport association documents archive id", false, false),
+		"sport_association_documents_archive_id": info("string", "Sport association documents archive id", false, true),
 		"sport_association":                      info("field", "Sport association", true, false), "document": nested,
 		"date": info("date", "Date", false, false), "folder": info("field", "Folder", false, false),
 	}

@@ -150,27 +150,16 @@ func supplierTextFields(row *domain.Supplier) map[string]**string {
 // supplierReferenceChecks are the lookups of SupplierSerializer's relations:
 // both the supplier transaction and the invoice-party store provide them.
 type supplierReferenceChecks interface {
-	SupplierIDTaken(ctx context.Context, id string, group *string, exclude *string) (bool, error)
 	AssociationExists(ctx context.Context, id string) (bool, error)
 	GroupAssociation(ctx context.Context, id string) (*string, bool, error)
 }
 
-// validateReferences applies the related querysets, the tenant scope (a
-// PermissionDenied escapes the serializer before its errors are raised) and
-// the supplier_id UniqueValidator.
+// validateReferences applies the related querysets and the tenant scope (a
+// PermissionDenied escapes the serializer before its errors are raised).
 func validateSupplierReferences(ctx context.Context, tx supplierReferenceChecks, write dto.SupplierWrite, invalid *dto.SupplierValidationError,
-	association string, group *string, exclude *string) (*dto.SupplierValidationError, error) {
+	association string, group *string) (*dto.SupplierValidationError, error) {
 	if invalid == nil {
 		invalid = &dto.SupplierValidationError{}
-	}
-	if write.SupplierID != nil {
-		taken, err := tx.SupplierIDTaken(ctx, *write.SupplierID, group, exclude)
-		if err != nil {
-			return nil, err
-		}
-		if taken {
-			invalid.Add("supplier_id", dto.SupplierValidationUnique)
-		}
 	}
 	if write.AssociationID != nil {
 		exists, err := tx.AssociationExists(ctx, *write.AssociationID)
@@ -243,7 +232,7 @@ func (s *SupplierWrites) Add(ctx context.Context, identity domain.ResolvedIdenti
 	}
 	// A body that is not a dict fails before any field is validated.
 	if invalid == nil || invalid.Fields[0].Name != "non_field_errors" {
-		if invalid, err = validateSupplierReferences(ctx, tx, write, invalid, association, supplierGroup(group), nil); err != nil {
+		if invalid, err = validateSupplierReferences(ctx, tx, write, invalid, association, supplierGroup(group)); err != nil {
 			return nil, err
 		}
 	}
@@ -254,9 +243,6 @@ func (s *SupplierWrites) Add(ctx context.Context, identity domain.ResolvedIdenti
 	row := domain.Supplier{Type: &defaultType, Country: &country, Nationality: &nationality}
 	applySupplierWrite(&row, write)
 	row.ID = s.ids()
-	if write.SupplierID != nil {
-		row.ID = *write.SupplierID
-	}
 	if group != "" {
 		if write.GroupPresent {
 			// create(group=..., group_id=header) is an unexpected keyword.
@@ -347,45 +333,12 @@ func (s *SupplierWrites) Update(ctx context.Context, identity domain.ResolvedIde
 		return nil, err
 	}
 	if invalid == nil || invalid.Fields[0].Name != "non_field_errors" {
-		if invalid, err = validateSupplierReferences(ctx, tx, write, invalid, association, supplierGroup(group), &row.ID); err != nil {
+		if invalid, err = validateSupplierReferences(ctx, tx, write, invalid, association, supplierGroup(group)); err != nil {
 			return nil, err
 		}
 	}
 	if invalid != nil {
 		return nil, ErrSupplierUpdateInvalid
-	}
-	if write.SupplierID != nil && *write.SupplierID != row.ID {
-		// Model.save() under a key no row has inserts a copy with the validated
-		// values; the row the request names stays as it was.
-		applySupplierWrite(row, write)
-		row.ID = *write.SupplierID
-		if err = tx.InsertSupplier(ctx, *row); err != nil {
-			return nil, err
-		}
-		// auditlog's pre_save finds no row under the new key and logs the whole
-		// row as an update (indexed from its changes), then post_save logs the
-		// create (indexed from the stored row).
-		copied := domain.SupplierAudit{ID: row.ID, Action: 1, FullDiff: true, Association: row.AssociationID,
-			Path: "changes_json.sport_association", Context: paymentCategoryAuditContext(identity, audit),
-			At: s.now().UTC().Truncate(time.Microsecond)}
-		if row.AssociationID == nil {
-			// A copy without an association: both entries fall back to the
-			// actor's own association (none for a collaborator).
-			copied.Path = "actor.sport_association"
-			if copied.Association, err = tx.ActiveAssociationOf(ctx, identity.Actor.ID); err != nil {
-				return nil, err
-			}
-		}
-		if err = tx.AuditSupplier(ctx, copied); err != nil {
-			return nil, err
-		}
-		if copied.Action = 0; row.AssociationID != nil {
-			copied.Path = "direct"
-		}
-		if err = tx.AuditSupplier(ctx, copied); err != nil {
-			return nil, err
-		}
-		return row, tx.Commit()
 	}
 	old := *row
 	applySupplierWrite(row, write)

@@ -7567,7 +7567,7 @@
       "course_subscription_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Course subscription id"
       },
       "subscription_id": {
@@ -8913,25 +8913,6 @@
    "body": []
   },
   {
-   "name": "course-enrolment-add-duplicate-key",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/course-subscriptions/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "course_subscription_id": [
-     "course subscription with this course subscription id already exists."
-    ]
-   },
-   "effect": null,
-   "body": {
-    "course_subscription_id": "e0000000-0000-4000-8000-000000000039",
-    "course": "e0000000-0000-4000-8000-000000000009",
-    "subscription_id": "e0000000-0000-4000-8000-000000000006"
-   }
-  },
-  {
    "name": "course-enrolment-add-unknown-subscription",
    "actor": "owner",
    "method": "POST",
@@ -9293,7 +9274,8 @@
    "body": {
     "course": "e0000000-0000-4000-8000-000000000009",
     "subscription_id": "e0000000-0000-4000-8000-000000000006",
-    "ignored": 1
+    "ignored": 1,
+    "course_subscription_id": "e0000000-0000-4000-8000-000000000039"
    }
   },
   {

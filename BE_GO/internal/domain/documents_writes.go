@@ -63,13 +63,8 @@ type DocumentUploadTransaction interface {
 	CreateArchive(ctx context.Context, row ArchiveRecord, created time.Time, audit LoginAuditContext, at time.Time) error
 	// Archive locks the association's archive row (ErrArchiveNotFound when missing).
 	Archive(ctx context.Context, id, association string) (ArchiveRecord, error)
-	// ArchiveIDTaken is the UniqueValidator lookup (other rows only).
-	ArchiveIDTaken(ctx context.Context, id, except string) (bool, error)
 	// SaveArchive is Model.save() of the updated row (changes: auditlog's update diff).
 	SaveArchive(ctx context.Context, row ArchiveRecord, changes map[string][2]string, audit LoginAuditContext, at time.Time) error
-	// InsertArchive is Model.save() under a new primary key: an INSERT, logged
-	// as an update against None (before the row exists) and a create.
-	InsertArchive(ctx context.Context, row ArchiveRecord, audit LoginAuditContext, at time.Time) error
 	// UploadSubscription is scoped_queryset(request, Subscription.objects).filter(subscription_id=id).first().
 	UploadSubscription(ctx context.Context, id string, impersonation, group *string) (*UploadSubscription, error)
 	// CreateSubscriptionFile inserts the SubscriptionFile with its create entry.

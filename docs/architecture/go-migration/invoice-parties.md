@@ -79,14 +79,22 @@ remains the production execution owner.
   payment save's `pre_save` entry through `changes_json` (the stored row has
   no association yet), the invoice entries directly. Requests are not
   atomic: an invoice the database rejects (for example notes longer than the
-  column) leaves the payment.
+  column) leaves the payment. t5pk: `invoice_supplier_id` is read-only, so a
+  key in the body (another invoice's, a malformed one) is ignored and the
+  model default generates the new invoice's key (`supplier-add-existing-invoice-id-ignored`,
+  `supplier-add-malformed-invoice-id-ignored`).
 - **Supplier update:** the partial serializer (a nested `payment: null`
   unlinks the payment), the invoice save (changed fields audited first),
   then, when the invoice has a payment, `payment.paid = data['paid']` (a
   missing key is a 500 after the invoice save) and `payment_date = now`;
   `Payment.save()` fills a missing category with the default one, and the
   `pre_save` entry is written before `BooleanField.to_python` can reject the
-  raw value.
+  raw value. t5pk: `invoice_supplier_id` is read-only, so a key in the body
+  (new, another invoice's, a malformed one) is ignored and the invoice the
+  path names is saved in place with one plain update entry
+  (`supplier-update-unused-id-ignored`, `supplier-update-other-row-id-ignored`,
+  `supplier-update-malformed-id-ignored`); a body with only the key changes
+  nothing and writes no entry (`supplier-update-key-only-ignored`).
 
 ## Go implementation
 
@@ -122,7 +130,7 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
 - A valid customer add was refused here; it is ported in
   [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
 - Nested `payment` objects (DRF's nested serializer validation and writes: its validation nests the account, associate,
-  instructor, supplier and invoice serializers) and a new `invoice_supplier_id` on update (`save()` would insert a copy).
+  instructor, supplier and invoice serializers).
 - `?` ordering (a random order has no answer to reproduce). Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`.
 - Multipart bodies with file parts on the customer add (Django merges files into
   a mutable copy; every other form body is a 500 in both). The supplier add
@@ -167,3 +175,12 @@ it (`CustomerInvoiceListRegenerationTests` in `BE/application/tests/test_invoice
 - Mutation (`secinv-mutation-final`): the pending query without its association filter fails
   `invoice-parties-customer-list-owner` (`print.request-count`, CAUGHT).
 - Re-run for shared code: invoice-sync-print (`secinv-rerun-r1`, 70/70).
+
+t5pk: the supplier add and update ignore an `invoice_supplier_id` in the body
+(the add generates the key, the update saves the path's invoice in place). The
+key parse in `internal/dto/invoice_parties.go`, the key lookup in
+`internal/service/invoice_parties.go` and the update's refusal of a new key are
+gone. The fixture (regenerated from its generator) authors 144 cases, adding
+`supplier-add-malformed-invoice-id-ignored` and the four
+`supplier-update-*-ignored` cases and turning the add's unique error into
+`supplier-add-existing-invoice-id-ignored`.

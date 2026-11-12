@@ -161,7 +161,6 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	if err != nil {
 		return err
 	}
-	copyID := ""
 	if patch.Association != nil {
 		exists, err := tx.AssociationExists(ctx, *patch.Association)
 		if err != nil {
@@ -173,23 +172,10 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 			return domain.ErrMessageReadForbidden
 		}
 	}
-	if patch.ID != nil && *patch.ID != old.ID {
-		exists, err := tx.AutomationWorkflowIDExists(ctx, *patch.ID)
-		if err != nil {
-			return err
-		}
-		if exists {
-			invalid = true
-		} else {
-			// save() under a key no row has inserts a copy of the workflow with
-			// the validated values; the row the request names stays as it was.
-			copyID = *patch.ID
-		}
-	}
 	if invalid {
 		return dto.ErrAutomationWorkflowInvalid
 	}
-	if patch.TreeTooDeep || patch.TreeRejected && copyID != "" {
+	if patch.TreeTooDeep {
 		return dto.ErrAutomationWorkflowFormTreeNotPorted
 	}
 	oldTree, err := dto.ParseProfileTablesJSON(old.Tree)
@@ -222,31 +208,6 @@ func (s *AutomationWorkflowWrites) Update(ctx context.Context, identity domain.R
 	}
 	save := func(before map[string]string) error {
 		at := s.now().UTC().Truncate(time.Microsecond)
-		if copyID != "" {
-			// auditlog's pre_save finds no row under the new key and logs the
-			// whole instance as an update (indexed from its changes); the insert
-			// sets both timestamps and post_save logs the create.
-			row.ID, row.Tree = copyID, json.RawMessage(dto.PythonJSONDumps(tree))
-			copyID = ""
-			auditContext := paymentCategoryAuditContext(identity, audit)
-			changes, err := automationWorkflowChanges(row, 0)
-			if err != nil {
-				return err
-			}
-			if err = tx.AppendAutomationWorkflowAudit(ctx, domain.AutomationWorkflowAudit{ID: row.ID, AssociationID: association, Action: 1,
-				Changes: changes, Context: auditContext, At: at, Path: "changes_json.sport_association"}); err != nil {
-				return err
-			}
-			row.CreatedAt, row.UpdatedAt = &at, &at
-			if err = tx.InsertAutomationWorkflow(ctx, row); err != nil {
-				return err
-			}
-			if changes, err = automationWorkflowChanges(row, 0); err != nil {
-				return err
-			}
-			return tx.AppendAutomationWorkflowAudit(ctx, domain.AutomationWorkflowAudit{ID: row.ID, AssociationID: association, Action: 0,
-				Changes: changes, Context: auditContext, At: at})
-		}
 		changes := automationWorkflowUpdateChanges(before, automationWorkflowUpdateValues(row, tree))
 		if patch.TreeRejected {
 			// auditlog's pre_save entry is written, then the column refuses the document: the entry is kept

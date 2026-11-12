@@ -7220,6 +7220,138 @@
    }
   },
   {
+   "name": "instructor-writes-add-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor created"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Instructor": {
+      "$new": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Copia",
+       "last_name": "Omonima",
+       "email": null,
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": null,
+       "address_city": null,
+       "address": null,
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "0.00",
+       "default_percentage_billing": "0.00"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      },
+      "overrides": {
+       "default_hourly_billing": "0.0",
+       "default_percentage_billing": "0.0"
+      }
+     }
+    ]
+   },
+   "body": {
+    "first_name": "Copia",
+    "last_name": "Omonima",
+    "instructor_id": "a1000000-0000-4000-8000-000000967003"
+   }
+  },
+  {
+   "name": "instructor-writes-add-malformed-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor created"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Instructor": {
+      "$new": {
+       "user_id": "a1000000-0000-4000-8000-000000700001",
+       "first_name": "Testo",
+       "last_name": "Non Valido",
+       "email": null,
+       "born_date": null,
+       "born_city": null,
+       "born_province": null,
+       "tax_code": null,
+       "address_city": null,
+       "address": null,
+       "address_province": null,
+       "civic_number": null,
+       "study_title": null,
+       "role": "Istruttore",
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "draft": false,
+       "associated_user_id": null,
+       "is_volunteer": false,
+       "stipulated_contract_in": null,
+       "default_hourly_billing": "0.00",
+       "default_percentage_billing": "0.00"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      },
+      "overrides": {
+       "default_hourly_billing": "0.0",
+       "default_percentage_billing": "0.0"
+      }
+     }
+    ]
+   },
+   "body": {
+    "first_name": "Testo",
+    "last_name": "Non Valido",
+    "instructor_id": "non-un-uuid"
+   }
+  },
+  {
    "name": "instructor-writes-add-full-collaborator",
    "actor": "full_collaborator",
    "method": "POST",
@@ -7233,7 +7365,7 @@
     "actor": "full_collaborator",
     "rows": {
      "Instructor": {
-      "a1000000-0000-4000-8000-000000967040": {
+      "$new": {
        "user_id": "a1000000-0000-4000-8000-000000700001",
        "first_name": "Giulia",
        "last_name": "Bianchi",
@@ -7265,7 +7397,7 @@
     "audit": [
      {
       "model": "Instructor",
-      "key": "a1000000-0000-4000-8000-000000967040",
+      "key": "$new",
       "action": 0,
       "changes": "$created",
       "index": {
@@ -7392,9 +7524,6 @@
    "response": {
     "documents": [
      "Invalid pk \"a1000000-0000-4000-8000-000000967999\" - object does not exist."
-    ],
-    "instructor_id": [
-     "instructor with this instructor id already exists."
     ],
     "default_hourly_billing": [
      "Ensure that there are no more than 2 decimal places."
@@ -7796,7 +7925,7 @@
    }
   },
   {
-   "name": "instructor-writes-update-copy-new-key",
+   "name": "instructor-writes-update-new-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/instructor/a1000000-0000-4000-8000-000000967004/update",
@@ -7809,8 +7938,7 @@
     "actor": "owner",
     "rows": {
      "Instructor": {
-      "a1000000-0000-4000-8000-000000967041": {
-       "$copy": "plain",
+      "plain": {
        "last_name": "Copia"
       }
      }
@@ -7819,21 +7947,14 @@
     "audit": [
      {
       "model": "Instructor",
-      "key": "a1000000-0000-4000-8000-000000967041",
+      "key": "a1000000-0000-4000-8000-000000967004",
       "action": 1,
-      "changes": "$created",
-      "overrides": {},
-      "index": {
-       "association": "a1000000-0000-4000-8000-000000701001",
-       "path": "actor.sport_association"
-      }
-     },
-     {
-      "model": "Instructor",
-      "key": "a1000000-0000-4000-8000-000000967041",
-      "action": 0,
-      "changes": "$created",
-      "overrides": {},
+      "changes": {
+       "last_name": [
+        "Neri Bianchi",
+        "Copia"
+       ]
+      },
       "index": {
        "association": "a1000000-0000-4000-8000-000000701001",
        "path": "instructor.user.sport_association"
@@ -7894,26 +8015,7 @@
    }
   },
   {
-   "name": "instructor-writes-update-taken-key",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "instructor_id": [
-     "instructor with this instructor id already exists."
-    ]
-   },
-   "effect": null,
-   "body": {
-    "instructor_id": "a1000000-0000-4000-8000-000000967009",
-    "first_name": "Bea",
-    "last_name": "Rossi"
-   }
-  },
-  {
-   "name": "instructor-writes-update-own-key-accepted",
+   "name": "instructor-writes-update-other-row-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
@@ -7924,14 +8026,100 @@
    },
    "effect": {
     "actor": "owner",
-    "rows": {},
+    "rows": {
+     "Instructor": {
+      "bare": {
+       "last_name": "Rossa"
+      }
+     }
+    },
     "documents": {},
-    "audit": []
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967008",
+      "action": 1,
+      "changes": {
+       "last_name": [
+        "Rossi",
+        "Rossa"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
+   },
+   "body": {
+    "instructor_id": "a1000000-0000-4000-8000-000000967009",
+    "first_name": "Bea",
+    "last_name": "Rossa"
+   }
+  },
+  {
+   "name": "instructor-writes-update-own-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "instructor updated"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "Instructor": {
+      "bare": {
+       "last_name": "Rossi"
+      }
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "Instructor",
+      "key": "a1000000-0000-4000-8000-000000967008",
+      "action": 1,
+      "changes": {
+       "last_name": [
+        "Rossa",
+        "Rossi"
+       ]
+      },
+      "index": {
+       "association": "a1000000-0000-4000-8000-000000701001",
+       "path": "instructor.user.sport_association"
+      }
+     }
+    ]
    },
    "body": {
     "instructor_id": "a1000000-0000-4000-8000-000000967008",
     "first_name": "Bea",
     "last_name": "Rossi"
+   }
+  },
+  {
+   "name": "instructor-writes-update-key-only-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000967008/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "first_name": [
+     "This field is required."
+    ],
+    "last_name": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "instructor_id": "a1000000-0000-4000-8000-000000967041"
    }
   },
   {

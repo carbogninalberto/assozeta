@@ -9,7 +9,7 @@ Evidence: `TESTS/fixtures/course_locations_list_http.json` (13 cases). RED: Djan
 `POST course/locations/add`, `PATCH course/locations/<pk>/update` and `DELETE course/locations/<pk>/delete` (`CourseLocationViewSet` add/update/delete) are implemented in Go (`BE_GO/internal/{domain,dto,repository,service,handler}/course_location_write(s).go`). Registry `association.courses.create`, `.update` and `.delete`.
 
 - `CourseLocationSerializer` (fields `'__all__'`) validates before the association lookup:
-  - a writable `course_location_id` with its UniqueValidator;
+  - a read-only `course_location_id`: a key in the body is ignored (add generates one, update saves the path's row);
   - `title` (255, nullable, not blank: an empty form value is None);
   - `description` (2048) and `address` (255), both nullable and blank;
   - a tenant-scoped `sport_association`: a foreign association is DRF's generic 403 that escapes before the field errors, an unknown one a 400;
@@ -24,7 +24,7 @@ Evidence: `TESTS/fixtures/course_locations_list_http.json` (13 cases). RED: Djan
   exists check, one PutObject with `mimetypes.guess_type` type and encoding and the cache header) and `documents.add`. An item
   that raises leaves the location and the earlier documents saved.
 - Not ported: indexed form keys `documents_data[n]`, filenames that are not plain storable text of at most 255 characters or
-  that `Storage.save` rejects, and a changed `course_location_id` on update. Go refuses them with a 500 before any write.
+  that `Storage.save` rejects. Go refuses them with a 500 before any write.
 
 Evidence: `TESTS/fixtures/course_location_writes_http.json` (47 cases). RED: Django 47/47, Go 404. GREEN: 47/47 on native Django, native Go, Caddy `/api/v1` and `/api/v2` with exact location, link, audit and index effects. Rolling back the save on a `documents_data` failure fails the first add whose document lacks its keys. The supplier writes (31) and the locations list (13) stay green after sharing their text-field and rendering helpers.
 
@@ -32,7 +32,11 @@ Document uploads (API v2, 51 cases): the runner owns a private MinIO (`service_c
 links and the stored objects (django-storages' own key, exact bytes, type, encoding and cache header). RED `v2c-red`
 (Django 51/51, Go refused), GREEN `v2c-green` on four transports, mutation `v2c-mutation-upload` CAUGHT.
 
-tailcourses: `PATCH course/locations/<pk>/update` with a new `course_location_id` inserts a copy under the new key and leaves the path's row (auditlog: the pre-save update indexed from its changes, then the create). Cases `update-primary-key-*` (54 cases; the taken and malformed keys are 400). RED: documented refusal. GREEN CI `tailcourses-2`. Mutation `tc-mut4` (pre-save entry indexed directly) CAUGHT. Indexed form keys `documents_data[n]` stay refused.
+t5pk: `course_location_id` is read-only in `CourseLocationSerializer` (`application/serializers/primary_key.py`). A key in an
+update body is ignored and the path's row is updated in place (cases `update-primary-key-ignored`,
+`update-primary-key-of-other-row-ignored`, `update-primary-key-malformed-ignored`); a key in an add body is ignored and the
+location gets a new key (`add-existing-id-ignored`, `add-explicit-id-ignored-and-own-association`). OPTIONS describes the key as
+read-only. The same holds on the stock router (`router_course_locations`).
 
 ## Round t3courses (course-location-writes)
 

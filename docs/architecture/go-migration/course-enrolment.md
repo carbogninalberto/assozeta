@@ -24,7 +24,7 @@ add and the installment payment are athlete views. Django remains the execution 
 - A list body is `many=True`: errors are one map per item (`{}` for valid ones), `[]` creates nothing (201). Other bodies are one
   item; a non-object is `non_field_errors`.
 - Fields: `course` (explicit `PrimaryKeyRelatedField` over live courses, no group filter) and `subscription_id` (UUIDField) are
-  required; the writable key has the live `UniqueValidator`; the other fields as in `course-subscriptions.md`. `validate()` for
+  required; `course_subscription_id` is read-only (a key in the body is ignored, case `add-course-fee`); the other fields as in `course-subscriptions.md`. `validate()` for
   membership courses: the course of `User.sport_association` (non-athletes; an owner without association is a 500), the subscription
   in the course's association (group-aware), both period dates (not required for athletes), end not before start, frequency 1..12,
   fee not negative; texts render as lists.

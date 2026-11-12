@@ -28,7 +28,7 @@ owner.
   HTML form (`This QueryDict instance is immutable`), a list (`list indices must be integers or slices, not str`) and
   any other non-mapping body (`'<type>' object does not support item assignment`, including `null`): 500
   `{'error': str(e)}`. Validation errors answer 400 `{'error': str(ValidationError)}` (the ErrorDetail dict repr in
-  field order: pk with its UniqueValidator, title, description, sport_association). The row is created (audit
+  field order: title, description, sport_association; the pk is read-only and ignored). The row is created (audit
   create, indexed `direct`) and saved again without changes (no second entry); 201
   `{'message': 'Camp or retreat added successfully', 'camp_and_retreat': data}`.
 - Info: users that are not associations or collaborators get `CampsAndRetreatsPublicInfoSerializer`
@@ -60,11 +60,10 @@ skipping the camp subscriptions' cascade fails the same case (`mutation-r2`, 500
 rendering moved into a shared helper and whose routes now sit beside `camps-and-retreats/:uid/*`) stays green on all
 four transports (`versioned-r1`).
 
-v2-rest-b: `PATCH camps-and-retreats/<uid>/update` with a `camps_and_retreats_id` no row has inserts the copy `Model.save()`
-inserts (validated values under the new key; the camp the path names stays). auditlog writes two entries for the copy: the
-pre-save update against nothing, indexed from its changes, then the create, indexed directly. A key another camp has is the
-unique error (400). Two cases (90 in all); RED is the documented refusal (v2-refusals.md, camps-core row). GREEN
-`v2restb-green-r1`: 90/90 on the four transports. Mutation `v2restb-mutation-r1` (the pre-save entry indexed directly) CAUGHT.
+t5pk: `camps_and_retreats_id` is read-only in `CampsAndRetreatsSerializer`. A key in an update body (new or another camp's)
+is ignored and the camp the path names is updated in place (`update-new-id-ignored`, `update-other-row-id-ignored`); a key in
+an add body is ignored and the camp gets a new key (`add-existing-id-ignored`, `add-explicit-id-ignored`,
+`add-multipart-file-as-id-ignored`).
 
 ## Round t3courses
 

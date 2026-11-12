@@ -165,7 +165,7 @@
    }
   },
   {
-   "name": "workflow-writes-add-client-id-truthy-enabled",
+   "name": "workflow-writes-add-client-id-ignored-truthy-enabled",
    "actor": "owner",
    "method": "POST",
    "path": "/communications/workflows/add",
@@ -173,7 +173,7 @@
    "status": 200,
    "response": {
     "msg": "workflow added.",
-    "workflow_id": "a1000000-0000-4000-8000-000000760009"
+    "workflow_id": "$new:client"
    },
    "effect": {
     "kind": "create",
@@ -223,8 +223,7 @@
       ]
      }
     },
-    "index_path": "direct",
-    "fixed_id": "a1000000-0000-4000-8000-000000760009"
+    "index_path": "direct"
    },
    "body": {
     "automation_workflow_id": "a1000000-0000-4000-8000-000000760009",
@@ -237,22 +236,128 @@
    }
   },
   {
-   "name": "workflow-writes-add-duplicate-id",
+   "name": "workflow-writes-add-client-id-again-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/communications/workflows/add",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "msg": "workflow not valid."
+    "msg": "workflow added.",
+    "workflow_id": "$new:again"
    },
    "effect": {
-    "kind": "none"
+    "kind": "create",
+    "label": "again",
+    "values": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "name": "Doppio",
+     "description": null,
+     "automation_tree": [],
+     "enabled": false
+    },
+    "audit": {
+     "action": 0,
+     "actor": "owner",
+     "changes": {
+      "automation_workflow_id": [
+       "None",
+       "$new:again"
+      ],
+      "name": [
+       "None",
+       "Doppio"
+      ],
+      "automation_tree": [
+       "None",
+       "[]"
+      ],
+      "enabled": [
+       "None",
+       "False"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "created_at": [
+       "None",
+       "$now-audit"
+      ],
+      "updated_at": [
+       "None",
+       "$now-audit"
+      ]
+     }
+    },
+    "index_path": "direct"
    },
    "body": {
     "automation_workflow_id": "a1000000-0000-4000-8000-000000760009",
     "name": "Doppio",
     "automation_tree": []
+   }
+  },
+  {
+   "name": "workflow-writes-add-malformed-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/workflows/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "workflow added.",
+    "workflow_id": "$new:malformed"
+   },
+   "effect": {
+    "kind": "create",
+    "label": "malformed",
+    "values": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "name": "Chiave",
+     "description": null,
+     "automation_tree": [],
+     "enabled": false
+    },
+    "audit": {
+     "action": 0,
+     "actor": "owner",
+     "changes": {
+      "automation_workflow_id": [
+       "None",
+       "$new:malformed"
+      ],
+      "name": [
+       "None",
+       "Chiave"
+      ],
+      "automation_tree": [
+       "None",
+       "[]"
+      ],
+      "enabled": [
+       "None",
+       "False"
+      ],
+      "sport_association": [
+       "None",
+       "a1000000-0000-4000-8000-000000701001"
+      ],
+      "created_at": [
+       "None",
+       "$now-audit"
+      ],
+      "updated_at": [
+       "None",
+       "$now-audit"
+      ]
+     }
+    },
+    "index_path": "direct"
+   },
+   "body": {
+    "name": "Chiave",
+    "automation_workflow_id": "nope"
    }
   },
   {
@@ -364,24 +469,6 @@
       "value": "sms"
      }
     ]
-   }
-  },
-  {
-   "name": "workflow-writes-add-invalid-bad-id",
-   "actor": "owner",
-   "method": "POST",
-   "path": "/communications/workflows/add",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "msg": "workflow not valid."
-   },
-   "effect": {
-    "kind": "none"
-   },
-   "body": {
-    "name": "x",
-    "automation_workflow_id": "nope"
    }
   },
   {

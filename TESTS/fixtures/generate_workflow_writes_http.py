@@ -51,18 +51,21 @@ def created(label, actor, *, name, tree, enabled=False, description=None, tree_a
 
 add('add-owner', 'owner', 'POST', ADD, 200, {'msg': 'workflow added.', 'workflow_id': '$new:owner'},
     body={'name': 'Benvenuto à', 'automation_tree': TREE}, effect=created('owner', 'owner', name='Benvenuto à', tree=TREE, tree_audit=TREE_AUDIT))
-add('add-client-id-truthy-enabled', 'owner', 'POST', ADD, 200, {'msg': 'workflow added.', 'workflow_id': CLIENT_ID},
+# automation_workflow_id is read-only: a key in the body is ignored and the workflow gets a new one.
+add('add-client-id-ignored-truthy-enabled', 'owner', 'POST', ADD, 200, {'msg': 'workflow added.', 'workflow_id': '$new:client'},
     body={'automation_workflow_id': CLIENT_ID, 'name': 'Scelto', 'automation_tree': [], 'enabled': 'yes', 'description': '',
           'created_at': '2020-01-01T00:00:00Z', 'sport_association': FOREIGN},
     effect=created('client', 'owner', name='Scelto', tree=[], enabled=True, description=''))
-cases[-1]['effect']['fixed_id'] = CLIENT_ID
-add('add-duplicate-id', 'owner', 'POST', ADD, 400, {'msg': 'workflow not valid.'},
-    body={'automation_workflow_id': CLIENT_ID, 'name': 'Doppio', 'automation_tree': []})
+add('add-client-id-again-ignored', 'owner', 'POST', ADD, 200, {'msg': 'workflow added.', 'workflow_id': '$new:again'},
+    body={'automation_workflow_id': CLIENT_ID, 'name': 'Doppio', 'automation_tree': []},
+    effect=created('again', 'owner', name='Doppio', tree=[]))
+add('add-malformed-id-ignored', 'owner', 'POST', ADD, 200, {'msg': 'workflow added.', 'workflow_id': '$new:malformed'},
+    body={'name': 'Chiave', 'automation_workflow_id': 'nope'}, effect=created('malformed', 'owner', name='Chiave', tree=[]))
 for label, body in (('blank-name', {'name': '   ', 'automation_tree': []}), ('long-name', {'name': 'x' * 256}),
                     ('missing-name', {'automation_tree': []}), ('tree-object', {'name': 'x', 'automation_tree': {}}),
                     ('tree-null', {'name': 'x', 'automation_tree': None}),
                     ('sms-message', {'name': 'x', 'automation_tree': [{'id': 'message', 'value': 'sms'}]}),
-                    ('bad-id', {'name': 'x', 'automation_workflow_id': 'nope'}), ('enabled-invalid', {'name': 'x', 'enabled': 'maybe'})):
+                    ('enabled-invalid', {'name': 'x', 'enabled': 'maybe'})):
     add(f'add-invalid-{label}', 'owner', 'POST', ADD, 400, {'msg': 'workflow not valid.'}, body=body)
 add('add-list-body', 'owner', 'POST', ADD, 500, '<stable-server-error-page>', body=[])
 add('add-null-body', 'owner', 'POST', ADD, 500, '<stable-server-error-page>', raw_body='null', content_type='application/json')

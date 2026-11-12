@@ -3,18 +3,18 @@ package dto
 import "github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 
 // CampInput is CampsAndRetreatsSerializer's field-level validation; Errors
-// holds codes by field, the service adds the lookups.
+// holds codes by field, the service adds the lookups. The primary key is
+// read-only: a camps_and_retreats_id in the body is ignored.
 type CampInput struct {
-	ID          CampsRelation
 	Title       CampsValue[*string]
 	Description CampsValue[*string]
 	Association CampsRelation
 	Errors      map[string][]string
 }
 
-// CampFieldOrder is the serializer's writable fields: the pk, model fields,
-// then the forward relation.
-var CampFieldOrder = []string{"camps_and_retreats_id", "title", "description", "sport_association"}
+// CampFieldOrder is the serializer's writable fields: model fields, then the
+// forward relation.
+var CampFieldOrder = []string{"title", "description", "sport_association"}
 
 // CampAssignAssociation is camps_and_retreats_add's
 // request.data['sport_association'] = association before validation: a form
@@ -57,7 +57,6 @@ func ParseCampWrite(body any, form, partial bool) (*CampInput, map[string][]stri
 	}
 	reader.partial = partial
 	input := &CampInput{}
-	input.ID = reader.uuid("camps_and_retreats_id")
 	input.Title = reader.text("title", 255)
 	input.Description = reader.text("description", 2048)
 	// sport_association has the model default None: not required, not null.

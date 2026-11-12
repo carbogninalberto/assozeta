@@ -1115,7 +1115,7 @@
       "subscription_membership_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Subscription membership id"
       },
       "sport_association": {
@@ -1347,9 +1347,6 @@
    "headers": {},
    "status": 400,
    "response": {
-    "subscription_membership_id": [
-     "Must be a valid UUID."
-    ],
     "creation_date": [
      "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
     ],
@@ -1455,20 +1452,49 @@
    }
   },
   {
-   "name": "subscription-memberships-add-existing-id",
+   "name": "subscription-memberships-add-existing-id-ignored",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/memberships/add",
    "headers": {},
-   "status": 400,
+   "status": 201,
    "response": {
-    "subscription_membership_id": [
-     "subscription membership with this subscription membership id already exists."
-    ]
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": "Chiave ignorata",
+    "membership_number": "0",
+    "description": null,
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
    },
-   "effect": null,
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Chiave ignorata",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    }
+   },
    "body": {
-    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016"
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016",
+    "membership_type": "Chiave ignorata"
    }
   },
   {
@@ -1750,14 +1776,14 @@
    "body": {}
   },
   {
-   "name": "subscription-memberships-add-explicit-id-short-date",
+   "name": "subscription-memberships-add-explicit-id-ignored-short-date",
    "actor": "owner",
    "method": "POST",
    "path": "/subscription/memberships/add",
    "headers": {},
    "status": 201,
    "response": {
-    "subscription_membership_id": "a1000000-0000-4000-8000-000000659001",
+    "subscription_membership_id": "$new",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "associate_id": null,
     "associate": null,
@@ -1775,7 +1801,7 @@
    "effect": {
     "kind": "add",
     "actor": "owner",
-    "id": "a1000000-0000-4000-8000-000000659001",
+    "id": "$new",
     "stored": {
      "subscription": null,
      "sport_association": "a1000000-0000-4000-8000-000000701001",
@@ -2259,23 +2285,6 @@
    "effect": null,
    "body": {
     "sport_association": "a1000000-0000-4000-8000-000000659999"
-   }
-  },
-  {
-   "name": "subscription-memberships-update-existing-id",
-   "actor": "owner",
-   "method": "PATCH",
-   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/update",
-   "headers": {},
-   "status": 400,
-   "response": {
-    "subscription_membership_id": [
-     "subscription membership with this subscription membership id already exists."
-    ]
-   },
-   "effect": null,
-   "body": {
-    "subscription_membership_id": "a1000000-0000-4000-8000-000000650017"
    }
   },
   {
@@ -2981,14 +2990,14 @@
    }
   },
   {
-   "name": "subscription-memberships-update-new-id-inserts-copy",
+   "name": "subscription-memberships-update-new-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/update",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_membership_id": "a1000000-0000-4000-8000-000000659101",
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650018",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "associate_id": "a1000000-0000-4000-8000-000000650006",
     "associate": "a1000000-0000-4000-8000-000000650006",
@@ -3001,12 +3010,27 @@
     "price": null,
     "paid": false,
     "payment": "a1000000-0000-4000-8000-000000650013",
-    "attached_membership_documents": []
+    "attached_membership_documents": [
+     {
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "certificato.pdf",
+      "file_size_bytes": null,
+      "token": "$new_document"
+     }
+    ]
    },
    "effect": {
-    "kind": "copy",
+    "kind": "update",
     "actor": "owner",
-    "id": "a1000000-0000-4000-8000-000000659101",
+    "label": "m3",
+    "changes": {
+     "description": [
+      "Con allegato",
+      "Copia"
+     ]
+    },
     "stored": {
      "subscription": null,
      "sport_association": "a1000000-0000-4000-8000-000000701001",
@@ -3027,14 +3051,14 @@
    }
   },
   {
-   "name": "subscription-memberships-update-new-id-with-document",
+   "name": "subscription-memberships-update-other-row-id-ignored",
    "actor": "full_collaborator",
    "method": "PATCH",
    "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/update",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_membership_id": "a1000000-0000-4000-8000-000000659102",
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650018",
     "sport_association": "a1000000-0000-4000-8000-000000701001",
     "associate_id": "a1000000-0000-4000-8000-000000650006",
     "associate": "a1000000-0000-4000-8000-000000650006",
@@ -3042,8 +3066,8 @@
     "start_date": null,
     "end_date": "2027-01-31",
     "membership_type": null,
-    "membership_number": "77",
-    "description": "Con allegato",
+    "membership_number": "12",
+    "description": "Copia",
     "price": null,
     "paid": false,
     "payment": "a1000000-0000-4000-8000-000000650013",
@@ -3052,16 +3076,22 @@
       "document_id": "$new_document",
       "creation_date": "$new_document",
       "filepath": null,
-      "filename": "copia.pdf",
+      "filename": "certificato.pdf",
       "file_size_bytes": null,
       "token": "$new_document"
      }
     ]
    },
    "effect": {
-    "kind": "copy",
+    "kind": "update",
     "actor": "full_collaborator",
-    "id": "a1000000-0000-4000-8000-000000659102",
+    "label": "m3",
+    "changes": {
+     "membership_number": [
+      "77",
+      "12"
+     ]
+    },
     "stored": {
      "subscription": null,
      "sport_association": "a1000000-0000-4000-8000-000000701001",
@@ -3071,25 +3101,69 @@
      "start_date": null,
      "end_date": "2027-01-31",
      "membership_type": null,
-     "membership_number": "77",
-     "description": "Con allegato",
+     "membership_number": "12",
+     "description": "Copia",
      "price": null
-    },
-    "documents": [
+    }
+   },
+   "body": {
+    "subscription_membership_id": "A1000000-0000-4000-8000-000000650016",
+    "membership_number": "12"
+   }
+  },
+  {
+   "name": "subscription-memberships-update-malformed-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650018",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650006",
+    "associate": "a1000000-0000-4000-8000-000000650006",
+    "creation_date": "2026-09-03T08:00:00Z",
+    "start_date": null,
+    "end_date": "2027-01-31",
+    "membership_type": null,
+    "membership_number": "12",
+    "description": "Copia",
+    "price": null,
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650013",
+    "attached_membership_documents": [
      {
-      "filename": "copia.pdf",
-      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "certificato.pdf",
+      "file_size_bytes": null,
+      "token": "$new_document"
      }
     ]
    },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "m3",
+    "changes": {},
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": "a1000000-0000-4000-8000-000000650006",
+     "payment": "a1000000-0000-4000-8000-000000650013",
+     "creation_date": "2026-09-03T08:00:00Z",
+     "start_date": null,
+     "end_date": "2027-01-31",
+     "membership_type": null,
+     "membership_number": "12",
+     "description": "Copia",
+     "price": null
+    }
+   },
    "body": {
-    "subscription_membership_id": "A1000000-0000-4000-8000-000000659102",
-    "documents_data": [
-     {
-      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
-      "filename": "copia.pdf"
-     }
-    ]
+    "subscription_membership_id": "abc"
    }
   },
   {

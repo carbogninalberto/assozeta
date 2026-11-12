@@ -4264,7 +4264,9 @@
    "additional_data": null,
    "app_label": "application",
    "audit": {
-    "exclude": [],
+    "exclude": [
+     "attachment_token_hash"
+    ],
     "fields": [
      {
       "column": "approved",

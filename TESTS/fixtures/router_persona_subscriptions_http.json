@@ -3836,7 +3836,7 @@
       "subscription_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Subscription id"
       },
       "active": {
@@ -5223,7 +5223,7 @@
       "subscription_id": {
        "type": "string",
        "required": false,
-       "read_only": false,
+       "read_only": true,
        "label": "Subscription id"
       },
       "active": {
@@ -6336,9 +6336,6 @@
    "headers": {},
    "status": 400,
    "response": {
-    "subscription_id": [
-     "Must be a valid UUID."
-    ],
     "type": [
      "\"9\" is not a valid choice."
     ],
@@ -6445,17 +6442,13 @@
    }
   },
   {
-   "name": "router-persona-subscriptions-create-subscription-id-taken",
+   "name": "router-persona-subscriptions-create-subscription-id-ignored-server-error",
    "actor": "full_collaborator",
    "method": "POST",
    "path": "/personas-subscriptions/",
    "headers": {},
-   "status": 400,
-   "response": {
-    "subscription_id": [
-     "subscription with this subscription id already exists."
-    ]
-   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
    "allow": [
     "DELETE",
     "GET",
@@ -6877,16 +6870,92 @@
    }
   },
   {
-   "name": "router-persona-subscriptions-update-subscription-id-taken",
+   "name": "router-persona-subscriptions-update-subscription-id-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677075/",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "subscription_id": [
-     "subscription with this subscription id already exists."
-    ]
+    "subscription_id": "a1000000-0000-4000-8000-000000677075",
+    "active": false,
+    "is_current": false,
+    "is_next_year": true,
+    "current_year": "successivo",
+    "medical": null,
+    "medical_expiration_date": null,
+    "age": {
+     "$age": "1990-01-01"
+    },
+    "renewal_available": true,
+    "signature_present": false,
+    "associate": {
+     "associate_id": "a1000000-0000-4000-8000-000000677049",
+     "full_name": "Serena Iscritta",
+     "tutors": [],
+     "picture_path": null,
+     "first_name": "Serena",
+     "last_name": "Iscritta",
+     "sex": "A",
+     "tax_code": "SRNSCR90A41H501S",
+     "born_date": "1990-01-01",
+     "born_city": null,
+     "address_city": null,
+     "address": null,
+     "address_cap": null,
+     "nationality": "Italiana",
+     "nationality_residence": "Italia",
+     "email": null,
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "phone_label": null,
+     "phone_2_label": null,
+     "phone_3_label": null,
+     "phone_4_label": null,
+     "is_minor": false,
+     "disabled": false,
+     "draft": false,
+     "deleted": false,
+     "family_role": null,
+     "id_number": null,
+     "migrated": false,
+     "notes": null,
+     "creation_date": "2024-02-20T07:00:00Z",
+     "user": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "group": null,
+     "family": null
+    },
+    "custom_data": null,
+    "additional_fields": null,
+    "type": 2,
+    "role": 1,
+    "acceptance_date": null,
+    "resignation_date": null,
+    "status_flag": 1,
+    "creation_date": "2022-01-01T09:00:00Z",
+    "start_date": "2099-01-01",
+    "end_date": "2099-12-31",
+    "signature_url": null,
+    "deleted": false,
+    "archived": false,
+    "draft": true,
+    "trial": true,
+    "meta": null,
+    "subscription_number": "0",
+    "subscription_type": null,
+    "competitive": false,
+    "notes": null,
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "supplier": null,
+    "instructor": null,
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "document_pdf": null,
+    "payment": null,
+    "group": null,
+    "tags": []
    },
    "allow": [
     "DELETE",
@@ -6896,7 +6965,14 @@
     "PATCH",
     "PUT"
    ],
-   "effect": null,
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677075",
+    "columns": {},
+    "changes": null,
+    "tags": null
+   },
    "body": {
     "subscription_id": "a1000000-0000-4000-8000-000000677076"
    }
@@ -8732,14 +8808,14 @@
    "content_type": "application/json"
   },
   {
-   "name": "router-persona-subscriptions-partial-update-new-key-copy",
+   "name": "router-persona-subscriptions-partial-update-new-key-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
    "headers": {},
    "status": 200,
    "response": {
-    "subscription_id": "a1000000-0000-4000-8000-000000990201",
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
     "active": false,
     "is_current": false,
     "is_next_year": false,
@@ -8835,12 +8911,17 @@
     "PUT"
    ],
    "effect": {
-    "kind": "copy",
+    "kind": "update",
     "actor": "owner",
     "subscription": "a1000000-0000-4000-8000-000000677076",
-    "copy": "a1000000-0000-4000-8000-000000990201",
     "columns": {
      "notes": "copia"
+    },
+    "changes": {
+     "notes": [
+      "",
+      "copia"
+     ]
     },
     "tags": [
      "a1000000-0000-4000-8000-000000677070"
@@ -8855,15 +8936,98 @@
    }
   },
   {
-   "name": "router-persona-subscriptions-partial-update-copy-key-taken",
+   "name": "router-persona-subscriptions-partial-update-other-row-key-ignored",
    "actor": "owner",
    "method": "PATCH",
    "path": "/personas-subscriptions/a1000000-0000-4000-8000-000000677076/",
    "headers": {},
-   "status": 400,
+   "status": 200,
    "response": {
-    "subscription_id": [
-     "subscription with this subscription id already exists."
+    "subscription_id": "a1000000-0000-4000-8000-000000677076",
+    "active": false,
+    "is_current": false,
+    "is_next_year": false,
+    "current_year": "precedente",
+    "medical": null,
+    "medical_expiration_date": null,
+    "age": {
+     "$age": "1991-01-01"
+    },
+    "renewal_available": true,
+    "signature_present": false,
+    "associate": {
+     "associate_id": "a1000000-0000-4000-8000-000000677050",
+     "full_name": "Leo Solitario",
+     "tutors": [],
+     "picture_path": null,
+     "first_name": "Leo",
+     "last_name": "Solitario",
+     "sex": "A",
+     "tax_code": "LNOSLT91A01H501L",
+     "born_date": "1991-01-01",
+     "born_city": null,
+     "address_city": null,
+     "address": null,
+     "address_cap": null,
+     "nationality": "Italiana",
+     "nationality_residence": "Italia",
+     "email": null,
+     "phone": null,
+     "phone_2": null,
+     "phone_3": null,
+     "phone_4": null,
+     "phone_label": null,
+     "phone_2_label": null,
+     "phone_3_label": null,
+     "phone_4_label": null,
+     "is_minor": false,
+     "disabled": false,
+     "draft": false,
+     "deleted": false,
+     "family_role": null,
+     "id_number": null,
+     "migrated": false,
+     "notes": null,
+     "creation_date": "2024-02-21T07:00:00Z",
+     "user": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "group": null,
+     "family": null
+    },
+    "custom_data": {
+     "a": 1
+    },
+    "additional_fields": [
+     1,
+     "a"
+    ],
+    "type": 1,
+    "role": 5,
+    "acceptance_date": null,
+    "resignation_date": "2025-06-05",
+    "status_flag": 2,
+    "creation_date": "2024-03-01T09:30:00.250000Z",
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
+    "signature_url": null,
+    "deleted": false,
+    "archived": false,
+    "draft": false,
+    "trial": false,
+    "meta": null,
+    "subscription_number": null,
+    "subscription_type": null,
+    "competitive": false,
+    "notes": "copia",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "supplier": null,
+    "instructor": null,
+    "user": "a1000000-0000-4000-8000-000000700001",
+    "document_pdf": null,
+    "payment": null,
+    "group": null,
+    "tags": [
+     "a1000000-0000-4000-8000-000000677070"
     ]
    },
    "allow": [
@@ -8874,9 +9038,16 @@
     "PATCH",
     "PUT"
    ],
-   "effect": null,
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "subscription": "a1000000-0000-4000-8000-000000677076",
+    "columns": {},
+    "changes": null,
+    "tags": null
+   },
    "body": {
-    "subscription_id": "a1000000-0000-4000-8000-000000990201"
+    "subscription_id": "a1000000-0000-4000-8000-000000677075"
    }
   },
   {

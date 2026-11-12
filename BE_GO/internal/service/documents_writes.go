@@ -452,15 +452,6 @@ func (s *DocumentUploads) Update(ctx context.Context, identity domain.ResolvedId
 	for name, list := range codes {
 		invalid[name] = list
 	}
-	if update.ID != nil {
-		taken, err := tx.ArchiveIDTaken(ctx, *update.ID, row.ID)
-		if err != nil {
-			return err
-		}
-		if taken {
-			invalid["sport_association_documents_archive_id"] = []string{dto.ArchiveUpdateUnique}
-		}
-	}
 	current, err := tx.CurrentAssociation(ctx, identity.ScopeUser.ID)
 	if err != nil {
 		return err
@@ -508,23 +499,17 @@ func (s *DocumentUploads) Update(ctx context.Context, identity domain.ResolvedId
 		}
 	}
 	context := uploadAuditContext(identity, audit)
-	if update.ID != nil && *update.ID != row.ID {
-		next.ID = *update.ID
-		err = tx.InsertArchive(ctx, next, context, s.at())
-	} else {
-		changes := map[string][2]string{}
-		if row.Association != next.Association {
-			changes["sport_association"] = [2]string{row.Association, next.Association}
-		}
-		if row.Date != next.Date {
-			changes["date"] = [2]string{row.Date, next.Date}
-		}
-		if before, after := archiveFolderText(row.Folder), archiveFolderText(next.Folder); before != after {
-			changes["folder"] = [2]string{before, after}
-		}
-		err = tx.SaveArchive(ctx, next, changes, context, s.at())
+	changes := map[string][2]string{}
+	if row.Association != next.Association {
+		changes["sport_association"] = [2]string{row.Association, next.Association}
 	}
-	if err != nil {
+	if row.Date != next.Date {
+		changes["date"] = [2]string{row.Date, next.Date}
+	}
+	if before, after := archiveFolderText(row.Folder), archiveFolderText(next.Folder); before != after {
+		changes["folder"] = [2]string{before, after}
+	}
+	if err = tx.SaveArchive(ctx, next, changes, context, s.at()); err != nil {
 		return err
 	}
 	if err = tx.Commit(); err != nil {
@@ -920,19 +905,6 @@ func (s *DocumentUploads) Create(ctx context.Context, identity domain.ResolvedId
 		return err
 	}
 	defer tx.Rollback()
-	if update.ID != nil {
-		except := "00000000-0000-0000-0000-000000000000"
-		if *update.ID == except {
-			except = "ffffffff-ffff-ffff-ffff-ffffffffffff"
-		}
-		taken, err := tx.ArchiveIDTaken(ctx, *update.ID, except)
-		if err != nil {
-			return err
-		}
-		if taken {
-			invalid["sport_association_documents_archive_id"] = []string{dto.ArchiveUpdateUnique}
-		}
-	}
 	current, err := tx.CurrentAssociation(ctx, identity.ScopeUser.ID)
 	if err != nil {
 		return err

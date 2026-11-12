@@ -10081,10 +10081,12 @@
             },
             "AssociateSubscription": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "subscription_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "active": {
                         "type": "boolean",
@@ -10277,6 +10279,7 @@
                     "renewal_available",
                     "signature_present",
                     "sport_association",
+                    "subscription_id",
                     "user"
                 ]
             },
@@ -10708,10 +10711,12 @@
             },
             "CourseLocation": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "course_location_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "documents": {
                         "type": "array",
@@ -10750,15 +10755,18 @@
                     }
                 },
                 "required": [
+                    "course_location_id",
                     "documents"
                 ]
             },
             "CourseSubscriptionOverview": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "course_subscription_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "subscription_id": {
                         "type": "string",
@@ -10860,6 +10868,7 @@
                 "required": [
                     "carnets",
                     "course",
+                    "course_subscription_id",
                     "installments",
                     "medical_label",
                     "membership_payments",
@@ -10915,10 +10924,12 @@
             },
             "DocumentArchive": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "sport_association_documents_archive_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "sport_association": {
                         "type": "string",
@@ -10942,7 +10953,8 @@
                 },
                 "required": [
                     "document",
-                    "sport_association"
+                    "sport_association",
+                    "sport_association_documents_archive_id"
                 ]
             },
             "Folder": {
@@ -10987,6 +10999,7 @@
             },
             "Instructor": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "instructor_id": {
                         "type": "string",
@@ -11520,10 +11533,12 @@
             },
             "PatchedAssociateSubscription": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "subscription_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "active": {
                         "type": "boolean",
@@ -11707,10 +11722,12 @@
             },
             "PatchedCourseLocation": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "course_location_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "documents": {
                         "type": "array",
@@ -11751,10 +11768,12 @@
             },
             "PatchedCourseSubscriptionOverview": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "course_subscription_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "subscription_id": {
                         "type": "string",
@@ -11856,10 +11875,12 @@
             },
             "PatchedDocumentArchive": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "sport_association_documents_archive_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "sport_association": {
                         "type": "string",
@@ -11917,10 +11938,12 @@
             },
             "PatchedSportAssociationModuleTemplates": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "sport_association_module_templates_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "name": {
                         "type": "string",
@@ -11955,10 +11978,12 @@
             },
             "PatchedSubscriptionMembership": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "subscription_membership_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "sport_association": {
                         "type": "string",
@@ -12224,10 +12249,12 @@
             },
             "SportAssociationModuleTemplates": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "sport_association_module_templates_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "name": {
                         "type": "string",
@@ -12261,7 +12288,8 @@
                 },
                 "required": [
                     "name",
-                    "sport_association"
+                    "sport_association",
+                    "sport_association_module_templates_id"
                 ]
             },
             "StatusFlagEnum": {
@@ -12287,10 +12315,12 @@
             },
             "SubscriptionMembership": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "subscription_membership_id": {
                         "type": "string",
-                        "format": "uuid"
+                        "format": "uuid",
+                        "readOnly": true
                     },
                     "sport_association": {
                         "type": "string",
@@ -12370,7 +12400,8 @@
                     "associate_id",
                     "attached_membership_documents",
                     "paid",
-                    "sport_association"
+                    "sport_association",
+                    "subscription_membership_id"
                 ]
             },
             "SubscriptionSerializerSimplify": {
@@ -12395,6 +12426,7 @@
             },
             "Supplier": {
                 "type": "object",
+                "description": "The model's primary key is never read from the request body.\n\nOn update the row the view loaded is saved in place and the answer shows its\nkey; on create the model default generates the key. Only the top-level\nserializer (or the child of a top-level ``many=True`` list) is affected: a\nserializer nested as a field of another one validates the key it is given.",
                 "properties": {
                     "supplier_id": {
                         "type": "string",

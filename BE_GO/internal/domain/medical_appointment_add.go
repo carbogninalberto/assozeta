@@ -25,7 +25,6 @@ type MedicalAppointmentAddTransaction interface {
 	OwnerAssociation(ctx context.Context, owner string) (string, error)
 	// Subscription is scoped_queryset(Subscription.objects) (group-aware, deleted rows included) by id and association.
 	Subscription(ctx context.Context, id, association string, impersonation, group *string) (bool, error)
-	AppointmentIDTaken(ctx context.Context, id string) (bool, error)
 	DocumentExists(ctx context.Context, id string) (bool, error)
 	// InsertAppointment saves the row and its auditlog create (index subscription.sport_association).
 	InsertAppointment(ctx context.Context, row MedicalAppointmentAddRow, association string, audit LoginAuditContext, at time.Time) error

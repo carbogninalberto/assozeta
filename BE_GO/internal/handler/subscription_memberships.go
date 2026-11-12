@@ -49,7 +49,7 @@ var subscriptionMembershipAddActions = func() map[string]any {
 	}
 	readOnly := map[string]any{"read_only": true}
 	return map[string]any{"POST": map[string]any{
-		"subscription_membership_id": field("string", "Subscription membership id", nil),
+		"subscription_membership_id": field("string", "Subscription membership id", readOnly),
 		"sport_association":          field("field", "Sport association", map[string]any{"required": true}),
 		"associate_id":               field("string", "Associate id", readOnly),
 		"associate":                  field("field", "Associate", nil),

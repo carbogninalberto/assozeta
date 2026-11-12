@@ -42,10 +42,6 @@ func (t *campsTransaction) Camp(ctx context.Context, id string, lock bool) (*dom
 	return &row, nil
 }
 
-func (t *campsTransaction) CampIDTaken(ctx context.Context, id string) (bool, error) {
-	return t.exists(ctx, `SELECT EXISTS(SELECT 1 FROM application_campsandretreats WHERE camps_and_retreats_id=$1)`, id)
-}
-
 func (t *campsTransaction) AssociationRelated(ctx context.Context, id string) (domain.CampsRelated, error) {
 	return t.related(ctx, `SELECT sport_association_id::text AS association FROM application_sportassociation WHERE sport_association_id=$1`, id)
 }

@@ -6,7 +6,7 @@
 
 - `request.user.sport_association`: athletes are the DRF PermissionDenied `User is not a sport association` (403); an owner without an active association (missing or soft-deleted) is `SportAssociation.DoesNotExist`.
 - `Module` and `ModuleResponses` are audited (`auditlog.register`, post_delete for deletes); no signals. Module creates and updates are indexed through the direct resolver.
-- Field rules of `ModulesAddSerializer` / `ModulesSerializer` (`fields='__all__'`, every field optional): `module_id` UUID (DRF `UUIDField`, ints through `uuid.UUID(int=)`) with a UniqueValidator over every association; `custom_link` CharField(255, null, not blank, trimmed) with a UniqueValidator over every association (exact, case-sensitive; skipped for `null`); `creation_date` DateTimeField (not null, stored UTC); `title` CharField(255) and `response_message` CharField(1024), null, not blank; `start_date`/`end_date` DateField with `DATE_INPUT_FORMATS ['%d/%m/%Y']` (`Date has wrong format. Use one of these formats instead: DD/MM/YYYY.`), null; the six BooleanFields not null; `max_responses` PositiveIntegerField 0..2147483647, null; `payment_data` and `elements` JSONField, not null (any JSON value). `enabled` (read-only) and unknown keys are ignored.
+- Field rules of `ModulesAddSerializer` / `ModulesSerializer` (`fields='__all__'`, every field optional): `module_id` is read-only (a key in the body is ignored); `custom_link` CharField(255, null, not blank, trimmed) with a UniqueValidator over every association (exact, case-sensitive; skipped for `null`); `creation_date` DateTimeField (not null, stored UTC); `title` CharField(255) and `response_message` CharField(1024), null, not blank; `start_date`/`end_date` DateField with `DATE_INPUT_FORMATS ['%d/%m/%Y']` (`Date has wrong format. Use one of these formats instead: DD/MM/YYYY.`), null; the six BooleanFields not null; `max_responses` PositiveIntegerField 0..2147483647, null; `payment_data` and `elements` JSONField, not null (any JSON value). `enabled` (read-only) and unknown keys are ignored.
 
 ## Routes
 
@@ -29,11 +29,11 @@ existing association of any state is `sport association with this sport associat
 `reviewed`, `groups` and unknown keys are ignored. The errors are nested in the answer: `{'sport_association': {'field': [ErrorDetail(...)]}}`, followed by the
 module's own field errors. A dict with no error ends in the assertion as before; nothing is saved.
 
-## Update under a new key
+## Primary key in the body (t5pk)
 
-An update body with a `module_id` that no module has passes the UniqueValidator and `Model.save()` inserts a copy of the module with the
-validated values; the module the path names stays (ported in v2-rest-b3). A database conflict on the copy (the `custom_link` of another
-module is caught earlier by the validator) answers its text as `500 {'error': ...}`.
+`module_id` is read-only: an update body naming any key (new or another module's) updates the module the path names in place
+(`update-new-key-ignored`, `update-other-row-key-ignored`); an add body's key is ignored and the module gets a new key
+(`add-owner-every-field`, `add-client-id-ignored-link-taken`).
 
 ## Not ported
 

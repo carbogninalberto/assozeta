@@ -28,9 +28,7 @@ var (
 	ErrCourseSubscriptionExportUnsupported = refusal.New("course subscription export is not ported")
 	// ErrCourseSubscriptionNotPorted refuses inputs this port does not
 	// reproduce, before any write: events given as an object or a string,
-	// unmatched installments sharing a payment, HTML-form JSON fields, a
-	// changed primary key, and a soft delete whose row shares its payment with
-	// an installment.
+	// unmatched installments sharing a payment and HTML-form JSON fields.
 	ErrCourseSubscriptionNotPorted = refusal.New("course subscription input is not ported")
 )
 
@@ -235,8 +233,8 @@ func (s *CourseSubscriptions) auditContext(ctx context.Context, tx domain.Course
 		At: s.now().UTC().Truncate(time.Microsecond), Group: group}, nil
 }
 
-// Delete is the viewset's delete(): the model's soft delete. On the delete
-// route get_object() includes deleted rows.
+// Delete is the viewset's delete(): the model's soft delete, in one
+// transaction. On the delete route get_object() includes deleted rows.
 func (s *CourseSubscriptions) Delete(ctx context.Context, identity domain.ResolvedIdentity, raw string, includeDeleted bool,
 	request CourseSubscriptionRequest, audit domain.LoginAuditContext) error {
 	tx, err := s.begin(ctx)
@@ -262,35 +260,21 @@ func (s *CourseSubscriptions) Delete(ctx context.Context, identity domain.Resolv
 	}
 	save := domain.CourseSubscriptionSave{Row: row, Unseen: row.Deleted}
 	save.Row.Deleted = true
+	if shared {
+		// An installment's signal deleted the row's own payment and cleared the
+		// stored reference; the model reads it back before the save.
+		save.Row.PaymentID = nil
+	}
 	save.Representation = dto.CourseSubscriptionRepr(save.Row, dto.CourseSubscriptionMemory{})
 	if !row.Deleted {
 		// auditlog writes the entry before the UPDATE: the row still resolves.
 		save.Changes = map[string][2]string{"deleted": {"False", "True"}}
 		save.AssociationID, save.ResolutionPath = row.CourseAssociationID, "course.sport_association"
 	}
-	if shared {
-		// An installment's signal deleted the row's own payment (the stored
-		// reference is cleared), the instance still holds it: auditlog records
-		// the save, the UPDATE fails on the missing payment and, nothing being
-		// atomic, the deletes and the entry stay.
-		save.AuditOnly = true
-		reference := [2]string{"None", *row.PaymentID}
-		if row.Deleted {
-			save.Overrides = map[string][2]string{"payment": reference}
-		} else {
-			save.Changes["payment"] = reference
-		}
-	}
 	if err = tx.SaveCourseSubscription(ctx, save, context); err != nil {
 		return err
 	}
-	if err = tx.Commit(); err != nil {
-		return err
-	}
-	if shared {
-		return domain.ErrCourseSubscriptionServer
-	}
-	return nil
+	return tx.Commit()
 }
 
 // bulkIDs is the course_subscription_id__in value: None is not iterable, a

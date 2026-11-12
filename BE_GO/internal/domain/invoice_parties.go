@@ -248,7 +248,6 @@ type InvoicePartyStore interface {
 	// SupplierSerializer's reference checks, shared with a nested supplier.
 	AssociationExists(ctx context.Context, id string) (bool, error)
 	GroupAssociation(ctx context.Context, id string) (association *string, found bool, err error)
-	SupplierIDTaken(ctx context.Context, id string, group *string, exclude *string) (bool, error)
 	DefaultPaymentCategory(ctx context.Context, association *string) (id, name *string, err error)
 	// PaymentLinkedName is get_course_carnet_name's linked row of a course payment.
 	PaymentLinkedName(ctx context.Context, payment string) (PaymentLinkedName, error)

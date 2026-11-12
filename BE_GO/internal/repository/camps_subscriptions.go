@@ -117,7 +117,7 @@ func (t *campsTransaction) ServiceOfPeriod(ctx context.Context, service, period 
 }
 
 func (t *campsTransaction) PeriodExists(ctx context.Context, id string) (bool, error) {
-	return t.PeriodIDTaken(ctx, id)
+	return t.exists(ctx, `SELECT EXISTS(SELECT 1 FROM application_campsandretreatsperiod WHERE camps_and_retreats_period_id=$1)`, id)
 }
 
 func (t *campsTransaction) ExistingServices(ctx context.Context, ids []string) ([]string, error) {

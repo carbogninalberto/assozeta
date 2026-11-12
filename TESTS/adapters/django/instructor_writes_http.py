@@ -5,10 +5,10 @@ hours, reminders, a subscription, courses and attendance registries with
 calendar events (audit disabled). Each case is checked against the complete
 model state: only the authored Instructor, InstructorHours, Payment,
 Subscription and Reminders rows and instructor document links change (a new
-row is matched as the one new key, or the authored key; a copied row equals its
-source but for the authored columns), and every new auditlog entry matches an
-authored event, in order, with its authored index row (or none). Rows the run
-creates are removed before the fixture cleanup compares the model state.
+row is matched as the one new key, or the authored key), and every new auditlog
+entry matches an authored event, in order, with its authored index row (or
+none). Rows the run creates are removed before the fixture cleanup compares the
+model state.
 """
 import ipaddress
 import json
@@ -205,11 +205,7 @@ def check_rows(before, after, effect, source, context):
                 actual = candidates.pop()
                 context['keys'][name] = actual
             contract.require(actual in fresh, f'state.{name}.created-key')
-            row, columns = new[actual], dict(authored[key])
-            if '$copy' in columns:
-                origin = old[labels[columns.pop('$copy')]['id']]
-                contract.require(row == {**origin, model(name)._meta.pk.attname: actual, **columns}, f'state.{name}.copied-row')
-                continue
+            row, columns = new[actual], authored[key]
             if 'creation_date' in row:
                 contract.require(recent(row['creation_date']), f'state.{name}.created-now')
             check_columns(row, columns, context, f'state.{name}.created-row')

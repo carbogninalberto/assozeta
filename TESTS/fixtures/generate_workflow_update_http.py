@@ -6,7 +6,7 @@ is_sport_association(), is_valid_uuid(workflow_id) (400 list), then
 AutomationWorkflow.objects.filter(sport_association=request.user.sport_association,
 pk=...).first() (missing or foreign: 404 {'msg': 'workflow not found.'}; a missing
 or soft-deleted association: 500). AutomationWorkflowSerializer(partial=True,
-fields '__all__'): a writable automation_workflow_id (UniqueValidator), the
+fields '__all__'): a read-only automation_workflow_id (ignored in the body), the
 tenant-scoped sport_association relation (another tenant's association raises
 DRF's generic 403 during validation, whatever the other errors), name
 CharField(255), description nullable and blank, automation_tree a list whose
@@ -178,8 +178,7 @@ for label, body in (('blank-name', {'name': '   '}), ('long-name', {'name': 'x' 
                     ('bool-name', {'name': True}), ('tree-object', {'automation_tree': {}}), ('tree-null', {'automation_tree': None}),
                     ('tree-string', {'automation_tree': '[]'}),
                     ('sms-message', {'automation_tree': [{'id': 'message', 'value': 'sms'}]}), ('enabled-invalid', {'enabled': 'maybe'}),
-                    ('enabled-null', {'enabled': None}), ('id-malformed', {'automation_workflow_id': 'nope'}),
-                    ('id-duplicate', {'automation_workflow_id': WORKFLOWS['foreign']['id']}),
+                    ('enabled-null', {'enabled': None}),
                     ('association-unknown', {'sport_association': UNKNOWN}),
                     ('association-bool', {'sport_association': True}), ('list-body', [])):
     add(f'invalid-{label}', 'owner', path('plain'), 400, INVALID, body=body)
@@ -285,32 +284,18 @@ for label in ('cron_aware', 'cron_no_data', 'cron_string_data', 'cron_time_numbe
         effect=saved('owner', label, {'enabled': True}))
 add('enable-null-node-single', 'owner', path('null_node_single'), 200, UPDATED, body={'enabled': True},
     effect=saved('owner', 'null_node_single', {'enabled': True}))
-# save() under a key no row has: the instance (new values, loaded timestamps) is logged as an update with
-# nothing to diff against, then inserted as a copy; the row the request named keeps its values.
-COPY_ID = 'a1000000-0000-4000-8000-000000962900'
+# automation_workflow_id is read-only: a key in the body is ignored and the workflow the path names is saved in place.
 TREE_COPY = [{'id': 'trigger', 'value': 'new_subscription', 'data': {'k': 'è'}}]
-
-
-def copied(actor, label, new_id, fields, *, session=None):
-    row = STATE[label]
-    values = {'automation_workflow_id': new_id, 'sport_association': row['association'], 'name': row['name'],
-              'automation_tree': dumps(row['tree']), 'enabled': text(row['enabled']).capitalize()}
-    if row['description'] is not None:
-        values['description'] = row['description']
-    values.update(fields)
-    return {'actor': actor, 'session': session, 'label': label, 'copy': {
-        'id': new_id,
-        'row': {'name': values['name'], 'description': values.get('description'), 'automation_tree': json.loads(values['automation_tree']),
-                'enabled': values['enabled'] == 'True'},
-        'update': {k: ['None', v] for k, v in values.items()}, 'create': {k: ['None', v] for k, v in values.items()}}}
-
-
-add('new-id-inserts-copy', 'owner', path('plain'), 200, UPDATED,
-    body={'automation_workflow_id': COPY_ID, 'name': 'Copia', 'automation_tree': TREE_COPY},
-    effect=copied('owner', 'plain', COPY_ID, {'name': 'Copia', 'automation_tree': dumps(TREE_COPY)}))
-add('new-id-enable-copy', 'full_collaborator', path('copy_plain'), 200, UPDATED,
+add('new-id-ignored', 'owner', path('plain'), 200, UPDATED,
+    body={'automation_workflow_id': 'a1000000-0000-4000-8000-000000962900', 'name': 'Copia', 'automation_tree': TREE_COPY},
+    effect=saved('owner', 'plain', {'name': 'Copia', 'automation_tree': TREE_COPY}))
+add('new-id-ignored-enable', 'full_collaborator', path('copy_plain'), 200, UPDATED,
     body={'automation_workflow_id': 'a1000000-0000-4000-8000-000000962901', 'enabled': True},
-    effect=copied('full_collaborator', 'copy_plain', 'a1000000-0000-4000-8000-000000962901', {'enabled': 'True'}))
+    effect=saved('full_collaborator', 'copy_plain', {'enabled': True}))
+add('id-of-other-row-ignored', 'owner', path('plain'), 200, UPDATED, body={'automation_workflow_id': WORKFLOWS['foreign']['id']},
+    effect=saved('owner', 'plain', {}))
+add('id-malformed-ignored', 'owner', path('plain'), 200, UPDATED, body={'automation_workflow_id': 'nope', 'description': 'Chiave'},
+    effect=saved('owner', 'plain', {'description': 'Chiave'}))
 add('restricted-after-updates-unmapped', 'restricted_collaborator', path('enabled'), 403, UNMAPPED('enabled'), body={})
 
 assert len({c['name'] for c in cases}) == len(cases)

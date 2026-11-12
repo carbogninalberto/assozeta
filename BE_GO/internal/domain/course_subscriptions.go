@@ -176,16 +176,6 @@ type CourseSubscriptionSave struct {
 	Representation string
 	AssociationID  *string
 	ResolutionPath string
-	// AuditOnly records the entry of a save whose UPDATE the database
-	// rejects (the statement leaves nothing behind).
-	AuditOnly bool
-	// Overrides are the in-memory values of an Unseen entry that differ from
-	// the stored row.
-	Overrides map[string][2]string
-	// Copy is Model.save() under another primary key: the UPDATE of a row
-	// with that key (one the default manager hides), else an INSERT with its
-	// create entry; Changes carry the in-memory values of the written fields.
-	Copy bool
 }
 
 // CourseSubscriptionPaymentSave is Payment.save() of the matched membership
@@ -222,7 +212,6 @@ type CourseSubscriptionTransaction interface {
 
 	Course(ctx context.Context, id string) (*CourseSubscriptionCourse, error)
 	SubscriptionVisible(ctx context.Context, id, association string, group *string) (bool, error)
-	CourseSubscriptionIDTaken(ctx context.Context, id, exclude string) (bool, error)
 	// MembershipPaymentsWhere returns up to limit membership payments of the
 	// row (PaymentManager: live, group-aware) with the optional unpaid and
 	// meta billed_until filters, locked.
@@ -231,7 +220,8 @@ type CourseSubscriptionTransaction interface {
 	DefaultPaymentCategory(ctx context.Context, association *string) (*string, error)
 	PaymentState(ctx context.Context, payment string) (CourseSubscriptionPaymentState, error)
 	// SharedPayment reports whether the row's own payment is also the unpaid
-	// payment of one of its live group-aware installments.
+	// payment of one of its live group-aware installments (deleting the
+	// installments deletes it).
 	SharedPayment(ctx context.Context, row CourseSubscriptionRow, group *string) (bool, error)
 	SaveCourseSubscription(ctx context.Context, save CourseSubscriptionSave, audit CourseSubscriptionAudit) error
 	SavePayment(ctx context.Context, save CourseSubscriptionPaymentSave, audit CourseSubscriptionAudit) error

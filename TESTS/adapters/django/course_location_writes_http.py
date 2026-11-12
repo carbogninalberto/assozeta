@@ -150,13 +150,6 @@ def assert_effect(case, before, after, source, context):
                          and str(new_l[key]['sport_association_id']) == own
                          and all(new_l[k] == old_l[k] for k in old_l if k != key), 'state.location')
         action, path, changes = 1, 'direct', effect['changes']
-    elif effect['kind'] == 'copy':
-        # Model.save() under a key no row has: the path's row stays, the validated values are inserted under the new key.
-        key = effect['id']
-        contract.require(set(new_l) == set(old_l) | {key} and all(new_l[k] == old_l[k] for k in old_l)
-                         and stored(new_l[key]) == effect['stored'] and str(new_l[key]['sport_association_id']) == own, 'state.copy')
-        action, path = 0, 'direct'
-        changes = topup.created_changes(location_model(), location_model()._base_manager.get(pk=key), {})
     else:
         key = source['locations'][effect['label']]['id']
         contract.require(set(new_l) == set(old_l) - {key}, 'state.deleted')
@@ -175,14 +168,8 @@ def assert_effect(case, before, after, source, context):
         contract.require(len(indexes) == len(added) + (len(links) if effect['actor'] == 'owner' else 0), 'index.count')
     else:
         contract.require(len(indexes) == len(added), 'index.count')
-    if effect['kind'] == 'copy':
-        # auditlog's pre_save finds no row under the new key: the whole row is logged as an update (indexed from its
-        # changes), then the create (indexed directly).
-        contract.require(len(added) == 2, 'audit.count')
-        expected = [(1, 'changes_json.sport_association'), (0, 'direct')]
-    else:
-        contract.require(len(added) == (1 if changes else 0), 'audit.count')
-        expected = [(action, path)] * len(added)
+    contract.require(len(added) == (1 if changes else 0), 'audit.count')
+    expected = [(action, path)] * len(added)
     for event, (event_action, event_path) in zip(added, expected):
         harness.check_audit_event(contract, case, event, indexes, before=before, ids=ids, model='CourseLocation', key=key,
                                   action=event_action, changes=changes, actor=effect['actor'], association=own, path=event_path, context=context)

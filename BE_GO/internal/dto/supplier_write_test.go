@@ -28,13 +28,13 @@ func TestSupplierValidationErrorKeepsSerializerFieldOrder(t *testing.T) {
 	invalid := &SupplierValidationError{}
 	invalid.Add("email", SupplierValidationEmail)
 	invalid.Add("name", "max:255")
-	invalid.Add("supplier_id", SupplierValidationUnique)
+	invalid.Add("tax_code", "max:30")
 	invalid.Add("email", "max:254")
 	got := []string{}
 	for _, field := range invalid.Fields {
 		got = append(got, field.Name+"="+strings.Join(field.Codes, ","))
 	}
-	if strings.Join(got, ";") != "supplier_id=supplier-unique;name=max:255;email=supplier-email,max:254" {
+	if strings.Join(got, ";") != "name=max:255;tax_code=max:30;email=supplier-email,max:254" {
 		t.Fatal(got)
 	}
 }

@@ -96,7 +96,7 @@ method = lambda name: {'detail': f'Method "{name}" not allowed.'}
 field = lambda kind, label, required=False, read_only=False, **extra: {'type': kind, 'required': required, 'read_only': read_only,
                                                                     **({'label': label} if label else {}), **extra}
 SERIALIZER = {
-    'subscription_membership_id': field('string', 'Subscription membership id'),
+    'subscription_membership_id': field('string', 'Subscription membership id', read_only=True),
     'sport_association': field('field', 'Sport association', required=True),
     'associate_id': field('string', 'Associate id', read_only=True),
     'associate': field('field', 'Associate'),
@@ -157,12 +157,14 @@ response, effect = created('owner', {'membership_type': 'Annuale', 'start_date':
 add('create-owner', 'owner', LIST, 201, response, method='POST',
     body={'sport_association': OWN, 'membership_type': 'Annuale', 'start_date': '01/09/2026', 'price': '30', 'associate': A('mario'),
           'payment': P('paid'), 'subscription': SUBSCRIPTIONS['sub_a']['id']}, effect=effect)
-response, effect = created('full_collaborator', {'description': 'Da form', 'membership_number': ''}, NEW_ID)
-add('create-form-body', 'full_collaborator', LIST, 201, response, method='POST',
+# subscription_membership_id is read-only: the body's key is ignored and the membership gets a new one.
+response, effect = created('full_collaborator', {'description': 'Da form', 'membership_number': ''})
+add('create-form-body-id-ignored', 'full_collaborator', LIST, 201, response, method='POST',
     raw_body=f'sport_association={OWN}&subscription_membership_id={NEW_ID}&description=Da+form&membership_number=',
     content_type='application/x-www-form-urlencoded', effect=effect)
-add('create-existing-id', 'owner', LIST, 400, {'subscription_membership_id': ['subscription membership with this subscription membership id already exists.']},
-    method='POST', body={'sport_association': OWN, 'subscription_membership_id': NEW_ID})
+response, effect = created('owner', {})
+add('create-existing-id-ignored', 'owner', LIST, 201, response, method='POST',
+    body={'sport_association': OWN, 'subscription_membership_id': MEMBERSHIPS['m1']['id']}, effect=effect)
 response, effect = created('owner', {'membership_type': 'Formato'})
 add('create-format-json', 'owner', '/subscription/memberships.json/', 201, response, method='POST',
     body={'sport_association': OWN, 'membership_type': 'Formato'}, effect=effect)
@@ -191,6 +193,9 @@ add('update-invalid-date', 'owner', detail('m2'), 400, {'end_date': ['Date has w
 response, effect = changed('owner', 'm2', description='Aggiornata router', end_date='2026-12-31', price='12.50')
 add('update-owner-put-is-partial', 'owner', detail('m2'), 200, response, method='PUT',
     body={'description': 'Aggiornata router', 'end_date': '31/12/2026', 'price': '12.5'}, effect=effect)
+response, effect = changed('owner', 'm2', description='Chiave ignorata')
+add('update-primary-key-ignored', 'owner', detail('m2'), 200, response, method='PUT',
+    body={'subscription_membership_id': MEMBERSHIPS['m1']['id'], 'description': 'Chiave ignorata'}, effect=effect)
 add('destroy-foreign-not-found', 'owner', detail('abroad'), 404, NOT_FOUND, method='DELETE')
 add('destroy-filter-narrows-not-found', 'owner', detail('m1') + f'?associate_id={A("grouped")}', 404, NOT_FOUND, method='DELETE')
 add('destroy-athlete-server-error', 'athlete', detail('m1'), 500, SERVER, method='DELETE')
