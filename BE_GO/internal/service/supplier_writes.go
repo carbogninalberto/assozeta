@@ -147,9 +147,16 @@ func supplierTextFields(row *domain.Supplier) map[string]**string {
 		"country": &row.Country, "nationality": &row.Nationality, "note": &row.Note}
 }
 
+// supplierReferenceChecks are the lookups of SupplierSerializer's relations:
+// both the supplier transaction and the invoice-party store provide them.
+type supplierReferenceChecks interface {
+	AssociationExists(ctx context.Context, id string) (bool, error)
+	GroupAssociation(ctx context.Context, id string) (*string, bool, error)
+}
+
 // validateReferences applies the related querysets and the tenant scope (a
 // PermissionDenied escapes the serializer before its errors are raised).
-func validateSupplierReferences(ctx context.Context, tx domain.SupplierWriteTransaction, write dto.SupplierWrite, invalid *dto.SupplierValidationError,
+func validateSupplierReferences(ctx context.Context, tx supplierReferenceChecks, write dto.SupplierWrite, invalid *dto.SupplierValidationError,
 	association string, group *string) (*dto.SupplierValidationError, error) {
 	if invalid == nil {
 		invalid = &dto.SupplierValidationError{}

@@ -167,6 +167,12 @@ func (r *InvoiceParties) related(ctx context.Context, row *domain.SupplierInvoic
 		if row.Payment == nil {
 			return errors.New("supplier invoice payment row missing")
 		}
+		if payment := row.Payment; payment.AssociateID != nil || payment.InstructorID != nil || payment.InvoiceID != nil ||
+			payment.Subject != 0 && payment.Subject != 3 {
+			if row.Render, err = r.render(ctx, *row.PaymentID, group); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -294,6 +300,21 @@ func (r *InvoiceParties) LiveSupplier(ctx context.Context, id, association strin
 	return &supplier, err
 }
 
+func (r *InvoiceParties) AssociationExists(ctx context.Context, id string) (bool, error) {
+	var exists bool
+	err := r.db.GetContext(ctx, &exists, `SELECT EXISTS(SELECT 1 FROM application_sportassociation WHERE sport_association_id=$1)`, id)
+	return exists, err
+}
+
+func (r *InvoiceParties) GroupAssociation(ctx context.Context, id string) (*string, bool, error) {
+	var association *string
+	err := r.db.GetContext(ctx, &association, `SELECT sport_association_id FROM application_group WHERE group_id=$1`, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, false, nil
+	}
+	return association, err == nil, err
+}
+
 // SupplierPaymentCategory prefers the association's live "Pagamento
 // Fornitore" category, then a shared one (iexact; unordered first()).
 func (r *InvoiceParties) SupplierPaymentCategory(ctx context.Context, association string) (*string, error) {
@@ -313,20 +334,68 @@ func (r *InvoiceParties) SupplierPaymentCategory(ctx context.Context, associatio
 }
 
 // DefaultPaymentCategory is Payment.save()'s default category lookup (PaymentCategory.default_for).
-func (r *InvoiceParties) DefaultPaymentCategory(ctx context.Context, association *string) (*string, error) {
+func (r *InvoiceParties) DefaultPaymentCategory(ctx context.Context, association *string) (*string, *string, error) {
 	var row struct {
 		ID   string `db:"payment_category_id"`
 		Name string `db:"name"`
 	}
 	err := r.db.GetContext(ctx, &row, secCategoryDefaultSQL, association)
-	id := row.ID
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
+		return nil, nil, nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return &id, nil
+	return &row.ID, &row.Name, nil
+}
+
+// courses is the shared payment loader on one read transaction.
+func (r *InvoiceParties) courses(ctx context.Context, run func(t *courseSubscriptionTransaction) error) error {
+	owned, err := beginOwnedTransaction(ctx, r.db, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+	if err != nil {
+		return err
+	}
+	defer owned.Rollback()
+	return run(&courseSubscriptionTransaction{paymentCategoryTransaction: &paymentCategoryTransaction{ownedTransaction: owned}})
+}
+
+func (r *InvoiceParties) PaymentLinkedName(ctx context.Context, payment string) (domain.PaymentLinkedName, error) {
+	var linked domain.PaymentLinkedName
+	err := r.courses(ctx, func(t *courseSubscriptionTransaction) error {
+		var err error
+		linked, err = (&paymentArchiveTransaction{paymentCategoryTransaction: t.paymentCategoryTransaction}).PaymentLinkedName(ctx, payment)
+		return err
+	})
+	return linked, err
+}
+
+func (r *InvoiceParties) PaymentCreatedChanges(ctx context.Context, payment string) (map[string][2]string, error) {
+	var changes map[string][2]string
+	err := r.courses(ctx, func(t *courseSubscriptionTransaction) error {
+		var err error
+		changes, err = createdModelChanges(ctx, t.tx, "application_payment", "payment_id", payment)
+		return err
+	})
+	return changes, err
+}
+
+// render loads everything PaymentSerializer nests for one payment.
+func (r *InvoiceParties) render(ctx context.Context, id string, group *string) (*domain.PaymentStateRender, error) {
+	var render domain.PaymentStateRender
+	err := r.courses(ctx, func(t *courseSubscriptionTransaction) error {
+		payment, err := t.payment(ctx, id, group)
+		if err != nil {
+			return err
+		}
+		render.Payment = payment
+		render.Instructor, render.Invoice, err = paymentNestedRows(ctx, t.tx, payment.InvoicePartyPayment)
+		return err
+	})
+	if errors.Is(err, domain.ErrCourseSubscriptionServer) {
+		// A lookup of get_subscription_id that raises (several rows, a missing subscription).
+		return nil, domain.ErrInvoicePartyServer
+	}
+	return &render, err
 }
 
 // write runs one autocommit step of the view in its own transaction.
@@ -391,14 +460,22 @@ func (r *InvoiceParties) CreateSupplierInvoice(ctx context.Context, invoice doma
 	payment, supplier string, audit domain.LoginAuditContext, at time.Time) error {
 	return r.write(ctx, func(tx *sqlx.Tx) error {
 		if _, err := tx.ExecContext(ctx, `INSERT INTO application_invoicesuppliers (invoice_supplier_id,invoice_identifier,amount,
- payment_date,expire_date,sport_association_id,paid,notes,document_pdf_id) VALUES ($1,$2,$3::numeric,$4,$5,$6,$7,$8,$9)`,
+ payment_date,expire_date,sport_association_id,paid,notes,document_pdf_id,payment_id) VALUES ($1,$2,$3::numeric,$4,$5,$6,$7,$8,$9,$10)`,
 			invoice.ID, invoice.Identifier, invoice.Amount, invoice.PaymentDate, invoice.ExpireDate, invoice.AssociationID, invoice.Paid,
-			invoice.Notes, invoice.DocumentID); err != nil {
+			invoice.Notes, invoice.DocumentID, invoice.PaymentID); err != nil {
+			return err
+		}
+		// The key constraint is deferred: a payment_id without its row fails here, as the INSERT does in autocommit.
+		if _, err := tx.ExecContext(ctx, `SET CONSTRAINTS ALL IMMEDIATE`); err != nil {
 			return err
 		}
 		changes, err := createdModelChanges(ctx, tx, "application_invoicesuppliers", "invoice_supplier_id", invoice.ID)
 		if err != nil {
 			return err
+		}
+		if invoice.PaymentText != nil {
+			// The entry carries str() of the payment_id as sent.
+			changes["payment"] = [2]string{"None", *invoice.PaymentText}
 		}
 		created.Changes = changes
 		if err = appendModelAudit(ctx, tx, invoicePartyEntry(created, audit, at)); err != nil {

@@ -46,7 +46,7 @@ const (
 )
 
 // ErrNotPorted refuses a parameter value the SDK would encode in a way this
-// port does not reproduce (floats, nested lists).
+// port does not reproduce (a Float outside its fixed-notation repr range).
 var ErrNotPorted = refusal.New("stripe parameter value not ported")
 
 // Error is an SDK exception raised for a request. InvalidRequest is
@@ -128,7 +128,9 @@ type Param struct {
 // Encode is stripe._encode._api_encode followed by urlencode and the
 // SDK's '%5B'/'%5D' -> '['/']' replacement. Values are parsed JSON values
 // (string, json.Number, bool, nil, []any, domain.RequestObject) or int64 and
-// string conversions; a top-level None is omitted.
+// string conversions; a top-level None is omitted. A list nested in a list is
+// yielded as-is and urlencode writes str(list) (dto.PythonStr); scalars are
+// str() of the Python value.
 func Encode(params []Param) (string, error) {
 	var pairs []string
 	var walk func(key string, value any, top bool) error
@@ -141,8 +143,10 @@ func Encode(params []Param) (string, error) {
 			pairs = append(pairs, quote(key)+"="+quote("None"))
 		case []any:
 			if !top {
-				// A list nested in a list is str(list): not ported.
-				return ErrNotPorted
+				// _api_encode yields a list item that is not a dict as-is:
+				// urlencode writes str(list), Python's repr.
+				pairs = append(pairs, quote(key)+"="+quote(dto.PythonStr(v)))
+				return nil
 			}
 			for index, item := range v {
 				child := key + "[" + strconv.Itoa(index) + "]"
@@ -151,9 +155,6 @@ func Encode(params []Param) (string, error) {
 						return err
 					}
 					continue
-				}
-				if _, ok := item.([]any); ok {
-					return ErrNotPorted
 				}
 				if err := walk(child, item, false); err != nil {
 					return err
@@ -203,9 +204,9 @@ func scalar(value any) (string, error) {
 	case Float:
 		return v.python()
 	case json.Number:
-		if _, err := strconv.ParseInt(string(v), 10, 64); err == nil {
-			return string(v), nil
-		}
+		// str() of the parsed Python value: an int's digits (unbounded) or
+		// str(float).
+		return dto.PythonStr(v), nil
 	}
 	return "", ErrNotPorted
 }

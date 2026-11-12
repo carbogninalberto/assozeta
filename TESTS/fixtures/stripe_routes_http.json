@@ -85,6 +85,25 @@
    "online": true,
    "methods": null,
    "checkout": "Paga entro il 10 è"
+  },
+  "encoded": {
+   "user": "a1000000-0000-4000-8000-000001529001",
+   "association": "a1000000-0000-4000-8000-000001529002",
+   "denomination": "Stripe metodi encodés",
+   "online": true,
+   "methods": [
+    "card",
+    1.5,
+    [
+     "sepa_debit",
+     null,
+     2.0,
+     true
+    ],
+    1e+22,
+    12345678901234567890
+   ],
+   "checkout": null
   }
  },
  "payments": {
@@ -613,6 +632,90 @@
    "meta": null,
    "type": "default"
   },
+  "pay_encoded_methods": {
+   "id": "a1000000-0000-4000-8000-000001529003",
+   "association": "a1000000-0000-4000-8000-000001529002",
+   "subject": 0,
+   "amount": "21.00",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "pay_created_noid": {
+   "id": "a1000000-0000-4000-8000-000001529004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "22.50",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "pay_created_nullid": {
+   "id": "a1000000-0000-4000-8000-000001529005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "23.50",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "pay_created_numid": {
+   "id": "a1000000-0000-4000-8000-000001529006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "24.50",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
   "mp_ids_a": {
    "id": "a1000000-0000-4000-8000-000001520034",
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -886,6 +989,111 @@
    "meta": null,
    "type": "default"
   },
+  "mp_encoded_methods": {
+   "id": "a1000000-0000-4000-8000-000001529007",
+   "association": "a1000000-0000-4000-8000-000001529002",
+   "subject": 0,
+   "amount": "6.75",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "mp_null_a": {
+   "id": "a1000000-0000-4000-8000-000001529008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "7.25",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "mp_null_b": {
+   "id": "a1000000-0000-4000-8000-000001529009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "7.75",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "mp_int_valid": {
+   "id": "a1000000-0000-4000-8000-000001529010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "8.25",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "mp_reject": {
+   "id": "a1000000-0000-4000-8000-000001529011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "8.75",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": null,
+   "invoice": false,
+   "supplier_invoice": false,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
   "wh_invoiced": {
    "id": "a1000000-0000-4000-8000-000001520047",
    "association": "a1000000-0000-4000-8000-000000701001",
@@ -940,6 +1148,48 @@
    "invoice": true,
    "supplier_invoice": true,
    "group": "own_group",
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "wh_float_intent": {
+   "id": "a1000000-0000-4000-8000-000001529012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "53.00",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": "1.5",
+   "invoice": true,
+   "supplier_invoice": true,
+   "group": null,
+   "deleted": false,
+   "category": "a1000000-0000-4000-8000-000001520001",
+   "description": "Quota",
+   "created": "2026-10-01T08:00:00Z",
+   "payment_date": null,
+   "meta_categories": null,
+   "meta": null,
+   "type": "default"
+  },
+  "wh_json_intent": {
+   "id": "a1000000-0000-4000-8000-000001529013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "subject": 0,
+   "amount": "54.00",
+   "paid": false,
+   "associate": true,
+   "user": true,
+   "intent": "{\n  \"a\": \"\\u00e8\",\n  \"b\": 1\n}",
+   "invoice": true,
+   "supplier_invoice": true,
+   "group": null,
    "deleted": false,
    "category": "a1000000-0000-4000-8000-000001520001",
    "description": "Quota",
@@ -1389,6 +1639,14 @@
   "wh_group": {
    "id": "a1000000-0000-4000-8000-000001520081",
    "number": 907
+  },
+  "wh_float_intent": {
+   "id": "a1000000-0000-4000-8000-000001529014",
+   "number": 908
+  },
+  "wh_json_intent": {
+   "id": "a1000000-0000-4000-8000-000001529015",
+   "number": 909
   }
  },
  "supplier_invoices": {
@@ -1421,6 +1679,16 @@
    "id": "a1000000-0000-4000-8000-000001520087",
    "identifier": "FT-S5",
    "amount": "52.00"
+  },
+  "wh_float_intent": {
+   "id": "a1000000-0000-4000-8000-000001529016",
+   "identifier": "FT-S6",
+   "amount": "53.00"
+  },
+  "wh_json_intent": {
+   "id": "a1000000-0000-4000-8000-000001529017",
+   "identifier": "FT-S7",
+   "amount": "54.00"
   }
  },
  "course": {
@@ -3141,6 +3409,191 @@
    ]
   },
   {
+   "name": "stripe-routes-pay-encodes-python-json-methods",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/pay/a1000000-0000-4000-8000-000001529003",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "client_secret": "pi_stub_pay_encoded_methods_secret_stub"
+    }
+   },
+   "effect": {
+    "payments_changed": {
+     "pay_encoded_methods": {
+      "intent": "pi_stub_pay_encoded_methods"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "pay_encoded_methods",
+      "action": 1,
+      "changes": {
+       "payment_intent_id": [
+        "None",
+        "pi_stub_pay_encoded_methods"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001529002",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "stripe": [
+    {
+     "method": "POST",
+     "path": "/v1/payment_intents",
+     "body": "amount=2100&currency=eur&description=Associato%3A+Mario+Rossi+-+Utente%3A+Message+Fixture+-+Pagamento+di+21.00+euro+per+Stripe+metodi+encod%C3%A9s&payment_method_types[0]=card&payment_method_types[1]=1.5&payment_method_types[2]=[%27sepa_debit%27%2C+None%2C+2.0%2C+True]&payment_method_types[3]=10000000000000000000000&payment_method_types[4]=12345678901234567890",
+     "status": 200,
+     "response": {
+      "id": "pi_stub_pay_encoded_methods",
+      "object": "payment_intent",
+      "amount": 2100,
+      "currency": "eur",
+      "client_secret": "pi_stub_pay_encoded_methods_secret_stub",
+      "status": "requires_payment_method",
+      "metadata": {}
+     },
+     "telemetry": null,
+     "same_key_as_previous": false
+    }
+   ]
+  },
+  {
+   "name": "stripe-routes-pay-created-intent-without-id-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/pay/a1000000-0000-4000-8000-000001529004",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [
+    {
+     "method": "POST",
+     "path": "/v1/payment_intents",
+     "body": "amount=2250&currency=eur&description=Associato%3A+Mario+Rossi+-+Utente%3A+Message+Fixture+-+Pagamento+di+22.50+euro+per+Message+reads+own&payment_method_types[0]=card&payment_method_types[1]=sepa_debit",
+     "status": 200,
+     "response": {
+      "object": "payment_intent",
+      "amount": 2250,
+      "currency": "eur",
+      "client_secret": "pi_stub_noid_secret_stub",
+      "status": "requires_payment_method",
+      "metadata": {}
+     },
+     "telemetry": null,
+     "same_key_as_previous": false
+    }
+   ]
+  },
+  {
+   "name": "stripe-routes-pay-created-intent-with-null-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/pay/a1000000-0000-4000-8000-000001529005",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "client_secret": "pi_stub_nullid_secret_stub"
+    }
+   },
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [
+    {
+     "method": "POST",
+     "path": "/v1/payment_intents",
+     "body": "amount=2350&currency=eur&description=Associato%3A+Mario+Rossi+-+Utente%3A+Message+Fixture+-+Pagamento+di+23.50+euro+per+Message+reads+own&payment_method_types[0]=card&payment_method_types[1]=sepa_debit",
+     "status": 200,
+     "response": {
+      "object": "payment_intent",
+      "amount": 2350,
+      "currency": "eur",
+      "client_secret": "pi_stub_nullid_secret_stub",
+      "status": "requires_payment_method",
+      "metadata": {},
+      "id": null
+     },
+     "telemetry": null,
+     "same_key_as_previous": false
+    }
+   ]
+  },
+  {
+   "name": "stripe-routes-pay-created-intent-with-integer-id",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/pay/a1000000-0000-4000-8000-000001529006",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "client_secret": "pi_stub_numid_secret_stub"
+    }
+   },
+   "effect": {
+    "payments_changed": {
+     "pay_created_numid": {
+      "intent": "5"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "pay_created_numid",
+      "action": 1,
+      "changes": {
+       "payment_intent_id": [
+        "None",
+        "5"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "stripe": [
+    {
+     "method": "POST",
+     "path": "/v1/payment_intents",
+     "body": "amount=2450&currency=eur&description=Associato%3A+Mario+Rossi+-+Utente%3A+Message+Fixture+-+Pagamento+di+24.50+euro+per+Message+reads+own&payment_method_types[0]=card&payment_method_types[1]=sepa_debit",
+     "status": 200,
+     "response": {
+      "object": "payment_intent",
+      "amount": 2450,
+      "currency": "eur",
+      "client_secret": "pi_stub_numid_secret_stub",
+      "status": "requires_payment_method",
+      "metadata": {},
+      "id": 5
+     },
+     "telemetry": null,
+     "same_key_as_previous": false
+    }
+   ]
+  },
+  {
    "name": "stripe-routes-multiple-pay-options",
    "actor": "anonymous",
    "method": "OPTIONS",
@@ -4723,6 +5176,570 @@
    }
   },
   {
+   "name": "stripe-routes-multiple-pay-encodes-python-json-methods",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/multiple-pay",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "client_secret": "pi_stub_multi_encoded_secret_stub",
+     "info": {
+      "checkout_info": null
+     }
+    },
+    "payments": [
+     {
+      "payment_id": "a1000000-0000-4000-8000-000001529007",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001520002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000001520003",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti Stripe fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "6.75",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000001520001",
+      "sport_association": "a1000000-0000-4000-8000-000001529002",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    ]
+   },
+   "effect": {
+    "payments_changed": {
+     "mp_encoded_methods": {
+      "intent": "pi_stub_multi_encoded"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "mp_encoded_methods",
+      "action": 1,
+      "changes": {
+       "payment_intent_id": [
+        "None",
+        "pi_stub_multi_encoded"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000001529002",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "stripe": [
+    {
+     "method": "POST",
+     "path": "/v1/payment_intents",
+     "body": "amount=675&currency=eur&description=Mar-Ros-%E2%82%AC6.75%7C&payment_method_types[0]=card&payment_method_types[1]=1.5&payment_method_types[2]=[%27sepa_debit%27%2C+None%2C+2.0%2C+True]&payment_method_types[3]=10000000000000000000000&payment_method_types[4]=12345678901234567890&metadata[a1000000-0000-4000-8000-000001529007]=6.75",
+     "status": 200,
+     "response": {
+      "id": "pi_stub_multi_encoded",
+      "object": "payment_intent",
+      "amount": 675,
+      "currency": "eur",
+      "client_secret": "pi_stub_multi_encoded_secret_stub",
+      "status": "requires_payment_method",
+      "metadata": {}
+     },
+     "telemetry": null,
+     "same_key_as_previous": false
+    }
+   ],
+   "body": {
+    "payments": [
+     {
+      "payment_id": "a1000000-0000-4000-8000-000001529007"
+     }
+    ]
+   }
+  },
+  {
+   "name": "stripe-routes-multiple-pay-ids-with-null",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/multiple-pay",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "client_secret": "pi_stub_multi_null_secret_stub",
+     "info": {
+      "checkout_info": null
+     }
+    },
+    "payments": [
+     {
+      "payment_id": "a1000000-0000-4000-8000-000001529008",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001520002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000001520003",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti Stripe fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "7.25",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000001520001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     },
+     {
+      "payment_id": "a1000000-0000-4000-8000-000001529009",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001520002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000001520003",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti Stripe fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "7.75",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000001520001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    ]
+   },
+   "effect": {
+    "payments_changed": {
+     "mp_null_a": {
+      "intent": "pi_stub_multi_null"
+     },
+     "mp_null_b": {
+      "intent": "pi_stub_multi_null"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "mp_null_a",
+      "action": 1,
+      "changes": {
+       "payment_intent_id": [
+        "None",
+        "pi_stub_multi_null"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "mp_null_b",
+      "action": 1,
+      "changes": {
+       "payment_intent_id": [
+        "None",
+        "pi_stub_multi_null"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "stripe": [
+    {
+     "method": "POST",
+     "path": "/v1/payment_intents",
+     "body": "amount=1500&currency=eur&description=Mar-Ros-%E2%82%AC7.25%7CMar-Ros-%E2%82%AC7.75%7C&payment_method_types[0]=card&payment_method_types[1]=sepa_debit&metadata[a1000000-0000-4000-8000-000001529008]=7.25&metadata[a1000000-0000-4000-8000-000001529009]=7.75",
+     "status": 200,
+     "response": {
+      "id": "pi_stub_multi_null",
+      "object": "payment_intent",
+      "amount": 1500,
+      "currency": "eur",
+      "client_secret": "pi_stub_multi_null_secret_stub",
+      "status": "requires_payment_method",
+      "metadata": {}
+     },
+     "telemetry": null,
+     "same_key_as_previous": false
+    }
+   ],
+   "body": {
+    "payments": [
+     "a1000000-0000-4000-8000-000001529008",
+     null,
+     "a1000000-0000-4000-8000-000001529009"
+    ]
+   }
+  },
+  {
+   "name": "stripe-routes-multiple-pay-object-integer-and-valid-ids",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/multiple-pay",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "client_secret": "pi_stub_multi_int_secret_stub",
+     "info": {
+      "checkout_info": null
+     }
+    },
+    "payments": [
+     {
+      "payment_id": "a1000000-0000-4000-8000-000001529010",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001520002",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": "1990-05-10",
+       "email": "mario@example.test",
+       "sex": "M",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sport_association": "a1000000-0000-4000-8000-000000701001",
+       "tax_code": "RSSMRA90E10H501Z",
+       "user": "a1000000-0000-4000-8000-000000700001",
+       "phone": null,
+       "family": null,
+       "family_role": null
+      },
+      "subscription_id": "a1000000-0000-4000-8000-000001520003",
+      "instructor_id": null,
+      "instructor": null,
+      "supplier": null,
+      "supplier_id": null,
+      "custom_account_type": null,
+      "custom_account_name": null,
+      "invoice": null,
+      "attachments": [],
+      "payment_category_name": "Pagamenti Stripe fixture",
+      "type": "default",
+      "subject": 0,
+      "amount": "8.25",
+      "creation_date": "2026-10-01T08:00:00Z",
+      "payment_date": null,
+      "paid": false,
+      "expense": false,
+      "description": "Quota",
+      "meta_payment_categories": null,
+      "payment_intent_id": null,
+      "archived": false,
+      "invoice_fiscal_code": null,
+      "meta": null,
+      "notes": null,
+      "deleted": false,
+      "course": null,
+      "payment_category": "a1000000-0000-4000-8000-000001520001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "custom_accounts": null,
+      "signature": null,
+      "group": null
+     }
+    ]
+   },
+   "effect": {
+    "payments_changed": {
+     "mp_int_valid": {
+      "intent": "pi_stub_multi_int"
+     }
+    },
+    "supplier_invoices_changed": {},
+    "audit": [
+     {
+      "model": "payment",
+      "label": "mp_int_valid",
+      "action": 1,
+      "changes": {
+       "payment_intent_id": [
+        "None",
+        "pi_stub_multi_int"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "stripe": [
+    {
+     "method": "POST",
+     "path": "/v1/payment_intents",
+     "body": "amount=825&currency=eur&description=Mar-Ros-%E2%82%AC8.25%7C&payment_method_types[0]=card&payment_method_types[1]=sepa_debit&metadata[a1000000-0000-4000-8000-000001529010]=8.25",
+     "status": 200,
+     "response": {
+      "id": "pi_stub_multi_int",
+      "object": "payment_intent",
+      "amount": 825,
+      "currency": "eur",
+      "client_secret": "pi_stub_multi_int_secret_stub",
+      "status": "requires_payment_method",
+      "metadata": {}
+     },
+     "telemetry": null,
+     "same_key_as_previous": false
+    }
+   ],
+   "body": {
+    "payments": [
+     {
+      "payment_id": 5
+     },
+     {
+      "payment_id": "a1000000-0000-4000-8000-000001529010"
+     }
+    ]
+   }
+  },
+  {
+   "name": "stripe-routes-multiple-pay-object-float-id-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/multiple-pay",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "body": {
+    "payments": [
+     {
+      "payment_id": 1.5
+     }
+    ]
+   }
+  },
+  {
+   "name": "stripe-routes-multiple-pay-string-then-float-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/multiple-pay",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "body": {
+    "payments": [
+     "a1000000-0000-4000-8000-000001529011",
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "stripe-routes-multiple-pay-string-then-object-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/multiple-pay",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "body": {
+    "payments": [
+     "a1000000-0000-4000-8000-000001529011",
+     {
+      "payment_id": "a1000000-0000-4000-8000-000001529011"
+     }
+    ]
+   }
+  },
+  {
+   "name": "stripe-routes-multiple-pay-object-negative-id-server-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/multiple-pay",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "body": {
+    "payments": [
+     {
+      "payment_id": -1
+     }
+    ]
+   }
+  },
+  {
    "name": "stripe-routes-webhook-options",
    "actor": "anonymous",
    "method": "OPTIONS",
@@ -5225,6 +6242,232 @@
    },
    "stripe": [],
    "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": \"pi_stub_wh_group\"}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-float-intent-unknown",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": 1.5}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-list-intent-unknown",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": [\"pi_x\", null, 2.0]}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-object-intent-unknown",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": {\"b\": 1, \"a\": \"\\u00e8\"}}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-list-object-intent-unknown",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {},
+    "supplier_invoices_changed": {},
+    "audit": []
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": [\"pi_x\", {\"a\": 1}]}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-float-intent-marks-payment",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {
+     "wh_float_intent": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "a1000000-0000-4000-8000-000001529014",
+      "type": "stripe"
+     }
+    },
+    "supplier_invoices_changed": {
+     "wh_float_intent": {
+      "paid": true,
+      "payment_date": "$now"
+     }
+    },
+    "audit": [
+     {
+      "model": "invoicesuppliers",
+      "label": "wh_float_intent",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "wh_float_intent",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "type": [
+        "default",
+        "stripe"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": 1.5}}}",
+   "content_type": "application/json",
+   "signature": "t={t},v1={v1}"
+  },
+  {
+   "name": "stripe-routes-webhook-charge-object-intent-marks-payment",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/stripe/webhook",
+   "headers": {},
+   "status": 200,
+   "response": "<empty>",
+   "effect": {
+    "payments_changed": {
+     "wh_json_intent": {
+      "paid": true,
+      "payment_date": "$now",
+      "invoice": "a1000000-0000-4000-8000-000001529015",
+      "type": "stripe"
+     }
+    },
+    "supplier_invoices_changed": {
+     "wh_json_intent": {
+      "paid": true,
+      "payment_date": "$now"
+     }
+    },
+    "audit": [
+     {
+      "model": "invoicesuppliers",
+      "label": "wh_json_intent",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "payment",
+      "label": "wh_json_intent",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ],
+       "payment_date": [
+        "None",
+        "$now"
+       ],
+       "type": [
+        "default",
+        "stripe"
+       ]
+      },
+      "actor": "anonymous",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ]
+   },
+   "stripe": [],
+   "raw_body": "{\"id\": \"evt_stub\", \"object\": \"event\", \"type\": \"charge.succeeded\", \"data\": {\"object\": {\"id\": \"ch_stub\", \"object\": \"charge\", \"payment_intent\": {\"b\": 1, \"a\": \"\\u00e8\"}}}}",
    "content_type": "application/json",
    "signature": "t={t},v1={v1}"
   },

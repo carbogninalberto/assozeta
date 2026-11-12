@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log/slog"
 	"math/big"
-	"strings"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/celery"
@@ -276,14 +275,25 @@ func clientSecret(object stripeapi.Object) (any, error) {
 	return json.RawMessage(dto.PythonJSONDumps(value)), nil
 }
 
-// stripeID is payment_intent.stripe_id (the object's id).
-func stripeID(object stripeapi.Object) (string, error) {
+// stripeID is payment_intent.stripe_id (getattr(self, 'id')) as the nullable
+// text the CharField stores: a missing key is the AttributeError (the 500
+// page), null is saved as None, a number or bool as its str().
+func stripeID(object stripeapi.Object) (*string, error) {
 	value, present := object.Lookup("id")
-	text, ok := value.(string)
-	if !present || !ok {
-		return "", domain.ErrStripeNotPorted
+	if !present {
+		return nil, domain.ErrStripeServer
 	}
-	return text, nil
+	switch v := value.(type) {
+	case nil:
+		return nil, nil
+	case string:
+		return &v, nil
+	case bool, json.Number:
+		text := dto.PythonStr(v)
+		return &text, nil
+	}
+	// A list or object id is a reply shape the API never sends.
+	return nil, domain.ErrStripeNotPorted
 }
 
 // pythonText is f'{value}' for a nullable text column.
@@ -314,12 +324,6 @@ func methodsValue(raw *string) (any, error) {
 	value, err := dto.ParseProfileTablesJSON([]byte(*raw))
 	if err != nil {
 		return nil, domain.ErrStripeServer
-	}
-	if value != nil {
-		// Only encodings this port reproduces are accepted before any write.
-		if _, err := stripeapi.Encode([]stripeapi.Param{{Key: "payment_method_types", Value: value}}); err != nil {
-			return nil, domain.ErrStripeNotPorted
-		}
 	}
 	return value, nil
 }
@@ -603,7 +607,7 @@ func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity
 		if err != nil {
 			return nil, err
 		}
-		if err := s.saveIntent(ctx, identity, request, payment, &identifier); err != nil {
+		if err := s.saveIntent(ctx, identity, request, payment, identifier); err != nil {
 			return nil, err
 		}
 		intent = created
@@ -618,6 +622,24 @@ func (s *StripeRoutes) Pay(ctx context.Context, identity domain.ResolvedIdentity
 // ---------------------------------------------------------------------------
 // stripe/multiple-pay
 // ---------------------------------------------------------------------------
+
+// paymentIDLookup is UUIDField.to_python for one payment_id__in value: a str
+// through uuid.UUID(hex=...), an int or bool through uuid.UUID(int=...)
+// (dto.DjangoUUIDLookup); a float, list or dict is the lookup's ValidationError.
+func paymentIDLookup(value any) (string, error) {
+	if text, ok := value.(string); ok {
+		id, err := paymentInfoParseUUID(text)
+		if err != nil {
+			return "", domain.ErrStripeServer
+		}
+		return id.String(), nil
+	}
+	id, ok := dto.DjangoUUIDLookup(value)
+	if !ok {
+		return "", domain.ErrStripeServer
+	}
+	return id, nil
+}
 
 // MultiplePay follows stripe_multiple_pay.
 func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.ResolvedIdentity, request StripeRequest, body any) (map[string]any, error) {
@@ -662,19 +684,15 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 			}
 			raw = value
 		}
-		if raw == nil && !idsOnly {
-			// A null id drops out of the IN list.
+		if raw == nil {
+			// payment_id__in drops None in both modes.
 			continue
 		}
-		text, ok := raw.(string)
-		if !ok {
-			return nil, domain.ErrStripeNotPorted
-		}
-		id, err := paymentInfoParseUUID(text)
+		text, err := paymentIDLookup(raw)
 		if err != nil {
-			return nil, domain.ErrStripeServer
+			return nil, err
 		}
-		values = append(values, id.String())
+		values = append(values, text)
 	}
 	if len(values) == 0 {
 		// payments[0] on an empty queryset.
@@ -731,7 +749,9 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 		switch value.(type) {
 		case nil, string:
 		default:
-			return nil, domain.ErrStripeNotPorted
+			// Rendered from a stored row: the serialized sport_association is
+			// always a uuid string or null.
+			return nil, domain.ErrStripeServer
 		}
 		keys = append(keys, value)
 	}
@@ -770,7 +790,8 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 			}
 			text, ok := value.(string)
 			if !ok {
-				return domain.ErrStripeNotPorted
+				// Rendered from a stored row: payment_id is always a uuid string.
+				return domain.ErrStripeServer
 			}
 			id, err := paymentInfoParseUUID(text)
 			if err != nil {
@@ -876,7 +897,7 @@ func (s *StripeRoutes) MultiplePay(ctx context.Context, identity domain.Resolved
 		return nil, err
 	}
 	for _, payment := range unpaid {
-		if err := s.saveIntent(ctx, identity, request, payment, &identifier); err != nil {
+		if err := s.saveIntent(ctx, identity, request, payment, identifier); err != nil {
 			return nil, err
 		}
 	}
@@ -986,13 +1007,36 @@ func chargeIntent(event domain.RequestObject) (domain.StripeIntentMatch, bool, e
 		return domain.StripeIntentMatch{Null: true}, true, nil
 	case string:
 		return domain.StripeIntentMatch{Value: v}, true, nil
-	case bool:
-		return domain.StripeIntentMatch{Value: map[bool]string{true: "True", false: "False"}[v]}, true, nil
-	case json.Number:
-		if !strings.ContainsAny(string(v), ".eE") {
-			return domain.StripeIntentMatch{Value: string(v)}, true, nil
+	case bool, json.Number:
+		// CharField.to_python is str(value) for anything that is not a str or None.
+		return domain.StripeIntentMatch{Value: dto.PythonStr(v)}, true, nil
+	case []any:
+		if containsStripeObject(v) {
+			// str(list) of a list holding a StripeObject embeds its memory
+			// address, so the text equals no stored value.
+			return domain.StripeIntentMatch{NoMatch: true}, true, nil
+		}
+		return domain.StripeIntentMatch{Value: dto.PythonStr(v)}, true, nil
+	case domain.RequestObject:
+		// The SDK's StripeObject.__str__.
+		return domain.StripeIntentMatch{Value: string(dto.PythonJSONDumpsSortedIndent(v, 2))}, true, nil
+	}
+	return domain.StripeIntentMatch{}, false, nil
+}
+
+// containsStripeObject reports whether a decoded JSON list holds an object
+// anywhere: the SDK builds each nested dict as a StripeObject, whose repr
+// carries a memory address.
+func containsStripeObject(list []any) bool {
+	for _, item := range list {
+		switch v := item.(type) {
+		case domain.RequestObject:
+			return true
+		case []any:
+			if containsStripeObject(v) {
+				return true
+			}
 		}
 	}
-	// CharField.to_python's str() of other values is not ported.
-	return domain.StripeIntentMatch{}, false, domain.ErrStripeNotPorted
+	return false
 }

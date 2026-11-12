@@ -63,6 +63,10 @@ func (r *StripeRoutes) PaymentByIntent(ctx context.Context, intent string, query
 
 func (r *StripeRoutes) PaymentsByIntent(ctx context.Context, match domain.StripeIntentMatch, query domain.StripePaymentQuery) ([]domain.StripePayment, error) {
 	rows := []domain.StripePayment{}
+	if match.NoMatch {
+		// str() of a value that carries an address equals no stored intent.
+		return rows, nil
+	}
 	var err error
 	if match.Null {
 		err = r.db.SelectContext(ctx, &rows, stripePaymentColumns+` WHERE`+stripePaymentScope+` AND p.payment_intent_id IS NULL`,

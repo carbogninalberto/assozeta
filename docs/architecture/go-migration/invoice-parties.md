@@ -112,25 +112,29 @@ A file part as `paid` or `transmitted` is written to the entry as the file's nam
 it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-error`). 139 cases, receipt
 `invoice-parties-http-sweep-restdocs-2` (GitHub run 42908069516): 4 transports. Mutation (the entry written with another name) CAUGHT.
 
+## t6x1
+
+- A non-null `payment_id` is stored and audited as sent; a payment of another association stays refused.
+- A linked payment the manager does not see is audited against None and indexed through `changes_json.sport_association`.
+- Every branch of `Payment.save()`'s description hook is written (course label, default category name, account transfer raising after the invoice save).
+- Supplier invoices render the shared `PaymentSerializer` with an associate, instructor or invoice.
+- A multipart supplier add is read as a form.
+- A nested `supplier` object is validated with `SupplierSerializer` (partial on update) and the supplier reference checks; its
+  errors join the invoice errors, another association's reference is the generic 403, and a valid object is the 500 page
+  (on add the payment is kept).
+
 ## Not ported (refused with a 500 before any write)
 
 - Customer-list invoices without a PDF whose FatturaPA inputs are outside `internal/fatturapa`'s subset (`ErrUnsupported`,
   checked for all of them before the first save).
 - A valid customer add was refused here; it is ported in
   [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
-- Nested `payment` or `supplier` objects (DRF's nested serializer validation
-  and writes) and a non-null `payment_id`.
-- Supplier-update payment saves for a payment the live, group-aware manager
-  cannot load (auditlog would diff against None), or whose `Payment.save()`
-  description needs a course's reverse lookups (subject 2, NULL), the default
-  category's name (subject 0, NULL, no category) or raises (account transfer).
-  A NULL description of other subjects and the "quota corso" meta override are
-  derived and written (see [model-hooks](model-hooks.md)).
-- Rendering a supplier invoice whose payment links an associate, instructor
-  or invoice, or has a subscription/course subject.
+- Nested `payment` objects (DRF's nested serializer validation and writes: its validation nests the account, associate,
+  instructor, supplier and invoice serializers).
 - `?` ordering (a random order has no answer to reproduce). Client-chosen orderings (t4l1): the list orders by the model's own columns (names and attnames, `pk`, a foreign key by its key column) and the columns the view annotated. A path through a relation or the owner account, a transform, a reverse accessor and a few stored columns (the stored document) answer as an unknown ordering (FieldError, the 500 page) on both sides; the shared helper is `checked_ordering` in `BE/application/utils/api_utils.py`.
-- Multipart bodies with file parts on the adds (Django merges files into a
-  mutable copy; every other form body is a 500 in both).
+- Multipart bodies with file parts on the customer add (Django merges files into
+  a mutable copy; every other form body is a 500 in both). The supplier add
+  reads the merged form.
 
 ## Evidence (TDD)
 

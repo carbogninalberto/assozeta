@@ -99,9 +99,16 @@ func InvoicePartyPaymentItem(row domain.InvoicePartyPayment) map[string]any {
 }
 
 // SupplierInvoiceItem is InvoiceSuppliersSerializer.
-func SupplierInvoiceItem(row domain.SupplierInvoiceRow) map[string]any {
+func SupplierInvoiceItem(row domain.SupplierInvoiceRow) (map[string]any, error) {
 	var payment any
-	if row.Payment != nil {
+	if row.Render != nil {
+		// A payment with an associate, instructor or invoice, or a subscription or course subject.
+		item, err := PaymentStateItem(*row.Render)
+		if err != nil {
+			return nil, err
+		}
+		payment = item
+	} else if row.Payment != nil {
 		payment = InvoicePartyPaymentItem(*row.Payment)
 	}
 	return map[string]any{
@@ -109,5 +116,5 @@ func SupplierInvoiceItem(row domain.SupplierInvoiceRow) map[string]any {
 		"notes": row.Notes, "supplier": invoicePartySupplier(row.Supplier), "invoice_identifier": row.Identifier, "amount": row.Amount,
 		"payment_date": invoicePartyTime(row.PaymentDate), "expire_date": invoicePartyTime(row.ExpireDate), "paid": row.Paid,
 		"sport_association": row.AssociationID, "document_pdf": row.DocumentID,
-	}
+	}, nil
 }

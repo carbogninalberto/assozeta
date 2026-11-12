@@ -24,6 +24,7 @@ import re
 import types
 
 from TESTS.contracts import test_invoice_parties_http as base_contract
+from TESTS.adapters.django import default_payment_category
 from TESTS.adapters.django import family_harness as harness
 from TESTS.adapters.django import invoice_sync_print_http as printer
 from TESTS.adapters.django.workflow_writes_http import keyed
@@ -36,7 +37,7 @@ SOURCES = ('TESTS/fixtures/invoice_parties_http.json', 'TESTS/contracts/test_inv
            'BE/application/models/user_models.py', 'BE/application/mixin.py', 'BE/application/tenant_scope.py',
            'BE/application/audit_resolvers.py', 'BE/application/signals.py', 'BE/application/utils/api_utils.py',
            'BE/docmanager/models.py', 'BE/application/printing_tasks.py', 'BE/instance/restore/task_base.py',
-           'TESTS/adapters/django/invoice_sync_print_http.py') + harness.SOURCES
+           'TESTS/adapters/django/invoice_sync_print_http.py') + default_payment_category.SOURCES + harness.SOURCES
 
 
 def _assert_case(case, base_url, *, token, sessions):
@@ -96,7 +97,8 @@ def field_values(model, row):
 
 
 def seed_rows(source, created):
-    from application.models import CustomAccounts, CustomerInvoice, InvoiceSuppliers, Payment, PaymentCategory, SupplierAndCustomers
+    from application.models import (Associate, CustomAccounts, CustomerInvoice, Instructor, Invoice, InvoiceSuppliers, Payment,
+                                    PaymentCategory, SupplierAndCustomers)
     from docmanager.models import Document
 
     def seed(model, row):
@@ -106,7 +108,8 @@ def seed_rows(source, created):
         created.append((model, instance.pk))
 
     for model, rows in ((Document, source['documents']), (SupplierAndCustomers, source['suppliers']), (CustomAccounts, source['accounts']),
-                        (PaymentCategory, source['categories']), (Payment, source['payments']),
+                        (PaymentCategory, source['categories']), (Associate, source['associates']),
+                        (Instructor, source['instructors']), (Invoice, source['invoices']), (Payment, source['payments']),
                         (InvoiceSuppliers, source['supplier_invoices']), (CustomerInvoice, source['customer_invoices'])):
         for row in rows.values():
             seed(model, row)
@@ -194,6 +197,10 @@ def assert_effect(case, before, after, source, context):
         touched = spec['rows'].get(name, {})
         contract.require(all(new[k] == old[k] for k in old if k not in touched), 'state.untouched:' + name)
     substitutions = {'$payment': created.get('payment'), '$invoice': created.get('invoicesuppliers')}
+    # Payment.save()'s default category for the foreign association's payment (the global row).
+    default = default_payment_category.default_category(source['ids']['foreign_association'])
+    if default is not None:
+        substitutions.update({'$default_category': str(default.pk), '$default_category_name': default.name})
 
     def expect(value, actual, previous=None, instance=None):
         if value == '$xml':
@@ -240,7 +247,9 @@ def assert_effect(case, before, after, source, context):
                          and event['object_pk'] == key and event['object_repr'] == f'{model.__name__} object ({key})', 'audit.identity')
         changes = wanted['changes']
         if '$created' in changes:
-            expected = created_changes(model, model._base_manager.get(pk=key), changes['$created'])
+            # '$override': fields whose entry carries the in-memory text instead of the stored value.
+            expected = {**created_changes(model, model._base_manager.get(pk=key), changes['$created']),
+                        **{field: [substitutions.get(text, text) for text in pair] for field, pair in changes.get('$override', {}).items()}}
             contract.require(event['changes'] == expected, 'audit.changes-created')
         else:
             old_rows = keyed(before[MODELS[wanted['model']]], keys[wanted['model']])

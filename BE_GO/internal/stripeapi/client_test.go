@@ -32,11 +32,31 @@ func TestEncodeMatchesStripePython(t *testing.T) {
 	if err != nil || got != want {
 		t.Fatalf("Encode = %q, %v; want %q", got, err, want)
 	}
-	if _, err := Encode([]Param{{Key: "x", Value: []any{[]any{"a"}}}}); !errors.Is(err, ErrNotPorted) {
-		t.Fatalf("nested list: %v", err)
+	if got, err := Encode([]Param{{Key: "x", Value: []any{[]any{"a"}}}}); err != nil || got != "x[0]=[%27a%27]" {
+		t.Fatalf("nested list: %q, %v", got, err)
 	}
-	if _, err := Encode([]Param{{Key: "x", Value: json.Number("1.5")}}); !errors.Is(err, ErrNotPorted) {
-		t.Fatalf("float: %v", err)
+	if got, err := Encode([]Param{{Key: "x", Value: json.Number("1.5")}}); err != nil || got != "x=1.5" {
+		t.Fatalf("float: %q, %v", got, err)
+	}
+}
+
+func TestEncodePythonValuesLikeStripePython(t *testing.T) {
+	// urlencode(list(_api_encode(...))) for a JSON payment_method_types value:
+	// floats are str(float), ints keep every digit, a nested list is str(list).
+	methods := []any{"card", json.Number("1.50"), []any{"sepa_debit", nil, json.Number("2.0"), true},
+		json.Number("1e+22"), json.Number("12345678901234567890")}
+	got, err := Encode([]Param{{Key: "payment_method_types", Value: methods}})
+	want := "payment_method_types[0]=card&payment_method_types[1]=1.5" +
+		"&payment_method_types[2]=[%27sepa_debit%27%2C+None%2C+2.0%2C+True]&payment_method_types[3]=1e%2B22" +
+		"&payment_method_types[4]=12345678901234567890"
+	if err != nil || got != want {
+		t.Fatalf("Encode = %q, %v; want %q", got, err, want)
+	}
+	got, err = Encode([]Param{{Key: "a", Value: json.Number("100000.0")}, {Key: "b", Value: json.Number("1e-5")},
+		{Key: "c", Value: json.Number("2.0")}, {Key: "d", Value: json.Number("12345678901234567890")},
+		{Key: "e", Value: true}, {Key: "f", Value: nil}})
+	if want := "a=100000.0&b=1e-05&c=2.0&d=12345678901234567890&e=True"; err != nil || got != want {
+		t.Fatalf("Encode = %q, %v; want %q", got, err, want)
 	}
 }
 

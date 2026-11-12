@@ -2,6 +2,7 @@ package dto
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
@@ -13,11 +14,19 @@ import (
 // PythonJSONDumps accepts.
 func PythonJSONDumpsIndent(value any, indent int) []byte {
 	var out strings.Builder
-	pythonJSONWriteIndent(&out, value, indent, 0)
+	pythonJSONWriteIndent(&out, value, indent, 0, false)
 	return []byte(out.String())
 }
 
-func pythonJSONWriteIndent(out *strings.Builder, value any, indent, level int) {
+// PythonJSONDumpsSortedIndent is json.dumps(value, sort_keys=True, indent=indent)
+// (stripe's StripeObject.__str__).
+func PythonJSONDumpsSortedIndent(value any, indent int) []byte {
+	var out strings.Builder
+	pythonJSONWriteIndent(&out, value, indent, 0, true)
+	return []byte(out.String())
+}
+
+func pythonJSONWriteIndent(out *strings.Builder, value any, indent, level int, sorted bool) {
 	newline := func(depth int) {
 		out.WriteByte('\n')
 		out.WriteString(strings.Repeat(" ", indent*depth))
@@ -28,6 +37,10 @@ func pythonJSONWriteIndent(out *strings.Builder, value any, indent, level int) {
 			out.WriteString("{}")
 			return
 		}
+		if sorted {
+			v = append(domain.RequestObject(nil), v...)
+			sort.SliceStable(v, func(i, j int) bool { return v[i].Name < v[j].Name })
+		}
 		out.WriteByte('{')
 		for i, field := range v {
 			if i > 0 {
@@ -36,7 +49,7 @@ func pythonJSONWriteIndent(out *strings.Builder, value any, indent, level int) {
 			newline(level + 1)
 			pythonJSONString(out, field.Name)
 			out.WriteString(": ")
-			pythonJSONWriteIndent(out, field.Value, indent, level+1)
+			pythonJSONWriteIndent(out, field.Value, indent, level+1, sorted)
 		}
 		newline(level)
 		out.WriteByte('}')
@@ -51,7 +64,7 @@ func pythonJSONWriteIndent(out *strings.Builder, value any, indent, level int) {
 				out.WriteByte(',')
 			}
 			newline(level + 1)
-			pythonJSONWriteIndent(out, element, indent, level+1)
+			pythonJSONWriteIndent(out, element, indent, level+1, sorted)
 		}
 		newline(level)
 		out.WriteByte(']')
