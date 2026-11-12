@@ -1,0 +1,1037 @@
+{
+ "matrix_version": 1,
+ "scope": "Staff-board HTTP list/add/update/delete authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011",
+  "staff_board_owner_pinned": "a1000000-0000-4000-8000-000000730001",
+  "staff_board_full": "a1000000-0000-4000-8000-000000730002",
+  "staff_board_deleted_author": "a1000000-0000-4000-8000-000000730003",
+  "staff_board_owner_delete": "a1000000-0000-4000-8000-000000730004",
+  "staff_board_foreign": "a1000000-0000-4000-8000-000000730005"
+ },
+ "seed": {
+  "a1000000-0000-4000-8000-000000730001": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "author": "a1000000-0000-4000-8000-000000700001",
+   "content": "Fissato",
+   "document": {
+    "type": "doc",
+    "content": [
+     {
+      "type": "paragraph",
+      "content": [
+       {
+        "type": "text",
+        "text": "Fissato"
+       }
+      ]
+     }
+    ]
+   },
+   "pinned": true,
+   "at": "2026-10-23T09:00:00Z"
+  },
+  "a1000000-0000-4000-8000-000000730002": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "author": "a1000000-0000-4000-8000-000000700002",
+   "content": "Dal collaboratore",
+   "document": null,
+   "pinned": false,
+   "at": "2026-10-23T10:00:00Z"
+  },
+  "a1000000-0000-4000-8000-000000730003": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "author": null,
+   "content": "Autore rimosso",
+   "document": null,
+   "pinned": false,
+   "at": "2026-10-23T08:00:00Z"
+  },
+  "a1000000-0000-4000-8000-000000730004": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "author": "a1000000-0000-4000-8000-000000700001",
+   "content": "Da eliminare",
+   "document": null,
+   "pinned": false,
+   "at": "2026-10-23T07:00:00Z"
+  },
+  "a1000000-0000-4000-8000-000000730005": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "author": "a1000000-0000-4000-8000-000000700007",
+   "content": "Estero",
+   "document": null,
+   "pinned": false,
+   "at": "2026-10-23T11:00:00Z"
+  }
+ },
+ "normalization": [
+  "$new:<label> generated UUID4 row IDs",
+  "$now write timestamps within the request window"
+ ],
+ "cases": [
+  {
+   "name": "staff-board-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": true,
+      "document": {
+       "type": "doc",
+       "content": [
+        {
+         "type": "paragraph",
+         "content": [
+          {
+           "type": "text",
+           "text": "Fissato"
+          }
+         ]
+        }
+       ]
+      },
+      "content": "Fissato",
+      "pinned": true,
+      "created_at": "2026-10-23T09:00:00Z",
+      "updated_at": "2026-10-23T09:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730002",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700002",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Dal collaboratore",
+      "pinned": false,
+      "created_at": "2026-10-23T10:00:00Z",
+      "updated_at": "2026-10-23T10:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": null,
+      "author_name": "Utente eliminato",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Autore rimosso",
+      "pinned": false,
+      "created_at": "2026-10-23T08:00:00Z",
+      "updated_at": "2026-10-23T08:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": true,
+      "document": null,
+      "content": "Da eliminare",
+      "pinned": false,
+      "created_at": "2026-10-23T07:00:00Z",
+      "updated_at": "2026-10-23T07:00:00Z"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": {
+       "type": "doc",
+       "content": [
+        {
+         "type": "paragraph",
+         "content": [
+          {
+           "type": "text",
+           "text": "Fissato"
+          }
+         ]
+        }
+       ]
+      },
+      "content": "Fissato",
+      "pinned": true,
+      "created_at": "2026-10-23T09:00:00Z",
+      "updated_at": "2026-10-23T09:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730002",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700002",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": true,
+      "document": null,
+      "content": "Dal collaboratore",
+      "pinned": false,
+      "created_at": "2026-10-23T10:00:00Z",
+      "updated_at": "2026-10-23T10:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": null,
+      "author_name": "Utente eliminato",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Autore rimosso",
+      "pinned": false,
+      "created_at": "2026-10-23T08:00:00Z",
+      "updated_at": "2026-10-23T08:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Da eliminare",
+      "pinned": false,
+      "created_at": "2026-10-23T07:00:00Z",
+      "updated_at": "2026-10-23T07:00:00Z"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-list-restricted-read-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": {
+       "type": "doc",
+       "content": [
+        {
+         "type": "paragraph",
+         "content": [
+          {
+           "type": "text",
+           "text": "Fissato"
+          }
+         ]
+        }
+       ]
+      },
+      "content": "Fissato",
+      "pinned": true,
+      "created_at": "2026-10-23T09:00:00Z",
+      "updated_at": "2026-10-23T09:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730002",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700002",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Dal collaboratore",
+      "pinned": false,
+      "created_at": "2026-10-23T10:00:00Z",
+      "updated_at": "2026-10-23T10:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": null,
+      "author_name": "Utente eliminato",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Autore rimosso",
+      "pinned": false,
+      "created_at": "2026-10-23T08:00:00Z",
+      "updated_at": "2026-10-23T08:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Da eliminare",
+      "pinned": false,
+      "created_at": "2026-10-23T07:00:00Z",
+      "updated_at": "2026-10-23T07:00:00Z"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-list-foreign-owner-isolated",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730005",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "author": "a1000000-0000-4000-8000-000000700007",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": true,
+      "document": null,
+      "content": "Estero",
+      "pinned": false,
+      "created_at": "2026-10-23T11:00:00Z",
+      "updated_at": "2026-10-23T11:00:00Z"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": true,
+      "document": {
+       "type": "doc",
+       "content": [
+        {
+         "type": "paragraph",
+         "content": [
+          {
+           "type": "text",
+           "text": "Fissato"
+          }
+         ]
+        }
+       ]
+      },
+      "content": "Fissato",
+      "pinned": true,
+      "created_at": "2026-10-23T09:00:00Z",
+      "updated_at": "2026-10-23T09:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730002",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700002",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Dal collaboratore",
+      "pinned": false,
+      "created_at": "2026-10-23T10:00:00Z",
+      "updated_at": "2026-10-23T10:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730003",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": null,
+      "author_name": "Utente eliminato",
+      "author_avatar": null,
+      "is_owner": false,
+      "document": null,
+      "content": "Autore rimosso",
+      "pinned": false,
+      "created_at": "2026-10-23T08:00:00Z",
+      "updated_at": "2026-10-23T08:00:00Z"
+     },
+     {
+      "staff_board_message_id": "a1000000-0000-4000-8000-000000730004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "author": "a1000000-0000-4000-8000-000000700001",
+      "author_name": "Message Fixture",
+      "author_avatar": null,
+      "is_owner": true,
+      "document": null,
+      "content": "Da eliminare",
+      "pinned": false,
+      "created_at": "2026-10-23T07:00:00Z",
+      "updated_at": "2026-10-23T07:00:00Z"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-list-athlete-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {}
+  },
+  {
+   "name": "staff-board-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/communications/staff-board/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Staff Board Messages List",
+    "description": "Internal staff board: list all messages of the association, pinned first.\nVisible to admins and collaborators with association.communication.messages.read.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-add-restricted-denied",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/communications/staff-board/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.communication.messages.create"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "content": "x"
+   }
+  },
+  {
+   "name": "staff-board-add-athlete-denied",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/communications/staff-board/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "content": "x"
+   }
+  },
+  {
+   "name": "staff-board-add-blank",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/staff-board/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "content": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "content": ""
+   }
+  },
+  {
+   "name": "staff-board-add-non-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/staff-board/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": []
+  },
+  {
+   "name": "staff-board-add-invalid-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/staff-board/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Documento non valido."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "document": {
+     "type": "paragraph"
+    }
+   }
+  },
+  {
+   "name": "staff-board-add-owner-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/communications/staff-board/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": {
+     "staff_board_message_id": "$new:owner_text",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "author": "a1000000-0000-4000-8000-000000700001",
+     "author_name": "Message Fixture",
+     "author_avatar": null,
+     "is_owner": true,
+     "document": null,
+     "content": "Nuovo avviso",
+     "pinned": false,
+     "created_at": "$now",
+     "updated_at": "$now"
+    }
+   },
+   "effect": {
+    "kind": "create",
+    "label": "owner_text",
+    "values": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "author_id": "a1000000-0000-4000-8000-000000700001",
+     "content": "Nuovo avviso",
+     "document": null,
+     "pinned": false
+    }
+   },
+   "body": {
+    "content": "  Nuovo avviso  "
+   }
+  },
+  {
+   "name": "staff-board-add-collaborator-document",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/communications/staff-board/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": {
+     "staff_board_message_id": "$new:full_document",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "author": "a1000000-0000-4000-8000-000000700002",
+     "author_name": "Message Fixture",
+     "author_avatar": null,
+     "is_owner": true,
+     "document": {
+      "type": "doc",
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "Ricco"
+         }
+        ]
+       }
+      ]
+     },
+     "content": "Ricco",
+     "pinned": true,
+     "created_at": "$now",
+     "updated_at": "$now"
+    }
+   },
+   "effect": {
+    "kind": "create",
+    "label": "full_document",
+    "values": {
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "author_id": "a1000000-0000-4000-8000-000000700002",
+     "content": "Ricco",
+     "document": {
+      "type": "doc",
+      "content": [
+       {
+        "type": "paragraph",
+        "content": [
+         {
+          "type": "text",
+          "text": "Ricco"
+         }
+        ]
+       }
+      ]
+     },
+     "pinned": true
+    }
+   },
+   "body": {
+    "document": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "attrs": {
+        "onclick": "x"
+       },
+       "content": [
+        {
+         "type": "text",
+         "text": "Ricco"
+        }
+       ]
+      }
+     ]
+    },
+    "pinned": "yes"
+   }
+  },
+  {
+   "name": "staff-board-update-malformed-id",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/staff-board/not-a-uuid/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "pinned": true
+   }
+  },
+  {
+   "name": "staff-board-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730005/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "message not found."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "pinned": true
+   }
+  },
+  {
+   "name": "staff-board-update-restricted-denied",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730002/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.communication.messages.update"
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "pinned": true
+   }
+  },
+  {
+   "name": "staff-board-update-non-author-content",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730002/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo l’autore può modificare questo messaggio."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "content": "x"
+   }
+  },
+  {
+   "name": "staff-board-update-non-author-invalid-content-precedence",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730002/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo l’autore può modificare questo messaggio."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "content": ""
+   }
+  },
+  {
+   "name": "staff-board-update-deleted-author-document",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730003/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo l’autore può modificare questo messaggio."
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "document": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Fissato"
+        }
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "staff-board-update-owner-pins-collaborator-row",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "staff_board_message_id": "a1000000-0000-4000-8000-000000730002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "author": "a1000000-0000-4000-8000-000000700002",
+     "author_name": "Message Fixture",
+     "author_avatar": null,
+     "is_owner": false,
+     "document": null,
+     "content": "Dal collaboratore",
+     "pinned": true,
+     "created_at": "2026-10-23T10:00:00Z",
+     "updated_at": "$now"
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "row": "a1000000-0000-4000-8000-000000730002",
+    "values": {
+     "pinned": true
+    }
+   },
+   "body": {
+    "pinned": true
+   }
+  },
+  {
+   "name": "staff-board-update-author-content",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730002/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "staff_board_message_id": "a1000000-0000-4000-8000-000000730002",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "author": "a1000000-0000-4000-8000-000000700002",
+     "author_name": "Message Fixture",
+     "author_avatar": null,
+     "is_owner": true,
+     "document": null,
+     "content": "Testo aggiornato",
+     "pinned": true,
+     "created_at": "2026-10-23T10:00:00Z",
+     "updated_at": "$now"
+    }
+   },
+   "effect": {
+    "kind": "update",
+    "row": "a1000000-0000-4000-8000-000000730002",
+    "values": {
+     "content": "Testo aggiornato",
+     "document": null
+    }
+   },
+   "body": {
+    "content": "Testo aggiornato"
+   }
+  },
+  {
+   "name": "staff-board-update-author-blank",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730002/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "content": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": {
+    "kind": "none"
+   },
+   "body": {
+    "content": ""
+   }
+  },
+  {
+   "name": "staff-board-delete-non-author",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730002/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo l’autore può eliminare questo messaggio."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-delete-deleted-author",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730003/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Solo l’autore può eliminare questo messaggio."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-delete-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730005/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "message not found."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-delete-restricted-denied",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730004/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.communication.messages.delete"
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-delete-owner-own-row",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730004/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "message deleted."
+   },
+   "effect": {
+    "kind": "delete",
+    "row": "a1000000-0000-4000-8000-000000730004"
+   }
+  },
+  {
+   "name": "staff-board-delete-repeat-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/communications/staff-board/a1000000-0000-4000-8000-000000730004/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "message not found."
+   },
+   "effect": {
+    "kind": "none"
+   }
+  },
+  {
+   "name": "staff-board-forged-session-rejected",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/communications/staff-board/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:forged",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+    "impersonation_invalid": "True"
+   },
+   "effect": {
+    "kind": "none"
+   }
+  }
+ ]
+}

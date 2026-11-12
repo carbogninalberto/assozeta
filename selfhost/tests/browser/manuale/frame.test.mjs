@@ -82,3 +82,31 @@ test('editable focus is preserved unless a completed-form capture explicitly rel
         assert.equal(await page.locator('textarea').inputValue(),'Descrizione compilata');
     } finally {await browser.close();fs.rmSync(run,{recursive:true,force:true});}
 });
+
+
+test('unstable captures retain the last unequal frames without accepting evidence', async () => {
+    const run = fs.mkdtempSync(path.join(os.tmpdir(), 'manual-frame-unstable-unit-'));
+    const browser = await chromium.launch();
+    try {
+        const page = await browser.newPage({viewport: {width: 1920, height: 1080}, deviceScaleFactor: 1});
+        await page.setContent('<style>body{margin:0}</style><main>Changing fixture</main>');
+        const screenshot = page.screenshot.bind(page);
+        const frames = [];
+        page.screenshot = async options => {
+            await page.evaluate(color => document.body.style.background = color,
+                frames.length % 2 ? '#334455' : '#ddeeff');
+            const bytes = await screenshot(options);
+            frames.push(bytes);
+            return bytes;
+        };
+        await assert.rejects(captureFrame({page, run, relative: 'images/unit-unstable.png',
+            checkpoint: 'unit-unstable'}), /Manual checkpoint did not reach a stable rendered state: unit-unstable/);
+        assert.equal(frames.length, 6, 'the original stability budget is unchanged');
+        const directory = path.join(run, 'diagnostics/unstable/images/unit-unstable.png');
+        assert.deepEqual(fs.readFileSync(path.join(directory, 'previous.png')), frames[4]);
+        assert.deepEqual(fs.readFileSync(path.join(directory, 'current.png')), frames[5]);
+        assert.notDeepEqual(frames[4], frames[5]);
+        assert.equal(fs.existsSync(path.join(run, 'masters/images/unit-unstable.png')), false);
+        assert.equal(fs.existsSync(path.join(run, 'captures/images/unit-unstable.png')), false);
+    } finally { await browser.close(); fs.rmSync(run, {recursive: true, force: true}); }
+});

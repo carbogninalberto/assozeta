@@ -91,6 +91,27 @@ def is_restorable_password_hash(encoded: Any) -> bool:
     return True
 
 
+def unlinked_user_message(user_id: Any) -> str:
+    return f"User UUID collision: {user_id} already exists and is not linked to the archive owner"
+
+
+def unlinked_existing_user_ids(user_ids, owner_user_id: Any) -> List[str]:
+    """Archive users that already exist here but are not the archive owner's collaborators.
+
+    Existing accounts are only reused when they belong to the archive owner;
+    any other matching account stops the import.
+    """
+    from application.models.user_models import User
+
+    candidates = sorted({str(user_id) for user_id in user_ids} - {str(owner_user_id)})
+    if not candidates:
+        return []
+    return [
+        str(user_id) for user_id in User.original_objects.filter(user_id__in=candidates)
+        .exclude(connected_user_id=owner_user_id).order_by('user_id').values_list('user_id', flat=True)
+    ]
+
+
 @dataclass
 class ValidationResult:
     """Result of a validation operation."""
@@ -364,8 +385,11 @@ class ImportValidator:
 
                 try:
                     owner_matches = []
+                    user_ids = set()
                     with zf.open('data/02_users.json') as stream:
                         for user_data in iter_json_array(stream):
+                            if user_data.get('user_id') is not None:
+                                user_ids.add(str(user_data.get('user_id')))
                             if str(user_data.get('user_id')) == str(owner_user_id):
                                 owner_matches.append(user_data)
                 except KeyError:
@@ -381,6 +405,7 @@ class ImportValidator:
                 owner = owner_matches[0]
                 self.source_association = association
                 self.source_owner = owner
+                self.source_user_ids = user_ids
                 result.info['association'] = {
                     **result.info.get('association', {}),
                     'sport_association_id': association.get('sport_association_id'),
@@ -436,8 +461,9 @@ class ImportValidator:
         if owner_id:
             existing_owner = User.original_objects.filter(user_id=owner_id).first()
             if existing_owner:
-                if is_restorable_password_hash(existing_owner.password):
-                    result.info['existing_owner_has_restorable_password'] = True
+                # An existing owner account keeps its own credentials, so no
+                # recovery password is needed.
+                result.info['existing_owner_keeps_credentials'] = True
                 conflicting_association = SportAssociation.original_objects.filter(
                     user=existing_owner
                 ).exclude(sport_association_id=assoc_id).first()
@@ -446,6 +472,8 @@ class ImportValidator:
                         "Owner user already owns another SportAssociation: "
                         f"{conflicting_association.sport_association_id}"
                     )
+            for user_id in unlinked_existing_user_ids(getattr(self, 'source_user_ids', ()), owner_id):
+                result.add_error(unlinked_user_message(user_id))
 
         return result
 
@@ -490,7 +518,7 @@ class ImportValidator:
         if identity_result.is_valid:
             uuid_result = self.validate_uuid_conflicts(preserve_uuids)
             result.merge(uuid_result)
-            if result.info.pop('existing_owner_has_restorable_password', False):
+            if result.info.pop('existing_owner_keeps_credentials', False):
                 result.info['owner_user']['requires_recovery_password'] = False
 
         return result

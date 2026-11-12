@@ -1,0 +1,10 @@
+{
+  "module": "golang.org/x/crypto",
+  "version": "v0.46.0",
+  "sha256": {
+    "argon2.go": "7ea7a9da71661a5b69964954e5691a6f2935a72a2f83dcba4c63cb8de33583a6",
+    "blake2b.go": "00b7ed36b3569e067ce4e34c92b44914e98a26f3666a2cf01b6785cc4b8201e6",
+    "blamka_generic.go": "64fc08ec2dbd617cad784bb742d3533ee14254489f94dea41849aa6e00f6b5ca",
+    "blamka_ref.go": "716a8b18609d5262d3164ac9c90c574f6b02a49337e9c2094facfe7ebdd8aaa6"
+  }
+}

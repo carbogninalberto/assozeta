@@ -1,0 +1,6774 @@
+{
+ "matrix_version": 1,
+ "scope": "document PDF routes through the renderer service",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "associations": {
+  "latin": {
+   "user": "a1000000-0000-4000-8000-000000984001",
+   "association": "a1000000-0000-4000-8000-000000984002",
+   "denomination": "Società Sportiva Ècole"
+  },
+  "wide": {
+   "user": "a1000000-0000-4000-8000-000000984003",
+   "association": "a1000000-0000-4000-8000-000000984004",
+   "denomination": "Club – Roma"
+  },
+  "season": {
+   "user": "a1000000-0000-4000-8000-000000984005",
+   "association": "a1000000-0000-4000-8000-000000984006",
+   "denomination": "Render stagione",
+   "start_day": 31,
+   "start_month": 4
+  },
+  "form": {
+   "user": "a1000000-0000-4000-8000-000000984007",
+   "association": "a1000000-0000-4000-8000-000000984008",
+   "denomination": "Polisportiva Città (Biella)",
+   "form": {
+    "federation": "fidal",
+    "address": "Via Roma 1",
+    "address_cap": "13900",
+    "address_city": "Biella",
+    "whatsapp": "+39 333 1234567",
+    "president_first_name": "Élise",
+    "president_last_name": "Łukasz",
+    "stamp": "data:image/png;base64,AAAA"
+   }
+  }
+ },
+ "association_ids": {
+  "own": "a1000000-0000-4000-8000-000000701001",
+  "foreign": "a1000000-0000-4000-8000-000000701002",
+  "latin": "a1000000-0000-4000-8000-000000984002",
+  "wide": "a1000000-0000-4000-8000-000000984004",
+  "season": "a1000000-0000-4000-8000-000000984006",
+  "form": "a1000000-0000-4000-8000-000000984008"
+ },
+ "associates": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-000000984010",
+   "association": "own",
+   "first": "Mario",
+   "last": "Rossi",
+   "email": "mario.rossi@example.test",
+   "user": null
+  },
+  "noemail": {
+   "id": "a1000000-0000-4000-8000-000000984011",
+   "association": "own",
+   "first": "Anna",
+   "last": "Verdi",
+   "email": "",
+   "user": null
+  },
+  "greek": {
+   "id": "a1000000-0000-4000-8000-000000984012",
+   "association": "wide",
+   "first": "Δημήτρης",
+   "last": "Παπαδόπουλος",
+   "email": null,
+   "user": null
+  },
+  "odd": {
+   "id": "a1000000-0000-4000-8000-000000984013",
+   "association": "own",
+   "first": null,
+   "last": " Neri　",
+   "email": null,
+   "user": null
+  },
+  "formfull": {
+   "id": "a1000000-0000-4000-8000-000000984053",
+   "association": "form",
+   "first": "Maria Chiara",
+   "last": "D'Angelò",
+   "email": null,
+   "user": null,
+   "form": {
+    "born_city": "Ωmega straße",
+    "born_date": "2012-05-09",
+    "address": "Via Garibaldi, 23 B int. 4",
+    "address_city": "Biella",
+    "id_number": "ca1234567",
+    "tax_code": "rssmra12e49a859x"
+   }
+  },
+  "formtutor": {
+   "id": "a1000000-0000-4000-8000-000000984054",
+   "association": "form",
+   "first": "Paola",
+   "last": "Tutrice",
+   "email": "tutor@example.test",
+   "user": null,
+   "form": {
+    "phone": "+39 0151234567"
+   }
+  },
+  "formbare": {
+   "id": "a1000000-0000-4000-8000-000000984055",
+   "association": "form",
+   "first": "Zoe",
+   "last": "None",
+   "email": null,
+   "user": null
+  },
+  "formminor": {
+   "id": "a1000000-0000-4000-8000-000000984059",
+   "association": "form",
+   "first": "Leo",
+   "last": "Piccolo",
+   "email": null,
+   "user": null
+  },
+  "newline": {
+   "id": "a1000000-0000-4000-8000-000000984094",
+   "association": "own",
+   "first": "Lia",
+   "last": "Bian\nchi",
+   "email": null,
+   "user": null
+  },
+  "separators": {
+   "id": "a1000000-0000-4000-8000-000000984095",
+   "association": "own",
+   "first": "Ωmega",
+   "last": "Ne\r\nri x",
+   "email": null,
+   "user": null
+  }
+ },
+ "documents": {
+  "old_subscription": {
+   "id": "a1000000-0000-4000-8000-000000984020",
+   "token": "a1000000-0000-4000-8000-000000984120",
+   "filename": "old subscription.pdf"
+  },
+  "old_invoice": {
+   "id": "a1000000-0000-4000-8000-000000984021",
+   "token": "a1000000-0000-4000-8000-000000984121",
+   "filename": "old invoice.pdf"
+  },
+  "old_customer": {
+   "id": "a1000000-0000-4000-8000-000000984022",
+   "token": "a1000000-0000-4000-8000-000000984122",
+   "filename": "old customer invoice.pdf"
+  },
+  "old_medical": {
+   "id": "a1000000-0000-4000-8000-000000984023",
+   "token": "a1000000-0000-4000-8000-000000984123",
+   "filename": "old medical.pdf"
+  },
+  "shared": {
+   "id": "a1000000-0000-4000-8000-000000984024",
+   "token": "a1000000-0000-4000-8000-000000984124",
+   "filename": "shared.pdf"
+  },
+  "dup_a": {
+   "id": "a1000000-0000-4000-8000-000000984025",
+   "token": "a1000000-0000-4000-8000-000000984125",
+   "filename": "dup a.pdf"
+  },
+  "dup_b": {
+   "id": "a1000000-0000-4000-8000-000000984026",
+   "token": "a1000000-0000-4000-8000-000000984125",
+   "filename": "dup b.pdf"
+  },
+  "tok_invoice": {
+   "id": "a1000000-0000-4000-8000-000000984014",
+   "token": "a1000000-0000-4000-8000-000000984130",
+   "filename": "token invoice.pdf"
+  },
+  "tok_invoice_hex": {
+   "id": "a1000000-0000-4000-8000-000000984015",
+   "token": "a1000000-0000-4000-8000-000000984131",
+   "filename": "token invoice hex.pdf"
+  },
+  "tok_customer": {
+   "id": "a1000000-0000-4000-8000-000000984016",
+   "token": "a1000000-0000-4000-8000-000000984132",
+   "filename": "token customer invoice.pdf"
+  },
+  "tok_hours": {
+   "id": "a1000000-0000-4000-8000-000000984017",
+   "token": "a1000000-0000-4000-8000-000000984133",
+   "filename": "token compensation.pdf"
+  },
+  "tok_medical": {
+   "id": "a1000000-0000-4000-8000-000000984018",
+   "token": "a1000000-0000-4000-8000-000000984134",
+   "filename": "token medical.pdf"
+  }
+ },
+ "subscriptions": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000984030",
+   "association": "own",
+   "associate": "mario",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "previous": {
+   "id": "a1000000-0000-4000-8000-000000984031",
+   "association": "own",
+   "associate": "mario",
+   "user": "owner",
+   "group": null,
+   "document": "old_subscription"
+  },
+  "group": {
+   "id": "a1000000-0000-4000-8000-000000984032",
+   "association": "own",
+   "associate": "mario",
+   "user": "owner",
+   "group": "own_group",
+   "document": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000984033",
+   "association": "own",
+   "associate": "athlete",
+   "user": "athlete",
+   "group": null,
+   "document": null
+  },
+  "noassociate": {
+   "id": "a1000000-0000-4000-8000-000000984034",
+   "association": "own",
+   "associate": null,
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "latin": {
+   "id": "a1000000-0000-4000-8000-000000984035",
+   "association": "latin",
+   "associate": "mario",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "wide": {
+   "id": "a1000000-0000-4000-8000-000000984036",
+   "association": "wide",
+   "associate": "mario",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "greek": {
+   "id": "a1000000-0000-4000-8000-000000984037",
+   "association": "wide",
+   "associate": "greek",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "odd": {
+   "id": "a1000000-0000-4000-8000-000000984038",
+   "association": "own",
+   "associate": "odd",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000984039",
+   "association": "foreign",
+   "associate": "mario",
+   "user": "foreign_owner",
+   "group": null,
+   "document": null
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000984029",
+   "association": "season",
+   "associate": "mario",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "renewal": {
+   "id": "a1000000-0000-4000-8000-000000984028",
+   "association": "own",
+   "associate": "athlete",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formfull": {
+   "id": "a1000000-0000-4000-8000-000000984056",
+   "association": "form",
+   "associate": "formfull",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formbare": {
+   "id": "a1000000-0000-4000-8000-000000984057",
+   "association": "form",
+   "associate": "formbare",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formnone": {
+   "id": "a1000000-0000-4000-8000-000000984058",
+   "association": "form",
+   "associate": null,
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "formminor": {
+   "id": "a1000000-0000-4000-8000-000000984120",
+   "association": "form",
+   "associate": "formminor",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "newline": {
+   "id": "a1000000-0000-4000-8000-000000984096",
+   "association": "own",
+   "associate": "newline",
+   "user": "owner",
+   "group": null,
+   "document": null
+  },
+  "separators": {
+   "id": "a1000000-0000-4000-8000-000000984097",
+   "association": "own",
+   "associate": "separators",
+   "user": "owner",
+   "group": null,
+   "document": null
+  }
+ },
+ "invoices": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000984040",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "noemail": {
+   "id": "a1000000-0000-4000-8000-000000984041",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "noassociate": {
+   "id": "a1000000-0000-4000-8000-000000984042",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "nopayment": {
+   "id": "a1000000-0000-4000-8000-000000984043",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000984044",
+   "association": "own",
+   "deleted": true,
+   "group": null,
+   "document": null
+  },
+  "deleted_payment": {
+   "id": "a1000000-0000-4000-8000-000000984045",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "two": {
+   "id": "a1000000-0000-4000-8000-000000984046",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "nodate": {
+   "id": "a1000000-0000-4000-8000-000000984047",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "group": {
+   "id": "a1000000-0000-4000-8000-000000984048",
+   "association": "own",
+   "deleted": false,
+   "group": "own_group",
+   "document": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000984049",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": null
+  },
+  "previous": {
+   "id": "a1000000-0000-4000-8000-000000984050",
+   "association": "latin",
+   "deleted": false,
+   "group": null,
+   "document": "old_invoice"
+  },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984051",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": "tok_invoice"
+  },
+  "tokened_hex": {
+   "id": "a1000000-0000-4000-8000-000000984052",
+   "association": "own",
+   "deleted": false,
+   "group": null,
+   "document": "tok_invoice_hex"
+  }
+ },
+ "payments": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000984060",
+   "invoice": "plain",
+   "association": "own",
+   "amount": "25.00",
+   "date": "2026-03-04T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "noemail": {
+   "id": "a1000000-0000-4000-8000-000000984061",
+   "invoice": "noemail",
+   "association": "own",
+   "amount": "1234.50",
+   "date": "2026-03-05T23:30:00+00:00",
+   "associate": "noemail",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "noassociate": {
+   "id": "a1000000-0000-4000-8000-000000984062",
+   "invoice": "noassociate",
+   "association": "own",
+   "amount": "7.00",
+   "date": "2026-03-06T10:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000984063",
+   "invoice": "deleted",
+   "association": "own",
+   "amount": "5.00",
+   "date": "2026-03-07T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "deleted_payment": {
+   "id": "a1000000-0000-4000-8000-000000984064",
+   "invoice": "deleted_payment",
+   "association": "own",
+   "amount": "5.00",
+   "date": "2026-03-08T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": true,
+   "group": null
+  },
+  "two_a": {
+   "id": "a1000000-0000-4000-8000-000000984065",
+   "invoice": "two",
+   "association": "own",
+   "amount": "5.00",
+   "date": "2026-03-09T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "two_b": {
+   "id": "a1000000-0000-4000-8000-000000984066",
+   "invoice": "two",
+   "association": "own",
+   "amount": "6.00",
+   "date": "2026-03-09T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "nodate": {
+   "id": "a1000000-0000-4000-8000-000000984067",
+   "invoice": "nodate",
+   "association": "own",
+   "amount": "5.00",
+   "date": null,
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "group": {
+   "id": "a1000000-0000-4000-8000-000000984068",
+   "invoice": "group",
+   "association": "own",
+   "amount": "9.90",
+   "date": "2026-03-10T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": "own_group"
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000984069",
+   "invoice": "athlete",
+   "association": "own",
+   "amount": "12.00",
+   "date": "2026-03-11T10:00:00+00:00",
+   "associate": "athlete",
+   "user": "athlete",
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "previous": {
+   "id": "a1000000-0000-4000-8000-000000984070",
+   "invoice": "previous",
+   "association": "latin",
+   "amount": "30.00",
+   "date": "2026-12-31T23:59:59+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984077",
+   "invoice": "tokened",
+   "association": "own",
+   "amount": "15.00",
+   "date": "2026-03-12T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "tokened_hex": {
+   "id": "a1000000-0000-4000-8000-000000984078",
+   "invoice": "tokened_hex",
+   "association": "own",
+   "amount": "16.00",
+   "date": "2026-03-13T10:00:00+00:00",
+   "associate": "mario",
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "comp": {
+   "id": "a1000000-0000-4000-8000-000000984071",
+   "invoice": null,
+   "association": "own",
+   "amount": "80.00",
+   "date": "2026-04-05T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "luca",
+   "deleted": false,
+   "group": null
+  },
+  "comp_nohours": {
+   "id": "a1000000-0000-4000-8000-000000984072",
+   "invoice": null,
+   "association": "own",
+   "amount": "10.00",
+   "date": "2026-04-06T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "luca",
+   "deleted": false,
+   "group": null
+  },
+  "comp_noinstructor": {
+   "id": "a1000000-0000-4000-8000-000000984073",
+   "invoice": null,
+   "association": "own",
+   "amount": "10.00",
+   "date": "2026-04-07T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": null,
+   "deleted": false,
+   "group": null
+  },
+  "comp_nodate": {
+   "id": "a1000000-0000-4000-8000-000000984074",
+   "invoice": null,
+   "association": "own",
+   "amount": "10.00",
+   "date": null,
+   "associate": null,
+   "user": null,
+   "instructor": "luca",
+   "deleted": false,
+   "group": null
+  },
+  "comp_deleted": {
+   "id": "a1000000-0000-4000-8000-000000984075",
+   "invoice": null,
+   "association": "own",
+   "amount": "10.00",
+   "date": "2026-04-08T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "luca",
+   "deleted": true,
+   "group": null
+  },
+  "comp_foreign": {
+   "id": "a1000000-0000-4000-8000-000000984076",
+   "invoice": null,
+   "association": "foreign",
+   "amount": "10.00",
+   "date": "2026-04-09T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "paolo",
+   "deleted": false,
+   "group": null
+  },
+  "comp_tokened": {
+   "id": "a1000000-0000-4000-8000-000000984079",
+   "invoice": null,
+   "association": "own",
+   "amount": "20.00",
+   "date": "2026-04-10T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "luca",
+   "deleted": false,
+   "group": null
+  },
+  "comp_orphan": {
+   "id": "a1000000-0000-4000-8000-000000984083",
+   "invoice": null,
+   "association": "own",
+   "amount": "30.00",
+   "date": "2026-04-11T09:00:00+00:00",
+   "associate": null,
+   "user": null,
+   "instructor": "nina",
+   "deleted": false,
+   "group": null
+  }
+ },
+ "instructors": {
+  "luca": {
+   "id": "a1000000-0000-4000-8000-000000984080",
+   "user": "owner",
+   "first": "Luca",
+   "last": "Bianchi",
+   "account": "coach"
+  },
+  "paolo": {
+   "id": "a1000000-0000-4000-8000-000000984081",
+   "user": "foreign_owner",
+   "first": "Paolo",
+   "last": "Gialli",
+   "account": null
+  },
+  "nina": {
+   "id": "a1000000-0000-4000-8000-000000984082",
+   "user": "owner_without_association",
+   "first": "Nina",
+   "last": "Blu",
+   "account": null
+  }
+ },
+ "hours": {
+  "h1": {
+   "id": "a1000000-0000-4000-8000-000000984085",
+   "instructor": "luca",
+   "payment": "comp",
+   "date": "2026-04-01",
+   "document": null
+  },
+  "h2": {
+   "id": "a1000000-0000-4000-8000-000000984086",
+   "instructor": "luca",
+   "payment": "comp",
+   "date": "2026-04-02",
+   "document": null
+  },
+  "h_other": {
+   "id": "a1000000-0000-4000-8000-000000984087",
+   "instructor": "luca",
+   "payment": null,
+   "date": "2026-04-03",
+   "document": null
+  },
+  "h_foreign": {
+   "id": "a1000000-0000-4000-8000-000000984088",
+   "instructor": "paolo",
+   "payment": "comp_foreign",
+   "date": "2026-04-04",
+   "document": null
+  },
+  "h_tokened": {
+   "id": "a1000000-0000-4000-8000-000000984089",
+   "instructor": "luca",
+   "payment": "comp_tokened",
+   "date": "2026-04-05",
+   "document": "tok_hours"
+  },
+  "h_orphan1": {
+   "id": "a1000000-0000-4000-8000-000000984098",
+   "instructor": "nina",
+   "payment": "comp_orphan",
+   "date": "2026-04-06",
+   "document": null
+  },
+  "h_orphan2": {
+   "id": "a1000000-0000-4000-8000-000000984099",
+   "instructor": "nina",
+   "payment": "comp_orphan",
+   "date": "2026-04-07",
+   "document": null
+  }
+ },
+ "customer_invoices": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000984090",
+   "association": "own",
+   "prefix": "FPR",
+   "number": 7,
+   "year": 2026,
+   "document": null
+  },
+  "nulls": {
+   "id": "a1000000-0000-4000-8000-000000984091",
+   "association": "own",
+   "prefix": null,
+   "number": null,
+   "year": null,
+   "document": null
+  },
+  "previous": {
+   "id": "a1000000-0000-4000-8000-000000984092",
+   "association": "foreign",
+   "prefix": "B",
+   "number": 12,
+   "year": 2025,
+   "document": "old_customer"
+  },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984093",
+   "association": "own",
+   "prefix": "T",
+   "number": 3,
+   "year": 2026,
+   "document": "tok_customer"
+  }
+ },
+ "templates": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000984100",
+   "association": "own",
+   "name": "Modulo privacy, v1.2"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000984101",
+   "association": "foreign",
+   "name": "Modulo estero"
+  }
+ },
+ "folders": {
+  "own": "own",
+  "foreign": "foreign"
+ },
+ "medical": {
+  "agonistica": {
+   "id": "a1000000-0000-4000-8000-000000984110",
+   "subscription": "plain",
+   "region": "agonistica",
+   "date": "2026-05-06",
+   "document": null
+  },
+  "non": {
+   "id": "a1000000-0000-4000-8000-000000984111",
+   "subscription": "latin",
+   "region": "non-agonistica",
+   "date": "2026-05-07",
+   "document": null
+  },
+  "nodate": {
+   "id": "a1000000-0000-4000-8000-000000984112",
+   "subscription": "plain",
+   "region": "agonistica",
+   "date": null,
+   "document": null
+  },
+  "badregion": {
+   "id": "a1000000-0000-4000-8000-000000984113",
+   "subscription": "plain",
+   "region": "unknown-region",
+   "date": "2026-05-08",
+   "document": null
+  },
+  "previous": {
+   "id": "a1000000-0000-4000-8000-000000984114",
+   "subscription": "foreign",
+   "region": "non-agonistica",
+   "date": "2026-05-09",
+   "document": "old_medical"
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000984115",
+   "subscription": "athlete",
+   "region": "agonistica",
+   "date": "2026-05-10",
+   "document": null
+  },
+  "tokened": {
+   "id": "a1000000-0000-4000-8000-000000984116",
+   "subscription": "plain",
+   "region": "agonistica",
+   "date": "2026-05-11",
+   "document": "tok_medical"
+  },
+  "biella": {
+   "id": "a1000000-0000-4000-8000-000000984117",
+   "subscription": "formfull",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-12",
+   "document": null,
+   "sport": "Atletica leggera",
+   "address": "Centro medico, Via Dante 5"
+  },
+  "biella_bare": {
+   "id": "a1000000-0000-4000-8000-000000984118",
+   "subscription": "formbare",
+   "region": "agonistica-piemonte-biella",
+   "date": null,
+   "document": null
+  },
+  "biella_noassociate": {
+   "id": "a1000000-0000-4000-8000-000000984119",
+   "subscription": "formnone",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-13",
+   "document": null
+  },
+  "biella_minor": {
+   "id": "a1000000-0000-4000-8000-000000984121",
+   "subscription": "formminor",
+   "region": "agonistica-piemonte-biella",
+   "date": "2026-05-15",
+   "document": null
+  },
+  "lombardia": {
+   "id": "a1000000-0000-4000-8000-000000984109",
+   "subscription": "plain",
+   "region": "agonistica-lombardia",
+   "date": "2026-05-14",
+   "document": null
+  }
+ },
+ "tutors": [
+  {
+   "associate": "formfull",
+   "tutor": "formtutor",
+   "primary": true
+  },
+  {
+   "associate": "formminor",
+   "tutor": "formtutor",
+   "primary": false
+  },
+  {
+   "associate": "formminor",
+   "tutor": "formbare",
+   "primary": false
+  }
+ ],
+ "location": "document-render",
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000984027",
+   "username": "document-render-member",
+   "email": "document-render-member@example.test"
+  },
+  "coach": {
+   "id": "a1000000-0000-4000-8000-000000984019",
+   "username": "document-render-coach",
+   "email": "document-render-coach@example.test"
+  }
+ },
+ "cases": [
+  {
+   "name": "document-render-subscription-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/subscription/a1000000-0000-4000-8000-000000984030'. Contact administrator to grant access."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Subscription",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984038",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984038/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione None  Neri.pdf",
+    "actor": "full_collaborator",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "odd"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione None  Neri.pdf"
+  },
+  {
+   "name": "document-render-subscription-athlete-direct",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984033",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984033/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
+  },
+  {
+   "name": "document-render-subscription-owner-foreign-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984039",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984039/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads foreign] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "foreign"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads foreign] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "admin",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-group-own",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984032",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984032/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "group"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-group-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984032",
+   "headers": {
+    "X-Group-Id": "not-a-group"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984032/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "group"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984033",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984033/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
+  },
+  {
+   "name": "document-render-subscription-latin-denomination",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984035",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984035/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Società Sportiva Ècole] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "latin"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Società Sportiva Ècole] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-mime-quoted",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984036",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984036/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Club – Roma] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "wide"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Club – Roma] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-mime-base64",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984037",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984037/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Club – Roma] Modulo di Iscrizione Δημήτρης Παπαδόπουλος.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "greek"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Club – Roma] Modulo di Iscrizione Δημήτρης Παπαδόπουλος.pdf"
+  },
+  {
+   "name": "document-render-subscription-post-download",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984031?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984031/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "previous"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "ignored": true
+   },
+   "disposition": "attachment; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-download-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030?download=",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-uppercase-uid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/A1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/A1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-subscription-invalid-season-settings",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984029",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Invalid date combination: day is out of range for month"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984029/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Render stagione] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Subscription matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/not-a-uuid",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "['“not-a-uuid” is not a valid UUID.']"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-invalid-uuid-quote",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/it's",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "[\"“it's” is not a valid UUID.\"]"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-group-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984032",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": {
+    "exception": "Subscription matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-scoped-athlete-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-athlete-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984028",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984028/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "renewal"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Athlete Fixture.pdf"
+  },
+  {
+   "name": "document-render-subscription-athlete-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-athlete-other-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984031?download=1",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "ignored": true
+   }
+  },
+  {
+   "name": "document-render-subscription-athlete-other-without-associate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984034",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Subscription matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984033",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-member-of-associate",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984028",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-without-associate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984034",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'get_full_name'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-renderer-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 500: renderer exploded"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 500,
+      "content_type": "text/plain; charset=utf-8",
+      "body": "renderer exploded"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-renderer-error-truncated",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 502: èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 502,
+      "content_type": "text/plain; charset=utf-8",
+      "body": "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-renderer-redirect-status",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 304: "
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 304,
+      "content_type": "application/pdf",
+      "body": ""
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-renderer-html",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned invalid PDF data (content-type: text/html; charset=utf-8)"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "body": "%PDF-not really"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-renderer-not-pdf",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned invalid PDF data (content-type: application/pdf)"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "PDF-1.7 without the percent"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-renderer-created",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984030",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984030/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 201,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Mario Rossi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "subscription",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Modulo di Iscrizione Mario Rossi.pdf"
+  },
+  {
+   "name": "document-render-invoice-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/invoice/a1000000-0000-4000-8000-000000984040'. Contact administrator to grant access."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Invoice",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-owner-receipt-email",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=true",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-capital",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=True&download=yes",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "attachment; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-yes",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=yes",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "send_receipt_email=1",
+   "content_type": "application/x-www-form-urlencoded",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-empty-query-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "send_receipt_email=true",
+   "content_type": "application/x-www-form-urlencoded",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-false-query-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=false",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "send_receipt_email=true",
+   "content_type": "application/x-www-form-urlencoded",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-json-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "send_receipt_email": "true"
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-without-address",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984041?send_receipt_email=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984041/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-05.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "noemail"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-05.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-without-associate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984042?send_receipt_email=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984042/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-06.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "noassociate"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-06.pdf"
+  },
+  {
+   "name": "document-render-invoice-previous-document",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984050?send_receipt_email=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984050/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Società Sportiva Ècole] Ricevuta 2026-12-31.pdf",
+    "actor": "full_collaborator",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "previous"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 31/12/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 30,00 € del 31/12/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nSocietà Sportiva Ècole",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Società Sportiva Ècole] Ricevuta 2026-12-31.pdf"
+  },
+  {
+   "name": "document-render-invoice-bypass-header",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=True",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bypass",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-athlete-other-document-token",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984051?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-other-invoice",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-post",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "send_receipt_email": "true"
+   }
+  },
+  {
+   "name": "document-render-invoice-document-token-invalid-uuid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/abc?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984051?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984051/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-12.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "tokened"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-12.pdf"
+  },
+  {
+   "name": "document-render-invoice-document-token-replaced",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984051?token=a1000000-0000-4000-8000-000000984130",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-hex",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984052?token=A1000000000040008000000000984131&send_receipt_email=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984052/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-13.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "tokened_hex"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 13/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 16,00 € del 13/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-13.pdf"
+  },
+  {
+   "name": "document-render-invoice-group-own",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984048",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984048/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-10.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "group"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-10.pdf"
+  },
+  {
+   "name": "document-render-invoice-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984049/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-11.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
+  },
+  {
+   "name": "document-render-invoice-athlete-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984049/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-11.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
+  },
+  {
+   "name": "document-render-invoice-athlete-own-receipt-email-form",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984049/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-11.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "send_receipt_email=0",
+   "content_type": "application/x-www-form-urlencoded",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-11.pdf"
+  },
+  {
+   "name": "document-render-invoice-athlete-direct",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-athlete-other-receipt-email",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=true",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "send_receipt_email": "true"
+   }
+  },
+  {
+   "name": "document-render-invoice-athlete-other-without-payment",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984043",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Invoice not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984049",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-unknown",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984050?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-empty",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984050?token=",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-document-token-duplicated",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?token=a1000000-0000-4000-8000-000000984125",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-bypass-wrong",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {
+    "Authorization": "not-the-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Invoice not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-deleted",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984044",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Invoice not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-group-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984048",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "exception": "Invoice not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-scoped-athlete-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/abc",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "['“abc” is not a valid UUID.']"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-without-payment",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984043",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Payment matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-deleted-payment",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984045",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Payment matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-two-payments",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984046",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "get() returned more than one Payment -- it returned 2!"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-payment-without-date",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984047",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'date'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-invoice-renderer-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=true",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 503: busy"
+   },
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 503,
+      "content_type": "text/plain; charset=utf-8",
+      "body": "busy"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-einvoice-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/einvoice/a1000000-0000-4000-8000-000000984090'. Contact administrator to grant access."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Einvoice",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/einvoice/a1000000-0000-4000-8000-000000984090/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Fattura FPR 7/2026.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "customerinvoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Fattura FPR 7/2026.pdf"
+  },
+  {
+   "name": "document-render-einvoice-null-numbering",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984091",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/einvoice/a1000000-0000-4000-8000-000000984091/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Fattura None None/None.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "customerinvoice",
+      "nulls"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Fattura None None/None.pdf"
+  },
+  {
+   "name": "document-render-einvoice-previous-foreign",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984092",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/einvoice/a1000000-0000-4000-8000-000000984092/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads foreign] Fattura B 12/2025.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "customerinvoice",
+      "previous"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads foreign] Fattura B 12/2025.pdf"
+  },
+  {
+   "name": "document-render-einvoice-bypass-header",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/einvoice/a1000000-0000-4000-8000-000000984090/view",
+     "authorization": "$bypass",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Fattura FPR 7/2026.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "customerinvoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Fattura FPR 7/2026.pdf"
+  },
+  {
+   "name": "document-render-einvoice-document-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-document-token-other-invoice",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090?token=a1000000-0000-4000-8000-000000984132",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-athlete-document-token",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=a1000000-0000-4000-8000-000000984132",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984093?token=a1000000-0000-4000-8000-000000984132",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/einvoice/a1000000-0000-4000-8000-000000984093/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Fattura T 3/2026.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "customerinvoice",
+      "tokened"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Fattura T 3/2026.pdf"
+  },
+  {
+   "name": "document-render-einvoice-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-athlete-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984092?download=1",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null,
+   "body": {
+    "ignored": true
+   }
+  },
+  {
+   "name": "document-render-einvoice-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "CustomerInvoice matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-member",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-instructor-account",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "CustomerInvoice matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/zz",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "['“zz” is not a valid UUID.']"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-einvoice-renderer-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/einvoice/a1000000-0000-4000-8000-000000984090",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned invalid PDF data (content-type: )"
+   },
+   "renders": [
+    {
+     "url": "document/einvoice/a1000000-0000-4000-8000-000000984090/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "",
+      "body": "%PDF-1.7 untyped"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Fattura FPR 7/2026.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-compensation-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/compensation/a1000000-0000-4000-8000-000000984071'. Contact administrator to grant access."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Compensation",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984071/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h1"
+     ],
+     [
+      "instructorhours",
+      "h2"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf"
+  },
+  {
+   "name": "document-render-compensation-without-hours",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984072?download=true",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984072/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-06.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "attachment; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-06.pdf"
+  },
+  {
+   "name": "document-render-compensation-foreign-row",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984076",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984076/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads foreign] Compenso per Paolo Gialli del 2026-04-09.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h_foreign"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads foreign] Compenso per Paolo Gialli del 2026-04-09.pdf"
+  },
+  {
+   "name": "document-render-compensation-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984079?token=a1000000-0000-4000-8000-000000984133",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984079/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-10.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h_tokened"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-10.pdf"
+  },
+  {
+   "name": "document-render-compensation-document-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-document-token-other-compensation",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984072?token=a1000000-0000-4000-8000-000000984133",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-instructor-account",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984071/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf",
+    "actor": "coach",
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h1"
+     ],
+     [
+      "instructorhours",
+      "h2"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf"
+  },
+  {
+   "name": "document-render-compensation-instructor-account-other",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984076",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-instructor-account-unknown",
+   "actor": "coach",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Compensation not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984072?download=true",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete-without-instructor",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984073",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-athlete-deleted",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984075",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Compensation not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-member",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-bypass-header",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Compensation not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-deleted",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984075",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Compensation not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/x-y",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "['“x-y” is not a valid UUID.']"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-without-instructor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984073",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'first_name'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-without-date",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984074",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'date'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-compensation-renderer-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984071",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 400: {\"error\": \"bad url\"}"
+   },
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984071/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 400,
+      "content_type": "application/json",
+      "body": "{\"error\": \"bad url\"}"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Luca Bianchi del 2026-04-05.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-template-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/template/a1000000-0000-4000-8000-000000984100'. Contact administrator to grant access."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Template",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-template-full-collaborator-additional-data",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=a1000000-0000-4000-8000-000000984030&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "full_collaborator",
+    "storage_task": true,
+    "links": [],
+    "creates": [
+     {
+      "model": "sportassociationdocumentsarchive",
+      "folder": "own"
+     },
+     {
+      "model": "subscriptionfile",
+      "subscription": "plain"
+     }
+    ],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "parent": "$folder:own",
+     "subscription": "a1000000-0000-4000-8000-000000984030"
+    }
+   }
+  },
+  {
+   "name": "document-render-template-folder-text-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [
+     {
+      "model": "sportassociationdocumentsarchive",
+      "folder": "foreign"
+     }
+    ],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "parent": "$folder-text:foreign"
+    }
+   }
+  },
+  {
+   "name": "document-render-template-folder-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "parent": 987654321,
+     "other": 1
+    }
+   }
+  },
+  {
+   "name": "document-render-template-folder-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "parent": "abc"
+    }
+   }
+  },
+  {
+   "name": "document-render-template-folder-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "parent": null
+    }
+   }
+  },
+  {
+   "name": "document-render-template-subscription-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=a1000000-0000-4000-8000-000000984999&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "subscription": "a1000000-0000-4000-8000-000000984999"
+    }
+   }
+  },
+  {
+   "name": "document-render-template-subscription-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=not-a-uuid&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "subscription": "not-a-uuid"
+    }
+   }
+  },
+  {
+   "name": "document-render-template-subscription-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=None&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "subscription": null
+    }
+   }
+  },
+  {
+   "name": "document-render-template-subscription-foreign",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=a1000000-0000-4000-8000-000000984039&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [
+     {
+      "model": "subscriptionfile",
+      "subscription": "foreign"
+     }
+    ],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "subscription": "a1000000-0000-4000-8000-000000984039"
+    }
+   }
+  },
+  {
+   "name": "document-render-template-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-renderer-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 500,
+      "content_type": "text/plain",
+      "body": "down"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [
+     {
+      "model": "sportassociationdocumentsarchive",
+      "folder": "own"
+     }
+    ],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "body": {
+    "additionalData": {
+     "parent": "$folder:own"
+    }
+   }
+  },
+  {
+   "name": "document-render-template-foreign",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984101",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Template not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "exception": "Template not found"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/template/nope",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "['“nope” is not a valid UUID.']"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "User is not a sport association"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "SportAssociation matching query does not exist."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-template-bypass-header",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/medical-appointment/a1000000-0000-4000-8000-000000984110'. Contact administrator to grant access."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Medical Appointment",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984110/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica del 2026-05-06.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "medicalappointments",
+      "agonistica"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-06.pdf"
+  },
+  {
+   "name": "document-render-medical-non-agonistica",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984111",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984111/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Società Sportiva Ècole] Visita Non Agonistica del 2026-05-07.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "medicalappointments",
+      "non"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Società Sportiva Ècole] Visita Non Agonistica del 2026-05-07.pdf"
+  },
+  {
+   "name": "document-render-medical-without-date",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984112",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984112/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica del None.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "medicalappointments",
+      "nodate"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Visita Agonistica del None.pdf"
+  },
+  {
+   "name": "document-render-medical-previous-foreign",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984114",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984114/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads foreign] Visita Non Agonistica del 2026-05-09.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "medicalappointments",
+      "previous"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads foreign] Visita Non Agonistica del 2026-05-09.pdf"
+  },
+  {
+   "name": "document-render-medical-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984116?token=a1000000-0000-4000-8000-000000984134",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984116/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica del 2026-05-11.pdf",
+    "actor": null,
+    "storage_task": true,
+    "links": [
+     [
+      "medicalappointments",
+      "tokened"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-11.pdf"
+  },
+  {
+   "name": "document-render-medical-athlete-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984115",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984115/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica del 2026-05-10.pdf",
+    "actor": "athlete",
+    "storage_task": true,
+    "links": [
+     [
+      "medicalappointments",
+      "athlete"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Visita Agonistica del 2026-05-10.pdf"
+  },
+  {
+   "name": "document-render-medical-document-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110?token=a1000000-0000-4000-8000-000000984124",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-document-token-other-appointment",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110?token=a1000000-0000-4000-8000-000000984134",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984114?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-bypass-header",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {
+    "Authorization": "$bypass"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-other-post",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984114?download=1",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-other-unknown-region",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984113",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'subscription'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-member-of-athlete",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984115",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984999",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'subscription'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/bad",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "['“bad” is not a valid UUID.']"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-unknown-region",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984113",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'unknown-region'"
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-medical-renderer-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984110",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 404: "
+   },
+   "renders": [
+    {
+     "url": "document/medical-appointment/a1000000-0000-4000-8000-000000984110/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 404,
+      "content_type": "text/plain",
+      "body": ""
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica del 2026-05-06.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984117",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.last_name": "  D'ANGELÒ",
+    "associate.first_name": "  MARIA CHIARA",
+    "associate.born_city": "  ΩMEGA STRASSE",
+    "associate.born_date": "09/05/2012",
+    "associate.address_city": "  BIELLA",
+    "associate.address_no_number": "  VIA GARIBALDI  INT.",
+    "associate.address_number": "  23 B",
+    "associate.id_number": "  CA1234567",
+    "associate.tax_code": "  RSSMRA12E49A859X",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST",
+    "medical_appointment.sport": "  ATLETICA LEGGERA",
+    "other.address": "  CENTRO MEDICO, VIA DANTE 5"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-again-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984117?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "attachment; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-12.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.last_name": "  D'ANGELÒ",
+    "associate.first_name": "  MARIA CHIARA",
+    "associate.born_city": "  ΩMEGA STRASSE",
+    "associate.born_date": "09/05/2012",
+    "associate.address_city": "  BIELLA",
+    "associate.address_no_number": "  VIA GARIBALDI  INT.",
+    "associate.address_number": "  23 B",
+    "associate.id_number": "  CA1234567",
+    "associate.tax_code": "  RSSMRA12E49A859X",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST",
+    "medical_appointment.sport": "  ATLETICA LEGGERA",
+    "other.address": "  CENTRO MEDICO, VIA DANTE 5"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-bare",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984118",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del None.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_bare"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del None.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.first_name": "  ZOE"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-promotes-tutor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984121",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_minor"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": [
+     [
+      "formminor",
+      "formtutor"
+     ]
+    ]
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.first_name": "  LEO",
+    "associate.last_name": "  PICCOLO",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST"
+   }
+  },
+  {
+   "name": "document-render-medical-form-biella-promoted-tutor-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984121",
+   "headers": {},
+   "status": 200,
+   "response": "<form-pdf>",
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [
+     [
+      "medicalappointments",
+      "biella_minor"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": true,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-15.pdf",
+   "form": {
+    "sport_association.denomination": "  POLISPORTIVA CITTÀ (BIELLA)",
+    "sport_association.federation": "  FIDAL",
+    "sport_association.address": "  VIA ROMA 1",
+    "sport_association.address_cap": "  13900",
+    "sport_association.address_city": "  BIELLA",
+    "sport_association.whatsapp": "  +39 333 1234567",
+    "sport_association.user.email": "  DOCUMENT-RENDER-FORM@EXAMPLE.TEST",
+    "sport_association.president_first_name": "  ÉLISE",
+    "sport_association.president_last_name": "  ŁUKASZ",
+    "sport_association.stamp": "  data:image/png;base64,AAAA",
+    "other.today_datetime": "  02/01/2026 03:04",
+    "associate.first_name": "  LEO",
+    "associate.last_name": "  PICCOLO",
+    "main_tutor.phone": "  +39 0151234567",
+    "main_tutor.email": "  TUTOR@EXAMPLE.TEST"
+   }
+  },
+  {
+   "name": "document-render-medical-form-without-associate",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984119",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'NoneType' object has no attribute 'main_tutor'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Polisportiva Città (Biella)] Visita Agonistica Piemonte Biella del 2026-05-13.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-medical-region-without-form",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984109",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "[Errno 2] No such file or directory: 'document/medical-appointments/non-agonistica.html'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Visita Agonistica Lombardia del 2026-05-14.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-medical-form-athlete-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/medical-appointment/a1000000-0000-4000-8000-000000984117",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "document-render-subscription-name-with-line-break",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984096",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'inline; filename=[Message reads own] Modulo di Iscrizione Lia Bian\\nchi.pdf')"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984096/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Bian\nchi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-name-with-line-break-download",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984096?download=1",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=[Message reads own] Modulo di Iscrizione Lia Bian\\nchi.pdf')"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984096/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Bian\nchi.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-name-with-separators",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984097",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'inline; filename=[Message reads own] Modulo di Iscrizione Ωmega Ne\\r\\nri\\u2028x.pdf')"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984097/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Ωmega Ne\r\nri x.pdf",
+    "actor": "full_collaborator",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-subscription-name-with-line-break-renderer-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/subscription/a1000000-0000-4000-8000-000000984096",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "PDF rendering failed: Renderer returned HTTP 500: down"
+   },
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000984096/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 500,
+      "content_type": "text/plain",
+      "body": "down"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo di Iscrizione Lia Bian\nchi.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   }
+  },
+  {
+   "name": "document-render-compensation-instructor-owner-without-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984083",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984083/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h_orphan1"
+     ],
+     [
+      "instructorhours",
+      "h_orphan2"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "inline; filename=[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf"
+  },
+  {
+   "name": "document-render-compensation-instructor-owner-without-association-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/compensation/a1000000-0000-4000-8000-000000984083?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/compensation/a1000000-0000-4000-8000-000000984083/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf",
+    "actor": "full_collaborator",
+    "storage_task": true,
+    "links": [
+     [
+      "instructorhours",
+      "h_orphan1"
+     ],
+     [
+      "instructorhours",
+      "h_orphan2"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "disposition": "attachment; filename=[Message reads own] Compenso per Nina Blu del 2026-04-11.pdf"
+  },
+  {
+   "name": "document-render-template-body-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "[1, \"parent\", {\"additionalData\": 1}]",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-list-with-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'list' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "[\"x\", \"additionalData\"]",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "\"additional data\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-text-with-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'str' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "\"the additionalData key\"",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'NoneType' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'int' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "7",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'float' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "1.5",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'bool' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "true",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "JSON parse error - Expecting value: line 1 column 20 (char 19)"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": ",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-body-plain-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Unsupported media type \"text/plain\" in request."
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "additionalData=1",
+   "content_type": "text/plain"
+  },
+  {
+   "name": "document-render-template-additional-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'NoneType' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": null}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'int' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": 3}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'bool' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": false}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "argument of type 'float' is not iterable"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": 2.50}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": \"nothing\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-text-with-parent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'str' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": \"a parent b\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-text-with-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "string indices must be integers, not 'str'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": \"subscriptions\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": [1, \"x\", [\"parent\"]]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-list-with-parent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'list' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": [\"subscription\", \"parent\"]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-additional-list-with-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "list indices must be integers or slices, not str"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": [\"subscription\"]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=1.5&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": 1.50}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-exponent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=1000.0&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": 1e3}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id=[1, 'a', None, True, 2.0]&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": [1, \"a\", null, true, 2.0]}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-subscription-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?subscription_id={'a': 'b c'}&",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "{\"additionalData\": {\"subscription\": {\"a\": \"b c\"}}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "document-render-template-form-additional-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "additionalData=nothing&other=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "document-render-template-form-additional-with-parent",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'str' object has no attribute 'get'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "full_collaborator",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "additionalData=parent",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "document-render-template-multipart-without-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Generato con successo."
+   },
+   "renders": [
+    {
+     "url": "document/template/a1000000-0000-4000-8000-000000984100/view?",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"\r\n\r\nparent\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary"
+  },
+  {
+   "name": "document-render-template-multipart-additional-with-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "string indices must be integers, not 'str'"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"additionalData\"\r\n\r\nsubscription\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary"
+  },
+  {
+   "name": "document-render-template-multipart-without-boundary",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/template/a1000000-0000-4000-8000-000000984100",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Multipart form parse error - Invalid boundary in multipart: None"
+   },
+   "renders": [],
+   "effect": {
+    "document": "[Message reads own] Modulo privacy  v1 2 del $today.pdf",
+    "actor": "owner",
+    "storage_task": false,
+    "links": [],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"additionalData\"\r\n\r\nx\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-multipart",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"send_receipt_email\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-multipart-other-field",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": null,
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"other\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data; boundary=fixture-boundary",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-receipt-email-query-with-plain-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=1",
+   "headers": {},
+   "status": 200,
+   "response": "<pdf>",
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000984040/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "document": "[Message reads own] Ricevuta 2026-03-04.pdf",
+    "actor": "owner",
+    "storage_task": true,
+    "links": [
+     [
+      "invoice",
+      "plain"
+     ]
+    ],
+    "creates": [],
+    "mail": {
+     "subject": "Ricevuta di pagamento 04/03/26",
+     "message": "Gentile Mario Rossi,\nabbiamo il piacere di inviarle la ricevuta di pagamento di 25,00 € del 04/03/26.\n\nEcco il link per scaricare la ricevuta:\n $app_url/api/document/retrieve/$document?download=false&token=$token\n\nCordiali saluti,\nMessage reads own",
+     "recipient": "mario.rossi@example.test"
+    },
+    "stored": false,
+    "promoted": []
+   },
+   "raw_body": "send_receipt_email=1",
+   "content_type": "text/plain",
+   "disposition": "inline; filename=[Message reads own] Ricevuta 2026-03-04.pdf"
+  },
+  {
+   "name": "document-render-invoice-plain-text-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"text/plain\" in request."
+   },
+   "renders": [],
+   "effect": null,
+   "raw_body": "send_receipt_email=1",
+   "content_type": "text/plain"
+  },
+  {
+   "name": "document-render-invoice-multipart-without-boundary",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/invoice/a1000000-0000-4000-8000-000000984040?send_receipt_email=",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "Multipart form parse error - Invalid boundary in multipart: None"
+   },
+   "renders": [],
+   "effect": null,
+   "raw_body": "--fixture-boundary\r\nContent-Disposition: form-data; name=\"send_receipt_email\"\r\n\r\ntrue\r\n--fixture-boundary--\r\n",
+   "content_type": "multipart/form-data"
+  }
+ ]
+}

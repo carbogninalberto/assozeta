@@ -1,0 +1,453 @@
+package service
+
+import (
+	"encoding/json"
+	"errors"
+	"os"
+	"path/filepath"
+	"reflect"
+	"testing"
+	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+)
+
+var scheduleSubset = []string{
+	"interval_wait", "interval_missed_slots", "disabled", "future_start_ceiling",
+	"utc_daily_before_boundary", "utc_daily_at_boundary", "utc_daily_after_boundary",
+	"utc_daily_already_dispatched", "interval_future_cursor", "utc_daily_future_cursor",
+	"utc_daily_start_before_slot", "utc_daily_start_at_slot", "utc_daily_start_reached",
+	"utc_daily_previous_date_same_hour", "utc_daily_future_date_same_hour",
+	"utc_daily_same_date_before_minute", "utc_daily_previous_date_at_due_minute",
+	"utc_daily_start_future_date_same_hour", "utc_daily_start_same_date_same_hour",
+	"interval_initial_cursor", "interval_initial_started", "utc_daily_initial_before_slot", "utc_daily_initial_at_slot",
+	"utc_every_minute_same_minute", "utc_every_minute_next_slot", "utc_every_minute_missed_slots",
+	"utc_every_minute_hour_rollover", "utc_every_minute_day_rollover", "utc_every_minute_previous_date",
+	"utc_every_minute_future_cursor", "utc_every_minute_start_future", "utc_every_minute_initial_cursor",
+	"utc_daily_0730_before_slot", "utc_daily_0730_at_slot",
+	"utc_daily_0010_before_slot", "utc_daily_0010_at_slot", "utc_daily_0010_missed_slot",
+	"utc_every_15_minutes_before_slot", "utc_every_15_minutes_at_slot", "utc_every_15_minutes_missed_slots",
+	"utc_every_15_minutes_hour_rollover", "utc_every_15_minutes_day_rollover", "utc_every_15_minutes_previous_date",
+	"utc_every_15_minutes_off_slot_cursor", "utc_every_15_minutes_future_cursor", "utc_every_15_minutes_start_future",
+	"utc_every_15_minutes_initial_cursor", "utc_every_45_minutes_hour_rollover", "utc_every_45_minutes_same_hour",
+	"interval_hourly_wait", "interval_hourly_missed_slots", "interval_hourly_at_slot", "interval_hourly_initial_cursor",
+	"utc_daily_0300_before_slot", "utc_daily_0300_at_slot", "utc_daily_0300_missed_slot",
+	"utc_every_20_minutes_before_slot", "utc_every_20_minutes_at_slot", "utc_every_20_minutes_hour_rollover",
+	"utc_archive_before_slot", "utc_archive_at_slot", "utc_archive_last_listed_day", "utc_archive_missed_slot",
+	"utc_archive_unlisted_month_cursor", "utc_archive_listed_day_after_hour", "utc_archive_initial_cursor",
+	"utc_archive_future_cursor", "utc_archive_start_future", "utc_archive_year_rollover",
+	"utc_daily_0015_before_slot", "utc_daily_0015_at_slot", "utc_daily_0015_missed_slot",
+}
+
+// Timing is task-independent in ModelEntry; each published task must reach
+// the same decision as the daily reset for one persisted definition.
+var periodicTasks = []string{domain.JobResetDailyEmailBalance, domain.JobUpdateAssociateAge,
+	domain.JobClearExpiredSubscriptionTokens, domain.JobDeleteOldAuditLogs, domain.JobDeleteUsersWithRequest,
+	domain.JobAutoMarkAttendance, domain.JobSendUserPartialRegistrationEmail, domain.JobSendExpiringCertificateEmail,
+	domain.JobSendExpiredCertificateEmail, domain.JobSendReminders, domain.JobMaintainBakneyPairings, domain.JobCleanupOldExports,
+	domain.JobChangeTypeOfStripePayments, domain.JobGenerateCouponIfNotExists, domain.JobRenewMembershipsPayments,
+	domain.JobCleanupDataRestores,
+	domain.JobAssociationQuoteAssign, domain.JobMarkAsPaidPaymentsCheckingStripe, domain.JobAutoDeleteOrphanMedicalCertificate,
+	domain.JobClearDeletedSubscription, domain.JobAutoArchiveSubscription}
+
+type dueFixtureInput struct {
+	Kind        string  `json:"kind"`
+	Every       int64   `json:"every"`
+	Minute      string  `json:"minute"`
+	Hour        string  `json:"hour"`
+	DayOfMonth  string  `json:"day_of_month"`
+	MonthOfYear string  `json:"month_of_year"`
+	Last        *string `json:"last"`
+	DateChanged string  `json:"date_changed"`
+	Start       *string `json:"start"`
+	Now         string  `json:"now"`
+	Enabled     *bool   `json:"enabled"`
+}
+
+type dueExpectation struct {
+	Due     bool    `json:"due"`
+	Next    float64 `json:"next_seconds"`
+	Enabled bool    `json:"enabled"`
+	Count   int     `json:"count"`
+}
+
+func scheduleTime(t *testing.T, raw string) time.Time {
+	t.Helper()
+	parsed, err := time.Parse(time.RFC3339Nano, raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return parsed
+}
+
+func basicSchedule() domain.PeriodicSchedule {
+	return domain.PeriodicSchedule{
+		Task: domain.JobResetDailyEmailBalance, Enabled: true,
+		Interval:    &domain.PeriodicInterval{Every: 60, Period: "seconds"},
+		DateChanged: time.Date(2026, 10, 22, 11, 59, 0, 0, time.UTC),
+		Args:        json.RawMessage(`[]`), Kwargs: json.RawMessage(`{}`), Headers: json.RawMessage(`{}`),
+	}
+}
+
+func TestScheduleDuePortableContract(t *testing.T) {
+	fixturePath := filepath.Join("..", "..", "..", "TESTS", "fixtures", "scheduler-authority.json")
+	data, err := os.ReadFile(fixturePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Cases map[string]struct {
+			Input    dueFixtureInput `json:"input"`
+			Expected dueExpectation  `json:"expected"`
+		} `json:"cases"`
+	}
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	// The differential adapter requires this actual Django report. Ordinary unit
+	// runs still use the shared authored expectations without requiring a database.
+	var observed map[string]dueExpectation
+	if reportPath := os.Getenv("TESTS_SCHEDULER_AUTHORITY_REPORT"); reportPath != "" {
+		raw, err := os.ReadFile(reportPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var report struct {
+			Success bool                       `json:"success"`
+			Cases   map[string]json.RawMessage `json:"cases"`
+		}
+		if err := json.Unmarshal(raw, &report); err != nil {
+			t.Fatal(err)
+		}
+		if !report.Success {
+			t.Fatal("actual Django oracle did not finish successfully")
+		}
+		observed = make(map[string]dueExpectation)
+		for _, name := range scheduleSubset {
+			var value dueExpectation
+			if err := json.Unmarshal(report.Cases[name], &value); err != nil {
+				t.Fatal(err)
+			}
+			observed[name] = value
+		}
+	}
+	for _, name := range scheduleSubset {
+		t.Run(name, func(t *testing.T) {
+			item, exists := fixture.Cases[name]
+			if !exists {
+				t.Fatal("missing authored case")
+			}
+			input := item.Input
+			row := basicSchedule()
+			if input.Enabled != nil {
+				row.Enabled = *input.Enabled
+			}
+			if input.Last != nil {
+				value := scheduleTime(t, *input.Last)
+				row.LastRunAt = &value
+			}
+			if input.DateChanged != "" {
+				row.DateChanged = scheduleTime(t, input.DateChanged)
+			}
+			if input.Start != nil {
+				value := scheduleTime(t, *input.Start)
+				row.StartTime = &value
+			}
+			if input.Kind == "interval" {
+				row.Interval.Every = input.Every
+			} else {
+				row.Interval = nil
+				row.Cron = &domain.PeriodicCron{Minute: input.Minute, Hour: input.Hour,
+					DayOfWeek: "*", DayOfMonth: "*", MonthOfYear: "*", Timezone: "UTC"}
+				if input.DayOfMonth != "" {
+					row.Cron.DayOfMonth = input.DayOfMonth
+				}
+				if input.MonthOfYear != "" {
+					row.Cron.MonthOfYear = input.MonthOfYear
+				}
+			}
+			for _, task := range periodicTasks {
+				row.Task = task
+				before, _ := json.Marshal(row)
+				actual, err := EvaluateScheduleDue(row, scheduleTime(t, input.Now))
+				if err != nil {
+					t.Fatal(task, err)
+				}
+				if actual.Due != item.Expected.Due || actual.NextCheckAfter.Seconds() != item.Expected.Next {
+					t.Fatalf("%s: expected due=%v next=%v, observed %+v", task, item.Expected.Due, item.Expected.Next, actual)
+				}
+				after, _ := json.Marshal(row)
+				if string(before) != string(after) {
+					t.Fatal("pure evaluation mutated the source snapshot")
+				}
+			}
+			if observed != nil && !reflect.DeepEqual(observed[name], item.Expected) {
+				t.Fatalf("actual Django result differs from authored expectation: %+v", observed[name])
+			}
+		})
+	}
+}
+
+func TestScheduleDueRejectsUnsupportedInputs(t *testing.T) {
+	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
+	integer := 0
+	cases := map[string]func(*domain.PeriodicSchedule){
+		"workflow cron task":        func(s *domain.PeriodicSchedule) { s.Task = "check_workflows_trigger_cron" },
+		"updated certificate task":  func(s *domain.PeriodicSchedule) { s.Task = "send_updated_certificate_email" },
+		"unregistered alias":        func(s *domain.PeriodicSchedule) { s.Task = "application.tasks.reset_communication_daily_email_balance" },
+		"one off":                   func(s *domain.PeriodicSchedule) { s.OneOff = true },
+		"absolute expiry":           func(s *domain.PeriodicSchedule) { s.ExpiresAt = &now },
+		"relative expiry even zero": func(s *domain.PeriodicSchedule) { s.ExpireSeconds = &integer },
+		"explicit priority":         func(s *domain.PeriodicSchedule) { s.Priority = &integer },
+		"queue":                     func(s *domain.PeriodicSchedule) { s.Queue = "custom" },
+		"exchange":                  func(s *domain.PeriodicSchedule) { s.Exchange = "custom" },
+		"routing":                   func(s *domain.PeriodicSchedule) { s.RoutingKey = "custom" },
+		"nonempty args":             func(s *domain.PeriodicSchedule) { s.Args = json.RawMessage(`[1]`) },
+		"nonempty kwargs":           func(s *domain.PeriodicSchedule) { s.Kwargs = json.RawMessage(`{"flag":true}`) },
+		"nonempty headers":          func(s *domain.PeriodicSchedule) { s.Headers = json.RawMessage(`{"trace":"value"}`) },
+		"null args":                 func(s *domain.PeriodicSchedule) { s.Args = json.RawMessage(`null`) },
+		"wrong kwargs type":         func(s *domain.PeriodicSchedule) { s.Kwargs = json.RawMessage(`[]`) },
+		"malformed args":            func(s *domain.PeriodicSchedule) { s.Args = json.RawMessage(`{`) },
+		"whitespace only headers":   func(s *domain.PeriodicSchedule) { s.Headers = json.RawMessage(` `) },
+		"trailing JSON":             func(s *domain.PeriodicSchedule) { s.Kwargs = json.RawMessage(`{} {}`) },
+		"no definition":             func(s *domain.PeriodicSchedule) { s.Interval = nil },
+		"solar also present":        func(s *domain.PeriodicSchedule) { s.HasSolar = true },
+		"clocked also present":      func(s *domain.PeriodicSchedule) { s.HasClocked = true },
+		"two definitions":           func(s *domain.PeriodicSchedule) { s.Cron = &domain.PeriodicCron{} },
+		"minutes interval":          func(s *domain.PeriodicSchedule) { s.Interval.Period = "minutes" },
+		"zero interval":             func(s *domain.PeriodicSchedule) { s.Interval.Every = 0 },
+		"negative interval":         func(s *domain.PeriodicSchedule) { s.Interval.Every = -1 },
+		"overflow interval":         func(s *domain.PeriodicSchedule) { s.Interval.Every = 1<<63 - 1 },
+	}
+	for name, mutate := range cases {
+		t.Run(name, func(t *testing.T) {
+			row := basicSchedule()
+			mutate(&row)
+			result, err := EvaluateScheduleDue(row, now)
+			if !errors.Is(err, domain.ErrScheduleUnsupported) || result != (domain.ScheduleDue{}) {
+				t.Fatalf("unsupported row must return no decision: %+v %v", result, err)
+			}
+		})
+	}
+	cronCases := map[string]func(*domain.PeriodicCron){
+		"timezone":     func(c *domain.PeriodicCron) { c.Timezone = "Europe/Rome" },
+		"minute steps": func(c *domain.PeriodicCron) { c.Minute = "*/15" },
+		"minute steps in Rome": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.Timezone = "*/15", "*", "Europe/Rome"
+		},
+		"minute steps on one weekday": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.DayOfWeek = "*/15", "*", "1"
+		},
+		"zero minute step":       func(c *domain.PeriodicCron) { c.Minute, c.Hour = "*/0", "*" },
+		"oversized minute step":  func(c *domain.PeriodicCron) { c.Minute, c.Hour = "*/60", "*" },
+		"offset minute step":     func(c *domain.PeriodicCron) { c.Minute, c.Hour = "5/15", "*" },
+		"ranged minute step":     func(c *domain.PeriodicCron) { c.Minute, c.Hour = "0-30/15", "*" },
+		"signed minute step":     func(c *domain.PeriodicCron) { c.Minute, c.Hour = "*/+5", "*" },
+		"scalar minute any hour": func(c *domain.PeriodicCron) { c.Minute, c.Hour = "15", "*" },
+		"hour steps":             func(c *domain.PeriodicCron) { c.Minute, c.Hour = "0", "*/2" },
+		"minute wildcard":        func(c *domain.PeriodicCron) { c.Minute = "*" },
+		"hour wildcard":          func(c *domain.PeriodicCron) { c.Hour = "*" },
+		"every minute on one weekday": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.DayOfWeek = "*", "*", "1"
+		},
+		"every minute in Rome": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.Timezone = "*", "*", "Europe/Rome"
+		},
+		"archive calendar in Rome": func(c *domain.PeriodicCron) {
+			c.Minute, c.Hour, c.DayOfMonth, c.MonthOfYear, c.Timezone = "0", "1", "1-4", "1,6,9", "Europe/Rome"
+		},
+		"archive calendar on one weekday": func(c *domain.PeriodicCron) {
+			c.DayOfMonth, c.MonthOfYear, c.DayOfWeek = "1-4", "1,6,9", "1"
+		},
+		"monthday any hour":       func(c *domain.PeriodicCron) { c.DayOfMonth, c.Hour = "1-4", "*" },
+		"monthday minute steps":   func(c *domain.PeriodicCron) { c.DayOfMonth, c.Minute, c.Hour = "1", "*/15", "*" },
+		"monthday hour list":      func(c *domain.PeriodicCron) { c.DayOfMonth, c.Hour = "1", "0,12" },
+		"monthday step":           func(c *domain.PeriodicCron) { c.DayOfMonth = "*/2" },
+		"monthday wrapping range": func(c *domain.PeriodicCron) { c.DayOfMonth = "4-1" },
+		"monthday zero":           func(c *domain.PeriodicCron) { c.DayOfMonth = "0" },
+		"monthday too large":      func(c *domain.PeriodicCron) { c.DayOfMonth = "32" },
+		"monthday empty item":     func(c *domain.PeriodicCron) { c.DayOfMonth = "1,,2" },
+		"monthday last":           func(c *domain.PeriodicCron) { c.DayOfMonth = "L" },
+		"month name":              func(c *domain.PeriodicCron) { c.MonthOfYear = "jan" },
+		"month thirteen":          func(c *domain.PeriodicCron) { c.MonthOfYear = "13" },
+		"month step":              func(c *domain.PeriodicCron) { c.MonthOfYear = "1-12/3" },
+		"month signed":            func(c *domain.PeriodicCron) { c.MonthOfYear = "+1" },
+		"hour list":               func(c *domain.PeriodicCron) { c.Hour = "0,12" },
+		"minute range":            func(c *domain.PeriodicCron) { c.Minute = "0-10" },
+		"invalid minute":          func(c *domain.PeriodicCron) { c.Minute = "60" },
+		"invalid hour":            func(c *domain.PeriodicCron) { c.Hour = "24" },
+		"signed hour":             func(c *domain.PeriodicCron) { c.Hour = "+1" },
+		"whitespace hour":         func(c *domain.PeriodicCron) { c.Hour = " 1" },
+		"weekday":                 func(c *domain.PeriodicCron) { c.DayOfWeek = "1" },
+	}
+	for name, mutate := range cronCases {
+		t.Run("cron "+name, func(t *testing.T) {
+			row := basicSchedule()
+			row.Interval = nil
+			row.Cron = &domain.PeriodicCron{Minute: "0", Hour: "0", DayOfWeek: "*", DayOfMonth: "*", MonthOfYear: "*", Timezone: "UTC"}
+			mutate(row.Cron)
+			result, err := EvaluateScheduleDue(row, now)
+			if !errors.Is(err, domain.ErrScheduleUnsupported) || result != (domain.ScheduleDue{}) {
+				t.Fatalf("%+v %v", result, err)
+			}
+		})
+	}
+}
+
+func TestScheduleDueEmptyDefaultsAndInvalidClock(t *testing.T) {
+	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
+	row := basicSchedule()
+	row.Args = nil
+	row.Kwargs = nil
+	row.Headers = nil
+	actual, err := EvaluateScheduleDue(row, now)
+	if err != nil || !actual.Due || actual.NextCheckAfter != time.Minute {
+		t.Fatalf("blank model defaults: %+v %v", actual, err)
+	}
+	for _, mutate := range []func(*domain.PeriodicSchedule){
+		func(s *domain.PeriodicSchedule) { s.DateChanged = time.Time{} },
+		func(s *domain.PeriodicSchedule) { value := time.Time{}; s.LastRunAt = &value },
+		func(s *domain.PeriodicSchedule) { value := time.Time{}; s.StartTime = &value },
+	} {
+		row := basicSchedule()
+		mutate(&row)
+		if _, err := EvaluateScheduleDue(row, now); !errors.Is(err, domain.ErrScheduleInvalid) {
+			t.Fatalf("invalid cursor accepted: %v", err)
+		}
+	}
+	if _, err := EvaluateScheduleDue(basicSchedule(), time.Time{}); !errors.Is(err, domain.ErrScheduleInvalid) {
+		t.Fatalf("zero clock: %v", err)
+	}
+}
+
+func TestScheduleDueRejectsUnrepresentableTime(t *testing.T) {
+	cases := []struct {
+		name    string
+		now     time.Time
+		prepare func(*domain.PeriodicSchedule)
+	}{
+		{"UTC conversion exceeds Python datetime", time.Date(9999, 12, 31, 23, 30, 0, 0, time.FixedZone("fixture", -3600)), func(s *domain.PeriodicSchedule) { s.Enabled = false }},
+		{"nanosecond clock exceeds PostgreSQL precision", time.Date(2026, 1, 1, 0, 0, 0, 1, time.UTC), func(*domain.PeriodicSchedule) {}},
+		{"future delay exceeds duration range", time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC), func(s *domain.PeriodicSchedule) {
+			value := time.Date(2500, 1, 1, 0, 0, 0, 0, time.UTC)
+			s.LastRunAt = &value
+		}},
+		{"initial start cursor underflows Python datetime", time.Date(20, 1, 1, 0, 0, 0, 0, time.UTC), func(s *domain.PeriodicSchedule) {
+			s.DateChanged = time.Date(20, 1, 1, 0, 0, 0, 0, time.UTC)
+			value := s.DateChanged
+			s.StartTime = &value
+		}},
+		{"next daily slot exceeds Python datetime", time.Date(9999, 12, 31, 12, 0, 0, 0, time.UTC), func(s *domain.PeriodicSchedule) {
+			s.Interval = nil
+			s.Cron = &domain.PeriodicCron{Minute: "0", Hour: "12", DayOfWeek: "*", DayOfMonth: "*", MonthOfYear: "*", Timezone: "UTC"}
+			value := time.Date(9999, 12, 31, 12, 0, 0, 0, time.UTC)
+			s.LastRunAt = &value
+		}},
+	}
+	for _, item := range cases {
+		t.Run(item.name, func(t *testing.T) {
+			row := basicSchedule()
+			item.prepare(&row)
+			decision, err := EvaluateScheduleDue(row, item.now)
+			if !errors.Is(err, domain.ErrScheduleInvalid) || decision != (domain.ScheduleDue{}) {
+				t.Fatalf("%+v %v", decision, err)
+			}
+		})
+	}
+}
+
+func TestPeriodicJobKindMapsOnlyRegisteredTasks(t *testing.T) {
+	for _, task := range periodicTasks {
+		if kind, ok := domain.PeriodicJobKind(task); !ok || kind != task {
+			t.Fatalf("%s mapped to %q %v", task, kind, ok)
+		}
+	}
+	for _, task := range []string{"", "application.tasks.auto_archive_subscription", "Clear_deleted_subscription",
+		"application.tasks.delete_old_audit_logs", "Delete_old_audit_logs"} {
+		if kind, ok := domain.PeriodicJobKind(task); ok || kind != "" {
+			t.Fatalf("%q unexpectedly mapped to %q", task, kind)
+		}
+	}
+}
+
+// scheduleDueConsumerOwned are effective Beat tasks the native Go scheduler
+// does not publish: Django Beat keeps publishing them, and the Go Celery
+// consumer runs them when GO_TASK_QUEUE_TASKS routes them (celery-consumer.md).
+var scheduleDueConsumerOwned = map[string]bool{"instance.backups.notify_failures": true}
+
+// Every declaration of the effective schedule (core/celery.py, measured by the
+// scheduler-authority oracle) is either a supported persisted definition for
+// a registered Go job or explicitly consumer-owned and refused here.
+func TestScheduleDueEffectiveDeclarations(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "..", "TESTS", "fixtures", "scheduler-authority.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Cases struct {
+			Configuration struct {
+				Expected struct {
+					EffectiveNames []string `json:"effective_names"`
+					Declarations   map[string]struct {
+						Task     string `json:"task"`
+						Schedule struct {
+							Kind        string  `json:"kind"`
+							Seconds     float64 `json:"seconds"`
+							Minute      string  `json:"minute"`
+							Hour        string  `json:"hour"`
+							DayOfWeek   string  `json:"day_of_week"`
+							DayOfMonth  string  `json:"day_of_month"`
+							MonthOfYear string  `json:"month_of_year"`
+						} `json:"schedule"`
+						Args []any `json:"args"`
+					} `json:"declarations"`
+				} `json:"expected"`
+			} `json:"configuration_authority"`
+		} `json:"cases"`
+	}
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	expected := fixture.Cases.Configuration.Expected
+	if len(expected.EffectiveNames) == 0 || len(expected.EffectiveNames) != len(expected.Declarations) {
+		t.Fatalf("the effective schedule must be the declarations: %v", expected.EffectiveNames)
+	}
+	now := time.Date(2026, 10, 22, 12, 0, 0, 0, time.UTC)
+	owned := 0
+	for _, name := range expected.EffectiveNames {
+		declaration, ok := expected.Declarations[name]
+		if !ok || declaration.Task == "" || len(declaration.Args) != 0 {
+			t.Fatalf("%s: declaration outside the characterized shape", name)
+		}
+		row := basicSchedule()
+		row.Task = declaration.Task
+		switch schedule := declaration.Schedule; schedule.Kind {
+		case "interval":
+			if schedule.Seconds != float64(int64(schedule.Seconds)) {
+				t.Fatalf("%s: fractional interval", name)
+			}
+			row.Interval = &domain.PeriodicInterval{Every: int64(schedule.Seconds), Period: "seconds"}
+		case "cron":
+			row.Interval = nil
+			row.Cron = &domain.PeriodicCron{Minute: schedule.Minute, Hour: schedule.Hour, DayOfWeek: schedule.DayOfWeek,
+				DayOfMonth: schedule.DayOfMonth, MonthOfYear: schedule.MonthOfYear, Timezone: "UTC"}
+		default:
+			t.Fatalf("%s: schedule kind %q", name, schedule.Kind)
+		}
+		_, mapped := domain.PeriodicJobKind(declaration.Task)
+		_, err := EvaluateScheduleDue(row, now)
+		if scheduleDueConsumerOwned[declaration.Task] {
+			owned++
+			if mapped || !errors.Is(err, domain.ErrScheduleUnsupported) {
+				t.Fatalf("%s: a consumer-owned task must be refused by the Go scheduler (mapped=%v, err=%v)", name, mapped, err)
+			}
+			continue
+		}
+		if !mapped || err != nil {
+			t.Fatalf("%s: effective declaration not published by Go (mapped=%v, err=%v)", name, mapped, err)
+		}
+	}
+	if owned != len(scheduleDueConsumerOwned) {
+		t.Fatalf("consumer-owned tasks missing from the effective schedule: %d", owned)
+	}
+}

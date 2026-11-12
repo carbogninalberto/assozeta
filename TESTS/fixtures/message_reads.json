@@ -1,0 +1,504 @@
+{
+  "matrix_version": 1,
+  "scope": "Saved communication message list and delivery-history detail reads.",
+  "ids": {
+    "owner": "a1000000-0000-4000-8000-000000700001",
+    "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+    "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+    "athlete": "a1000000-0000-4000-8000-000000700004",
+    "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+    "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+    "own_association": "a1000000-0000-4000-8000-000000701001",
+    "foreign_association": "a1000000-0000-4000-8000-000000701002",
+    "deleted_association": "a1000000-0000-4000-8000-000000701003",
+    "newest_email": "a1000000-0000-4000-8000-000000702001",
+    "null_date_post": "a1000000-0000-4000-8000-000000702002",
+    "older_email": "a1000000-0000-4000-8000-000000702003",
+    "foreign_email": "a1000000-0000-4000-8000-000000702004",
+    "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+    "empty_email": "a1000000-0000-4000-8000-000000702006",
+    "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007"
+  },
+  "seed_requirements": {
+    "unsupported_type_transaction": "Seed a delivery transaction for unsupported-type message a1000000-0000-4000-8000-000000702005 so removing the detail type predicate returns 200 rather than 404."
+  },
+  "cases": [
+    {
+      "name": "message-reads-list-owner",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ]
+    },
+    {
+      "name": "message-reads-list-query-and-group-ignored",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/list?page=2&page_size=1&ordering=message&search=foreign&group_id=a1000000-0000-4000-8000-000000799999",
+      "headers": {
+        "X-Group-Id": "a1000000-0000-4000-8000-000000799999"
+      },
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ]
+    },
+    {
+      "name": "message-reads-detail-owner",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703001",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "first@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": "2026-10-23T12:00:01.123456Z",
+          "opened_on": "2026-10-23T12:01:00.000001Z",
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703002",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "second@example.test",
+          "sent_on": "2026-10-23T12:00:00.123456Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        },
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703003",
+          "message": "a1000000-0000-4000-8000-000000702001",
+          "recipient": "bounced@example.test",
+          "sent_on": "2026-10-23T11:00:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": "2026-10-23T11:00:02Z",
+          "bounced_reason": "Mailbox full",
+          "bounced_type": "permanent",
+          "bounced_status": "5.2.2"
+        }
+      ]
+    },
+    {
+      "name": "message-reads-detail-foreign",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702004/detail",
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      }
+    },
+    {
+      "name": "message-reads-detail-empty",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702006/detail",
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      }
+    },
+    {
+      "name": "message-reads-detail-unsupported-type",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702005/detail",
+      "status": 404,
+      "response": {
+        "msg": "message not found."
+      }
+    },
+    {
+      "name": "message-reads-detail-malformed-uuid",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/not-a-uuid/detail",
+      "status": 400,
+      "response": [
+        "badly formed hexadecimal UUID string"
+      ]
+    },
+    {
+      "name": "message-reads-detail-uppercase-uuid",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/A1000000-0000-4000-8000-000000702003/detail",
+      "status": 200,
+      "response": [
+        {
+          "message_transaction_id": "a1000000-0000-4000-8000-000000703005",
+          "message": "a1000000-0000-4000-8000-000000702003",
+          "recipient": "older@example.test",
+          "sent_on": "2026-10-23T10:00:00Z",
+          "delivered_on": null,
+          "opened_on": null,
+          "clicked_on": null,
+          "bounced_on": null,
+          "bounced_reason": null,
+          "bounced_type": null,
+          "bounced_status": null
+        }
+      ]
+    },
+    {
+      "name": "message-reads-list-full-collaborator",
+      "actor": "full_collaborator",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "status": 200,
+      "response": [
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702002",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "INSIDE_APP",
+          "message": "Post senza data",
+          "subject": "None",
+          "created_at": null
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702001",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+          "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+          "created_at": "2026-10-23T08:09:10.123456Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702003",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "Avviso più vecchio",
+          "subject": "old",
+          "created_at": "2026-10-23T07:00:00Z"
+        },
+        {
+          "message_id": "a1000000-0000-4000-8000-000000702006",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "type": "EMAIL",
+          "message": "No delivery history",
+          "subject": "empty",
+          "created_at": "2026-10-23T04:00:00Z"
+        }
+      ]
+    },
+    {
+      "name": "message-reads-list-restricted-collaborator",
+      "actor": "restricted_collaborator",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "status": 403,
+      "response": {
+        "detail": "Access denied: No permission mapping for endpoint 'communications/messages/list'. Contact administrator to grant access."
+      }
+    },
+    {
+      "name": "message-reads-list-athlete",
+      "actor": "athlete",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "status": 403,
+      "response": {
+        "detail": "You do not have permission to perform this action."
+      }
+    },
+    {
+      "name": "message-reads-list-anonymous",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "status": 401,
+      "response": {
+        "detail": "Authentication credentials were not provided."
+      }
+    },
+    {
+      "name": "message-reads-list-anonymous-forged-scope",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "a1000000-0000-4000-8000-000000799998"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Accesso non consentito.",
+        "impersonation_invalid": "True"
+      }
+    },
+    {
+      "name": "message-reads-list-owner-without-association",
+      "actor": "owner_without_association",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "status": 500,
+      "response": "<stable-server-error-page>"
+    },
+    {
+      "name": "message-reads-list-deleted-association",
+      "actor": "deleted_association_owner",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "status": 500,
+      "response": "<stable-server-error-page>"
+    },
+    {
+      "name": "message-reads-list-options",
+      "actor": "owner",
+      "method": "OPTIONS",
+      "path": "/communications/messages/list",
+      "status": 200,
+      "response": {
+        "name": "Communication Messages List",
+        "description": "",
+        "renders": [
+          "application/json"
+        ],
+        "parses": [
+          "application/json",
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ]
+      }
+    },
+    {
+      "name": "message-reads-detail-options",
+      "actor": "owner",
+      "method": "OPTIONS",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "status": 200,
+      "response": {
+        "name": "Communication Messages Detail",
+        "description": "",
+        "renders": [
+          "application/json"
+        ],
+        "parses": [
+          "application/json",
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ]
+      }
+    },
+    {
+      "name": "message-reads-list-post-method",
+      "actor": "owner",
+      "method": "POST",
+      "path": "/communications/messages/list",
+      "body": {},
+      "status": 405,
+      "response": {
+        "detail": "Method \"POST\" not allowed."
+      }
+    },
+    {
+      "name": "message-reads-list-head-method",
+      "actor": "owner",
+      "method": "HEAD",
+      "path": "/communications/messages/list",
+      "status": 405
+    },
+    {
+      "name": "message-reads-format-before-auth",
+      "method": "GET",
+      "path": "/communications/messages/list?format=xml",
+      "headers": {
+        "Accept": "text/html"
+      },
+      "status": 404,
+      "response": {
+        "detail": "Not found."
+      }
+    },
+    {
+      "name": "message-reads-accept-before-auth",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "Accept": "text/html"
+      },
+      "status": 406,
+      "response": {
+        "detail": "Could not satisfy the request Accept header."
+      }
+    },
+    {
+      "name": "message-reads-detail-format-before-uuid",
+      "actor": "owner",
+      "method": "GET",
+      "path": "/communications/messages/not-a-uuid/detail?format=xml",
+      "status": 404,
+      "response": {
+        "detail": "Not found."
+      }
+    },
+    {
+      "name": "message-reads-format-before-forged-identity",
+      "method": "GET",
+      "path": "/communications/messages/list?format=xml",
+      "headers": {
+        "Accept": "text/html",
+        "User-Id": "a1000000-0000-4000-8000-000000700001",
+        "X-Impersonation-Id": "a1000000-0000-4000-8000-000000799998"
+      },
+      "status": 404,
+      "response": {
+        "detail": "Not found."
+      }
+    },
+    {
+      "name": "message-reads-list-athlete-options",
+      "actor": "athlete",
+      "method": "OPTIONS",
+      "path": "/communications/messages/list",
+      "status": 403,
+      "response": {
+        "detail": "You do not have permission to perform this action."
+      }
+    },
+    {
+      "name": "message-reads-list-athlete-post",
+      "actor": "athlete",
+      "method": "POST",
+      "path": "/communications/messages/list",
+      "body": {},
+      "status": 403,
+      "response": {
+        "detail": "You do not have permission to perform this action."
+      }
+    },
+    {
+      "name": "message-reads-list-athlete-head",
+      "actor": "athlete",
+      "method": "HEAD",
+      "path": "/communications/messages/list",
+      "status": 403
+    },
+    {
+      "name": "message-reads-detail-athlete-options",
+      "actor": "athlete",
+      "method": "OPTIONS",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "status": 403,
+      "response": {
+        "detail": "You do not have permission to perform this action."
+      }
+    },
+    {
+      "name": "message-reads-detail-athlete-post",
+      "actor": "athlete",
+      "method": "POST",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "body": {},
+      "status": 403,
+      "response": {
+        "detail": "You do not have permission to perform this action."
+      }
+    },
+    {
+      "name": "message-reads-detail-athlete-head",
+      "actor": "athlete",
+      "method": "HEAD",
+      "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+      "status": 403
+    },
+    {
+      "name": "message-reads-list-locale-italian-athlete",
+      "actor": "athlete",
+      "method": "GET",
+      "path": "/communications/messages/list",
+      "headers": {
+        "Accept-Language": "it"
+      },
+      "status": 403,
+      "response": {
+        "detail": "Non hai l'autorizzazione per eseguire questa azione."
+      }
+    }
+  ],
+  "baseline_facts": [
+    "The list has no server-side pagination, filtering, or sorting; the UI configures client-side table operations.",
+    "PostgreSQL descending order places a null created_at before populated timestamps.",
+    "A nullable subject is serialized through Django escape(None) as the string 'None'.",
+    "A scoped message with no delivery transactions returns the same 404 response as an absent message.",
+    "An owned message without delivery transactions remains visible in the list.",
+    "An impersonated athlete cannot use a group reference to bypass association operation admission.",
+    "The message models have no attachment fields."
+  ]
+}

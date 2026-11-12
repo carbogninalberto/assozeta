@@ -16,6 +16,9 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Set, Tuple, Type
 
+from auditlog.context import disable_auditlog
+from auditlog.receivers import log_create
+from auditlog.registry import auditlog
 from django.contrib.auth.hashers import make_password
 from django.core.files import File
 from django.core.files.storage import default_storage
@@ -94,7 +97,11 @@ from application.models.user_models import (
     UsersOnboarding,
 )
 from application.services.json_stream import iter_json_array
-from application.services.validators import is_restorable_password_hash
+from application.services.validators import (
+    is_restorable_password_hash,
+    unlinked_existing_user_ids,
+    unlinked_user_message,
+)
 from communications.models import (
     AutomationWorkflow,
     CommunicationConfiguration,
@@ -763,6 +770,14 @@ class AssociationImportService:
             "contain a supported usable password hash"
         )
 
+    def _may_reuse_existing_user(self, existing_user: User) -> bool:
+        """Only the archive owner's collaborators are reused by exact UUID."""
+        return str(existing_user.connected_user_id) == str(self.source_owner_user_id)
+
+    def _takes_archived_password(self, existing_user: User) -> bool:
+        """Existing accounts keep their own credentials on import."""
+        return False
+
     def _ensure_no_pk_collision(
         self,
         model_class: Type[models.Model],
@@ -863,18 +878,20 @@ class AssociationImportService:
                                 f"{conflicting_association.sport_association_id}"
                             )
 
+                    # An existing owner account keeps its own credentials.
                     password_is_available = (
                         is_restorable_password_hash(owner_data.get('password'))
-                        or (
-                            existing_owner is not None
-                            and is_restorable_password_hash(existing_owner.password)
-                        )
+                        or existing_owner is not None
                     )
                     if not password_is_available and not self.options.owner_password:
                         result.add_error(
                             "Owner recovery password is required because the archive does not "
                             "contain a supported usable password hash"
                         )
+                    for user_id in unlinked_existing_user_ids(
+                        self.source_pks_by_model.get('User', set()), self.source_owner_user_id,
+                    ):
+                        result.add_error(unlinked_user_message(user_id))
                 except ValueError as e:
                     result.add_error(str(e))
 
@@ -987,11 +1004,7 @@ class AssociationImportService:
                     "cannot import a second association for the same owner user"
                 )
 
-            if not is_restorable_password_hash(existing_user.password):
-                existing_user.password = self._owner_password_hash(original_owner)
-                if not self.options.dry_run:
-                    existing_user.save(update_fields=['password'])
-
+            # The existing account keeps its own credentials.
             user = existing_user
             self.reused_user_pks.add(old_user_id)
             logger.info(f"Reused owner user by UUID: {user.user_id}")
@@ -1133,7 +1146,10 @@ class AssociationImportService:
                 obj = self._create_model_instance(model_class, record.copy())
                 was_existing = bool(obj and not obj._state.adding)
                 if obj and not self.options.dry_run and obj._state.adding:
-                    obj.save()
+                    if model_class in (Message, MessageTransaction):
+                        self._save_imported_message(obj, record)
+                    else:
+                        obj.save()
                     # Debug logging for User and Signature imports
                     if model_name == 'User':
                         logger.info(f"Saved User: {obj.pk} - {obj.email}")
@@ -1152,6 +1168,35 @@ class AssociationImportService:
                 self.errors.append(f"Failed to import {model_name}: {e}")
                 raise
         return count
+
+    @staticmethod
+    def _save_imported_message(obj: models.Model, record: Dict[str, Any]):
+        """Insert explicit message history without auto_now_add rewriting it.
+
+        These two concrete models have no save override or other field pre-save
+        work. Raw saves still emit pre_save/post_save, with raw=True. Invoke
+        auditlog's create receiver once afterward, independently of its raw-save
+        policy, so the source value and usual LogEntry/index hooks are preserved.
+        Keep this boundary explicit if either model gains more save hooks.
+        """
+        field_name = 'created_at' if type(obj) is Message else 'sent_on'
+        if field_name not in record:
+            obj.save()
+            return
+
+        # The generic parser returns None for malformed datetime strings.
+        # Do not turn an explicit invalid timestamp into a supported null.
+        if record[field_name] is not None and getattr(obj, field_name) is None:
+            raise ValueError('Invalid imported message timestamp')
+
+        # Context-local suppression also prevents duplicate create events when
+        # AUDITLOG_DISABLE_ON_RAW_SAVE=False. The enclosing audit context is
+        # restored before log_create (including an existing disable/veto/actor).
+        with disable_auditlog():
+            obj.save_base(raw=True, force_insert=True)
+        if type(obj) is Message and auditlog.contains(Message):
+            log_create(sender=Message, instance=obj, created=True,
+                       raw=False, using=obj._state.db)
 
     def _import_folders(self, records: List[Dict[str, Any]]) -> int:
         """Import folders parent-first and let MPTT generate its tree fields."""
@@ -1246,11 +1291,11 @@ class AssociationImportService:
             if existing_user:
                 # Reuse by exact UUID only; do not merge by email/username and
                 # do not overwrite credentials, profile, security fields or M2M.
-                # Exception: an account without a usable password adopts the
-                # archived hash, like the owner, so users first imported from
-                # an archive without hashes can sign in after a later restore.
+                if not self._may_reuse_existing_user(existing_user):
+                    raise ValueError(unlinked_user_message(existing_user.pk))
                 archived_password = data.get('password')
-                if (not is_restorable_password_hash(existing_user.password)
+                if (self._takes_archived_password(existing_user)
+                        and not is_restorable_password_hash(existing_user.password)
                         and is_restorable_password_hash(archived_password)):
                     existing_user.password = archived_password
                     if not self.options.dry_run:

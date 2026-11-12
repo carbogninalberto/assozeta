@@ -326,6 +326,8 @@ class UsersOnboardingSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsersOnboarding
         fields = "__all__"
+        # Only the checklist fields are written; the row keeps its id and user.
+        read_only_fields = ("users_onboarding_id", "user")
 
 class UserAuthSerializer(serializers.ModelSerializer):
     can_impersonate = serializers.SerializerMethodField()
@@ -486,3 +488,9 @@ class UserAccountSerializer(serializers.Serializer):
         return instance
 
 
+
+
+class ProfileIntegrationsSerializer(serializers.Serializer):
+    """The values of the profile integrations form (profile/integrations)."""
+    review_url = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    review_url_enabled = serializers.BooleanField(required=False)

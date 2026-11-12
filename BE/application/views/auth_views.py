@@ -121,6 +121,10 @@ def oauth2_login(request):
             logger.warning("Social auth verification failed", extra={'backend': backend})
             return Response({'error': 'Invalid social token'}, status=status.HTTP_401_UNAUTHORIZED)
 
+        if not SocialAuthService.has_verified_email(user_info):
+            logger.warning("Social login without a verified email", extra={'backend': backend})
+            return Response({'error': 'Invalid social token'}, status=status.HTTP_401_UNAUTHORIZED)
+
         # Verify email matches the user
         if user_info['email'].lower() != user.email.lower():
             logger.warning("Social auth email mismatch",
@@ -251,6 +255,60 @@ def oauth2_delete_account(request):
     return Response({"msg": "Account will be deleted in 30 days."}, status=status.HTTP_200_OK)
 
 
+def _accept_collaboration_invite(token):
+    """
+    Look up the collaboration invite of a signup and consume it.
+    :return: (invite, None) or (None, the response that refuses the signup)
+    """
+    collaboration_invite = CollaborationInvites.objects.filter(token=token).first()
+    if collaboration_invite is None:
+        return None, Response({"msg": "Collaboration invite not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # delete invite
+    collaboration_invite.delete()
+    if collaboration_invite.expiration_date < timezone.now():
+        return None, Response({"msg": "Collaboration invite expired."}, status=status.HTTP_400_BAD_REQUEST)
+    return collaboration_invite, None
+
+
+def _signup_content(user, content):
+    """Signup-specific data of the login response."""
+    if user.role == User.COLLABORATOR:
+        sport_association = user.connected_user.sport_association
+        content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
+        if sport_association.regulation is None or sport_association.regulation == '' or \
+                sport_association.demand is None or sport_association.demand == '':
+            content['user_data']['sport_association']['empty_sections'] = True
+        content['user_data']['requires_welcome'] = False
+    return content
+
+
+def _existing_account_signin(candidates, data):
+    """
+    A social signup whose verified email belongs to an account: the account signs in
+    under the login rules (one active account, its second factor) and is not modified.
+    """
+    if len(candidates) != 1:
+        logger.warning("Social signup for an ambiguous account")
+        return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    user = candidates[0]
+    if not user.is_active or user.deleted:
+        return Response({'error': 'invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    if user.two_fa:
+        if 'otp' in data and len(data['otp']) == 6:
+            totp = pyotp.TOTP(user.two_fa_secret)
+            if not totp.verify(data['otp']):
+                return Response({"msg": "OTP code not valid."}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({"msg": "OTP code required."}, status=status.HTTP_401_UNAUTHORIZED)
+
+    tokens = JWTTokenService.generate_tokens_for_user(user)
+    content = JWTTokenService.build_login_response(user, tokens)
+    logger.info("Existing account signed in from social signup", extra={'user_id': str(user.user_id), 'role': user.role})
+    return Response(_signup_content(user, content), status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def oauth2_signup(request):
@@ -338,30 +396,38 @@ def oauth2_signup(request):
         if not success:
             return Response({'error': 'Invalid social token'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Check if user already exists with this email
-        existing_user = User.objects.filter(email__iexact=user_info['email']).first()
-        if existing_user:
-            # User already exists - update role and return tokens
-            try:
-                user_serializer = UserSerializer(existing_user,
-                                                 data={"role": role},
-                                                 partial=True)
-                if user_serializer.is_valid(raise_exception=True):
-                    user = user_serializer.save()
-            except IntegrityError:
-                pass
-            except ValueError as e:
-                return Response({"msg": e}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            # Create new user from social auth info
-            user = User.objects.create_user(
-                first_name=user_info.get('first_name') or data.get('first_name', ''),
-                last_name=user_info.get('last_name') or data.get('last_name', ''),
-                username=data['username'].upper(),
-                email=user_info['email'],
-                password=None,  # No password for social users
-                role=role,
-            )
+        if not SocialAuthService.has_verified_email(user_info):
+            logger.warning("Social signup without a verified email", extra={'backend': backend})
+            return Response({'error': 'Invalid social token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # An account with this email signs in as it is; signup never edits it.
+        existing_users = list(User.objects.filter(email__iexact=user_info['email']).order_by('user_id')[:2])
+        if existing_users:
+            return _existing_account_signin(existing_users, data)
+
+        connected_user = None
+        collaborator_role = User.FULL
+        collaborator_permissions = None
+        if role == User.COLLABORATOR:
+            collaboration_invite, refusal = _accept_collaboration_invite(data['collaboratorToken'])
+            if refusal is not None:
+                return refusal
+            connected_user = collaboration_invite.user
+            collaborator_role = collaboration_invite.collaborator_role
+            collaborator_permissions = collaboration_invite.collaborator_permissions
+
+        # Create new user from social auth info
+        user = User.objects.create_user(
+            first_name=user_info.get('first_name') or data.get('first_name', ''),
+            last_name=user_info.get('last_name') or data.get('last_name', ''),
+            username=data['username'].upper(),
+            email=user_info['email'],
+            password=None,  # No password for social users
+            role=role,
+            connected_user=connected_user,
+            collaborator_role=collaborator_role,
+            collaborator_permissions=collaborator_permissions,
+        )
 
     serialized = UserSerializerSignup(data=data)
     validated = serialized.is_valid()
@@ -378,18 +444,13 @@ def oauth2_signup(request):
                 collaborator_role = User.FULL
                 collaborator_permissions = None
                 if role == User.COLLABORATOR:
-                    collaboration_invite = CollaborationInvites.objects.filter(token=data['collaboratorToken']).first()
-                    if collaboration_invite is None:
-                        return Response({"msg": "Collaboration invite not found."}, status=status.HTTP_400_BAD_REQUEST)
+                    collaboration_invite, refusal = _accept_collaboration_invite(data['collaboratorToken'])
+                    if refusal is not None:
+                        return refusal
                     connected_user = collaboration_invite.user
                     # set the collaboration invite parameters
                     collaborator_role = collaboration_invite.collaborator_role
                     collaborator_permissions = collaboration_invite.collaborator_permissions
-
-                    # delete invite
-                    collaboration_invite.delete()
-                    if collaboration_invite.expiration_date < timezone.now():
-                        return Response({"msg": "Collaboration invite expired."}, status=status.HTTP_400_BAD_REQUEST)
                 user = User.objects.create_user(
                     first_name=serialized.validated_data['first_name'],
                     last_name=serialized.validated_data['last_name'],
@@ -422,16 +483,7 @@ def oauth2_signup(request):
         AuthUtils.send_welcome_email(user)
         logger.info("User signup completed successfully", extra={'user_id': str(user.user_id), 'role': user.role})
 
-        # Override with signup-specific data
-        if user.role == User.COLLABORATOR:
-            sport_association = user.connected_user.sport_association
-            content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
-            if sport_association.regulation is None or sport_association.regulation == '' or \
-                    sport_association.demand is None or sport_association.demand == '':
-                content['user_data']['sport_association']['empty_sections'] = True
-            content['user_data']['requires_welcome'] = False
-
-        return Response(content, status=status.HTTP_200_OK)
+        return Response(_signup_content(user, content), status=status.HTTP_200_OK)
     else:
         details = serialized.errors
         logging.exception(details)

@@ -2,6 +2,7 @@
 @ copyright: Bakney SRL
 """
 from datetime import datetime
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 
@@ -16,7 +17,7 @@ from application.models.user_models import SportAssociation, User
 from application.permissions import IsAssociationUser
 from application.serializers.auth_serializers import SportAssociationSerializer
 from application.serializers.balance_sheet import CustomAccountSerializer, CustomAccountTransferSerializer, \
-    CustomAccountTransferInfoSerializer
+    CustomAccountTransferInfoSerializer, custom_account_in_use
 from application.utils.api_utils import BalanceSheetData
 import logging
 
@@ -417,7 +418,6 @@ def balance_sheet_accounts_add(request):
         return Response({'msg': 'Info not available.'}, status=status.HTTP_403_FORBIDDEN)
 
     data = request.data
-    data['sport_association'] = sport_association.sport_association_id
     serializer = CustomAccountSerializer(data=data)
     if serializer.is_valid(raise_exception=True):
         serializer.save(sport_association=sport_association)
@@ -454,8 +454,16 @@ def balance_sheet_accounts_update(request, uid):
         return Response({'msg': 'Info not available.'}, status=status.HTTP_403_FORBIDDEN)
 
     data = request.data
-    data['sport_association'] = sport_association.sport_association_id
-    custom_account = CustomAccounts.objects.get(custom_account_id=uid)
+    try:
+        custom_account = CustomAccounts.objects.get(
+            custom_account_id=uid,
+            sport_association=sport_association,
+        )
+    except (CustomAccounts.DoesNotExist, DjangoValidationError):
+        return Response(
+            {'exception': 'CustomAccounts matching query does not exist.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     # if not custom_account.editable:
     #     return Response({'msg': 'This account is not editable.'}, status=status.HTTP_403_FORBIDDEN)
@@ -496,7 +504,16 @@ def balance_sheet_accounts_delete(request, uid):
         logger.error("Sport association not found", extra={'user_id': str(user.user_id)})
         return Response({'msg': 'Info not available.'}, status=status.HTTP_403_FORBIDDEN)
 
-    custom_account = CustomAccounts.objects.get(custom_account_id=uid)
+    try:
+        custom_account = CustomAccounts.objects.get(
+            custom_account_id=uid,
+            sport_association=sport_association,
+        )
+    except (CustomAccounts.DoesNotExist, DjangoValidationError):
+        return Response(
+            {'exception': 'CustomAccounts matching query does not exist.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     if not custom_account.editable:
         logger.warning("Attempted to delete non-editable account", extra={
@@ -504,6 +521,17 @@ def balance_sheet_accounts_delete(request, uid):
             'account_id': uid
         })
         return Response({'msg': 'This account is not deletable.'}, status=status.HTTP_403_FORBIDDEN)
+
+    # Same rule as the `deletable` flag of the accounts list.
+    if custom_account_in_use(custom_account):
+        logger.warning("Attempted to delete an account in use", extra={
+            'user_id': str(user.user_id),
+            'account_id': uid
+        })
+        return Response(
+            {'msg': 'An account with transfers or payments cannot be deleted.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     logger.info("Custom account deleted successfully", extra={
         'user_id': str(user.user_id),
@@ -564,8 +592,10 @@ def balance_sheet_accounts_transfer_add(request):
         return Response({'msg': 'Info not available.'}, status=status.HTTP_403_FORBIDDEN)
 
     data = request.data
-    data['sport_association'] = sport_association.sport_association_id
-    serializer = CustomAccountTransferSerializer(data=data)
+    serializer = CustomAccountTransferSerializer(
+        data=data,
+        context={'sport_association': sport_association},
+    )
     if serializer.is_valid(raise_exception=True):
         serializer.save(sport_association=sport_association)
         logger.info("Account transfer created successfully", extra={
@@ -601,11 +631,24 @@ def balance_sheet_accounts_transfer_update(request, uid):
         return Response({'msg': 'Info not available.'}, status=status.HTTP_403_FORBIDDEN)
 
     data = request.data
-    data['sport_association'] = sport_association.sport_association_id
-    custom_account_transfer = CustomAccountsTransfer.objects.get(custom_account_transfer_id=uid)
-    serializer = CustomAccountTransferSerializer(custom_account_transfer, data=data, partial=True)
+    try:
+        custom_account_transfer = CustomAccountsTransfer.objects.get(
+            custom_account_transfer_id=uid,
+            sport_association=sport_association,
+        )
+    except (CustomAccountsTransfer.DoesNotExist, DjangoValidationError):
+        return Response(
+            {'exception': 'CustomAccountsTransfer matching query does not exist.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    serializer = CustomAccountTransferSerializer(
+        custom_account_transfer,
+        data=data,
+        partial=True,
+        context={'sport_association': sport_association},
+    )
     if serializer.is_valid(raise_exception=True):
-        serializer.save()
+        serializer.save(sport_association=sport_association)
         logger.info("Account transfer updated successfully", extra={
             'user_id': str(user.user_id),
             'transfer_id': uid,
@@ -639,7 +682,16 @@ def balance_sheet_accounts_transfer_delete(request, uid):
         logger.error("Sport association not found", extra={'user_id': str(user.user_id)})
         return Response({'msg': 'Info not available.'}, status=status.HTTP_403_FORBIDDEN)
 
-    custom_account_transfer = CustomAccountsTransfer.objects.get(custom_account_transfer_id=uid)
+    try:
+        custom_account_transfer = CustomAccountsTransfer.objects.get(
+            custom_account_transfer_id=uid,
+            sport_association=sport_association,
+        )
+    except (CustomAccountsTransfer.DoesNotExist, DjangoValidationError):
+        return Response(
+            {'exception': 'CustomAccountsTransfer matching query does not exist.'},
+            status=status.HTTP_404_NOT_FOUND,
+        )
     logger.info("Account transfer deleted successfully", extra={
         'user_id': str(user.user_id),
         'transfer_id': uid

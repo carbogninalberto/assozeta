@@ -1,0 +1,557 @@
+{
+ "matrix_version": 1,
+ "scope": "Dashboard layout authored sequence with User audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "cases": [
+  {
+   "name": "dashboard-layout-owner-sets",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": {
+     "widgets": [
+      {
+       "id": "iscritti",
+       "x": 1.5,
+       "w": [
+        1,
+        null,
+        true
+       ]
+      }
+     ],
+     "é": "ü 😀",
+     "big": 10000000000000000000000000
+    },
+    "audit": {
+     "changes": {
+      "dashboard_layout": [
+       "null",
+       "{\"big\": 10000000000000000000000000, \"widgets\": [{\"id\": \"iscritti\", \"w\": [1, null, true], \"x\": 1.5}], \"\\u00e9\": \"\\u00fc \\ud83d\\ude00\"}"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "body": {
+    "dashboard_layout": {
+     "widgets": [
+      {
+       "id": "iscritti",
+       "x": 1.5,
+       "w": [
+        1,
+        null,
+        true
+       ]
+      }
+     ],
+     "é": "ü 😀",
+     "big": 10000000000000000000000000
+    }
+   }
+  },
+  {
+   "name": "dashboard-layout-owner-reordered-same",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": {
+     "widgets": [
+      {
+       "id": "iscritti",
+       "x": 1.5,
+       "w": [
+        1,
+        null,
+        true
+       ]
+      }
+     ],
+     "é": "ü 😀",
+     "big": 10000000000000000000000000
+    },
+    "audit": null
+   },
+   "body": {
+    "dashboard_layout": {
+     "big": 10000000000000000000000000,
+     "é": "ü 😀",
+     "widgets": [
+      {
+       "w": [
+        1,
+        null,
+        true
+       ],
+       "x": 1.5,
+       "id": "iscritti"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "dashboard-layout-owner-float-exponent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": {
+     "e": 100000.0
+    },
+    "audit": {
+     "changes": {
+      "dashboard_layout": [
+       "{\"big\": 10000000000000000000000000, \"widgets\": [{\"id\": \"iscritti\", \"w\": [1, null, true], \"x\": 1.5}], \"\\u00e9\": \"\\u00fc \\ud83d\\ude00\"}",
+       "{\"e\": 100000.0}"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "body": {
+    "dashboard_layout": {
+     "e": 100000.0
+    }
+   }
+  },
+  {
+   "name": "dashboard-layout-owner-float-exponent-again",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": {
+     "e": 100000.0
+    },
+    "audit": null
+   },
+   "body": {
+    "dashboard_layout": {
+     "e": 100000.0
+    }
+   }
+  },
+  {
+   "name": "dashboard-layout-owner-explicit-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": null,
+    "audit": {
+     "changes": {
+      "dashboard_layout": [
+       "{\"e\": 100000.0}",
+       "null"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "body": {
+    "dashboard_layout": null
+   }
+  },
+  {
+   "name": "dashboard-layout-owner-missing-key-keeps-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": null,
+    "audit": null
+   },
+   "body": {
+    "altro": 1
+   }
+  },
+  {
+   "name": "dashboard-layout-owner-form-string",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": "bè",
+    "audit": {
+     "changes": {
+      "dashboard_layout": [
+       "null",
+       "\"b\\u00e8\""
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "raw_body": "dashboard_layout=a&dashboard_layout=b%C3%A8",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "dashboard-layout-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "dashboard-layout-string-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": "dashboard_layout"
+  },
+  {
+   "name": "dashboard-layout-number-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": 3
+  },
+  {
+   "name": "dashboard-layout-null-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "dashboard-layout-lone-surrogate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": "owner",
+    "value": "bè",
+    "audit": {
+     "changes": {
+      "dashboard_layout": [
+       "\"b\\u00e8\"",
+       "{\"t\": \"\\ud800\"}"
+      ]
+     },
+     "actor": "owner",
+     "impersonation": null,
+     "index": {
+      "association": "own_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "raw_body": "{\"dashboard_layout\": {\"t\": \"\\ud800\"}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "dashboard-layout-full-collaborator-own-layout",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "full_collaborator",
+    "value": [
+     "c"
+    ],
+    "audit": {
+     "changes": {
+      "dashboard_layout": [
+       "null",
+       "[\"c\"]"
+      ]
+     },
+     "actor": "full_collaborator",
+     "impersonation": null,
+     "index": null
+    }
+   },
+   "body": {
+    "dashboard_layout": [
+     "c"
+    ]
+   }
+  },
+  {
+   "name": "dashboard-layout-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": "dashboard layout updated"
+   },
+   "effect": {
+    "user": "owner",
+    "value": {
+     "da": "admin"
+    },
+    "audit": {
+     "changes": {
+      "dashboard_layout": [
+       "\"b\\u00e8\"",
+       "{\"da\": \"admin\"}"
+      ]
+     },
+     "actor": "admin",
+     "impersonation": "admin_owner",
+     "index": {
+      "association": "own_association",
+      "path": "user.sport_association"
+     }
+    }
+   },
+   "body": {
+    "dashboard_layout": {
+     "da": "admin"
+    }
+   }
+  },
+  {
+   "name": "dashboard-layout-restricted-collaborator-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.dashboard.read"
+   },
+   "effect": null,
+   "body": {
+    "dashboard_layout": 1
+   }
+  },
+  {
+   "name": "dashboard-layout-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "dashboard_layout": 1
+   }
+  },
+  {
+   "name": "dashboard-layout-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "dashboard_layout": 1
+   }
+  },
+  {
+   "name": "dashboard-layout-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "dashboard_layout": 1
+   }
+  },
+  {
+   "name": "dashboard-layout-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "dashboard_layout": 1
+   }
+  },
+  {
+   "name": "dashboard-layout-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "dashboard_layout": 1
+   }
+  },
+  {
+   "name": "dashboard-layout-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "dashboard-layout-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/statistic/dashboard/layout",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Statistic Dashboard Layout",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  }
+ ]
+}

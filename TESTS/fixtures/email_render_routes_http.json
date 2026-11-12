@@ -1,0 +1,4603 @@
+{
+ "matrix_version": 1,
+ "scope": "Rendered e-mails queued by collaborators/add, payment request and invoice send",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "pdf_a": {
+   "document_id": "a1000000-0000-4000-8000-000000690001",
+   "creation_date": "2026-09-01T08:00:00Z",
+   "filepath": "private/pdf_a.pdf",
+   "filename": "pdf_a.pdf",
+   "file_size_bytes": 2048,
+   "token": "a1000000-0000-4000-8000-000000690002"
+  },
+  "pdf_b": {
+   "document_id": "a1000000-0000-4000-8000-000000690003",
+   "creation_date": "2026-09-01T08:00:00Z",
+   "filepath": "private/pdf_b.pdf",
+   "filename": "pdf_b.pdf",
+   "file_size_bytes": 2048,
+   "token": "a1000000-0000-4000-8000-000000690004"
+  }
+ },
+ "associates": {
+  "mario": {
+   "associate_id": "a1000000-0000-4000-8000-000000690005",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "first_name": "Mario",
+   "last_name": "Rossi",
+   "sex": "M",
+   "is_minor": false,
+   "email": "mario.rossi@example.test",
+   "deleted": false,
+   "creation_date": "2025-01-01T08:00:00Z"
+  },
+  "luca": {
+   "associate_id": "a1000000-0000-4000-8000-000000690006",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "first_name": "Luca",
+   "last_name": "Bianchi",
+   "sex": "M",
+   "is_minor": false,
+   "email": null,
+   "deleted": false,
+   "creation_date": "2025-01-01T08:00:00Z"
+  },
+  "empty": {
+   "associate_id": "a1000000-0000-4000-8000-000000690007",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "first_name": "Ivo",
+   "last_name": "Gialli",
+   "sex": "M",
+   "is_minor": false,
+   "email": "",
+   "deleted": false,
+   "creation_date": "2025-01-01T08:00:00Z"
+  },
+  "quoted": {
+   "associate_id": "a1000000-0000-4000-8000-000000690008",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "first_name": "D'Arco",
+   "last_name": "<Ünal> & Co",
+   "sex": "M",
+   "is_minor": false,
+   "email": "darco@example.test",
+   "deleted": false,
+   "creation_date": "2025-01-01T08:00:00Z"
+  },
+  "hans": {
+   "associate_id": "a1000000-0000-4000-8000-000000690009",
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "first_name": "Hans",
+   "last_name": "Muller",
+   "sex": "M",
+   "is_minor": false,
+   "email": "hans@example.test",
+   "deleted": false,
+   "creation_date": "2025-01-01T08:00:00Z"
+  }
+ },
+ "suppliers": {
+  "mailed": {
+   "supplier_id": "a1000000-0000-4000-8000-000000690010",
+   "name": "Fornitore \"Uno\" & C.",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "type": "supplier",
+   "email": "fornitore@example.test",
+   "deleted": false
+  },
+  "silent": {
+   "supplier_id": "a1000000-0000-4000-8000-000000690011",
+   "name": "Fornitore Due",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "type": "supplier",
+   "email": "",
+   "deleted": false
+  }
+ },
+ "invoices": {
+  "associate": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690012",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota\r\nannuale & <altro>\nfine",
+   "number": 7,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "user": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690013",
+   "document_pdf": "a1000000-0000-4000-8000-000000690003",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "30.00",
+   "activity_fee": "20.00",
+   "description": "Quota annuale",
+   "number": 8,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "supplier": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690014",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "0.01",
+   "activity_fee": "0.00",
+   "description": "Quota annuale",
+   "number": 9,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "empty_email": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690015",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "-5.00",
+   "activity_fee": "0.00",
+   "description": "Quota annuale",
+   "number": 10,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "no_email": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690016",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 11,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "null_number": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690017",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "2.67",
+   "activity_fee": "0.00",
+   "description": null,
+   "number": null,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "no_pdf": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690018",
+   "document_pdf": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 12,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "no_payment": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690019",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 13,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "no_date": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690020",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 14,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "only_deleted_payment": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690021",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 15,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "two_payments": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690022",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "9999999.99",
+   "activity_fee": "9999999.99",
+   "description": "Quota annuale",
+   "number": 16,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "grouped": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690023",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 17,
+   "archived": false,
+   "cancelled": false,
+   "group": "a1000000-0000-4000-8000-000000714001",
+   "deleted": false
+  },
+  "deleted": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690024",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 18,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": true
+  },
+  "archived": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690025",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 19,
+   "archived": true,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  },
+  "abroad": {
+   "invoice_id": "a1000000-0000-4000-8000-000000690026",
+   "document_pdf": "a1000000-0000-4000-8000-000000690001",
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "creation_date": "2026-02-01T09:00:00Z",
+   "membership_fee": "10.10",
+   "activity_fee": "0.20",
+   "description": "Quota annuale",
+   "number": 20,
+   "archived": false,
+   "cancelled": false,
+   "group": null,
+   "deleted": false
+  }
+ },
+ "payments": {
+  "i_associate": {
+   "payment_id": "a1000000-0000-4000-8000-000000690027",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690012",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_user": {
+   "payment_id": "a1000000-0000-4000-8000-000000690028",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2025-12-31T23:59:59Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690013",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690006",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_supplier": {
+   "payment_id": "a1000000-0000-4000-8000-000000690029",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690014",
+   "user": null,
+   "associate": null,
+   "supplier": "a1000000-0000-4000-8000-000000690010",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_empty_email": {
+   "payment_id": "a1000000-0000-4000-8000-000000690030",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690015",
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000690007",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_no_email": {
+   "payment_id": "a1000000-0000-4000-8000-000000690031",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690016",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690006",
+   "supplier": "a1000000-0000-4000-8000-000000690011",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_null_number": {
+   "payment_id": "a1000000-0000-4000-8000-000000690032",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690017",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690008",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_no_pdf": {
+   "payment_id": "a1000000-0000-4000-8000-000000690033",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690018",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_no_date": {
+   "payment_id": "a1000000-0000-4000-8000-000000690034",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": null,
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690020",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_only_deleted": {
+   "payment_id": "a1000000-0000-4000-8000-000000690035",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690021",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": true,
+   "group": null
+  },
+  "i_first": {
+   "payment_id": "a1000000-0000-4000-8000-000000690036",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690022",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_second": {
+   "payment_id": "a1000000-0000-4000-8000-000000690037",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690022",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690008",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_grouped": {
+   "payment_id": "a1000000-0000-4000-8000-000000690038",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690023",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714001"
+  },
+  "i_archived": {
+   "payment_id": "a1000000-0000-4000-8000-000000690039",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690025",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "i_abroad": {
+   "payment_id": "a1000000-0000-4000-8000-000000690040",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": "a1000000-0000-4000-8000-000000690026",
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690009",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_course": {
+   "payment_id": "a1000000-0000-4000-8000-000000690041",
+   "type": "cash",
+   "subject": 2,
+   "amount": "25.50",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_subscription": {
+   "payment_id": "a1000000-0000-4000-8000-000000690042",
+   "type": "cash",
+   "subject": 1,
+   "amount": "40.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_described": {
+   "payment_id": "a1000000-0000-4000-8000-000000690043",
+   "type": "cash",
+   "subject": 0,
+   "amount": "3.05",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota <x> & 'y'",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690008",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_undescribed": {
+   "payment_id": "a1000000-0000-4000-8000-000000690044",
+   "type": "cash",
+   "subject": 0,
+   "amount": "0.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": null,
+   "invoice": null,
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690006",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_empty_email": {
+   "payment_id": "a1000000-0000-4000-8000-000000690045",
+   "type": "cash",
+   "subject": 0,
+   "amount": "1234567.89",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690007",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_no_associate": {
+   "payment_id": "a1000000-0000-4000-8000-000000690046",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700004",
+   "associate": null,
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_paid": {
+   "payment_id": "a1000000-0000-4000-8000-000000690047",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": true,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_deleted": {
+   "payment_id": "a1000000-0000-4000-8000-000000690048",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": true,
+   "group": null
+  },
+  "p_grouped": {
+   "payment_id": "a1000000-0000-4000-8000-000000690049",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "archived": false,
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714001"
+  },
+  "p_orphan": {
+   "payment_id": "a1000000-0000-4000-8000-000000690050",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": null,
+   "associate": "a1000000-0000-4000-8000-000000690005",
+   "supplier": null,
+   "sport_association": null,
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "p_abroad": {
+   "payment_id": "a1000000-0000-4000-8000-000000690051",
+   "type": "cash",
+   "subject": 0,
+   "amount": "15.00",
+   "creation_date": "2026-01-01T09:00:00Z",
+   "payment_date": "2026-03-05T10:00:00Z",
+   "paid": false,
+   "expense": false,
+   "description": "Quota",
+   "invoice": null,
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "a1000000-0000-4000-8000-000000690009",
+   "supplier": null,
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  }
+ },
+ "cases": [
+  {
+   "name": "email-render-routes-add-full-role-with-permissions",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "nuovo@example.test",
+    "role": 2,
+    "permissions": {
+     "b": [
+      1,
+      2.5,
+      null
+     ],
+     "a": "è"
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "nuovo@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "nuovo@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "nuovo@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "email": "nuovo@example.test",
+    "collaborator_role": 2,
+    "collaborator_permissions": {
+     "b": [
+      1,
+      2.5,
+      null
+     ],
+     "a": "è"
+    }
+   }
+  },
+  {
+   "name": "email-render-routes-add-default-role",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "default@example.test",
+    "role": 3,
+    "permissions": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "default@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "default@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "default@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "email": "default@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-unknown-role-becomes-full",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "sette@example.test",
+    "role": 1,
+    "permissions": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "sette@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "sette@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "sette@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "email": "sette@example.test",
+    "collaborator_role": "7"
+   }
+  },
+  {
+   "name": "email-render-routes-add-bool-role",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "bool@example.test",
+    "role": 1,
+    "permissions": [
+     "x"
+    ],
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "bool@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "bool@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "bool@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "email": "bool@example.test",
+    "collaborator_role": true,
+    "collaborator_permissions": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-add-quoted-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "o'brien+tag@example.test",
+    "role": 3,
+    "permissions": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "o'brien+tag@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "o'brien+tag@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "o'brien+tag@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "email": "o'brien+tag@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "form@example.test",
+    "role": 3,
+    "permissions": "{}",
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "form@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "form@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "form@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "email=form%40example.test&collaborator_role=3&collaborator_permissions=x&collaborator_permissions=%7B%7D",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "email-render-routes-add-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "full_collaborator",
+    "email": "collab@example.test",
+    "role": 1,
+    "permissions": null,
+    "index": null,
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "collab@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "collab@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "collab@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "email": "collab@example.test",
+    "collaborator_role": 1
+   }
+  },
+  {
+   "name": "email-render-routes-add-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "admin",
+    "email": "admin@example.test",
+    "role": 3,
+    "permissions": null,
+    "index": [
+     "a1000000-0000-4000-8000-000000711001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "admin@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "admin@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "admin@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "body": {
+    "email": "admin@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-owner-without-association-kept",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "invite",
+    "actor": "owner_without_association",
+    "email": "kept@example.test",
+    "role": 3,
+    "permissions": null,
+    "index": null,
+    "reading": null,
+    "celery": [],
+    "owner": "owner_without_association"
+   },
+   "body": {
+    "email": "kept@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-missing-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is required"
+   ],
+   "effect": null,
+   "body": {
+    "collaborator_role": 1
+   }
+  },
+  {
+   "name": "email-render-routes-add-invalid-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "body": {
+    "email": "not-an-email"
+   }
+  },
+  {
+   "name": "email-render-routes-add-blank-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "body": {
+    "email": ""
+   }
+  },
+  {
+   "name": "email-render-routes-add-null-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "body": {
+    "email": null
+   }
+  },
+  {
+   "name": "email-render-routes-add-nul-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "raw_body": "{\"email\": \"a\\u0000@b.it\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-nul-domain-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "raw_body": "{\"email\": \"a@b.it\\u0000\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-surrogate-email-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"email\": \"a@b\\ud800.it\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-list-email-without-at",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is not valid."
+   ],
+   "effect": null,
+   "body": {
+    "email": [
+     "a@b.it"
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-add-list-email-with-at",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "email": [
+     "@"
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-add-number-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "email": 5
+   }
+  },
+  {
+   "name": "email-render-routes-add-too-long-for-column",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.it"
+   }
+  },
+  {
+   "name": "email-render-routes-add-role-not-int",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "email": "x@example.test",
+    "collaborator_role": "2.0"
+   }
+  },
+  {
+   "name": "email-render-routes-add-role-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "email": "x@example.test",
+    "collaborator_role": null
+   }
+  },
+  {
+   "name": "email-render-routes-add-permissions-exponent-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "float-exponent-float@example.test",
+    "role": 3,
+    "permissions": {
+     "a": 100000000000000000000,
+     "b": [
+      15000000000000000
+     ]
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": [
+     "{\"a\": 100000000000000000000, \"b\": [15000000000000000]}",
+     "{\"a\": 1e+20, \"b\": [1.5e+16]}"
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "float-exponent-float@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"float-exponent-float@example.test\", \"collaborator_permissions\": {\"a\": 1e20, \"b\": [1.5e+16]}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-permissions-negative-zero",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "float-negative-zero@example.test",
+    "role": 3,
+    "permissions": [
+     0.0,
+     1
+    ],
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": [
+     "[0.0, 1]",
+     "[-0.0, 1]"
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-zero@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "float-negative-zero@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-zero@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"float-negative-zero@example.test\", \"collaborator_permissions\": [-0.0, 1]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-permissions-negative-exponent-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "float-negative-exponent-float@example.test",
+    "role": 3,
+    "permissions": {
+     "k": -2000000000000000000000000000000
+    },
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": [
+     "{\"k\": -2000000000000000000000000000000}",
+     "{\"k\": -2e+30}"
+    ],
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "float-negative-exponent-float@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "float-negative-exponent-float@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"float-negative-exponent-float@example.test\", \"collaborator_permissions\": {\"k\": -2e30}}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-permissions-small-exponent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "User invited"
+   },
+   "effect": {
+    "kind": "invite",
+    "actor": "owner",
+    "email": "small@example.test",
+    "role": 3,
+    "permissions": [
+     1e-05,
+     1000000000000000.0,
+     0.0001
+    ],
+    "index": [
+     "a1000000-0000-4000-8000-000000701001",
+     "actor.sport_association"
+    ],
+    "reading": null,
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$whitelabel | Invito a collaborare"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "small@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$from_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "small@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/account/email_welcome_collaborator_message.html",
+         "language": "en",
+         "context": {
+          "email": "small@example.test",
+          "token": "$token",
+          "sport_association": {
+           "denomination": "$denomination:own"
+          },
+          "app_host": "$app_url",
+          "settings": {
+           "WHITELABEL_NAME": "$whitelabel",
+           "IS_WHITELABEL": "$is_whitelabel"
+          }
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{\"email\": \"small@example.test\", \"collaborator_permissions\": [1e-05, 1e15, 0.0001]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-permissions-nul",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "email": "x@example.test",
+    "collaborator_permissions": {
+     "k": "a\u0000"
+    }
+   }
+  },
+  {
+   "name": "email-render-routes-add-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Email is required"
+   ],
+   "effect": null,
+   "body": [
+    "other"
+   ]
+  },
+  {
+   "name": "email-render-routes-add-list-body-with-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "email"
+   ]
+  },
+  {
+   "name": "email-render-routes-add-string-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": "my email"
+  },
+  {
+   "name": "email-render-routes-add-null-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-add-athlete-denied",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "email": "x@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-restricted",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.collaborators.create"
+   },
+   "effect": null,
+   "body": {
+    "email": "x@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "email": "x@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "email": "x@example.test"
+   }
+  },
+  {
+   "name": "email-render-routes-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/collaborators/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Collaborators Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per il corso ",
+          "amount": {
+           "decimal": "25.50"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per il corso ",
+          "amount": {
+           "decimal": "25.50"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-subscription-other-user",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690042/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per l'iscrizione ",
+          "amount": {
+           "decimal": "40.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test",
+         "$email:owner"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per l'iscrizione ",
+          "amount": {
+           "decimal": "40.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-described",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690043/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "D'Arco <Ünal> & Co",
+          "description": "Quota <x> & 'y' ",
+          "amount": {
+           "decimal": "3.05"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "darco@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "D'Arco <Ünal> & Co",
+          "description": "Quota <x> & 'y' ",
+          "amount": {
+           "decimal": "3.05"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-undescribed-without-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690044/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Luca Bianchi",
+          "description": "",
+          "amount": {
+           "decimal": "0.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:owner"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Luca Bianchi",
+          "description": "",
+          "amount": {
+           "decimal": "0.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-empty-associate-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690045/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Ivo Gialli",
+          "description": "Quota ",
+          "amount": {
+           "decimal": "1234567.89"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         ""
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Ivo Gialli",
+          "description": "Quota ",
+          "amount": {
+           "decimal": "1234567.89"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-body-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per il corso ",
+          "amount": {
+           "decimal": "25.50"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per il corso ",
+          "amount": {
+           "decimal": "25.50"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-request-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per il corso ",
+          "amount": {
+           "decimal": "25.50"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per il corso ",
+          "amount": {
+           "decimal": "25.50"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690042/request",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per l'iscrizione ",
+          "amount": {
+           "decimal": "40.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test",
+         "$email:owner"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "per l'iscrizione ",
+          "amount": {
+           "decimal": "40.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-group-member",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690049/request",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "Quota ",
+          "amount": {
+           "decimal": "15.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "description": "Quota ",
+          "amount": {
+           "decimal": "15.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:own",
+          "online_payments_enabled": "$online:owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-other-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690049/request",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690051/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:foreign | Pagamento in attesa"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Hans Muller",
+          "description": "Quota ",
+          "amount": {
+           "decimal": "15.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:foreign",
+          "online_payments_enabled": "$online:foreign_owner"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "hans@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/pending.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Hans Muller",
+          "description": "Quota ",
+          "amount": {
+           "decimal": "15.00"
+          },
+          "application_name": "$whitelabel",
+          "application_url": "$app_url",
+          "association_name": "$denomination:foreign",
+          "online_payments_enabled": "$online:foreign_owner"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701002"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:foreign_owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-request-no-associate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690046/request",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-paid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690047/request",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "msg": "email not sent, payment already paid."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690048/request",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000699999/request",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-without-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690050/request",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-foreign-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690051/request",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-malformed-uid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/payment/abc/request",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-restricted",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.payments.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-request-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/payment/a1000000-0000-4000-8000-000000690041/request",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Payment Request",
+    "description": "API endpoint to add a new payment",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-associate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 7 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 7,
+          "payment_date": "05/03/2026",
+          "description": "Quota\r\nannuale & <altro>\nfine",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690012?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 7,
+          "payment_date": "05/03/2026",
+          "description": "Quota\r\nannuale & <altro>\nfine",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690012?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-user",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690013/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 8 - 31/12/2025"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "$name:owner",
+          "amount": {
+           "float_sum": [
+            "30.00",
+            "20.00"
+           ]
+          },
+          "receipt_number": 8,
+          "payment_date": "31/12/2025",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690013?download=true&token=a1000000-0000-4000-8000-000000690004",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:owner"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "$name:owner",
+          "amount": {
+           "float_sum": [
+            "30.00",
+            "20.00"
+           ]
+          },
+          "receipt_number": 8,
+          "payment_date": "31/12/2025",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690013?download=true&token=a1000000-0000-4000-8000-000000690004",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-supplier",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690014/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 9 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Fornitore \"Uno\" & C.",
+          "amount": {
+           "float_sum": [
+            "0.01",
+            "0.00"
+           ]
+          },
+          "receipt_number": 9,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690014?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "fornitore@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Fornitore \"Uno\" & C.",
+          "amount": {
+           "float_sum": [
+            "0.01",
+            "0.00"
+           ]
+          },
+          "receipt_number": 9,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690014?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-empty-associate-email-user",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690015/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 10 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "$name:athlete",
+          "amount": {
+           "float_sum": [
+            "-5.00",
+            "0.00"
+           ]
+          },
+          "receipt_number": 10,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690015?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "$email:athlete"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "$name:athlete",
+          "amount": {
+           "float_sum": [
+            "-5.00",
+            "0.00"
+           ]
+          },
+          "receipt_number": 10,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690015?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-null-number-and-description",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690017/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. None - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "D'Arco <Ünal> & Co",
+          "amount": {
+           "float_sum": [
+            "2.67",
+            "0.00"
+           ]
+          },
+          "receipt_number": null,
+          "payment_date": "05/03/2026",
+          "description": null,
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690017?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "darco@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "D'Arco <Ünal> & Co",
+          "amount": {
+           "float_sum": [
+            "2.67",
+            "0.00"
+           ]
+          },
+          "receipt_number": null,
+          "payment_date": "05/03/2026",
+          "description": null,
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690017?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-first-payment-by-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690022/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 16 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "9999999.99",
+            "9999999.99"
+           ]
+          },
+          "receipt_number": 16,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690022?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "9999999.99",
+            "9999999.99"
+           ]
+          },
+          "receipt_number": 16,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690022?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-archived",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690025/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 19 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 19,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690025?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 19,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690025?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-group-member",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690023/send",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 17 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 17,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690023?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 17,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690023?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 7 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 7,
+          "payment_date": "05/03/2026",
+          "description": "Quota\r\nannuale & <altro>\nfine",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690012?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "mario.rossi@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Mario Rossi",
+          "amount": {
+           "float_sum": [
+            "10.10",
+            "0.20"
+           ]
+          },
+          "receipt_number": 7,
+          "payment_date": "05/03/2026",
+          "description": "Quota\r\nannuale & <altro>\nfine",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690012?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "email-render-routes-send-body-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690014/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "email sent."
+   },
+   "effect": {
+    "kind": "mail",
+    "celery": [
+     {
+      "task": "core.tasks.send_mail_async",
+      "args": [],
+      "kwargs": [
+       [
+        "subject",
+        "$denomination:own | Ricevuta di pagamento n. 9 - 05/03/2026"
+       ],
+       [
+        "message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Fornitore \"Uno\" & C.",
+          "amount": {
+           "float_sum": [
+            "0.01",
+            "0.00"
+           ]
+          },
+          "receipt_number": 9,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690014?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "from_email",
+        "$team_email"
+       ],
+       [
+        "recipient_list",
+        [
+         "fornitore@example.test"
+        ]
+       ],
+       [
+        "html_message",
+        {
+         "$render": "email/payment/payment_receipt.html",
+         "language": "en",
+         "context": {
+          "recipient_name": "Fornitore \"Uno\" & C.",
+          "amount": {
+           "float_sum": [
+            "0.01",
+            "0.00"
+           ]
+          },
+          "receipt_number": 9,
+          "payment_date": "05/03/2026",
+          "description": "Quota annuale",
+          "download_url": "$app_url/api/document/retrieve/a1000000-0000-4000-8000-000000690014?download=true&token=a1000000-0000-4000-8000-000000690002",
+          "association_name": "$denomination:own"
+         }
+        }
+       ],
+       [
+        "fail_silently",
+        false
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "reply_to",
+        [
+         "$email:owner"
+        ]
+       ]
+      ]
+     }
+    ]
+   },
+   "raw_body": "{",
+   "content_type": "application/json"
+  },
+  {
+   "name": "email-render-routes-send-no-email",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690016/send",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "msg": "Nessuna email associata."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-no-pdf",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690018/send",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-no-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690019/send",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-only-deleted-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690021/send",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-no-payment-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690020/send",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-other-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690023/send",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-deleted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690024/send",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000699999/send",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-foreign-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690026/send",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-malformed-uid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/abc/send",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-restricted",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.documents.invoices.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "email-render-routes-send-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/invoice/a1000000-0000-4000-8000-000000690012/send",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Invoice Send",
+    "description": "API endpoint to add a new payment",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  }
+ ]
+}

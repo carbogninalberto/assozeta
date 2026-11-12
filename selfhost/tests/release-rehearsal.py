@@ -18,7 +18,7 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / 'selfhost/updater'), str(ROOT / 'BE/instance')]
 from common import atomic_write, read_env, update_env
-from distribution import digest, download, resolve_tag, unpack, validate_manifest
+from distribution import digest, download, resolve_tag, unpack, validate_manifest, go_backend_reference
 from release_catalog import RELEASES_URL, image_version, read_json, version_tuple
 from quality_support import docker_host, write_evidence, assert_project_removed
 
@@ -36,7 +36,7 @@ def rehearse(source, target, revision, browser=False):
         raise ValueError('The expected release commit must be a complete Git SHA')
     # Resolve and verify the real distribution before provisioning any services.
     source_tag, target_tag = resolve_tag(source), resolve_tag(target)
-    manifest = validate_manifest(read_json(f'{RELEASES_URL}/download/{target_tag}/assozeta-update.json'), target_tag)
+    manifest = validate_manifest(read_json(f'{RELEASES_URL}/download/{target_tag}/assozeta-update.json'), target_tag, require_go_backend=True)
     bundle = download(f'{RELEASES_URL}/download/{target_tag}/assozeta-selfhost-{target_tag}.tar.gz')
     files = unpack(bundle)
     if digest(bundle) != manifest['bundle_sha256'] or {name: digest(value[0]) for name, value in files.items()} != manifest['files']:
@@ -77,7 +77,8 @@ def rehearse(source, target, revision, browser=False):
         # Pull exactly the verified public image digests, and bind the rehearsal
         # to the source commit recorded by the image publishing workflow.
         image_ids = {}
-        for name, reference in manifest['images'].items():
+        release_images = {**manifest['images'], 'backend-go': go_backend_reference(manifest, required=True)}
+        for name, reference in release_images.items():
             command(['docker', 'pull', reference])
             metadata = json.loads(command(['docker', 'image', 'inspect', reference], capture=True))[0]
             if metadata['Config'].get('Labels', {}).get('org.opencontainers.image.revision') != revision:
@@ -141,7 +142,7 @@ print('QUALITY_REFRESH=' + str(refresh))
             raise ValueError('The release manifest changed during the rehearsal')
         after = read_env(env_file)
         for key, value in before.items():
-            if key != 'ASSOZETA_VERSION' and after.get(key) != value:
+            if key not in {'ASSOZETA_VERSION', 'ASSOZETA_BACKEND_REF', 'ASSOZETA_WEB_REF', 'ASSOZETA_RENDERER_REF', 'ASSOZETA_UPDATER_REF', 'ASSOZETA_BACKEND_GO_REF'} and after.get(key) != value:
                 raise ValueError(f'Configuration was not preserved: {key}')
         if command(['docker', 'volume', 'inspect', f'{project}_postgres_data', f'{project}_minio_data'], capture=True) != volumes:
             raise ValueError('Existing data volumes were replaced')
@@ -157,7 +158,7 @@ assert instance.name == 'Release Quality Sentinel'
 with default_storage.open(instance.logo_path, 'rb') as logo:
     assert logo.read() == __import__('base64').b64decode('iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAIAAAASFvFNAAAAEElEQVR4nGMwVJ0CQQxwFgA0mgV9TDUSVgAAAABJRU5ErkJggg==')
 '''))
-        for service, image in {'api': 'backend', 'worker': 'backend', 'beat': 'backend', 'web': 'web', 'renderer': 'renderer'}.items():
+        for service, image in {'api': 'backend', 'api-go': 'backend-go', 'worker': 'backend', 'beat': 'backend', 'web': 'web', 'renderer': 'renderer'}.items():
             container = command(compose('ps', '-q', service), capture=True)
             if command(['docker', 'inspect', '--format', '{{.Image}}', container], capture=True) != image_ids[image]:
                 raise ValueError(f'{service} is not running the verified release image')
@@ -165,6 +166,15 @@ with default_storage.open(instance.logo_path, 'rb') as logo:
             '--project-name', project + '-updater', 'ps', '-q', 'updater'], capture=True)
         if command(['docker', 'inspect', '--format', '{{.Image}}', updater], capture=True) != image_ids['updater']:
             raise ValueError('The updater is not running the verified release image')
+        for prefix in ('/api', '/api/v1', '/api/v2'):
+            with urlopen(f'{origin}{prefix}/readyz', timeout=30) as response:
+                ready = json.load(response)
+            if ready != {'status': 'ready', 'checks': {'database': True, 'redis': True}}:
+                raise ValueError(f'{prefix} dependencies are not ready')
+            with urlopen(f'{origin}{prefix}/healthz', timeout=30) as response:
+                health = json.load(response)
+            if health.get('status') != 'ok' or image_version(health.get('version')) != image_version(target):
+                raise ValueError(f'{prefix} health reports a different release')
         for endpoint in ('admin', 'admin/updates'):
             request = Request(f'{origin}/api/instance/{endpoint}', headers={'Authorization': f'Bearer {token}'})
             with urlopen(request, timeout=30) as response:
@@ -183,7 +193,7 @@ with default_storage.open(instance.logo_path, 'rb') as logo:
                 subprocess.run(['npm', 'test', '--prefix', str(ROOT / 'selfhost/tests/browser')], check=True, stdout=output, stderr=output,
                     env={**environment, 'ASSOZETA_BROWSER_INPUT': str(browser_input), 'ASSOZETA_BROWSER_PHASE': 'readiness', 'ASSOZETA_BROWSER_OUTPUT': str(report_dir)})
         evidence = {'source': source_tag, 'target': target_tag, 'release_commit': revision,
-            'bundle_sha256': manifest['bundle_sha256'], 'images': manifest['images'], 'image_ids': image_ids, 'browser': browser}
+            'bundle_sha256': manifest['bundle_sha256'], 'images': release_images, 'image_ids': image_ids, 'browser': browser}
         print('PASS: real release bootstrap, immutable images, commit identity, data preservation and updater readiness.', flush=True)
     finally:
         # Never upload raw logs, backups, .env, browser credentials or updater state.

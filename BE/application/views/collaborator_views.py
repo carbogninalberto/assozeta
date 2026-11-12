@@ -12,6 +12,7 @@ from datetime import timedelta
 from core.tasks import send_mail_async
 
 from application.models import User
+from application.audit_context import atomic_audit_mutation
 from application.models.user_models import CollaborationInvites
 from application.permissions import IsAssociationUser
 from application.serializers.auth_serializers import UserSerializer
@@ -215,26 +216,32 @@ def collaborators_delete(request, uid):
 
     is_valid_uuid(uid)
 
-    collaborator = User.objects.filter(
-        connected_user=request.user,
-        user_id=uid
-    ).first()
-
-    logger.debug("Checking collaborator type", extra={'collaborator_id': uid, 'is_user': collaborator is not None})
-    if collaborator is None:
-        collaborator = CollaborationInvites.objects.filter(
-            user=request.user,
-            collaboration_invite_id=uid
+    # Keep both deletions and their audit/index writes in the same transaction.
+    # Serialize this owner's delete requests before locking either target kind.
+    with atomic_audit_mutation():
+        User.objects.select_for_update().get(pk=request.user.pk)
+        collaborator = User.objects.select_for_update().filter(
+            connected_user=request.user,
+            user_id=uid
         ).first()
-        if collaborator is None:
-            logger.warning("Collaborator not found for deletion", extra={'user_id': str(request.user.user_id), 'collaborator_id': uid})
-            raise ValidationError(detail='Collaborator not found')
-        if collaborator.accepted:
-            logger.debug("Deleting accepted invite user", extra={'collaborator_id': uid, 'email': collaborator.email})
-            user_to_delete = User.objects.filter(email=collaborator.email).first()
-            if user_to_delete is not None:
-                user_to_delete.delete()
 
+        logger.debug("Checking collaborator type", extra={'collaborator_id': uid, 'is_user': collaborator is not None})
+        if collaborator is None:
+            collaborator = CollaborationInvites.objects.select_for_update().filter(
+                user=request.user,
+                collaboration_invite_id=uid
+            ).first()
+            if collaborator is None:
+                logger.warning("Collaborator not found for deletion", extra={'user_id': str(request.user.user_id), 'collaborator_id': uid})
+                raise ValidationError(detail='Collaborator not found')
+            if collaborator.accepted:
+                logger.debug("Deleting accepted invite user", extra={'collaborator_id': uid, 'email': collaborator.email})
+                user_to_delete = User.objects.select_for_update().filter(
+                    email=collaborator.email, connected_user=request.user
+                ).first()
+                if user_to_delete is not None:
+                    user_to_delete.delete()
+
+        collaborator.delete()
     logger.info("Collaborator deleted successfully", extra={'collaborator_id': uid})
-    collaborator.delete()
     return Response({"msg": "collaborator deleted."}, status=status.HTTP_200_OK)

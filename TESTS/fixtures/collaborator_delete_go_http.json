@@ -1,0 +1,3144 @@
+{
+ "matrix_version": 1,
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011",
+  "unknown": "c1000000-0000-4000-8000-000000989999"
+ },
+ "rows": [
+  {
+   "label": "doc",
+   "model": "docmanager.Document",
+   "id": "c1000000-0000-4000-8000-000000980001",
+   "values": {
+    "filename": "collaborator-delete.pdf"
+   }
+  },
+  {
+   "label": "feature",
+   "model": "application.PreviewAndCustomFeatures",
+   "id": "c1000000-0000-4000-8000-000000980002",
+   "values": {
+    "name": "cdgo-feature",
+    "description": "Preview"
+   }
+  },
+  {
+   "label": "auth_group",
+   "model": "auth.Group",
+   "id": null,
+   "values": {
+    "name": "cdgo-group"
+   }
+  },
+  {
+   "label": "course",
+   "model": "application.Course",
+   "id": "c1000000-0000-4000-8000-000000980003",
+   "values": {
+    "sport_association_id": "$own_association",
+    "title": "Delete course"
+   }
+  },
+  {
+   "label": "tag",
+   "model": "application.Tags",
+   "id": "c1000000-0000-4000-8000-000000980004",
+   "values": {
+    "sport_association_id": "$own_association",
+    "tag_name": "cdgo-tag"
+   }
+  },
+  {
+   "label": "product",
+   "model": "application.ProductsAndServices",
+   "id": "c1000000-0000-4000-8000-000000980005",
+   "values": {
+    "sport_association_id": "$own_association",
+    "product_sku": "CDGO",
+    "product_name": "Kit"
+   }
+  },
+  {
+   "label": "module",
+   "model": "application.Module",
+   "id": "c1000000-0000-4000-8000-000000980006",
+   "values": {
+    "sport_association_id": "$own_association",
+    "title": "Delete module"
+   }
+  },
+  {
+   "label": "camps",
+   "model": "application.CampsAndRetreats",
+   "id": "c1000000-0000-4000-8000-000000980007",
+   "values": {
+    "sport_association_id": "$own_association",
+    "title": "Camp"
+   }
+  },
+  {
+   "label": "camps_period",
+   "model": "application.CampsAndRetreatsPeriod",
+   "id": "c1000000-0000-4000-8000-000000980008",
+   "values": {
+    "camps_and_retreats_id": "@camps",
+    "start_date": "2026-03-01T09:30:00.250000+00:00",
+    "end_date": "2026-03-01T09:30:00.250000+00:00"
+   }
+  },
+  {
+   "label": "camps_service",
+   "model": "application.CampsAndRetreatsPeriodsService",
+   "id": "c1000000-0000-4000-8000-000000980009",
+   "values": {
+    "camps_and_retreats_period_id": "@camps_period",
+    "title": "Lunch"
+   }
+  },
+  {
+   "label": "broadcast",
+   "model": "notifications.NotificationsBroadcast",
+   "id": "c1000000-0000-4000-8000-000000980010",
+   "values": {
+    "broadcast_name": "cdgo"
+   }
+  },
+  {
+   "label": "keep_subscription",
+   "model": "application.Subscription",
+   "id": "c1000000-0000-4000-8000-000000980011",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete"
+   }
+  },
+  {
+   "label": "keep_course_subscription",
+   "model": "application.CourseSubscription",
+   "id": "c1000000-0000-4000-8000-000000980012",
+   "values": {
+    "course_id": "@course",
+    "subscription_id": "@keep_subscription"
+   }
+  },
+  {
+   "label": "minimal",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980013",
+   "values": {
+    "username": "cdgo-minimal",
+    "email": "cdgo-minimal@example.test",
+    "password": "!synthetic",
+    "first_name": "Minimal",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "foreign_collaborator",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980014",
+   "values": {
+    "username": "cdgo-foreign_collaborator",
+    "email": "cdgo-foreign_collaborator@example.test",
+    "password": "!synthetic",
+    "first_name": "Foreign_Collaborator",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$foreign_owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "soft_deleted",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980015",
+   "values": {
+    "username": "cdgo-soft_deleted",
+    "email": "cdgo-soft_deleted@example.test",
+    "password": "!synthetic",
+    "first_name": "Soft_Deleted",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": true
+   }
+  },
+  {
+   "label": "foreign_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980016",
+   "values": {
+    "user_id": "$foreign_owner",
+    "email": "cdgo-foreign-invite@example.test"
+   }
+  },
+  {
+   "label": "pending_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980017",
+   "values": {
+    "user_id": "$owner",
+    "email": "cdgo-pending@example.test"
+   }
+  },
+  {
+   "label": "noaccount_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980018",
+   "values": {
+    "user_id": "$owner",
+    "email": "cdgo-noaccount@example.test",
+    "accepted": true
+   }
+  },
+  {
+   "label": "account_user",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980019",
+   "values": {
+    "username": "cdgo-account_user",
+    "email": "cdgo-account@example.test",
+    "password": "!synthetic",
+    "first_name": "Account_User",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "account_onboarding",
+   "model": "application.UsersOnboarding",
+   "id": "c1000000-0000-4000-8000-000000980020",
+   "values": {
+    "user_id": "@account_user"
+   }
+  },
+  {
+   "label": "account_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980021",
+   "values": {
+    "user_id": "$owner",
+    "email": "cdgo-account@example.test",
+    "accepted": true
+   }
+  },
+  {
+   "label": "duplicate_first",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980022",
+   "values": {
+    "username": "cdgo-duplicate_first",
+    "email": "cdgo-duplicate@example.test",
+    "password": "!synthetic",
+    "first_name": "Duplicate_First",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "duplicate_second",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980023",
+   "values": {
+    "username": "cdgo-duplicate_second",
+    "email": "cdgo-duplicate@example.test",
+    "password": "!synthetic",
+    "first_name": "Duplicate_Second",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "duplicate_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980024",
+   "values": {
+    "user_id": "$owner",
+    "email": "cdgo-duplicate@example.test",
+    "accepted": true
+   }
+  },
+  {
+   "label": "foreign_account",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980025",
+   "values": {
+    "username": "cdgo-foreign_account",
+    "email": "cdgo-foreign-account@example.test",
+    "password": "!synthetic",
+    "first_name": "Foreign_Account",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$foreign_owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "foreign_account_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980026",
+   "values": {
+    "user_id": "$owner",
+    "email": "cdgo-foreign-account@example.test",
+    "accepted": true
+   }
+  },
+  {
+   "label": "case_account",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980027",
+   "values": {
+    "username": "cdgo-case_account",
+    "email": "cdgo-case@example.test",
+    "password": "!synthetic",
+    "first_name": "Case_Account",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "case_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980028",
+   "values": {
+    "user_id": "$owner",
+    "email": "CDGO-case@example.test",
+    "accepted": true
+   }
+  },
+  {
+   "label": "soft_account",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980029",
+   "values": {
+    "username": "cdgo-soft_account",
+    "email": "cdgo-soft@example.test",
+    "password": "!synthetic",
+    "first_name": "Soft_Account",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": true
+   }
+  },
+  {
+   "label": "soft_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980030",
+   "values": {
+    "user_id": "$owner",
+    "email": "cdgo-soft@example.test",
+    "accepted": true
+   }
+  },
+  {
+   "label": "upper",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980031",
+   "values": {
+    "username": "cdgo-upper",
+    "email": "cdgo-upper@example.test",
+    "password": "!synthetic",
+    "first_name": "Upper",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "hex",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980032",
+   "values": {
+    "username": "cdgo-hex",
+    "email": "cdgo-hex@example.test",
+    "password": "!synthetic",
+    "first_name": "Hex",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "chain",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980033",
+   "values": {
+    "username": "cdgo-chain",
+    "email": "cdgo-chain@example.test",
+    "password": "!synthetic",
+    "first_name": "Chain",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "chain_child",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980034",
+   "values": {
+    "username": "cdgo-chain_child",
+    "email": "cdgo-chain_child@example.test",
+    "password": "!synthetic",
+    "first_name": "Chain_Child",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "@chain",
+    "deleted": false
+   }
+  },
+  {
+   "label": "chain_grandchild",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980035",
+   "values": {
+    "username": "cdgo-chain_grandchild",
+    "email": "cdgo-chain_grandchild@example.test",
+    "password": "!synthetic",
+    "first_name": "Chain_Grandchild",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "@chain_child",
+    "deleted": false
+   }
+  },
+  {
+   "label": "broad",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980036",
+   "values": {
+    "username": "cdgo-broad",
+    "email": "cdgo-broad@example.test",
+    "password": "!synthetic",
+    "first_name": "Broad",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "broad_feature",
+   "model": "application.User_preview_and_custom_features",
+   "id": null,
+   "values": {
+    "user_id": "@broad",
+    "previewandcustomfeatures_id": "@feature"
+   }
+  },
+  {
+   "label": "broad_group",
+   "model": "application.User_groups",
+   "id": null,
+   "values": {
+    "user_id": "@broad",
+    "group_id": "@auth_group"
+   }
+  },
+  {
+   "label": "broad_permission",
+   "model": "application.User_user_permissions",
+   "id": null,
+   "values": {
+    "user_id": "@broad",
+    "permission_id": "$permission:view_logentry"
+   }
+  },
+  {
+   "label": "broad_onboarding",
+   "model": "application.UsersOnboarding",
+   "id": "c1000000-0000-4000-8000-000000980037",
+   "values": {
+    "user_id": "@broad"
+   }
+  },
+  {
+   "label": "broad_invite",
+   "model": "application.CollaborationInvites",
+   "id": "c1000000-0000-4000-8000-000000980038",
+   "values": {
+    "user_id": "@broad",
+    "email": "cdgo-broad-invite@example.test"
+   }
+  },
+  {
+   "label": "broad_instructor",
+   "model": "application.Instructor",
+   "id": "c1000000-0000-4000-8000-000000980039",
+   "values": {
+    "user_id": "@broad",
+    "first_name": "Ina",
+    "last_name": "Struttrice"
+   }
+  },
+  {
+   "label": "broad_instructor_doc",
+   "model": "application.Instructor_documents",
+   "id": null,
+   "values": {
+    "instructor_id": "@broad_instructor",
+    "document_id": "@doc"
+   }
+  },
+  {
+   "label": "broad_payment",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980040",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "@broad",
+    "paid": true,
+    "amount": "12.50"
+   }
+  },
+  {
+   "label": "broad_payment_doc",
+   "model": "application.Payment_attachments",
+   "id": null,
+   "values": {
+    "payment_id": "@broad_payment",
+    "document_id": "@doc"
+   }
+  },
+  {
+   "label": "broad_hours",
+   "model": "application.InstructorHours",
+   "id": "c1000000-0000-4000-8000-000000980041",
+   "values": {
+    "instructor_id": "@broad_instructor",
+    "hours": "2.50",
+    "payment_id": "@broad_payment"
+   }
+  },
+  {
+   "label": "broad_instructor_reminder",
+   "model": "application.Reminders",
+   "id": "c1000000-0000-4000-8000-000000980042",
+   "values": {
+    "user_id": "@broad",
+    "instructor_id": "@broad_instructor",
+    "event_title": "Turno",
+    "send_at": "2026-03-01T09:30:00.250000+00:00",
+    "sport_association_id": "$own_association"
+   }
+  },
+  {
+   "label": "broad_medical",
+   "model": "application.MedicalCertificate",
+   "id": "c1000000-0000-4000-8000-000000980043",
+   "values": {
+    "user_id": "@broad",
+    "notes": "Visita"
+   }
+  },
+  {
+   "label": "broad_subscription",
+   "model": "application.Subscription",
+   "id": "c1000000-0000-4000-8000-000000980044",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "@broad",
+    "custom_data": {
+     "b": [
+      1,
+      2.5
+     ],
+     "a": null
+    }
+   }
+  },
+  {
+   "label": "broad_appointment",
+   "model": "application.MedicalAppointments",
+   "id": "c1000000-0000-4000-8000-000000980045",
+   "values": {
+    "subscription_id": "@broad_subscription",
+    "region": "Veneto"
+   }
+  },
+  {
+   "label": "broad_subscription_tag",
+   "model": "application.Subscription_tags",
+   "id": null,
+   "values": {
+    "subscription_id": "@broad_subscription",
+    "tags_id": "@tag"
+   }
+  },
+  {
+   "label": "broad_membership",
+   "model": "application.SubscriptionMembership",
+   "id": "c1000000-0000-4000-8000-000000980046",
+   "values": {
+    "subscription_id": "@broad_subscription",
+    "sport_association_id": "$own_association"
+   }
+  },
+  {
+   "label": "broad_membership_doc",
+   "model": "application.SubscriptionMembership_attached_membership_documents",
+   "id": null,
+   "values": {
+    "subscriptionmembership_id": "@broad_membership",
+    "document_id": "@doc"
+   }
+  },
+  {
+   "label": "broad_sold",
+   "model": "application.SoldProducts",
+   "id": "c1000000-0000-4000-8000-000000980047",
+   "values": {
+    "subscription_id": "@broad_subscription",
+    "product_id": "@product"
+   }
+  },
+  {
+   "label": "broad_token",
+   "model": "application.SubscriptionToken",
+   "id": "c1000000-0000-4000-8000-000000980048",
+   "values": {
+    "subscription_id": "@broad_subscription"
+   }
+  },
+  {
+   "label": "broad_file",
+   "model": "application.SubscriptionFile",
+   "id": "c1000000-0000-4000-8000-000000980049",
+   "values": {
+    "subscription_id": "@broad_subscription",
+    "document_id": "@doc"
+   }
+  },
+  {
+   "label": "broad_transfer",
+   "model": "application.SubscriptionTransfer",
+   "id": "c1000000-0000-4000-8000-000000980050",
+   "values": {
+    "subscription_id": "@broad_subscription",
+    "requester_id": "$owner"
+   }
+  },
+  {
+   "label": "broad_camp",
+   "model": "application.CampsAndRetreatsSubscription",
+   "id": "c1000000-0000-4000-8000-000000980051",
+   "values": {
+    "camps_and_retreats_id": "@camps",
+    "subscription_id": "@broad_subscription"
+   }
+  },
+  {
+   "label": "broad_camp_period",
+   "model": "application.CampsAndRetreatsSubscriptionPeriod",
+   "id": "c1000000-0000-4000-8000-000000980052",
+   "values": {
+    "camps_and_retreats_period_id": "@camps_period",
+    "camps_and_retreats_subscription_id": "@broad_camp"
+   }
+  },
+  {
+   "label": "broad_camp_service",
+   "model": "application.CampsAndRetreatsSubscriptionPeriod_camps_and_retreats_period_services",
+   "id": null,
+   "values": {
+    "campsandretreatssubscriptionperiod_id": "@broad_camp_period",
+    "campsandretreatsperiodsservice_id": "@camps_service"
+   }
+  },
+  {
+   "label": "broad_carnet_subscription",
+   "model": "application.CarnetSubscription",
+   "id": "c1000000-0000-4000-8000-000000980053",
+   "values": {
+    "subscription_id": "@broad_subscription"
+   }
+  },
+  {
+   "label": "broad_signature",
+   "model": "application.Signature",
+   "id": "c1000000-0000-4000-8000-000000980054",
+   "values": {
+    "user_id": "@broad",
+    "signature": "data:image/png;base64,AAAA"
+   }
+  },
+  {
+   "label": "broad_requested",
+   "model": "application.SubscriptionTransfer",
+   "id": "c1000000-0000-4000-8000-000000980055",
+   "values": {
+    "subscription_id": "@keep_subscription",
+    "requester_id": "@broad"
+   }
+  },
+  {
+   "label": "broad_received",
+   "model": "application.SubscriptionTransfer",
+   "id": "c1000000-0000-4000-8000-000000980056",
+   "values": {
+    "subscription_id": "@keep_subscription",
+    "requester_id": "$owner",
+    "recipient_id": "@broad"
+   }
+  },
+  {
+   "label": "broad_reminder",
+   "model": "application.Reminders",
+   "id": "c1000000-0000-4000-8000-000000980057",
+   "values": {
+    "user_id": "@broad",
+    "event_title": "Promemoria",
+    "send_at": "2026-03-01T09:30:00.250000+00:00",
+    "sport_association_id": "$own_association"
+   }
+  },
+  {
+   "label": "broad_carnet",
+   "model": "application.Carnet",
+   "id": "c1000000-0000-4000-8000-000000980058",
+   "values": {
+    "user_id_id": "@broad",
+    "sport_association_id": "$own_association",
+    "title": "Carnet",
+    "fee": "30.00"
+   }
+  },
+  {
+   "label": "broad_carnet_use",
+   "model": "application.CarnetSubscription",
+   "id": "c1000000-0000-4000-8000-000000980059",
+   "values": {
+    "carnet_id_id": "@broad_carnet"
+   }
+  },
+  {
+   "label": "broad_own_carnet_subscription",
+   "model": "application.CarnetSubscription",
+   "id": "c1000000-0000-4000-8000-000000980060",
+   "values": {
+    "user_id_id": "@broad"
+   }
+  },
+  {
+   "label": "broad_response",
+   "model": "application.ModuleResponses",
+   "id": "c1000000-0000-4000-8000-000000980061",
+   "values": {
+    "module_id": "@module",
+    "user_id": "@broad",
+    "response": {
+     "q": "r"
+    }
+   }
+  },
+  {
+   "label": "broad_response_doc",
+   "model": "application.ModuleResponses_attachments",
+   "id": null,
+   "values": {
+    "moduleresponses_id": "@broad_response",
+    "document_id": "@doc"
+   }
+  },
+  {
+   "label": "broad_report",
+   "model": "application.SavedReport",
+   "id": "c1000000-0000-4000-8000-000000980062",
+   "values": {
+    "sport_association_id": "$own_association",
+    "created_by_id": "@broad",
+    "name": "Report",
+    "tool_name": "payments"
+   }
+  },
+  {
+   "label": "broad_board",
+   "model": "communications.StaffBoardMessage",
+   "id": "c1000000-0000-4000-8000-000000980063",
+   "values": {
+    "sport_association_id": "$own_association",
+    "author_id": "@broad",
+    "content": "Ciao"
+   }
+  },
+  {
+   "label": "broad_notification",
+   "model": "notifications.UserNotificationsBroadcast",
+   "id": "c1000000-0000-4000-8000-000000980064",
+   "values": {
+    "user_id": "@broad",
+    "broadcast_id": "@broadcast"
+   }
+  },
+  {
+   "label": "broad_detachment",
+   "model": "instance.DataRestoreUserDetachment",
+   "id": null,
+   "values": {
+    "user_id": "@broad",
+    "owner_id": "$owner",
+    "association_id": "$own_association"
+   }
+  },
+  {
+   "label": "broad_social",
+   "model": "social_django.UserSocialAuth",
+   "id": null,
+   "values": {
+    "user_id": "@broad",
+    "provider": "google-oauth2",
+    "uid": "cdgo-broad"
+   }
+  },
+  {
+   "label": "broad_logentry",
+   "model": "auditlog.LogEntry",
+   "id": null,
+   "values": {
+    "actor_id": "@broad",
+    "content_type_id": "$contenttype:application.user",
+    "object_pk": "seed",
+    "object_repr": "seed",
+    "action": 0,
+    "changes_text": ""
+   }
+  },
+  {
+   "label": "broad_nurturing",
+   "model": "application.NurturingEmails",
+   "id": "c1000000-0000-4000-8000-000000980065",
+   "values": {
+    "user_id": "@broad"
+   }
+  },
+  {
+   "label": "broad_child",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980066",
+   "values": {
+    "username": "cdgo-broad_child",
+    "email": "cdgo-broad_child@example.test",
+    "password": "!synthetic",
+    "first_name": "Broad_Child",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "@broad",
+    "deleted": false
+   }
+  },
+  {
+   "label": "broad_child_onboarding",
+   "model": "application.UsersOnboarding",
+   "id": "c1000000-0000-4000-8000-000000980067",
+   "values": {
+    "user_id": "@broad_child"
+   }
+  },
+  {
+   "label": "keep_payment",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980068",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "signature_id": "@broad_signature",
+    "paid": true
+   }
+  },
+  {
+   "label": "keep_pointer_subscription",
+   "model": "application.Subscription",
+   "id": "c1000000-0000-4000-8000-000000980069",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "medical_id": "@broad_medical",
+    "payment_id": "@broad_payment",
+    "instructor_id": "@broad_instructor"
+   }
+  },
+  {
+   "label": "finance",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980070",
+   "values": {
+    "username": "cdgo-finance",
+    "email": "cdgo-finance@example.test",
+    "password": "!synthetic",
+    "first_name": "Finance",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "finance_subscription",
+   "model": "application.Subscription",
+   "id": "c1000000-0000-4000-8000-000000980071",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "@finance"
+   }
+  },
+  {
+   "label": "finance_pa1",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980072",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": false,
+    "deleted": false,
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_pa2",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980073",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": true,
+    "deleted": false,
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_pa3",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980074",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": false,
+    "deleted": false,
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_pc",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980075",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": true,
+    "deleted": false,
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_pm1",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980076",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": false,
+    "deleted": false,
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_pm2",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980077",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": true,
+    "deleted": false,
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_pm3",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980078",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": false,
+    "deleted": true,
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_cs_a",
+   "model": "application.CourseSubscription",
+   "id": "c1000000-0000-4000-8000-000000980079",
+   "values": {
+    "course_id": "@course",
+    "subscription_id": "@finance_subscription",
+    "type": 1
+   }
+  },
+  {
+   "label": "finance_ia1",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980080",
+   "values": {
+    "course_subscription_id": "@finance_cs_a",
+    "payment_id": "@finance_pa1",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00",
+    "amount": "5.00"
+   }
+  },
+  {
+   "label": "finance_ia2",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980081",
+   "values": {
+    "course_subscription_id": "@finance_cs_a",
+    "payment_id": "@finance_pa2",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00",
+    "paid": true
+   }
+  },
+  {
+   "label": "finance_ia3",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980082",
+   "values": {
+    "course_subscription_id": "@finance_cs_a",
+    "payment_id": "@finance_pa3",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00",
+    "deleted": true
+   }
+  },
+  {
+   "label": "finance_ia4",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980083",
+   "values": {
+    "course_subscription_id": "@finance_cs_a",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00"
+   }
+  },
+  {
+   "label": "finance_cs_b",
+   "model": "application.CourseSubscription",
+   "id": "c1000000-0000-4000-8000-000000980084",
+   "values": {
+    "course_id": "@course",
+    "subscription_id": "@finance_subscription",
+    "type": 3,
+    "membership_fee": "15.00"
+   }
+  },
+  {
+   "label": "finance_pm1_link",
+   "model": "application.CourseSubscription_membership_payments",
+   "id": null,
+   "values": {
+    "coursesubscription_id": "@finance_cs_b",
+    "payment_id": "@finance_pm1"
+   }
+  },
+  {
+   "label": "finance_pm2_link",
+   "model": "application.CourseSubscription_membership_payments",
+   "id": null,
+   "values": {
+    "coursesubscription_id": "@finance_cs_b",
+    "payment_id": "@finance_pm2"
+   }
+  },
+  {
+   "label": "finance_pm3_link",
+   "model": "application.CourseSubscription_membership_payments",
+   "id": null,
+   "values": {
+    "coursesubscription_id": "@finance_cs_b",
+    "payment_id": "@finance_pm3"
+   }
+  },
+  {
+   "label": "finance_cs_c",
+   "model": "application.CourseSubscription",
+   "id": "c1000000-0000-4000-8000-000000980085",
+   "values": {
+    "course_id": "@course",
+    "subscription_id": "@finance_subscription",
+    "type": 1,
+    "payment_id": "@finance_pc",
+    "multiple_quote": {
+     "rate": [
+      1,
+      2
+     ]
+    }
+   }
+  },
+  {
+   "label": "finance_pu",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980086",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "@finance",
+    "paid": false,
+    "amount": "7.00"
+   }
+  },
+  {
+   "label": "finance_iu",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980087",
+   "values": {
+    "course_subscription_id": "@keep_course_subscription",
+    "payment_id": "@finance_pu",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00"
+   }
+  },
+  {
+   "label": "grouped",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980088",
+   "values": {
+    "username": "cdgo-grouped",
+    "email": "cdgo-grouped@example.test",
+    "password": "!synthetic",
+    "first_name": "Grouped",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "grouped_payment",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980089",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "@grouped",
+    "paid": false,
+    "group_id": "$own_group"
+   }
+  },
+  {
+   "label": "grouped_in_group",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980090",
+   "values": {
+    "course_subscription_id": "@keep_course_subscription",
+    "payment_id": "@grouped_payment",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00",
+    "group_id": "$own_group"
+   }
+  },
+  {
+   "label": "grouped_no_group",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980091",
+   "values": {
+    "course_subscription_id": "@keep_course_subscription",
+    "payment_id": "@grouped_payment",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00"
+   }
+  },
+  {
+   "label": "ungrouped",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980092",
+   "values": {
+    "username": "cdgo-ungrouped",
+    "email": "cdgo-ungrouped@example.test",
+    "password": "!synthetic",
+    "first_name": "Ungrouped",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "ungrouped_payment",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980093",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "@ungrouped",
+    "paid": false,
+    "group_id": "$own_group"
+   }
+  },
+  {
+   "label": "ungrouped_in_group",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980094",
+   "values": {
+    "course_subscription_id": "@keep_course_subscription",
+    "payment_id": "@ungrouped_payment",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00",
+    "group_id": "$own_group"
+   }
+  },
+  {
+   "label": "ungrouped_no_group",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980095",
+   "values": {
+    "course_subscription_id": "@keep_course_subscription",
+    "payment_id": "@ungrouped_payment",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00"
+   }
+  },
+  {
+   "label": "restore_owner",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980096",
+   "values": {
+    "username": "cdgo-restore_owner",
+    "email": "cdgo-restore_owner@example.test",
+    "password": "!synthetic",
+    "first_name": "Restore_Owner",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "restore",
+   "model": "instance.DataRestore",
+   "id": "c1000000-0000-4000-8000-000000980097",
+   "values": {
+    "owner_id": "@restore_owner",
+    "association_id": "$own_association",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  },
+  {
+   "label": "billing_subscriber",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980098",
+   "values": {
+    "username": "cdgo-billing_subscriber",
+    "email": "cdgo-billing_subscriber@example.test",
+    "password": "!synthetic",
+    "first_name": "Billing_Subscriber",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "billing_subscription",
+   "model": "application.BillingSubscription",
+   "id": "c1000000-0000-4000-8000-000000980099",
+   "values": {
+    "user_id": "@billing_subscriber"
+   }
+  },
+  {
+   "label": "billing_payer",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980100",
+   "values": {
+    "username": "cdgo-billing_payer",
+    "email": "cdgo-billing_payer@example.test",
+    "password": "!synthetic",
+    "first_name": "Billing_Payer",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "billing_payment",
+   "model": "application.BillingPayment",
+   "id": "c1000000-0000-4000-8000-000000980101",
+   "values": {
+    "user_id": "@billing_payer",
+    "amount": "9.00"
+   }
+  },
+  {
+   "label": "associate_user",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980102",
+   "values": {
+    "username": "cdgo-associate_user",
+    "email": "cdgo-associate_user@example.test",
+    "password": "!synthetic",
+    "first_name": "Associate_User",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "associate",
+   "model": "application.Associate",
+   "id": "c1000000-0000-4000-8000-000000980103",
+   "values": {
+    "user_id": "@associate_user",
+    "sport_association_id": "$own_association",
+    "first_name": "Socio"
+   }
+  },
+  {
+   "label": "owning_with_group",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980104",
+   "values": {
+    "username": "cdgo-owning_with_group",
+    "email": "cdgo-owning_with_group@example.test",
+    "password": "!synthetic",
+    "first_name": "Owning_With_Group",
+    "last_name": "Delete",
+    "role": 1,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "owned_association_with_group",
+   "model": "application.SportAssociation",
+   "id": "c1000000-0000-4000-8000-000000980105",
+   "values": {
+    "user_id": "@owning_with_group",
+    "denomination": "Owned with group",
+    "tax_code": "79800000001"
+   }
+  },
+  {
+   "label": "owned_group",
+   "model": "application.Group",
+   "id": "c1000000-0000-4000-8000-000000980106",
+   "values": {
+    "sport_association_id": "@owned_association_with_group",
+    "name": "Owned group"
+   }
+  },
+  {
+   "label": "owning_alone",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980107",
+   "values": {
+    "username": "cdgo-owning_alone",
+    "email": "cdgo-owning_alone@example.test",
+    "password": "!synthetic",
+    "first_name": "Owning_Alone",
+    "last_name": "Delete",
+    "role": 1,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "owned_association_alone",
+   "model": "application.SportAssociation",
+   "id": "c1000000-0000-4000-8000-000000980108",
+   "values": {
+    "user_id": "@owning_alone",
+    "denomination": "Owned alone",
+    "tax_code": "79800000002"
+   }
+  },
+  {
+   "label": "owning_tree",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980109",
+   "values": {
+    "username": "cdgo-owning_tree",
+    "email": "cdgo-owning_tree@example.test",
+    "password": "!synthetic",
+    "first_name": "Owning_Tree",
+    "last_name": "Delete",
+    "role": 1,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "owned_tree",
+   "model": "application.SportAssociation",
+   "id": "c1000000-0000-4000-8000-000000980110",
+   "values": {
+    "user_id": "@owning_tree",
+    "denomination": "Owned tree",
+    "tax_code": "79800000003"
+   }
+  },
+  {
+   "label": "tree_course_tag",
+   "model": "application.CourseTags",
+   "id": "c1000000-0000-4000-8000-000000980111",
+   "values": {
+    "sport_association_id": "$own_association",
+    "tag_name": "cdgo-tree-tag"
+   }
+  },
+  {
+   "label": "tree_course",
+   "model": "application.Course",
+   "id": "c1000000-0000-4000-8000-000000980112",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "title": "Tree course"
+   }
+  },
+  {
+   "label": "tree_course_tag_link",
+   "model": "application.Course_tags",
+   "id": null,
+   "values": {
+    "course_id": "@tree_course",
+    "coursetags_id": "@tree_course_tag"
+   }
+  },
+  {
+   "label": "tree_location",
+   "model": "application.CourseLocation",
+   "id": "c1000000-0000-4000-8000-000000980113",
+   "values": {
+    "sport_association_id": "@owned_tree"
+   }
+  },
+  {
+   "label": "tree_course_location",
+   "model": "application.Course_locations",
+   "id": null,
+   "values": {
+    "course_id": "@tree_course",
+    "courselocation_id": "@tree_location"
+   }
+  },
+  {
+   "label": "tree_location_doc",
+   "model": "application.CourseLocation_documents",
+   "id": null,
+   "values": {
+    "courselocation_id": "@tree_location",
+    "document_id": "@doc"
+   }
+  },
+  {
+   "label": "tree_registry",
+   "model": "application.AttendanceRegistry",
+   "id": "c1000000-0000-4000-8000-000000980114",
+   "values": {
+    "course_id": "@tree_course"
+   }
+  },
+  {
+   "label": "tree_day",
+   "model": "application.AttendanceDay",
+   "id": "c1000000-0000-4000-8000-000000980115",
+   "values": {
+    "attendance_registry_id": "@tree_registry",
+    "date": "2026-03-01T09:30:00.250000+00:00"
+   }
+  },
+  {
+   "label": "tree_course_subscription",
+   "model": "application.CourseSubscription",
+   "id": "c1000000-0000-4000-8000-000000980116",
+   "values": {
+    "course_id": "@tree_course",
+    "type": 1
+   }
+  },
+  {
+   "label": "tree_installment",
+   "model": "application.CourseSubscriptionInstallment",
+   "id": "c1000000-0000-4000-8000-000000980117",
+   "values": {
+    "course_subscription_id": "@tree_course_subscription",
+    "payment_date": "2026-03-01T09:30:00.250000+00:00",
+    "amount": "3.30"
+   }
+  },
+  {
+   "label": "tree_payment",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980118",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "user_id": "$athlete",
+    "paid": false
+   }
+  },
+  {
+   "label": "tree_account",
+   "model": "application.CustomAccounts",
+   "id": "c1000000-0000-4000-8000-000000980119",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "name": "Cassa",
+    "initial_balance": "100.00",
+    "account_code": "C1"
+   }
+  },
+  {
+   "label": "tree_account_two",
+   "model": "application.CustomAccounts",
+   "id": "c1000000-0000-4000-8000-000000980120",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "name": "Banca",
+    "initial_balance": "0.00",
+    "account_code": "B1"
+   }
+  },
+  {
+   "label": "tree_transfer",
+   "model": "application.CustomAccountsTransfer",
+   "id": "c1000000-0000-4000-8000-000000980121",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "custom_account_from_id": "@tree_account",
+    "custom_account_to_id": "@tree_account_two",
+    "amount": "10.00"
+   }
+  },
+  {
+   "label": "tree_account_payment",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980122",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "paid": true,
+    "custom_accounts_id": "@tree_account"
+   }
+  },
+  {
+   "label": "tree_balance",
+   "model": "application.BalanceSheet",
+   "id": "c1000000-0000-4000-8000-000000980123",
+   "values": {
+    "sport_association_id": "@owned_tree"
+   }
+  },
+  {
+   "label": "tree_supplier",
+   "model": "application.SupplierAndCustomers",
+   "id": "c1000000-0000-4000-8000-000000980124",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "name": "Fornitore"
+   }
+  },
+  {
+   "label": "tree_kept_supplier_payment",
+   "model": "application.Payment",
+   "id": "c1000000-0000-4000-8000-000000980125",
+   "values": {
+    "sport_association_id": "$own_association",
+    "user_id": "$athlete",
+    "supplier_id": "@tree_supplier"
+   }
+  },
+  {
+   "label": "tree_category",
+   "model": "application.PaymentCategory",
+   "id": "c1000000-0000-4000-8000-000000980126",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "name": "Categoria"
+   }
+  },
+  {
+   "label": "tree_category_user",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980127",
+   "values": {
+    "username": "cdgo-tree_category_user",
+    "email": "cdgo-tree_category_user@example.test",
+    "password": "!synthetic",
+    "first_name": "Tree_Category_User",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false,
+    "default_payment_category_id": "@tree_category"
+   }
+  },
+  {
+   "label": "tree_draft",
+   "model": "application.AssociateImportDraft",
+   "id": "c1000000-0000-4000-8000-000000980128",
+   "values": {
+    "sport_association_id": "@owned_tree"
+   }
+  },
+  {
+   "label": "tree_draft_status",
+   "model": "application.AssociateImportDraftStatus",
+   "id": "c1000000-0000-4000-8000-000000980129",
+   "values": {
+    "sport_association_id": "@owned_tree"
+   }
+  },
+  {
+   "label": "tree_configuration",
+   "model": "communications.CommunicationConfiguration",
+   "id": "c1000000-0000-4000-8000-000000980130",
+   "values": {
+    "sport_association_id": "@owned_tree"
+   }
+  },
+  {
+   "label": "tree_kept_associate",
+   "model": "application.Associate",
+   "id": "c1000000-0000-4000-8000-000000980131",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "first_name": "Rimane"
+   }
+  },
+  {
+   "label": "tree_email_log",
+   "model": "application.EmailLog",
+   "id": "c1000000-0000-4000-8000-000000980132",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "subject": "Oggetto",
+    "result": "ok"
+   }
+  },
+  {
+   "label": "tree_calendar",
+   "model": "application.GlobalCalendarEvents",
+   "id": "c1000000-0000-4000-8000-000000980133",
+   "values": {
+    "sport_association_id": "@owned_tree"
+   }
+  },
+  {
+   "label": "tree_reminders",
+   "model": "application.Reminders",
+   "id": "c1000000-0000-4000-8000-000000980134",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "user_id": "$athlete",
+    "event_title": "Evento",
+    "send_at": "2026-03-01T09:30:00.250000+00:00"
+   }
+  },
+  {
+   "label": "tree_carnet",
+   "model": "application.Carnet",
+   "id": "c1000000-0000-4000-8000-000000980135",
+   "values": {
+    "sport_association_id": "@owned_tree",
+    "fee": "20.00"
+   }
+  },
+  {
+   "label": "tree_carnet_subscription",
+   "model": "application.CarnetSubscription",
+   "id": "c1000000-0000-4000-8000-000000980136",
+   "values": {
+    "carnet_id_id": "@tree_carnet"
+   }
+  },
+  {
+   "label": "tree_module",
+   "model": "application.Module",
+   "id": "c1000000-0000-4000-8000-000000980137",
+   "values": {
+    "sport_association_id": "@owned_tree"
+   }
+  },
+  {
+   "label": "tree_module_response",
+   "model": "application.ModuleResponses",
+   "id": "c1000000-0000-4000-8000-000000980138",
+   "values": {
+    "module_id": "@tree_module"
+   }
+  },
+  {
+   "label": "owning_plain",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980139",
+   "values": {
+    "username": "cdgo-owning_plain",
+    "email": "cdgo-owning_plain@example.test",
+    "password": "!synthetic",
+    "first_name": "Owning_Plain",
+    "last_name": "Delete",
+    "role": 1,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "owned_plain",
+   "model": "application.SportAssociation",
+   "id": "c1000000-0000-4000-8000-000000980140",
+   "values": {
+    "user_id": "@owning_plain",
+    "denomination": "Owned plain",
+    "tax_code": "79800000004"
+   }
+  },
+  {
+   "label": "plain_folder",
+   "model": "application.Folder",
+   "id": null,
+   "values": {
+    "name": "Radice",
+    "sport_association_id": "@owned_plain",
+    "lft": 1,
+    "rght": 4,
+    "tree_id": 980001,
+    "level": 0
+   }
+  },
+  {
+   "label": "plain_child_folder",
+   "model": "application.Folder",
+   "id": null,
+   "values": {
+    "name": "Figlia",
+    "parent_id": "@plain_folder",
+    "sport_association_id": "@owned_plain",
+    "lft": 2,
+    "rght": 3,
+    "tree_id": 980001,
+    "level": 1
+   }
+  },
+  {
+   "label": "plain_product",
+   "model": "application.ProductsAndServices",
+   "id": "c1000000-0000-4000-8000-000000980141",
+   "values": {
+    "sport_association_id": "@owned_plain",
+    "product_sku": "PLAIN",
+    "product_name": "Maglia"
+   }
+  },
+  {
+   "label": "plain_sold",
+   "model": "application.SoldProducts",
+   "id": "c1000000-0000-4000-8000-000000980142",
+   "values": {
+    "product_id": "@plain_product",
+    "quantity": 2
+   }
+  },
+  {
+   "label": "plain_testimonial",
+   "model": "application.Testimonial",
+   "id": "c1000000-0000-4000-8000-000000980143",
+   "values": {
+    "sport_association_id": "@owned_plain",
+    "text": "Bene",
+    "score": 4.5
+   }
+  },
+  {
+   "label": "plain_report",
+   "model": "application.SavedReport",
+   "id": "c1000000-0000-4000-8000-000000980144",
+   "values": {
+    "sport_association_id": "@owned_plain",
+    "created_by_id": "$athlete",
+    "name": "R",
+    "tool_name": "payments"
+   }
+  },
+  {
+   "label": "plain_board",
+   "model": "communications.StaffBoardMessage",
+   "id": "c1000000-0000-4000-8000-000000980145",
+   "values": {
+    "sport_association_id": "@owned_plain",
+    "content": "Nota"
+   }
+  },
+  {
+   "label": "plain_logentry",
+   "model": "auditlog.LogEntry",
+   "id": null,
+   "values": {
+    "content_type_id": "$contenttype:application.sportassociation",
+    "object_pk": "seed-plain",
+    "object_repr": "seed",
+    "action": 1,
+    "changes_text": ""
+   }
+  },
+  {
+   "label": "plain_index",
+   "model": "application.AuditLogIndex",
+   "id": "c1000000-0000-4000-8000-000000980146",
+   "values": {
+    "log_entry_id": "@plain_logentry",
+    "sport_association_id": "@owned_plain",
+    "resolution_path": "direct"
+   }
+  },
+  {
+   "label": "by_collaborator",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980147",
+   "values": {
+    "username": "cdgo-by_collaborator",
+    "email": "cdgo-by_collaborator@example.test",
+    "password": "!synthetic",
+    "first_name": "By_Collaborator",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  },
+  {
+   "label": "by_admin",
+   "model": "application.User",
+   "id": "c1000000-0000-4000-8000-000000980148",
+   "values": {
+    "username": "cdgo-by_admin",
+    "email": "cdgo-by_admin@example.test",
+    "password": "!synthetic",
+    "first_name": "By_Admin",
+    "last_name": "Delete",
+    "role": 3,
+    "connected_user_id": "$owner",
+    "deleted": false
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "collaborator-delete-go-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.collaborators.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-restricted-collaborator-wrong-method",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.users.collaborators.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-athlete",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-athlete-invalid-uuid",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/collaborators/not-a-uuid/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-athlete-wrong-method",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-owner-scoped-to-athlete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-wrong-method-get",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborator-delete-go-wrong-method-post",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborator-delete-go-wrong-method-put",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborator-delete-go-wrong-method-patch",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "collaborator-delete-go-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Collaborators Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-invalid-uuid",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/not-a-uuid/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000989999/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-foreign-collaborator",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980014/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-soft-deleted-user",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980015/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-owner-self",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000700001/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-foreign-invitation",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980016/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Collaborator not found"
+   ],
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-pending-invitation-malformed-body",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980017/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "pending_invite"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "pending_invite",
+      "actor"
+     ]
+    ]
+   },
+   "raw_body": "{",
+   "content_type": "application/json"
+  },
+  {
+   "name": "collaborator-delete-go-accepted-invitation-without-account",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980018/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "noaccount_invite"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "noaccount_invite",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-accepted-invitation-with-account",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980021/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "account_user",
+     "account_onboarding",
+     "account_invite"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "account_onboarding",
+      "actor"
+     ],
+     [
+      "account_user",
+      "actor"
+     ],
+     [
+      "account_invite",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-accepted-invitation-duplicate-email",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980024/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "duplicate_first",
+     "duplicate_invite"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "duplicate_first",
+      "actor"
+     ],
+     [
+      "duplicate_invite",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-accepted-invitation-foreign-account",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980026/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "foreign_account_invite"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "foreign_account_invite",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-accepted-invitation-email-case",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980028/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "case_invite"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "case_invite",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-accepted-invitation-soft-deleted-account",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980030/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "soft_invite"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "soft_invite",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-minimal-user",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980013/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "minimal"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "minimal",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-uppercase-uuid",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/C1000000-0000-4000-8000-000000980031/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "upper"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "upper",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-hex-uuid",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000000040008000000000980032/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "hex"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "hex",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-connected-chain",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980033/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "chain",
+     "chain_child",
+     "chain_grandchild"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "chain",
+      "actor"
+     ],
+     [
+      "chain_child",
+      "actor"
+     ],
+     [
+      "chain_grandchild",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-broad-graph",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980036/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "broad",
+     "broad_feature",
+     "broad_group",
+     "broad_permission",
+     "broad_onboarding",
+     "broad_invite",
+     "broad_instructor",
+     "broad_instructor_doc",
+     "broad_payment",
+     "broad_payment_doc",
+     "broad_hours",
+     "broad_instructor_reminder",
+     "broad_medical",
+     "broad_subscription",
+     "broad_appointment",
+     "broad_subscription_tag",
+     "broad_membership",
+     "broad_membership_doc",
+     "broad_sold",
+     "broad_token",
+     "broad_file",
+     "broad_transfer",
+     "broad_camp",
+     "broad_camp_period",
+     "broad_camp_service",
+     "broad_carnet_subscription",
+     "broad_signature",
+     "broad_requested",
+     "broad_reminder",
+     "broad_carnet",
+     "broad_carnet_use",
+     "broad_own_carnet_subscription",
+     "broad_response",
+     "broad_response_doc",
+     "broad_report",
+     "broad_notification",
+     "broad_detachment",
+     "broad_social",
+     "broad_child",
+     "broad_child_onboarding"
+    ],
+    "nulled": [
+     [
+      "keep_payment",
+      "signature_id"
+     ],
+     [
+      "keep_pointer_subscription",
+      "medical_id"
+     ],
+     [
+      "keep_pointer_subscription",
+      "payment_id"
+     ],
+     [
+      "keep_pointer_subscription",
+      "instructor_id"
+     ],
+     [
+      "broad_received",
+      "recipient_id"
+     ],
+     [
+      "broad_board",
+      "author_id"
+     ],
+     [
+      "broad_logentry",
+      "actor_id"
+     ],
+     [
+      "broad_nurturing",
+      "user_id"
+     ]
+    ],
+    "audit": [
+     [
+      "broad",
+      "actor"
+     ],
+     [
+      "broad_onboarding",
+      "actor"
+     ],
+     [
+      "broad_invite",
+      "actor"
+     ],
+     [
+      "broad_instructor",
+      "actor"
+     ],
+     [
+      "broad_payment",
+      "sa"
+     ],
+     [
+      "broad_hours",
+      "actor"
+     ],
+     [
+      "broad_instructor_reminder",
+      "sa"
+     ],
+     [
+      "broad_medical",
+      "actor"
+     ],
+     [
+      "broad_subscription",
+      "sa"
+     ],
+     [
+      "broad_appointment",
+      "actor"
+     ],
+     [
+      "broad_membership",
+      "sa"
+     ],
+     [
+      "broad_sold",
+      "actor"
+     ],
+     [
+      "broad_token",
+      "actor"
+     ],
+     [
+      "broad_file",
+      "actor"
+     ],
+     [
+      "broad_transfer",
+      "actor"
+     ],
+     [
+      "broad_camp",
+      "actor"
+     ],
+     [
+      "broad_camp_period",
+      "actor"
+     ],
+     [
+      "broad_carnet_subscription",
+      "actor"
+     ],
+     [
+      "broad_signature",
+      "actor"
+     ],
+     [
+      "broad_requested",
+      "actor"
+     ],
+     [
+      "broad_reminder",
+      "sa"
+     ],
+     [
+      "broad_carnet",
+      "sa"
+     ],
+     [
+      "broad_carnet_use",
+      "actor"
+     ],
+     [
+      "broad_own_carnet_subscription",
+      "actor"
+     ],
+     [
+      "broad_response",
+      "actor"
+     ],
+     [
+      "broad_notification",
+      "actor"
+     ],
+     [
+      "broad_child",
+      "actor"
+     ],
+     [
+      "broad_child_onboarding",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-financial-receivers",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980070/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "finance",
+     "finance_subscription",
+     "finance_cs_a",
+     "finance_cs_b",
+     "finance_cs_c",
+     "finance_ia1",
+     "finance_ia2",
+     "finance_ia3",
+     "finance_ia4",
+     "finance_pa1",
+     "finance_pa3",
+     "finance_pm1",
+     "finance_pu",
+     "finance_iu",
+     "finance_pm1_link",
+     "finance_pm2_link",
+     "finance_pm3_link"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "finance_pu",
+      "sa"
+     ],
+     [
+      "finance_iu",
+      "actor"
+     ],
+     [
+      "finance_pa1",
+      "sa"
+     ],
+     [
+      "finance_ia1",
+      "actor"
+     ],
+     [
+      "finance_pa1",
+      "sa"
+     ],
+     [
+      "finance_pa3",
+      "sa"
+     ],
+     [
+      "finance_ia4",
+      "actor"
+     ],
+     [
+      "finance_ia2",
+      "actor"
+     ],
+     [
+      "finance_pm1",
+      "sa"
+     ],
+     [
+      "finance_pu",
+      "sa"
+     ],
+     [
+      "finance_subscription",
+      "sa"
+     ],
+     [
+      "finance_ia4",
+      "actor"
+     ],
+     [
+      "finance_ia3",
+      "actor"
+     ],
+     [
+      "finance_ia2",
+      "actor"
+     ],
+     [
+      "finance_ia1",
+      "actor"
+     ],
+     [
+      "finance",
+      "actor"
+     ],
+     [
+      "finance_cs_c",
+      "actor"
+     ],
+     [
+      "finance_cs_b",
+      "actor"
+     ],
+     [
+      "finance_cs_a",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-group-header-filters-receivers",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980088/delete",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "grouped",
+     "grouped_payment",
+     "grouped_in_group"
+    ],
+    "nulled": [
+     [
+      "grouped_no_group",
+      "payment_id"
+     ]
+    ],
+    "audit": [
+     [
+      "grouped_payment",
+      "sa"
+     ],
+     [
+      "grouped_in_group",
+      "actor"
+     ],
+     [
+      "grouped_payment",
+      "sa"
+     ],
+     [
+      "grouped",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-no-group-header",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980092/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "ungrouped",
+     "ungrouped_payment",
+     "ungrouped_in_group",
+     "ungrouped_no_group"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "ungrouped_payment",
+      "sa"
+     ],
+     [
+      "ungrouped_no_group",
+      "actor"
+     ],
+     [
+      "ungrouped_in_group",
+      "actor"
+     ],
+     [
+      "ungrouped_payment",
+      "sa"
+     ],
+     [
+      "ungrouped",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-protected-data-restore",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980096/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-protected-billing-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980098/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-protected-billing-payment",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980100/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-associate-reference-fails-at-commit",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980102/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-owned-association-with-child-fails-at-commit",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980104/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "collaborator-delete-go-owned-association",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980107/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "owning_alone",
+     "owned_association_alone"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "owned_association_alone",
+      "actor"
+     ],
+     [
+      "owning_alone",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-owned-association-tree",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980109/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "owning_tree",
+     "owned_tree",
+     "tree_course",
+     "tree_location",
+     "tree_registry",
+     "tree_day",
+     "tree_course_subscription",
+     "tree_payment",
+     "tree_account",
+     "tree_account_two",
+     "tree_transfer",
+     "tree_balance",
+     "tree_supplier",
+     "tree_category",
+     "tree_draft",
+     "tree_draft_status",
+     "tree_configuration",
+     "tree_calendar",
+     "tree_reminders",
+     "tree_carnet",
+     "tree_carnet_subscription",
+     "tree_module",
+     "tree_module_response",
+     "tree_installment",
+     "tree_account_payment",
+     "tree_course_tag_link",
+     "tree_course_location",
+     "tree_location_doc",
+     "tree_email_log"
+    ],
+    "nulled": [
+     [
+      "tree_kept_supplier_payment",
+      "supplier_id"
+     ],
+     [
+      "tree_category_user",
+      "default_payment_category_id"
+     ],
+     [
+      "tree_kept_associate",
+      "sport_association_id"
+     ]
+    ],
+    "audit": [
+     [
+      "owning_tree",
+      "actor"
+     ],
+     [
+      "owned_tree",
+      "actor"
+     ],
+     [
+      "tree_course",
+      "actor"
+     ],
+     [
+      "tree_location",
+      "actor"
+     ],
+     [
+      "tree_registry",
+      "actor"
+     ],
+     [
+      "tree_day",
+      "actor"
+     ],
+     [
+      "tree_course_subscription",
+      "actor"
+     ],
+     [
+      "tree_payment",
+      "actor"
+     ],
+     [
+      "tree_account",
+      "actor"
+     ],
+     [
+      "tree_account_two",
+      "actor"
+     ],
+     [
+      "tree_transfer",
+      "actor"
+     ],
+     [
+      "tree_balance",
+      "actor"
+     ],
+     [
+      "tree_supplier",
+      "actor"
+     ],
+     [
+      "tree_category",
+      "actor"
+     ],
+     [
+      "tree_draft",
+      "actor"
+     ],
+     [
+      "tree_draft_status",
+      "actor"
+     ],
+     [
+      "tree_configuration",
+      "actor"
+     ],
+     [
+      "tree_calendar",
+      "actor"
+     ],
+     [
+      "tree_reminders",
+      "actor"
+     ],
+     [
+      "tree_carnet",
+      "actor"
+     ],
+     [
+      "tree_carnet_subscription",
+      "actor"
+     ],
+     [
+      "tree_module",
+      "actor"
+     ],
+     [
+      "tree_module_response",
+      "actor"
+     ],
+     [
+      "tree_installment",
+      "actor"
+     ],
+     [
+      "tree_installment",
+      "actor"
+     ],
+     [
+      "tree_account_payment",
+      "sa"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-owned-association-unaudited-children",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980139/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "owning_plain",
+     "owned_plain",
+     "plain_folder",
+     "plain_child_folder",
+     "plain_product",
+     "plain_sold",
+     "plain_testimonial",
+     "plain_report",
+     "plain_board",
+     "plain_index"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "owning_plain",
+      "actor"
+     ],
+     [
+      "owned_plain",
+      "actor"
+     ],
+     [
+      "plain_sold",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-full-collaborator-actor",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980147/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "by_collaborator"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "by_collaborator",
+      null
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-impersonating-admin",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/collaborators/c1000000-0000-4000-8000-000000980148/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "collaborator deleted."
+   },
+   "effect": {
+    "deleted": [
+     "by_admin"
+    ],
+    "nulled": [],
+    "audit": [
+     [
+      "by_admin",
+      "actor"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "collaborator-delete-go-full-collaborator-self",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/collaborators/a1000000-0000-4000-8000-000000700002/delete",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  }
+ ]
+}

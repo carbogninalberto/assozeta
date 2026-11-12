@@ -1,0 +1,54 @@
+"""Independently authored supplier-invoice stats HTTP expectations; no Django imports."""
+import json
+from pathlib import Path
+
+from TESTS.http_client import Client
+from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, require, substitute
+
+SOURCE = Path(__file__).resolve().parents[1] / 'fixtures/supplier_invoice_stats_http.json'
+
+
+def load_source(path=SOURCE):
+    source = json.loads(Path(path).read_text())
+    require(source['matrix_version'] == 1 and len(source['cases']) >= 10, 'source.version-count')
+    require(len({case['name'] for case in source['cases']}) == len(source['cases']), 'source.names')
+    return source
+
+
+def materialize(value, rows):
+    if isinstance(value, str) and value.startswith('$row:'):
+        return rows[value[5:]]
+    if isinstance(value, list):
+        return [materialize(item, rows) for item in value]
+    if isinstance(value, dict):
+        return {key: materialize(item, rows) for key, item in value.items()}
+    return value
+
+
+def assert_case(case, base_url, *, token, sessions, rows):
+    """rows maps labels to the anchored seed's expected values-row dicts."""
+    headers = {'Accept-Language': 'en', 'Accept': 'application/json', 'X-Correlation-ID': case['name'],
+               **substitute(case['headers'], sessions)}
+    body = {} if case['method'] == 'POST' else None
+    status, raw, received = Client(base_url, token).request(case['method'], case['path'], body, headers, raw=True, include_headers=True)
+
+    def check(condition, code):
+        if not condition:
+            raise ResponseFailure(code, status)
+
+    check(type(status) is int and status == case['status'], 'response.status')
+    if case['response'] == '<stable-server-error-page>':
+        check(raw == SERVER_ERROR_DOCUMENT, 'response.error-document')
+        return status
+    check(set(received.get('Allow', '').replace(' ', '').split(',')) == {'GET', 'OPTIONS'}, 'response.allow')
+    check(received.get('Content-Language') == 'en' and received.get('Set-Cookie') is None, 'response.headers')
+    check(received.get('WWW-Authenticate') == ('Bearer realm="api"' if status == 401 else None), 'response.authentication')
+    try:
+        actual = json.loads(raw)
+    except (ValueError, UnicodeDecodeError):
+        raise ResponseFailure('response.json', status) from None
+    expected = materialize(case['response'], rows)
+    # Integer 0 and float 0.0 are distinct here: compare JSON renderings.
+    check(json.dumps(actual, sort_keys=True) == json.dumps(expected, sort_keys=True), 'response.body' + difference(expected, actual))
+    check(received.get('Content-Type', '').split(';')[0] == 'application/json', 'response.type')
+    return status

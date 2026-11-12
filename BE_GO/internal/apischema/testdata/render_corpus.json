@@ -1,0 +1,2510 @@
+[
+ {
+  "text": "Seleziona un utente da impersonificare per accedere a questa sezione.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Seleziona un utente da impersonificare per accedere a questa sezione.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Seleziona un utente da impersonificare per accedere a questa sezione.\"\n}"
+ },
+ {
+  "text": "Seleziona un utente da impersonificare per accedere a questa sezione.",
+  "shape": 1,
+  "yaml": "detail:\n  string: Seleziona un utente da impersonificare per accedere a questa sezione.\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"Seleziona un utente da impersonificare per accedere a questa sezione.\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "Seleziona un utente da impersonificare per accedere a questa sezione.",
+  "shape": 2,
+  "yaml": "detail:\n  string: Seleziona un utente da impersonificare per accedere a questa sezione.\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: Seleziona un utente da impersonificare per accedere a questa sezione.\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"Seleziona un utente da impersonificare per accedere a questa sezione.\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"Seleziona un utente da impersonificare per accedere a questa sezione.\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "Seleziona un utente da impersonificare per accedere a questa sezione.",
+  "shape": 3,
+  "yaml": "detail:\n  string: Seleziona un utente da impersonificare per accedere a questa sezione.\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"Seleziona un utente da impersonificare per accedere a questa sezione.\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "Operazione non disponibile nel contesto dell’associazione.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Operazione non disponibile nel contesto dell’associazione.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Operazione non disponibile nel contesto dell’associazione.\"\n}"
+ },
+ {
+  "text": "Operazione non disponibile nel contesto dell’associazione.",
+  "shape": 1,
+  "yaml": "detail:\n  string: Operazione non disponibile nel contesto dell’associazione.\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"Operazione non disponibile nel contesto dell’associazione.\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "Operazione non disponibile nel contesto dell’associazione.",
+  "shape": 2,
+  "yaml": "detail:\n  string: Operazione non disponibile nel contesto dell’associazione.\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: Operazione non disponibile nel contesto dell’associazione.\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"Operazione non disponibile nel contesto dell’associazione.\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"Operazione non disponibile nel contesto dell’associazione.\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "Operazione non disponibile nel contesto dell’associazione.",
+  "shape": 3,
+  "yaml": "detail:\n  string: Operazione non disponibile nel contesto dell’associazione.\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"Operazione non disponibile nel contesto dell’associazione.\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "Esci dall’impersonificazione per accedere all’amministrazione.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Esci dall’impersonificazione per accedere all’amministrazione.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Esci dall’impersonificazione per accedere all’amministrazione.\"\n}"
+ },
+ {
+  "text": "Esci dall’impersonificazione per accedere all’amministrazione.",
+  "shape": 1,
+  "yaml": "detail:\n  string: Esci dall’impersonificazione per accedere all’amministrazione.\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"Esci dall’impersonificazione per accedere all’amministrazione.\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "Esci dall’impersonificazione per accedere all’amministrazione.",
+  "shape": 2,
+  "yaml": "detail:\n  string: Esci dall’impersonificazione per accedere all’amministrazione.\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: Esci dall’impersonificazione per accedere all’amministrazione.\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"Esci dall’impersonificazione per accedere all’amministrazione.\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"Esci dall’impersonificazione per accedere all’amministrazione.\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "Esci dall’impersonificazione per accedere all’amministrazione.",
+  "shape": 3,
+  "yaml": "detail:\n  string: Esci dall’impersonificazione per accedere all’amministrazione.\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"Esci dall’impersonificazione per accedere all’amministrazione.\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema''. Contact administrator\n    to grant access.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.\"\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema''. Contact administrator\n    to grant access.'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema''. Contact administrator\n    to grant access.'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'Access denied: No permission mapping for endpoint ''schema''. Contact\n      administrator to grant access.'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema''. Contact administrator\n    to grant access.'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema'. Contact administrator to grant access.\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema/swagger-ui''.\n    Contact administrator to grant access.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.\"\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema/swagger-ui''.\n    Contact administrator to grant access.'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema/swagger-ui''.\n    Contact administrator to grant access.'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'Access denied: No permission mapping for endpoint ''schema/swagger-ui''.\n      Contact administrator to grant access.'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'Access denied: No permission mapping for endpoint ''schema/swagger-ui''.\n    Contact administrator to grant access.'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"Access denied: No permission mapping for endpoint 'schema/swagger-ui'. Contact administrator to grant access.\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "Missing permission: association.courses.read",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'Missing permission: association.courses.read'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Missing permission: association.courses.read\"\n}"
+ },
+ {
+  "text": "Missing permission: association.courses.read",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'Missing permission: association.courses.read'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"Missing permission: association.courses.read\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "Missing permission: association.courses.read",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'Missing permission: association.courses.read'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'Missing permission: association.courses.read'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"Missing permission: association.courses.read\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"Missing permission: association.courses.read\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "Missing permission: association.courses.read",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'Missing permission: association.courses.read'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"Missing permission: association.courses.read\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "Given token not valid for any token type",
+  "shape": 0,
+  "yaml": "detail:\n  string: Given token not valid for any token type\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Given token not valid for any token type\"\n}"
+ },
+ {
+  "text": "Given token not valid for any token type",
+  "shape": 1,
+  "yaml": "detail:\n  string: Given token not valid for any token type\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"Given token not valid for any token type\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "Given token not valid for any token type",
+  "shape": 2,
+  "yaml": "detail:\n  string: Given token not valid for any token type\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: Given token not valid for any token type\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"Given token not valid for any token type\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"Given token not valid for any token type\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "Given token not valid for any token type",
+  "shape": 3,
+  "yaml": "detail:\n  string: Given token not valid for any token type\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"Given token not valid for any token type\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "True",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'True'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"True\"\n}"
+ },
+ {
+  "text": "True",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'True'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"True\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "True",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'True'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'True'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"True\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"True\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "True",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'True'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"True\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "yes",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'yes'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"yes\"\n}"
+ },
+ {
+  "text": "yes",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'yes'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"yes\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "yes",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'yes'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'yes'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"yes\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"yes\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "yes",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'yes'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"yes\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "null",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'null'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"null\"\n}"
+ },
+ {
+  "text": "null",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'null'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"null\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "null",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'null'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'null'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"null\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"null\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "null",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'null'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"null\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "~",
+  "shape": 0,
+  "yaml": "detail:\n  string: '~'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"~\"\n}"
+ },
+ {
+  "text": "~",
+  "shape": 1,
+  "yaml": "detail:\n  string: '~'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"~\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "~",
+  "shape": 2,
+  "yaml": "detail:\n  string: '~'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '~'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"~\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"~\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "~",
+  "shape": 3,
+  "yaml": "detail:\n  string: '~'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"~\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "1",
+  "shape": 0,
+  "yaml": "detail:\n  string: '1'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"1\"\n}"
+ },
+ {
+  "text": "1",
+  "shape": 1,
+  "yaml": "detail:\n  string: '1'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"1\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "1",
+  "shape": 2,
+  "yaml": "detail:\n  string: '1'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '1'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"1\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"1\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "1",
+  "shape": 3,
+  "yaml": "detail:\n  string: '1'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"1\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "1.5",
+  "shape": 0,
+  "yaml": "detail:\n  string: '1.5'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"1.5\"\n}"
+ },
+ {
+  "text": "1.5",
+  "shape": 1,
+  "yaml": "detail:\n  string: '1.5'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"1.5\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "1.5",
+  "shape": 2,
+  "yaml": "detail:\n  string: '1.5'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '1.5'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"1.5\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"1.5\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "1.5",
+  "shape": 3,
+  "yaml": "detail:\n  string: '1.5'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"1.5\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "0x1F",
+  "shape": 0,
+  "yaml": "detail:\n  string: '0x1F'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"0x1F\"\n}"
+ },
+ {
+  "text": "0x1F",
+  "shape": 1,
+  "yaml": "detail:\n  string: '0x1F'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"0x1F\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "0x1F",
+  "shape": 2,
+  "yaml": "detail:\n  string: '0x1F'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '0x1F'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"0x1F\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"0x1F\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "0x1F",
+  "shape": 3,
+  "yaml": "detail:\n  string: '0x1F'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"0x1F\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "2024-01-01",
+  "shape": 0,
+  "yaml": "detail:\n  string: '2024-01-01'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"2024-01-01\"\n}"
+ },
+ {
+  "text": "2024-01-01",
+  "shape": 1,
+  "yaml": "detail:\n  string: '2024-01-01'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"2024-01-01\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "2024-01-01",
+  "shape": 2,
+  "yaml": "detail:\n  string: '2024-01-01'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '2024-01-01'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"2024-01-01\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"2024-01-01\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "2024-01-01",
+  "shape": 3,
+  "yaml": "detail:\n  string: '2024-01-01'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"2024-01-01\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "",
+  "shape": 0,
+  "yaml": "detail:\n  string: ''\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\"\n}"
+ },
+ {
+  "text": "",
+  "shape": 1,
+  "yaml": "detail:\n  string: ''\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "",
+  "shape": 2,
+  "yaml": "detail:\n  string: ''\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: ''\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "",
+  "shape": 3,
+  "yaml": "detail:\n  string: ''\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": " lead",
+  "shape": 0,
+  "yaml": "detail:\n  string: ' lead'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \" lead\"\n}"
+ },
+ {
+  "text": " lead",
+  "shape": 1,
+  "yaml": "detail:\n  string: ' lead'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \" lead\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": " lead",
+  "shape": 2,
+  "yaml": "detail:\n  string: ' lead'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: ' lead'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \" lead\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \" lead\"\n        }\n    ]\n}"
+ },
+ {
+  "text": " lead",
+  "shape": 3,
+  "yaml": "detail:\n  string: ' lead'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \" lead\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "trail ",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'trail '\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"trail \"\n}"
+ },
+ {
+  "text": "trail ",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'trail '\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"trail \",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "trail ",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'trail '\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'trail '\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"trail \",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"trail \"\n        }\n    ]\n}"
+ },
+ {
+  "text": "trail ",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'trail '\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"trail \",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "- dash",
+  "shape": 0,
+  "yaml": "detail:\n  string: '- dash'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"- dash\"\n}"
+ },
+ {
+  "text": "- dash",
+  "shape": 1,
+  "yaml": "detail:\n  string: '- dash'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"- dash\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "- dash",
+  "shape": 2,
+  "yaml": "detail:\n  string: '- dash'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '- dash'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"- dash\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"- dash\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "- dash",
+  "shape": 3,
+  "yaml": "detail:\n  string: '- dash'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"- dash\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "? q",
+  "shape": 0,
+  "yaml": "detail:\n  string: '? q'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"? q\"\n}"
+ },
+ {
+  "text": "? q",
+  "shape": 1,
+  "yaml": "detail:\n  string: '? q'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"? q\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "? q",
+  "shape": 2,
+  "yaml": "detail:\n  string: '? q'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '? q'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"? q\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"? q\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "? q",
+  "shape": 3,
+  "yaml": "detail:\n  string: '? q'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"? q\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "# c",
+  "shape": 0,
+  "yaml": "detail:\n  string: '# c'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"# c\"\n}"
+ },
+ {
+  "text": "# c",
+  "shape": 1,
+  "yaml": "detail:\n  string: '# c'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"# c\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "# c",
+  "shape": 2,
+  "yaml": "detail:\n  string: '# c'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '# c'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"# c\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"# c\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "# c",
+  "shape": 3,
+  "yaml": "detail:\n  string: '# c'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"# c\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "a: b",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'a: b'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"a: b\"\n}"
+ },
+ {
+  "text": "a: b",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'a: b'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"a: b\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "a: b",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'a: b'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'a: b'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"a: b\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"a: b\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "a: b",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'a: b'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"a: b\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "a #b",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'a #b'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"a #b\"\n}"
+ },
+ {
+  "text": "a #b",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'a #b'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"a #b\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "a #b",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'a #b'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'a #b'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"a #b\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"a #b\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "a #b",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'a #b'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"a #b\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "tab\there",
+  "shape": 0,
+  "yaml": "detail:\n  string: \"tab\\there\"\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"tab\\there\"\n}"
+ },
+ {
+  "text": "tab\there",
+  "shape": 1,
+  "yaml": "detail:\n  string: \"tab\\there\"\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"tab\\there\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "tab\there",
+  "shape": 2,
+  "yaml": "detail:\n  string: \"tab\\there\"\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: \"tab\\there\"\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"tab\\there\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"tab\\there\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "tab\there",
+  "shape": 3,
+  "yaml": "detail:\n  string: \"tab\\there\"\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"tab\\there\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "quote's",
+  "shape": 0,
+  "yaml": "detail:\n  string: quote's\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"quote's\"\n}"
+ },
+ {
+  "text": "quote's",
+  "shape": 1,
+  "yaml": "detail:\n  string: quote's\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"quote's\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "quote's",
+  "shape": 2,
+  "yaml": "detail:\n  string: quote's\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: quote's\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"quote's\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"quote's\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "quote's",
+  "shape": 3,
+  "yaml": "detail:\n  string: quote's\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"quote's\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "\"double\"",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"double\"'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"double\\\"\"\n}"
+ },
+ {
+  "text": "\"double\"",
+  "shape": 1,
+  "yaml": "detail:\n  string: '\"double\"'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"\\\"double\\\"\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "\"double\"",
+  "shape": 2,
+  "yaml": "detail:\n  string: '\"double\"'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '\"double\"'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"\\\"double\\\"\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"\\\"double\\\"\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "\"double\"",
+  "shape": 3,
+  "yaml": "detail:\n  string: '\"double\"'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"\\\"double\\\"\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "[x]",
+  "shape": 0,
+  "yaml": "detail:\n  string: '[x]'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"[x]\"\n}"
+ },
+ {
+  "text": "[x]",
+  "shape": 1,
+  "yaml": "detail:\n  string: '[x]'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"[x]\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "[x]",
+  "shape": 2,
+  "yaml": "detail:\n  string: '[x]'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '[x]'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"[x]\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"[x]\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "[x]",
+  "shape": 3,
+  "yaml": "detail:\n  string: '[x]'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"[x]\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "{x}",
+  "shape": 0,
+  "yaml": "detail:\n  string: '{x}'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"{x}\"\n}"
+ },
+ {
+  "text": "{x}",
+  "shape": 1,
+  "yaml": "detail:\n  string: '{x}'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"{x}\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "{x}",
+  "shape": 2,
+  "yaml": "detail:\n  string: '{x}'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '{x}'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"{x}\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"{x}\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "{x}",
+  "shape": 3,
+  "yaml": "detail:\n  string: '{x}'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"{x}\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "&a",
+  "shape": 0,
+  "yaml": "detail:\n  string: '&a'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"&a\"\n}"
+ },
+ {
+  "text": "&a",
+  "shape": 1,
+  "yaml": "detail:\n  string: '&a'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"&a\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "&a",
+  "shape": 2,
+  "yaml": "detail:\n  string: '&a'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '&a'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"&a\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"&a\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "&a",
+  "shape": 3,
+  "yaml": "detail:\n  string: '&a'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"&a\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "*a",
+  "shape": 0,
+  "yaml": "detail:\n  string: '*a'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"*a\"\n}"
+ },
+ {
+  "text": "*a",
+  "shape": 1,
+  "yaml": "detail:\n  string: '*a'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"*a\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "*a",
+  "shape": 2,
+  "yaml": "detail:\n  string: '*a'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '*a'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"*a\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"*a\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "*a",
+  "shape": 3,
+  "yaml": "detail:\n  string: '*a'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"*a\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "!t",
+  "shape": 0,
+  "yaml": "detail:\n  string: '!t'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"!t\"\n}"
+ },
+ {
+  "text": "!t",
+  "shape": 1,
+  "yaml": "detail:\n  string: '!t'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"!t\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "!t",
+  "shape": 2,
+  "yaml": "detail:\n  string: '!t'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '!t'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"!t\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"!t\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "!t",
+  "shape": 3,
+  "yaml": "detail:\n  string: '!t'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"!t\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "%p",
+  "shape": 0,
+  "yaml": "detail:\n  string: '%p'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"%p\"\n}"
+ },
+ {
+  "text": "%p",
+  "shape": 1,
+  "yaml": "detail:\n  string: '%p'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"%p\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "%p",
+  "shape": 2,
+  "yaml": "detail:\n  string: '%p'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '%p'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"%p\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"%p\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "%p",
+  "shape": 3,
+  "yaml": "detail:\n  string: '%p'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"%p\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "@a",
+  "shape": 0,
+  "yaml": "detail:\n  string: '@a'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"@a\"\n}"
+ },
+ {
+  "text": "@a",
+  "shape": 1,
+  "yaml": "detail:\n  string: '@a'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"@a\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "@a",
+  "shape": 2,
+  "yaml": "detail:\n  string: '@a'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '@a'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"@a\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"@a\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "@a",
+  "shape": 3,
+  "yaml": "detail:\n  string: '@a'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"@a\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "`b",
+  "shape": 0,
+  "yaml": "detail:\n  string: '`b'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"`b\"\n}"
+ },
+ {
+  "text": "`b",
+  "shape": 1,
+  "yaml": "detail:\n  string: '`b'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"`b\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "`b",
+  "shape": 2,
+  "yaml": "detail:\n  string: '`b'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '`b'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"`b\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"`b\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "`b",
+  "shape": 3,
+  "yaml": "detail:\n  string: '`b'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"`b\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "é ’ « » nbsp",
+  "shape": 0,
+  "yaml": "detail:\n  string: é ’ « » nbsp\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"é ’ « » nbsp\"\n}"
+ },
+ {
+  "text": "é ’ « » nbsp",
+  "shape": 1,
+  "yaml": "detail:\n  string: é ’ « » nbsp\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"é ’ « » nbsp\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "é ’ « » nbsp",
+  "shape": 2,
+  "yaml": "detail:\n  string: é ’ « » nbsp\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: é ’ « » nbsp\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"é ’ « » nbsp\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"é ’ « » nbsp\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "é ’ « » nbsp",
+  "shape": 3,
+  "yaml": "detail:\n  string: é ’ « » nbsp\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"é ’ « » nbsp\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "line\nbreak",
+  "shape": 0,
+  "yaml": "detail:\n  string: |-\n    line\n    break\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"line\\nbreak\"\n}"
+ },
+ {
+  "text": "line\nbreak",
+  "shape": 1,
+  "yaml": "detail:\n  string: |-\n    line\n    break\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"line\\nbreak\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "line\nbreak",
+  "shape": 2,
+  "yaml": "detail:\n  string: |-\n    line\n    break\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: |-\n      line\n      break\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"line\\nbreak\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"line\\nbreak\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "line\nbreak",
+  "shape": 3,
+  "yaml": "detail:\n  string: |-\n    line\n    break\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"line\\nbreak\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "shape": 0,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "shape": 1,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "shape": 2,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "shape": 3,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+  "shape": 0,
+  "yaml": "detail:\n  string: word word word word word word word word word word word word word word word\n    word word word word word word word word word word word word word word word\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\"\n}"
+ },
+ {
+  "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+  "shape": 1,
+  "yaml": "detail:\n  string: word word word word word word word word word word word word word word word\n    word word word word word word word word word word word word word word word\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+  "shape": 2,
+  "yaml": "detail:\n  string: word word word word word word word word word word word word word word word\n    word word word word word word word word word word word word word word word\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: word word word word word word word word word word word word word word\n      word word word word word word word word word word word word word word word word\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+  "shape": 3,
+  "yaml": "detail:\n  string: word word word word word word word word word word word word word word word\n    word word word word word word word word word word word word word word word\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "ctrl\u0001",
+  "shape": 0,
+  "yaml": "detail:\n  string: \"ctrl\\x01\"\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"ctrl\\u0001\"\n}"
+ },
+ {
+  "text": "ctrl\u0001",
+  "shape": 1,
+  "yaml": "detail:\n  string: \"ctrl\\x01\"\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"ctrl\\u0001\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "ctrl\u0001",
+  "shape": 2,
+  "yaml": "detail:\n  string: \"ctrl\\x01\"\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: \"ctrl\\x01\"\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"ctrl\\u0001\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"ctrl\\u0001\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "ctrl\u0001",
+  "shape": 3,
+  "yaml": "detail:\n  string: \"ctrl\\x01\"\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"ctrl\\u0001\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": " sep",
+  "shape": 0,
+  "yaml": "detail:\n  string: '     sep'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\u2028sep\"\n}"
+ },
+ {
+  "text": " sep",
+  "shape": 1,
+  "yaml": "detail:\n  string: '     sep'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"\\u2028sep\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": " sep",
+  "shape": 2,
+  "yaml": "detail:\n  string: '     sep'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '       sep'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"\\u2028sep\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"\\u2028sep\"\n        }\n    ]\n}"
+ },
+ {
+  "text": " sep",
+  "shape": 3,
+  "yaml": "detail:\n  string: '     sep'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"\\u2028sep\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "﻿bom",
+  "shape": 0,
+  "yaml": "detail:\n  string: \"\\uFEFFbom\"\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"﻿bom\"\n}"
+ },
+ {
+  "text": "﻿bom",
+  "shape": 1,
+  "yaml": "detail:\n  string: \"\\uFEFFbom\"\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"﻿bom\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "﻿bom",
+  "shape": 2,
+  "yaml": "detail:\n  string: \"\\uFEFFbom\"\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: \"\\uFEFFbom\"\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"﻿bom\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"﻿bom\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "﻿bom",
+  "shape": 3,
+  "yaml": "detail:\n  string: \"\\uFEFFbom\"\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"﻿bom\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "a,b",
+  "shape": 0,
+  "yaml": "detail:\n  string: a,b\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"a,b\"\n}"
+ },
+ {
+  "text": "a,b",
+  "shape": 1,
+  "yaml": "detail:\n  string: a,b\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"a,b\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "a,b",
+  "shape": 2,
+  "yaml": "detail:\n  string: a,b\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: a,b\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"a,b\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"a,b\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "a,b",
+  "shape": 3,
+  "yaml": "detail:\n  string: a,b\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"a,b\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "a: ",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'a: '\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"a: \"\n}"
+ },
+ {
+  "text": "a: ",
+  "shape": 1,
+  "yaml": "detail:\n  string: 'a: '\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"a: \",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "a: ",
+  "shape": 2,
+  "yaml": "detail:\n  string: 'a: '\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: 'a: '\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"a: \",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"a: \"\n        }\n    ]\n}"
+ },
+ {
+  "text": "a: ",
+  "shape": 3,
+  "yaml": "detail:\n  string: 'a: '\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"a: \",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": ":a",
+  "shape": 0,
+  "yaml": "detail:\n  string: :a\n  code: some_code\n",
+  "json": "{\n    \"detail\": \":a\"\n}"
+ },
+ {
+  "text": ":a",
+  "shape": 1,
+  "yaml": "detail:\n  string: :a\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \":a\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": ":a",
+  "shape": 2,
+  "yaml": "detail:\n  string: :a\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: :a\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \":a\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \":a\"\n        }\n    ]\n}"
+ },
+ {
+  "text": ":a",
+  "shape": 3,
+  "yaml": "detail:\n  string: :a\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \":a\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "-",
+  "shape": 0,
+  "yaml": "detail:\n  string: '-'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"-\"\n}"
+ },
+ {
+  "text": "-",
+  "shape": 1,
+  "yaml": "detail:\n  string: '-'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"-\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "-",
+  "shape": 2,
+  "yaml": "detail:\n  string: '-'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '-'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"-\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"-\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "-",
+  "shape": 3,
+  "yaml": "detail:\n  string: '-'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"-\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "---",
+  "shape": 0,
+  "yaml": "detail:\n  string: '---'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"---\"\n}"
+ },
+ {
+  "text": "---",
+  "shape": 1,
+  "yaml": "detail:\n  string: '---'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"---\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "---",
+  "shape": 2,
+  "yaml": "detail:\n  string: '---'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '---'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"---\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"---\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "---",
+  "shape": 3,
+  "yaml": "detail:\n  string: '---'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"---\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "...",
+  "shape": 0,
+  "yaml": "detail:\n  string: '...'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"...\"\n}"
+ },
+ {
+  "text": "...",
+  "shape": 1,
+  "yaml": "detail:\n  string: '...'\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"...\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "...",
+  "shape": 2,
+  "yaml": "detail:\n  string: '...'\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: '...'\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"...\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"...\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "...",
+  "shape": 3,
+  "yaml": "detail:\n  string: '...'\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"...\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "shape": 0,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "shape": 1,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n  code: user_not_found\ncode:\n  string: user_not_found\n  code: user_not_found\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\",\n    \"code\": \"user_not_found\"\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "shape": 2,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n  code: token_not_valid\ncode:\n  string: token_not_valid\n  code: token_not_valid\nmessages:\n- token_class:\n    string: AccessToken\n    code: token_not_valid\n  token_type:\n    string: access\n    code: token_not_valid\n  message:\n    string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n      yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n    code: token_not_valid\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\",\n    \"code\": \"token_not_valid\",\n    \"messages\": [\n        {\n            \"token_class\": \"AccessToken\",\n            \"token_type\": \"access\",\n            \"message\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"\n        }\n    ]\n}"
+ },
+ {
+  "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "shape": 3,
+  "yaml": "detail:\n  string: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\n  code: permission_denied\nimpersonation_invalid:\n  string: 'True'\n  code: permission_denied\n",
+  "json": "{\n    \"detail\": \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\",\n    \"impersonation_invalid\": \"True\"\n}"
+ },
+ {
+  "text": "Non trovato.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Non trovato.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Non trovato.\"\n}"
+ },
+ {
+  "text": "Impossibile soddisfare l'header \"Accept\" presente nella richiesta.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Impossibile soddisfare l'header \"Accept\" presente nella richiesta.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Impossibile soddisfare l'header \\\"Accept\\\" presente nella richiesta.\"\n}"
+ },
+ {
+  "text": "Metodo \"POST\" non consentito",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metodo \"POST\" non consentito\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metodo \\\"POST\\\" non consentito\"\n}"
+ },
+ {
+  "text": "Metodo \"DELETE\" non consentito",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metodo \"DELETE\" non consentito\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metodo \\\"DELETE\\\" non consentito\"\n}"
+ },
+ {
+  "text": "Non sono state immesse le credenziali di autenticazione.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Non sono state immesse le credenziali di autenticazione.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Non sono state immesse le credenziali di autenticazione.\"\n}"
+ },
+ {
+  "text": "Non hai l'autorizzazione per eseguire questa azione.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Non hai l'autorizzazione per eseguire questa azione.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Non hai l'autorizzazione per eseguire questa azione.\"\n}"
+ },
+ {
+  "text": "غير موجود.",
+  "shape": 0,
+  "yaml": "detail:\n  string: غير موجود.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"غير موجود.\"\n}"
+ },
+ {
+  "text": "تعذر تلبية ترويسة Accept في الطلب.",
+  "shape": 0,
+  "yaml": "detail:\n  string: تعذر تلبية ترويسة Accept في الطلب.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"تعذر تلبية ترويسة Accept في الطلب.\"\n}"
+ },
+ {
+  "text": "طريقة \"POST\" غير مسموح بها.",
+  "shape": 0,
+  "yaml": "detail:\n  string: طريقة \"POST\" غير مسموح بها.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"طريقة \\\"POST\\\" غير مسموح بها.\"\n}"
+ },
+ {
+  "text": "طريقة \"DELETE\" غير مسموح بها.",
+  "shape": 0,
+  "yaml": "detail:\n  string: طريقة \"DELETE\" غير مسموح بها.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"طريقة \\\"DELETE\\\" غير مسموح بها.\"\n}"
+ },
+ {
+  "text": "لم يتم تزويد بيانات الدخول.",
+  "shape": 0,
+  "yaml": "detail:\n  string: لم يتم تزويد بيانات الدخول.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"لم يتم تزويد بيانات الدخول.\"\n}"
+ },
+ {
+  "text": "ليس لديك صلاحية للقيام بهذا الإجراء.",
+  "shape": 0,
+  "yaml": "detail:\n  string: ليس لديك صلاحية للقيام بهذا الإجراء.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"ليس لديك صلاحية للقيام بهذا الإجراء.\"\n}"
+ },
+ {
+  "text": "Tapılmadı.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Tapılmadı.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Tapılmadı.\"\n}"
+ },
+ {
+  "text": "İstəyin Accept başlığını qane etmək mümkün olmadı.",
+  "shape": 0,
+  "yaml": "detail:\n  string: İstəyin Accept başlığını qane etmək mümkün olmadı.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"İstəyin Accept başlığını qane etmək mümkün olmadı.\"\n}"
+ },
+ {
+  "text": "\"POST\" yöntəminə icazə verilmir.",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"POST\" yöntəminə icazə verilmir.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"POST\\\" yöntəminə icazə verilmir.\"\n}"
+ },
+ {
+  "text": "\"DELETE\" yöntəminə icazə verilmir.",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"DELETE\" yöntəminə icazə verilmir.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"DELETE\\\" yöntəminə icazə verilmir.\"\n}"
+ },
+ {
+  "text": "Təsdiqləmə məlumatları təchiz edilməyib.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Təsdiqləmə məlumatları təchiz edilməyib.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Təsdiqləmə məlumatları təchiz edilməyib.\"\n}"
+ },
+ {
+  "text": "Bu əməliyyat üçün icazəniz yoxdur.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Bu əməliyyat üçün icazəniz yoxdur.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Bu əməliyyat üçün icazəniz yoxdur.\"\n}"
+ },
+ {
+  "text": "Обектът не е намерен.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Обектът не е намерен.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Обектът не е намерен.\"\n}"
+ },
+ {
+  "text": "Не може да бъде удовлетворен Accept header.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Не може да бъде удовлетворен Accept header.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Не може да бъде удовлетворен Accept header.\"\n}"
+ },
+ {
+  "text": "Метод \"POST\" не е позволен.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Метод \"POST\" не е позволен.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Метод \\\"POST\\\" не е позволен.\"\n}"
+ },
+ {
+  "text": "Метод \"DELETE\" не е позволен.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Метод \"DELETE\" не е позволен.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Метод \\\"DELETE\\\" не е позволен.\"\n}"
+ },
+ {
+  "text": "Носители на удостоверение не са предоставени.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Носители на удостоверение не са предоставени.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Носители на удостоверение не са предоставени.\"\n}"
+ },
+ {
+  "text": "Нямате права да се направи това действие.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Нямате права да се направи това действие.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Нямате права да се направи това действие.\"\n}"
+ },
+ {
+  "text": "No trobat.",
+  "shape": 0,
+  "yaml": "detail:\n  string: No trobat.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"No trobat.\"\n}"
+ },
+ {
+  "text": "No s'ha pogut satisfer l'Accept header de la petició.",
+  "shape": 0,
+  "yaml": "detail:\n  string: No s'ha pogut satisfer l'Accept header de la petició.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"No s'ha pogut satisfer l'Accept header de la petició.\"\n}"
+ },
+ {
+  "text": "Mètode \"POST\" no permès.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Mètode \"POST\" no permès.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Mètode \\\"POST\\\" no permès.\"\n}"
+ },
+ {
+  "text": "Mètode \"DELETE\" no permès.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Mètode \"DELETE\" no permès.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Mètode \\\"DELETE\\\" no permès.\"\n}"
+ },
+ {
+  "text": "Credencials d'autenticació no disponibles.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Credencials d'autenticació no disponibles.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Credencials d'autenticació no disponibles.\"\n}"
+ },
+ {
+  "text": "No té permisos per realitzar aquesta acció.",
+  "shape": 0,
+  "yaml": "detail:\n  string: No té permisos per realitzar aquesta acció.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"No té permisos per realitzar aquesta acció.\"\n}"
+ },
+ {
+  "text": "Nenalezeno.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nenalezeno.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nenalezeno.\"\n}"
+ },
+ {
+  "text": "Nelze vyhovět požadavku v hlavičce Accept.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nelze vyhovět požadavku v hlavičce Accept.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nelze vyhovět požadavku v hlavičce Accept.\"\n}"
+ },
+ {
+  "text": "Metoda \"POST\" není povolena.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoda \"POST\" není povolena.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoda \\\"POST\\\" není povolena.\"\n}"
+ },
+ {
+  "text": "Metoda \"DELETE\" není povolena.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoda \"DELETE\" není povolena.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoda \\\"DELETE\\\" není povolena.\"\n}"
+ },
+ {
+  "text": "Nebyly zadány přihlašovací údaje.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nebyly zadány přihlašovací údaje.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nebyly zadány přihlašovací údaje.\"\n}"
+ },
+ {
+  "text": "K této akci nemáte oprávnění.",
+  "shape": 0,
+  "yaml": "detail:\n  string: K této akci nemáte oprávnění.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"K této akci nemáte oprávnění.\"\n}"
+ },
+ {
+  "text": "Ikke fundet.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Ikke fundet.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Ikke fundet.\"\n}"
+ },
+ {
+  "text": "Kunne ikke efterkomme forespørgslens Accept header.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Kunne ikke efterkomme forespørgslens Accept header.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Kunne ikke efterkomme forespørgslens Accept header.\"\n}"
+ },
+ {
+  "text": "Metoden \"POST\" er ikke tilladt.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoden \"POST\" er ikke tilladt.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoden \\\"POST\\\" er ikke tilladt.\"\n}"
+ },
+ {
+  "text": "Metoden \"DELETE\" er ikke tilladt.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoden \"DELETE\" er ikke tilladt.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoden \\\"DELETE\\\" er ikke tilladt.\"\n}"
+ },
+ {
+  "text": "Legitimation til autentificering blev ikke angivet.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Legitimation til autentificering blev ikke angivet.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Legitimation til autentificering blev ikke angivet.\"\n}"
+ },
+ {
+  "text": "Du har ikke lov til at udføre denne handling.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Du har ikke lov til at udføre denne handling.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Du har ikke lov til at udføre denne handling.\"\n}"
+ },
+ {
+  "text": "Nicht gefunden.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nicht gefunden.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nicht gefunden.\"\n}"
+ },
+ {
+  "text": "Kann die Accept Kopfzeile der Anfrage nicht erfüllen.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Kann die Accept Kopfzeile der Anfrage nicht erfüllen.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Kann die Accept Kopfzeile der Anfrage nicht erfüllen.\"\n}"
+ },
+ {
+  "text": "Methode \"POST\" nicht erlaubt.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Methode \"POST\" nicht erlaubt.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Methode \\\"POST\\\" nicht erlaubt.\"\n}"
+ },
+ {
+  "text": "Methode \"DELETE\" nicht erlaubt.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Methode \"DELETE\" nicht erlaubt.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Methode \\\"DELETE\\\" nicht erlaubt.\"\n}"
+ },
+ {
+  "text": "Anmeldedaten fehlen.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Anmeldedaten fehlen.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Anmeldedaten fehlen.\"\n}"
+ },
+ {
+  "text": "Sie sind nicht berechtigt, diese Aktion durchzuführen.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Sie sind nicht berechtigt, diese Aktion durchzuführen.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Sie sind nicht berechtigt, diese Aktion durchzuführen.\"\n}"
+ },
+ {
+  "text": "Δε βρέθηκε.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Δε βρέθηκε.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Δε βρέθηκε.\"\n}"
+ },
+ {
+  "text": "Δεν ήταν δυνατή η ικανοποίηση της επικεφαλίδας Accept της αίτησης.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Δεν ήταν δυνατή η ικανοποίηση της επικεφαλίδας Accept της αίτησης.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Δεν ήταν δυνατή η ικανοποίηση της επικεφαλίδας Accept της αίτησης.\"\n}"
+ },
+ {
+  "text": "Η μέθοδος \"POST\" δεν επιτρέπεται.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Η μέθοδος \"POST\" δεν επιτρέπεται.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Η μέθοδος \\\"POST\\\" δεν επιτρέπεται.\"\n}"
+ },
+ {
+  "text": "Η μέθοδος \"DELETE\" δεν επιτρέπεται.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Η μέθοδος \"DELETE\" δεν επιτρέπεται.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Η μέθοδος \\\"DELETE\\\" δεν επιτρέπεται.\"\n}"
+ },
+ {
+  "text": "Δεν δόθηκαν διαπιστευτήρια.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Δεν δόθηκαν διαπιστευτήρια.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Δεν δόθηκαν διαπιστευτήρια.\"\n}"
+ },
+ {
+  "text": "Δεν έχετε δικαίωματα για αυτή την ενέργεια.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Δεν έχετε δικαίωματα για αυτή την ενέργεια.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Δεν έχετε δικαίωματα για αυτή την ενέργεια.\"\n}"
+ },
+ {
+  "text": "Not found.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Not found.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Not found.\"\n}"
+ },
+ {
+  "text": "Could not satisfy the request Accept header.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Could not satisfy the request Accept header.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Could not satisfy the request Accept header.\"\n}"
+ },
+ {
+  "text": "Method \"POST\" not allowed.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Method \"POST\" not allowed.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Method \\\"POST\\\" not allowed.\"\n}"
+ },
+ {
+  "text": "Method \"DELETE\" not allowed.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Method \"DELETE\" not allowed.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Method \\\"DELETE\\\" not allowed.\"\n}"
+ },
+ {
+  "text": "Authentication credentials were not provided.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Authentication credentials were not provided.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Authentication credentials were not provided.\"\n}"
+ },
+ {
+  "text": "You do not have permission to perform this action.",
+  "shape": 0,
+  "yaml": "detail:\n  string: You do not have permission to perform this action.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"You do not have permission to perform this action.\"\n}"
+ },
+ {
+  "text": "No encontrado.",
+  "shape": 0,
+  "yaml": "detail:\n  string: No encontrado.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"No encontrado.\"\n}"
+ },
+ {
+  "text": "No se ha podido satisfacer la solicitud de cabecera de Accept.",
+  "shape": 0,
+  "yaml": "detail:\n  string: No se ha podido satisfacer la solicitud de cabecera de Accept.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"No se ha podido satisfacer la solicitud de cabecera de Accept.\"\n}"
+ },
+ {
+  "text": "Método \"POST\" no permitido.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Método \"POST\" no permitido.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Método \\\"POST\\\" no permitido.\"\n}"
+ },
+ {
+  "text": "Método \"DELETE\" no permitido.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Método \"DELETE\" no permitido.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Método \\\"DELETE\\\" no permitido.\"\n}"
+ },
+ {
+  "text": "Las credenciales de autenticación no se proveyeron.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Las credenciales de autenticación no se proveyeron.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Las credenciales de autenticación no se proveyeron.\"\n}"
+ },
+ {
+  "text": "Usted no tiene permiso para realizar esta acción.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Usted no tiene permiso para realizar esta acción.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Usted no tiene permiso para realizar esta acción.\"\n}"
+ },
+ {
+  "text": "Ei leidnud.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Ei leidnud.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Ei leidnud.\"\n}"
+ },
+ {
+  "text": "Päringu Accept-päist ei suutnud täita.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Päringu Accept-päist ei suutnud täita.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Päringu Accept-päist ei suutnud täita.\"\n}"
+ },
+ {
+  "text": "Meetod \"POST\" pole lubatud.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Meetod \"POST\" pole lubatud.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Meetod \\\"POST\\\" pole lubatud.\"\n}"
+ },
+ {
+  "text": "Meetod \"DELETE\" pole lubatud.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Meetod \"DELETE\" pole lubatud.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Meetod \\\"DELETE\\\" pole lubatud.\"\n}"
+ },
+ {
+  "text": "Autentimistunnus on esitamata.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Autentimistunnus on esitamata.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Autentimistunnus on esitamata.\"\n}"
+ },
+ {
+  "text": "Teil puuduvad piisavad õigused selle tegevuse teostamiseks.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Teil puuduvad piisavad õigused selle tegevuse teostamiseks.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Teil puuduvad piisavad õigused selle tegevuse teostamiseks.\"\n}"
+ },
+ {
+  "text": "یافت نشد.",
+  "shape": 0,
+  "yaml": "detail:\n  string: یافت نشد.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"یافت نشد.\"\n}"
+ },
+ {
+  "text": "نوع محتوای درخواستی در هدر قابل قبول نیست.",
+  "shape": 0,
+  "yaml": "detail:\n  string: نوع محتوای درخواستی در هدر قابل قبول نیست.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"نوع محتوای درخواستی در هدر قابل قبول نیست.\"\n}"
+ },
+ {
+  "text": "متد POST مجاز نیست.",
+  "shape": 0,
+  "yaml": "detail:\n  string: متد POST مجاز نیست.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"متد POST مجاز نیست.\"\n}"
+ },
+ {
+  "text": "متد DELETE مجاز نیست.",
+  "shape": 0,
+  "yaml": "detail:\n  string: متد DELETE مجاز نیست.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"متد DELETE مجاز نیست.\"\n}"
+ },
+ {
+  "text": "اطلاعات برای اعتبارسنجی ارسال نشده است.",
+  "shape": 0,
+  "yaml": "detail:\n  string: اطلاعات برای اعتبارسنجی ارسال نشده است.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"اطلاعات برای اعتبارسنجی ارسال نشده است.\"\n}"
+ },
+ {
+  "text": "شما اجازه انجام این دستور را ندارید.",
+  "shape": 0,
+  "yaml": "detail:\n  string: شما اجازه انجام این دستور را ندارید.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"شما اجازه انجام این دستور را ندارید.\"\n}"
+ },
+ {
+  "text": "Ei löydy.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Ei löydy.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Ei löydy.\"\n}"
+ },
+ {
+  "text": "Ei voitu vastata pyynnön Accept-otsakkeen mukaisesti.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Ei voitu vastata pyynnön Accept-otsakkeen mukaisesti.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Ei voitu vastata pyynnön Accept-otsakkeen mukaisesti.\"\n}"
+ },
+ {
+  "text": "Metodi \"POST\" ei ole sallittu.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metodi \"POST\" ei ole sallittu.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metodi \\\"POST\\\" ei ole sallittu.\"\n}"
+ },
+ {
+  "text": "Metodi \"DELETE\" ei ole sallittu.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metodi \"DELETE\" ei ole sallittu.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metodi \\\"DELETE\\\" ei ole sallittu.\"\n}"
+ },
+ {
+  "text": "Autentikaatiotunnuksia ei annettu.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Autentikaatiotunnuksia ei annettu.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Autentikaatiotunnuksia ei annettu.\"\n}"
+ },
+ {
+  "text": "Sinulla ei ole oikeutta suorittaa tätä toimintoa.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Sinulla ei ole oikeutta suorittaa tätä toimintoa.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Sinulla ei ole oikeutta suorittaa tätä toimintoa.\"\n}"
+ },
+ {
+  "text": "Non trouvé.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Non trouvé.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Non trouvé.\"\n}"
+ },
+ {
+  "text": "L'en-tête « Accept » n'a pas pu être satisfaite.",
+  "shape": 0,
+  "yaml": "detail:\n  string: L'en-tête « Accept » n'a pas pu être satisfaite.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"L'en-tête « Accept » n'a pas pu être satisfaite.\"\n}"
+ },
+ {
+  "text": "Méthode « POST » non autorisée.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Méthode « POST » non autorisée.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Méthode « POST » non autorisée.\"\n}"
+ },
+ {
+  "text": "Méthode « DELETE » non autorisée.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Méthode « DELETE » non autorisée.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Méthode « DELETE » non autorisée.\"\n}"
+ },
+ {
+  "text": "Informations d'authentification non fournies.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Informations d'authentification non fournies.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Informations d'authentification non fournies.\"\n}"
+ },
+ {
+  "text": "Vous n'avez pas la permission d'effectuer cette action.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Vous n'avez pas la permission d'effectuer cette action.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Vous n'avez pas la permission d'effectuer cette action.\"\n}"
+ },
+ {
+  "text": "Nem található.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nem található.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nem található.\"\n}"
+ },
+ {
+  "text": "A kérés Accept fejlécét nem lehetett teljesíteni.",
+  "shape": 0,
+  "yaml": "detail:\n  string: A kérés Accept fejlécét nem lehetett teljesíteni.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"A kérés Accept fejlécét nem lehetett teljesíteni.\"\n}"
+ },
+ {
+  "text": "A \"POST\" metódus nem megengedett.",
+  "shape": 0,
+  "yaml": "detail:\n  string: A \"POST\" metódus nem megengedett.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"A \\\"POST\\\" metódus nem megengedett.\"\n}"
+ },
+ {
+  "text": "A \"DELETE\" metódus nem megengedett.",
+  "shape": 0,
+  "yaml": "detail:\n  string: A \"DELETE\" metódus nem megengedett.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"A \\\"DELETE\\\" metódus nem megengedett.\"\n}"
+ },
+ {
+  "text": "Nem voltak megadva azonosítók.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nem voltak megadva azonosítók.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nem voltak megadva azonosítók.\"\n}"
+ },
+ {
+  "text": "Nincs jogosultsága a művelet végrehajtásához.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nincs jogosultsága a művelet végrehajtásához.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nincs jogosultsága a művelet végrehajtásához.\"\n}"
+ },
+ {
+  "text": "Չի գտնվել։",
+  "shape": 0,
+  "yaml": "detail:\n  string: Չի գտնվել։\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Չի գտնվել։\"\n}"
+ },
+ {
+  "text": "Չհաջողվեց բավարարել հարցման Ընդունել վերնագիրը:",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'Չհաջողվեց բավարարել հարցման Ընդունել վերնագիրը:'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Չհաջողվեց բավարարել հարցման Ընդունել վերնագիրը:\"\n}"
+ },
+ {
+  "text": "\"POST\" մեթոդը թույլատրված չէ:",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"POST\" մեթոդը թույլատրված չէ:'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"POST\\\" մեթոդը թույլատրված չէ:\"\n}"
+ },
+ {
+  "text": "\"DELETE\" մեթոդը թույլատրված չէ:",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"DELETE\" մեթոդը թույլատրված չէ:'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"DELETE\\\" մեթոդը թույլատրված չէ:\"\n}"
+ },
+ {
+  "text": "Նույնականացման տվյալները տրամադրված չեն:",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'Նույնականացման տվյալները տրամադրված չեն:'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Նույնականացման տվյալները տրամադրված չեն:\"\n}"
+ },
+ {
+  "text": "Այս գործողությունը կատարելու թույլտվություն չունեք:",
+  "shape": 0,
+  "yaml": "detail:\n  string: 'Այս գործողությունը կատարելու թույլտվություն չունեք:'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Այս գործողությունը կատարելու թույլտվություն չունեք:\"\n}"
+ },
+ {
+  "text": "Data tidak ditemukan.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Data tidak ditemukan.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Data tidak ditemukan.\"\n}"
+ },
+ {
+  "text": "Permintaan dengan header Accept ini tidak dapat dipenuhi.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Permintaan dengan header Accept ini tidak dapat dipenuhi.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Permintaan dengan header Accept ini tidak dapat dipenuhi.\"\n}"
+ },
+ {
+  "text": "Data autentikasi tidak diberikan.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Data autentikasi tidak diberikan.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Data autentikasi tidak diberikan.\"\n}"
+ },
+ {
+  "text": "Anda tidak memiliki izin untuk melakukan tindakan ini.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Anda tidak memiliki izin untuk melakukan tindakan ini.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Anda tidak memiliki izin untuk melakukan tindakan ini.\"\n}"
+ },
+ {
+  "text": "見つかりませんでした。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 見つかりませんでした。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"見つかりませんでした。\"\n}"
+ },
+ {
+  "text": "リクエストのAcceptヘッダを満たすことができませんでした。",
+  "shape": 0,
+  "yaml": "detail:\n  string: リクエストのAcceptヘッダを満たすことができませんでした。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"リクエストのAcceptヘッダを満たすことができませんでした。\"\n}"
+ },
+ {
+  "text": "メソッド \"POST\" は許されていません。",
+  "shape": 0,
+  "yaml": "detail:\n  string: メソッド \"POST\" は許されていません。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"メソッド \\\"POST\\\" は許されていません。\"\n}"
+ },
+ {
+  "text": "メソッド \"DELETE\" は許されていません。",
+  "shape": 0,
+  "yaml": "detail:\n  string: メソッド \"DELETE\" は許されていません。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"メソッド \\\"DELETE\\\" は許されていません。\"\n}"
+ },
+ {
+  "text": "認証情報が含まれていません。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 認証情報が含まれていません。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"認証情報が含まれていません。\"\n}"
+ },
+ {
+  "text": "このアクションを実行する権限がありません。",
+  "shape": 0,
+  "yaml": "detail:\n  string: このアクションを実行する権限がありません。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"このアクションを実行する権限がありません。\"\n}"
+ },
+ {
+  "text": "Табылмады.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Табылмады.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Табылмады.\"\n}"
+ },
+ {
+  "text": "Сұраныстағы Accept тақырыбын қанағаттандыру мүмкін емес.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Сұраныстағы Accept тақырыбын қанағаттандыру мүмкін емес.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Сұраныстағы Accept тақырыбын қанағаттандыру мүмкін емес.\"\n}"
+ },
+ {
+  "text": "\"POST\" әдісіне рұқсат етілмейді.",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"POST\" әдісіне рұқсат етілмейді.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"POST\\\" әдісіне рұқсат етілмейді.\"\n}"
+ },
+ {
+  "text": "\"DELETE\" әдісіне рұқсат етілмейді.",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"DELETE\" әдісіне рұқсат етілмейді.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"DELETE\\\" әдісіне рұқсат етілмейді.\"\n}"
+ },
+ {
+  "text": "Аутентификация деректері берілмеген.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Аутентификация деректері берілмеген.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Аутентификация деректері берілмеген.\"\n}"
+ },
+ {
+  "text": "Бұл әрекетті орындауға рұқсатыңыз жоқ.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Бұл әрекетті орындауға рұқсатыңыз жоқ.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Бұл әрекетті орындауға рұқсатыңыз жоқ.\"\n}"
+ },
+ {
+  "text": "찾을 수 없습니다.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 찾을 수 없습니다.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"찾을 수 없습니다.\"\n}"
+ },
+ {
+  "text": "요청 Accept 헤더를 만족시킬 수 없습니다.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 요청 Accept 헤더를 만족시킬 수 없습니다.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"요청 Accept 헤더를 만족시킬 수 없습니다.\"\n}"
+ },
+ {
+  "text": "메서드 \"POST\"는 허용되지 않습니다.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 메서드 \"POST\"는 허용되지 않습니다.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"메서드 \\\"POST\\\"는 허용되지 않습니다.\"\n}"
+ },
+ {
+  "text": "메서드 \"DELETE\"는 허용되지 않습니다.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 메서드 \"DELETE\"는 허용되지 않습니다.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"메서드 \\\"DELETE\\\"는 허용되지 않습니다.\"\n}"
+ },
+ {
+  "text": "자격 인증 데이터가 제공되지 않았습니다.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 자격 인증 데이터가 제공되지 않았습니다.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"자격 인증 데이터가 제공되지 않았습니다.\"\n}"
+ },
+ {
+  "text": "이 작업을 수행할 권한이 없습니다.",
+  "shape": 0,
+  "yaml": "detail:\n  string: 이 작업을 수행할 권한이 없습니다.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"이 작업을 수행할 권한이 없습니다.\"\n}"
+ },
+ {
+  "text": "Nerasta.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nerasta.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nerasta.\"\n}"
+ },
+ {
+  "text": "Nepavyko patenkinti užklausos Accept antraštės.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nepavyko patenkinti užklausos Accept antraštės.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nepavyko patenkinti užklausos Accept antraštės.\"\n}"
+ },
+ {
+  "text": "Metodas \"POST\" yra neleidžiamas.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metodas \"POST\" yra neleidžiamas.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metodas \\\"POST\\\" yra neleidžiamas.\"\n}"
+ },
+ {
+  "text": "Metodas \"DELETE\" yra neleidžiamas.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metodas \"DELETE\" yra neleidžiamas.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metodas \\\"DELETE\\\" yra neleidžiamas.\"\n}"
+ },
+ {
+  "text": "Autentifikacijos duomenys nesuteikti.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Autentifikacijos duomenys nesuteikti.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Autentifikacijos duomenys nesuteikti.\"\n}"
+ },
+ {
+  "text": "Nav atrasts.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nav atrasts.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nav atrasts.\"\n}"
+ },
+ {
+  "text": "Nevarēja apmierināt pieprasījuma Accept header.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nevarēja apmierināt pieprasījuma Accept header.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nevarēja apmierināt pieprasījuma Accept header.\"\n}"
+ },
+ {
+  "text": "Metode \"POST\" nav atļauta.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metode \"POST\" nav atļauta.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metode \\\"POST\\\" nav atļauta.\"\n}"
+ },
+ {
+  "text": "Metode \"DELETE\" nav atļauta.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metode \"DELETE\" nav atļauta.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metode \\\"DELETE\\\" nav atļauta.\"\n}"
+ },
+ {
+  "text": "Netika nodrošināti autorizācijas parametri.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Netika nodrošināti autorizācijas parametri.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Netika nodrošināti autorizācijas parametri.\"\n}"
+ },
+ {
+  "text": "Tev nav tiesību veikt šo darbību.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Tev nav tiesību veikt šo darbību.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Tev nav tiesību veikt šo darbību.\"\n}"
+ },
+ {
+  "text": "Не е пронајдено ништо.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Не е пронајдено ништо.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Не е пронајдено ништо.\"\n}"
+ },
+ {
+  "text": "Не може да се исполни барањето на Accept header-от.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Не може да се исполни барањето на Accept header-от.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Не може да се исполни барањето на Accept header-от.\"\n}"
+ },
+ {
+  "text": "Методата \"POST\" не е дозволена.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Методата \"POST\" не е дозволена.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Методата \\\"POST\\\" не е дозволена.\"\n}"
+ },
+ {
+  "text": "Методата \"DELETE\" не е дозволена.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Методата \"DELETE\" не е дозволена.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Методата \\\"DELETE\\\" не е дозволена.\"\n}"
+ },
+ {
+  "text": "Не се внесени податоци за најава.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Не се внесени податоци за најава.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Не се внесени податоци за најава.\"\n}"
+ },
+ {
+  "text": "Немате дозвола да го сторите ова.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Немате дозвола да го сторите ова.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Немате дозвола да го сторите ова.\"\n}"
+ },
+ {
+  "text": "Ikke funnet.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Ikke funnet.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Ikke funnet.\"\n}"
+ },
+ {
+  "text": "Kunne ikke tilfredsstille request Accept header.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Kunne ikke tilfredsstille request Accept header.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Kunne ikke tilfredsstille request Accept header.\"\n}"
+ },
+ {
+  "text": "Metoden \"POST\" ikke gyldig.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoden \"POST\" ikke gyldig.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoden \\\"POST\\\" ikke gyldig.\"\n}"
+ },
+ {
+  "text": "Metoden \"DELETE\" ikke gyldig.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoden \"DELETE\" ikke gyldig.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoden \\\"DELETE\\\" ikke gyldig.\"\n}"
+ },
+ {
+  "text": "Manglende autentiseringsinformasjon.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Manglende autentiseringsinformasjon.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Manglende autentiseringsinformasjon.\"\n}"
+ },
+ {
+  "text": "Du har ikke tilgang til å utføre denne handlingen.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Du har ikke tilgang til å utføre denne handlingen.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Du har ikke tilgang til å utføre denne handlingen.\"\n}"
+ },
+ {
+  "text": "Niet gevonden.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Niet gevonden.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Niet gevonden.\"\n}"
+ },
+ {
+  "text": "Kan niet voldoen aan de opgegeven Accept header.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Kan niet voldoen aan de opgegeven Accept header.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Kan niet voldoen aan de opgegeven Accept header.\"\n}"
+ },
+ {
+  "text": "Methode \"POST\" niet toegestaan.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Methode \"POST\" niet toegestaan.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Methode \\\"POST\\\" niet toegestaan.\"\n}"
+ },
+ {
+  "text": "Methode \"DELETE\" niet toegestaan.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Methode \"DELETE\" niet toegestaan.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Methode \\\"DELETE\\\" niet toegestaan.\"\n}"
+ },
+ {
+  "text": "Authenticatiegegevens zijn niet opgegeven.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Authenticatiegegevens zijn niet opgegeven.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Authenticatiegegevens zijn niet opgegeven.\"\n}"
+ },
+ {
+  "text": "Je hebt geen toestemming om deze actie uit te voeren.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Je hebt geen toestemming om deze actie uit te voeren.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Je hebt geen toestemming om deze actie uit te voeren.\"\n}"
+ },
+ {
+  "text": "Nie znaleziono.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nie znaleziono.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nie znaleziono.\"\n}"
+ },
+ {
+  "text": "Nie można zaspokoić nagłówka Accept żądania.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nie można zaspokoić nagłówka Accept żądania.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nie można zaspokoić nagłówka Accept żądania.\"\n}"
+ },
+ {
+  "text": "Niedozwolona metoda \"POST\".",
+  "shape": 0,
+  "yaml": "detail:\n  string: Niedozwolona metoda \"POST\".\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Niedozwolona metoda \\\"POST\\\".\"\n}"
+ },
+ {
+  "text": "Niedozwolona metoda \"DELETE\".",
+  "shape": 0,
+  "yaml": "detail:\n  string: Niedozwolona metoda \"DELETE\".\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Niedozwolona metoda \\\"DELETE\\\".\"\n}"
+ },
+ {
+  "text": "Nie podano danych uwierzytelniających.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nie podano danych uwierzytelniających.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nie podano danych uwierzytelniających.\"\n}"
+ },
+ {
+  "text": "Nie masz uprawnień, by wykonać tę czynność.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nie masz uprawnień, by wykonać tę czynność.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nie masz uprawnień, by wykonać tę czynność.\"\n}"
+ },
+ {
+  "text": "Não encontrado.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Não encontrado.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Não encontrado.\"\n}"
+ },
+ {
+  "text": "Não foi possível satisfazer a requisição do cabeçalho Accept.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Não foi possível satisfazer a requisição do cabeçalho Accept.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Não foi possível satisfazer a requisição do cabeçalho Accept.\"\n}"
+ },
+ {
+  "text": "Método \"POST\" não é permitido.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Método \"POST\" não é permitido.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Método \\\"POST\\\" não é permitido.\"\n}"
+ },
+ {
+  "text": "Método \"DELETE\" não é permitido.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Método \"DELETE\" não é permitido.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Método \\\"DELETE\\\" não é permitido.\"\n}"
+ },
+ {
+  "text": "As credenciais de autenticação não foram fornecidas.",
+  "shape": 0,
+  "yaml": "detail:\n  string: As credenciais de autenticação não foram fornecidas.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"As credenciais de autenticação não foram fornecidas.\"\n}"
+ },
+ {
+  "text": "Você não tem permissão para executar essa ação.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Você não tem permissão para executar essa ação.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Você não tem permissão para executar essa ação.\"\n}"
+ },
+ {
+  "text": "Nu a fost găsit(ă).",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nu a fost găsit(ă).\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nu a fost găsit(ă).\"\n}"
+ },
+ {
+  "text": "Antetul Accept al cererii nu a putut fi îndeplinit.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Antetul Accept al cererii nu a putut fi îndeplinit.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Antetul Accept al cererii nu a putut fi îndeplinit.\"\n}"
+ },
+ {
+  "text": "Metoda \"POST\" nu este permisa.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoda \"POST\" nu este permisa.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoda \\\"POST\\\" nu este permisa.\"\n}"
+ },
+ {
+  "text": "Metoda \"DELETE\" nu este permisa.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoda \"DELETE\" nu este permisa.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoda \\\"DELETE\\\" nu este permisa.\"\n}"
+ },
+ {
+  "text": "Datele de autentificare nu au fost furnizate.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Datele de autentificare nu au fost furnizate.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Datele de autentificare nu au fost furnizate.\"\n}"
+ },
+ {
+  "text": "Nu aveți permisiunea de a efectua această acțiune.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nu aveți permisiunea de a efectua această acțiune.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nu aveți permisiunea de a efectua această acțiune.\"\n}"
+ },
+ {
+  "text": "Страница не найдена.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Страница не найдена.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Страница не найдена.\"\n}"
+ },
+ {
+  "text": "Невозможно удовлетворить \"Accept\" заголовок запроса.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Невозможно удовлетворить \"Accept\" заголовок запроса.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Невозможно удовлетворить \\\"Accept\\\" заголовок запроса.\"\n}"
+ },
+ {
+  "text": "Метод \"POST\" не разрешен.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Метод \"POST\" не разрешен.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Метод \\\"POST\\\" не разрешен.\"\n}"
+ },
+ {
+  "text": "Метод \"DELETE\" не разрешен.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Метод \"DELETE\" не разрешен.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Метод \\\"DELETE\\\" не разрешен.\"\n}"
+ },
+ {
+  "text": "Учетные данные не были предоставлены.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Учетные данные не были предоставлены.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Учетные данные не были предоставлены.\"\n}"
+ },
+ {
+  "text": "У вас недостаточно прав для выполнения данного действия.",
+  "shape": 0,
+  "yaml": "detail:\n  string: У вас недостаточно прав для выполнения данного действия.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"У вас недостаточно прав для выполнения данного действия.\"\n}"
+ },
+ {
+  "text": "Nebolo nájdené.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nebolo nájdené.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nebolo nájdené.\"\n}"
+ },
+ {
+  "text": "Nie je možné vyhovieť požiadavku v hlavičke \"Accept\".",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nie je možné vyhovieť požiadavku v hlavičke \"Accept\".\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nie je možné vyhovieť požiadavku v hlavičke \\\"Accept\\\".\"\n}"
+ },
+ {
+  "text": "Metóda \"POST\" nie je povolená.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metóda \"POST\" nie je povolená.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metóda \\\"POST\\\" nie je povolená.\"\n}"
+ },
+ {
+  "text": "Metóda \"DELETE\" nie je povolená.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metóda \"DELETE\" nie je povolená.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metóda \\\"DELETE\\\" nie je povolená.\"\n}"
+ },
+ {
+  "text": "Prihlasovacie údaje neboli zadané.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Prihlasovacie údaje neboli zadané.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Prihlasovacie údaje neboli zadané.\"\n}"
+ },
+ {
+  "text": "K danej akcii nemáte oprávnenie.",
+  "shape": 0,
+  "yaml": "detail:\n  string: K danej akcii nemáte oprávnenie.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"K danej akcii nemáte oprávnenie.\"\n}"
+ },
+ {
+  "text": "Ni najdeno",
+  "shape": 0,
+  "yaml": "detail:\n  string: Ni najdeno\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Ni najdeno\"\n}"
+ },
+ {
+  "text": "Ni bilo mogoče zagotoviti zaglavja Accept zahtevka.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Ni bilo mogoče zagotoviti zaglavja Accept zahtevka.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Ni bilo mogoče zagotoviti zaglavja Accept zahtevka.\"\n}"
+ },
+ {
+  "text": "Metoda \"POST\" ni dovoljena",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoda \"POST\" ni dovoljena\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoda \\\"POST\\\" ni dovoljena\"\n}"
+ },
+ {
+  "text": "Metoda \"DELETE\" ni dovoljena",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoda \"DELETE\" ni dovoljena\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoda \\\"DELETE\\\" ni dovoljena\"\n}"
+ },
+ {
+  "text": "Avtentikacijski podatki niso bili podani.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Avtentikacijski podatki niso bili podani.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Avtentikacijski podatki niso bili podani.\"\n}"
+ },
+ {
+  "text": "Nimate dovoljenj za izvedbo te akcije.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Nimate dovoljenj za izvedbo te akcije.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Nimate dovoljenj za izvedbo te akcije.\"\n}"
+ },
+ {
+  "text": "Hittades inte.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Hittades inte.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Hittades inte.\"\n}"
+ },
+ {
+  "text": "Kunde inte tillfredsställa förfrågans \"Accept\"-header.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Kunde inte tillfredsställa förfrågans \"Accept\"-header.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Kunde inte tillfredsställa förfrågans \\\"Accept\\\"-header.\"\n}"
+ },
+ {
+  "text": "Metoden \"POST\" tillåts inte.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoden \"POST\" tillåts inte.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoden \\\"POST\\\" tillåts inte.\"\n}"
+ },
+ {
+  "text": "Metoden \"DELETE\" tillåts inte.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Metoden \"DELETE\" tillåts inte.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Metoden \\\"DELETE\\\" tillåts inte.\"\n}"
+ },
+ {
+  "text": "Autentiseringsuppgifter ej tillhandahållna.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Autentiseringsuppgifter ej tillhandahållna.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Autentiseringsuppgifter ej tillhandahållna.\"\n}"
+ },
+ {
+  "text": "Du har inte tillåtelse att utföra denna förfrågan.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Du har inte tillåtelse att utföra denna förfrågan.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Du har inte tillåtelse att utföra denna förfrågan.\"\n}"
+ },
+ {
+  "text": "ไม่พบ",
+  "shape": 0,
+  "yaml": "detail:\n  string: ไม่พบ\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"ไม่พบ\"\n}"
+ },
+ {
+  "text": "ไม่ใช่อนุญาติให้ใช้ Method \"POST\"",
+  "shape": 0,
+  "yaml": "detail:\n  string: ไม่ใช่อนุญาติให้ใช้ Method \"POST\"\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"ไม่ใช่อนุญาติให้ใช้ Method \\\"POST\\\"\"\n}"
+ },
+ {
+  "text": "ไม่ใช่อนุญาติให้ใช้ Method \"DELETE\"",
+  "shape": 0,
+  "yaml": "detail:\n  string: ไม่ใช่อนุญาติให้ใช้ Method \"DELETE\"\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"ไม่ใช่อนุญาติให้ใช้ Method \\\"DELETE\\\"\"\n}"
+ },
+ {
+  "text": "ไม่พบข้อมูลการเข้าสู่ระบบ",
+  "shape": 0,
+  "yaml": "detail:\n  string: ไม่พบข้อมูลการเข้าสู่ระบบ\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"ไม่พบข้อมูลการเข้าสู่ระบบ\"\n}"
+ },
+ {
+  "text": "คุณไม่มีสิทธิ์ที่จะดำเนินการ",
+  "shape": 0,
+  "yaml": "detail:\n  string: คุณไม่มีสิทธิ์ที่จะดำเนินการ\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"คุณไม่มีสิทธิ์ที่จะดำเนินการ\"\n}"
+ },
+ {
+  "text": "Bulunamadı.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Bulunamadı.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Bulunamadı.\"\n}"
+ },
+ {
+  "text": "İsteğe ait Accept başlık bilgisi yanıt verilecek başlık bilgileri arasında değil.",
+  "shape": 0,
+  "yaml": "detail:\n  string: İsteğe ait Accept başlık bilgisi yanıt verilecek başlık bilgileri arasında\n    değil.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"İsteğe ait Accept başlık bilgisi yanıt verilecek başlık bilgileri arasında değil.\"\n}"
+ },
+ {
+  "text": "\"POST\" metoduna izin verilmiyor.",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"POST\" metoduna izin verilmiyor.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"POST\\\" metoduna izin verilmiyor.\"\n}"
+ },
+ {
+  "text": "\"DELETE\" metoduna izin verilmiyor.",
+  "shape": 0,
+  "yaml": "detail:\n  string: '\"DELETE\" metoduna izin verilmiyor.'\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"\\\"DELETE\\\" metoduna izin verilmiyor.\"\n}"
+ },
+ {
+  "text": "Giriş bilgileri verilmedi.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Giriş bilgileri verilmedi.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Giriş bilgileri verilmedi.\"\n}"
+ },
+ {
+  "text": "Bu işlemi yapmak için izniniz bulunmuyor.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Bu işlemi yapmak için izniniz bulunmuyor.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Bu işlemi yapmak için izniniz bulunmuyor.\"\n}"
+ },
+ {
+  "text": "Не знайдено.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Не знайдено.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Не знайдено.\"\n}"
+ },
+ {
+  "text": "Неможливо виконати запит заголовку Accept.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Неможливо виконати запит заголовку Accept.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Неможливо виконати запит заголовку Accept.\"\n}"
+ },
+ {
+  "text": "Метод \"POST\" не дозволений.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Метод \"POST\" не дозволений.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Метод \\\"POST\\\" не дозволений.\"\n}"
+ },
+ {
+  "text": "Метод \"DELETE\" не дозволений.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Метод \"DELETE\" не дозволений.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Метод \\\"DELETE\\\" не дозволений.\"\n}"
+ },
+ {
+  "text": "Реквізити перевірки достовірності не надані.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Реквізити перевірки достовірності не надані.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Реквізити перевірки достовірності не надані.\"\n}"
+ },
+ {
+  "text": "У вас нема дозволу робити цю дію.",
+  "shape": 0,
+  "yaml": "detail:\n  string: У вас нема дозволу робити цю дію.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"У вас нема дозволу робити цю дію.\"\n}"
+ },
+ {
+  "text": "Không tìm thấy.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Không tìm thấy.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Không tìm thấy.\"\n}"
+ },
+ {
+  "text": "Phương thức “POST” không được chấp nhận.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Phương thức “POST” không được chấp nhận.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Phương thức “POST” không được chấp nhận.\"\n}"
+ },
+ {
+  "text": "Phương thức “DELETE” không được chấp nhận.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Phương thức “DELETE” không được chấp nhận.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Phương thức “DELETE” không được chấp nhận.\"\n}"
+ },
+ {
+  "text": "Bạn không được cấp quyền để thực hiện hành động này.",
+  "shape": 0,
+  "yaml": "detail:\n  string: Bạn không được cấp quyền để thực hiện hành động này.\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"Bạn không được cấp quyền để thực hiện hành động này.\"\n}"
+ },
+ {
+  "text": "未找到。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 未找到。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"未找到。\"\n}"
+ },
+ {
+  "text": "无法满足Accept HTTP头的请求。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 无法满足Accept HTTP头的请求。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"无法满足Accept HTTP头的请求。\"\n}"
+ },
+ {
+  "text": "方法 “POST” 不被允许。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 方法 “POST” 不被允许。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"方法 “POST” 不被允许。\"\n}"
+ },
+ {
+  "text": "方法 “DELETE” 不被允许。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 方法 “DELETE” 不被允许。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"方法 “DELETE” 不被允许。\"\n}"
+ },
+ {
+  "text": "身份认证信息未提供。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 身份认证信息未提供。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"身份认证信息未提供。\"\n}"
+ },
+ {
+  "text": "您没有执行该操作的权限。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 您没有执行该操作的权限。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"您没有执行该操作的权限。\"\n}"
+ },
+ {
+  "text": "找不到資源。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 找不到資源。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"找不到資源。\"\n}"
+ },
+ {
+  "text": "不被允許的方法 \"POST\"。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 不被允許的方法 \"POST\"。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"不被允許的方法 \\\"POST\\\"。\"\n}"
+ },
+ {
+  "text": "不被允許的方法 \"DELETE\"。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 不被允許的方法 \"DELETE\"。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"不被允許的方法 \\\"DELETE\\\"。\"\n}"
+ },
+ {
+  "text": "你沒有執行此操作的權限。",
+  "shape": 0,
+  "yaml": "detail:\n  string: 你沒有執行此操作的權限。\n  code: some_code\n",
+  "json": "{\n    \"detail\": \"你沒有執行此操作的權限。\"\n}"
+ }
+]

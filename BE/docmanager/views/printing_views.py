@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils import translation
 from django.views.decorators.clickjacking import xframe_options_exempt
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 
 from rest_framework.decorators import permission_classes, api_view
 
@@ -31,8 +32,10 @@ from application.utils.printing import Puppeteer, PrintingService
 import base64
 
 from core.tasks import send_mail_async
+from docmanager.access import require_document_access
 from docmanager.models import Document
-from docmanager.views.utils import HasDocumentToken, HasBypassAuthorizationHeader, get_pdf_fields
+from docmanager.views.utils import HasBypassAuthorizationHeader, HasCompensationDocumentToken, \
+    HasCustomerInvoiceDocumentToken, HasInvoiceDocumentToken, HasMedicalAppointmentDocumentToken, get_pdf_fields
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +51,7 @@ def document_subscription(request, uid):
         # template = os.path.join(BASE_DIR, 'templates/document/application/subscription.html')
         logger.info('document_subscription {}'.format(uid))
         subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=uid)
+        require_document_access(request, subscription)
         filename = '[{}] Modulo di Iscrizione {}.pdf'.format(
             subscription.sport_association.denomination,
             subscription.associate.get_full_name())
@@ -64,6 +68,8 @@ def document_subscription(request, uid):
             # earlier instance cannot overwrite concurrent registration edits.
             subscription.save(update_fields=['document_pdf'])
         return response
+    except PermissionDenied:
+        raise
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
@@ -71,7 +77,7 @@ def document_subscription(request, uid):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 @xframe_options_exempt
 def document_subscription_preview(request):
 
@@ -86,7 +92,9 @@ def document_subscription_preview(request):
         # # return the pdf
         # return HttpResponse(res, content_type='application/pdf')
         puppeteer = Puppeteer()
-        rendered_status, rendered_pdf = puppeteer.pdf_from_url(url=full_url, headers={})
+        # The renderer opens the page as the requester.
+        rendered_status, rendered_pdf = puppeteer.pdf_from_url(
+            url=full_url, headers={'Authorization': request.headers.get('authorization')})
         # make sure the pdf is rendered
         if not rendered_status:
             return Response(data={
@@ -198,6 +206,7 @@ def document_subscription_view(request, uid):
 
     logger.info('document_subscription_view {}'.format(uid))
     subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=uid)
+    require_document_access(request, subscription)
     payment_data = None
     if subscription.payment and subscription.payment.meta:
         try:
@@ -276,7 +285,7 @@ def document_subscription_view(request, uid):
 
 
 @api_view(['POST', 'GET'])
-@permission_classes([IsAuthenticated|HasDocumentToken|HasBypassAuthorizationHeader])
+@permission_classes([IsAuthenticated|HasInvoiceDocumentToken|HasBypassAuthorizationHeader])
 def document_invoice(request, uid):
 
 
@@ -291,6 +300,7 @@ def document_invoice(request, uid):
         logger.info('document_invoice {}'.format(uid))
         try:
             invoice = scoped_queryset(request, Invoice.objects).get(invoice_id=uid)
+            require_document_access(request, invoice)
             invoice.payment = scoped_queryset(request, Payment.objects).get(invoice=invoice)
         except Invoice.DoesNotExist:
             return Response({'exception': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -329,6 +339,8 @@ def document_invoice(request, uid):
                     }
                 )
         return response
+    except PermissionDenied:
+        raise
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
@@ -344,6 +356,7 @@ def document_invoice_view(request, uid):
 
     logger.info('document_invoice_view {}'.format(uid))
     invoice = scoped_queryset(request, Invoice.objects).get(invoice_id=uid)
+    require_document_access(request, invoice)
     payment = scoped_queryset(request, Payment.objects).get(invoice=invoice)
     total_amount = invoice.activity_fee + invoice.membership_fee
     user = User.objects.filter(user_id=invoice.sport_association.user_id).first()
@@ -554,13 +567,14 @@ def document_invoice_view(request, uid):
 
 
 @api_view(['POST', 'GET'])
-@permission_classes([IsAuthenticated|HasDocumentToken|HasBypassAuthorizationHeader])
+@permission_classes([IsAuthenticated|HasCustomerInvoiceDocumentToken|HasBypassAuthorizationHeader])
 def document_einvoice(request, uid):
 
     try:
         logger.info('document_invoice {}'.format(uid))
         try:
             customer_invoice = CustomerInvoice.objects.get(customer_invoice_id=uid)
+            require_document_access(request, customer_invoice)
         except Invoice.DoesNotExist:
             return Response({'exception': 'Invoice not found'}, status=status.HTTP_404_NOT_FOUND)
         filename = f"[{customer_invoice.sport_association.denomination}] Fattura {customer_invoice.prefix} {customer_invoice.number}/{customer_invoice.fiscal_year}.pdf"
@@ -575,6 +589,8 @@ def document_einvoice(request, uid):
             customer_invoice.pdf = document
             customer_invoice.save()
         return response
+    except PermissionDenied:
+        raise
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
@@ -585,15 +601,17 @@ def document_einvoice(request, uid):
 @permission_classes([IsAuthenticated|HasBypassAuthorizationHeader])
 def document_einvoice_view(request, uid):
     invoice = CustomerInvoice.objects.get(pk=uid)
+    require_document_access(request, invoice)
     einvoice = generate_invoice_html(invoice)
     return HttpResponse(einvoice, content_type='text/html; charset=utf-8')
 
 @api_view(['POST', 'GET'])
-@permission_classes([IsAuthenticated | HasDocumentToken])
+@permission_classes([IsAuthenticated | HasCompensationDocumentToken])
 def document_compensation(request, uid):
     try:
         try:
             payment = scoped_queryset(request, Payment.objects).get(payment_id=uid)
+            require_document_access(request, payment)
         except Payment.DoesNotExist:
             return Response({'exception': 'Compensation not found'}, status=status.HTTP_404_NOT_FOUND)
         filename = '[{}] Compenso per {} del {}.pdf'.format(
@@ -614,6 +632,8 @@ def document_compensation(request, uid):
                 instructor_hour.document = document
                 instructor_hour.save()
         return response
+    except PermissionDenied:
+        raise
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
@@ -624,6 +644,7 @@ def document_compensation(request, uid):
 @permission_classes([IsAuthenticated])
 def document_compensation_view(request, uid):
     payment = scoped_queryset(request, Payment.objects).get(payment_id=uid)
+    require_document_access(request, payment)
 
     user_language = 'it'
     translation.activate(user_language)
@@ -663,7 +684,7 @@ def document_compensation_view(request, uid):
     )
 
 @api_view(['POST', 'GET'])
-@permission_classes([IsAuthenticated | HasDocumentToken])
+@permission_classes([IsAuthenticated])
 def document_template(request, uid):
     try:
         try:
@@ -724,6 +745,7 @@ def document_template(request, uid):
 @permission_classes([IsAuthenticated|HasBypassAuthorizationHeader])
 def document_template_view(request, uid):
     template = SportAssociationModuleTemplates.objects.get(pk=uid)
+    require_document_access(request, template)
     sport_association = template.sport_association
 
     # get query params
@@ -788,12 +810,13 @@ def document_template_view(request, uid):
     )
 
 @api_view(['POST', 'GET'])
-@permission_classes([IsAuthenticated | HasDocumentToken])
+@permission_classes([IsAuthenticated | HasMedicalAppointmentDocumentToken])
 def document_medical_appointment(request, uid):
     try:
         appointment = MedicalAppointments.objects.filter(
             medical_appointments_id=uid
         ).select_related('subscription', 'subscription__sport_association', 'subscription__associate').first()
+        require_document_access(request, appointment.subscription)
         filename = '[{}] {} del {}.pdf'.format(
             appointment.subscription.sport_association.denomination,
             MedicalAppointments.REGIONS[appointment.region],
@@ -855,6 +878,8 @@ def document_medical_appointment(request, uid):
             appointment.document = document
             appointment.save()
         return response
+    except PermissionDenied:
+        raise
     except TypeError as e:
         return Response({'exception': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception as e:
@@ -862,13 +887,14 @@ def document_medical_appointment(request, uid):
 
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated|HasBypassAuthorizationHeader])
 def document_medical_appointment_view(request, uid):
     is_valid_uuid(uid)
 
     appointment = MedicalAppointments.objects.filter(
         medical_appointments_id=uid
     ).select_related('subscription', 'subscription__sport_association', 'subscription__associate').first()
+    require_document_access(request, appointment.subscription)
 
     # check medical appointment is of type "agonistica" or "non-agonistica"
     if appointment.region not in ['agonistica', 'non-agonistica']:

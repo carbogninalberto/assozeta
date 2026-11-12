@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from application.models.user_models import EmailLog, User
+from application.audit_context import atomic_audit_mutation
 from application.permissions import IsAssociationUser
 from application.permissions_registry import check_collaborator_permission
 from application.serializers.user_serializers import EmailLogSerializer
@@ -242,12 +243,15 @@ def communication_messages_delete(request, message_id):
     request.user.is_sport_association()
     is_valid_uuid(message_id)
 
-    # get the message and its message transactions
-    message = Message.objects.filter(
-        sport_association=request.user.sport_association,
-        message_id=message_id,
-    ).first()
-    message.delete()
+    with atomic_audit_mutation():
+        # Serialize lookup and deletion so a concurrent loser observes absence.
+        message = Message.objects.select_for_update().filter(
+            sport_association=request.user.sport_association,
+            message_id=message_id,
+        ).first()
+        if not message:
+            return Response({'msg': 'message not found.'}, status=status.HTTP_404_NOT_FOUND)
+        message.delete()
 
     return Response({'msg': 'message deleted.'}, status.HTTP_200_OK)
 
@@ -263,7 +267,8 @@ def communication_messages_add(request):
     if not serializer.is_valid():
         return Response({'msg': 'message not valid.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    serializer.save(sport_association=request.user.sport_association)
+    with atomic_audit_mutation():
+        serializer.save(sport_association=request.user.sport_association)
 
     return Response({'msg': 'message added.'}, status.HTTP_200_OK)
 

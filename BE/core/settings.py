@@ -46,6 +46,9 @@ JWT_PUBLIC_KEY = env_key('JWT_PUBLIC_KEY')
 
 APP_HOST = env.str('APP_HOST')
 APP_URL = env.str('APP_URL', f'https://{APP_HOST}').rstrip('/')
+# Address the diagnostics "api" check calls; production keeps the default.
+DIAGNOSTICS_API_URL = env.str(
+    'ASSOZETA_DIAGNOSTICS_API_URL', default='http://127.0.0.1:8000') or 'http://127.0.0.1:8000'
 # Trusted deployment configuration; never chosen by a handoff request.
 BAKNEY_SSO_API_BASE = env.str('BAKNEY_SSO_API_BASE', 'https://app.bakney.com/api').rstrip('/')
 BAKNEY_SSO_UI_ORIGIN = env.str('BAKNEY_SSO_UI_ORIGIN', 'https://app.bakney.com').rstrip('/')
@@ -177,6 +180,11 @@ CELERY_BEAT_SCHEDULER = 'instance.scheduler.InstanceScheduler'
 # here: it replaces that whole schedule instead of adding to it.
 # useful for mitigating memory leaks
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
+# Opt-in: task names consumed by the Go Celery consumer (empty by default, no routes).
+from core.task_routing import go_task_routes  # noqa: E402
+_go_task_routes = go_task_routes(os.environ.get('GO_TASK_QUEUE_TASKS', ''))
+if _go_task_routes:
+    CELERY_TASK_ROUTES = _go_task_routes
 
 # Redis cache configuration
 CACHES = {
@@ -481,7 +489,8 @@ ASGI_APPLICATION = 'core.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        # Also mirrors group messages to Go WebSocket servers (notifications.realtime_layer).
+        "BACKEND": "notifications.realtime_layer.GoMirroredRedisChannelLayer",
         "CONFIG": {
             "hosts": [{"address": f"{REDIS_PROTOCOL}://{REDIS_HOST}:{REDIS_PORT}/0", "password": REDIS_PASSWORD}],
         },
@@ -680,6 +689,22 @@ STORE_ON_DISK = env.bool('STORE_ON_DISK', False)
 
 # STORAGE DIR
 STORAGE_DIR = os.path.join(BASE_DIR, env.str('STORAGE_DIR', 'storage'))
+
+# MEMBER IMPORT: largest accepted file and hours an upload that was not imported is kept
+SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES = env.int('SUBSCRIPTION_IMPORT_MAX_UPLOAD_BYTES', 20 * 1024 * 1024)
+SUBSCRIPTION_IMPORT_RETENTION_HOURS = env.int('SUBSCRIPTION_IMPORT_RETENTION_HOURS', 24)
+
+# MEDICAL CERTIFICATE UPLOAD (document/medical/certificate/): largest accepted file, and how many
+# uploads one address may send without an account in an hour
+MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES = env.int('MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES', 10 * 1024 * 1024)
+MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR = env.int('MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR', 60)
+
+# PUBLIC FORMS: the flows open without an account (form answers, form attachments, the subscription
+# link) accept files up to this size, and one address may send this many requests per endpoint in
+# the window below (requests with an account are not counted)
+PUBLIC_UPLOAD_MAX_BYTES = env.int('PUBLIC_UPLOAD_MAX_BYTES', 10 * 1024 * 1024)
+PUBLIC_REQUESTS_PER_WINDOW = env.int('PUBLIC_REQUESTS_PER_WINDOW', 30)
+PUBLIC_REQUEST_WINDOW_SECONDS = env.int('PUBLIC_REQUEST_WINDOW_SECONDS', 600)
 
 # AWS S3 CONFIGURATION
 AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')

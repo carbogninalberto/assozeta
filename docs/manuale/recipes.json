@@ -25,6 +25,7 @@
     "BE/instance/restore/"
   ],
   "reference_dependencies": [
+    "BE/application/audit_context.py",
     "BE/application/impersonation.py",
     "BE/application/management/commands/seed_selfhost.py",
     "BE/application/manuale/views.py",
@@ -50,6 +51,7 @@
     "BE/application/serializers/subscriptions_serializers.py",
     "BE/application/serializers/user_serializers.py",
     "BE/application/services/export_service.py",
+    "BE/application/services/import_service.py",
     "BE/application/services/invoice_service.py",
     "BE/application/services/subscription_service.py",
     "BE/application/signals.py",
@@ -92,11 +94,14 @@
     "BE/core/authentication.py",
     "BE/core/celery.py",
     "BE/core/settings.py",
+    "BE/docmanager/access.py",
     "BE/docmanager/tasks.py",
     "BE/docmanager/views/document_view.py",
     "BE/docmanager/views/printing_views.py",
+    "BE/instance/backups.py",
     "BE/instance/integrations.py",
     "BE/instance/permissions.py",
+    "BE/instance/remote_backups.py",
     "BE/instance/restore/views.py",
     "BE/templates/document/application/invoice.html",
     "UI/src/App.svelte",
@@ -264,6 +269,7 @@
     "UI/src/routes/profile/ProfileMenu.svelte",
     "UI/src/routes/profile/sections/Account.svelte",
     "UI/src/routes/profile/sections/DataExports.svelte",
+    "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte",
     "UI/src/routes/profile/sections/Integrations.svelte",
@@ -283,6 +289,7 @@
     "UI/src/utils/Functions.js",
     "UI/src/utils/Permissions.js",
     "UI/src/utils/TaxCode.js",
+    "UI/src/utils/apiVersion.js",
     "UI/src/utils/enumUtils.js",
     "UI/src/utils/eventCalendar.js"
   ],
@@ -2740,10 +2747,12 @@
       "UI/src/utils/eventCalendar.js"
     ],
     "docs/collaboratori.mdx#accesso-completo": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -2758,10 +2767,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/collaboratori.mdx#introduzione": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -2776,10 +2787,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/collaboratori.mdx#invitare-un-collaboratore": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -2794,10 +2807,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/collaboratori.mdx#livelli-di-permessi": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -2812,10 +2827,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/collaboratori.mdx#modificare-i-permessi-di-un-collaboratore": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -2830,10 +2847,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/collaboratori.mdx#personalizzato": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -2857,10 +2876,12 @@
       "BE/application/views/collaborator_views.py"
     ],
     "docs/collaboratori.mdx#stato-degli-inviti": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -2975,6 +2996,7 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/contabilita-avanzata.mdx#causali-aggiuntive-nei-pagamenti": [
+      "BE/application/audit_context.py",
       "BE/application/impersonation.py",
       "BE/application/models/balance_sheet_models.py",
       "BE/application/models/invoices_models.py",
@@ -2983,6 +3005,7 @@
       "BE/application/serializers/balance_sheet.py",
       "BE/application/serializers/invoice_serializers.py",
       "BE/application/serializers/payment_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/utils/balance_sheet_utils.py",
       "BE/application/views/balance_sheet_views.py",
@@ -3011,6 +3034,7 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/contabilita-avanzata.mdx#causali-detraibili-730": [
+      "BE/application/audit_context.py",
       "BE/application/impersonation.py",
       "BE/application/models/balance_sheet_models.py",
       "BE/application/models/invoices_models.py",
@@ -3019,6 +3043,7 @@
       "BE/application/serializers/balance_sheet.py",
       "BE/application/serializers/invoice_serializers.py",
       "BE/application/serializers/payment_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/utils/balance_sheet_utils.py",
       "BE/application/views/balance_sheet_views.py",
@@ -3047,6 +3072,7 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/contabilita-avanzata.mdx#causali-di-pagamento": [
+      "BE/application/audit_context.py",
       "BE/application/impersonation.py",
       "BE/application/models/balance_sheet_models.py",
       "BE/application/models/invoices_models.py",
@@ -3055,6 +3081,7 @@
       "BE/application/serializers/balance_sheet.py",
       "BE/application/serializers/invoice_serializers.py",
       "BE/application/serializers/payment_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/utils/balance_sheet_utils.py",
       "BE/application/views/balance_sheet_views.py",
@@ -3191,6 +3218,7 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/contabilita-avanzata.mdx#creare-una-causale": [
+      "BE/application/audit_context.py",
       "BE/application/impersonation.py",
       "BE/application/models/balance_sheet_models.py",
       "BE/application/models/invoices_models.py",
@@ -3199,6 +3227,7 @@
       "BE/application/serializers/balance_sheet.py",
       "BE/application/serializers/invoice_serializers.py",
       "BE/application/serializers/payment_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/utils/balance_sheet_utils.py",
       "BE/application/views/balance_sheet_views.py",
@@ -3551,6 +3580,7 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/contabilita-avanzata.mdx#modificare-una-causale": [
+      "BE/application/audit_context.py",
       "BE/application/impersonation.py",
       "BE/application/models/balance_sheet_models.py",
       "BE/application/models/invoices_models.py",
@@ -3559,6 +3589,7 @@
       "BE/application/serializers/balance_sheet.py",
       "BE/application/serializers/invoice_serializers.py",
       "BE/application/serializers/payment_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/utils/balance_sheet_utils.py",
       "BE/application/views/balance_sheet_views.py",
@@ -3803,6 +3834,7 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/contabilita-avanzata.mdx#tipologie-di-causali": [
+      "BE/application/audit_context.py",
       "BE/application/impersonation.py",
       "BE/application/models/balance_sheet_models.py",
       "BE/application/models/invoices_models.py",
@@ -3811,6 +3843,7 @@
       "BE/application/serializers/balance_sheet.py",
       "BE/application/serializers/invoice_serializers.py",
       "BE/application/serializers/payment_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/utils/balance_sheet_utils.py",
       "BE/application/views/balance_sheet_views.py",
@@ -4241,11 +4274,13 @@
       "UI/src/routes/profile/sections/Settings.svelte"
     ],
     "docs/impostazioni.mdx#anno-fiscale": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -4262,6 +4297,8 @@
       "UI/src/routes/profile/sections/Settings.svelte"
     ],
     "docs/impostazioni.mdx#autenticazione-a-due-fattori-2fa": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/two_fa_views.py",
       "UI/src/routes/profile/ProfileMenu.svelte",
       "UI/src/routes/profile/sections/TwoFactor.svelte"
@@ -4272,6 +4309,8 @@
       "UI/src/routes/profile/sections/Settings.svelte"
     ],
     "docs/impostazioni.mdx#checkout": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/profile_views.py",
       "UI/src/routes/profile/sections/Account.svelte"
     ],
@@ -4281,11 +4320,13 @@
       "UI/src/routes/profile/sections/Settings.svelte"
     ],
     "docs/impostazioni.mdx#durata-delle-iscrizioni-e-tesseramenti": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -4297,15 +4338,19 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/impostazioni.mdx#firma-del-presidente-e-timbro": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/profile_views.py",
       "UI/src/routes/profile/sections/Account.svelte"
     ],
     "docs/impostazioni.mdx#informazioni-dell-organizzazione": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -4317,6 +4362,8 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/impostazioni.mdx#intestazione-e-pie-di-pagina-stampe": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/profile_views.py",
       "BE/docmanager/views/printing_views.py",
       "UI/src/routes/profile/sections/Account.svelte"
@@ -4325,17 +4372,24 @@
       "BE/application/permissions_registry.py",
       "UI/src/routes/profile/ProfileMenu.svelte",
       "UI/src/routes/profile/sections/Account.svelte",
-      "UI/src/routes/profile/sections/Settings.svelte"
+      "UI/src/routes/profile/sections/InstanceApiVersion.svelte",
+      "UI/src/routes/profile/sections/SelfInstance.svelte",
+      "UI/src/routes/profile/sections/Settings.svelte",
+      "UI/src/utils/apiVersion.js"
     ],
     "docs/impostazioni.mdx#modalita-scura": [
       "BE/application/views/profile_views.py",
       "UI/src/routes/profile/sections/Settings.svelte"
     ],
     "docs/impostazioni.mdx#modelli-documenti": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/profile_views.py",
       "UI/src/routes/profile/sections/Account.svelte"
     ],
     "docs/impostazioni.mdx#moduli-d-iscrizione": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/profile_views.py",
       "UI/src/routes/profile/sections/Account.svelte",
       "UI/src/routes/subscribe/wizard/Step1.svelte",
@@ -4393,11 +4447,13 @@
       "UI/src/routes/profile/sections/Settings.svelte"
     ],
     "docs/impostazioni.mdx#stagione-sportiva": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -4409,10 +4465,14 @@
       "UI/src/utils/Permissions.js"
     ],
     "docs/impostazioni.mdx#stripe-pagamenti-online": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/profile_views.py",
       "UI/src/routes/profile/sections/Stripe.svelte"
     ],
     "docs/impostazioni.mdx#testo-extra-ricevute": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/profile_views.py",
       "BE/docmanager/views/printing_views.py",
       "UI/src/routes/profile/sections/Account.svelte"
@@ -5732,6 +5792,7 @@
       "BE/application/views/invoice_views.py",
       "BE/application/views/payment_views.py",
       "BE/application/views/profile_views.py",
+      "BE/docmanager/access.py",
       "BE/docmanager/tasks.py",
       "BE/docmanager/views/document_view.py",
       "BE/docmanager/views/printing_views.py",
@@ -5895,20 +5956,28 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-abilitare-autenticazione-due-fattori.mdx#abilitare-l-autenticazione-a-due-fattori-2fa": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/auth_views.py",
       "BE/application/views/two_fa_views.py",
       "UI/src/routes/profile/sections/TwoFactor.svelte"
     ],
     "faq/come-abilitare-autenticazione-due-fattori.mdx#app-compatibili": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/two_fa_views.py",
       "UI/src/routes/profile/sections/TwoFactor.svelte"
     ],
     "faq/come-abilitare-autenticazione-due-fattori.mdx#come-attivare-il-2fa": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/two_fa_views.py",
       "UI/src/routes/profile/ProfileMenu.svelte",
       "UI/src/routes/profile/sections/TwoFactor.svelte"
     ],
     "faq/come-abilitare-autenticazione-due-fattori.mdx#come-disattivare-il-2fa": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/two_fa_views.py",
       "UI/src/routes/profile/ProfileMenu.svelte",
       "UI/src/routes/profile/sections/TwoFactor.svelte"
@@ -5918,10 +5987,14 @@
       "UI/src/routes/login/Login.svelte"
     ],
     "faq/come-abilitare-autenticazione-due-fattori.mdx#hai-perso-l-accesso-all-app": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/auth_views.py",
       "BE/application/views/two_fa_views.py"
     ],
     "faq/come-abilitare-autenticazione-due-fattori.mdx#perche-attivare-il-2fa": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/auth_views.py",
       "BE/application/views/two_fa_views.py"
     ],
@@ -6042,11 +6115,13 @@
       "UI/src/utils/TaxCode.js"
     ],
     "faq/come-cambiare-anno-sportivo-fiscale.mdx#cambiare-l-anno-sportivo-e-fiscale": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -6058,11 +6133,13 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-cambiare-anno-sportivo-fiscale.mdx#come-cambiare-l-anno-fiscale": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -6074,11 +6151,13 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-cambiare-anno-sportivo-fiscale.mdx#come-cambiare-la-stagione-sportiva": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -6090,11 +6169,13 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-cambiare-anno-sportivo-fiscale.mdx#cosa-cambia-dopo-la-modifica": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -6106,11 +6187,13 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-cambiare-anno-sportivo-fiscale.mdx#opzioni-disponibili": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -6122,11 +6205,13 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-cambiare-anno-sportivo-fiscale.mdx#qual-e-la-differenza": [
+      "BE/application/audit_context.py",
       "BE/application/models/subscriptions_models.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/subscriptions_serializers.py",
+      "BE/application/signals.py",
       "BE/application/utils/api_utils.py",
       "BE/application/views/profile_views.py",
       "BE/application/views/subscriptions_views.py",
@@ -6957,10 +7042,12 @@
       "UI/src/routes/association/communication/settings/sections/Stats.svelte"
     ],
     "faq/come-invitare-collaboratori.mdx#come-inviare-un-invito": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -6975,10 +7062,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-invitare-collaboratori.mdx#invitare-un-collaboratore": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -6993,10 +7082,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-invitare-collaboratori.mdx#livelli-di-accesso": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -7011,10 +7102,12 @@
       "UI/src/utils/Permissions.js"
     ],
     "faq/come-invitare-collaboratori.mdx#modificare-i-permessi": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -7034,10 +7127,12 @@
       "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte"
     ],
     "faq/come-invitare-collaboratori.mdx#stato-degli-inviti": [
+      "BE/application/audit_context.py",
       "BE/application/models/user_models.py",
       "BE/application/permissions_registry.py",
       "BE/application/serializers/auth_serializers.py",
       "BE/application/serializers/collaborators_serializers.py",
+      "BE/application/signals.py",
       "BE/application/views/collaborator_views.py",
       "BE/application/views/profile_views.py",
       "BE/instance/permissions.py",
@@ -7216,11 +7311,15 @@
     "faq/i-miei-dati-sono-al-sicuro.mdx#conformita-gdpr-e-gestione-responsabile-dei-dati": [],
     "faq/i-miei-dati-sono-al-sicuro.mdx#infrastruttura-di-archiviazione-affidabile": [],
     "faq/i-miei-dati-sono-al-sicuro.mdx#la-sicurezza-dei-tuoi-dati-e-la-nostra-priorita": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/two_fa_views.py",
       "BE/core/authentication.py",
       "BE/instance/permissions.py"
     ],
     "faq/i-miei-dati-sono-al-sicuro.mdx#misure-di-sicurezza-avanzate": [
+      "BE/application/audit_context.py",
+      "BE/application/signals.py",
       "BE/application/views/auth_views.py",
       "BE/application/views/two_fa_views.py",
       "BE/core/authentication.py",
@@ -7228,7 +7327,9 @@
       "BE/instance/restore/views.py"
     ],
     "faq/i-miei-dati-sono-al-sicuro.mdx#robusta-politica-di-backup": [
+      "BE/instance/backups.py",
       "BE/instance/permissions.py",
+      "BE/instance/remote_backups.py",
       "BE/instance/restore/views.py"
     ],
     "faq/quali-sono-piani-abbonamento.mdx#come-cambiare-piano": [
@@ -7889,6 +7990,7 @@
     ],
     "tutorials/come-esportare-dati-associazione.mdx#esportare-tutti-i-dati-dell-associazione": [
       "BE/application/services/export_service.py",
+      "BE/application/services/import_service.py",
       "BE/application/tasks.py",
       "BE/application/views/export_views.py",
       "UI/src/routes/profile/ProfileMenu.svelte",
@@ -9165,11 +9267,13 @@
         "faq/come-abilitare-autenticazione-due-fattori.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/management/commands/run_manuale_instance.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/services/jwt_token_service.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/views/auth_views.py",
         "BE/application/views/two_fa_views.py",
@@ -9198,6 +9302,8 @@
         "UI/src/utils/loginSession.js",
         "UI/src/utils/ApiMiddleware.js",
         "BE/application/views/two_fa_views.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/views/auth_views.py",
         "BE/application/models/user_models.py",
         "BE/application/services/jwt_token_service.py",
@@ -9251,12 +9357,14 @@
         "faq/come-abilitare-autenticazione-due-fattori.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/run_manuale_instance.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/services/jwt_token_service.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/views/auth_views.py",
         "BE/application/views/profile_views.py",
@@ -9287,6 +9395,8 @@
         "UI/src/utils/loginSession.js",
         "UI/src/utils/ApiMiddleware.js",
         "BE/application/views/two_fa_views.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/views/auth_views.py",
         "BE/application/views/profile_views.py",
         "BE/application/models/user_models.py",
@@ -9830,11 +9940,13 @@
         "faq/come-archiviare-dati.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
+        "BE/application/signals.py",
         "BE/application/tasks.py",
         "BE/application/urls.py",
         "BE/application/views/course_views.py",
@@ -9882,7 +9994,9 @@
         "BE/application/views/course_views.py",
         "BE/application/permissions_registry.py",
         "BE/application/tasks.py",
-        "BE/application/urls.py"
+        "BE/application/urls.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -9965,6 +10079,7 @@
         "docs/carnet.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/impersonation_scope.py",
         "BE/application/management/commands/run_manuale_attendance.py",
@@ -9980,6 +10095,7 @@
         "BE/application/serializers/carnet_serializers.py",
         "BE/application/serializers/courses_serializers.py",
         "BE/application/services/jwt_token_service.py",
+        "BE/application/signals.py",
         "BE/application/tasks.py",
         "BE/application/tests/test_attendance_absence_scope.py",
         "BE/application/tests/test_automatic_attendance_results.py",
@@ -10090,7 +10206,9 @@
         "BE/core/middleware.py",
         "BE/application/permissions.py",
         "BE/core/celery.py",
-        "BE/instance/models.py"
+        "BE/instance/models.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -10555,6 +10673,7 @@
         "docs/registro-presenze.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/impersonation_scope.py",
         "BE/application/management/commands/run_manuale_attendance.py",
@@ -10570,6 +10689,7 @@
         "BE/application/serializers/carnet_serializers.py",
         "BE/application/serializers/courses_serializers.py",
         "BE/application/services/jwt_token_service.py",
+        "BE/application/signals.py",
         "BE/application/tasks.py",
         "BE/application/tests/test_attendance_absence_scope.py",
         "BE/application/tests/test_automatic_attendance_results.py",
@@ -10680,7 +10800,9 @@
         "BE/core/middleware.py",
         "BE/application/permissions.py",
         "BE/core/celery.py",
-        "BE/instance/models.py"
+        "BE/instance/models.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -11262,11 +11384,13 @@
         "faq/come-invitare-collaboratori.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
         "BE/application/serializers/collaborators_serializers.py",
         "BE/application/serializers/user_serializers.py",
+        "BE/application/signals.py",
         "BE/application/views/collaborator_views.py",
         "BE/application/views/profile_views.py",
         "BE/instance/permissions.py",
@@ -11294,6 +11418,8 @@
         "BE/application/serializers/collaborators_serializers.py",
         "BE/application/views/collaborator_views.py",
         "BE/application/views/profile_views.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/instance/permissions.py",
         "UI/src/components/PermissionsComponent.svelte",
         "UI/src/components/Sidebar.svelte",
@@ -11362,12 +11488,14 @@
         "faq/come-invitare-collaboratori.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
         "BE/application/serializers/collaborators_serializers.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/views/collaborator_views.py",
         "BE/application/views/profile_views.py",
@@ -11408,7 +11536,9 @@
         "UI/src/routes/connectedCollaborators/modals/EditModal.svelte",
         "UI/src/routes/profile/ProfileMenu.svelte",
         "UI/src/routes/profile/sections/Account.svelte",
-        "UI/src/utils/Permissions.js"
+        "UI/src/utils/Permissions.js",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -12327,6 +12457,7 @@
         "tutorials/come-impostare-pagamenti-rateizzati.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/courses_models.py",
         "BE/application/models/invoices_models.py",
         "BE/application/models/payment_models.py",
@@ -12414,7 +12545,8 @@
         "BE/application/utils/subscriptions_utils.py",
         "BE/application/signals.py",
         "BE/application/views/profile_views.py",
-        "BE/application/serializers/auth_serializers.py"
+        "BE/application/serializers/auth_serializers.py",
+        "BE/application/audit_context.py"
       ],
       "checkpoints": [
         {
@@ -12799,6 +12931,7 @@
         "docs/bacheca.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/carnet_models.py",
@@ -12808,6 +12941,7 @@
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
+        "BE/application/signals.py",
         "BE/application/tests/test_attendance_absence_scope.py",
         "BE/application/tests/test_automatic_attendance_results.py",
         "BE/application/utils/api_utils.py",
@@ -12875,7 +13009,9 @@
         "BE/application/permissions_registry.py",
         "BE/application/impersonation.py",
         "BE/core/middleware.py",
-        "UI/src/utils/ECharts.js"
+        "UI/src/utils/ECharts.js",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -12953,6 +13089,7 @@
         "docs/bacheca.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/run_manuale_dashboard_lists.py",
         "BE/application/management/commands/seed_manuale.py",
@@ -13057,7 +13194,8 @@
         "UI/src/routes/association/Members/detail/sections/modals/AddMedicalCertificate.svelte",
         "UI/src/routes/association/course/overview/components/modals/MarkAttendees.svelte",
         "UI/src/routes/dashboard/Dashboard.svelte",
-        "UI/src/utils/Permissions.js"
+        "UI/src/utils/Permissions.js",
+        "BE/application/audit_context.py"
       ],
       "checkpoints": [
         {
@@ -13178,6 +13316,7 @@
         "docs/bacheca.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/carnet_models.py",
@@ -13187,6 +13326,7 @@
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
+        "BE/application/signals.py",
         "BE/application/utils/api_utils.py",
         "BE/application/views/profile_views.py",
         "BE/application/views/statistic_views.py",
@@ -13250,7 +13390,9 @@
         "BE/application/utils/api_utils.py",
         "BE/application/permissions_registry.py",
         "BE/application/impersonation.py",
-        "BE/core/middleware.py"
+        "BE/core/middleware.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -13314,6 +13456,7 @@
         "docs/bacheca.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/carnet_models.py",
@@ -13323,6 +13466,7 @@
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
+        "BE/application/signals.py",
         "BE/application/utils/api_utils.py",
         "BE/application/views/profile_views.py",
         "BE/application/views/statistic_views.py",
@@ -13385,7 +13529,9 @@
         "BE/application/utils/api_utils.py",
         "BE/application/permissions_registry.py",
         "BE/application/impersonation.py",
-        "BE/core/middleware.py"
+        "BE/core/middleware.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -13414,6 +13560,7 @@
         "faq/come-generare-bilancio.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/balance_sheet_models.py",
@@ -13425,6 +13572,7 @@
         "BE/application/serializers/balance_sheet.py",
         "BE/application/serializers/invoice_serializers.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/signals.py",
         "BE/application/utils/api_utils.py",
         "BE/application/utils/balance_sheet_utils.py",
         "BE/application/views/balance_sheet_views.py",
@@ -13494,7 +13642,9 @@
         "BE/application/views/profile_views.py",
         "BE/application/serializers/auth_serializers.py",
         "BE/application/models/user_models.py",
-        "BE/application/management/commands/seed_manuale.py"
+        "BE/application/management/commands/seed_manuale.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -14042,6 +14192,7 @@
         "faq/come-gestire-i-certificati-medici.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/models/carnet_models.py",
         "BE/application/models/courses_models.py",
@@ -14053,6 +14204,7 @@
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/serializers/user_serializers.py",
         "BE/application/services/subscription_service.py",
+        "BE/application/signals.py",
         "BE/application/tasks.py",
         "BE/application/urls.py",
         "BE/application/utils/api_utils.py",
@@ -14206,7 +14358,9 @@
         "BE/application/urls.py",
         "BE/application/tasks.py",
         "UI/src/routes/subscribe-multiple/wizard/Step3.svelte",
-        "UI/src/routes/subscribe-multiple/SubscribeMultiple.svelte"
+        "UI/src/routes/subscribe-multiple/SubscribeMultiple.svelte",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -14826,6 +14980,7 @@
         "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/user_models.py",
@@ -14834,6 +14989,7 @@
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/serializers/user_serializers.py",
         "BE/application/services/subscription_service.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/subscriptions_utils.py",
         "BE/application/views/archive_views.py",
@@ -14945,7 +15101,9 @@
         "UI/src/routes/subscribe/wizard/Step0.svelte",
         "UI/src/routes/subscribe/wizard/Step1.svelte",
         "UI/src/routes/subscribe/wizard/Step2.svelte",
-        "UI/src/routes/subscribe/wizard/partials/additional-fields.svelte"
+        "UI/src/routes/subscribe/wizard/partials/additional-fields.svelte",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -14986,11 +15144,13 @@
         "faq/come-usare-ricerca-filtri-atleti.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/services/subscription_service.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/printing.py",
         "BE/application/utils/subscriptions_utils.py",
@@ -15063,7 +15223,9 @@
         "UI/src/routes/association/Members/detail/sections/Info.svelte",
         "UI/src/components/drawer/basic-drawer.svelte",
         "BE/application/views/profile_views.py",
-        "BE/application/utils/printing.py"
+        "BE/application/utils/printing.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -15598,6 +15760,7 @@
         "faq/come-condividere-il-link-iscrizioni.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/impersonation_scope.py",
         "BE/application/management/commands/seed_manuale.py",
@@ -15608,6 +15771,7 @@
         "BE/application/serializers/auth_serializers.py",
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/services/subscription_service.py",
+        "BE/application/signals.py",
         "BE/application/tests/test_manuale_cards.py",
         "BE/application/urls.py",
         "BE/application/views/archive_views.py",
@@ -15739,7 +15903,9 @@
         "BE/application/impersonation.py",
         "BE/application/impersonation_scope.py",
         "BE/application/tests/test_manuale_cards.py",
-        "BE/application/management/commands/seed_manuale.py"
+        "BE/application/management/commands/seed_manuale.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -15795,6 +15961,7 @@
         "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/user_models.py",
         "BE/application/models/utils.py",
@@ -15803,6 +15970,7 @@
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/serializers/user_serializers.py",
         "BE/application/services/subscription_service.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/printing.py",
         "BE/application/views/archive_views.py",
@@ -15875,6 +16043,8 @@
         "BE/application/utils/printing.py",
         "BE/application/views/archive_views.py",
         "BE/application/views/profile_views.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/views/search_views.py",
         "BE/application/views/subscriptions_views.py",
         "BE/docmanager/models.py",
@@ -16100,11 +16270,13 @@
         "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
         "BE/application/serializers/subscriptions_serializers.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/api_utils.py",
         "BE/application/views/archive_views.py",
@@ -16157,6 +16329,8 @@
         "BE/application/utils/api_utils.py",
         "BE/application/views/archive_views.py",
         "BE/application/views/profile_views.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/views/search_views.py",
         "BE/application/views/subscriptions_views.py",
         "BE/docmanager/views/printing_views.py",
@@ -16247,6 +16421,7 @@
         "docs/contabilita-avanzata.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/models/balance_sheet_models.py",
         "BE/application/models/invoices_models.py",
@@ -16255,6 +16430,7 @@
         "BE/application/serializers/balance_sheet.py",
         "BE/application/serializers/invoice_serializers.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/api_utils.py",
         "BE/application/utils/balance_sheet_utils.py",
@@ -16308,6 +16484,8 @@
         "UI/src/components/formBuilder/preview-blocks/smart-select-input.svelte",
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/models/payment_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/urls.py",
@@ -16388,6 +16566,7 @@
         "docs/contabilita-avanzata.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/impersonation.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/balance_sheet_models.py",
@@ -16486,6 +16665,7 @@
         "UI/src/components/formBuilder/preview-blocks/smart-select-input.svelte",
         "BE/application/views/payment_views.py",
         "BE/application/serializers/payment_serializers.py",
+        "BE/application/audit_context.py",
         "BE/application/models/payment_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/urls.py",
@@ -16711,6 +16891,7 @@
         "docs/pagamenti.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/courses_models.py",
         "BE/application/models/invoices_models.py",
         "BE/application/models/payment_models.py",
@@ -16812,7 +16993,8 @@
         "BE/application/views/profile_views.py",
         "BE/application/serializers/auth_serializers.py",
         "BE/application/utils/excel_utils.py",
-        "BE/application/urls.py"
+        "BE/application/urls.py",
+        "BE/application/audit_context.py"
       ],
       "checkpoints": [
         {
@@ -16898,6 +17080,7 @@
         "docs/ricevute.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/invoices_models.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/user_models.py",
@@ -16906,6 +17089,7 @@
         "BE/application/serializers/invoice_serializers.py",
         "BE/application/serializers/payment_serializers.py",
         "BE/application/services/invoice_service.py",
+        "BE/application/signals.py",
         "BE/application/utils/printing.py",
         "BE/application/views/invoice_views.py",
         "BE/application/views/payment_views.py",
@@ -16972,7 +17156,9 @@
         "UI/src/routes/accounting/receipts/modals/EditModal.svelte",
         "UI/src/routes/accounting/receipts/modals/ShareModal.svelte",
         "UI/src/routes/profile/sections/Settings.svelte",
-        "UI/src/utils/Permissions.js"
+        "UI/src/utils/Permissions.js",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -17006,6 +17192,7 @@
         "docs/ricevute.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/invoices_models.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/user_models.py",
@@ -17015,6 +17202,7 @@
         "BE/application/serializers/invoice_serializers.py",
         "BE/application/serializers/payment_serializers.py",
         "BE/application/services/invoice_service.py",
+        "BE/application/signals.py",
         "BE/application/utils/printing.py",
         "BE/application/views/invoice_views.py",
         "BE/application/views/payment_views.py",
@@ -17081,7 +17269,9 @@
         "UI/src/routes/accounting/receipts/modals/EditModal.svelte",
         "UI/src/routes/accounting/receipts/modals/ShareModal.svelte",
         "UI/src/routes/profile/sections/Settings.svelte",
-        "UI/src/utils/Permissions.js"
+        "UI/src/utils/Permissions.js",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -17119,6 +17309,7 @@
         "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/user_models.py",
@@ -17127,6 +17318,7 @@
         "BE/application/serializers/payment_serializers.py",
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/serializers/user_serializers.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/api_utils.py",
         "BE/application/utils/subscriptions_utils.py",
@@ -17197,6 +17389,8 @@
         "BE/application/views/archive_views.py",
         "BE/application/views/payment_views.py",
         "BE/application/views/profile_views.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py",
         "BE/application/views/search_views.py",
         "BE/application/views/subscriptions_views.py",
         "BE/docmanager/views/printing_views.py",
@@ -17278,10 +17472,12 @@
         "tutorials/come-creare-moduli-iscrizione-personalizzati.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/manuale/views.py",
         "BE/application/models/user_models.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/views/archive_views.py",
         "BE/application/views/profile_views.py",
@@ -17364,7 +17560,9 @@
         "UI/src/routes/manuale/Manuale.svelte",
         "UI/src/routes/manuale/ManualContent.svelte",
         "UI/src/routes/manuale/manualPresentation.js",
-        "BE/application/manuale/views.py"
+        "BE/application/manuale/views.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -17432,6 +17630,7 @@
         "docs/impostazioni.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/invoices_models.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/user_models.py",
@@ -17442,6 +17641,7 @@
         "BE/application/serializers/invoice_serializers.py",
         "BE/application/serializers/payment_serializers.py",
         "BE/application/services/invoice_service.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/printing.py",
         "BE/application/views/invoice_views.py",
@@ -17536,7 +17736,9 @@
         "BE/templates/document/application/subscription.html",
         "BE/templates/document/application/subscription_classic.html",
         "BE/docmanager/urls.py",
-        "BE/docmanager/models.py"
+        "BE/docmanager/models.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -17658,6 +17860,7 @@
         "docs/impostazioni.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/models/invoices_models.py",
         "BE/application/models/payment_models.py",
         "BE/application/models/subscriptions_models.py",
@@ -17669,6 +17872,7 @@
         "BE/application/serializers/payment_serializers.py",
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/services/invoice_service.py",
+        "BE/application/signals.py",
         "BE/application/utils/printing.py",
         "BE/application/views/invoice_views.py",
         "BE/application/views/payment_views.py",
@@ -17748,7 +17952,9 @@
         "BE/application/serializers/auth_serializers.py",
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/views/subscriptions_views.py",
-        "BE/application/models/subscriptions_models.py"
+        "BE/application/models/subscriptions_models.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -17808,6 +18014,7 @@
         "faq/come-condividere-il-link-iscrizioni.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/models/subscriptions_models.py",
         "BE/application/models/user_models.py",
@@ -17815,6 +18022,7 @@
         "BE/application/serializers/auth_serializers.py",
         "BE/application/serializers/subscriptions_serializers.py",
         "BE/application/services/subscription_service.py",
+        "BE/application/signals.py",
         "BE/application/urls.py",
         "BE/application/utils/stripe_utils.py",
         "BE/application/utils/subscriptions_utils.py",
@@ -17930,7 +18138,9 @@
         "BE/docmanager/views/printing_views.py",
         "BE/docmanager/urls.py",
         "BE/templates/document/application/subscription.html",
-        "BE/application/management/commands/seed_manuale.py"
+        "BE/application/management/commands/seed_manuale.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {
@@ -18070,10 +18280,12 @@
         "docs/pagamenti.mdx"
       ],
       "dependencies": [
+        "BE/application/audit_context.py",
         "BE/application/management/commands/run_manuale_instance.py",
         "BE/application/management/commands/seed_manuale.py",
         "BE/application/permissions_registry.py",
         "BE/application/serializers/auth_serializers.py",
+        "BE/application/signals.py",
         "BE/application/utils/stripe_utils.py",
         "BE/application/views/payment_views.py",
         "BE/application/views/profile_views.py",
@@ -18118,7 +18330,9 @@
         "BE/application/views/stripe_views.py",
         "BE/application/permissions_registry.py",
         "BE/instance/permissions.py",
-        "BE/core/middleware.py"
+        "BE/core/middleware.py",
+        "BE/application/audit_context.py",
+        "BE/application/signals.py"
       ],
       "checkpoints": [
         {

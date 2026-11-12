@@ -1,0 +1,91 @@
+package service
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
+)
+
+// Vectors from django.utils.dateparse.parse_datetime (Django 5.2.18, Python 3.13).
+func TestCalendarExportParse(t *testing.T) {
+	for _, tc := range []struct {
+		input, want string
+		fails       error
+	}{
+		{input: "2026-03-10", want: ":20260310T000000"},
+		{input: "20260310", want: ":20260310T000000"},
+		{input: "2026-03-10T09", want: ":20260310T090000"},
+		{input: "2026-03-10T0905", want: ":20260310T090500"},
+		{input: "2026-03-10T090507.5", want: ":20260310T090507"},
+		{input: "2026-03-10 9:05", want: ":20260310T090500"},
+		{input: "2026-3-5T9:5:7,1234567", want: ":20260305T090507"},
+		{input: "2026-03-10T09:05:07.1234567Z", want: ":20260310T090507Z"},
+		{input: "2026-03-10T09:05-00:00", want: ":20260310T090500Z"},
+		{input: "2026-03-10T09:05:07 +0000", want: ":20260310T090507Z"},
+		{input: "2026-03-10T10:00\n", want: ":20260310T100000"},
+		{input: "2026-02-30"}, // None
+		{input: "domani"},     // None
+		{input: "2026-02-30T10:00", fails: domain.ErrMiscRoutesServer}, // ValueError
+		{input: "2026-03-10T25:00", fails: domain.ErrMiscRoutesServer},
+		{input: "0000-01-01T00:00", fails: domain.ErrMiscRoutesServer},
+		// icalendar 6.1.1 names a fixed offset from its equivalent-timezone table, else by the timezone's name.
+		{input: "2026-03-10T10:00+01:00", want: ";TZID=Africa/Bangui:20260310T100000"},
+		{input: "2026-03-10 9:05 -0330", want: ";TZID=America/Paramaribo:20260310T090500"},
+		{input: "2026-03-10T10:00:00+05:45", want: `;TZID="UTC+05:45":20260310T100000`},
+		{input: "2026-03-10T1:00:00+0545", want: ";TZID=+0545:20260310T010000"},
+		{input: "2026-03-10T10:00:00+02:00:30", want: `;TZID="UTC+02:00:30":20260310T100000`},
+		{input: "2026-03-10T10:00:00-05:30:15", want: `;TZID="UTC-05:30:15":20260310T100000`},
+		{input: "2026-W11-2T10:00", want: ":20260310T100000"},
+		{input: "2026W112 10:00", want: ":20260310T100000"},
+		{input: "2026-W11T10:00+05:30:15.5", want: `;TZID="UTC+05:30:15.500000":20260309T100000`},
+		{input: "2026-03-10x10:00", want: ":20260310T100000"},
+		{input: "2026-03-10\u00e910:00", want: ":20260310T100000"},
+		{input: "\uff12\uff10\uff12\uff16-03-10T10:00", want: ":20260310T100000"},
+		{input: "2026-03-10T10:00:00+24:00", fails: domain.ErrMiscRoutesServer}, // ValueError
+		{input: "2026-03-10T10:00 \u00e0"},                                      // None
+	} {
+		moment, err := calendarExportParse(tc.input)
+		if tc.fails != nil {
+			if !errors.Is(err, tc.fails) {
+				t.Errorf("%q: error %v, want %v", tc.input, err, tc.fails)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("%q: unexpected error %v", tc.input, err)
+			continue
+		}
+		got := ""
+		if moment != nil {
+			got = moment.render()
+		}
+		if got != tc.want {
+			t.Errorf("%q: got %q, want %q", tc.input, got, tc.want)
+		}
+	}
+}
+
+// icalendar's foldline and escape_char.
+func TestCalendarExportFoldEscape(t *testing.T) {
+	if got := calendarExportEscape("a\\Nb;c,d\\e\r\nf\ng\rh"); got != `a\nb\;c\,d\\e\nf\ng`+"\r"+`h` {
+		t.Errorf("escape: %q", got)
+	}
+	line := "SUMMARY:" + string(make([]byte, 0))
+	for i := 0; i < 80; i++ {
+		line += "x"
+	}
+	folded := calendarExportFold(line)
+	if folded[:74] != line[:74] || folded[74:77] != "\r\n " || folded[77:] != line[74:] {
+		t.Errorf("ascii fold: %q", folded)
+	}
+	// 'à' is two octets: the fold comes before the character reaching 75.
+	wide := "SUMMARY:"
+	for i := 0; i < 40; i++ {
+		wide += "à"
+	}
+	folded = calendarExportFold(wide)
+	if folded[:8+33*2] != wide[:8+33*2] || folded[8+33*2:8+33*2+3] != "\r\n " {
+		t.Errorf("utf-8 fold: %q", folded)
+	}
+}

@@ -72,12 +72,44 @@ sys.exit(98)
                 result = subprocess.run(['sh', '-c', script], env={**os.environ, 'ASSOZETA_ENV_FILE': str(self.env)}, capture_output=True)
                 self.assertEqual(result.returncode == 0, update_eligibility_reason(read_env(self.env)) is None)
 
+    def test_optional_go_image_eligibility_preserves_historical_defaults(self):
+        script = CLI.read_text().split('\ncommand=${1:-help}\n')[0] + '\nsupports_self_update\n'
+        for image, eligible in ((None, True), ('', True),
+                                ('ghcr.io/carbogninalberto/assozeta-backend-go', True),
+                                ('custom/backend-go', False)):
+            with self.subTest(image=image):
+                self.write_env(self.values | ({} if image is None else {'ASSOZETA_BACKEND_GO_IMAGE': image}))
+                reason = update_eligibility_reason(read_env(self.env))
+                self.assertEqual(reason is None, eligible)
+                if not eligible:
+                    self.assertIn('ASSOZETA_BACKEND_GO_IMAGE', reason)
+                result = subprocess.run(['sh', '-c', script],
+                                        env={**os.environ, 'ASSOZETA_ENV_FILE': str(self.env)}, capture_output=True)
+                self.assertEqual(result.returncode == 0, eligible)
+
+    def test_go_pinned_custom_upgrade_rejects_before_any_mutation(self):
+        for custom_key in ('ASSOZETA_BACKEND_GO_IMAGE', 'ASSOZETA_WEB_IMAGE'):
+            for runner in (True, False):
+                with self.subTest(custom_key=custom_key, runner=runner):
+                    self.write_env(self.values | {custom_key: 'custom',
+                                   'ASSOZETA_BACKEND_GO_REF': 'custom/backend-go@sha256:' + 'b' * 64})
+                    before = self.env.read_bytes()
+                    self.calls.unlink(missing_ok=True)
+                    result = self.run_cli(**({'ASSOZETA_RUNNER_ACTIVE': '1', 'ASSOZETA_EXPECTED_SOURCE': 'v1.0.5'} if runner else {}))
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn('managed update unavailable' if runner else 'ASSOZETA_BACKEND_GO_REF pins an image', result.stderr)
+                    self.assertEqual(self.env.read_bytes(), before)
+                    calls = [json.loads(line) for line in self.calls.read_text().splitlines()]
+                    self.assertTrue(calls)
+                    self.assertTrue(all(call[0] == 'ps' for call in calls), calls)
+                    self.assertNotIn('@@ASSOZETA_STAGE backup', result.stdout)
+
     def test_managed_and_unpinned_custom_flows_remain_reachable(self):
         # Stop at the first downstream boundary, before backup or any real Docker use.
         definitions = CLI.read_text().split('\ncommand=${1:-help}\n')[0]
-        for custom in (True, False):
+        for custom in ('ASSOZETA_WEB_IMAGE', 'ASSOZETA_BACKEND_GO_IMAGE', None):
             with self.subTest(custom=custom):
-                self.write_env(self.values | ({'ASSOZETA_WEB_IMAGE': 'custom'} if custom else {}))
+                self.write_env(self.values | ({custom: 'custom'} if custom else {}))
                 script = definitions + '''
 ensure_configuration_values() { :; }
 docker() { printf 'managed-image-pull\\n'; exit 43; }

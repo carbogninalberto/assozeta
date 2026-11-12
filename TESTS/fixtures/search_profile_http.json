@@ -1,0 +1,966 @@
+{
+ "matrix_version": 1,
+ "scope": "Search profile authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "users": {
+  "club": {
+   "id": "a1000000-0000-4000-8000-000000930001",
+   "username": "Club-Search",
+   "role": 1,
+   "first_name": "Club è",
+   "last_name": "Owner",
+   "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAABeElEQVR42u3SMQ0AAAgEsZeAZCQjARMMDE2q4HKpHjgXCTAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIyFsVTAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAtjqYCxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbH4ZgFWdW23F+u6bwAAAABJRU5ErkJggg==",
+   "month": 9,
+   "day": 1,
+   "disable": true,
+   "force": false,
+   "deleted": false
+  },
+  "leap": {
+   "id": "a1000000-0000-4000-8000-000000930002",
+   "username": "leap-search",
+   "role": 1,
+   "first_name": "Leap",
+   "last_name": "",
+   "avatar": null,
+   "month": 2,
+   "day": 31,
+   "disable": false,
+   "force": true,
+   "deleted": false
+  },
+  "loner": {
+   "id": "a1000000-0000-4000-8000-000000930003",
+   "username": "loner-search",
+   "role": 1,
+   "first_name": "Loner",
+   "last_name": "",
+   "avatar": null,
+   "month": 1,
+   "day": 1,
+   "disable": false,
+   "force": false,
+   "deleted": false
+  },
+  "runner": {
+   "id": "a1000000-0000-4000-8000-000000930004",
+   "username": "Runner-Search",
+   "role": 2,
+   "first_name": "Runner",
+   "last_name": "Uno",
+   "avatar": "data:not-an-image",
+   "month": 1,
+   "day": 1,
+   "disable": false,
+   "force": false,
+   "deleted": false
+  },
+  "helper": {
+   "id": "a1000000-0000-4000-8000-000000930005",
+   "username": "helper-search",
+   "role": 3,
+   "first_name": "Helper",
+   "last_name": "",
+   "avatar": null,
+   "month": 1,
+   "day": 1,
+   "disable": false,
+   "force": false,
+   "deleted": false
+  },
+  "ghost": {
+   "id": "a1000000-0000-4000-8000-000000930006",
+   "username": "ghost-search",
+   "role": 2,
+   "first_name": "Ghost",
+   "last_name": "",
+   "avatar": null,
+   "month": 1,
+   "day": 1,
+   "disable": false,
+   "force": false,
+   "deleted": true
+  }
+ },
+ "associations": {
+  "club": {
+   "id": "a1000000-0000-4000-8000-000000930007",
+   "user": "club",
+   "denomination": "Club è ASD",
+   "demand": "Domanda",
+   "regulation": null,
+   "additional_sections": [
+    {
+     "title": "Extra"
+    }
+   ],
+   "show_regulation_to_members": true,
+   "show_regulation_to_both": false,
+   "show_regulation_to_athletes": true,
+   "show_demand_to_members": false,
+   "show_demand_to_both": true,
+   "show_demand_to_athletes": false
+  },
+  "leap": {
+   "id": "a1000000-0000-4000-8000-000000930008",
+   "user": "leap",
+   "denomination": "Leap",
+   "demand": null,
+   "regulation": "Regolamento",
+   "additional_sections": [],
+   "show_regulation_to_members": false,
+   "show_regulation_to_both": false,
+   "show_regulation_to_athletes": false,
+   "show_demand_to_members": false,
+   "show_demand_to_both": false,
+   "show_demand_to_athletes": false
+  }
+ },
+ "tags": {
+  "t1": {
+   "id": "a1000000-0000-4000-8000-000000930009",
+   "name": "Nuoto"
+  },
+  "t2": {
+   "id": "a1000000-0000-4000-8000-000000930010",
+   "name": "Bimbi è"
+  }
+ },
+ "locations": {
+  "l1": {
+   "id": "a1000000-0000-4000-8000-000000930011",
+   "title": "Piscina",
+   "address": "Via 1"
+  }
+ },
+ "courses": [
+  {
+   "id": "a1000000-0000-4000-8000-000000930012",
+   "label": "newest",
+   "created": "2026-09-03T10:00:00Z",
+   "pinned": false,
+   "status": 2,
+   "deleted": false,
+   "tag": "t1",
+   "location": null,
+   "title": "Newest",
+   "description": "Corso è",
+   "fee": null,
+   "one_fee": "0.00",
+   "events": [
+    {
+     "start": "x"
+    }
+   ],
+   "course_type": 1,
+   "start": null,
+   "end": null,
+   "color": "#123456"
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000930013",
+   "label": "older",
+   "created": "2026-09-01T10:00:00.250000Z",
+   "pinned": false,
+   "status": 2,
+   "deleted": false,
+   "tag": null,
+   "location": null,
+   "title": "Older",
+   "description": null,
+   "fee": "50.00",
+   "one_fee": "0.00",
+   "events": null,
+   "course_type": 1,
+   "start": "2026-10-01T08:00:00Z",
+   "end": "2027-06-30T08:00:00Z",
+   "color": "#123456"
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000930014",
+   "label": "pinned",
+   "created": "2026-09-02T10:00:00Z",
+   "pinned": true,
+   "status": 2,
+   "deleted": false,
+   "tag": null,
+   "location": "l1",
+   "title": "Pinned",
+   "description": null,
+   "fee": "50.00",
+   "one_fee": "12.50",
+   "events": null,
+   "course_type": 3,
+   "start": null,
+   "end": null,
+   "color": "#123456"
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000930015",
+   "label": "draft",
+   "created": "2026-09-04T10:00:00Z",
+   "pinned": false,
+   "status": 1,
+   "deleted": false,
+   "tag": null,
+   "location": null,
+   "title": "Draft",
+   "description": null,
+   "fee": "50.00",
+   "one_fee": "0.00",
+   "events": null,
+   "course_type": 1,
+   "start": null,
+   "end": null,
+   "color": "#123456"
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000930016",
+   "label": "removed",
+   "created": "2026-09-05T10:00:00Z",
+   "pinned": false,
+   "status": 2,
+   "deleted": true,
+   "tag": null,
+   "location": null,
+   "title": "Removed",
+   "description": null,
+   "fee": "50.00",
+   "one_fee": "0.00",
+   "events": null,
+   "course_type": 1,
+   "start": null,
+   "end": null,
+   "color": "#123456"
+  }
+ ],
+ "subscriptions": [
+  [
+   "newest",
+   false
+  ],
+  [
+   "newest",
+   true
+  ],
+  [
+   "pinned",
+   false
+  ]
+ ],
+ "carnets": {
+  "k1": {
+   "id": "a1000000-0000-4000-8000-000000930017",
+   "title": "Dieci",
+   "description": "ingressi",
+   "lessons": 10,
+   "fee": "40.00",
+   "public": true,
+   "created": "2026-08-01T10:00:00Z"
+  }
+ },
+ "profile_keys": [
+  "additional_fields",
+  "address",
+  "address_cap",
+  "address_city",
+  "checkout_info",
+  "configuration",
+  "custom_subscription_form_data",
+  "denomination",
+  "enable_quotes_management",
+  "enabled_for",
+  "extra_text_invoices",
+  "invoice_template",
+  "membership_fee",
+  "membership_fee_plans",
+  "multiple_membership_fee",
+  "multiple_subscription_fee",
+  "stripe_available_methods",
+  "subscription_fee",
+  "subscription_fee_plans",
+  "subscription_template",
+  "tax_code"
+ ],
+ "module_keys": [
+  "additional_sections",
+  "demand",
+  "preregistration_module_closed",
+  "regulation",
+  "remaining_preregistration_days",
+  "show_demand_to_athletes",
+  "show_demand_to_both",
+  "show_demand_to_members",
+  "show_regulation_to_athletes",
+  "show_regulation_to_both",
+  "show_regulation_to_members"
+ ],
+ "cases": [
+  {
+   "name": "search-profile-public-profile-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/club-search",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000930012",
+       "sport_association": "a1000000-0000-4000-8000-000000930007",
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2026-09-03T10:00:00Z",
+       "title": "Newest",
+       "description": "Corso è",
+       "multi_payments": false,
+       "fee": null,
+       "events": [
+        {
+         "start": "x"
+        }
+       ],
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "tags": [
+        {
+         "tag_id": "a1000000-0000-4000-8000-000000930009",
+         "tag_name": "Nuoto"
+        }
+       ],
+       "multiple_quotes": null,
+       "locations": [],
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "group": null,
+       "athletes": null,
+       "total_subscriptions": 1
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000930013",
+       "sport_association": "a1000000-0000-4000-8000-000000930007",
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2026-09-01T10:00:00.250000Z",
+       "title": "Older",
+       "description": null,
+       "multi_payments": false,
+       "fee": "50.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "tags": [],
+       "multiple_quotes": null,
+       "locations": [],
+       "start_date": "2026-10-01T08:00:00Z",
+       "end_date": "2027-06-30T08:00:00Z",
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "group": null,
+       "athletes": null,
+       "total_subscriptions": 0
+      }
+     ],
+     "courses_pinned": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000930014",
+       "sport_association": "a1000000-0000-4000-8000-000000930007",
+       "status_flag": 2,
+       "course_type": 3,
+       "creation_date": "2026-09-02T10:00:00Z",
+       "title": "Pinned",
+       "description": null,
+       "multi_payments": false,
+       "fee": "50.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "12.50",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "tags": [],
+       "multiple_quotes": null,
+       "locations": [
+        {
+         "course_location_id": "a1000000-0000-4000-8000-000000930011",
+         "title": "Piscina",
+         "address": "Via 1"
+        }
+       ],
+       "start_date": null,
+       "end_date": null,
+       "pinned": true,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "group": null,
+       "athletes": null,
+       "total_subscriptions": 1
+      }
+     ],
+     "carnets": [
+      {
+       "carnet_id": "a1000000-0000-4000-8000-000000930017",
+       "title": "Dieci",
+       "description": "ingressi",
+       "lessons_number": 10,
+       "creation_date": "2026-08-01T10:00:00Z",
+       "fee": "40.00",
+       "public": true
+      }
+     ],
+     "user": {
+      "first_name": "Club è",
+      "last_name": "Owner",
+      "username": "Club-Search",
+      "avatar_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAABeElEQVR42u3SMQ0AAAgEsZeAZCQjARMMDE2q4HKpHjgXCTAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIyFsVTAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAtjqYCxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbH4ZgFWdW23F+u6bwAAAABJRU5ErkJggg==",
+      "preview_and_custom_features": [
+       "Iscrizione per famiglia"
+      ],
+      "disable_account_creation": true,
+      "force_account_creation": false,
+      "online_payments": false,
+      "sport_association": {
+       "$profile": "a1000000-0000-4000-8000-000000930007",
+       "$values": {
+        "denomination": "Club è ASD"
+       }
+      },
+      "is_athlete": false
+     },
+     "sport_association_id": "a1000000-0000-4000-8000-000000930007",
+     "courses_tags": [
+      {
+       "tag_id": "a1000000-0000-4000-8000-000000930009",
+       "tag_name": "Nuoto",
+       "active": true
+      },
+      {
+       "tag_id": "a1000000-0000-4000-8000-000000930010",
+       "tag_name": "Bimbi è",
+       "active": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "search-profile-public-profile-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/search/profile/CLUB-SEARCH",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000930012",
+       "sport_association": "a1000000-0000-4000-8000-000000930007",
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2026-09-03T10:00:00Z",
+       "title": "Newest",
+       "description": "Corso è",
+       "multi_payments": false,
+       "fee": null,
+       "events": [
+        {
+         "start": "x"
+        }
+       ],
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "tags": [
+        {
+         "tag_id": "a1000000-0000-4000-8000-000000930009",
+         "tag_name": "Nuoto"
+        }
+       ],
+       "multiple_quotes": null,
+       "locations": [],
+       "start_date": null,
+       "end_date": null,
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "group": null,
+       "athletes": null,
+       "total_subscriptions": 1
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000930013",
+       "sport_association": "a1000000-0000-4000-8000-000000930007",
+       "status_flag": 2,
+       "course_type": 1,
+       "creation_date": "2026-09-01T10:00:00.250000Z",
+       "title": "Older",
+       "description": null,
+       "multi_payments": false,
+       "fee": "50.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "0.00",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "tags": [],
+       "multiple_quotes": null,
+       "locations": [],
+       "start_date": "2026-10-01T08:00:00Z",
+       "end_date": "2027-06-30T08:00:00Z",
+       "pinned": false,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "group": null,
+       "athletes": null,
+       "total_subscriptions": 0
+      }
+     ],
+     "courses_pinned": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000930014",
+       "sport_association": "a1000000-0000-4000-8000-000000930007",
+       "status_flag": 2,
+       "course_type": 3,
+       "creation_date": "2026-09-02T10:00:00Z",
+       "title": "Pinned",
+       "description": null,
+       "multi_payments": false,
+       "fee": "50.00",
+       "events": null,
+       "one_fee_payment": false,
+       "one_fee": "12.50",
+       "google_calendar_id": null,
+       "google_background_color": "#123456",
+       "tags": [],
+       "multiple_quotes": null,
+       "locations": [
+        {
+         "course_location_id": "a1000000-0000-4000-8000-000000930011",
+         "title": "Piscina",
+         "address": "Via 1"
+        }
+       ],
+       "start_date": null,
+       "end_date": null,
+       "pinned": true,
+       "billed_duration_is_sport_season": false,
+       "billed_frequency": 1,
+       "billed_from_subscription_date": false,
+       "billed_from_day_of_month": 1,
+       "auto_renewal": false,
+       "deleted": false,
+       "group": null,
+       "athletes": null,
+       "total_subscriptions": 1
+      }
+     ],
+     "carnets": [
+      {
+       "carnet_id": "a1000000-0000-4000-8000-000000930017",
+       "title": "Dieci",
+       "description": "ingressi",
+       "lessons_number": 10,
+       "creation_date": "2026-08-01T10:00:00Z",
+       "fee": "40.00",
+       "public": true
+      }
+     ],
+     "user": {
+      "first_name": "Club è",
+      "last_name": "Owner",
+      "username": "Club-Search",
+      "avatar_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAABeElEQVR42u3SMQ0AAAgEsZeAZCQjARMMDE2q4HKpHjgXCTAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIyFsVTAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAtjqYCxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbH4ZgFWdW23F+u6bwAAAABJRU5ErkJggg==",
+      "preview_and_custom_features": [
+       "Iscrizione per famiglia"
+      ],
+      "disable_account_creation": true,
+      "force_account_creation": false,
+      "online_payments": false,
+      "sport_association": {
+       "$profile": "a1000000-0000-4000-8000-000000930007",
+       "$values": {
+        "denomination": "Club è ASD"
+       }
+      },
+      "is_athlete": false
+     },
+     "sport_association_id": "a1000000-0000-4000-8000-000000930007",
+     "courses_tags": [
+      {
+       "tag_id": "a1000000-0000-4000-8000-000000930009",
+       "tag_name": "Nuoto",
+       "active": true
+      },
+      {
+       "tag_id": "a1000000-0000-4000-8000-000000930010",
+       "tag_name": "Bimbi è",
+       "active": true
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "search-profile-module-info-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/Club-Search?module_info=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "user": {
+      "first_name": "Club è",
+      "last_name": "Owner",
+      "username": "Club-Search",
+      "avatar_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAABeElEQVR42u3SMQ0AAAgEsZeAZCQjARMMDE2q4HKpHjgXCTAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIyFsVTAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAtjqYCxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbH4ZgFWdW23F+u6bwAAAABJRU5ErkJggg==",
+      "preview_and_custom_features": [
+       "Iscrizione per famiglia"
+      ],
+      "disable_account_creation": true,
+      "force_account_creation": false,
+      "online_payments": false,
+      "sport_association": {
+       "$profile": "a1000000-0000-4000-8000-000000930007",
+       "$values": {
+        "denomination": "Club è ASD",
+        "demand": "Domanda",
+        "regulation": null,
+        "additional_sections": [
+         {
+          "title": "Extra"
+         }
+        ],
+        "show_regulation_to_members": true,
+        "show_regulation_to_both": false,
+        "show_regulation_to_athletes": true,
+        "show_demand_to_members": false,
+        "show_demand_to_both": true,
+        "show_demand_to_athletes": false
+       },
+       "$preregistration": {
+        "month": 9,
+        "day": 1
+       }
+      }
+     },
+     "sport_association_id": "a1000000-0000-4000-8000-000000930007"
+    }
+   }
+  },
+  {
+   "name": "search-profile-module-info-empty-value",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/search/profile/Club-Search?module_info=",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "user": {
+      "first_name": "Club è",
+      "last_name": "Owner",
+      "username": "Club-Search",
+      "avatar_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAABeElEQVR42u3SMQ0AAAgEsZeAZCQjARMMDE2q4HKpHjgXCTAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIyFsVTAWBgLY4GxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbEwFsYCY2EsjAXGwlgYC4yFsTAWGAtjYSwwFsbCWGAsjIWxwFgYC2OBsTAWxgJjYSyMBcbCWBgLjIWxMBYYC2NhLDAWxsJYYCyMhbHAWBgLY4GxMBbGAmNhLIwFxsJYGAtjqYCxMBbGAmNhLIwFxsJYGAuMhbEwFhgLY2EsMBbGwlhgLIyFscBYGAtjgbH4ZgFWdW23F+u6bwAAAABJRU5ErkJggg==",
+      "preview_and_custom_features": [
+       "Iscrizione per famiglia"
+      ],
+      "disable_account_creation": true,
+      "force_account_creation": false,
+      "online_payments": false,
+      "sport_association": {
+       "$profile": "a1000000-0000-4000-8000-000000930007",
+       "$values": {
+        "denomination": "Club è ASD",
+        "demand": "Domanda",
+        "regulation": null,
+        "additional_sections": [
+         {
+          "title": "Extra"
+         }
+        ],
+        "show_regulation_to_members": true,
+        "show_regulation_to_both": false,
+        "show_regulation_to_athletes": true,
+        "show_demand_to_members": false,
+        "show_demand_to_both": true,
+        "show_demand_to_athletes": false
+       },
+       "$preregistration": {
+        "month": 9,
+        "day": 1
+       }
+      }
+     },
+     "sport_association_id": "a1000000-0000-4000-8000-000000930007"
+    }
+   }
+  },
+  {
+   "name": "search-profile-module-info-invalid-season-date",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/leap-search?module_info=yes",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "user": {
+      "first_name": "Leap",
+      "last_name": "",
+      "username": "leap-search",
+      "avatar_image": null,
+      "preview_and_custom_features": [
+       "Iscrizione per famiglia"
+      ],
+      "disable_account_creation": false,
+      "force_account_creation": true,
+      "online_payments": false,
+      "sport_association": {
+       "$profile": "a1000000-0000-4000-8000-000000930008",
+       "$values": {
+        "denomination": "Leap",
+        "demand": null,
+        "regulation": "Regolamento",
+        "additional_sections": [],
+        "show_regulation_to_members": false,
+        "show_regulation_to_both": false,
+        "show_regulation_to_athletes": false,
+        "show_demand_to_members": false,
+        "show_demand_to_both": false,
+        "show_demand_to_athletes": false
+       },
+       "$preregistration": {
+        "month": 2,
+        "day": 31
+       }
+      }
+     },
+     "sport_association_id": "a1000000-0000-4000-8000-000000930008"
+    }
+   }
+  },
+  {
+   "name": "search-profile-athlete-profile",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/runner-search",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "user": {
+      "first_name": "Runner",
+      "last_name": "Uno",
+      "username": "Runner-Search",
+      "avatar_image": "data:not-an-image",
+      "preview_and_custom_features": [
+       "Iscrizione per famiglia"
+      ],
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "online_payments": false,
+      "is_athlete": true
+     }
+    }
+   }
+  },
+  {
+   "name": "search-profile-athlete-profile-ignores-module-info",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/Runner-Search?module_info=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "user": {
+      "first_name": "Runner",
+      "last_name": "Uno",
+      "username": "Runner-Search",
+      "avatar_image": "data:not-an-image",
+      "preview_and_custom_features": [
+       "Iscrizione per famiglia"
+      ],
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "online_payments": false,
+      "is_athlete": true
+     }
+    }
+   }
+  },
+  {
+   "name": "search-profile-deleted-user-not-found",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/ghost-search",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "user not found."
+   }
+  },
+  {
+   "name": "search-profile-missing-user-not-found",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/nobody-search",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "user not found."
+   }
+  },
+  {
+   "name": "search-profile-association-without-row-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/loner-search",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "search-profile-module-info-without-row-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/loner-search?module_info=1",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "search-profile-collaborator-user-server-error",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/search/profile/helper-search",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "search-profile-owner-scoped-athlete-other-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/search/profile/Club-Search",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Associazione non disponibile."
+   }
+  },
+  {
+   "name": "search-profile-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/search/profile/Club-Search",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "search-profile-wrong-method",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/search/profile/Club-Search",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "search-profile-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/search/profile/Club-Search",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Search Profile",
+    "description": "Returns information about a certain profile",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

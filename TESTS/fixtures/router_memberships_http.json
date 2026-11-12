@@ -1,0 +1,1676 @@
+{
+ "matrix_version": 1,
+ "scope": "DefaultRouter subscription/memberships routes",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "d1": {
+   "id": "a1000000-0000-4000-8000-000000650001",
+   "token": "a1000000-0000-4000-8000-000000650002",
+   "filename": "tessera è.pdf",
+   "filepath": "docs/tessera.pdf",
+   "size": 4096,
+   "created": "2026-09-01T08:00:00.500000Z"
+  },
+  "d2": {
+   "id": "a1000000-0000-4000-8000-000000650003",
+   "token": "a1000000-0000-4000-8000-000000650004",
+   "filename": "ricevuta.pdf",
+   "filepath": null,
+   "size": null,
+   "created": "2026-09-02T08:00:00Z"
+  }
+ },
+ "associates": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-000000650005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": false
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000650006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": "own_group",
+   "deleted": false
+  },
+  "removed": {
+   "id": "a1000000-0000-4000-8000-000000650007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "group": null,
+   "deleted": true
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000650008",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "group": null,
+   "deleted": false
+  }
+ },
+ "subscriptions": {
+  "sub_a": {
+   "id": "a1000000-0000-4000-8000-000000650009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario"
+  },
+  "sub_b": {
+   "id": "a1000000-0000-4000-8000-000000650010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario"
+  }
+ },
+ "payments": {
+  "paid": {
+   "id": "a1000000-0000-4000-8000-000000650011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "paid": true,
+   "group": null,
+   "deleted": false
+  },
+  "unpaid": {
+   "id": "a1000000-0000-4000-8000-000000650012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "paid": false,
+   "group": null,
+   "deleted": false
+  },
+  "grouped_pay": {
+   "id": "a1000000-0000-4000-8000-000000650013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "paid": false,
+   "group": "own_group",
+   "deleted": false
+  },
+  "removed_pay": {
+   "id": "a1000000-0000-4000-8000-000000650014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "paid": true,
+   "group": null,
+   "deleted": true
+  },
+  "abroad_pay": {
+   "id": "a1000000-0000-4000-8000-000000650015",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "paid": false,
+   "group": null,
+   "deleted": false
+  }
+ },
+ "memberships": {
+  "m1": {
+   "id": "a1000000-0000-4000-8000-000000650016",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "subscription": "sub_a",
+   "associate": "a1000000-0000-4000-8000-000000650005",
+   "payment": "a1000000-0000-4000-8000-000000650011",
+   "creation_date": "2026-09-01T08:00:00.250000Z",
+   "start_date": "2025-09-01",
+   "end_date": "2026-08-31",
+   "membership_type": "Annuale",
+   "membership_number": "12",
+   "description": "Tessera è",
+   "price": "25.00",
+   "documents": [
+    "d1"
+   ]
+  },
+  "m2": {
+   "id": "a1000000-0000-4000-8000-000000650017",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "subscription": "sub_b",
+   "associate": null,
+   "payment": "a1000000-0000-4000-8000-000000650012",
+   "creation_date": "2026-09-02T08:00:00Z",
+   "start_date": "2026-01-01",
+   "end_date": null,
+   "membership_type": null,
+   "membership_number": "0",
+   "description": "",
+   "price": null,
+   "documents": [
+    "d2"
+   ]
+  },
+  "m3": {
+   "id": "a1000000-0000-4000-8000-000000650018",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "subscription": null,
+   "associate": "a1000000-0000-4000-8000-000000650006",
+   "payment": null,
+   "creation_date": "2026-09-03T08:00:00Z",
+   "start_date": null,
+   "end_date": null,
+   "membership_type": null,
+   "membership_number": null,
+   "description": null,
+   "price": null,
+   "documents": []
+  },
+  "m4": {
+   "id": "a1000000-0000-4000-8000-000000650019",
+   "sport_association": "a1000000-0000-4000-8000-000000701001",
+   "subscription": "sub_a",
+   "associate": "a1000000-0000-4000-8000-000000650005",
+   "payment": "a1000000-0000-4000-8000-000000650014",
+   "creation_date": "2026-09-04T08:00:00Z",
+   "start_date": "2024-09-01",
+   "end_date": "2025-08-31",
+   "membership_type": "Ridotta",
+   "membership_number": "3",
+   "description": null,
+   "price": "0.50",
+   "documents": [
+    "d1"
+   ]
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000650020",
+   "sport_association": "a1000000-0000-4000-8000-000000701002",
+   "subscription": null,
+   "associate": "a1000000-0000-4000-8000-000000650008",
+   "payment": null,
+   "creation_date": "2026-09-05T08:00:00Z",
+   "start_date": null,
+   "end_date": null,
+   "membership_type": "Estero",
+   "membership_number": "1",
+   "description": null,
+   "price": "1.00",
+   "documents": []
+  }
+ },
+ "cases": [
+  {
+   "name": "router-memberships-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'subscription/memberships'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "subscription_membership_id": "a1000000-0000-4000-8000-000000650016",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "associate_id": "a1000000-0000-4000-8000-000000650005",
+      "associate": "a1000000-0000-4000-8000-000000650005",
+      "creation_date": "2026-09-01T08:00:00.250000Z",
+      "start_date": "2025-09-01",
+      "end_date": "2026-08-31",
+      "membership_type": "Annuale",
+      "membership_number": "12",
+      "description": "Tessera è",
+      "price": "25.00",
+      "paid": true,
+      "payment": "a1000000-0000-4000-8000-000000650011",
+      "attached_membership_documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000650001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/tessera.pdf",
+        "filename": "tessera è.pdf",
+        "file_size_bytes": 4096,
+        "token": "a1000000-0000-4000-8000-000000650002"
+       }
+      ]
+     },
+     {
+      "subscription_membership_id": "a1000000-0000-4000-8000-000000650017",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "associate_id": null,
+      "associate": null,
+      "creation_date": "2026-09-02T08:00:00Z",
+      "start_date": "2026-01-01",
+      "end_date": null,
+      "membership_type": null,
+      "membership_number": "0",
+      "description": "",
+      "price": null,
+      "paid": false,
+      "payment": "a1000000-0000-4000-8000-000000650012",
+      "attached_membership_documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000650003",
+        "creation_date": "2026-09-02T08:00:00Z",
+        "filepath": null,
+        "filename": "ricevuta.pdf",
+        "file_size_bytes": null,
+        "token": "a1000000-0000-4000-8000-000000650004"
+       }
+      ]
+     },
+     {
+      "subscription_membership_id": "a1000000-0000-4000-8000-000000650018",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "associate_id": "a1000000-0000-4000-8000-000000650006",
+      "associate": "a1000000-0000-4000-8000-000000650006",
+      "creation_date": "2026-09-03T08:00:00Z",
+      "start_date": null,
+      "end_date": null,
+      "membership_type": null,
+      "membership_number": null,
+      "description": null,
+      "price": null,
+      "paid": null,
+      "payment": null,
+      "attached_membership_documents": []
+     },
+     {
+      "subscription_membership_id": "a1000000-0000-4000-8000-000000650019",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "associate_id": "a1000000-0000-4000-8000-000000650005",
+      "associate": "a1000000-0000-4000-8000-000000650005",
+      "creation_date": "2026-09-04T08:00:00Z",
+      "start_date": "2024-09-01",
+      "end_date": "2025-08-31",
+      "membership_type": "Ridotta",
+      "membership_number": "3",
+      "description": null,
+      "price": "0.50",
+      "paid": true,
+      "payment": "a1000000-0000-4000-8000-000000650014",
+      "attached_membership_documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000650001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/tessera.pdf",
+        "filename": "tessera è.pdf",
+        "file_size_bytes": 4096,
+        "token": "a1000000-0000-4000-8000-000000650002"
+       }
+      ]
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-subscription-filter",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/memberships/?subscription=a1000000-0000-4000-8000-000000650009",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "subscription_membership_id": "a1000000-0000-4000-8000-000000650016",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "associate_id": "a1000000-0000-4000-8000-000000650005",
+      "associate": "a1000000-0000-4000-8000-000000650005",
+      "creation_date": "2026-09-01T08:00:00.250000Z",
+      "start_date": "2025-09-01",
+      "end_date": "2026-08-31",
+      "membership_type": "Annuale",
+      "membership_number": "12",
+      "description": "Tessera è",
+      "price": "25.00",
+      "paid": true,
+      "payment": "a1000000-0000-4000-8000-000000650011",
+      "attached_membership_documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000650001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/tessera.pdf",
+        "filename": "tessera è.pdf",
+        "file_size_bytes": 4096,
+        "token": "a1000000-0000-4000-8000-000000650002"
+       }
+      ]
+     },
+     {
+      "subscription_membership_id": "a1000000-0000-4000-8000-000000650019",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "associate_id": "a1000000-0000-4000-8000-000000650005",
+      "associate": "a1000000-0000-4000-8000-000000650005",
+      "creation_date": "2026-09-04T08:00:00Z",
+      "start_date": "2024-09-01",
+      "end_date": "2025-08-31",
+      "membership_type": "Ridotta",
+      "membership_number": "3",
+      "description": null,
+      "price": "0.50",
+      "paid": true,
+      "payment": "a1000000-0000-4000-8000-000000650014",
+      "attached_membership_documents": [
+       {
+        "document_id": "a1000000-0000-4000-8000-000000650001",
+        "creation_date": "2026-09-01T08:00:00.500000Z",
+        "filepath": "docs/tessera.pdf",
+        "filename": "tessera è.pdf",
+        "file_size_bytes": 4096,
+        "token": "a1000000-0000-4000-8000-000000650002"
+       }
+      ]
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-malformed-filter-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/?associate_id=abc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-patch-not-allowed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-memberships-list-delete-without-pk-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Membership List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "POST": {
+      "subscription_membership_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Subscription membership id"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "associate_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Associate id"
+      },
+      "associate": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Associate"
+      },
+      "creation_date": {
+       "type": "datetime",
+       "required": false,
+       "read_only": false,
+       "label": "Creation date"
+      },
+      "start_date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "Start date"
+      },
+      "end_date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "End date"
+      },
+      "membership_type": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Membership type",
+       "max_length": 255
+      },
+      "membership_number": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Membership number",
+       "max_length": 50
+      },
+      "description": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Description",
+       "max_length": 255
+      },
+      "price": {
+       "type": "decimal",
+       "required": false,
+       "read_only": false,
+       "label": "Price",
+       "max_digits": 9,
+       "decimal_places": 2
+      },
+      "paid": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Paid"
+      },
+      "payment": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Payment"
+      },
+      "attached_membership_documents": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Attached membership documents",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "documents_data": {
+       "type": "list",
+       "required": false,
+       "read_only": false,
+       "label": "Documents data",
+       "child": {
+        "type": "nested object",
+        "required": true,
+        "read_only": false,
+        "child": {
+         "type": "field",
+         "required": true,
+         "read_only": false
+        }
+       }
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-format-json-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-memberships-list-format-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships.html",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-create-association-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "membership_type": "Annuale"
+   }
+  },
+  {
+   "name": "router-memberships-create-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "body": [
+    {
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   ]
+  },
+  {
+   "name": "router-memberships-create-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "start_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "price": [
+     "A valid number is required."
+    ],
+    "associate": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000659998\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "start_date": "2026-01-01",
+    "price": "x",
+    "associate": "a1000000-0000-4000-8000-000000659998"
+   }
+  },
+  {
+   "name": "router-memberships-create-foreign-association-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-memberships-create-foreign-associate-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate": "a1000000-0000-4000-8000-000000650008"
+   }
+  },
+  {
+   "name": "router-memberships-create-athlete-association-required",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-memberships-create-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-memberships-create-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-memberships-create-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650005",
+    "associate": "a1000000-0000-4000-8000-000000650005",
+    "creation_date": "$now",
+    "start_date": "2026-09-01",
+    "end_date": null,
+    "membership_type": "Annuale",
+    "membership_number": "0",
+    "description": null,
+    "price": "30.00",
+    "paid": true,
+    "payment": "a1000000-0000-4000-8000-000000650011",
+    "attached_membership_documents": []
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": "a1000000-0000-4000-8000-000000650005",
+     "payment": "a1000000-0000-4000-8000-000000650011",
+     "creation_date": "$now",
+     "start_date": "2026-09-01",
+     "end_date": null,
+     "membership_type": "Annuale",
+     "membership_number": "0",
+     "description": null,
+     "price": "30.00"
+    }
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "membership_type": "Annuale",
+    "start_date": "01/09/2026",
+    "price": "30",
+    "associate": "a1000000-0000-4000-8000-000000650005",
+    "payment": "a1000000-0000-4000-8000-000000650011",
+    "subscription": "a1000000-0000-4000-8000-000000650009"
+   }
+  },
+  {
+   "name": "router-memberships-create-form-body-id-ignored",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": null,
+    "membership_number": "",
+    "description": "Da form",
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": null,
+     "membership_number": "",
+     "description": "Da form",
+     "price": null
+    }
+   },
+   "raw_body": "sport_association=a1000000-0000-4000-8000-000000701001&subscription_membership_id=a1000000-0000-4000-8000-000000659101&description=Da+form&membership_number=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-memberships-create-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": null,
+    "membership_number": "0",
+    "description": null,
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": null,
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    }
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016"
+   }
+  },
+  {
+   "name": "router-memberships-create-format-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships.json/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": "Formato",
+    "membership_number": "0",
+    "description": null,
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Formato",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    }
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "membership_type": "Formato"
+   }
+  },
+  {
+   "name": "router-memberships-create-document-missing-key-keeps-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": null,
+     "membership_number": "0",
+     "description": "Chiavi",
+     "price": null
+    }
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "description": "Chiavi",
+    "documents_data": [
+     {
+      "filename": "a.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "router-memberships-detail-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-detail-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'subscription/memberships/a1000000-0000-4000-8000-000000650016'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-retrieve-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650005",
+    "associate": "a1000000-0000-4000-8000-000000650005",
+    "creation_date": "2026-09-01T08:00:00.250000Z",
+    "start_date": "2025-09-01",
+    "end_date": "2026-08-31",
+    "membership_type": "Annuale",
+    "membership_number": "12",
+    "description": "Tessera è",
+    "price": "25.00",
+    "paid": true,
+    "payment": "a1000000-0000-4000-8000-000000650011",
+    "attached_membership_documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000650001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/tessera.pdf",
+      "filename": "tessera è.pdf",
+      "file_size_bytes": 4096,
+      "token": "a1000000-0000-4000-8000-000000650002"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-retrieve-soft-deleted-payment",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650019.json",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650019",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650005",
+    "associate": "a1000000-0000-4000-8000-000000650005",
+    "creation_date": "2026-09-04T08:00:00Z",
+    "start_date": "2024-09-01",
+    "end_date": "2025-08-31",
+    "membership_type": "Ridotta",
+    "membership_number": "3",
+    "description": null,
+    "price": "0.50",
+    "paid": true,
+    "payment": "a1000000-0000-4000-8000-000000650014",
+    "attached_membership_documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000650001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/tessera.pdf",
+      "filename": "tessera è.pdf",
+      "file_size_bytes": 4096,
+      "token": "a1000000-0000-4000-8000-000000650002"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-retrieve-filter-narrows-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650017/?subscription=a1000000-0000-4000-8000-000000650009",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SubscriptionMembership matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-retrieve-filter-matches",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650018/?associate_id=a1000000-0000-4000-8000-000000650006",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650018",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": "a1000000-0000-4000-8000-000000650006",
+    "associate": "a1000000-0000-4000-8000-000000650006",
+    "creation_date": "2026-09-03T08:00:00Z",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": null,
+    "membership_number": null,
+    "description": null,
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": []
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-retrieve-foreign-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650020/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SubscriptionMembership matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-retrieve-malformed-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/memberships/abc/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-retrieve-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-memberships-detail-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-memberships-detail-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Membership Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "PUT": {
+      "subscription_membership_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Subscription membership id"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "associate_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Associate id"
+      },
+      "associate": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Associate"
+      },
+      "creation_date": {
+       "type": "datetime",
+       "required": false,
+       "read_only": false,
+       "label": "Creation date"
+      },
+      "start_date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "Start date"
+      },
+      "end_date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "End date"
+      },
+      "membership_type": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Membership type",
+       "max_length": 255
+      },
+      "membership_number": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Membership number",
+       "max_length": 50
+      },
+      "description": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Description",
+       "max_length": 255
+      },
+      "price": {
+       "type": "decimal",
+       "required": false,
+       "read_only": false,
+       "label": "Price",
+       "max_digits": 9,
+       "decimal_places": 2
+      },
+      "paid": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Paid"
+      },
+      "payment": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Payment"
+      },
+      "attached_membership_documents": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Attached membership documents",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "documents_data": {
+       "type": "list",
+       "required": false,
+       "read_only": false,
+       "label": "Documents data",
+       "child": {
+        "type": "nested object",
+        "required": true,
+        "read_only": false,
+        "child": {
+         "type": "field",
+         "required": true,
+         "read_only": false
+        }
+       }
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-detail-options-unknown-no-actions",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000659998/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Membership Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-partial-update-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650017/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "description": "Mai"
+   }
+  },
+  {
+   "name": "router-memberships-update-format-json-server-error",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650017.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "description": "Mai"
+   }
+  },
+  {
+   "name": "router-memberships-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650020/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SubscriptionMembership matches the given query."
+   },
+   "effect": null,
+   "body": {
+    "description": "x"
+   }
+  },
+  {
+   "name": "router-memberships-update-invalid-date",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650017/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "end_date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "end_date": "2027-01-01"
+   }
+  },
+  {
+   "name": "router-memberships-update-owner-put-is-partial",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650017/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650017",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "2026-09-02T08:00:00Z",
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "membership_type": null,
+    "membership_number": "0",
+    "description": "Aggiornata router",
+    "price": "12.50",
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650012",
+    "attached_membership_documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000650003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "ricevuta.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000650004"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "m2",
+    "changes": {
+     "description": [
+      "",
+      "Aggiornata router"
+     ],
+     "end_date": [
+      "None",
+      "2026-12-31"
+     ],
+     "price": [
+      "None",
+      "12.50"
+     ]
+    },
+    "stored": {
+     "subscription": "a1000000-0000-4000-8000-000000650010",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": "a1000000-0000-4000-8000-000000650012",
+     "creation_date": "2026-09-02T08:00:00Z",
+     "start_date": "2026-01-01",
+     "end_date": "2026-12-31",
+     "membership_type": null,
+     "membership_number": "0",
+     "description": "Aggiornata router",
+     "price": "12.50"
+    }
+   },
+   "body": {
+    "description": "Aggiornata router",
+    "end_date": "31/12/2026",
+    "price": "12.5"
+   }
+  },
+  {
+   "name": "router-memberships-update-primary-key-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650017/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650017",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "2026-09-02T08:00:00Z",
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "membership_type": null,
+    "membership_number": "0",
+    "description": "Chiave ignorata",
+    "price": "12.50",
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650012",
+    "attached_membership_documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000650003",
+      "creation_date": "2026-09-02T08:00:00Z",
+      "filepath": null,
+      "filename": "ricevuta.pdf",
+      "file_size_bytes": null,
+      "token": "a1000000-0000-4000-8000-000000650004"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "m2",
+    "changes": {
+     "description": [
+      "Aggiornata router",
+      "Chiave ignorata"
+     ]
+    },
+    "stored": {
+     "subscription": "a1000000-0000-4000-8000-000000650010",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": "a1000000-0000-4000-8000-000000650012",
+     "creation_date": "2026-09-02T08:00:00Z",
+     "start_date": "2026-01-01",
+     "end_date": "2026-12-31",
+     "membership_type": null,
+     "membership_number": "0",
+     "description": "Chiave ignorata",
+     "price": "12.50"
+    }
+   },
+   "body": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016",
+    "description": "Chiave ignorata"
+   }
+  },
+  {
+   "name": "router-memberships-destroy-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650020/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SubscriptionMembership matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-destroy-filter-narrows-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/?associate_id=a1000000-0000-4000-8000-000000650006",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SubscriptionMembership matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-destroy-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-memberships-destroy-owner-with-documents",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "label": "m1"
+   }
+  },
+  {
+   "name": "router-memberships-destroy-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SubscriptionMembership matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-memberships-destroy-format-json",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650019.json/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "actor": "full_collaborator",
+    "label": "m4"
+   }
+  }
+ ]
+}

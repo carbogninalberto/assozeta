@@ -1,0 +1,358 @@
+{
+ "format": 1,
+ "cases": [
+  {
+   "name": "full-name-owner-actor",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700002",
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "username": "mario",
+     "avatar_image": "data:image/png;base64,AAAA"
+    },
+    "content": "Ciao",
+    "document": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Ciao"
+        }
+       ]
+      }
+     ]
+    },
+    "pinned": true,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700002",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700002",
+    "author_name": "Mario Rossi",
+    "author_avatar": "data:image/png;base64,AAAA",
+    "is_owner": true,
+    "document": {
+     "type": "doc",
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Ciao"
+        }
+       ]
+      }
+     ]
+    },
+    "content": "Ciao",
+    "pinned": true,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "other-actor-not-owner",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700002",
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "username": "mario",
+     "avatar_image": "data:image/png;base64,AAAA"
+    },
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700001",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700002",
+    "author_name": "Mario Rossi",
+    "author_avatar": "data:image/png;base64,AAAA",
+    "is_owner": false,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "association-owner-denomination",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700001",
+     "first_name": "",
+     "last_name": "",
+     "username": "h4sh3d-owner",
+     "avatar_image": null
+    },
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700001",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700001",
+    "author_name": "ASD Fixture à",
+    "author_avatar": null,
+    "is_owner": true,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "username-fallback",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700002",
+     "first_name": "",
+     "last_name": "",
+     "username": "mario",
+     "avatar_image": "data:image/png;base64,AAAA"
+    },
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700001",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700002",
+    "author_name": "mario",
+    "author_avatar": "data:image/png;base64,AAAA",
+    "is_owner": false,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "name-stripped",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700002",
+     "first_name": " Anna ",
+     "last_name": "",
+     "username": "mario",
+     "avatar_image": "data:image/png;base64,AAAA"
+    },
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700001",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700002",
+    "author_name": "Anna",
+    "author_avatar": "data:image/png;base64,AAAA",
+    "is_owner": false,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "python-whitespace-name-falls-back",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700002",
+     "first_name": "　",
+     "last_name": "\u001c",
+     "username": "mario",
+     "avatar_image": "data:image/png;base64,AAAA"
+    },
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700001",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700002",
+    "author_name": "mario",
+    "author_avatar": "data:image/png;base64,AAAA",
+    "is_owner": false,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "last-name-only",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700002",
+     "first_name": "",
+     "last_name": "Bianchi",
+     "username": "mario",
+     "avatar_image": "data:image/png;base64,AAAA"
+    },
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700001",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700002",
+    "author_name": "Bianchi",
+    "author_avatar": "data:image/png;base64,AAAA",
+    "is_owner": false,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "deleted-author",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": null,
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456+00:00",
+    "updated_at": "2026-10-27T10:11:13+00:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700001",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": null,
+    "author_name": "Utente eliminato",
+    "author_avatar": null,
+    "is_owner": false,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.123456Z",
+    "updated_at": "2026-10-27T10:11:13Z"
+   }
+  },
+  {
+   "name": "non-utc-timestamps-normalized",
+   "record": {
+    "id": "a1000000-0000-4000-8000-000000704001",
+    "association": {
+     "id": "a1000000-0000-4000-8000-000000703001",
+     "owner_id": "a1000000-0000-4000-8000-000000700001",
+     "denomination": "ASD Fixture à"
+    },
+    "author": {
+     "id": "a1000000-0000-4000-8000-000000700002",
+     "first_name": "Mario",
+     "last_name": "Rossi",
+     "username": "mario",
+     "avatar_image": "data:image/png;base64,AAAA"
+    },
+    "content": "Ciao",
+    "document": null,
+    "pinned": false,
+    "created_at": "2026-10-27T10:11:12.000001+02:00",
+    "updated_at": "2027-01-01T00:30:00+01:00"
+   },
+   "actor_id": "a1000000-0000-4000-8000-000000700002",
+   "expect": {
+    "staff_board_message_id": "a1000000-0000-4000-8000-000000704001",
+    "sport_association": "a1000000-0000-4000-8000-000000703001",
+    "author": "a1000000-0000-4000-8000-000000700002",
+    "author_name": "Mario Rossi",
+    "author_avatar": "data:image/png;base64,AAAA",
+    "is_owner": true,
+    "document": null,
+    "content": "Ciao",
+    "pinned": false,
+    "created_at": "2026-10-27T08:11:12.000001Z",
+    "updated_at": "2026-12-31T23:30:00Z"
+   }
+  }
+ ]
+}

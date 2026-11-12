@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - "BE/**"
+      - "BE_GO/**"
+      - "TESTS/**"
+      - ".github/workflows/go-quality.yml"
       - "UI/**"
       - "selfhost/**"
       - ".github/workflows/publish-images.yml"
@@ -33,7 +36,7 @@ on:
 permissions:
   contents: read
 
-# Releases publish without rebuilding the manual: the backend image carries the
+# Releases publish without rebuilding the manual: both backend images carry the
 # verified manual of the previous release unchanged (MANUAL_CARRIED_FROM). The
 # manual is rebuilt, verified and bundled only on an explicit manual dispatch
 # with include_manual.
@@ -41,6 +44,9 @@ env:
   RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
 
 jobs:
+  go-quality:
+    uses: ./.github/workflows/go-quality.yml
+
   release-target:
     name: Check release target
     if: github.event_name == 'release' || inputs.release_tag
@@ -125,6 +131,7 @@ jobs:
     if: >-
       ${{ !cancelled() &&
           needs.validate.result == 'success' &&
+          needs.go-quality.result == 'success' &&
           needs.production-smoke.result == 'success' &&
           (needs.release-target.result == 'success' ||
            (github.event_name != 'release' && !inputs.release_tag && needs.release-target.result == 'skipped')) &&
@@ -132,7 +139,7 @@ jobs:
            (!(github.event_name == 'workflow_dispatch' && inputs.include_manual) && needs.manual-release.result == 'skipped')) &&
           (needs.selfhost-quality.result == 'success' ||
            (github.event_name == 'push' && needs.selfhost-quality.result == 'skipped')) }}
-    needs: [validate, production-smoke, selfhost-quality, manual-release, release-target]
+    needs: [validate, production-smoke, selfhost-quality, manual-release, release-target, go-quality]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -147,6 +154,11 @@ jobs:
             context: ./BE
             file: ./BE/Dockerfile
             target: production
+          - name: backend-go
+            image: assozeta-backend-go
+            context: ./BE_GO
+            file: ./BE_GO/Dockerfile
+            target: ""
           - name: web
             image: assozeta-web
             context: ./UI
@@ -170,19 +182,21 @@ jobs:
           persist-credentials: false
 
       - name: Download the verified release manual
-        if: matrix.name == 'backend' && needs.manual-release.result == 'success'
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && needs.manual-release.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: manuale-release-runtime
-          path: BE/release-manual
+          path: ${{ matrix.context }}/release-manual
 
       - name: Carry the manual of the previous release
         # Releases without include_manual reuse the verified manual of the
         # current :latest release image unchanged (it may itself be carried).
+        # Both backend images take the same package from the Django image.
         id: carried
-        if: matrix.name == 'backend' && needs.manual-release.result != 'success' && env.RELEASE_TAG != ''
+        if: (matrix.name == 'backend' || matrix.name == 'backend-go') && needs.manual-release.result != 'success' && env.RELEASE_TAG != ''
         env:
           SOURCE_IMAGE: ghcr.io/${{ github.repository_owner }}/assozeta-backend:latest
+          DESTINATION: ${{ matrix.context }}/release-manual
         run: |
           set -euo pipefail
           if ! docker pull --quiet "$SOURCE_IMAGE"; then
@@ -200,8 +214,8 @@ jobs:
             exit 0
           fi
           origin=$(python3 -c 'import json,sys; b=json.load(open(sys.argv[1])); print(b["release"], b["application_revision"])' "$work/release-manual/bundle.json")
-          find BE/release-manual -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
-          cp -a "$work/release-manual/." BE/release-manual/
+          find "$DESTINATION" -mindepth 1 ! -name .gitkeep -exec rm -rf {} +
+          cp -a "$work/release-manual/." "$DESTINATION/"
           echo "Carrying the manual verified for $origin"
           echo "origin=$origin" >> "$GITHUB_OUTPUT"
 
@@ -268,7 +282,7 @@ jobs:
           set -euo pipefail
           RELEASE_TAG="${RELEASE_TAG#v}"
 
-          images=(assozeta-backend assozeta-web assozeta-renderer assozeta-updater)
+          images=(assozeta-backend assozeta-backend-go assozeta-web assozeta-renderer assozeta-updater)
           failures=()
 
           for image in "${images[@]}"; do
@@ -292,16 +306,17 @@ jobs:
             printf '\nAnonymous pull verification failed for:\n' >&2
             printf '  - %s\n' "${failures[@]}" >&2
             printf '\nGHCR container packages are private by default, but the self-host installer\n' >&2
-            printf 'pulls images without credentials. Set all four packages to Public\n' >&2
+            printf 'pulls images without credentials. Set all five packages to Public\n' >&2
             printf '(Package settings > Change visibility > Public), then rerun this workflow:\n' >&2
             printf '  - ghcr.io/%s/assozeta-backend\n' "${IMAGE_OWNER}" >&2
+            printf '  - ghcr.io/%s/assozeta-backend-go\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-web\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-renderer\n' "${IMAGE_OWNER}" >&2
             printf '  - ghcr.io/%s/assozeta-updater\n' "${IMAGE_OWNER}" >&2
             exit 1
           fi
 
-          echo "All four release images are anonymously pullable."
+          echo "All five release images are anonymously pullable."
 
   release-bundle:
     name: Attach self-host bundle

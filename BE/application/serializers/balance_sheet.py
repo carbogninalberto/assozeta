@@ -3,9 +3,20 @@ from rest_framework import serializers
 
 from application.models.balance_sheet_models import CustomAccounts, CustomAccountsTransfer
 from application.models.payment_models import Payment
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
-class CustomAccountSerializer(serializers.ModelSerializer):
+def custom_account_in_use(account):
+    """True when a transfer or a payment references the account: such an account cannot be deleted."""
+    # account transfer from or to this account
+    if CustomAccountsTransfer.objects.filter(custom_account_from=account).exists() \
+            or CustomAccountsTransfer.objects.filter(custom_account_to=account).exists():
+        return True
+    # check if there are payments with this account
+    return Payment.objects.filter(custom_accounts_id=account.custom_account_id).exists()
+
+
+class CustomAccountSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     deletable = serializers.SerializerMethodField()
     current_balance = serializers.SerializerMethodField()
 
@@ -95,16 +106,7 @@ class CustomAccountSerializer(serializers.ModelSerializer):
         # check if is editable
         if not obj.editable:
             return False
-
-        # account transfer from or to this account
-        if CustomAccountsTransfer.objects.filter(custom_account_from=obj).exists() \
-                or CustomAccountsTransfer.objects.filter(custom_account_to=obj).exists():
-            return False
-        # check if there are payments with this account
-        payments = Payment.objects.filter(custom_accounts_id=obj.custom_account_id).count()
-        if payments > 0:
-            return False
-        return True
+        return not custom_account_in_use(obj)
 
     def create(self, validated_data):
         instance = CustomAccounts.objects.create(**validated_data)
@@ -140,11 +142,42 @@ class CustomAccountSerializerSimplify(serializers.ModelSerializer):
         )
 
 
-class CustomAccountTransferSerializer(serializers.ModelSerializer):
+class CustomAccountTransferSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        sport_association = self.context.get('sport_association')
+        accounts = CustomAccounts.objects.none()
+        if sport_association is not None:
+            accounts = CustomAccounts.objects.filter(
+                sport_association=sport_association,
+            )
+        self.fields['custom_account_from'].queryset = accounts
+        self.fields['custom_account_to'].queryset = accounts
 
     def create(self, validated_data):
         instance = CustomAccountsTransfer.objects.create(**validated_data)
         return instance
+
+    def validate(self, attrs):
+        sport_association = self.context.get('sport_association')
+        association_id = getattr(sport_association, 'pk', None)
+        errors = {}
+        for field_name in ('custom_account_from', 'custom_account_to'):
+            if field_name in attrs:
+                account = attrs[field_name]
+            elif self.instance is not None:
+                account = getattr(self.instance, field_name)
+            else:
+                account = None
+            if account is None or account.sport_association_id == association_id:
+                continue
+            errors[field_name] = self.fields[field_name].error_messages[
+                'does_not_exist'
+            ].format(pk_value=account.pk)
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
 
     def save(self, **kwargs):
         return super().save(**kwargs)
@@ -159,6 +192,9 @@ class CustomAccountTransferSerializer(serializers.ModelSerializer):
             'date',
             'sport_association'
         )
+        extra_kwargs = {
+            'sport_association': {'read_only': True},
+        }
 
 
 class CustomAccountTransferInfoSerializer(serializers.ModelSerializer):

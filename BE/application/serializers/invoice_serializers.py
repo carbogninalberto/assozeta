@@ -1,4 +1,5 @@
 import json
+import uuid
 
 import a38
 import xml.etree.ElementTree as ET
@@ -6,6 +7,7 @@ from rest_framework import serializers
 
 from application.models.invoices_models import Invoice, InvoiceSuppliers, CustomerInvoice
 from application.serializers.payment_serializers import PaymentSerializer, SupplierSerializer
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
 class InvoiceSerializer(serializers.ModelSerializer):
@@ -28,7 +30,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return doc
 
 
-class InvoiceSuppliersSerializer(serializers.ModelSerializer):
+class InvoiceSuppliersSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     payment = PaymentSerializer(required=False, allow_null=True)
     payment_id = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     document_token = serializers.SerializerMethodField()
@@ -41,6 +43,31 @@ class InvoiceSuppliersSerializer(serializers.ModelSerializer):
 
     def save(self, **kwargs):
         return super().save(**kwargs)
+
+    def validate_payment_id(self, value):
+        """A payment id must name a payment this caller can see in its association."""
+        if value is None or value == '':
+            return value
+        try:
+            parsed = uuid.UUID(str(value))
+        except ValueError:
+            parsed = None
+        if parsed is not None:
+            # Re-sending the payment the invoice already links stays valid.
+            if self.instance is not None and self.instance.payment_id == parsed:
+                return value
+            request = self.context.get('request')
+            association = self.context.get('sport_association')
+            if request is not None and association is not None:
+                from application.impersonation_scope import scoped_queryset
+                from application.models.payment_models import Payment
+                if scoped_queryset(request, Payment.objects).filter(
+                        pk=parsed, sport_association=association).exists():
+                    return value
+        raise serializers.ValidationError(
+            serializers.PrimaryKeyRelatedField.default_error_messages['does_not_exist'].format(pk_value=value),
+            code='does_not_exist'
+        )
 
     class Meta:
         model = InvoiceSuppliers
@@ -76,7 +103,11 @@ class CustomerInvoiceSerializer(serializers.ModelSerializer):
         if data['transferor_contact_email'] is None and data['id_transmitter'] is None:
             raise serializers.ValidationError("Either transferor_contact_email or id_transmitter must be provided!")
         # check if the invoice is already present
-        if CustomerInvoice.objects.filter(number=data['number'], fiscal_year=data['fiscal_year']).exists():
+        if CustomerInvoice.objects.filter(
+                number=data['number'],
+                fiscal_year=data['fiscal_year'],
+                sport_association=data.get('sport_association'),
+        ).exists():
             raise serializers.ValidationError("Invoice already exists!")
         return data
 

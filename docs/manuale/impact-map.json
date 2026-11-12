@@ -190,7 +190,7 @@
                "docs/scripts/README.md", "docs/scripts/analyze_architecture.mjs",
                "docs/scripts/capture_system_screenshots.mjs", "docs/scripts/generate_coverage_gaps.mjs",
                "docs/scripts/generate_docs_summary.mjs", "docs/scripts/render_mermaid_diagrams.mjs",
-               "quality-reports/", "skills/", "README.md", "LICENSE", "Makefile", "run_tests.sh", ".gitignore",
+               "quality-reports/", "skills/", ".claude/", "tools/", "README.md", "LICENSE", "Makefile", "run_tests.sh", ".gitignore",
                ".gitattributes", ".github/workflows/pull-request-quality.yml",
                ".github/workflows/selfhost-quality.yml", ".github/workflows/selfhost-release-rehearsal.yml",
                ".github/workflows/update-contributors.yml"],

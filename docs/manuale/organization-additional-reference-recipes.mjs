@@ -1,24 +1,29 @@
+// Profile, association and mapped-owner table mutations commit with their audit indexes;
+// any index exception rolls back the mutation. Locked reads and selected columns preserve
+// concurrent changes. Successful settings and registration workflows remain unchanged.
 // Authored MDX is the only prose source. These descriptors seal code review only.
 // No browser report, capture or runtime success is implied by a verified text reference.
 export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
     "UI/src/routes/association/Members/detail/sections/Info.svelte": "720d401c86e498d7efdba75321ce399fe2788033cf453690b3c6bf6869d5cff7",
     "UI/src/routes/association/Members/detail/sections/subcomponents/Tessera.svelte": "47539a823dbdc092996cb671eec8044a6168da923a2b2a62550d438673a86fd7",
-    "BE/application/views/subscriptions_views.py": "5b7de613eec3deb9e154352eb900ba7ef791d03a56d206c01a96281ab153e8f5",
+    "BE/application/views/subscriptions_views.py": "5fb701ca27d2ca4bbf9a11b0a6f374cd79f6db6bb556f52e10b441aae06f064c",
     "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
     "UI/src/routes/association/Members/shared/ExportData.svelte": "119330667e35cbc6b316abb6c45f484ef4a8aae2ea5951d477f21c32ca9f7307",
     "UI/src/components/modals/CurrentViewPrintingModal.svelte": "89cd17ec6bc9c60c50579a72a88ce83ef716dbd4ffa2719f5c0d3bd064b9be7a",
     "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-    "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
+    "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
     "UI/src/routes/profile/sections/DataManagement.svelte": "349a510108fde62e09cd746c5934f445f3c176efe43946541a59a50cd1890bbd",
     "UI/src/routes/profile/sections/DataExports.svelte": "4fec2d01e6e95c2f7dfc65dfa156e68110e0479264dc86995598948e7f4b2ca9",
-    "BE/application/views/export_views.py": "1620991baa696f9ea410edc33fe11a612c8dd9d7d9d5ef8ceb9b0b3cce55544a",
+    "BE/application/views/export_views.py": "6d2984cdc7c859d2a6a63801a0776c815dede42dbcb5087f10e0006b8dcf736d",
     "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
     "UI/src/routes/profile/ProfileMenu.svelte": "5bb6b5afa551d786105d4ccea32a42358182e8cff50ddc6662bddb6e79c73e13",
     // Reviewed: association scope is retained for both endpoints; links to
     // soft-deleted associates now survive export and repeated restore.
-    "BE/application/services/export_service.py": "d0fcd5140e8054d66dc50083d943a9020ad7f40592c96ddf9206dcf78d842238",
+    // Category/VAT dependencies of exported soft-deleted payments remain retained;
+    // association scope and the pending full-export workflow are unchanged.
+    "BE/application/services/export_service.py": "a209b477776257fe4c6dc79a66280e5a6538edec4188811ddeb8d16ef1b15678",
     "UI/src/routes/association/course/instructor/InstructorList.svelte": "1bb5636275f07a54fbde9266959cdfa3518d5f88f1274d513379a345797f60ff",
     "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
     "UI/src/routes/association/course/instructor/add/sections/Section1.svelte": "991fbfebdbf28eb862ce140436ee8444b3ec16dd2c187bad61cce31600b23a28",
@@ -26,7 +31,7 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "BE/application/views/instructor_views.py": "111d01ab43c07ef99fc95bc6214d1702b4b5511b2f84d52edcaf2896e893bc6c",
     "UI/src/routes/association/course/instructor/info/modals/AddEditModal.svelte": "19133f13c71dbcf769df0371d32248cff54c7fa2e4291d42c5c28969bd1152e9",
     "UI/src/routes/association/course/instructor/info/Instructor.svelte": "1501b33bbe3fc27b751a3d0450038c6b47e78dd8e1c0b781fc43ca1a394fe6a5",
-    "BE/application/utils/instructors_utils.py": "6c333d73ce96a6bcaceda43015657fb57a23fb6b6937dcf49eefcff0936e73f9",
+    "BE/application/utils/instructors_utils.py": "c5d1a2ca35eee74848b28687b124166ca40de4b0e175c10d1eae7d3f8ff1aa32",
     "UI/src/routes/association/course/instructor/modals/ReportModal.svelte": "d2a2733ef36ab973bd01d3c98e19b62d43ce2544c1da3e3b9800df1d7f1fb42e",
     "UI/src/routes/association/course/add/sections/Section1.svelte": "f3e456ade95d87006f5a490dfef3ce9dd0e1f49ace814205a4cca049bb7622f7",
     "UI/src/routes/association/course/overview/components/Calendar.svelte": "5cdbdd7e450b7ccbcc87eee2349be0b156e9bdb2b79f79f750da99656fb6224e",
@@ -39,14 +44,17 @@ export const organizationAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/accounting/payment/PaymentListArchive.svelte": "6d6a23a9476b388069d43efafa3d8446fd8cb3f493f949d96d13f937b97cf07b",
     "UI/src/routes/accounting/receipts/ReceiptList.svelte": "69b7c0c6188590a5be6db126e497cc1e7aa9dabf5ef91e2e07f05499928b7e51",
     "UI/src/routes/association/archive/Archive.svelte": "dc000f87fcd9fe66213b4b753049d0b9e254e907092ce12f6e4759fbb63d9a24",
-    "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
+    "BE/application/views/profile_views.py": "adea11d45c4364fe508860db111f574d1e99a752bb5e792309d1a74ae6200c09",
     "UI/src/routes/connectedCollaborators/CollaboratorActions.svelte": "2df48f56f3e4035b34ca2db58fa83423b7db8f2cce72d983e5dd1c826907ca8b",
-    "BE/application/views/collaborator_views.py": "ffa954fe33b662b6cf580c8e19474ca8a24d19b517af83f92fdf392263f48c4d",
+    "BE/application/views/collaborator_views.py": "170561838fb06cf89016da5356cb0d39a2731b3591cc6a3487113c395ecbc558",
     "UI/src/routes/association/communication/messages/Messages.svelte": "7a5862099d6165b59b93bbb3ff1be6fa7703a85db6dbae7749aca198d115a43f",
-    "BE/communications/models.py": "32530538f7a66f9cf0a6e0c94f7846ef142bce13e5a1cae67663126927ebc591"
+    "BE/communications/models.py": "32530538f7a66f9cf0a6e0c94f7846ef142bce13e5a1cae67663126927ebc591",
+    // Reviewed: import reuses only accounts linked to the archive owner, and
+    // existing accounts keep their own credentials.
+    "BE/application/services/import_service.py": "26afb1fbcd70a47484bdf2c189a85bcf57a1646de9cb7ba013ff5ba61a02a344"
 });
 
-const sourceKeys = Object.freeze(["card_settings", "card_info", "card_render", "card_backend", "card_multiactions", "permissions_cards", "members_export", "members_backend", "members_current", "current_modal", "payment_export", "payment_backend", "export_ui", "export_start", "export_cleanup", "export_navigation", "export_service", "instructor_list", "instructor_model", "hours_model", "instructor_create_ui", "instructor_edit_ui", "instructor_delete", "hours_form", "hours_actions", "hours_info", "hours_list_backend", "hours_update", "hours_delete", "percentage_backend", "compensation_backend", "calendar_hours", "report_ui", "report_backend", "report_data", "course_fields", "calendar_ui", "calendar_create", "calendar_edit", "attendance_registry", "archive_members", "subscription_archive", "archive_members_nav", "archive_members_list", "course_archive_nav", "payment_archive_ui", "receipt_archive_ui", "document_archive", "auto_archive_ui", "auto_archive_task", "settings_backend", "profile_navigation", "collaborator_actions", "collaborator_delete", "collaborator_list", "collaborator_add", "permissions_members", "permissions_payments", "permissions_instructors", "permissions_calendar", "permissions_settings", "permissions_collaborators", "communication_types", "communication_model", "staff_model", "workflow_model"]);
+const sourceKeys = Object.freeze(["card_settings", "card_info", "card_render", "card_backend", "card_multiactions", "permissions_cards", "members_export", "members_backend", "members_current", "current_modal", "payment_export", "payment_backend", "export_ui", "export_start", "export_cleanup", "export_navigation", "export_service", "instructor_list", "instructor_model", "hours_model", "instructor_create_ui", "instructor_edit_ui", "instructor_delete", "hours_form", "hours_actions", "hours_info", "hours_list_backend", "hours_update", "hours_delete", "percentage_backend", "compensation_backend", "calendar_hours", "report_ui", "report_backend", "report_data", "course_fields", "calendar_ui", "calendar_create", "calendar_edit", "attendance_registry", "archive_members", "subscription_archive", "archive_members_nav", "archive_members_list", "course_archive_nav", "payment_archive_ui", "receipt_archive_ui", "document_archive", "auto_archive_ui", "auto_archive_task", "settings_backend", "profile_navigation", "collaborator_actions", "collaborator_delete", "collaborator_list", "collaborator_add", "permissions_members", "permissions_payments", "permissions_instructors", "permissions_calendar", "permissions_settings", "permissions_collaborators", "communication_types", "communication_model", "staff_model", "workflow_model", "import_service"]);
 export const organizationAdditionalSourceContracts = Object.freeze([
     [
         "UI/src/routes/profile/sections/Settings.svelte",
@@ -377,6 +385,11 @@ export const organizationAdditionalSourceContracts = Object.freeze([
         "BE/communications/models.py",
         "class AutomationWorkflow(models.Model):",
         115
+    ],
+    [
+        "BE/application/services/import_service.py",
+        "def _sanitize_user_data(",
+        45
     ]
 ].map(contract => Object.freeze(contract)));
 
@@ -449,7 +462,8 @@ const sections = [
             "export_start",
             "export_cleanup",
             "export_navigation",
-            "export_service"
+            "export_service",
+            "import_service"
         ],
         "reason": "Procedura descritta dalle sorgenti; mancano esercizio in browser, controlli del risultato e schermate reali."
     },

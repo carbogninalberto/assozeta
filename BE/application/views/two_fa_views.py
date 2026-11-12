@@ -1,6 +1,7 @@
 """
 @ copyright: Bakney SRL
 """
+from application.audit_context import atomic_audit_mutation
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -80,21 +81,24 @@ def two_fa_update(request):
         totp = pyotp.TOTP(secret)
         otp_valid = totp.verify(otp)
 
-    # disabling the 2fa
     logger.debug("2FA update decision", extra={'user_id': str(user.user_id), 'enable': enable, 'otp_valid': otp_valid})
-    if not enable:
-        logger.info("Disabling 2FA", extra={'user_id': str(user.user_id)})
-        user.two_fa = False
-        user.save()
-        return Response({'data': {'msg': 'Disabled two factor authentication'}}, status=status.HTTP_200_OK)
-    elif enable and otp_valid:
-        logger.info("Enabling 2FA", extra={'user_id': str(user.user_id)})
-        user.two_fa = True
-        user.two_fa_secret = secret
-        user.save()
-        return Response({'data': {'msg': 'Two factor authentication enabled.'}}, status=status.HTTP_200_OK)
-    elif enable and not otp_valid:
+    if enable and not otp_valid:
         logger.warning("2FA enable failed - OTP validation failed", extra={'user_id': str(user.user_id)})
         return Response({'data': {'msg': 'Otp validation failed.'}}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({'data': {'msg': 'Provided data are not valid'}}, status=status.HTTP_400_BAD_REQUEST)  # pragma: no cover
+    logger.info("Enabling 2FA" if enable else "Disabling 2FA", extra={'user_id': str(user.user_id)})
+    # A failed user/audit/index write must not leave a successful-looking audit.
+    # Lock and reload only the mutation target: authentication/scoping has already
+    # selected it. Restricted update fields preserve concurrent password/profile
+    # changes instead of writing the earlier request.user snapshot back wholesale.
+    with atomic_audit_mutation():
+        current = User.original_objects.select_for_update().get(pk=user.pk)
+        current.two_fa = bool(enable)
+        fields = ['two_fa']
+        if enable:
+            current.two_fa_secret = secret
+            fields.append('two_fa_secret')
+        current.save(update_fields=fields)
+
+    message = 'Two factor authentication enabled.' if enable else 'Disabled two factor authentication'
+    return Response({'data': {'msg': message}}, status=status.HTTP_200_OK)

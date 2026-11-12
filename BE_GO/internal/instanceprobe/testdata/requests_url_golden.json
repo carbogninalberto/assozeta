@@ -1,0 +1,1501 @@
+{
+"requests": "2.34.2",
+"urllib3": "2.8.0",
+"django": "5.2.18",
+"cases": [
+{
+"input": "https://api.example.com/v1",
+"stored": "https://api.example.com/v1",
+"answer": "request",
+"url": "https://api.example.com/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "https://API.Example.COM/V1/",
+"stored": "https://API.Example.COM/V1/",
+"answer": "request",
+"url": "https://api.example.com/V1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/V1/models"
+},
+{
+"input": "HTTPS://api.example.com:8443/v1",
+"stored": "HTTPS://api.example.com:8443/v1",
+"answer": "request",
+"url": "https://api.example.com:8443/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 8443,
+"host_header": "api.example.com:8443",
+"target": "/v1/models"
+},
+{
+"input": "http://api.example.com:80/v1",
+"stored": "http://api.example.com:80/v1",
+"answer": "request",
+"url": "http://api.example.com:80/v1/models",
+"scheme": "http",
+"connect_host": "api.example.com",
+"port": 80,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com:443",
+"stored": "https://api.example.com:443",
+"answer": "request",
+"url": "https://api.example.com:443/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com",
+"stored": "https://api.example.com",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com/",
+"stored": "https://api.example.com/",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com//",
+"stored": "https://api.example.com//",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com/v1//",
+"stored": "https://api.example.com/v1//",
+"answer": "request",
+"url": "https://api.example.com/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com/a/../b",
+"stored": "https://api.example.com/a/../b",
+"answer": "request",
+"url": "https://api.example.com/b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/b/models"
+},
+{
+"input": "https://api.example.com/a/./b/",
+"stored": "https://api.example.com/a/./b/",
+"answer": "request",
+"url": "https://api.example.com/a/b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/b/models"
+},
+{
+"input": "https://api.example.com/../a",
+"stored": "https://api.example.com/../a",
+"answer": "request",
+"url": "https://api.example.com/a/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/models"
+},
+{
+"input": "https://api.example.com/a/..",
+"stored": "https://api.example.com/a/..",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com/a/b/../../../c",
+"stored": "https://api.example.com/a/b/../../../c",
+"answer": "request",
+"url": "https://api.example.com/c/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/c/models"
+},
+{
+"input": "https://api.example.com/a/%2e%2e/b",
+"stored": "https://api.example.com/a/%2e%2e/b",
+"answer": "request",
+"url": "https://api.example.com/a/../b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/../b/models"
+},
+{
+"input": "https://api.example.com/a%2fb",
+"stored": "https://api.example.com/a%2fb",
+"answer": "request",
+"url": "https://api.example.com/a%2Fb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%2Fb/models"
+},
+{
+"input": "https://api.example.com/a%2Fb",
+"stored": "https://api.example.com/a%2Fb",
+"answer": "request",
+"url": "https://api.example.com/a%2Fb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%2Fb/models"
+},
+{
+"input": "https://api.example.com/%41%7e%2d",
+"stored": "https://api.example.com/%41%7e%2d",
+"answer": "request",
+"url": "https://api.example.com/A~-/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/A~-/models"
+},
+{
+"input": "https://api.example.com/a%zzb",
+"stored": "https://api.example.com/a%zzb",
+"answer": "request",
+"url": "https://api.example.com/a%25zzb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%25zzb/models"
+},
+{
+"input": "https://api.example.com/a%",
+"stored": "https://api.example.com/a%",
+"answer": "request",
+"url": "https://api.example.com/a%25/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%25/models"
+},
+{
+"input": "https://api.example.com/a%4",
+"stored": "https://api.example.com/a%4",
+"answer": "request",
+"url": "https://api.example.com/a%254/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%254/models"
+},
+{
+"input": "https://api.example.com/a b",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api.example.com/a\"b",
+"stored": "https://api.example.com/a\"b",
+"answer": "request",
+"url": "https://api.example.com/a%22b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%22b/models"
+},
+{
+"input": "https://api.example.com/a<b>",
+"stored": "https://api.example.com/a<b>",
+"answer": "request",
+"url": "https://api.example.com/a%3Cb%3E/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%3Cb%3E/models"
+},
+{
+"input": "https://api.example.com/a^b`c",
+"stored": "https://api.example.com/a^b`c",
+"answer": "request",
+"url": "https://api.example.com/a%5Eb%60c/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%5Eb%60c/models"
+},
+{
+"input": "https://api.example.com/a{b}|c",
+"stored": "https://api.example.com/a{b}|c",
+"answer": "request",
+"url": "https://api.example.com/a%7Bb%7D%7Cc/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%7Bb%7D%7Cc/models"
+},
+{
+"input": "https://api.example.com/a\\b",
+"stored": "https://api.example.com/a\\b",
+"answer": "request",
+"url": "https://api.example.com/a%5Cb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%5Cb/models"
+},
+{
+"input": "https://api.example.com/a[b]",
+"stored": "https://api.example.com/a[b]",
+"answer": "request",
+"url": "https://api.example.com/a%5Bb%5D/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%5Bb%5D/models"
+},
+{
+"input": "https://api.example.com/a;b=c,d",
+"stored": "https://api.example.com/a;b=c,d",
+"answer": "request",
+"url": "https://api.example.com/a;b=c,d/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a;b=c,d/models"
+},
+{
+"input": "https://api.example.com/a:b@c",
+"stored": "https://api.example.com/a:b@c",
+"answer": "request",
+"url": "https://api.example.com/a:b@c/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a:b@c/models"
+},
+{
+"input": "https://api.example.com/a!$&'()*+,",
+"stored": "https://api.example.com/a!$&'()*+,",
+"answer": "request",
+"url": "https://api.example.com/a!$&'()*+,/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a!$&'()*+,/models"
+},
+{
+"input": "https://api.example.com/\u00e0/\u00e8",
+"stored": "https://api.example.com/\u00e0/\u00e8",
+"answer": "request",
+"url": "https://api.example.com/%C3%A0/%C3%A8/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/%C3%A0/%C3%A8/models"
+},
+{
+"input": "https://api.example.com/%C3%A0",
+"stored": "https://api.example.com/%C3%A0",
+"answer": "request",
+"url": "https://api.example.com/%C3%A0/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/%C3%A0/models"
+},
+{
+"input": "https://api.example.com/%c3%a0",
+"stored": "https://api.example.com/%c3%a0",
+"answer": "request",
+"url": "https://api.example.com/%C3%A0/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/%C3%A0/models"
+},
+{
+"input": "https://api.example.com/~user/_x.-y",
+"stored": "https://api.example.com/~user/_x.-y",
+"answer": "request",
+"url": "https://api.example.com/~user/_x.-y/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/~user/_x.-y/models"
+},
+{
+"input": "https://:@api.example.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://@api.example.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://:@API.example.com",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://user@api.example.com/v1",
+"stored": null,
+"why": "serializer: validate_base_url"
+},
+{
+"input": "https://user:pw@api.example.com/v1",
+"stored": null,
+"why": "serializer: validate_base_url"
+},
+{
+"input": "https://api.example.com./v1",
+"stored": "https://api.example.com./v1",
+"answer": "request",
+"url": "https://api.example.com./v1/models",
+"scheme": "https",
+"connect_host": "api.example.com.",
+"port": 443,
+"host_header": "api.example.com.",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com:/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api.example.com:08080/v1",
+"stored": "https://api.example.com:08080/v1",
+"answer": "request",
+"url": "https://api.example.com:8080/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 8080,
+"host_header": "api.example.com:8080",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com:65536/v1",
+"stored": "https://api.example.com:65536/v1",
+"answer": "raises",
+"error": "InvalidURL: Failed to parse: https://api.example.com:65536/v1/models"
+},
+{
+"input": "https://127.0.0.1/v1",
+"stored": "https://127.0.0.1/v1",
+"answer": "request",
+"url": "https://127.0.0.1/v1/models",
+"scheme": "https",
+"connect_host": "127.0.0.1",
+"port": 443,
+"host_header": "127.0.0.1",
+"target": "/v1/models"
+},
+{
+"input": "https://127.0.0.1:9000",
+"stored": "https://127.0.0.1:9000",
+"answer": "request",
+"url": "https://127.0.0.1:9000/models",
+"scheme": "https",
+"connect_host": "127.0.0.1",
+"port": 9000,
+"host_header": "127.0.0.1:9000",
+"target": "/models"
+},
+{
+"input": "https://[::1]/v1",
+"stored": "https://[::1]/v1",
+"answer": "request",
+"url": "https://[::1]/v1/models",
+"scheme": "https",
+"connect_host": "::1",
+"port": 443,
+"host_header": "[::1]",
+"target": "/v1/models"
+},
+{
+"input": "https://[::1]:8000/v1",
+"stored": "https://[::1]:8000/v1",
+"answer": "request",
+"url": "https://[::1]:8000/v1/models",
+"scheme": "https",
+"connect_host": "::1",
+"port": 8000,
+"host_header": "[::1]:8000",
+"target": "/v1/models"
+},
+{
+"input": "https://[2001:DB8::1]/v1",
+"stored": "https://[2001:DB8::1]/v1",
+"answer": "request",
+"url": "https://[2001:db8::1]/v1/models",
+"scheme": "https",
+"connect_host": "2001:db8::1",
+"port": 443,
+"host_header": "[2001:db8::1]",
+"target": "/v1/models"
+},
+{
+"input": "https://[::ffff:1.2.3.4]/",
+"stored": "https://[::ffff:1.2.3.4]/",
+"answer": "request",
+"url": "https://[::ffff:1.2.3.4]/models",
+"scheme": "https",
+"connect_host": "::ffff:1.2.3.4",
+"port": 443,
+"host_header": "[::ffff:1.2.3.4]",
+"target": "/models"
+},
+{
+"input": "http://localhost/v1",
+"stored": "http://localhost/v1",
+"answer": "request",
+"url": "http://localhost/v1/models",
+"scheme": "http",
+"connect_host": "localhost",
+"port": 80,
+"host_header": "localhost",
+"target": "/v1/models"
+},
+{
+"input": "http://localhost:11434",
+"stored": "http://localhost:11434",
+"answer": "request",
+"url": "http://localhost:11434/models",
+"scheme": "http",
+"connect_host": "localhost",
+"port": 11434,
+"host_header": "localhost:11434",
+"target": "/models"
+},
+{
+"input": "http://LOCALHOST:11434/api/",
+"stored": "http://LOCALHOST:11434/api/",
+"answer": "request",
+"url": "http://localhost:11434/api/models",
+"scheme": "http",
+"connect_host": "localhost",
+"port": 11434,
+"host_header": "localhost:11434",
+"target": "/api/models"
+},
+{
+"input": "https://b\u00fccher.example/v1",
+"stored": "https://b\u00fccher.example/v1",
+"answer": "request",
+"url": "https://xn--bcher-kva.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--bcher-kva.example",
+"port": 443,
+"host_header": "xn--bcher-kva.example",
+"target": "/v1/models"
+},
+{
+"input": "https://xn--bcher-kva.example/v1",
+"stored": "https://xn--bcher-kva.example/v1",
+"answer": "request",
+"url": "https://xn--bcher-kva.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--bcher-kva.example",
+"port": 443,
+"host_header": "xn--bcher-kva.example",
+"target": "/v1/models"
+},
+{
+"input": "https://stra\u00dfe.example/v1",
+"stored": "https://stra\u00dfe.example/v1",
+"answer": "request",
+"url": "https://xn--strae-oqa.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--strae-oqa.example",
+"port": 443,
+"host_header": "xn--strae-oqa.example",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com/v1?x=1",
+"stored": null,
+"why": "serializer: validate_base_url"
+},
+{
+"input": "https://api.example.com/v1#frag",
+"stored": null,
+"why": "serializer: validate_base_url"
+},
+{
+"input": "https://api.example.com/v1?",
+"stored": "https://api.example.com/v1?",
+"answer": "request",
+"url": "https://api.example.com/v1?/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1?/models"
+},
+{
+"input": "https://api.example.com/v1#",
+"stored": "https://api.example.com/v1#",
+"answer": "request",
+"url": "https://api.example.com/v1#/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1"
+},
+{
+"input": "ftp://api.example.com/v1",
+"stored": null,
+"why": "serializer: validate_base_url"
+},
+{
+"input": "https://api.example.com/v1/",
+"stored": "https://api.example.com/v1/",
+"answer": "request",
+"url": "https://api.example.com/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com/v1///",
+"stored": "https://api.example.com/v1///",
+"answer": "request",
+"url": "https://api.example.com/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "  https://api.example.com/v1  ",
+"stored": "https://api.example.com/v1",
+"answer": "request",
+"url": "https://api.example.com/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "https://api_x.example.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://-api.example.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://a..example.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://example/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api.example.com/a%25b",
+"stored": "https://api.example.com/a%25b",
+"answer": "request",
+"url": "https://api.example.com/a%25b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%25b/models"
+},
+{
+"input": "https://api.example.com/a%2525b",
+"stored": "https://api.example.com/a%2525b",
+"answer": "request",
+"url": "https://api.example.com/a%2525b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%2525b/models"
+},
+{
+"input": "https://api.example.com/a%20b",
+"stored": "https://api.example.com/a%20b",
+"answer": "request",
+"url": "https://api.example.com/a%20b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%20b/models"
+},
+{
+"input": "https://api.example.com/a+b",
+"stored": "https://api.example.com/a+b",
+"answer": "request",
+"url": "https://api.example.com/a+b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a+b/models"
+},
+{
+"input": "https://api.example.com/a=b&c",
+"stored": "https://api.example.com/a=b&c",
+"answer": "request",
+"url": "https://api.example.com/a=b&c/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a=b&c/models"
+},
+{
+"input": "https://api.example.com/%",
+"stored": "https://api.example.com/%",
+"answer": "request",
+"url": "https://api.example.com/%25/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/%25/models"
+},
+{
+"input": "https://api.example.com/a/b/c/./../../g",
+"stored": "https://api.example.com/a/b/c/./../../g",
+"answer": "request",
+"url": "https://api.example.com/a/g/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/g/models"
+},
+{
+"input": "https://api.example.com/.",
+"stored": "https://api.example.com/.",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com/..",
+"stored": "https://api.example.com/..",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com/a/.",
+"stored": "https://api.example.com/a/.",
+"answer": "request",
+"url": "https://api.example.com/a/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/models"
+},
+{
+"input": "https://api.example.com/a/./",
+"stored": "https://api.example.com/a/./",
+"answer": "request",
+"url": "https://api.example.com/a/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/models"
+},
+{
+"input": "https://api.example.com/.a/..b/...",
+"stored": "https://api.example.com/.a/..b/...",
+"answer": "request",
+"url": "https://api.example.com/.a/..b/.../models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/.a/..b/.../models"
+},
+{
+"input": "https://api.example.com/a//../b",
+"stored": "https://api.example.com/a//../b",
+"answer": "request",
+"url": "https://api.example.com/a/b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/b/models"
+},
+{
+"input": "https://Api.Example.com/%7Euser/%7euser",
+"stored": "https://Api.Example.com/%7Euser/%7euser",
+"answer": "request",
+"url": "https://api.example.com/~user/~user/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/~user/~user/models"
+},
+{
+"input": "https://api.example.com/a%E2%82%ACb",
+"stored": "https://api.example.com/a%E2%82%ACb",
+"answer": "request",
+"url": "https://api.example.com/a%E2%82%ACb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%E2%82%ACb/models"
+},
+{
+"input": "https://api.example.com/\u20ac",
+"stored": "https://api.example.com/\u20ac",
+"answer": "request",
+"url": "https://api.example.com/%E2%82%AC/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/%E2%82%AC/models"
+},
+{
+"input": "https://api.example.com/a\tb",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://1.2.3.4.5/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://0x7f.1/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api.example.com/v1/models",
+"stored": "https://api.example.com/v1/models",
+"answer": "request",
+"url": "https://api.example.com/v1/models/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models/models"
+},
+{
+"input": "https://api.example.com/v1/.",
+"stored": "https://api.example.com/v1/.",
+"answer": "request",
+"url": "https://api.example.com/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com/v1/..",
+"stored": "https://api.example.com/v1/..",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://B\u00dcCHER.example/v1",
+"stored": "https://B\u00dcCHER.example/v1",
+"answer": "request",
+"url": "https://xn--bcher-kva.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--bcher-kva.example",
+"port": 443,
+"host_header": "xn--bcher-kva.example",
+"target": "/v1/models"
+},
+{
+"input": "https://\u0391\u0392\u0393.example/v1",
+"stored": "https://\u0391\u0392\u0393.example/v1",
+"answer": "request",
+"url": "https://xn--mxacd.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--mxacd.example",
+"port": 443,
+"host_header": "xn--mxacd.example",
+"target": "/v1/models"
+},
+{
+"input": "https://stra\u00dfe.example/v1",
+"stored": "https://stra\u00dfe.example/v1",
+"answer": "request",
+"url": "https://xn--strae-oqa.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--strae-oqa.example",
+"port": 443,
+"host_header": "xn--strae-oqa.example",
+"target": "/v1/models"
+},
+{
+"input": "https://STRASSE.example/v1",
+"stored": "https://STRASSE.example/v1",
+"answer": "request",
+"url": "https://strasse.example/v1/models",
+"scheme": "https",
+"connect_host": "strasse.example",
+"port": 443,
+"host_header": "strasse.example",
+"target": "/v1/models"
+},
+{
+"input": "https://fa\u00df.de/v1",
+"stored": "https://fa\u00df.de/v1",
+"answer": "request",
+"url": "https://xn--fa-hia.de/v1/models",
+"scheme": "https",
+"connect_host": "xn--fa-hia.de",
+"port": 443,
+"host_header": "xn--fa-hia.de",
+"target": "/v1/models"
+},
+{
+"input": "https://\u03c2.example/v1",
+"stored": "https://\u03c2.example/v1",
+"answer": "request",
+"url": "https://xn--3xa.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--3xa.example",
+"port": 443,
+"host_header": "xn--3xa.example",
+"target": "/v1/models"
+},
+{
+"input": "https://a\u00df\u03c2.example/v1",
+"stored": "https://a\u00df\u03c2.example/v1",
+"answer": "request",
+"url": "https://xn--a-qfa13t.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--a-qfa13t.example",
+"port": 443,
+"host_header": "xn--a-qfa13t.example",
+"target": "/v1/models"
+},
+{
+"input": "https://\ud83d\ude00.example/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://\u0301example.example/v1",
+"stored": "https://\u0301example.example/v1",
+"answer": "raises",
+"error": "InvalidURL: Failed to parse: Name '\u0301example' is not a valid IDNA label"
+},
+{
+"input": "https://ab--cd.example/v1",
+"stored": "https://ab--cd.example/v1",
+"answer": "request",
+"url": "https://ab--cd.example/v1/models",
+"scheme": "https",
+"connect_host": "ab--cd.example",
+"port": 443,
+"host_header": "ab--cd.example",
+"target": "/v1/models"
+},
+{
+"input": "https://b\u00dc--cher.example/v1",
+"stored": "https://b\u00dc--cher.example/v1",
+"answer": "raises",
+"error": "InvalidURL: Failed to parse: Name 'b\u00dc--cher' is not a valid IDNA label"
+},
+{
+"input": "https://api.b\u00fccher.example/v1",
+"stored": "https://api.b\u00fccher.example/v1",
+"answer": "request",
+"url": "https://api.xn--bcher-kva.example/v1/models",
+"scheme": "https",
+"connect_host": "api.xn--bcher-kva.example",
+"port": 443,
+"host_header": "api.xn--bcher-kva.example",
+"target": "/v1/models"
+},
+{
+"input": "https://b\u00fccher.API.example/v1",
+"stored": "https://b\u00fccher.API.example/v1",
+"answer": "request",
+"url": "https://xn--bcher-kva.api.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--bcher-kva.api.example",
+"port": 443,
+"host_header": "xn--bcher-kva.api.example",
+"target": "/v1/models"
+},
+{
+"input": "https://b\u00fccher.example./v1",
+"stored": "https://b\u00fccher.example./v1",
+"answer": "request",
+"url": "https://xn--bcher-kva.example./v1/models",
+"scheme": "https",
+"connect_host": "xn--bcher-kva.example.",
+"port": 443,
+"host_header": "xn--bcher-kva.example.",
+"target": "/v1/models"
+},
+{
+"input": "https://\uff45\uff58\uff41\uff4d\uff50\uff4c\uff45.example/v1",
+"stored": "https://\uff45\uff58\uff41\uff4d\uff50\uff4c\uff45.example/v1",
+"answer": "raises",
+"error": "InvalidURL: Failed to parse: Name '\uff45\uff58\uff41\uff4d\uff50\uff4c\uff45' is not a valid IDNA label"
+},
+{
+"input": "https://b\u00fccher\u3002example/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://B\u00dcCHER.example:8443/v1/",
+"stored": "https://B\u00dcCHER.example:8443/v1/",
+"answer": "request",
+"url": "https://xn--bcher-kva.example:8443/v1/models",
+"scheme": "https",
+"connect_host": "xn--bcher-kva.example",
+"port": 8443,
+"host_header": "xn--bcher-kva.example:8443",
+"target": "/v1/models"
+},
+{
+"input": "https://\u00fcn\u00efcode.example/v1",
+"stored": "https://\u00fcn\u00efcode.example/v1",
+"answer": "request",
+"url": "https://xn--ncode-cta3g.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--ncode-cta3g.example",
+"port": 443,
+"host_header": "xn--ncode-cta3g.example",
+"target": "/v1/models"
+},
+{
+"input": "https://xn--strae-oqa.example/v1",
+"stored": "https://xn--strae-oqa.example/v1",
+"answer": "request",
+"url": "https://xn--strae-oqa.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--strae-oqa.example",
+"port": 443,
+"host_header": "xn--strae-oqa.example",
+"target": "/v1/models"
+},
+{
+"input": "https://XN--BCHER-KVA.example/v1",
+"stored": "https://XN--BCHER-KVA.example/v1",
+"answer": "request",
+"url": "https://xn--bcher-kva.example/v1/models",
+"scheme": "https",
+"connect_host": "xn--bcher-kva.example",
+"port": 443,
+"host_header": "xn--bcher-kva.example",
+"target": "/v1/models"
+},
+{
+"input": "https://stra\u00dfe.example:443/v1",
+"stored": "https://stra\u00dfe.example:443/v1",
+"answer": "request",
+"url": "https://xn--strae-oqa.example:443/v1/models",
+"scheme": "https",
+"connect_host": "xn--strae-oqa.example",
+"port": 443,
+"host_header": "xn--strae-oqa.example",
+"target": "/v1/models"
+},
+{
+"input": "https://api%2Eexample.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://%41PI.example.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api%2dexample.com/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://%C3%A0.example/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api%zz.example/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api%25.example/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://127.0.0.1:80/v1",
+"stored": "https://127.0.0.1:80/v1",
+"answer": "request",
+"url": "https://127.0.0.1:80/v1/models",
+"scheme": "https",
+"connect_host": "127.0.0.1",
+"port": 80,
+"host_header": "127.0.0.1:80",
+"target": "/v1/models"
+},
+{
+"input": "http://127.0.0.1:65535/v1",
+"stored": "http://127.0.0.1:65535/v1",
+"answer": "request",
+"url": "http://127.0.0.1:65535/v1/models",
+"scheme": "http",
+"connect_host": "127.0.0.1",
+"port": 65535,
+"host_header": "127.0.0.1:65535",
+"target": "/v1/models"
+},
+{
+"input": "https://[::]/v1",
+"stored": "https://[::]/v1",
+"answer": "request",
+"url": "https://[::]/v1/models",
+"scheme": "https",
+"connect_host": "::",
+"port": 443,
+"host_header": "[::]",
+"target": "/v1/models"
+},
+{
+"input": "https://[::1]:08080/v1",
+"stored": "https://[::1]:08080/v1",
+"answer": "request",
+"url": "https://[::1]:8080/v1/models",
+"scheme": "https",
+"connect_host": "::1",
+"port": 8080,
+"host_header": "[::1]:8080",
+"target": "/v1/models"
+},
+{
+"input": "https://[fe80::1%25eth0]/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://[fe80::1%eth0]/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://[FE80::1%25ETH0]/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://[::FFFF:1.2.3.4]:8443/v1",
+"stored": "https://[::FFFF:1.2.3.4]:8443/v1",
+"answer": "request",
+"url": "https://[::ffff:1.2.3.4]:8443/v1/models",
+"scheme": "https",
+"connect_host": "::ffff:1.2.3.4",
+"port": 8443,
+"host_header": "[::ffff:1.2.3.4]:8443",
+"target": "/v1/models"
+},
+{
+"input": "https://[2001:db8::]/v1",
+"stored": "https://[2001:db8::]/v1",
+"answer": "request",
+"url": "https://[2001:db8::]/v1/models",
+"scheme": "https",
+"connect_host": "2001:db8::",
+"port": 443,
+"host_header": "[2001:db8::]",
+"target": "/v1/models"
+},
+{
+"input": "https://[::1]:443/v1",
+"stored": "https://[::1]:443/v1",
+"answer": "request",
+"url": "https://[::1]:443/v1/models",
+"scheme": "https",
+"connect_host": "::1",
+"port": 443,
+"host_header": "[::1]",
+"target": "/v1/models"
+},
+{
+"input": "http://[::1]:0/v1",
+"stored": "http://[::1]:0/v1",
+"answer": "request",
+"url": "http://[::1]/v1/models",
+"scheme": "http",
+"connect_host": "::1",
+"port": 80,
+"host_header": "[::1]",
+"target": "/v1/models"
+},
+{
+"input": "https://1.2.3.4/v1",
+"stored": "https://1.2.3.4/v1",
+"answer": "request",
+"url": "https://1.2.3.4/v1/models",
+"scheme": "https",
+"connect_host": "1.2.3.4",
+"port": 443,
+"host_header": "1.2.3.4",
+"target": "/v1/models"
+},
+{
+"input": "https://%2e/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api.example.com/%2e/v1",
+"stored": "https://api.example.com/%2e/v1",
+"answer": "request",
+"url": "https://api.example.com/./v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/./v1/models"
+},
+{
+"input": "https://api.example.com/%2E%2E/v1",
+"stored": "https://api.example.com/%2E%2E/v1",
+"answer": "request",
+"url": "https://api.example.com/../v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/../v1/models"
+},
+{
+"input": "https://api.example.com/a/%2e%2e/b/",
+"stored": "https://api.example.com/a/%2e%2e/b/",
+"answer": "request",
+"url": "https://api.example.com/a/../b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/../b/models"
+},
+{
+"input": "https://api.example.com/a/%2F/../b",
+"stored": "https://api.example.com/a/%2F/../b",
+"answer": "request",
+"url": "https://api.example.com/a/b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/b/models"
+},
+{
+"input": "https://api.example.com/a%3fb",
+"stored": "https://api.example.com/a%3fb",
+"answer": "request",
+"url": "https://api.example.com/a%3Fb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%3Fb/models"
+},
+{
+"input": "https://api.example.com/a%23b",
+"stored": "https://api.example.com/a%23b",
+"answer": "request",
+"url": "https://api.example.com/a%23b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%23b/models"
+},
+{
+"input": "https://api.example.com/a%3Ab%40c",
+"stored": "https://api.example.com/a%3Ab%40c",
+"answer": "request",
+"url": "https://api.example.com/a%3Ab%40c/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%3Ab%40c/models"
+},
+{
+"input": "https://api.example.com/a%5Bb%5D",
+"stored": "https://api.example.com/a%5Bb%5D",
+"answer": "request",
+"url": "https://api.example.com/a%5Bb%5D/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%5Bb%5D/models"
+},
+{
+"input": "https://api.example.com/a%252fb",
+"stored": "https://api.example.com/a%252fb",
+"answer": "request",
+"url": "https://api.example.com/a%252fb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a%252fb/models"
+},
+{
+"input": "https://api.example.com//a///b//",
+"stored": "https://api.example.com//a///b//",
+"answer": "request",
+"url": "https://api.example.com//a///b/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "//a///b/models"
+},
+{
+"input": "https://api.example.com/./a/./",
+"stored": "https://api.example.com/./a/./",
+"answer": "request",
+"url": "https://api.example.com/a/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a/models"
+},
+{
+"input": "https://api.example.com/a/../../",
+"stored": "https://api.example.com/a/../../",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com/%C3%A9/%E2%82%AC",
+"stored": "https://api.example.com/%C3%A9/%E2%82%AC",
+"answer": "request",
+"url": "https://api.example.com/%C3%A9/%E2%82%AC/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/%C3%A9/%E2%82%AC/models"
+},
+{
+"input": "https://api.example.com/%e2%82%ac",
+"stored": "https://api.example.com/%e2%82%ac",
+"answer": "request",
+"url": "https://api.example.com/%E2%82%AC/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/%E2%82%AC/models"
+},
+{
+"input": "https://api.example.com/a%2e%2e%2fb",
+"stored": "https://api.example.com/a%2e%2e%2fb",
+"answer": "request",
+"url": "https://api.example.com/a..%2Fb/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/a..%2Fb/models"
+},
+{
+"input": "https://api.example.com/./",
+"stored": "https://api.example.com/./",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com/..//",
+"stored": "https://api.example.com/..//",
+"answer": "request",
+"url": "https://api.example.com/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/models"
+},
+{
+"input": "https://api.example.com:0/v1",
+"stored": "https://api.example.com:0/v1",
+"answer": "request",
+"url": "https://api.example.com/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com:000443/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api.example.com:65535/v1",
+"stored": "https://api.example.com:65535/v1",
+"answer": "request",
+"url": "https://api.example.com:65535/v1/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 65535,
+"host_header": "api.example.com:65535",
+"target": "/v1/models"
+},
+{
+"input": "https://api.example.com:00065536/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://api.example.com:099999/v1",
+"stored": null,
+"why": "serializer: Enter a valid URL."
+},
+{
+"input": "https://API.EXAMPLE.COM:08080/a/../%7e?",
+"stored": "https://API.EXAMPLE.COM:08080/a/../%7e?",
+"answer": "request",
+"url": "https://api.example.com:8080/~?/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 8080,
+"host_header": "api.example.com:8080",
+"target": "/~?/models"
+},
+{
+"input": "https://api.example.com/v1/?",
+"stored": "https://api.example.com/v1/?",
+"answer": "request",
+"url": "https://api.example.com/v1/?/models",
+"scheme": "https",
+"connect_host": "api.example.com",
+"port": 443,
+"host_header": "api.example.com",
+"target": "/v1/?/models"
+},
+{
+"input": "https://\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc.example/v1",
+"stored": "https://\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc.example/v1",
+"answer": "raises",
+"error": "InvalidURL: Failed to parse: Name '\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc\u00fc"
+},
+{
+"input": "https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u00fc.example/v1",
+"stored": "https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u00fc.example/v1",
+"answer": "raises",
+"error": "InvalidURL: Failed to parse: Name 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
+]
+}

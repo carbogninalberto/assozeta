@@ -3,9 +3,9 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 cd "$ROOT"
 scenario=${1:-legacy}
-case "$scenario" in legacy|recovery) ;; *) echo 'Use legacy or recovery' >&2; exit 1 ;; esac
+case "$scenario" in legacy|legacy-controller|recovery) ;; *) echo 'Use legacy, legacy-controller or recovery' >&2; exit 1 ;; esac
 image_mode=${2:-build}
-case "$image_mode" in build|--prepared-images) ;; *) echo 'Use legacy|recovery [--prepared-images]' >&2; exit 1 ;; esac
+case "$image_mode" in build|--prepared-images) ;; *) echo 'Use legacy|legacy-controller|recovery [--prepared-images]' >&2; exit 1 ;; esac
 [ "$#" -le 2 ] || { echo 'Too many arguments' >&2; exit 1; }
 revision=$(git rev-parse HEAD)
 export ASSOZETA_QUALITY_REPORT_DIR=${ASSOZETA_QUALITY_REPORT_DIR:-"$ROOT/quality-reports"}
@@ -13,13 +13,14 @@ mkdir -p "$ASSOZETA_QUALITY_REPORT_DIR"
 if [ "$image_mode" = --prepared-images ]; then
     # CI builds with persistent BuildKit caches before invoking this script.
     # Reject missing/stale images rather than silently testing another commit.
-    for image in assozeta-backend:goal-test assozeta-web:goal-test assozeta-renderer:test assozeta-updater:goal-test; do
+    for image in assozeta-backend:goal-test assozeta-backend-go:goal-test assozeta-web:goal-test assozeta-renderer:test assozeta-updater:goal-test; do
         image_revision=$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$image")
         [ "$image_revision" = "$revision" ] || { echo "Test image $image does not match revision $revision" >&2; exit 1; }
     done
 else
     # Build sequentially so two frontend builds do not exhaust a standard CI runner.
     docker build --label "org.opencontainers.image.revision=$revision" -t assozeta-backend:goal-test BE
+    docker build --label "org.opencontainers.image.revision=$revision" -t assozeta-backend-go:goal-test BE_GO
     docker build --label "org.opencontainers.image.revision=$revision" -t assozeta-web:goal-test UI
     docker build --label "org.opencontainers.image.revision=$revision" -t assozeta-renderer:test selfhost/renderer
     docker build --label "org.opencontainers.image.revision=$revision" -t assozeta-updater:goal-test -f selfhost/updater/Dockerfile .
@@ -40,6 +41,9 @@ run_scenario() {
 if [ "$scenario" = legacy ]; then
     git rev-parse --verify 'v1.0.2^{commit}' >/dev/null
     run_scenario selfhost/tests/application-update-smoke.py --legacy --browser
+elif [ "$scenario" = legacy-controller ]; then
+    git rev-parse --verify '14a23c36d2f03ee453f903c07b503460717a79f1^{commit}' >/dev/null
+    run_scenario selfhost/tests/application-update-smoke.py --legacy-controller --browser
 else
     run_scenario selfhost/tests/application-update-smoke.py --browser
 fi

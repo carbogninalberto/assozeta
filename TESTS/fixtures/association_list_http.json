@@ -1,0 +1,368 @@
+{
+ "matrix_version": 1,
+ "scope": "Superuser association list authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "plan": "a1000000-0000-4000-8000-000000780001",
+ "associations": {
+  "own_association": {
+   "owner": "owner",
+   "association": {
+    "denomination": "Società sportiva è",
+    "tax_code": "01234567890",
+    "address": "Via Roma 1",
+    "address_cap": "00100",
+    "address_city": "Roma",
+    "notes": "Note interne"
+   },
+   "user": {
+    "email": "list-owner@example.test",
+    "username": "list-owner",
+    "first_name": "Maria",
+    "last_name": "Rossi",
+    "phone": "+39 000",
+    "lead_sport_association_role": "presidente",
+    "lead_sport_association_size": "50-100",
+    "lead_sport_market_channel": "web",
+    "date_joined": "2026-01-02T03:04:05.678901Z",
+    "last_login": "2026-10-20T08:00:00Z"
+   }
+  },
+  "foreign_association": {
+   "owner": "foreign_owner",
+   "association": {
+    "denomination": "Estera",
+    "tax_code": "09876543210",
+    "address": null,
+    "address_cap": null,
+    "address_city": null,
+    "notes": null
+   },
+   "user": {
+    "email": "list-foreign@example.test",
+    "username": "list-foreign",
+    "first_name": "",
+    "last_name": "",
+    "phone": null,
+    "lead_sport_association_role": null,
+    "lead_sport_association_size": null,
+    "lead_sport_market_channel": null,
+    "date_joined": "2025-05-06T07:08:09Z",
+    "last_login": null
+   }
+  },
+  "admin_association": {
+   "owner": "admin",
+   "association": {
+    "denomination": "Amministrazione",
+    "tax_code": "71000000001",
+    "address": "Piazza 2",
+    "address_cap": "20100",
+    "address_city": "Milano",
+    "notes": ""
+   },
+   "user": {
+    "email": "list-admin@example.test",
+    "username": "list-admin",
+    "first_name": "Ada",
+    "last_name": "Admin",
+    "phone": "",
+    "lead_sport_association_role": "",
+    "lead_sport_association_size": null,
+    "lead_sport_market_channel": null,
+    "date_joined": "2024-02-29T12:00:00.000001Z",
+    "last_login": "2026-10-27T00:00:00.5Z"
+   }
+  }
+ },
+ "onboarding": [
+  {
+   "id": "a1000000-0000-4000-8000-000000780011",
+   "user": "owner",
+   "show": false,
+   "create_membership": true,
+   "view_membership": false,
+   "approve_payment": true,
+   "download_invoice": false,
+   "view_collaborators": true,
+   "view_settings": false
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000780012",
+   "user": "foreign_owner"
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000780013",
+   "user": "foreign_owner"
+  }
+ ],
+ "billing": [
+  {
+   "id": "a1000000-0000-4000-8000-000000780021",
+   "user": "owner",
+   "auto_renewal": false,
+   "renewal_type": 2,
+   "ends_on": "2026-12-31T23:59:59.123456Z",
+   "plan": "a1000000-0000-4000-8000-000000780001"
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000780022",
+   "user": "owner",
+   "auto_renewal": true,
+   "renewal_type": 1,
+   "ends_on": null,
+   "plan": null
+  },
+  {
+   "id": "a1000000-0000-4000-8000-000000780023",
+   "user": "admin",
+   "auto_renewal": true,
+   "renewal_type": 1,
+   "ends_on": null,
+   "plan": null
+  }
+ ],
+ "cases": [
+  {
+   "name": "association-list-admin",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "date_joined": "2026-01-02T03:04:05.678901Z",
+     "user_id": "a1000000-0000-4000-8000-000000700001",
+     "email": "list-owner@example.test",
+     "username": "list-owner",
+     "first_name": "Maria",
+     "last_name": "Rossi",
+     "phone": "+39 000",
+     "role": "presidente",
+     "size": "50-100",
+     "denomination": "Società sportiva è",
+     "tax_code": "01234567890",
+     "address": "Via Roma 1",
+     "address_cap": "00100",
+     "address_city": "Roma",
+     "market": "web",
+     "last_login": "2026-10-20T08:00:00Z",
+     "notes": "Note interne",
+     "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+     "billing_subscription": {
+      "auto_renewal": false,
+      "renewal_type": 2,
+      "ends_on": "2026-12-31T23:59:59.123456Z",
+      "billing_plan": "a1000000-0000-4000-8000-000000780001"
+     },
+     "user_onboarding": {
+      "users_onboarding_id": "a1000000-0000-4000-8000-000000780011",
+      "show": false,
+      "create_membership": true,
+      "view_membership": false,
+      "approve_payment": true,
+      "download_invoice": false,
+      "view_collaborators": true,
+      "view_settings": false,
+      "user": "a1000000-0000-4000-8000-000000700001"
+     }
+    },
+    {
+     "date_joined": "2025-05-06T07:08:09Z",
+     "user_id": "a1000000-0000-4000-8000-000000700007",
+     "email": "list-foreign@example.test",
+     "username": "list-foreign",
+     "first_name": "",
+     "last_name": "",
+     "phone": null,
+     "role": null,
+     "size": null,
+     "denomination": "Estera",
+     "tax_code": "09876543210",
+     "address": null,
+     "address_cap": null,
+     "address_city": null,
+     "market": null,
+     "last_login": null,
+     "notes": null,
+     "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+     "billing_subscription": null,
+     "user_onboarding": null
+    },
+    {
+     "date_joined": "2024-02-29T12:00:00.000001Z",
+     "user_id": "a1000000-0000-4000-8000-000000710001",
+     "email": "list-admin@example.test",
+     "username": "list-admin",
+     "first_name": "Ada",
+     "last_name": "Admin",
+     "phone": "",
+     "role": "",
+     "size": null,
+     "denomination": "Amministrazione",
+     "tax_code": "71000000001",
+     "address": "Piazza 2",
+     "address_cap": "20100",
+     "address_city": "Milano",
+     "market": null,
+     "last_login": "2026-10-27T00:00:00.500000Z",
+     "notes": "",
+     "sport_association_id": "a1000000-0000-4000-8000-000000711001",
+     "billing_subscription": {
+      "auto_renewal": true,
+      "renewal_type": 1,
+      "ends_on": null,
+      "billing_plan": null
+     },
+     "user_onboarding": null
+    }
+   ],
+   "unordered": true
+  },
+  {
+   "name": "association-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 401,
+   "response": "<empty>",
+   "unordered": false
+  },
+  {
+   "name": "association-list-owner-not-superuser",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "unordered": false
+  },
+  {
+   "name": "association-list-full-collaborator-not-superuser",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "unordered": false
+  },
+  {
+   "name": "association-list-restricted-collaborator-not-superuser",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "unordered": false
+  },
+  {
+   "name": "association-list-athlete-not-superuser",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "unordered": false
+  },
+  {
+   "name": "association-list-owner-without-association-not-superuser",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 401,
+   "response": "<empty>",
+   "unordered": false
+  },
+  {
+   "name": "association-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "unordered": false
+  },
+  {
+   "name": "association-list-wrong-method",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "unordered": false
+  },
+  {
+   "name": "association-list-options",
+   "actor": "admin",
+   "method": "OPTIONS",
+   "path": "/sport-associations/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Sport Association List",
+    "description": "List all sport associations",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "unordered": false
+  }
+ ]
+}

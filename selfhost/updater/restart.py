@@ -14,7 +14,7 @@ import time
 import traceback
 from uuid import UUID
 
-from common import compose_command, compose_environment, read_env
+from common import GO_TASKS_PROFILE, compose_command, compose_environment, read_env
 from journal import Journal, now
 
 RECOVERY = ('Verifica i container e i log del server, poi riprova il riavvio. '
@@ -74,8 +74,12 @@ def launch_restart(root, env_file, journal, operation):
 
 
 def service_order(services):
-    """Only long-running configured services; never rerun tools/migrations."""
-    selected = {name: value for name, value in services.items() if not value.get('profiles')}
+    """Only long-running configured services; never rerun tools/migrations.
+
+    The opt-in Go task consumer is long-running; it is configured only when
+    compose_command enabled its profile."""
+    selected = {name: value for name, value in services.items()
+                if value.get('profiles', []) in ([], [GO_TASKS_PROFILE])}
     ordered = []
     visiting = set()
 
@@ -134,6 +138,9 @@ class Restart:
             state = current['State']
             if current['Image'] != original['Image']:
                 raise RuntimeError('Container image changed during restart')
+            service = original.get('Config', {}).get('Labels', {}).get('com.docker.compose.service')
+            if service == 'api-go' and 'Health' not in state:
+                raise RuntimeError('Go service has no readiness check')
             if (state['Running'] and state['StartedAt'] != original['State']['StartedAt'] and
                     state.get('Health', {}).get('Status', 'healthy') == 'healthy'):
                 return
@@ -190,7 +197,10 @@ class Restart:
             app_url = read_env(self.env_file).get('APP_URL', '').rstrip('/')
             if not app_url.startswith(('http://', 'https://')):
                 raise RuntimeError('Missing installation URL')
-            for endpoint in ('/healthz', '/api/readyz'):
+            endpoints = ['/healthz', '/api/readyz']
+            if any(item['Config']['Labels']['com.docker.compose.service'] == 'api-go' for item in application):
+                endpoints.extend(('/api/v1/readyz', '/api/v2/readyz'))
+            for endpoint in endpoints:
                 while True:
                     try:
                         self.run(['curl', '--fail', '--silent', '--show-error', '--connect-timeout', '5',

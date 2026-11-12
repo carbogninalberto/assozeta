@@ -15,7 +15,7 @@ on:
         required: true
         type: string
       release_commit:
-        description: Full Git commit SHA expected in all four published images
+        description: Full Git commit SHA expected in all five published images
         required: true
         type: string
 

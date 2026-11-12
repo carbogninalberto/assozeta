@@ -2,8 +2,9 @@ from rest_framework import serializers
 from application.models import Module, ModuleResponses
 from application.serializers.auth_serializers import SportAssociationSerializer
 from docmanager.models import Document
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
-class ModulesAddSerializer(serializers.ModelSerializer):
+class ModulesAddSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     enabled = serializers.SerializerMethodField()
 
@@ -18,7 +19,7 @@ class ModulesAddSerializer(serializers.ModelSerializer):
         model = Module
         fields = '__all__'
 
-class ModulesSerializer(serializers.ModelSerializer):
+class ModulesSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     enabled = serializers.SerializerMethodField()
     sport_association = SportAssociationSerializer()
@@ -41,7 +42,7 @@ class ModuleResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ModuleResponses
-        fields = '__all__'
+        exclude = ('attachment_token_hash',)
 
     @staticmethod
     def get_attachments_docs(obj):
@@ -58,6 +59,39 @@ class ModuleResponseSerializer(serializers.ModelSerializer):
 
         return attachments
 
+
+
+class PublicModuleSerializer(serializers.ModelSerializer):
+    """The public module page: the fields the form needs."""
+
+    sport_association = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_sport_association(obj):
+        association = obj.sport_association
+        if association is None:
+            return None
+        return {'denomination': association.denomination}
+
+    class Meta:
+        model = Module
+        fields = ['module_id', 'title', 'response_message', 'allow_attachments', 'only_users', 'elements',
+                  'sport_association']
+
+
+class PublicModuleResponseSerializer(serializers.ModelSerializer):
+    """The public module page: the attachment list of a response."""
+
+    attachments_docs = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ModuleResponses
+        fields = ['attachments_docs']
+
+    @staticmethod
+    def get_attachments_docs(obj):
+        return [{'document_id': document.document_id, 'filename': document.filename}
+                for document in obj.attachments.all()]
 
 
 class ModulesSerializerWithResponses(serializers.ModelSerializer):

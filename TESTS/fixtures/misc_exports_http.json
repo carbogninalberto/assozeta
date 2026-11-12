@@ -1,0 +1,3216 @@
+{
+ "matrix_version": 1,
+ "scope": "Subscription and invoice CSV exports, tutor promotion and the invoice zip dispatch",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "associates": {
+  "mario": {
+   "first_name": "Mario",
+   "last_name": "Rossi",
+   "sex": "M",
+   "tax_code": "RSSMRA80A01H501U",
+   "born_date": "1980-01-01",
+   "born_city": "Roma",
+   "address_city": "Milano",
+   "address": "Via Roma, 1",
+   "address_cap": "20100",
+   "email": "mario@example.test",
+   "phone_label": "Casa",
+   "phone": "3331112222",
+   "phone_2_label": "Lavoro \"ufficio\"",
+   "phone_2": "3334445555",
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": false,
+   "deleted": false
+  },
+  "luisa": {
+   "first_name": "Luisa",
+   "last_name": "Bianchi",
+   "sex": "F",
+   "tax_code": null,
+   "born_date": "2015-06-15",
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "email": "luisa@example.test",
+   "phone_label": null,
+   "phone": null,
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": true,
+   "deleted": false
+  },
+  "gino": {
+   "first_name": "Niccolò",
+   "last_name": "Verdi",
+   "sex": "M",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": "Piazza\nDuomo",
+   "address_cap": null,
+   "email": null,
+   "phone_label": null,
+   "phone": null,
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": "Nonna",
+   "phone_4": "045 1234567",
+   "id": "a1000000-0000-4000-8000-000000455003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": false,
+   "deleted": false
+  },
+  "elena": {
+   "first_name": "Elena",
+   "last_name": null,
+   "sex": "F",
+   "tax_code": "LNEXXX90B41F205Z",
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "email": null,
+   "phone_label": null,
+   "phone": null,
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455004",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": false,
+   "deleted": true
+  },
+  "bruno": {
+   "first_name": "Bruno",
+   "last_name": "Bianchi",
+   "sex": "M",
+   "tax_code": "BRNBNC75C03L219K",
+   "born_date": "1975-03-03",
+   "born_city": "Torino",
+   "address_city": "Torino",
+   "address": "Corso Francia 10",
+   "address_cap": "10100",
+   "email": "bruno@example.test",
+   "phone_label": "Cellulare",
+   "phone": "3470000001",
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": "Ufficio",
+   "phone_3": "0110000000",
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": false,
+   "deleted": false
+  },
+  "anna": {
+   "first_name": "Anna",
+   "last_name": "Rossi",
+   "sex": "F",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "email": null,
+   "phone_label": null,
+   "phone": null,
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": false,
+   "deleted": false
+  },
+  "strange": {
+   "first_name": "=SUM(1,2)",
+   "last_name": "http://example.test/p#a",
+   "sex": "F",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": "internal:Sheet1!A1",
+   "address_city": null,
+   "address": "{=A1}",
+   "address_cap": null,
+   "email": "<r>x</r>",
+   "phone_label": null,
+   "phone": "=SEQUENCE(2)",
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "is_minor": false,
+   "deleted": false
+  },
+  "hans": {
+   "first_name": "Hans",
+   "last_name": "Muller",
+   "sex": "M",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "email": null,
+   "phone_label": null,
+   "phone": null,
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455008",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "is_minor": false,
+   "deleted": false
+  },
+  "greta": {
+   "first_name": "Greta",
+   "last_name": "Muller",
+   "sex": "F",
+   "tax_code": null,
+   "born_date": null,
+   "born_city": null,
+   "address_city": null,
+   "address": null,
+   "address_cap": null,
+   "email": null,
+   "phone_label": null,
+   "phone": null,
+   "phone_2_label": null,
+   "phone_2": null,
+   "phone_3_label": null,
+   "phone_3": null,
+   "phone_4_label": null,
+   "phone_4": null,
+   "id": "a1000000-0000-4000-8000-000000455009",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "is_minor": false,
+   "deleted": false
+  }
+ },
+ "relations": [
+  [
+   "mario",
+   "bruno",
+   false
+  ],
+  [
+   "mario",
+   "anna",
+   true
+  ],
+  [
+   "luisa",
+   "bruno",
+   false
+  ],
+  [
+   "luisa",
+   "anna",
+   false
+  ],
+  [
+   "hans",
+   "greta",
+   false
+  ]
+ ],
+ "certificates": {
+  "valid": {
+   "id": "a1000000-0000-4000-8000-000000455010",
+   "expiration": "2031-05-01"
+  },
+  "expired_minor": {
+   "id": "a1000000-0000-4000-8000-000000455011",
+   "expiration": "2020-01-01"
+  },
+  "no_expiration": {
+   "id": "a1000000-0000-4000-8000-000000455012",
+   "expiration": null
+  },
+  "expired_adult": {
+   "id": "a1000000-0000-4000-8000-000000455013",
+   "expiration": "2021-02-02"
+  }
+ },
+ "tags": {
+  "agonisti": {
+   "id": "a1000000-0000-4000-8000-000000455014",
+   "name": "Agonisti",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "under": {
+   "id": "a1000000-0000-4000-8000-000000455015",
+   "name": "Under 12, misti",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  }
+ },
+ "subscriptions": {
+  "mario": {
+   "id": "a1000000-0000-4000-8000-000000455016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "status": 4,
+   "created": "2026-03-01T10:00:00Z",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "number": "12",
+   "kind": "Socio ordinario",
+   "medical": "valid",
+   "signature_key": "signatures/mario.png",
+   "signature_url": null,
+   "tags": [
+    "agonisti",
+    "under"
+   ],
+   "group": null,
+   "archived": false,
+   "deleted": false
+  },
+  "luisa": {
+   "id": "a1000000-0000-4000-8000-000000455017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "luisa",
+   "status": 2,
+   "created": "2026-02-01T10:00:00Z",
+   "start": null,
+   "end": null,
+   "number": null,
+   "kind": null,
+   "medical": "expired_minor",
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": null,
+   "archived": false,
+   "deleted": false
+  },
+  "gino": {
+   "id": "a1000000-0000-4000-8000-000000455018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "gino",
+   "status": 1,
+   "created": "2026-01-15T10:00:00Z",
+   "start": "2025-09-01",
+   "end": null,
+   "number": "",
+   "kind": "",
+   "medical": "no_expiration",
+   "signature_key": "",
+   "signature_url": "https://storage.example.test/firma.png",
+   "tags": [
+    "under"
+   ],
+   "group": null,
+   "archived": false,
+   "deleted": false
+  },
+  "mario_old": {
+   "id": "a1000000-0000-4000-8000-000000455019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "status": 3,
+   "created": "2025-12-01T10:00:00Z",
+   "start": null,
+   "end": "2025-08-31",
+   "number": "0",
+   "kind": null,
+   "medical": "expired_adult",
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": null,
+   "archived": false,
+   "deleted": true
+  },
+  "elena": {
+   "id": "a1000000-0000-4000-8000-000000455020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "elena",
+   "status": 5,
+   "created": "2025-11-01T10:00:00Z",
+   "start": null,
+   "end": null,
+   "number": "7",
+   "kind": "Tesserato",
+   "medical": null,
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": "own_group",
+   "archived": false,
+   "deleted": false
+  },
+  "strange": {
+   "id": "a1000000-0000-4000-8000-000000455021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "strange",
+   "status": 4,
+   "created": "2026-03-02T10:00:00Z",
+   "start": null,
+   "end": null,
+   "number": "external:C:/x#S!A1",
+   "kind": "mailto:a@b.it",
+   "medical": null,
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": null,
+   "archived": false,
+   "deleted": false
+  },
+  "archived": {
+   "id": "a1000000-0000-4000-8000-000000455022",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "mario",
+   "status": 4,
+   "created": "2026-04-01T10:00:00Z",
+   "start": null,
+   "end": null,
+   "number": "99",
+   "kind": null,
+   "medical": null,
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": null,
+   "archived": true,
+   "deleted": false
+  },
+  "hans": {
+   "id": "a1000000-0000-4000-8000-000000455023",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "associate": "hans",
+   "status": 4,
+   "created": "2026-03-05T10:00:00Z",
+   "start": null,
+   "end": null,
+   "number": "1",
+   "kind": null,
+   "medical": null,
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": null,
+   "archived": false,
+   "deleted": false
+  },
+  "nobody": {
+   "id": "a1000000-0000-4000-8000-000000455024",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "associate": null,
+   "status": 4,
+   "created": "2026-01-05T10:00:00Z",
+   "start": null,
+   "end": null,
+   "number": "2",
+   "kind": null,
+   "medical": null,
+   "signature_key": null,
+   "signature_url": null,
+   "tags": [],
+   "group": null,
+   "archived": false,
+   "deleted": false
+  }
+ },
+ "documents": {
+  "one": {
+   "id": "a1000000-0000-4000-8000-000000455025",
+   "filename": "ricevuta-one.pdf"
+  },
+  "three": {
+   "id": "a1000000-0000-4000-8000-000000455026",
+   "filename": "ricevuta-three.pdf"
+  },
+  "four": {
+   "id": "a1000000-0000-4000-8000-000000455027",
+   "filename": "ricevuta-four.pdf"
+  },
+  "six": {
+   "id": "a1000000-0000-4000-8000-000000455028",
+   "filename": "ricevuta-six.pdf"
+  },
+  "archived": {
+   "id": "a1000000-0000-4000-8000-000000455029",
+   "filename": "ricevuta-archived.pdf"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000455030",
+   "filename": "ricevuta-foreign.pdf"
+  }
+ },
+ "invoices": {
+  "one": {
+   "id": "a1000000-0000-4000-8000-000000455031",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-10T09:00:00Z",
+   "membership": "40.00",
+   "activity": "10.00",
+   "number": 1,
+   "document": "one",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "two": {
+   "id": "a1000000-0000-4000-8000-000000455032",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-02-10T09:00:00Z",
+   "membership": "35.50",
+   "activity": "0.00",
+   "number": null,
+   "document": null,
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "three": {
+   "id": "a1000000-0000-4000-8000-000000455033",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-03-10T09:00:00Z",
+   "membership": "0.00",
+   "activity": "120.00",
+   "number": 3,
+   "document": "three",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "four": {
+   "id": "a1000000-0000-4000-8000-000000455034",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-20T09:00:00Z",
+   "membership": "40.00",
+   "activity": "10.00",
+   "number": 4,
+   "document": "four",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  },
+  "five": {
+   "id": "a1000000-0000-4000-8000-000000455035",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-02-20T09:00:00Z",
+   "membership": "40.00",
+   "activity": "10.00",
+   "number": 5,
+   "document": null,
+   "archived": false,
+   "deleted": false,
+   "group": "own_group"
+  },
+  "six": {
+   "id": "a1000000-0000-4000-8000-000000455036",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-02-25T09:00:00Z",
+   "membership": "40.00",
+   "activity": "10.00",
+   "number": 6,
+   "document": "six",
+   "archived": false,
+   "deleted": false,
+   "group": "own_group"
+  },
+  "archived": {
+   "id": "a1000000-0000-4000-8000-000000455037",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-04-01T09:00:00Z",
+   "membership": "40.00",
+   "activity": "10.00",
+   "number": 9,
+   "document": "archived",
+   "archived": true,
+   "deleted": false,
+   "group": null
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000455038",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2026-01-12T09:00:00Z",
+   "membership": "40.00",
+   "activity": "10.00",
+   "number": 8,
+   "document": null,
+   "archived": false,
+   "deleted": true,
+   "group": null
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000455039",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "created": "2026-01-11T09:00:00Z",
+   "membership": "40.00",
+   "activity": "10.00",
+   "number": 1,
+   "document": "foreign",
+   "archived": false,
+   "deleted": false,
+   "group": null
+  }
+ },
+ "payments": {
+  "one_late": {
+   "id": "a1000000-0000-4000-8000-000000455990",
+   "invoice": "one",
+   "associate": "mario",
+   "type": "cash",
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "one_first": {
+   "id": "a1000000-0000-4000-8000-000000455980",
+   "invoice": "one",
+   "associate": "luisa",
+   "type": "default",
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "two": {
+   "id": "a1000000-0000-4000-8000-000000455040",
+   "invoice": "two",
+   "associate": null,
+   "type": "transfer",
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "four_deleted": {
+   "id": "a1000000-0000-4000-8000-000000455041",
+   "invoice": "four",
+   "associate": "mario",
+   "type": "cash",
+   "deleted": true,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "five": {
+   "id": "a1000000-0000-4000-8000-000000455042",
+   "invoice": "five",
+   "associate": "gino",
+   "type": "pos",
+   "group": "own_group",
+   "deleted": false,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "six": {
+   "id": "a1000000-0000-4000-8000-000000455043",
+   "invoice": "six",
+   "associate": "elena",
+   "type": "online",
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "archived": {
+   "id": "a1000000-0000-4000-8000-000000455044",
+   "invoice": "archived",
+   "associate": "mario",
+   "type": "online",
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000455045",
+   "invoice": "foreign",
+   "associate": "hans",
+   "type": "cash",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "deleted": false,
+   "group": null
+  }
+ },
+ "cases": [
+  {
+   "name": "misc-exports-subs-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-put",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription List Export",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-format-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?format=xml",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-full-promotes",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,=SEQUENCE(2),,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": {
+    "celery": [],
+    "promoted": [
+     [
+      "luisa",
+      "owner"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "misc-exports-subs-full-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,=SEQUENCE(2),,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-full-post",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,=SEQUENCE(2),,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-filetype-csv",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=csv",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,=SEQUENCE(2),,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-filetype-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=pdf",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,=SEQUENCE(2),,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-simplified",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=simplified",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-simplified-suffix",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=csv-simplified",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-simplified-post",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list/export?filetype=simplified",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,=SEQUENCE(2),,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=simplified",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2026-03-02,\"=SUM(1,2)\",http://example.test/p#a,,,maggiorenne,accettata,no,,,no,<r>x</r>,,,external:C:/x#S!A1,mailto:a@b.it,\r\n2026-03-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,accettata,si,2031-05-01,valido,si,mario@example.test,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\n2026-02-01,Luisa,Bianchi,2015-06-15,,minorenne,in attesa,si,2020-01-01,esente,no,luisa@example.test,,,,,\r\n2026-01-15,Niccolò,Verdi,,,maggiorenne,non firmata,si,,,si,,2025-09-01,,,,\"Under 12, misti\"\r\n2025-12-01,Mario,Rossi,1980-01-01,RSSMRA80A01H501U,maggiorenne,rifiutata,si,2021-02-02,scaduto,no,mario@example.test,,2025-08-31,0,,\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-group-simplified",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=simplified",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "data,nome,cognome,data di nascita,codice fiscale,minore,stato,certificato medico,scadenza certificato medico,validità certificato medico,firmata,email,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\n2025-11-01,Elena,,,LNEXXX90B41F205Z,maggiorenne,archiviata,no,,,no,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-group-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-group-malformed-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {
+    "X-Group-Id": "nope"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.csv",
+     "type": "csv",
+     "file": {
+      "$csv": "stato iscrizione,certificato medico,scadenza certificato medico,validità certificato medico,firma,nome,cognome,sesso,codice fiscale,data di nascita,città di nascita,città di residenza,indirizzo di residenza,cap di residenza,email,nome contatto telefono,telefono,nome contatto telefono 2,telefono 2,nome contatto telefono 3,telefono 3,nome contatto telefono 4,telefono 4,nome tutore,cognome tutore,sesso tutore,codice fiscale tutore,data di nascita tutore,città di nascita tutore,città di residenza tutore,indirizzo di residenza tutore,cap di residenza tutore,email tutore,nome contatto telefono tutore,telefono tutore,nome contatto telefono 2 tutore,telefono 2 tutore,nome contatto telefono 3 tutore,telefono 3 tutore,nome contatto telefono 4 tutore,telefono 4 tutore,iscritto il,scadenza iscrizione,numero tessera,tipo tessera,tags\r\naccettata,no,,,no,\"=SUM(1,2)\",http://example.test/p#a,F,,,internal:Sheet1!A1,,{=A1},,<r>x</r>,,=SEQUENCE(2),,,,,,,,,,,,,,,,,,,,,,,,,,,external:C:/x#S!A1,mailto:a@b.it,\r\naccettata,si,2031-05-01,valido,si,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,2026-01-01,2026-12-31,12,Socio ordinario,\"Agonisti, Under 12, misti\"\r\nin attesa,si,2020-01-01,esente,no,Luisa,Bianchi,F,,2015-06-15,,,,,luisa@example.test,,,,,,,,,Bruno,Bianchi,M,BRNBNC75C03L219K,1975-03-03,Torino,Torino,Corso Francia 10,10100,bruno@example.test,Cellulare,3470000001,,,Ufficio,0110000000,,,,,,,\r\nnon firmata,si,,,si,Niccolò,Verdi,M,,,,,\"Piazza\nDuomo\",,,,,,,,,Nonna,045 1234567,,,,,,,,,,,,,,,,,,,2025-09-01,,,,\"Under 12, misti\"\r\nrifiutata,si,2021-02-02,scaduto,no,Mario,Rossi,M,RSSMRA80A01H501U,1980-01-01,Roma,Milano,\"Via Roma, 1\",20100,mario@example.test,Casa,3331112222,\"Lavoro \"\"ufficio\"\"\",3334445555,,,,,Anna,Rossi,F,,,,,,,,,,,,,,,,,2025-08-31,0,,\r\narchiviata,no,,,no,Elena,,F,LNEXXX90B41F205Z,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7,Tesserato,\r\n"
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-foreign-simplified-no-associate",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=simplified",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-foreign-full-promotes-then-fails",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "celery": [],
+    "promoted": [
+     [
+      "hans",
+      "foreign_owner"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "misc-exports-subs-foreign-full-again",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-xls-full",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=xls",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.xls",
+     "type": "xls",
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Libro Soci",
+       "columns": [
+        "stato iscrizione",
+        "certificato medico",
+        "scadenza certificato medico",
+        "validità certificato medico",
+        "firma",
+        "nome",
+        "cognome",
+        "sesso",
+        "codice fiscale",
+        "data di nascita",
+        "città di nascita",
+        "città di residenza",
+        "indirizzo di residenza",
+        "cap di residenza",
+        "email",
+        "nome contatto telefono",
+        "telefono",
+        "nome contatto telefono 2",
+        "telefono 2",
+        "nome contatto telefono 3",
+        "telefono 3",
+        "nome contatto telefono 4",
+        "telefono 4",
+        "nome tutore",
+        "cognome tutore",
+        "sesso tutore",
+        "codice fiscale tutore",
+        "data di nascita tutore",
+        "città di nascita tutore",
+        "città di residenza tutore",
+        "indirizzo di residenza tutore",
+        "cap di residenza tutore",
+        "email tutore",
+        "nome contatto telefono tutore",
+        "telefono tutore",
+        "nome contatto telefono 2 tutore",
+        "telefono 2 tutore",
+        "nome contatto telefono 3 tutore",
+        "telefono 3 tutore",
+        "nome contatto telefono 4 tutore",
+        "telefono 4 tutore",
+        "iscritto il",
+        "scadenza iscrizione",
+        "numero tessera",
+        "tipo tessera",
+        "tags"
+       ],
+       "index": true,
+       "rows": [
+        [
+         "accettata",
+         "no",
+         "",
+         "",
+         "no",
+         "=SUM(1,2)",
+         "http://example.test/p#a",
+         "F",
+         null,
+         "",
+         "internal:Sheet1!A1",
+         null,
+         "{=A1}",
+         null,
+         "<r>x</r>",
+         null,
+         "=SEQUENCE(2)",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "external:C:/x#S!A1",
+         "mailto:a@b.it",
+         ""
+        ],
+        [
+         "accettata",
+         "si",
+         "2031-05-01",
+         "valido",
+         "si",
+         "Mario",
+         "Rossi",
+         "M",
+         "RSSMRA80A01H501U",
+         "1980-01-01",
+         "Roma",
+         "Milano",
+         "Via Roma, 1",
+         "20100",
+         "mario@example.test",
+         "Casa",
+         "3331112222",
+         "Lavoro \"ufficio\"",
+         "3334445555",
+         null,
+         null,
+         null,
+         null,
+         "Anna",
+         "Rossi",
+         "F",
+         null,
+         "",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "2026-01-01",
+         "2026-12-31",
+         "12",
+         "Socio ordinario",
+         "Agonisti, Under 12, misti"
+        ],
+        [
+         "in attesa",
+         "si",
+         "2020-01-01",
+         "esente",
+         "no",
+         "Luisa",
+         "Bianchi",
+         "F",
+         null,
+         "2015-06-15",
+         null,
+         null,
+         null,
+         null,
+         "luisa@example.test",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "Bruno",
+         "Bianchi",
+         "M",
+         "BRNBNC75C03L219K",
+         "1975-03-03",
+         "Torino",
+         "Torino",
+         "Corso Francia 10",
+         "10100",
+         "bruno@example.test",
+         "Cellulare",
+         "3470000001",
+         null,
+         null,
+         "Ufficio",
+         "0110000000",
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "non firmata",
+         "si",
+         "",
+         "",
+         "si",
+         "Niccolò",
+         "Verdi",
+         "M",
+         null,
+         "",
+         null,
+         null,
+         "Piazza\nDuomo",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "Nonna",
+         "045 1234567",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "2025-09-01",
+         "",
+         "",
+         "",
+         "Under 12, misti"
+        ],
+        [
+         "rifiutata",
+         "si",
+         "2021-02-02",
+         "scaduto",
+         "no",
+         "Mario",
+         "Rossi",
+         "M",
+         "RSSMRA80A01H501U",
+         "1980-01-01",
+         "Roma",
+         "Milano",
+         "Via Roma, 1",
+         "20100",
+         "mario@example.test",
+         "Casa",
+         "3331112222",
+         "Lavoro \"ufficio\"",
+         "3334445555",
+         null,
+         null,
+         null,
+         null,
+         "Anna",
+         "Rossi",
+         "F",
+         null,
+         "",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "2025-08-31",
+         "0",
+         "",
+         ""
+        ],
+        [
+         "archiviata",
+         "no",
+         "",
+         "",
+         "no",
+         "Elena",
+         null,
+         "F",
+         "LNEXXX90B41F205Z",
+         "",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "7",
+         "Tesserato",
+         ""
+        ]
+       ],
+       "widths": [
+        26,
+        28,
+        37,
+        37,
+        15,
+        14,
+        17,
+        15,
+        24,
+        25,
+        26,
+        28,
+        32,
+        26,
+        15,
+        32,
+        18,
+        34,
+        20,
+        34,
+        20,
+        34,
+        20,
+        21,
+        24,
+        22,
+        31,
+        32,
+        33,
+        35,
+        39,
+        33,
+        22,
+        39,
+        25,
+        41,
+        27,
+        41,
+        27,
+        41,
+        27,
+        21,
+        29,
+        24,
+        22,
+        14
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-xls-full-post",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/list/export?filetype=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.xls",
+     "type": "xls",
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Libro Soci",
+       "columns": [
+        "stato iscrizione",
+        "certificato medico",
+        "scadenza certificato medico",
+        "validità certificato medico",
+        "firma",
+        "nome",
+        "cognome",
+        "sesso",
+        "codice fiscale",
+        "data di nascita",
+        "città di nascita",
+        "città di residenza",
+        "indirizzo di residenza",
+        "cap di residenza",
+        "email",
+        "nome contatto telefono",
+        "telefono",
+        "nome contatto telefono 2",
+        "telefono 2",
+        "nome contatto telefono 3",
+        "telefono 3",
+        "nome contatto telefono 4",
+        "telefono 4",
+        "nome tutore",
+        "cognome tutore",
+        "sesso tutore",
+        "codice fiscale tutore",
+        "data di nascita tutore",
+        "città di nascita tutore",
+        "città di residenza tutore",
+        "indirizzo di residenza tutore",
+        "cap di residenza tutore",
+        "email tutore",
+        "nome contatto telefono tutore",
+        "telefono tutore",
+        "nome contatto telefono 2 tutore",
+        "telefono 2 tutore",
+        "nome contatto telefono 3 tutore",
+        "telefono 3 tutore",
+        "nome contatto telefono 4 tutore",
+        "telefono 4 tutore",
+        "iscritto il",
+        "scadenza iscrizione",
+        "numero tessera",
+        "tipo tessera",
+        "tags"
+       ],
+       "index": true,
+       "rows": [
+        [
+         "accettata",
+         "no",
+         "",
+         "",
+         "no",
+         "=SUM(1,2)",
+         "http://example.test/p#a",
+         "F",
+         null,
+         "",
+         "internal:Sheet1!A1",
+         null,
+         "{=A1}",
+         null,
+         "<r>x</r>",
+         null,
+         "=SEQUENCE(2)",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "external:C:/x#S!A1",
+         "mailto:a@b.it",
+         ""
+        ],
+        [
+         "accettata",
+         "si",
+         "2031-05-01",
+         "valido",
+         "si",
+         "Mario",
+         "Rossi",
+         "M",
+         "RSSMRA80A01H501U",
+         "1980-01-01",
+         "Roma",
+         "Milano",
+         "Via Roma, 1",
+         "20100",
+         "mario@example.test",
+         "Casa",
+         "3331112222",
+         "Lavoro \"ufficio\"",
+         "3334445555",
+         null,
+         null,
+         null,
+         null,
+         "Anna",
+         "Rossi",
+         "F",
+         null,
+         "",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "2026-01-01",
+         "2026-12-31",
+         "12",
+         "Socio ordinario",
+         "Agonisti, Under 12, misti"
+        ],
+        [
+         "in attesa",
+         "si",
+         "2020-01-01",
+         "esente",
+         "no",
+         "Luisa",
+         "Bianchi",
+         "F",
+         null,
+         "2015-06-15",
+         null,
+         null,
+         null,
+         null,
+         "luisa@example.test",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "Bruno",
+         "Bianchi",
+         "M",
+         "BRNBNC75C03L219K",
+         "1975-03-03",
+         "Torino",
+         "Torino",
+         "Corso Francia 10",
+         "10100",
+         "bruno@example.test",
+         "Cellulare",
+         "3470000001",
+         null,
+         null,
+         "Ufficio",
+         "0110000000",
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "non firmata",
+         "si",
+         "",
+         "",
+         "si",
+         "Niccolò",
+         "Verdi",
+         "M",
+         null,
+         "",
+         null,
+         null,
+         "Piazza\nDuomo",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "Nonna",
+         "045 1234567",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "2025-09-01",
+         "",
+         "",
+         "",
+         "Under 12, misti"
+        ],
+        [
+         "rifiutata",
+         "si",
+         "2021-02-02",
+         "scaduto",
+         "no",
+         "Mario",
+         "Rossi",
+         "M",
+         "RSSMRA80A01H501U",
+         "1980-01-01",
+         "Roma",
+         "Milano",
+         "Via Roma, 1",
+         "20100",
+         "mario@example.test",
+         "Casa",
+         "3331112222",
+         "Lavoro \"ufficio\"",
+         "3334445555",
+         null,
+         null,
+         null,
+         null,
+         "Anna",
+         "Rossi",
+         "F",
+         null,
+         "",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "2025-08-31",
+         "0",
+         "",
+         ""
+        ],
+        [
+         "archiviata",
+         "no",
+         "",
+         "",
+         "no",
+         "Elena",
+         null,
+         "F",
+         "LNEXXX90B41F205Z",
+         "",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "7",
+         "Tesserato",
+         ""
+        ]
+       ],
+       "widths": [
+        26,
+        28,
+        37,
+        37,
+        15,
+        14,
+        17,
+        15,
+        24,
+        25,
+        26,
+        28,
+        32,
+        26,
+        15,
+        32,
+        18,
+        34,
+        20,
+        34,
+        20,
+        34,
+        20,
+        21,
+        24,
+        22,
+        31,
+        32,
+        33,
+        35,
+        39,
+        33,
+        22,
+        39,
+        25,
+        41,
+        27,
+        41,
+        27,
+        41,
+        27,
+        21,
+        29,
+        24,
+        22,
+        14
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-xls-simplified",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=xls-simplified",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.xls",
+     "type": "xls",
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Libro Soci",
+       "columns": [
+        "data",
+        "nome",
+        "cognome",
+        "data di nascita",
+        "codice fiscale",
+        "minore",
+        "stato",
+        "certificato medico",
+        "scadenza certificato medico",
+        "validità certificato medico",
+        "firmata",
+        "email",
+        "iscritto il",
+        "scadenza iscrizione",
+        "numero tessera",
+        "tipo tessera",
+        "tags"
+       ],
+       "index": true,
+       "rows": [
+        [
+         "2026-03-02",
+         "=SUM(1,2)",
+         "http://example.test/p#a",
+         "",
+         null,
+         "maggiorenne",
+         "accettata",
+         "no",
+         "",
+         "",
+         "no",
+         "<r>x</r>",
+         "",
+         "",
+         "external:C:/x#S!A1",
+         "mailto:a@b.it",
+         ""
+        ],
+        [
+         "2026-03-01",
+         "Mario",
+         "Rossi",
+         "1980-01-01",
+         "RSSMRA80A01H501U",
+         "maggiorenne",
+         "accettata",
+         "si",
+         "2031-05-01",
+         "valido",
+         "si",
+         "mario@example.test",
+         "2026-01-01",
+         "2026-12-31",
+         "12",
+         "Socio ordinario",
+         "Agonisti, Under 12, misti"
+        ],
+        [
+         "2026-02-01",
+         "Luisa",
+         "Bianchi",
+         "2015-06-15",
+         null,
+         "minorenne",
+         "in attesa",
+         "si",
+         "2020-01-01",
+         "esente",
+         "no",
+         "luisa@example.test",
+         "",
+         "",
+         "",
+         "",
+         ""
+        ],
+        [
+         "2026-01-15",
+         "Niccolò",
+         "Verdi",
+         "",
+         null,
+         "maggiorenne",
+         "non firmata",
+         "si",
+         "",
+         "",
+         "si",
+         null,
+         "2025-09-01",
+         "",
+         "",
+         "",
+         "Under 12, misti"
+        ],
+        [
+         "2025-12-01",
+         "Mario",
+         "Rossi",
+         "1980-01-01",
+         "RSSMRA80A01H501U",
+         "maggiorenne",
+         "rifiutata",
+         "si",
+         "2021-02-02",
+         "scaduto",
+         "no",
+         "mario@example.test",
+         "",
+         "2025-08-31",
+         "0",
+         "",
+         ""
+        ],
+        [
+         "2025-11-01",
+         "Elena",
+         null,
+         "",
+         "LNEXXX90B41F205Z",
+         "maggiorenne",
+         "archiviata",
+         "no",
+         "",
+         "",
+         "no",
+         null,
+         "",
+         "",
+         "7",
+         "Tesserato",
+         ""
+        ]
+       ],
+       "widths": [
+        14,
+        14,
+        17,
+        25,
+        24,
+        16,
+        15,
+        28,
+        37,
+        37,
+        17,
+        15,
+        21,
+        29,
+        24,
+        22,
+        14
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-xls-group",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=xls",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "filename": "[$today] ISCRIZIONI a Message reads own.xls",
+     "type": "xls",
+     "file": {
+      "$xlsx": {
+       "engine": "xlsxwriter",
+       "sheet": "Libro Soci",
+       "columns": [
+        "stato iscrizione",
+        "certificato medico",
+        "scadenza certificato medico",
+        "validità certificato medico",
+        "firma",
+        "nome",
+        "cognome",
+        "sesso",
+        "codice fiscale",
+        "data di nascita",
+        "città di nascita",
+        "città di residenza",
+        "indirizzo di residenza",
+        "cap di residenza",
+        "email",
+        "nome contatto telefono",
+        "telefono",
+        "nome contatto telefono 2",
+        "telefono 2",
+        "nome contatto telefono 3",
+        "telefono 3",
+        "nome contatto telefono 4",
+        "telefono 4",
+        "nome tutore",
+        "cognome tutore",
+        "sesso tutore",
+        "codice fiscale tutore",
+        "data di nascita tutore",
+        "città di nascita tutore",
+        "città di residenza tutore",
+        "indirizzo di residenza tutore",
+        "cap di residenza tutore",
+        "email tutore",
+        "nome contatto telefono tutore",
+        "telefono tutore",
+        "nome contatto telefono 2 tutore",
+        "telefono 2 tutore",
+        "nome contatto telefono 3 tutore",
+        "telefono 3 tutore",
+        "nome contatto telefono 4 tutore",
+        "telefono 4 tutore",
+        "iscritto il",
+        "scadenza iscrizione",
+        "numero tessera",
+        "tipo tessera",
+        "tags"
+       ],
+       "index": true,
+       "rows": [
+        [
+         "archiviata",
+         "no",
+         "",
+         "",
+         "no",
+         "Elena",
+         null,
+         "F",
+         "LNEXXX90B41F205Z",
+         "",
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         null,
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "",
+         "7",
+         "Tesserato",
+         ""
+        ]
+       ],
+       "widths": [
+        26,
+        28,
+        37,
+        37,
+        15,
+        14,
+        17,
+        15,
+        24,
+        25,
+        26,
+        28,
+        32,
+        26,
+        15,
+        32,
+        18,
+        34,
+        20,
+        34,
+        20,
+        34,
+        20,
+        21,
+        24,
+        22,
+        31,
+        32,
+        33,
+        35,
+        39,
+        33,
+        22,
+        39,
+        25,
+        41,
+        27,
+        41,
+        27,
+        41,
+        27,
+        21,
+        29,
+        24,
+        22,
+        14
+       ]
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-xls-group-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=xls",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-xls-foreign-no-associate",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=xls",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-subs-xls-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/list/export?filetype=xls",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.documents.invoices.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-post",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Invoice List Export",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-format-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?format=xml",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-deleted-association-owner",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-01-10,Luisa,Bianchi,40.00,10.00,1,-\r\n2026-01-20,,,40.00,10.00,4,-\r\n2026-02-10,,,35.50,0.00,,transfer\r\n2026-02-20,Niccolò,Verdi,40.00,10.00,5,pos\r\n2026-02-25,Elena,,40.00,10.00,6,online\r\n2026-03-10,,,0.00,120.00,3,-\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-mode-csv",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=csv",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-01-10,Luisa,Bianchi,40.00,10.00,1,-\r\n2026-01-20,,,40.00,10.00,4,-\r\n2026-02-10,,,35.50,0.00,,transfer\r\n2026-02-20,Niccolò,Verdi,40.00,10.00,5,pos\r\n2026-02-25,Elena,,40.00,10.00,6,online\r\n2026-03-10,,,0.00,120.00,3,-\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-01-10,Luisa,Bianchi,40.00,10.00,1,-\r\n2026-01-20,,,40.00,10.00,4,-\r\n2026-02-10,,,35.50,0.00,,transfer\r\n2026-02-20,Niccolò,Verdi,40.00,10.00,5,pos\r\n2026-02-25,Elena,,40.00,10.00,6,online\r\n2026-03-10,,,0.00,120.00,3,-\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-01-10,Luisa,Bianchi,40.00,10.00,1,-\r\n2026-01-20,,,40.00,10.00,4,-\r\n2026-02-10,,,35.50,0.00,,transfer\r\n2026-02-20,Niccolò,Verdi,40.00,10.00,5,pos\r\n2026-02-25,Elena,,40.00,10.00,6,online\r\n2026-03-10,,,0.00,120.00,3,-\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-archived-true",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?archived=True",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-04-01,Mario,Rossi,40.00,10.00,9,online\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-archived-one",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?archived=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-04-01,Mario,Rossi,40.00,10.00,9,online\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-archived-zero",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?archived=0",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-01-10,Luisa,Bianchi,40.00,10.00,1,-\r\n2026-01-20,,,40.00,10.00,4,-\r\n2026-02-10,,,35.50,0.00,,transfer\r\n2026-02-20,Niccolò,Verdi,40.00,10.00,5,pos\r\n2026-02-25,Elena,,40.00,10.00,6,online\r\n2026-03-10,,,0.00,120.00,3,-\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-archived-lowercase",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?archived=true",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-archived-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?archived=",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-02-20,Niccolò,Verdi,40.00,10.00,5,pos\r\n2026-02-25,,,40.00,10.00,6,-\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-group-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-group-malformed-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {
+    "X-Group-Id": "nope"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-01-10,Luisa,Bianchi,40.00,10.00,1,-\r\n2026-01-20,,,40.00,10.00,4,-\r\n2026-02-10,,,35.50,0.00,,transfer\r\n2026-02-20,Niccolò,Verdi,40.00,10.00,5,pos\r\n2026-02-25,Elena,,40.00,10.00,6,online\r\n2026-03-10,,,0.00,120.00,3,-\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads own.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/invoice/list/export",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$csv": "data,nome,cognome,quota associativa,quota attivita,numero,modalità di pagamento\r\n2026-01-11,Hans,Muller,40.00,10.00,1,cash\r\n"
+     },
+     "type": "csv",
+     "filename": "[$today] RICEVUTE a Message reads foreign.csv"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-xlsx",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "data",
+        "nome",
+        "cognome",
+        "quota associativa",
+        "quota attivita",
+        "numero",
+        "modalità di pagamento"
+       ],
+       "data": [
+        [
+         "2026-01-10",
+         "2026-01-20",
+         "2026-02-10",
+         "2026-02-20",
+         "2026-02-25",
+         "2026-03-10"
+        ],
+        [
+         "Luisa",
+         "",
+         "",
+         "Niccolò",
+         "Elena",
+         ""
+        ],
+        [
+         "Bianchi",
+         "",
+         "",
+         "Verdi",
+         null,
+         ""
+        ],
+        [
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "35.50"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "0.00"
+         }
+        ],
+        [
+         {
+          "decimal": "10.00"
+         },
+         {
+          "decimal": "10.00"
+         },
+         {
+          "decimal": "0.00"
+         },
+         {
+          "decimal": "10.00"
+         },
+         {
+          "decimal": "10.00"
+         },
+         {
+          "decimal": "120.00"
+         }
+        ],
+        [
+         {
+          "int": "1"
+         },
+         {
+          "int": "4"
+         },
+         null,
+         {
+          "int": "5"
+         },
+         {
+          "int": "6"
+         },
+         {
+          "int": "3"
+         }
+        ],
+        [
+         "-",
+         "-",
+         "transfer",
+         "pos",
+         "online",
+         "-"
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] RICEVUTE a Message reads own.xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-xlsx-archived",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=xlsx&archived=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "data",
+        "nome",
+        "cognome",
+        "quota associativa",
+        "quota attivita",
+        "numero",
+        "modalità di pagamento"
+       ],
+       "data": [
+        [
+         "2026-04-01"
+        ],
+        [
+         "Mario"
+        ],
+        [
+         "Rossi"
+        ],
+        [
+         {
+          "decimal": "40.00"
+         }
+        ],
+        [
+         {
+          "decimal": "10.00"
+         }
+        ],
+        [
+         {
+          "int": "9"
+         }
+        ],
+        [
+         "online"
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] RICEVUTE a Message reads own.xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-xlsx-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=xlsx",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "data",
+        "nome",
+        "cognome",
+        "quota associativa",
+        "quota attivita",
+        "numero",
+        "modalità di pagamento"
+       ],
+       "data": [
+        [
+         "2026-02-20",
+         "2026-02-25"
+        ],
+        [
+         "Niccolò",
+         ""
+        ],
+        [
+         "Verdi",
+         ""
+        ],
+        [
+         {
+          "decimal": "40.00"
+         },
+         {
+          "decimal": "40.00"
+         }
+        ],
+        [
+         {
+          "decimal": "10.00"
+         },
+         {
+          "decimal": "10.00"
+         }
+        ],
+        [
+         {
+          "int": "5"
+         },
+         {
+          "int": "6"
+         }
+        ],
+        [
+         "pos",
+         "-"
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] RICEVUTE a Message reads own.xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-xlsx-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=xlsx",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "data",
+        "nome",
+        "cognome",
+        "quota associativa",
+        "quota attivita",
+        "numero",
+        "modalità di pagamento"
+       ],
+       "data": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] RICEVUTE a Message reads own.xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-xlsx-foreign",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=xlsx",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": {
+      "$xlsx": {
+       "engine": "excel_utils",
+       "columns": [
+        "data",
+        "nome",
+        "cognome",
+        "quota associativa",
+        "quota attivita",
+        "numero",
+        "modalità di pagamento"
+       ],
+       "data": [
+        [
+         "2026-01-11"
+        ],
+        [
+         "Hans"
+        ],
+        [
+         "Muller"
+        ],
+        [
+         {
+          "decimal": "40.00"
+         }
+        ],
+        [
+         {
+          "decimal": "10.00"
+         }
+        ],
+        [
+         {
+          "int": "1"
+         }
+        ],
+        [
+         "cash"
+        ]
+       ]
+      }
+     },
+     "type": "xlsx",
+     "filename": "[$today] RICEVUTE a Message reads foreign.xlsx"
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-xlsx-archived-invalid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=xlsx&archived=yes",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-mode-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=pdf",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": ""
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-mode-other-archived-invalid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=pdf&archived=yes",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "misc-exports-inv-files",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=files",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": "",
+     "message": "Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto."
+    }
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_invoices_to_zip",
+      "args": [
+       [
+        "a1000000-0000-4000-8000-000000455025",
+        "a1000000-0000-4000-8000-000000455027",
+        "a1000000-0000-4000-8000-000000455028",
+        "a1000000-0000-4000-8000-000000455026"
+       ],
+       {
+        "uuid": "a1000000-0000-4000-8000-000000701001"
+       }
+      ],
+      "kwargs": []
+     }
+    ],
+    "promoted": []
+   }
+  },
+  {
+   "name": "misc-exports-inv-files-archived",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=files&archived=t",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": "",
+     "message": "Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto."
+    }
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_invoices_to_zip",
+      "args": [
+       [
+        "a1000000-0000-4000-8000-000000455029"
+       ],
+       {
+        "uuid": "a1000000-0000-4000-8000-000000701001"
+       }
+      ],
+      "kwargs": []
+     }
+    ],
+    "promoted": []
+   }
+  },
+  {
+   "name": "misc-exports-inv-files-group",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/invoice/list/export?m=files",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": "",
+     "message": "Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto."
+    }
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_invoices_to_zip",
+      "args": [
+       [
+        "a1000000-0000-4000-8000-000000455028"
+       ],
+       {
+        "uuid": "a1000000-0000-4000-8000-000000701001"
+       }
+      ],
+      "kwargs": []
+     }
+    ],
+    "promoted": []
+   }
+  },
+  {
+   "name": "misc-exports-inv-files-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=files",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "file": "",
+     "message": "Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto."
+    }
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_invoices_to_zip",
+      "args": [
+       [],
+       {
+        "uuid": "a1000000-0000-4000-8000-000000701001"
+       }
+      ],
+      "kwargs": []
+     }
+    ],
+    "promoted": []
+   }
+  },
+  {
+   "name": "misc-exports-inv-files-foreign",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/invoice/list/export?m=files",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "file": "",
+     "message": "Export dei file in corso, controlla la sezione Documenti e Modelli tra qualche minuto."
+    }
+   },
+   "effect": {
+    "celery": [
+     {
+      "task": "export_invoices_to_zip",
+      "args": [
+       [
+        "a1000000-0000-4000-8000-000000455030"
+       ],
+       {
+        "uuid": "a1000000-0000-4000-8000-000000701002"
+       }
+      ],
+      "kwargs": []
+     }
+    ],
+    "promoted": []
+   }
+  }
+ ]
+}

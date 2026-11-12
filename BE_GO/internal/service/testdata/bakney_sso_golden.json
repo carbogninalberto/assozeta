@@ -1,0 +1,1046 @@
+{
+ "cases": [
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://Example.COM/",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com:443",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com:8443",
+   "normalize": "https://example.com:8443",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://example.com:8443"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "http://example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com/path",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://example.com/path"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com?",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com?x=1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com#",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com#f",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://user@example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://:@example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com:0",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com:65536",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com:00443",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com:+1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://[::1]",
+   "normalize": "https://[::1]",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://[::1]"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://[::1]:8443",
+   "normalize": "https://[::1]:8443",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://[::1]:8443"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://[127.0.0.1]",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "ValueError"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://[::1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "ValueError"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://a..b",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com.",
+   "normalize": "https://example.com.",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://example.com."
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://.example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "HTTPS://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://exa mple.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com\\",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://ex%41mple.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "//example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com:",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "ftp://example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://127.0.0.1",
+   "normalize": "https://127.0.0.1",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://127.0.0.1"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://localhost",
+   "normalize": "https://localhost",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://localhost"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "http://localhost:8000",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "\u0001https://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://example.com/?",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://[v1.x]",
+   "normalize": "https://v1.x",
+   "origin": "https://v1.x",
+   "authority": "https://v1.x"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://bad_host.example",
+   "normalize": "https://bad_host.example",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://bad_host.example"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://-x.example",
+   "normalize": "https://-x.example",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://-x.example"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://Example.COM/",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com:443",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com:8443",
+   "normalize": "https://example.com:8443",
+   "origin": "https://example.com:8443",
+   "authority": "https://example.com:8443"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "http://example.com",
+   "normalize": "http://example.com",
+   "origin": "http://example.com",
+   "authority": "http://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com/path",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://example.com/path"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com?",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com?x=1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com#",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com#f",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://user@example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://:@example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com:0",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com:65536",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com:00443",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com:+1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://[::1]",
+   "normalize": "https://[::1]",
+   "origin": "https://[::1]",
+   "authority": "https://[::1]"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://[::1]:8443",
+   "normalize": "https://[::1]:8443",
+   "origin": "https://[::1]:8443",
+   "authority": "https://[::1]:8443"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://[127.0.0.1]",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "ValueError"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://[::1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "ValueError"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://a..b",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com.",
+   "normalize": "https://example.com.",
+   "origin": "https://example.com.",
+   "authority": "https://example.com."
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://.example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "HTTPS://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://exa mple.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com\\",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://ex%41mple.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "//example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com:",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "ftp://example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://127.0.0.1",
+   "normalize": "https://127.0.0.1",
+   "origin": "https://127.0.0.1",
+   "authority": "https://127.0.0.1"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://localhost",
+   "normalize": "https://localhost",
+   "origin": "https://localhost",
+   "authority": "https://localhost"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "http://localhost:8000",
+   "normalize": "http://localhost:8000",
+   "origin": "http://localhost:8000",
+   "authority": "http://localhost:8000"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "\u0001https://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://example.com/?",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://[v1.x]",
+   "normalize": "https://v1.x",
+   "origin": "https://v1.x",
+   "authority": "https://v1.x"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://bad_host.example",
+   "normalize": "https://bad_host.example",
+   "origin": "https://bad_host.example",
+   "authority": "https://bad_host.example"
+  },
+  {
+   "debug": true,
+   "mode": "development",
+   "value": "https://-x.example",
+   "normalize": "https://-x.example",
+   "origin": "https://-x.example",
+   "authority": "https://-x.example"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://Example.COM/",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com:443",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com:8443",
+   "normalize": "https://example.com:8443",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://example.com:8443"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "http://example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com/path",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://example.com/path"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com?",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com?x=1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com#",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com#f",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://user@example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://:@example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com:0",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com:65536",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com:00443",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com:+1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://[::1]",
+   "normalize": "https://[::1]",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://[::1]"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://[::1]:8443",
+   "normalize": "https://[::1]:8443",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://[::1]:8443"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://[127.0.0.1]",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "ValueError"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://[::1",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "ValueError"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://a..b",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com.",
+   "normalize": "https://example.com.",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://example.com."
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://.example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "HTTPS://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://exa mple.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com\\",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://ex%41mple.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "//example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com:",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "ftp://example.com",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://127.0.0.1",
+   "normalize": "https://127.0.0.1",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://127.0.0.1"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://localhost",
+   "normalize": "https://localhost",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://localhost"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "http://localhost:8000",
+   "normalize": "SSOError:configuration_required",
+   "origin": "SSOError:configuration_required",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "\u0001https://example.com",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "https://example.com"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://example.com/?",
+   "normalize": "https://example.com",
+   "origin": "https://example.com",
+   "authority": "SSOError:configuration_required"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://[v1.x]",
+   "normalize": "https://v1.x",
+   "origin": "https://v1.x",
+   "authority": "https://v1.x"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://bad_host.example",
+   "normalize": "https://bad_host.example",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://bad_host.example"
+  },
+  {
+   "debug": true,
+   "mode": "production",
+   "value": "https://-x.example",
+   "normalize": "https://-x.example",
+   "origin": "SSOError:configuration_required",
+   "authority": "https://-x.example"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://app.bakney.com/api",
+   "authority_only": "https://app.bakney.com/api"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://app.bakney.com/api/",
+   "authority_only": "https://app.bakney.com/api"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://app.bakney.com/a-b/c_d",
+   "authority_only": "https://app.bakney.com/a-b/c_d"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://app.bakney.com/a.b",
+   "authority_only": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://app.bakney.com/api?x",
+   "authority_only": "SSOError:configuration_required"
+  },
+  {
+   "debug": false,
+   "mode": "production",
+   "value": "https://app.bakney.com//api",
+   "authority_only": "SSOError:configuration_required"
+  }
+ ],
+ "secret": "c3ludGhldGljLXBsYWNlaG9sZGVyLWtleS0zMmJ5dGU",
+ "binding": {
+  "pairing_id": "b2000000-0000-4000-8000-000001600003",
+  "association_id": "a1000000-0000-4000-8000-000000701001",
+  "instance_id": "b2000000-0000-4000-8000-000001600001",
+  "origin": "https://sso.example.test",
+  "callback_uri": "https://sso.example.test/bakney/v1/callback",
+  "generation": "b2000000-0000-4000-8000-000001600004",
+  "nonce": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+  "expires_at": 1790000000
+ },
+ "signatures": {
+  "challenge": "917adf4fcb8366ba260fe79216bb6c0db48b2b69e7ee3320ce02b78fa51f7bdd",
+  "commit": "6d7e33d3a82f0f98f9f51d0e889f714ba076cb06f5db38611624f92c92d41f40",
+  "ack": "2f667f88cbc2aa2e526a8e8a03fac0511b573bce9bd50b6af21c425741c9c499"
+ },
+ "fernet": {
+  "key": "synthetic-placeholder-key",
+  "token": "gAAAAABq8Y3oSTXJG_UztWLezA_icmhgmKR0Om7Uelz9-MbQkhoY8dWm8qq88tnkUA-YIz0Ad7OC88FEZoRX0Lyd-QErGgJlsXa6gC3YlGSGf1vo6RCsbZg=",
+  "plain": "synthetic plain text"
+ },
+ "digest": "c47f6b9e1a6aaebb7db10b32d966829c6d77130075b22628074e94321024158a"
+}

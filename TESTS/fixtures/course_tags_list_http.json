@@ -1,0 +1,255 @@
+{
+ "matrix_version": 1,
+ "scope": "Course tags list authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "tags": {
+  "zeta": {
+   "id": "a1000000-0000-4000-8000-000000970001",
+   "name": "Zeta",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "alpha": {
+   "id": "a1000000-0000-4000-8000-000000970002",
+   "name": "Alpha è",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "lower": {
+   "id": "a1000000-0000-4000-8000-000000970003",
+   "name": "bimbi",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000970004",
+   "name": "Estero",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "cases": [
+  {
+   "name": "course-tags-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970002",
+      "tag_name": "Alpha è"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970001",
+      "tag_name": "Zeta"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970003",
+      "tag_name": "bimbi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-tags-list-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970002",
+      "tag_name": "Alpha è"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970001",
+      "tag_name": "Zeta"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970003",
+      "tag_name": "bimbi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-tags-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970002",
+      "tag_name": "Alpha è"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970001",
+      "tag_name": "Zeta"
+     },
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970003",
+      "tag_name": "bimbi"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-tags-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tags": [
+     {
+      "tag_id": "a1000000-0000-4000-8000-000000970004",
+      "tag_name": "Estero"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-tags-list-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "course-tags-list-athlete-not-association",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   }
+  },
+  {
+   "name": "course-tags-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   }
+  },
+  {
+   "name": "course-tags-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.read"
+   }
+  },
+  {
+   "name": "course-tags-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "course-tags-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "course-tags-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "course-tags-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/tags/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Course Tags List",
+    "description": "API endpoint to get the list of tags for the subscriptions\n:param request: None\n:return: list of tags",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

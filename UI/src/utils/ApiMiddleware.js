@@ -2,6 +2,7 @@ import {readImpersonation, contextKey, recoverInvalidImpersonation} from './impe
 import {sessionToken} from '../store/stores.js';
 import {get} from 'svelte/store';
 import {hasSessionToken} from './accountSession.js';
+import {rewriteApiUrl, rewriteFetchInput} from './apiVersion.js';
 
 sessionToken.useLocalStorage();
 
@@ -52,7 +53,7 @@ let checkExpired = async function () {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             };
-            let res = await originalFetch(__bakney.env.API.OAUTH2.REFRESH_TOKEN, {
+            let res = await originalFetch(rewriteApiUrl(__bakney.env.API.OAUTH2.REFRESH_TOKEN), {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
@@ -85,8 +86,10 @@ let checkExpired = async function () {
 
 // Override the fetch function with your custom function
 window.fetch = async (...args) => {
-    // Handle both fetch(url, options) and fetch(request) patterns
-    const requestUrl = typeof args[0] === 'string' ? args[0] : args[0]?.url;
+    // Same-origin '/api' requests follow the active API version.
+    if (args.length) args[0] = await rewriteFetchInput(args[0]);
+    // Handle fetch(url, options), fetch(URL) and fetch(request) patterns
+    const requestUrl = typeof args[0] === 'string' ? args[0] : args[0] instanceof URL ? args[0].href : args[0]?.url;
 
     // skip for fetch on urls different from same origin (api)
     if (!requestUrl?.includes('/api')) return await originalFetch(...args);
@@ -178,10 +181,12 @@ window.fetch = async (...args) => {
         let method, url;
 
         // Override the open method
-        xhr.open = function (m, u, async, user, password) {
+        xhr.open = function (m, u) {
+            const args = Array.from(arguments);
+            args[1] = rewriteApiUrl(u);
             method = m;
-            url = u;
-            originalOpen.apply(xhr, arguments);
+            url = args[1] instanceof URL ? args[1].href : args[1];
+            originalOpen.apply(xhr, args);
         };
 
         // Override the send method
@@ -246,7 +251,7 @@ export const apiFetch = async function (url, fetchData = {method: 'GET'}) {
 
     fetchData['headers'] = headers;
 
-    const response = await window.fetch(url, fetchData);
+    const response = await window.fetch(rewriteApiUrl(url), fetchData);
     let error = false;
     let jsonResponse = {};
 

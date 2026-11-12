@@ -293,3 +293,36 @@ class InvoiceExtraTextMentionTests(BaseAPITestCase):
         extra_text = render_mock.call_args.args[2]['extra_text_invoices']
         self.assertIn('Marco — Anna Verdi — corsi:', extra_text)
         self.assertNotIn('@listacorsi', extra_text)
+
+
+class SubscriptionPreviewTests(BaseAPITestCase):
+    """The form preview is for signed-in users; its PDF is rendered as the requester."""
+
+    PATH = '/document/subscription/preview/'
+
+    def test_anonymous_request_is_asked_for_credentials(self):
+        anonymous = self.create_authenticated_client()
+        anonymous.force_authenticate(user=None)
+
+        for query in ('', f'?sport_association_id={self.sport_association.pk}', '?print=true'):
+            with patch('docmanager.views.printing_views.Puppeteer') as renderer:
+                response = anonymous.get(self.PATH + query)
+            self.assertEqual(response.status_code, 401, query)
+            renderer.assert_not_called()
+
+    def test_signed_in_user_gets_the_form(self):
+        response = self.client.get(f'{self.PATH}?sport_association_id={self.sport_association.pk}')
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertIn('text/html', response['Content-Type'])
+
+    def test_pdf_is_rendered_with_the_request_authorization(self):
+        with patch('docmanager.views.printing_views.Puppeteer') as renderer:
+            renderer.return_value.pdf_from_url.return_value = (True, b'%PDF-1.4 modulo')
+            response = self.client.get(f'{self.PATH}?print=true&sport_association_id={self.sport_association.pk}',
+                                       HTTP_AUTHORIZATION='Bearer sessione')
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json(), {'file': base64.b64encode(b'%PDF-1.4 modulo').decode()})
+        renderer.return_value.pdf_from_url.assert_called_once_with(
+            url=f'{self.PATH}?sport_association_id={self.sport_association.pk}', headers={'Authorization': 'Bearer sessione'})

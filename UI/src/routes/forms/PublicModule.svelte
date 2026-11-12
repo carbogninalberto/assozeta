@@ -33,8 +33,15 @@
         if (params.response_id) {
             alreadyResponed = true;
             query = `?response_id=${params.response_id}`;
+            if (params.attachment_token) query += `&attachment_token=${encodeURIComponent(params.attachment_token)}`;
         }
         res = await apiFetch(replaceUID(__bakney.env.API.MODULES.CUSTOM_LINK_INFO, params.custom_link) + query);
+    }
+
+    // The saved link keeps the secret that lets the respondent change the attachments later.
+    function responseLink() {
+        const token = params.attachment_token ? `/${encodeURIComponent(params.attachment_token)}` : '';
+        return `${window.location.origin}/#/forms/${params.custom_link}/${params.response_id}${token}`;
     }
 
     function checkLogin() {
@@ -51,7 +58,8 @@
 
         if (addRes.status == 200) {
             showSubmit = true;
-            push(`/forms/${params.custom_link}/${addRes.response.module_response_id}`);
+            const token = addRes.response.attachment_token ? `/${encodeURIComponent(addRes.response.attachment_token)}` : '';
+            push(`/forms/${params.custom_link}/${addRes.response.module_response_id}${token}`);
         } else {
             toast.error('Qualcosa è andato storto, riprova.');
         }
@@ -69,6 +77,7 @@
             body: JSON.stringify({
                 filename,
                 base64,
+                attachment_token: params?.attachment_token,
             }),
         });
 
@@ -87,6 +96,7 @@
                 method: 'DELETE',
                 body: JSON.stringify({
                     document_id: document_id,
+                    attachment_token: params?.attachment_token,
                 }),
             }
         );
@@ -204,15 +214,13 @@
                                     style="max-width: 30rem;width: 30rem;"
                                     class="input-group-text input-group-text-sm border-0 bg-light font-weight-bold font-size-sm"
                                     type="text"
-                                    value="{window.location.origin}/#/forms/{params.custom_link}/{params.response_id}"
-                                    href={`/#/forms/${params.custom_link}/${params.response_id}`}
+                                    value={responseLink()}
+                                    href={responseLink()}
                                     target="_blank" />
                                 <!-- copy to clipboard btn -->
                                 <button
                                     on:click={() => {
-                                        navigator.clipboard.writeText(
-                                            `${window.location.origin}/#/forms/${params.custom_link}/${params.response_id}`
-                                        );
+                                        navigator.clipboard.writeText(responseLink());
                                         toast.success('Link copiato negli appunti.');
                                     }}
                                     class="btn btn-sm btn-primary btn-icon mb-0 ml-2">

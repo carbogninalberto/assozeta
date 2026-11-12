@@ -1,0 +1,1173 @@
+{
+ "matrix_version": 1,
+ "scope": "DefaultRouter templates routes",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "seed": {
+  "keep": {
+   "id": "a1000000-0000-4000-8000-000000990101",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Modulo router à",
+   "template": "<p>Corpo</p>",
+   "footer": true,
+   "header": true,
+   "custom_footer_header": true,
+   "custom_footer": "<b>piede</b>",
+   "custom_header": "<b>testa</b>"
+  },
+  "edit": {
+   "id": "a1000000-0000-4000-8000-000000990102",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Da modificare",
+   "template": "<p>Corpo</p>",
+   "footer": false,
+   "header": true,
+   "custom_footer_header": false,
+   "custom_footer": "f",
+   "custom_header": null
+  },
+  "remove": {
+   "id": "a1000000-0000-4000-8000-000000990103",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "name": "Da eliminare",
+   "template": null,
+   "footer": true,
+   "header": true,
+   "custom_footer_header": false,
+   "custom_footer": null,
+   "custom_header": null
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000990104",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "name": "Estero",
+   "template": "<p>Corpo</p>",
+   "footer": true,
+   "header": true,
+   "custom_footer_header": false,
+   "custom_footer": null,
+   "custom_header": null
+  }
+ },
+ "cases": [
+  {
+   "name": "router-templates-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'templates'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990101",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Modulo router à",
+     "template": "<p>Corpo</p>",
+     "footer": true,
+     "header": true,
+     "custom_footer_header": true,
+     "custom_footer": "<b>piede</b>",
+     "custom_header": "<b>testa</b>"
+    },
+    {
+     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Da modificare",
+     "template": "<p>Corpo</p>",
+     "footer": false,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": "f",
+     "custom_header": null
+    },
+    {
+     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990103",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Da eliminare",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   ],
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990101",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Modulo router à",
+     "template": "<p>Corpo</p>",
+     "footer": true,
+     "header": true,
+     "custom_footer_header": true,
+     "custom_footer": "<b>piede</b>",
+     "custom_header": "<b>testa</b>"
+    },
+    {
+     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Da modificare",
+     "template": "<p>Corpo</p>",
+     "footer": false,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": "f",
+     "custom_header": null
+    },
+    {
+     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990103",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "name": "Da eliminare",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   ],
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990104",
+     "sport_association": "a1000000-0000-4000-8000-000000701002",
+     "name": "Estero",
+     "template": "<p>Corpo</p>",
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   ],
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/templates/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-templates-list-delete-without-pk-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/templates/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/templates/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Sport Association Module Templates List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "POST": {
+      "sport_association_module_templates_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Sport association module templates id"
+      },
+      "name": {
+       "type": "string",
+       "required": true,
+       "read_only": false,
+       "label": "Name",
+       "max_length": 150
+      },
+      "template": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Template"
+      },
+      "footer": {
+       "type": "boolean",
+       "required": false,
+       "read_only": false,
+       "label": "Footer"
+      },
+      "header": {
+       "type": "boolean",
+       "required": false,
+       "read_only": false,
+       "label": "Header"
+      },
+      "custom_footer_header": {
+       "type": "boolean",
+       "required": false,
+       "read_only": false,
+       "label": "Custom footer header"
+      },
+      "custom_footer": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Custom footer"
+      },
+      "custom_header": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Custom header"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-format-json-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/templates.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-templates-list-format-unknown-not-found",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/templates.csv/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-create-format-json-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "name": "Mai"
+   }
+  },
+  {
+   "name": "router-templates-create-missing-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "template": "x"
+   }
+  },
+  {
+   "name": "router-templates-create-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "Ensure this field has no more than 150 characters."
+    ],
+    "footer": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "footer": "maybe",
+    "sport_association_module_templates_id": "nope"
+   }
+  },
+  {
+   "name": "router-templates-create-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "router-templates-create-form-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "name=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-templates-create-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "router-templates-create-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "sport_association_module_templates_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Nuovo router",
+    "template": "<p>x</p>",
+    "footer": false,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "name": "Nuovo router",
+     "template": "<p>x</p>",
+     "footer": false,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "name": " Nuovo router ",
+    "template": "<p>x</p>",
+    "footer": "no",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-templates-create-client-id-ignored",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "sport_association_module_templates_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "7",
+    "template": null,
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": "h"
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "full_collaborator",
+    "id": "$new",
+    "stored": {
+     "name": "7",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": "h"
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990199",
+    "name": 7,
+    "custom_header": "h"
+   }
+  },
+  {
+   "name": "router-templates-create-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "sport_association_module_templates_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Chiave esistente",
+    "template": null,
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "name": "Chiave esistente",
+     "template": null,
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990101",
+    "name": "Chiave esistente"
+   }
+  },
+  {
+   "name": "router-templates-detail-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/templates/a1000000-0000-4000-8000-000000990101/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-detail-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/templates/a1000000-0000-4000-8000-000000990101/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'templates/a1000000-0000-4000-8000-000000990101'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-retrieve-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/templates/a1000000-0000-4000-8000-000000990101/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990101",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modulo router à",
+    "template": "<p>Corpo</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": true,
+    "custom_footer": "<b>piede</b>",
+    "custom_header": "<b>testa</b>"
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-retrieve-format-json",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/templates/a1000000-0000-4000-8000-000000990103.json",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990103",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Da eliminare",
+    "template": null,
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-retrieve-foreign-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/templates/a1000000-0000-4000-8000-000000990104/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationModuleTemplates matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-retrieve-missing-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/templates/a1000000-0000-4000-8000-000000720009/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationModuleTemplates matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-retrieve-malformed-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/templates/nope/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-retrieve-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/templates/a1000000-0000-4000-8000-000000990101/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-templates-detail-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/templates/a1000000-0000-4000-8000-000000990101/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-templates-detail-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/templates/a1000000-0000-4000-8000-000000990101/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Sport Association Module Templates Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ],
+    "actions": {
+     "PUT": {
+      "sport_association_module_templates_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Sport association module templates id"
+      },
+      "name": {
+       "type": "string",
+       "required": true,
+       "read_only": false,
+       "label": "Name",
+       "max_length": 150
+      },
+      "template": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Template"
+      },
+      "footer": {
+       "type": "boolean",
+       "required": false,
+       "read_only": false,
+       "label": "Footer"
+      },
+      "header": {
+       "type": "boolean",
+       "required": false,
+       "read_only": false,
+       "label": "Header"
+      },
+      "custom_footer_header": {
+       "type": "boolean",
+       "required": false,
+       "read_only": false,
+       "label": "Custom footer header"
+      },
+      "custom_footer": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Custom footer"
+      },
+      "custom_header": {
+       "type": "string",
+       "required": false,
+       "read_only": false,
+       "label": "Custom header"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-detail-options-foreign-no-actions",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/templates/a1000000-0000-4000-8000-000000990104/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Sport Association Module Templates Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-partial-update-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "name": "Mai"
+   }
+  },
+  {
+   "name": "router-templates-update-format-json-server-error",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102.json/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "name": "Mai"
+   }
+  },
+  {
+   "name": "router-templates-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990104/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationModuleTemplates matches the given query."
+   },
+   "effect": null,
+   "body": {
+    "name": "x"
+   }
+  },
+  {
+   "name": "router-templates-update-blank-name",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "name": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "name": " "
+   }
+  },
+  {
+   "name": "router-templates-update-foreign-association-denied",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-templates-update-owner-put-is-partial",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>Corpo</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {
+     "name": [
+      "Da modificare",
+      "Modificato router"
+     ],
+     "footer": [
+      "False",
+      "True"
+     ],
+     "custom_footer": [
+      "f",
+      "None"
+     ]
+    },
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>Corpo</p>",
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "name": "Modificato router",
+    "footer": true,
+    "custom_footer": null
+   }
+  },
+  {
+   "name": "router-templates-update-key-only-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>Corpo</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {},
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>Corpo</p>",
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990299"
+   }
+  },
+  {
+   "name": "router-templates-update-unused-id-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>chiave</p>",
+    "footer": true,
+    "header": true,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {
+     "template": [
+      "<p>Corpo</p>",
+      "<p>chiave</p>"
+     ]
+    },
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>chiave</p>",
+     "footer": true,
+     "header": true,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990299",
+    "template": "<p>chiave</p>"
+   }
+  },
+  {
+   "name": "router-templates-update-other-row-id-ignored",
+   "actor": "full_collaborator",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>chiave</p>",
+    "footer": true,
+    "header": false,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {
+     "header": [
+      "True",
+      "False"
+     ]
+    },
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>chiave</p>",
+     "footer": true,
+     "header": false,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990101",
+    "header": false
+   }
+  },
+  {
+   "name": "router-templates-update-unchanged-no-audit",
+   "actor": "full_collaborator",
+   "method": "PUT",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "sport_association_module_templates_id": "a1000000-0000-4000-8000-000000990102",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "name": "Modificato router",
+    "template": "<p>chiave</p>",
+    "footer": true,
+    "header": false,
+    "custom_footer_header": false,
+    "custom_footer": null,
+    "custom_header": null
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "full_collaborator",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "changes": {},
+    "stored": {
+     "name": "Modificato router",
+     "template": "<p>chiave</p>",
+     "footer": true,
+     "header": false,
+     "custom_footer_header": false,
+     "custom_footer": null,
+     "custom_header": null
+    }
+   },
+   "body": {
+    "name": "Modificato router"
+   }
+  },
+  {
+   "name": "router-templates-destroy-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/templates/a1000000-0000-4000-8000-000000990104/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationModuleTemplates matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-destroy-malformed-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/templates/nope/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-destroy-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/templates/a1000000-0000-4000-8000-000000990103/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-templates-destroy-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/templates/a1000000-0000-4000-8000-000000990103/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "actor": "owner",
+    "id": "a1000000-0000-4000-8000-000000990103",
+    "stored": {}
+   }
+  },
+  {
+   "name": "router-templates-destroy-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/templates/a1000000-0000-4000-8000-000000990103/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationModuleTemplates matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-templates-destroy-format-json",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/templates/a1000000-0000-4000-8000-000000990102.json",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "actor": "full_collaborator",
+    "id": "a1000000-0000-4000-8000-000000990102",
+    "stored": {}
+   }
+  }
+ ]
+}

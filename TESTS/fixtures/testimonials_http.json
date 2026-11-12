@@ -1,0 +1,804 @@
+{
+ "matrix_version": 1,
+ "scope": "Testimonial add authored sequence with reviewed-flag audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "index_path": "self",
+ "cases": [
+  {
+   "name": "testimonials-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "Da amministratore",
+     "score": 4.0
+    },
+    "reviewed": {
+     "association": "own_association",
+     "actor": "admin",
+     "changes": {
+      "reviewed": [
+       "False",
+       "True"
+      ]
+     },
+     "impersonation": "admin_owner"
+    }
+   },
+   "body": {
+    "text": "Da amministratore",
+    "score": 4
+   }
+  },
+  {
+   "name": "testimonials-owner-already-reviewed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "Ottimo è 😀",
+     "score": 5.0
+    },
+    "reviewed": null
+   },
+   "body": {
+    "text": "Ottimo è 😀",
+    "score": 5
+   }
+  },
+  {
+   "name": "testimonials-foreign-owner-flips-own-association",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "foreign_association",
+     "text": "Estero",
+     "score": 1.0
+    },
+    "reviewed": {
+     "association": "foreign_association",
+     "actor": "foreign_owner",
+     "changes": {
+      "reviewed": [
+       "False",
+       "True"
+      ]
+     },
+     "impersonation": null
+    }
+   },
+   "body": {
+    "score": 1,
+    "text": "Estero"
+   }
+  },
+  {
+   "name": "testimonials-text-integer-score-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "123",
+     "score": 2.5
+    },
+    "reviewed": null
+   },
+   "body": {
+    "text": 123,
+    "score": 2.5
+   }
+  },
+  {
+   "name": "testimonials-text-true-score-true",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "True",
+     "score": 1.0
+    },
+    "reviewed": null
+   },
+   "body": {
+    "text": true,
+    "score": true
+   }
+  },
+  {
+   "name": "testimonials-text-float-repr",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "1e+16",
+     "score": 1.0
+    },
+    "reviewed": null
+   },
+   "body": {
+    "text": 1e+16,
+    "score": 1.0
+   }
+  },
+  {
+   "name": "testimonials-text-object-repr",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "{'a': [1, \"b'c\", None, False], 'z': 'x\\n'}",
+     "score": 3.0
+    },
+    "reviewed": null
+   },
+   "body": {
+    "text": {
+     "a": [
+      1,
+      "b'c",
+      null,
+      false
+     ],
+     "z": "x\n"
+    },
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-extra-fields-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "Extra",
+     "score": 5.0
+    },
+    "reviewed": null
+   },
+   "body": {
+    "text": "Extra",
+    "score": 5,
+    "sport_association": "a1000000-0000-4000-8000-000000701002",
+    "testimonial_id": "a1000000-0000-4000-8000-000000720009"
+   }
+  },
+  {
+   "name": "testimonials-missing-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "missing params."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-missing-score",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "missing params."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x"
+   }
+  },
+  {
+   "name": "testimonials-empty-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "missing params."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {}
+  },
+  {
+   "name": "testimonials-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "missing params."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": [
+    "testo"
+   ]
+  },
+  {
+   "name": "testimonials-score-zero",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "invalid score."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 0
+   }
+  },
+  {
+   "name": "testimonials-score-above",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "invalid score."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 6
+   }
+  },
+  {
+   "name": "testimonials-score-just-above",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "invalid score."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 5.0001
+   }
+  },
+  {
+   "name": "testimonials-score-negative",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "invalid score."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": -1
+   }
+  },
+  {
+   "name": "testimonials-score-false",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "invalid score."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": false
+   }
+  },
+  {
+   "name": "testimonials-score-huge",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "invalid score."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 1000000000000000000000000000000
+   }
+  },
+  {
+   "name": "testimonials-score-string-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": "3"
+   }
+  },
+  {
+   "name": "testimonials-score-null-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": null
+   }
+  },
+  {
+   "name": "testimonials-score-list-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": [
+     3
+    ]
+   }
+  },
+  {
+   "name": "testimonials-text-null-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": null,
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-list-members-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": [
+    "text",
+    "score"
+   ]
+  },
+  {
+   "name": "testimonials-substring-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": "textscore"
+  },
+  {
+   "name": "testimonials-number-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": 5
+  },
+  {
+   "name": "testimonials-null-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "testimonials-form-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "raw_body": "text=x&score=3",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "testimonials-athlete-missing-params",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "missing params."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x"
+   }
+  },
+  {
+   "name": "testimonials-athlete-not-association",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Thank you for your review."
+   },
+   "effect": {
+    "testimonial": {
+     "association": "own_association",
+     "text": "Collaboratore",
+     "score": 4.0
+    },
+    "reviewed": null
+   },
+   "body": {
+    "text": "Collaboratore",
+    "score": 4
+   }
+  },
+  {
+   "name": "testimonials-restricted-collaborator-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.update"
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-forged-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:forged",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+    "impersonation_invalid": "True"
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   },
+   "body": {
+    "text": "x",
+    "score": 3
+   }
+  },
+  {
+   "name": "testimonials-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  },
+  {
+   "name": "testimonials-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/testimonials/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Testimonials Create",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": {
+    "testimonial": null,
+    "reviewed": null
+   }
+  }
+ ]
+}

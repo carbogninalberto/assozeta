@@ -26,7 +26,8 @@ class AssociationImpersonationTests(TestCase):
         self.admin = User.objects.create_superuser(username='admin', password='test')
         self.member = Associate.objects.create(user=self.athlete, sport_association=self.association,
             first_name='Shared', last_name='Athlete', tax_code='TEST')
-        self.other_member = Associate.objects.create(user=self.athlete, sport_association=self.other,
+        # The other association registered the same person under its own account.
+        self.other_member = Associate.objects.create(user=self.other_owner, sport_association=self.other,
             first_name='Shared', last_name='Athlete', tax_code='TEST')
         self.client = APIClient()
         self.authenticate(self.owner)
@@ -46,7 +47,7 @@ class AssociationImpersonationTests(TestCase):
         # Avoid enrollment callbacks; the test exercises the existing subscription records.
         values = []
         for association, member in ((self.association, self.member), (self.other, self.other_member)):
-            subscription = Subscription(user=self.athlete, sport_association=association, associate=member,
+            subscription = Subscription(user=member.user, sport_association=association, associate=member,
                 start_date=timezone.now(), end_date=timezone.now() + timezone.timedelta(days=365))
             subscription.save()
             values.append(subscription)
@@ -88,18 +89,91 @@ class AssociationImpersonationTests(TestCase):
         self.assertNotIn(self.owner.pk, eligible)
         self.start(subscriber)
 
-    def test_self_hosted_owner_sees_every_athlete_like_the_admin(self):
+    def test_instance_owner_sees_every_athlete_like_the_admin(self):
         from instance.models import InstanceConfiguration
-        InstanceConfiguration.objects.create(domain='club.example.com', name='Club', self_hosted=True,
-                                             primary_association=self.association)
+        config = InstanceConfiguration.objects.create(domain='club.example.com', name='Club', self_hosted=True,
+                                                      primary_association=self.association)
+        # Members registered by the association itself are linked through their subscription.
+        own_member = Associate.objects.create(user=self.owner, sport_association=self.association)
+        subscriber = User.objects.create_user(username='subscriber', role=User.ATHLETE)
+        other_athlete = User.objects.create_user(username='other-athlete', role=User.ATHLETE)
+        Associate.objects.create(user=other_athlete, sport_association=self.other)
+        # Linked to the association by subscription and a member of the other association.
+        shared = User.objects.create_user(username='shared', role=User.ATHLETE)
+        Associate.objects.create(user=shared, sport_association=self.other)
+        other_collaborator = User.objects.create_user(username='other-collaborator', role=User.COLLABORATOR,
+            connected_user=self.other_owner, collaborator_role=User.CUSTOM_COLLABORATOR_ROLE)
+        now = timezone.now()
+        for user in (subscriber, shared):
+            Subscription(user=user, sport_association=self.association, associate=own_member,
+                         start_date=now, end_date=now + timezone.timedelta(days=365)).save()
         eligible = set(eligible_users(self.owner).values_list('pk', flat=True))
         admin_athletes = set(eligible_users(self.admin).filter(role=User.ATHLETE).values_list('pk', flat=True))
         self.assertSetEqual(eligible, admin_athletes | {self.collaborator.pk})
-        self.assertIn(self.unrelated.pk, eligible)
-        self.start(self.unrelated)
-        # A second association on the same install keeps the linked-members scope.
+        self.assertSetEqual(eligible, {self.athlete.pk, self.unrelated.pk, subscriber.pk, other_athlete.pk, shared.pk,
+                                       self.collaborator.pk})
+        response = self.client.get('/association/impersonation/users', {'q': 'other-athlete'})
+        self.assertEqual([u['user_id'] for u in response.data['users']], [str(other_athlete.pk)])
+        # Sessions on an unlinked athlete and on an athlete of the other association start and stay valid.
+        for target in (self.unrelated, other_athlete, shared):
+            with self.subTest(target=target.username):
+                self.start(target)
+                self.assertEqual(self.client.get('/profile/info', **self.headers).status_code, 200)
+        for target in (self.other_owner, other_collaborator, self.owner, self.admin):
+            with self.subTest(target=target.username):
+                response = self.client.post('/association/impersonation', {'target_user_id': str(target.pk)}, format='json')
+                self.assertEqual(response.status_code, 403, response.data)
+        # The owner of the other association keeps the linked-members scope.
+        self.assertSetEqual(set(eligible_users(self.other_owner).values_list('pk', flat=True)),
+                            {other_athlete.pk, other_collaborator.pk})
         self.authenticate(self.other_owner)
-        self.assertNotIn(self.unrelated.pk, set(eligible_users(self.other_owner).values_list('pk', flat=True)))
+        for target in (self.unrelated, shared, self.athlete):
+            with self.subTest(other_owner_target=target.username):
+                response = self.client.post('/association/impersonation', {'target_user_id': str(target.pk)}, format='json')
+                self.assertEqual(response.status_code, 403, response.data)
+        # The running session follows the instance configuration: once the association is no longer the
+        # primary one of a self-hosted install, the linked-members scope applies again.
+        self.authenticate(self.owner)
+        self.start(other_athlete)
+        config.self_hosted = False
+        config.save()
+        response = self.client.get('/profile/info', **self.headers)
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(response.data['impersonation_invalid'])
+        self.assertSetEqual(set(eligible_users(self.owner).values_list('pk', flat=True)),
+                            {self.athlete.pk, subscriber.pk, self.collaborator.pk})
+
+    def test_athletes_with_memberships_in_another_association_are_not_eligible(self):
+        now = timezone.now()
+        own_member = Associate.objects.create(user=self.owner, sport_association=self.association)
+        # An existing account attached to a subscription by e-mail (renewal) that has another association.
+        linked = User.objects.create_user(username='linked', email='linked@example.test', role=User.ATHLETE)
+        Subscription(user=linked, sport_association=self.association, associate=own_member,
+                     start_date=now, end_date=now + timezone.timedelta(days=365)).save()
+        away = Subscription(user=linked, sport_association=self.other, associate=self.other_member,
+                            start_date=now, end_date=now + timezone.timedelta(days=365))
+        away.save()
+        # A member of both associations.
+        Associate.objects.create(user=self.athlete, sport_association=self.other)
+        eligible = set(eligible_users(self.owner).values_list('pk', flat=True))
+        self.assertSetEqual(eligible, {self.collaborator.pk})
+        for target in (linked, self.athlete):
+            with self.subTest(target=target.username):
+                response = self.client.post('/association/impersonation', {'target_user_id': str(target.pk)}, format='json')
+                self.assertEqual(response.status_code, 403, response.data)
+        # Deleted links elsewhere do not count; a new one ends a running session.
+        away.deleted = True
+        away.save()
+        self.start(linked)
+        self.assertEqual(self.client.get('/profile/info', **self.headers).status_code, 200)
+        Associate.objects.create(user=linked, sport_association=self.other, deleted=True)
+        self.assertEqual(self.client.get('/profile/info', **self.headers).status_code, 200)
+        Associate.objects.create(user=linked, sport_association=self.other)
+        response = self.client.get('/profile/info', **self.headers)
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(response.data['impersonation_invalid'])
+        # The administrator keeps every athlete.
+        self.assertTrue({linked.pk, self.athlete.pk} <= set(eligible_users(self.admin).values_list('pk', flat=True)))
 
     def test_search_matches_every_word_in_any_order(self):
         self.athlete.first_name, self.athlete.last_name = 'Mario', 'Rossi'

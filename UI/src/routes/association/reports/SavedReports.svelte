@@ -1,4 +1,5 @@
 <script>
+    import {rewriteApiUrl} from 'utils/apiVersion.js';
     import FilterSelect from 'components/filters/FilterSelect.svelte';
     import {onMount, onDestroy, tick} from 'svelte';
     import {apiFetch, replaceUID, originalFetch} from 'utils/ApiMiddleware.js';
@@ -173,7 +174,7 @@
         toast.info('Generazione report in corso...');
 
         try {
-            const url = replaceUID(__bakney.env.API.SAVED_REPORTS.RUN, reportId);
+            const url = rewriteApiUrl(replaceUID(__bakney.env.API.SAVED_REPORTS.RUN, reportId));
             const token = JSON.parse(localStorage.getItem('sessionToken'));
             const headers = {
                 Authorization: `Bearer ${token}`,

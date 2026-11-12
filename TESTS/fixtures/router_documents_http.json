@@ -1,0 +1,1225 @@
+{
+ "matrix_version": 1,
+ "scope": "DefaultRouter documents routes with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "folders": [
+  [
+   "a",
+   null,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "f",
+   null,
+   "a1000000-0000-4000-8000-000000701002"
+  ]
+ ],
+ "archives": [
+  {
+   "label": "root1",
+   "id": "a1000000-0000-4000-8000-000000840001",
+   "document": "a1000000-0000-4000-8000-000000840002",
+   "token": "a1000000-0000-4000-8000-000000840003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": null,
+   "filename": "statuto è.pdf",
+   "date": "2026-09-01",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": 1234,
+   "filepath": null
+  },
+  {
+   "label": "root2",
+   "id": "a1000000-0000-4000-8000-000000840004",
+   "document": "a1000000-0000-4000-8000-000000840005",
+   "token": "a1000000-0000-4000-8000-000000840006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": null,
+   "filename": "verbale.pdf",
+   "date": "2026-09-02",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": null,
+   "filepath": "docs/verbale.pdf"
+  },
+  {
+   "label": "in_a",
+   "id": "a1000000-0000-4000-8000-000000840007",
+   "document": "a1000000-0000-4000-8000-000000840008",
+   "token": "a1000000-0000-4000-8000-000000840009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": "a",
+   "filename": "bilancio.pdf",
+   "date": "2026-09-03",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": 0,
+   "filepath": null
+  },
+  {
+   "label": "foreign",
+   "id": "a1000000-0000-4000-8000-000000840010",
+   "document": "a1000000-0000-4000-8000-000000840011",
+   "token": "a1000000-0000-4000-8000-000000840012",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "folder": null,
+   "filename": "estero.pdf",
+   "date": "2026-09-04",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": null,
+   "filepath": null
+  }
+ ],
+ "cases": [
+  {
+   "name": "router-documents-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/documents/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/documents/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/documents/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'documents'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-owner-root",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840002",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": null,
+       "filename": "statuto è.pdf",
+       "file_size_bytes": 1234,
+       "token": "a1000000-0000-4000-8000-000000840003"
+      },
+      "date": "2026-09-01",
+      "folder": null
+     },
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840005",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": "docs/verbale.pdf",
+       "filename": "verbale.pdf",
+       "file_size_bytes": null,
+       "token": "a1000000-0000-4000-8000-000000840006"
+      },
+      "date": "2026-09-02",
+      "folder": null
+     }
+    ],
+    "pagination": {
+     "page": 0,
+     "total_pages": 1,
+     "total_items": 2,
+     "has_next": false
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-owner-folder",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/documents/?folder=$folder:a",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840007",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840008",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": null,
+       "filename": "bilancio.pdf",
+       "file_size_bytes": 0,
+       "token": "a1000000-0000-4000-8000-000000840009"
+      },
+      "date": "2026-09-03",
+      "folder": "$folder:a"
+     }
+    ],
+    "pagination": {
+     "page": 0,
+     "total_pages": 1,
+     "total_items": 1,
+     "has_next": false
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-foreign-folder-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/?folder=$folder:f",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Cannot access folder from different sport association."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/documents/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-put-not-allowed",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-documents-list-delete-without-pk-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Archive List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ],
+    "actions": {
+     "POST": {
+      "sport_association_documents_archive_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Sport association documents archive id"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "document": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Document",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "Date"
+      },
+      "folder": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Folder"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-format-json-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-documents-list-format-unknown-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents.xml/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-create-form-unsupported-media",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "effect": null,
+   "raw_body": "date=01%2F10%2F2026",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-documents-create-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-documents-create-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "router-documents-create-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "folder": [
+     "Invalid pk \"999999999\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "date": "2026-10-01",
+    "folder": 999999999
+   }
+  },
+  {
+   "name": "router-documents-create-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001"
+   }
+  },
+  {
+   "name": "router-documents-create-malformed-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "sport_association_documents_archive_id": "abc"
+   }
+  },
+  {
+   "name": "router-documents-create-foreign-association-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-documents-create-foreign-folder-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "folder": "$folder:f"
+   }
+  },
+  {
+   "name": "router-documents-create-valid-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "folder": "$folder:a",
+    "date": "01/10/2026"
+   }
+  },
+  {
+   "name": "router-documents-create-format-json-server-error",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/documents.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "router-documents-create-athlete-required",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-documents-create-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/documents/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "router-documents-detail-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-detail-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'documents/a1000000-0000-4000-8000-000000840001'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-retrieve-found-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-documents-retrieve-format-json-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000840007.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-documents-retrieve-foreign-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000840010/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-retrieve-missing-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000720009/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-retrieve-malformed-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/nope/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-retrieve-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-documents-detail-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-documents-detail-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Archive Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ],
+    "actions": {
+     "PUT": {
+      "sport_association_documents_archive_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Sport association documents archive id"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "document": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Document",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "Date"
+      },
+      "folder": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Folder"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-detail-options-foreign-no-actions",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/a1000000-0000-4000-8000-000000840010/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Archive Instance",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-partial-update-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "date": "05/10/2026"
+   }
+  },
+  {
+   "name": "router-documents-update-format-json-server-error",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "date": "05/10/2026"
+   }
+  },
+  {
+   "name": "router-documents-update-form-unsupported-media",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004/",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "effect": null,
+   "raw_body": "date=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "router-documents-update-foreign-not-found",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/a1000000-0000-4000-8000-000000840010/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null,
+   "body": {
+    "date": "05/10/2026"
+   }
+  },
+  {
+   "name": "router-documents-update-invalid-date",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "date": "2026-10-05"
+   }
+  },
+  {
+   "name": "router-documents-update-saves-then-server-error",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "archive": "a1000000-0000-4000-8000-000000840004",
+    "stored": {
+     "date": "2026-10-05"
+    },
+    "changes": {
+     "date": [
+      "2026-09-02",
+      "2026-10-05"
+     ]
+    }
+   },
+   "body": {
+    "date": "05/10/2026"
+   }
+  },
+  {
+   "name": "router-documents-update-primary-key-ignored",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/documents/a1000000-0000-4000-8000-000000840004/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "update",
+    "archive": "a1000000-0000-4000-8000-000000840004",
+    "stored": {
+     "date": "2026-10-06"
+    },
+    "changes": {
+     "date": [
+      "2026-10-05",
+      "2026-10-06"
+     ]
+    }
+   },
+   "body": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001",
+    "date": "06/10/2026"
+   }
+  },
+  {
+   "name": "router-documents-destroy-foreign-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/a1000000-0000-4000-8000-000000840010/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-destroy-malformed-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/nope/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-destroy-athlete-server-error",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "router-documents-destroy-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "archives": [
+     "a1000000-0000-4000-8000-000000840001"
+    ],
+    "documents": [],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000840001": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000840001",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000840002",
+       "None"
+      ],
+      "date": [
+       "2026-09-01",
+       "None"
+      ],
+      "folder": [
+       "None",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {}
+   }
+  },
+  {
+   "name": "router-documents-destroy-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/a1000000-0000-4000-8000-000000840001/",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-destroy-format-json",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/documents/a1000000-0000-4000-8000-000000840007.json",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "archives": [
+     "a1000000-0000-4000-8000-000000840007"
+    ],
+    "documents": [],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000840007": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000840007",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000840008",
+       "None"
+      ],
+      "date": [
+       "2026-09-03",
+       "None"
+      ],
+      "folder": [
+       "$folder:a",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {}
+   }
+  },
+  {
+   "name": "router-documents-bulk-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/documents/bulk_delete/",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-documents-bulk-restricted-unmapped",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/documents/bulk_delete/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'documents/bulk_delete'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-documents-bulk-get-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/bulk_delete/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-bulk-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/bulk_delete/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Bulk delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "router-documents-bulk-missing-files",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/bulk_delete/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "No instances provided"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "router-documents-bulk-foreign-included",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/bulk_delete/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed to delete some of these instances."
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     "a1000000-0000-4000-8000-000000840004",
+     "a1000000-0000-4000-8000-000000840010"
+    ]
+   }
+  },
+  {
+   "name": "router-documents-bulk-format-json-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/bulk_delete.json",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "files": [
+     "a1000000-0000-4000-8000-000000840004"
+    ]
+   }
+  },
+  {
+   "name": "router-documents-bulk-owner-deletes",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/bulk_delete/",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "kind": "delete",
+    "archives": [
+     "a1000000-0000-4000-8000-000000840004"
+    ],
+    "documents": [
+     "a1000000-0000-4000-8000-000000840005"
+    ],
+    "archive_changes": {
+     "a1000000-0000-4000-8000-000000840004": {
+      "sport_association_documents_archive_id": [
+       "a1000000-0000-4000-8000-000000840004",
+       "None"
+      ],
+      "sport_association": [
+       "a1000000-0000-4000-8000-000000701001",
+       "None"
+      ],
+      "document": [
+       "a1000000-0000-4000-8000-000000840005",
+       "None"
+      ],
+      "date": [
+       "2026-10-06",
+       "None"
+      ],
+      "folder": [
+       "None",
+       "None"
+      ]
+     }
+    },
+    "document_changes": {
+     "a1000000-0000-4000-8000-000000840005": {
+      "document_id": [
+       "a1000000-0000-4000-8000-000000840005",
+       "None"
+      ],
+      "creation_date": [
+       "2026-10-01 08:00:00.500000",
+       "None"
+      ],
+      "filepath": [
+       "docs/verbale.pdf",
+       "None"
+      ],
+      "filename": [
+       "verbale.pdf",
+       "None"
+      ],
+      "token": [
+       "a1000000-0000-4000-8000-000000840006",
+       "None"
+      ],
+      "customer_invoice_pdf": [
+       "application.CustomerInvoice.None",
+       "None"
+      ]
+     }
+    }
+   },
+   "body": {
+    "files": [
+     "a1000000-0000-4000-8000-000000840004"
+    ]
+   }
+  }
+ ]
+}

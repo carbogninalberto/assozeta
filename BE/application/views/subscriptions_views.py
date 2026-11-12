@@ -1,4 +1,5 @@
 from application.impersonation_scope import scoped_queryset, isolate_medical_certificate
+from application.utils.person_dates import person_date
 """
 @ copyright: Bakney SRL
 """
@@ -18,6 +19,7 @@ from dateutil.relativedelta import relativedelta
 import os
 import secrets
 import string
+import uuid
 import logging
 import base64
 import csv
@@ -31,13 +33,15 @@ from django.utils.timezone import make_aware
 from rest_framework.exceptions import APIException, ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from django.conf import settings as django_settings
+from application.public_limits import PublicSubscriptionThrottle, body_too_large, upload_too_large_message
 
 from application.printing_tasks import print_document_medical_appointment
 from application.signals import subscription_signed, subscription_approved
 from application.utils.printing import current_view_subscriptions
 from application.utils.subscriptions_utils import create_subscription, get_optimized_subscriptions, \
-    add_course_to_subscription, smart_search, cleanup_storage_keys
+    add_course_to_subscription, smart_search, cleanup_storage_keys, family_tax_codes
 from application.services.subscription_service import (
     SubscriptionService, TagService, MedicalCertificateService, SubscriptionImportService
 )
@@ -61,8 +65,9 @@ from application.serializers.subscriptions_serializers import SubscriptionSerial
 from application.serializers.auth_serializers import UserAccountSerializer
 from application.models.subscriptions_models import Subscription, future_renewal_exists
 from application.serializers.user_serializers import AssociateSerializer, MedicalAppointmentsSerializer
+from application.utils.xlsx_text import xlsx_safe_frame
 from application.utils.api_utils import is_valid_uuid, SubscriptionMaps, BalanceSheetData, KTDatatablePagination, \
-    check_date, generate_image_with_text
+    check_date, generate_image_with_text, checked_ordering
 from application.utils.notification_utils import NotificationUtils
 from application.views.auth_views import AuthUtils
 from django.core.files.storage import default_storage
@@ -191,6 +196,38 @@ def subscription_tags_unassign(request, tag_id, subscription_id):
         return Response({'msg': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
+def _member_renewal_association(request, data):
+    """The association a member account renews in.
+
+    A member account renews its own subscriptions and those of its family, in
+    the association they belong to: the named association must have a
+    subscription of the account (or of a person sharing a filled-in tax code or a family
+    with one of the account's subscriptions) for the associate of the request.
+    """
+    association = scoped_queryset(request, SportAssociation.objects).get(
+        sport_association_id=data['sport_association']['sport_association_id'])
+    own = Subscription._base_manager.filter(user=request.user)
+    renewable = Subscription._base_manager.filter(sport_association=association).filter(
+        Q(user=request.user)
+        | Q(associate__tax_code__in=family_tax_codes(own))
+        | Q(associate__family__in=own.filter(associate__family__isnull=False).values('associate__family'))
+    )
+    associate = data.get('associate_data')
+    associate = associate if isinstance(associate, dict) else {}
+    associate_id, tax_code = associate.get('associate_id'), associate.get('tax_code')
+    allowed = False
+    if isinstance(associate_id, str) and associate_id:
+        try:
+            allowed = renewable.filter(associate_id=uuid.UUID(associate_id)).exists()
+        except ValueError:
+            allowed = False
+    elif associate_id is None and isinstance(tax_code, str) and tax_code:
+        allowed = renewable.filter(associate__tax_code__iexact=tax_code).exists()
+    if not allowed:
+        raise PermissionDenied("User not allowed.")
+    return association
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def subscription_renew(request):
@@ -198,7 +235,7 @@ def subscription_renew(request):
     data = request.data
     requester = request.user
     if request.user.role != User.ASSOCIATION:
-        request.user = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association']['sport_association_id']).user
+        request.user = _member_renewal_association(request, data).user
 
     created_storage_keys = []
     try:
@@ -226,24 +263,19 @@ def subscription_renew(request):
                 payments = payments.exclude(payment_id=fresh_sub.payment.payment_id)
             payments.order_by('creation_date').delete()
 
-            if 'user' in data and 'email' in data['user']:
-                user = User.objects.filter(email=data['user']['email']).first()
-                if user is not None:
-                    fresh_sub.user = user
-                    fresh_sub.save()
-
             if 'tags' in data and len(data['tags']) > 0:
                 if isinstance(data['tags'][0], str):
                     tag_ids = data['tags']
                 else:
                     tag_ids = [tag['tag_id'] for tag in data['tags']]
-                tags = Tags.objects.filter(tag_id__in=tag_ids)
+                tags = Tags.objects.filter(tag_id__in=tag_ids, sport_association=fresh_sub.sport_association)
                 fresh_sub.tags.set(tags)
 
             if 'courses' in data and len(data['courses']) > 0:
                 for c in data['courses']:
                     u: User = request.user
-                    course = scoped_queryset(request, Course.objects).filter(course_id=c['value']).first()
+                    course = scoped_queryset(request, Course.objects).filter(
+                        course_id=c['value'], sport_association=fresh_sub.sport_association).first()
                     add_course_to_subscription(course, fresh_sub, u.sport_association, data=None, is_athlete=False)
 
         logger.info("Subscription renewal completed", extra={'user_id': str(request.user.user_id), 'subscription_id': str(fresh_sub.subscription_id)})
@@ -325,6 +357,11 @@ def _handle_family_subscription(data, request, is_athlete_request):
         cleanup_storage_keys(created_storage_keys)
         raise
 
+    # A payment created by this request still holds the values it was built with (a plain
+    # date as payment_date); the answer lists every payment as it is stored.
+    for payment in payments:
+        payment.refresh_from_db()
+
     return Response({
         "status": "success",
         "subs": [],
@@ -341,6 +378,10 @@ def _handle_quick_subscription(data, request):
     """Handle quick subscription for existing associate."""
     sport_association = scoped_queryset(request, SportAssociation.objects).get(sport_association_id=data['sport_association'])
     associate = scoped_queryset(request, Associate.objects).get(associate_id=data['associate'])
+    # The quick re-subscription only uses the association's own members, for its own owner.
+    if (request.subscription_requester is None or sport_association.user_id != request.user.user_id
+            or associate.sport_association_id != sport_association.sport_association_id):
+        raise PermissionDenied("User not allowed.")
 
     with transaction.atomic():
         sport_association = scoped_queryset(request, SportAssociation.objects).select_for_update().get(
@@ -412,6 +453,7 @@ def _prepare_subscription_request(request, data, mode):
 
 
 @api_view(['POST'])
+@throttle_classes([PublicSubscriptionThrottle])
 # @permission_classes([IsAuthenticated])
 def subscription_add(request):
     """
@@ -419,6 +461,9 @@ def subscription_add(request):
     :param request: data: {newUserAccount, newAssociate, signature, paymentMethod}
     :return: token, refresh token
     """
+    if body_too_large(request):
+        return Response({'error': upload_too_large_message(django_settings.PUBLIC_UPLOAD_MAX_BYTES)},
+                        status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
     logger.info("Adding new subscription", extra={'user_id': str(request.user.user_id) if request.user.is_authenticated else 'anonymous'})
     data = request.data
     mode = request.GET.get('m', None)
@@ -1039,9 +1084,8 @@ def _apply_sorting(subscriptions, params):
                 f"{'-' if params['sort_type'] == 'desc' else ''}age"
             )
         else:
-            subscriptions = subscriptions.order_by(
-                f"{'-' if params['sort_type'] == 'desc' else ''}{params['sort_field']}"
-            )
+            subscriptions = subscriptions.order_by(checked_ordering(
+                subscriptions, f"{'-' if params['sort_type'] == 'desc' else ''}{params['sort_field']}"))
 
     return subscriptions
 
@@ -1174,7 +1218,7 @@ def subscription_list_archived(request):
                 f"{'-' if sort_type == 'desc' else ''}associate__last_name"
             )
         else:
-            subscriptions = subscriptions.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+            subscriptions = subscriptions.order_by(checked_ordering(subscriptions, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
         # apply the sort by lastname asc or desc if one of the two is present
     if sort_lastname_asc_flag or sort_lastname_desc_flag:
@@ -1313,12 +1357,12 @@ def subscription_associates_draft_edit(request, uid):
             # this check means that al fields are valid
             else:
                 now = date.today()
-                born_date = dateutil.parser.parse(data['edit_data']['associate']['born_date'])
+                born_date = person_date(data['edit_data']['associate']['born_date'])
                 born_date = born_date.strftime('%d/%m/%Y')
                 age = relativedelta(now, datetime.strptime(born_date, '%d/%m/%Y')).years
                 if age < 18:
                     try:
-                        born_date_tutor = dateutil.parser.parse(data['edit_data']['associate_tutor']['born_date'])
+                        born_date_tutor = person_date(data['edit_data']['associate_tutor']['born_date'])
                         born_date_tutor = born_date_tutor.strftime('%d/%m/%Y')
                         tutor_age = relativedelta(now, datetime.strptime(born_date_tutor, '%d/%m/%Y')).years
                         if tutor_age < 18:
@@ -1632,7 +1676,7 @@ def _export_to_excel(dataframe, cols):
     """Export dataframe to Excel format."""
     f = BytesIO()
     writer = pandas.ExcelWriter(f, engine='xlsxwriter')
-    dataframe.to_excel(writer, sheet_name='Libro Soci')
+    xlsx_safe_frame(dataframe).to_excel(writer, sheet_name='Libro Soci')
     worksheet = writer.sheets['Libro Soci']
     for i, col in enumerate(cols):
         worksheet.set_column(i, i, len(col) + 10)
@@ -1708,9 +1752,7 @@ def subscription_info(request, uid):
     if request.user.role == User.ATHLETE:
         # Get unique tax codes from associates of user's subscriptions
         user_subscriptions = scoped_queryset(request, Subscription.objects).filter(user=request.user)
-        tax_codes = user_subscriptions.filter(
-            associate__tax_code__isnull=False
-        ).values_list('associate__tax_code', flat=True).distinct()
+        tax_codes = family_tax_codes(user_subscriptions)
 
         # Get all subscription IDs for users with those tax codes, plus original user subscriptions
         allowed_subscription_ids = list(scoped_queryset(request, Subscription.objects).filter(
@@ -1884,7 +1926,7 @@ def subscription_payments(request, uid):
             )
     # sort by field
     if sort_field:
-        payments = payments.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+        payments = payments.order_by(checked_ordering(payments, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
     payments = paginator.paginate_queryset(queryset=payments, request=request)
     payments_data = PaymentOptimizedSerializer(payments, many=True).data
@@ -2676,12 +2718,22 @@ def subscription_import_upload(request):
 
     logger.info("subscription_import_upload")
     data = request.data
-    file_info = {"columns": [], "map": SubscriptionMaps.MAP}
+    # The map of this request: every key, filled from the columns of its upload.
+    file_info = {"columns": [], "map": dict(SubscriptionMaps.MAP)}
 
     # Handle new file upload
     if 'associates_file' in data.keys():
         associates_file = data['associates_file']
-        document, file_path = SubscriptionImportService.upload_and_store_file(associates_file)
+        limit = SubscriptionImportService.upload_limit()
+        if getattr(associates_file, 'size', 0) > limit:
+            return Response({'msg': SubscriptionImportService.too_large_message(limit)},
+                            status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        document, file_path = SubscriptionImportService.upload_and_store_file(associates_file, sport_association)
+        # Uploads that were never imported leave with the next upload, once past their retention time.
+        try:
+            SubscriptionImportService.remove_expired_uploads(sport_association)
+        except Exception as e:
+            logger.exception(e)
         file_info['document_id'] = document.document_id
 
         rows_data_df = get_pandas_df_from_file(file_path)
@@ -2693,25 +2745,38 @@ def subscription_import_upload(request):
 
     # Handle existing document mapping
     elif 'document_id' in data.keys() and 'map' in data.keys():
-        file_path = SubscriptionImportService.retrieve_document_path(data['document_id'])
+        document, file_path = SubscriptionImportService.retrieve_document(data['document_id'], sport_association)
 
-        rows_data_df = get_pandas_df_from_file(file_path)
+        rows_data_df = get_pandas_df_from_file(file_path, SubscriptionImportService.text_columns(data['map']))
         if rows_data_df is None:
             raise ValidationError('Cannot extract dataframe')
 
         file_info['columns'] = rows_data_df.columns.tolist()
 
+        # The rows are imported together: a failure leaves no draft and no certificate.
+        imported = False
         try:
             SubscriptionImportService.manage_import_status(sport_association, action='start')
-            objects_to_create = SubscriptionImportService.process_import_rows(
-                rows_data_df, data, sport_association, request.user
-            )
-            AssociateImportDraft.objects.bulk_create(objects_to_create)
+            with transaction.atomic():
+                objects_to_create = SubscriptionImportService.process_import_rows(
+                    rows_data_df, data, sport_association, request.user
+                )
+                AssociateImportDraft.objects.bulk_create(objects_to_create)
+            imported = True
             logger.info("subscription_import_upload - end")
         except Exception as e:
             logger.exception(e)
         finally:
             SubscriptionImportService.manage_import_status(sport_association, action='end')
+
+        if not imported:
+            return Response({'msg': SubscriptionImportService.FAILED_MESSAGE}, status=status.HTTP_400_BAD_REQUEST)
+
+        # The upload has served its purpose.
+        try:
+            SubscriptionImportService.remove_upload(document, file_path)
+        except Exception as e:
+            logger.exception(e)
 
     else:
         raise TypeError("associates_file key not present!")
@@ -2771,6 +2836,10 @@ def subscription_upload_document(request, uid):
     if subscription is None:
         raise TypeError("subscription not found!")
 
+    # Files are attached by the association's staff and by the member the subscription belongs to.
+    from docmanager.access import require_document_access
+    require_document_access(request, subscription)
+
     data = request.data
 
     if 'document' in data.keys() and 'filename' in data.keys():
@@ -2796,6 +2865,23 @@ def subscription_upload_document(request, uid):
 
     return Response({'mgs': 'file uploaded'}, status=status.HTTP_200_OK)
 
+
+
+def _document_used_elsewhere(subscription_file):
+    """True when a row other than this file references its document."""
+    document = subscription_file.document
+    for relation in document._meta.related_objects:
+        if relation.many_to_many:
+            rows = relation.through._base_manager.filter(
+                **{relation.field.m2m_reverse_field_name(): document},
+            )
+        else:
+            rows = relation.related_model._base_manager.filter(**{relation.field.name: document})
+            if relation.related_model is SubscriptionFile:
+                rows = rows.exclude(pk=subscription_file.pk)
+        if rows.exists():
+            return True
+    return False
 
 
 @api_view(['DELETE'])
@@ -2829,23 +2915,34 @@ def subscription_delete_document(request, uid, subscription_file_id):
         raise TypeError("subscription file not found!")
 
     # delete document
-    if not getattr(request, 'impersonation_association', None):
+    # A document other rows still reference stays with them: only this link goes.
+    if not getattr(request, 'impersonation_association', None) \
+            and not _document_used_elsewhere(subscription_file):
         subscription_file.document.delete()
     subscription_file.delete()
 
     return Response({'msg': 'subscription file deleted'}, status=status.HTTP_200_OK)
 
 
-def get_pandas_df_from_file(associates_file):
+def _import_cell_text(value):
+    """A number of a column read as text, as its text; any other cell as it is."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return str(value)
+    return value
+
+
+def get_pandas_df_from_file(associates_file, text_columns=()):
+    """The file's frame. text_columns keep their values as written: no numeric reading."""
     opened_file = default_storage.open(associates_file, 'rb')
     rows_data_df = None
     if associates_file.lower().endswith('.csv'):
-        rows_data_df = pandas.read_csv(opened_file, delimiter=';')
+        rows_data_df = pandas.read_csv(opened_file, delimiter=';', dtype={column: str for column in text_columns})
     elif associates_file.lower().endswith(('xls', 'xlsx', 'xlsm', 'xlsb', 'odf', 'ods', 'odt')):
+        converters = {column: _import_cell_text for column in text_columns}
         try:
-            rows_data_df = pandas.read_excel(opened_file, engine="openpyxl")
+            rows_data_df = pandas.read_excel(opened_file, engine="openpyxl", converters=converters)
         except Exception:
-            rows_data_df = pandas.read_excel(opened_file, engine="xlrd")
+            rows_data_df = pandas.read_excel(opened_file, engine="xlrd", converters=converters)
     else:
         raise TypeError("file extension not recognized!")
 

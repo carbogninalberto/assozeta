@@ -10,7 +10,7 @@ from application.models import Subscription
 from application.models.user_models import Associate, AssociateTutorRelation
 from application.serializers.personas_serializers import AssociateSerializer, AssociateSubscriptionSerializer, \
     AssociateSearchSerializer
-from application.utils.api_utils import KTDatatablePagination
+from application.utils.api_utils import KTDatatablePagination, checked_ordering
 import logging
 
 logger = logging.getLogger(__name__)
@@ -94,9 +94,9 @@ class AssociateViewSet(viewsets.ModelViewSet):
                 sort_sort = 'asc' if sort_sort == 'asc' else 'desc'
 
             if sort_sort == 'asc':
-                qs = qs.order_by(sort_field)
+                qs = qs.order_by(checked_ordering(qs, sort_field))
             else:
-                qs = qs.order_by(f'-{sort_field}')
+                qs = qs.order_by(checked_ordering(qs, f'-{sort_field}'))
 
         return qs
 

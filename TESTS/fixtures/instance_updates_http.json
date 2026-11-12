@@ -1,0 +1,1715 @@
+{
+ "matrix_version": 1,
+ "scope": "instance updates and restarts in production mode",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "instance": {
+  "id": 7410,
+  "domain": "updates.example.test",
+  "name": "Istanza aggiornamenti",
+  "self_hosted": true,
+  "setup_provenance": "fresh",
+  "primary_association": "own_association"
+ },
+ "runner_token": "runner-token-placeholder",
+ "cases": [
+  {
+   "name": "instance-updates-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [],
+    "expect": []
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [],
+    "expect": []
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-collaborator-restarts",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [],
+    "expect": []
+   },
+   "github": [],
+   "body": {
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-status",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "protocol": 1,
+    "available": true,
+    "can_update": true,
+    "active": null,
+    "reason": "",
+    "history": [
+     {
+      "request_id": "f1000000-0000-4000-8000-000000000002",
+      "actor_id": "a1000000-0000-4000-8000-000000700001",
+      "release_id": 7,
+      "tag": "v1.0.0",
+      "state": "completed"
+     }
+    ],
+    "installed_version": "v0.0.0",
+    "note": "àè"
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-admin",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "protocol": 1,
+    "available": true,
+    "can_update": true,
+    "active": null,
+    "reason": "",
+    "history": [
+     {
+      "request_id": "f1000000-0000-4000-8000-000000000002",
+      "actor_id": "a1000000-0000-4000-8000-000000700001",
+      "release_id": 7,
+      "tag": "v1.0.0",
+      "state": "completed"
+     }
+    ],
+    "installed_version": "v0.0.0",
+    "note": "àè"
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-protocol-float",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "protocol": 1.0,
+    "available": false
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEuMCwgImF2YWlsYWJsZSI6IGZhbHNlfQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-other-protocol",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": false,
+    "reason": "Il servizio di aggiornamento richiede una versione compatibile.",
+    "active": null,
+    "history": []
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDIsICJhdmFpbGFibGUiOiB0cnVlfQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-without-protocol",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": false,
+    "reason": "Il servizio di aggiornamento richiede una versione compatibile.",
+    "active": null,
+    "history": []
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "e30="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-rejected",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Operazione in corso."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 409,
+      "body_b64": "eyJlcnJvciI6ICJPcGVyYXppb25lIGluIGNvcnNvLiJ9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-rejected-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Aggiornamento non disponibile."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 500,
+      "body_b64": "eyJkZXRhaWwiOiAieCJ9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-not-json",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": false,
+    "reason": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.",
+    "active": null,
+    "history": []
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "PGh0bWw+"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-list",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "WzFd"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-no-socket",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": false,
+    "reason": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.",
+    "active": null,
+    "history": []
+   },
+   "effect": null,
+   "runner": {
+    "state": "no-socket",
+    "replies": [],
+    "expect": []
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-no-token",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": false,
+    "reason": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.",
+    "active": null,
+    "history": []
+   },
+   "effect": null,
+   "runner": {
+    "state": "no-token",
+    "replies": [],
+    "expect": []
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-status-empty-token",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "available": false,
+    "reason": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica.",
+    "active": null,
+    "history": []
+   },
+   "effect": null,
+   "runner": {
+    "state": "empty-token",
+    "replies": [],
+    "expect": []
+   },
+   "github": []
+  },
+  {
+   "name": "instance-updates-request-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "release_id": [
+     "A valid integer is required."
+    ],
+    "request_id": [
+     "Must be a valid UUID."
+    ]
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [],
+    "expect": []
+   },
+   "github": [],
+   "body": {
+    "release_id": "x",
+    "tag": "v1",
+    "request_id": "nope"
+   }
+  },
+  {
+   "name": "instance-updates-request-other-protocol",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento richiede una versione compatibile."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDB9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-runner-down",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "effect": null,
+   "runner": {
+    "state": "no-socket",
+    "replies": [],
+    "expect": []
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-replayed-active",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "request_id": "f1000000-0000-4000-8000-000000000001",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "release_id": 12,
+     "tag": "v1.2.0",
+     "state": "running"
+    }
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiB7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwgImFjdG9yX2lkIjogImExMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDcwMDAwMSIsICJyZWxlYXNlX2lkIjogMTIsICJ0YWciOiAidjEuMi4wIiwgInN0YXRlIjogInJ1bm5pbmcifSwgInJlYXNvbiI6ICIiLCAiaGlzdG9yeSI6IFt7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAyIiwgImFjdG9yX2lkIjogImExMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDcwMDAwMSIsICJyZWxlYXNlX2lkIjogNywgInRhZyI6ICJ2MS4wLjAiLCAic3RhdGUiOiAiY29tcGxldGVkIn1dLCAiaW5zdGFsbGVkX3ZlcnNpb24iOiAidjAuMC4wIiwgIm5vdGUiOiAiXHUwMGUwXHUwMGU4In0="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-replayed-history",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "request_id": "f1000000-0000-4000-8000-000000000001",
+     "actor_id": "a1000000-0000-4000-8000-000000700001",
+     "release_id": 12.0,
+     "tag": "v1.2.0",
+     "state": "running"
+    }
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiBmYWxzZSwgImNhbl91cGRhdGUiOiB0cnVlLCAiYWN0aXZlIjogbnVsbCwgInJlYXNvbiI6ICIiLCAiaGlzdG9yeSI6IFt7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwgImFjdG9yX2lkIjogImExMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDcwMDAwMSIsICJyZWxlYXNlX2lkIjogMTIuMCwgInRhZyI6ICJ2MS4yLjAiLCAic3RhdGUiOiAicnVubmluZyJ9XSwgImluc3RhbGxlZF92ZXJzaW9uIjogInYwLjAuMCIsICJub3RlIjogIlx1MDBlMFx1MDBlOCJ9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": " v1.2.0 ",
+    "request_id": "F1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-replayed-other-tag",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Questo identificativo è già stato usato per un altro aggiornamento."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDEiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiAxMiwgInRhZyI6ICJ2MS4xLjAiLCAic3RhdGUiOiAicnVubmluZyJ9XSwgImluc3RhbGxlZF92ZXJzaW9uIjogInYwLjAuMCIsICJub3RlIjogIlx1MDBlMFx1MDBlOCJ9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-replayed-other-actor",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Questo identificativo è già stato usato per un altro aggiornamento."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiB7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwgImFjdG9yX2lkIjogImExMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDcwMDAwMSIsICJyZWxlYXNlX2lkIjogMTIsICJ0YWciOiAidjEuMi4wIiwgInN0YXRlIjogInJ1bm5pbmcifSwgInJlYXNvbiI6ICIiLCAiaGlzdG9yeSI6IFt7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAyIiwgImFjdG9yX2lkIjogImExMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDcwMDAwMSIsICJyZWxlYXNlX2lkIjogNywgInRhZyI6ICJ2MS4wLjAiLCAic3RhdGUiOiAiY29tcGxldGVkIn1dLCAiaW5zdGFsbGVkX3ZlcnNpb24iOiAidjAuMC4wIiwgIm5vdGUiOiAiXHUwMGUwXHUwMGU4In0="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-unavailable",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Manutenzione in corso."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiBmYWxzZSwgImNhbl91cGRhdGUiOiB0cnVlLCAiYWN0aXZlIjogbnVsbCwgInJlYXNvbiI6ICJNYW51dGVuemlvbmUgaW4gY29yc28uIiwgImhpc3RvcnkiOiBbeyJyZXF1ZXN0X2lkIjogImYxMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMiIsICJhY3Rvcl9pZCI6ICJhMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDA3MDAwMDEiLCAicmVsZWFzZV9pZCI6IDcsICJ0YWciOiAidjEuMC4wIiwgInN0YXRlIjogImNvbXBsZXRlZCJ9XSwgImluc3RhbGxlZF92ZXJzaW9uIjogInYwLjAuMCIsICJub3RlIjogIlx1MDBlMFx1MDBlOCJ9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-unavailable-default",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è disponibile."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJoaXN0b3J5IjogW119"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-needs-recovery",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "La transazione precedente richiede un ripristino."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IGZhbHNlLCAiYWN0aXZlIjogbnVsbCwgInJlYXNvbiI6ICIiLCAiaGlzdG9yeSI6IFt7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAyIiwgImFjdG9yX2lkIjogImExMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDcwMDAwMSIsICJyZWxlYXNlX2lkIjogNywgInRhZyI6ICJ2MS4wLjAiLCAic3RhdGUiOiAiY29tcGxldGVkIn1dLCAiaW5zdGFsbGVkX3ZlcnNpb24iOiAidjAuMC4wIiwgIm5vdGUiOiAiXHUwMGUwXHUwMGU4In0="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-history-not-list",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogbnVsbCwgImluc3RhbGxlZF92ZXJzaW9uIjogInYwLjAuMCIsICJub3RlIjogIlx1MDBlMFx1MDBlOCJ9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-release-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Release service returned HTTP 404."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 404,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJtZXNzYWdlIjogIk5vdCBGb3VuZCJ9"
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-release-rate-limit",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Release service rate limit reached. Please try again later."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 403,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "e30="
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-release-draft",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "The selected release is not a published stable release."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJpZCI6IDEyLCAidGFnX25hbWUiOiAidjEuMi4wIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICJOb3RlIiwgImRyYWZ0IjogdHJ1ZSwgInByZXJlbGVhc2UiOiBmYWxzZSwgInB1Ymxpc2hlZF9hdCI6ICIyMDI2LTA1LTAxVDEwOjAwOjAwWiIsICJhc3NldHMiOiBbeyJuYW1lIjogImFzc296ZXRhLXNlbGZob3N0LXYxLjIuMC50YXIuZ3oiLCAic3RhdGUiOiAidXBsb2FkZWQiLCAic2l6ZSI6IDEwMjR9LCB7Im5hbWUiOiAiYXNzb3pldGEtdXBkYXRlLmpzb24iLCAic3RhdGUiOiAidXBsb2FkZWQiLCAic2l6ZSI6IDEyfV19"
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-release-other-tag",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "La release selezionata non è pronta per l’aggiornamento."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJpZCI6IDEyLCAidGFnX25hbWUiOiAidjEuMi4xIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICJOb3RlIiwgImRyYWZ0IjogZmFsc2UsICJwcmVyZWxlYXNlIjogZmFsc2UsICJwdWJsaXNoZWRfYXQiOiAiMjAyNi0wNS0wMVQxMDowMDowMFoiLCAiYXNzZXRzIjogW3sibmFtZSI6ICJhc3NvemV0YS1zZWxmaG9zdC12MS4yLjEudGFyLmd6IiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMDI0fSwgeyJuYW1lIjogImFzc296ZXRhLXVwZGF0ZS5qc29uIiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMn1dfQ=="
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-release-not-ready",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "La release selezionata non è pronta per l’aggiornamento."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJpZCI6IDEyLCAidGFnX25hbWUiOiAidjEuMi4wIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICJOb3RlIiwgImRyYWZ0IjogZmFsc2UsICJwcmVyZWxlYXNlIjogZmFsc2UsICJwdWJsaXNoZWRfYXQiOiAiMjAyNi0wNS0wMVQxMDowMDowMFoiLCAiYXNzZXRzIjogW119"
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-release-not-newer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "La versione installata non consente questo aggiornamento."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJpZCI6IDEyLCAidGFnX25hbWUiOiAidjAuMC4wIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICJOb3RlIiwgImRyYWZ0IjogZmFsc2UsICJwcmVyZWxlYXNlIjogZmFsc2UsICJwdWJsaXNoZWRfYXQiOiAiMjAyNi0wNS0wMVQxMDowMDowMFoiLCAiYXNzZXRzIjogW3sibmFtZSI6ICJhc3NvemV0YS1zZWxmaG9zdC12MC4wLjAudGFyLmd6IiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMDI0fSwgeyJuYW1lIjogImFzc296ZXRhLXVwZGF0ZS5qc29uIiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMn1dfQ=="
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v0.0.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "request_id": "f1000000-0000-4000-8000-000000000001",
+     "state": "queued"
+    }
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     },
+     {
+      "status": 200,
+      "body_b64": "eyJvcGVyYXRpb24iOiB7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwgInN0YXRlIjogInF1ZXVlZCJ9fQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     },
+     {
+      "method": "POST",
+      "path": "/updates",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "169"
+      },
+      "json": {
+       "release_id": 12,
+       "tag": "v1.2.0",
+       "request_id": "f1000000-0000-4000-8000-000000000001",
+       "actor_id": "a1000000-0000-4000-8000-000000700001",
+       "source_version": "v0.0.0"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJpZCI6IDEyLCAidGFnX25hbWUiOiAidjEuMi4wIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICJOb3RlIiwgImRyYWZ0IjogZmFsc2UsICJwcmVyZWxlYXNlIjogZmFsc2UsICJwdWJsaXNoZWRfYXQiOiAiMjAyNi0wNS0wMVQxMDowMDowMFoiLCAiYXNzZXRzIjogW3sibmFtZSI6ICJhc3NvemV0YS1zZWxmaG9zdC12MS4yLjAudGFyLmd6IiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMDI0fSwgeyJuYW1lIjogImFzc296ZXRhLXVwZGF0ZS5qc29uIiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMn1dfQ=="
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-admin",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "operation": {
+     "request_id": "f1000000-0000-4000-8000-000000000001",
+     "state": "queued"
+    }
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     },
+     {
+      "status": 200,
+      "body_b64": "eyJvcGVyYXRpb24iOiB7InJlcXVlc3RfaWQiOiAiZjEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwgInN0YXRlIjogInF1ZXVlZCJ9fQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     },
+     {
+      "method": "POST",
+      "path": "/updates",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "169"
+      },
+      "json": {
+       "release_id": 12,
+       "tag": "v1.2.0",
+       "request_id": "f1000000-0000-4000-8000-000000000001",
+       "actor_id": "a1000000-0000-4000-8000-000000710001",
+       "source_version": "v0.0.0"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJpZCI6IDEyLCAidGFnX25hbWUiOiAidjEuMi4wIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICJOb3RlIiwgImRyYWZ0IjogZmFsc2UsICJwcmVyZWxlYXNlIjogZmFsc2UsICJwdWJsaXNoZWRfYXQiOiAiMjAyNi0wNS0wMVQxMDowMDowMFoiLCAiYXNzZXRzIjogW3sibmFtZSI6ICJhc3NvemV0YS1zZWxmaG9zdC12MS4yLjAudGFyLmd6IiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMDI0fSwgeyJuYW1lIjogImFzc296ZXRhLXVwZGF0ZS5qc29uIiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMn1dfQ=="
+     }
+    }
+   ],
+   "body": {
+    "release_id": "12",
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-request-runner-refuses",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/updates",
+   "headers": {},
+   "status": 507,
+   "response": {
+    "error": "Spazio insufficiente."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJwcm90b2NvbCI6IDEsICJhdmFpbGFibGUiOiB0cnVlLCAiY2FuX3VwZGF0ZSI6IHRydWUsICJhY3RpdmUiOiBudWxsLCAicmVhc29uIjogIiIsICJoaXN0b3J5IjogW3sicmVxdWVzdF9pZCI6ICJmMTAwMDAwMC0wMDAwLTQwMDAtODAwMC0wMDAwMDAwMDAwMDIiLCAiYWN0b3JfaWQiOiAiYTEwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwNzAwMDAxIiwgInJlbGVhc2VfaWQiOiA3LCAidGFnIjogInYxLjAuMCIsICJzdGF0ZSI6ICJjb21wbGV0ZWQifV0sICJpbnN0YWxsZWRfdmVyc2lvbiI6ICJ2MC4wLjAiLCAibm90ZSI6ICJcdTAwZTBcdTAwZTgifQ=="
+     },
+     {
+      "status": 507,
+      "body_b64": "eyJlcnJvciI6ICJTcGF6aW8gaW5zdWZmaWNpZW50ZS4ifQ=="
+     }
+    ],
+    "expect": [
+     {
+      "method": "GET",
+      "path": "/status",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json"
+      }
+     },
+     {
+      "method": "POST",
+      "path": "/updates",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "169"
+      },
+      "json": {
+       "release_id": 12,
+       "tag": "v1.2.0",
+       "request_id": "f1000000-0000-4000-8000-000000000001",
+       "actor_id": "a1000000-0000-4000-8000-000000700001",
+       "source_version": "v0.0.0"
+      }
+     }
+    ]
+   },
+   "github": [
+    {
+     "connect": "api.github.com:443",
+     "method": "GET",
+     "path": "/repos/carbogninalberto/assozeta/releases/12",
+     "headers": {
+      "host": "api.github.com",
+      "accept-encoding": "identity",
+      "user-agent": "Assozeta-Self-Instance",
+      "connection": "close",
+      "accept": "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28"
+     },
+     "reply": {
+      "status": 200,
+      "headers": {
+       "Content-Type": "application/json"
+      },
+      "raw_b64": "eyJpZCI6IDEyLCAidGFnX25hbWUiOiAidjEuMi4wIiwgIm5hbWUiOiBudWxsLCAiYm9keSI6ICJOb3RlIiwgImRyYWZ0IjogZmFsc2UsICJwcmVyZWxlYXNlIjogZmFsc2UsICJwdWJsaXNoZWRfYXQiOiAiMjAyNi0wNS0wMVQxMDowMDowMFoiLCAiYXNzZXRzIjogW3sibmFtZSI6ICJhc3NvemV0YS1zZWxmaG9zdC12MS4yLjAudGFyLmd6IiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMDI0fSwgeyJuYW1lIjogImFzc296ZXRhLXVwZGF0ZS5qc29uIiwgInN0YXRlIjogInVwbG9hZGVkIiwgInNpemUiOiAxMn1dfQ=="
+     }
+    }
+   ],
+   "body": {
+    "release_id": 12,
+    "tag": "v1.2.0",
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-restart",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 202,
+   "response": {
+    "request_id": "f1000000-0000-4000-8000-000000000001",
+    "state": "queued",
+    "services": [
+     "backend",
+     "web"
+    ]
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "eyJyZXF1ZXN0X2lkIjogImYxMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMSIsICJzdGF0ZSI6ICJxdWV1ZWQiLCAic2VydmljZXMiOiBbImJhY2tlbmQiLCAid2ViIl19"
+     }
+    ],
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/restarts",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "f1000000-0000-4000-8000-000000000001",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-restart-admin-hex",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 202,
+   "response": [
+    "ok"
+   ],
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 200,
+      "body_b64": "WyJvayJd"
+     }
+    ],
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/restarts",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "f1000000-0000-4000-8000-000000000001",
+       "actor_id": "a1000000-0000-4000-8000-000000710001"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "request_id": "F1000000000040008000000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-restart-extra-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "È richiesto soltanto l’identificativo della richiesta."
+   ],
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [],
+    "expect": []
+   },
+   "github": [],
+   "body": {
+    "request_id": "f1000000-0000-4000-8000-000000000001",
+    "force": true
+   }
+  },
+  {
+   "name": "instance-updates-restart-rejected",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "error": "Riavvio già in corso."
+   },
+   "effect": null,
+   "runner": {
+    "state": "ok",
+    "replies": [
+     {
+      "status": 409,
+      "body_b64": "eyJlcnJvciI6ICJSaWF2dmlvIGdpXHUwMGUwIGluIGNvcnNvLiJ9"
+     }
+    ],
+    "expect": [
+     {
+      "method": "POST",
+      "path": "/restarts",
+      "headers": {
+       "host": "localhost",
+       "accept-encoding": "identity",
+       "authorization": "Bearer runner-token-placeholder",
+       "content-type": "application/json",
+       "content-length": "106"
+      },
+      "json": {
+       "request_id": "f1000000-0000-4000-8000-000000000001",
+       "actor_id": "a1000000-0000-4000-8000-000000700001"
+      }
+     }
+    ]
+   },
+   "github": [],
+   "body": {
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  },
+  {
+   "name": "instance-updates-restart-runner-down",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/restarts",
+   "headers": {},
+   "status": 503,
+   "response": {
+    "error": "Il servizio di aggiornamento non è raggiungibile. Verifica l’esito della configurazione automatica."
+   },
+   "effect": null,
+   "runner": {
+    "state": "empty-token",
+    "replies": [],
+    "expect": []
+   },
+   "github": [],
+   "body": {
+    "request_id": "f1000000-0000-4000-8000-000000000001"
+   }
+  }
+ ]
+}

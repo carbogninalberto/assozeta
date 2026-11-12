@@ -3,10 +3,12 @@
 The independent runner owns the backup directory and runs every backup; the
 API measures the data that the next backup will contain, relays the owner's
 actions, archive downloads and uploads, and records each action in the audit
-log. A download or a restore needs the owner's password again.
+log. A download, a restore, deleting or un-keeping an archive and changing
+the remote copy need the owner's password again.
 """
 import json
 import logging
+import os
 import re
 from uuid import uuid4
 
@@ -40,6 +42,23 @@ PASSWORD_ATTEMPTS = 5
 PASSWORD_WINDOW = 900
 # The CLI budgets the uncompressed size, staged twice, plus this margin.
 DEFAULT_MARGIN_MB = 1024
+# Largest archive the page accepts (ASSOZETA_BACKUP_UPLOAD_MAX_BYTES); the
+# runner then checks the free disk space for it.
+UPLOAD_MAX_BYTES = 50 * 1024 ** 3
+UPLOAD_TOO_LARGE = 'Il file supera la dimensione massima consentita per il caricamento.'
+LIMIT_DIGITS = re.compile(r'[0-9]+')
+
+
+def instance_setting(name):
+    """A Django setting when defined, else the environment variable of the same name."""
+    value = getattr(settings, name, None)
+    return os.environ.get(name, '') if value is None else value
+
+
+def upload_max_bytes():
+    value = str(instance_setting('ASSOZETA_BACKUP_UPLOAD_MAX_BYTES')).strip(' \t\r\n')
+    limit = int(value) if LIMIT_DIGITS.fullmatch(value) else 0
+    return limit if limit > 0 else UPLOAD_MAX_BYTES
 
 
 def actor_of(request):
@@ -157,6 +176,10 @@ class BackupItemView(APIView):
         keep = request.data.get('keep') if isinstance(request.data, dict) else None
         if not isinstance(keep, bool):
             return Response({'error': 'Richiesta non valida.'}, status=400)
+        # Back into the rotation: the archive may then be deleted automatically.
+        refusal = None if keep else password_confirmation(request)
+        if refusal:
+            return refusal
         response = relay('PATCH', f'/backups/{name}', {'keep': keep})
         if response.status_code == 200:
             audit(actor_of(request), 'backup_keep' if keep else 'backup_unkeep', name, backup=name)
@@ -168,6 +191,9 @@ class BackupItemView(APIView):
         confirm = request.data.get('confirm', False) if isinstance(request.data, dict) else False
         if not isinstance(confirm, bool):
             return Response({'error': 'Richiesta non valida.'}, status=400)
+        refusal = password_confirmation(request)
+        if refusal:
+            return refusal
         response = relay('DELETE', f'/backups/{name}', {'confirm': confirm})
         if response.status_code == 200:
             audit(actor_of(request), 'backup_delete', name, backup=name)
@@ -201,16 +227,34 @@ class DownloadTokenSerializer(serializers.Serializer):
 
 
 def password_refusal(actor, password):
-    """A refusal response when the re-entered password is wrong or tried too often."""
+    """A refusal response when the re-entered password is wrong or tried too often.
+
+    Every try is counted before the password is checked (cache.incr is
+    atomic), so tries sent at the same time cannot pass the limit together;
+    the first try starts the window and a correct password clears it.
+    """
     attempts_key = f'instance:backup-download-attempts:{actor.pk}'
+    too_many = Response({'error': 'Troppi tentativi. Riprova tra qualche minuto.'}, status=429)
     if cache.get(attempts_key, 0) >= PASSWORD_ATTEMPTS:
-        return Response({'error': 'Troppi tentativi. Riprova tra qualche minuto.'}, status=429)
+        return too_many
+    cache.add(attempts_key, 0, timeout=PASSWORD_WINDOW)
+    if cache.incr(attempts_key) > PASSWORD_ATTEMPTS:
+        return too_many
     if not actor.check_password(password):
-        cache.add(attempts_key, 0, timeout=PASSWORD_WINDOW)
-        cache.incr(attempts_key)
         return Response({'error': 'Password non corretta.'}, status=400)
     cache.delete(attempts_key)
     return None
+
+
+class PasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(max_length=256, trim_whitespace=False)
+
+
+def password_confirmation(request):
+    """The owner's password for a backup change: None when it matches, else the refusal."""
+    serializer = PasswordSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    return password_refusal(actor_of(request), serializer.validated_data['password'])
 
 
 class BackupDownloadTokenView(APIView):
@@ -274,6 +318,9 @@ class BackupUploadView(APIView):
             length = 0
         if length <= 0:
             return Response({'error': 'Seleziona un file da caricare.'}, status=411)
+        limit = upload_max_bytes()
+        if length > limit:
+            return Response({'error': UPLOAD_TOO_LARGE, 'max_bytes': limit}, status=413)
         try:
             result = send_runner_stream('/backups/upload', body_chunks(request, length), length)
         except UploadAborted:
@@ -330,7 +377,7 @@ FAILURE_WINDOW_HOURS = 48
 
 
 def _failures(status, inventory):
-    """Failed backups of the last two days, as (key, when, reason)."""
+    """Failed backups of the last two days, as (key, when, reason, archive name or '')."""
     from datetime import timedelta
     from django.utils import timezone
     from django.utils.dateparse import parse_datetime
@@ -338,21 +385,26 @@ def _failures(status, inventory):
     for operation in status.get('history', []):
         when = parse_datetime(operation.get('updated_at') or operation.get('created_at') or '')
         if operation.get('kind') == 'backup' and operation.get('status') == 'failed' and when and when >= cutoff:
-            yield operation['id'], when, operation.get('error') or ''
+            yield operation['id'], when, operation.get('error') or '', ''
     last = (inventory.get('schedule') or {}).get('last_run') or {}
     when = parse_datetime(last.get('at') or '')
     # A scheduled run that could not start has no operation of its own.
     if last.get('status') == 'failed' and not last.get('operation') and when and when >= cutoff:
-        yield f'schedule:{last["at"]}', when, last.get('error') or ''
+        yield f'schedule:{last["at"]}', when, last.get('error') or '', ''
     # Uploads to the remote copy are retried by the runner before they count.
     failure = (inventory.get('remote') or {}).get('last_failure') or {}
     when = parse_datetime(failure.get('at') or '')
     if when and when >= cutoff:
-        yield f'remote:{failure["at"]}', when, failure.get('error') or ''
+        name = failure.get('name')
+        yield f'remote:{failure["at"]}', when, failure.get('error') or '', name if isinstance(name, str) and ARCHIVE.fullmatch(name) else ''
 
 
 def notify_failures():
-    """Email the owner once about each failed backup."""
+    """Email the owner once about each failed backup.
+
+    The notice names the time (and the archive, when known) and points to the
+    page; the runner's message stays in the log and on the owner's page.
+    """
     from django.core.mail import send_mail
     from django.utils import timezone
     from .updater_client import deployment_mode
@@ -368,17 +420,16 @@ def notify_failures():
     if not owner or not owner.email:
         return 0
     sent = 0
-    for key, when, reason in _failures(status, inventory):
+    for key, when, reason, name in _failures(status, inventory):
         if not cache.add(FAILURE_NOTIFIED.format(key), True, timeout=7 * 86400):
             continue
+        logger.warning('Backup failure %s: %s', key, reason)
         local = timezone.localtime(when).strftime('%d/%m/%Y %H:%M')
         link = f'https://{config.domain}/#/profile?page=self-instance&tab=backups' if config.domain else ''
         remote = key.startswith('remote:')
         subject = 'Copia remota non riuscita' if remote else 'Backup non riuscito'
-        body = (f'La copia remota del backup non è riuscita ({local}).\n\n' if remote
+        body = (f'La copia remota del backup{" " + name if name else ""} non è riuscita ({local}).\n\n' if remote
                 else f'Il backup del {local} non è riuscito.\n\n')
-        if reason:
-            body += f'Motivo: {reason}\n\n'
         body += f'Controlla in Istanza > Backup{": " + link if link else ""}.\n'
         try:
             send_mail(subject, body, None, [owner.email])

@@ -1,0 +1,2594 @@
+{
+ "matrix_version": 1,
+ "scope": "Profile settings and integrations authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "categories": {
+  "own": "a1000000-0000-4000-8000-000000977001",
+  "foreign": "a1000000-0000-4000-8000-000000977002",
+  "global": "a1000000-0000-4000-8000-000000977003",
+  "own_archived": "a1000000-0000-4000-8000-000000977004"
+ },
+ "foreign_review": {
+  "review_url": "https://foreign.example.test/review",
+  "review_url_enabled": true
+ },
+ "fields": [
+  "enumerate_invoices",
+  "online_payments",
+  "balance_sheet_year",
+  "balance_sheet_start_day",
+  "balance_sheet_start_month",
+  "temporary_invoice_deletion",
+  "auto_archive",
+  "auto_mark_attendance",
+  "payment_date_equal_invoice_date",
+  "starting_number_invoices",
+  "auto_paid_payment",
+  "full_installments_plan",
+  "show_zero_payments",
+  "dark_mode",
+  "medical_certificate_notifications",
+  "hide_category_name",
+  "subscription_duration_equal_sport_year",
+  "subscription_duration",
+  "membership_duration",
+  "membership_starting_number",
+  "default_membership_type",
+  "subscription_start_day",
+  "subscription_start_month",
+  "custom_end_date",
+  "subscription_end_day",
+  "subscription_end_month",
+  "disable_account_creation",
+  "force_account_creation",
+  "default_payment_category",
+  "default_payment_category_courses"
+ ],
+ "cases": [
+  {
+   "name": "profile-settings-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-restricted-patch-missing-update",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: other.settings.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-settings-restricted-post-no-mapping",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'profile/settings'. Contact administrator to grant access."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-settings-restricted-options-no-mapping",
+   "actor": "restricted_collaborator",
+   "method": "OPTIONS",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'profile/settings'. Contact administrator to grant access."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-wrong-method-put",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-settings-wrong-method-patch",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-settings-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Profile Settings",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-athlete-get-denied",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-athlete-post-denied",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {
+    "enumerate_invoices": "x"
+   }
+  },
+  {
+   "name": "profile-settings-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-settings-owner-without-association-post-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "profile-settings-owner-get-creates-card",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "settings": {
+     "enumerate_invoices": false,
+     "online_payments": true,
+     "balance_sheet_year": "1",
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "temporary_invoice_deletion": true,
+     "auto_archive": false,
+     "auto_mark_attendance": false,
+     "payment_date_equal_invoice_date": false,
+     "starting_number_invoices": 0,
+     "auto_paid_payment": false,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "subscription_duration_equal_sport_year": true,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "disable_account_creation": false,
+     "force_account_creation": false,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "current_year": {
+      "$current_year": [
+       1,
+       1
+      ]
+     },
+     "table_settings": {},
+     "membership_card_configuration": {
+      "emit_only_on_approval": false,
+      "customized_template": null
+     }
+    }
+   },
+   "effect": {
+    "card_create": {
+     "actor": "owner",
+     "association": "own_association"
+    }
+   }
+  },
+  {
+   "name": "profile-settings-full-collaborator-get",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "settings": {
+     "enumerate_invoices": false,
+     "online_payments": true,
+     "balance_sheet_year": "1",
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "temporary_invoice_deletion": true,
+     "auto_archive": false,
+     "auto_mark_attendance": false,
+     "payment_date_equal_invoice_date": false,
+     "starting_number_invoices": 0,
+     "auto_paid_payment": false,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "subscription_duration_equal_sport_year": true,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "disable_account_creation": false,
+     "force_account_creation": false,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "current_year": {
+      "$current_year": [
+       1,
+       1
+      ]
+     },
+     "table_settings": {},
+     "membership_card_configuration": {
+      "emit_only_on_approval": false,
+      "customized_template": null
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-restricted-get-with-read",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "settings": {
+     "enumerate_invoices": false,
+     "online_payments": true,
+     "balance_sheet_year": "1",
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "temporary_invoice_deletion": true,
+     "auto_archive": false,
+     "auto_mark_attendance": false,
+     "payment_date_equal_invoice_date": false,
+     "starting_number_invoices": 0,
+     "auto_paid_payment": false,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "subscription_duration_equal_sport_year": true,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "disable_account_creation": false,
+     "force_account_creation": false,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "current_year": {
+      "$current_year": [
+       1,
+       1
+      ]
+     },
+     "table_settings": {},
+     "membership_card_configuration": {
+      "emit_only_on_approval": false,
+      "customized_template": null
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-admin-impersonating-owner-get",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "settings": {
+     "enumerate_invoices": false,
+     "online_payments": true,
+     "balance_sheet_year": "1",
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 1,
+     "temporary_invoice_deletion": true,
+     "auto_archive": false,
+     "auto_mark_attendance": false,
+     "payment_date_equal_invoice_date": false,
+     "starting_number_invoices": 0,
+     "auto_paid_payment": false,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "subscription_duration_equal_sport_year": true,
+     "subscription_duration": 2,
+     "membership_duration": 2,
+     "membership_starting_number": 0,
+     "default_membership_type": "",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": false,
+     "subscription_end_day": 31,
+     "subscription_end_month": 12,
+     "disable_account_creation": false,
+     "force_account_creation": false,
+     "default_payment_category": null,
+     "default_payment_category_courses": null,
+     "current_year": {
+      "$current_year": [
+       1,
+       1
+      ]
+     },
+     "table_settings": {},
+     "membership_card_configuration": {
+      "emit_only_on_approval": false,
+      "customized_template": null
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-foreign-owner-post-invalid-creates-own-card",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": {
+    "card_create": {
+     "actor": "foreign_owner",
+     "association": "foreign_association"
+    }
+   },
+   "body": []
+  },
+  {
+   "name": "profile-settings-post-invalid-values",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "enumerate_invoices": [
+     "Must be a valid boolean."
+    ],
+    "online_payments": [
+     "This field may not be null."
+    ],
+    "balance_sheet_year": [
+     "\"5\" is not a valid choice."
+    ],
+    "balance_sheet_start_day": [
+     "Ensure this value is less than or equal to 31."
+    ],
+    "balance_sheet_start_month": [
+     "Ensure this value is greater than or equal to 0."
+    ],
+    "starting_number_invoices": [
+     "Ensure this value is less than or equal to 32767."
+    ],
+    "membership_starting_number": [
+     "A valid integer is required."
+    ],
+    "subscription_duration": [
+     "\"0\" is not a valid choice."
+    ],
+    "default_membership_type": [
+     "Ensure this field has no more than 255 characters."
+    ],
+    "subscription_start_day": [
+     "Ensure this value is greater than or equal to 0."
+    ],
+    "subscription_end_day": [
+     "A valid integer is required."
+    ],
+    "subscription_end_month": [
+     "Ensure this value is less than or equal to 12."
+    ],
+    "default_payment_category": [
+     "“abc” is not a valid UUID."
+    ],
+    "default_payment_category_courses": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000977999\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "enumerate_invoices": "maybe",
+    "online_payments": null,
+    "balance_sheet_year": 5,
+    "balance_sheet_start_day": 32,
+    "balance_sheet_start_month": -1,
+    "starting_number_invoices": 40000,
+    "membership_starting_number": "abc",
+    "subscription_duration": "0",
+    "default_membership_type": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "subscription_start_day": "-3",
+    "subscription_end_day": 1.5,
+    "subscription_end_month": 13,
+    "default_payment_category": "abc",
+    "default_payment_category_courses": "a1000000-0000-4000-8000-000000977999",
+    "dark_mode": "YES"
+   }
+  },
+  {
+   "name": "profile-settings-post-invalid-types",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "auto_archive": [
+     "Must be a valid boolean."
+    ],
+    "dark_mode": [
+     "Must be a valid boolean."
+    ],
+    "temporary_invoice_deletion": [
+     "Must be a valid boolean."
+    ],
+    "subscription_start_month": [
+     "A valid integer is required."
+    ],
+    "balance_sheet_year": [
+     "\"True\" is not a valid choice."
+    ],
+    "membership_duration": [
+     "\"1.0\" is not a valid choice."
+    ],
+    "starting_number_invoices": [
+     "String value too large."
+    ],
+    "membership_starting_number": [
+     "Ensure this value is less than or equal to 2147483647."
+    ],
+    "subscription_end_month": [
+     "This field may not be null."
+    ],
+    "default_payment_category": [
+     "Incorrect type. Expected pk value, received bool."
+    ],
+    "default_payment_category_courses": [
+     "“['a1000000-0000-4000-8000-000000977001']” is not a valid UUID."
+    ],
+    "default_membership_type": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "auto_archive": [],
+    "dark_mode": 2,
+    "temporary_invoice_deletion": {
+     "a": 1
+    },
+    "subscription_start_month": true,
+    "balance_sheet_year": true,
+    "membership_duration": 1.0,
+    "starting_number_invoices": "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+    "membership_starting_number": 3000000000,
+    "subscription_end_month": null,
+    "default_payment_category": true,
+    "default_payment_category_courses": [
+     "a1000000-0000-4000-8000-000000977001"
+    ],
+    "default_membership_type": false,
+    "custom_end_date": "On",
+    "subscription_end_day": "7.000"
+   }
+  },
+  {
+   "name": "profile-settings-post-foreign-category-forbidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "enumerate_invoices": "maybe",
+    "default_payment_category": "a1000000-0000-4000-8000-000000977002"
+   }
+  },
+  {
+   "name": "profile-settings-post-null-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "No data provided"
+    ]
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-settings-post-partial-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "enumerate_invoices": true
+   }
+  },
+  {
+   "name": "profile-settings-post-empty-server-error",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-settings-post-without-card-saves-user-then-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {
+      "enumerate_invoices": [
+       "False",
+       "True"
+      ],
+      "online_payments": [
+       "True",
+       "False"
+      ],
+      "balance_sheet_year": [
+       "1",
+       "2"
+      ],
+      "balance_sheet_start_month": [
+       "1",
+       "9"
+      ],
+      "starting_number_invoices": [
+       "0",
+       "-5"
+      ],
+      "membership_starting_number": [
+       "0",
+       "120"
+      ],
+      "default_membership_type": [
+       "",
+       "Socio ordinario"
+      ],
+      "subscription_duration": [
+       "2",
+       "4"
+      ],
+      "membership_duration": [
+       "2",
+       "5"
+      ],
+      "subscription_end_day": [
+       "31",
+       "7"
+      ],
+      "default_payment_category": [
+       "None",
+       "a1000000-0000-4000-8000-000000977001"
+      ],
+      "default_payment_category_courses": [
+       "None",
+       "a1000000-0000-4000-8000-000000977003"
+      ],
+      "dark_mode": [
+       "False",
+       "True"
+      ],
+      "custom_end_date": [
+       "False",
+       "True"
+      ]
+     },
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": true,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "Socio ordinario",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003"
+     }
+    }
+   },
+   "body": {
+    "enumerate_invoices": "on",
+    "online_payments": "No",
+    "balance_sheet_year": "2",
+    "balance_sheet_start_day": 1,
+    "balance_sheet_start_month": "9",
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": " -5 ",
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": 1,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": "5",
+    "membership_starting_number": 120.0,
+    "default_membership_type": "  Socio ordinario ",
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": "TRUE",
+    "subscription_end_day": "7.000",
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+    "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003",
+    "ignored": "value"
+   }
+  },
+  {
+   "name": "profile-settings-post-full-collaborator-card",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "user": {
+     "actor": "full_collaborator",
+     "changes": {},
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": true,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "Socio ordinario",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003"
+     }
+    },
+    "card": {
+     "actor": "full_collaborator",
+     "changes": {
+      "emit_only_on_approval": [
+       "False",
+       "True"
+      ],
+      "customized_template": [
+       "null",
+       "{\"colore\": \"blu \\u00e8\", \"scale\": 1.5, \"sections\": [\"nome\", \"numero\"], \"size\": 9007199254740993}"
+      ]
+     },
+     "stored": {
+      "emit_only_on_approval": true,
+      "customized_template": {
+       "sections": [
+        "nome",
+        "numero"
+       ],
+       "colore": "blu è",
+       "size": 9007199254740993,
+       "scale": 1.5
+      }
+     }
+    }
+   },
+   "body": {
+    "enumerate_invoices": true,
+    "online_payments": false,
+    "balance_sheet_year": 2,
+    "balance_sheet_start_day": 1,
+    "balance_sheet_start_month": 9,
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": -5,
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": true,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": 5,
+    "membership_starting_number": 120,
+    "default_membership_type": "Socio ordinario",
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": true,
+    "subscription_end_day": 7,
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+    "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003",
+    "membership_card_configuration": {
+     "emit_only_on_approval": true,
+     "customized_template": {
+      "sections": [
+       "nome",
+       "numero"
+      ],
+      "colore": "blu è",
+      "size": 9007199254740993,
+      "scale": 1.5
+     },
+     "extra": 1
+    }
+   }
+  },
+  {
+   "name": "profile-settings-get-after-post",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "settings": {
+     "enumerate_invoices": true,
+     "online_payments": false,
+     "balance_sheet_year": "2",
+     "balance_sheet_start_day": 1,
+     "balance_sheet_start_month": 9,
+     "temporary_invoice_deletion": true,
+     "auto_archive": false,
+     "auto_mark_attendance": false,
+     "payment_date_equal_invoice_date": false,
+     "starting_number_invoices": -5,
+     "auto_paid_payment": false,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": true,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "subscription_duration_equal_sport_year": true,
+     "subscription_duration": 4,
+     "membership_duration": 5,
+     "membership_starting_number": 120,
+     "default_membership_type": "Socio ordinario",
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": true,
+     "subscription_end_day": 7,
+     "subscription_end_month": 12,
+     "disable_account_creation": false,
+     "force_account_creation": false,
+     "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+     "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003",
+     "current_year": {
+      "$current_year": [
+       1,
+       9
+      ]
+     },
+     "table_settings": {},
+     "membership_card_configuration": {
+      "emit_only_on_approval": true,
+      "customized_template": {
+       "sections": [
+        "nome",
+        "numero"
+       ],
+       "colore": "blu è",
+       "size": 9007199254740993,
+       "scale": 1.5
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-post-int-boolean-audits-str-change",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": true,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "Socio ordinario",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003"
+     }
+    },
+    "card": {
+     "actor": "owner",
+     "changes": {
+      "emit_only_on_approval": [
+       "True",
+       "1"
+      ]
+     },
+     "stored": {
+      "emit_only_on_approval": true,
+      "customized_template": {
+       "sections": [
+        "nome",
+        "numero"
+       ],
+       "colore": "blu è",
+       "size": 9007199254740993,
+       "scale": 1.5
+      }
+     }
+    }
+   },
+   "body": {
+    "enumerate_invoices": true,
+    "online_payments": false,
+    "balance_sheet_year": 2,
+    "balance_sheet_start_day": 1,
+    "balance_sheet_start_month": 9,
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": -5,
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": true,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": 5,
+    "membership_starting_number": 120,
+    "default_membership_type": "Socio ordinario",
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": true,
+    "subscription_end_day": 7,
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+    "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003",
+    "membership_card_configuration": {
+     "emit_only_on_approval": 1,
+     "customized_template": {
+      "sections": [
+       "nome",
+       "numero"
+      ],
+      "colore": "blu è",
+      "size": 9007199254740993,
+      "scale": 1.5
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-settings-post-card-invalid-boolean-keeps-audit",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {
+      "dark_mode": [
+       "True",
+       "False"
+      ]
+     },
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "Socio ordinario",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003"
+     }
+    },
+    "card": {
+     "actor": "owner",
+     "changes": {
+      "emit_only_on_approval": [
+       "True",
+       "maybe"
+      ],
+      "customized_template": [
+       "{\"colore\": \"blu \\u00e8\", \"scale\": 1.5, \"sections\": [\"nome\", \"numero\"], \"size\": 9007199254740993}",
+       "null"
+      ]
+     },
+     "stored": null
+    }
+   },
+   "body": {
+    "enumerate_invoices": true,
+    "online_payments": false,
+    "balance_sheet_year": 2,
+    "balance_sheet_start_day": 1,
+    "balance_sheet_start_month": 9,
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": -5,
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": false,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": 5,
+    "membership_starting_number": 120,
+    "default_membership_type": "Socio ordinario",
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": true,
+    "subscription_end_day": 7,
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+    "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003",
+    "membership_card_configuration": {
+     "emit_only_on_approval": "maybe",
+     "customized_template": null
+    }
+   }
+  },
+  {
+   "name": "profile-settings-post-card-missing-template-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "Socio ordinario",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003"
+     }
+    }
+   },
+   "body": {
+    "enumerate_invoices": true,
+    "online_payments": false,
+    "balance_sheet_year": 2,
+    "balance_sheet_start_day": 1,
+    "balance_sheet_start_month": 9,
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": -5,
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": false,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": 5,
+    "membership_starting_number": 120,
+    "default_membership_type": "Socio ordinario",
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": true,
+    "subscription_end_day": 7,
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+    "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003",
+    "membership_card_configuration": {
+     "emit_only_on_approval": false
+    }
+   }
+  },
+  {
+   "name": "profile-settings-post-card-not-dict-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 1,
+      "balance_sheet_start_month": 9,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "Socio ordinario",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003"
+     }
+    }
+   },
+   "body": {
+    "enumerate_invoices": true,
+    "online_payments": false,
+    "balance_sheet_year": 2,
+    "balance_sheet_start_day": 1,
+    "balance_sheet_start_month": 9,
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": -5,
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": false,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": 5,
+    "membership_starting_number": 120,
+    "default_membership_type": "Socio ordinario",
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": true,
+    "subscription_end_day": 7,
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977001",
+    "default_payment_category_courses": "a1000000-0000-4000-8000-000000977003",
+    "membership_card_configuration": "not a dict"
+   }
+  },
+  {
+   "name": "profile-settings-post-impossible-start-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {
+      "balance_sheet_start_day": [
+       "1",
+       "31"
+      ],
+      "balance_sheet_start_month": [
+       "9",
+       "2"
+      ],
+      "default_payment_category": [
+       "a1000000-0000-4000-8000-000000977001",
+       "a1000000-0000-4000-8000-000000977004"
+      ],
+      "default_payment_category_courses": [
+       "a1000000-0000-4000-8000-000000977003",
+       "None"
+      ],
+      "default_membership_type": [
+       "Socio ordinario",
+       "None"
+      ]
+     },
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 31,
+      "balance_sheet_start_month": 2,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": null,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977004",
+      "default_payment_category_courses": null
+     }
+    },
+    "card": {
+     "actor": "owner",
+     "changes": {
+      "emit_only_on_approval": [
+       "True",
+       "False"
+      ],
+      "customized_template": [
+       "{\"colore\": \"blu \\u00e8\", \"scale\": 1.5, \"sections\": [\"nome\", \"numero\"], \"size\": 9007199254740993}",
+       "{\"a\": null, \"b\": []}"
+      ]
+     },
+     "stored": {
+      "emit_only_on_approval": false,
+      "customized_template": {
+       "b": [],
+       "a": null
+      }
+     }
+    }
+   },
+   "body": {
+    "enumerate_invoices": true,
+    "online_payments": false,
+    "balance_sheet_year": 2,
+    "balance_sheet_start_day": 31,
+    "balance_sheet_start_month": 2,
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": -5,
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": false,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": 5,
+    "membership_starting_number": 120,
+    "default_membership_type": null,
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": true,
+    "subscription_end_day": 7,
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977004",
+    "default_payment_category_courses": null,
+    "membership_card_configuration": {
+     "emit_only_on_approval": "False",
+     "customized_template": {
+      "b": [],
+      "a": null
+     }
+    }
+   }
+  },
+  {
+   "name": "profile-settings-get-impossible-start-date-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-settings-post-restores-start-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success"
+   },
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {
+      "balance_sheet_start_day": [
+       "31",
+       "15"
+      ],
+      "balance_sheet_start_month": [
+       "2",
+       "3"
+      ]
+     },
+     "stored": {
+      "enumerate_invoices": true,
+      "online_payments": false,
+      "balance_sheet_year": 2,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "temporary_invoice_deletion": true,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": true,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": true,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": null,
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": true,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": "a1000000-0000-4000-8000-000000977004",
+      "default_payment_category_courses": null
+     }
+    },
+    "card": {
+     "actor": "owner",
+     "changes": {
+      "customized_template": [
+       "{\"a\": null, \"b\": []}",
+       "null"
+      ]
+     },
+     "stored": {
+      "emit_only_on_approval": false,
+      "customized_template": null
+     }
+    }
+   },
+   "body": {
+    "enumerate_invoices": true,
+    "online_payments": false,
+    "balance_sheet_year": 2,
+    "balance_sheet_start_day": 15,
+    "balance_sheet_start_month": 3,
+    "temporary_invoice_deletion": true,
+    "auto_archive": false,
+    "auto_mark_attendance": false,
+    "payment_date_equal_invoice_date": false,
+    "starting_number_invoices": -5,
+    "auto_paid_payment": false,
+    "full_installments_plan": false,
+    "show_zero_payments": false,
+    "dark_mode": false,
+    "medical_certificate_notifications": true,
+    "hide_category_name": false,
+    "subscription_duration_equal_sport_year": true,
+    "subscription_duration": 4,
+    "membership_duration": 5,
+    "membership_starting_number": 120,
+    "default_membership_type": null,
+    "subscription_start_day": 1,
+    "subscription_start_month": 1,
+    "custom_end_date": true,
+    "subscription_end_day": 7,
+    "subscription_end_month": 12,
+    "disable_account_creation": false,
+    "force_account_creation": false,
+    "default_payment_category": "a1000000-0000-4000-8000-000000977004",
+    "default_payment_category_courses": null,
+    "membership_card_configuration": {
+     "emit_only_on_approval": false,
+     "customized_template": null
+    }
+   }
+  },
+  {
+   "name": "profile-settings-get-after-restore",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "settings": {
+     "enumerate_invoices": true,
+     "online_payments": false,
+     "balance_sheet_year": "2",
+     "balance_sheet_start_day": 15,
+     "balance_sheet_start_month": 3,
+     "temporary_invoice_deletion": true,
+     "auto_archive": false,
+     "auto_mark_attendance": false,
+     "payment_date_equal_invoice_date": false,
+     "starting_number_invoices": -5,
+     "auto_paid_payment": false,
+     "full_installments_plan": false,
+     "show_zero_payments": false,
+     "dark_mode": false,
+     "medical_certificate_notifications": true,
+     "hide_category_name": false,
+     "subscription_duration_equal_sport_year": true,
+     "subscription_duration": 4,
+     "membership_duration": 5,
+     "membership_starting_number": 120,
+     "default_membership_type": null,
+     "subscription_start_day": 1,
+     "subscription_start_month": 1,
+     "custom_end_date": true,
+     "subscription_end_day": 7,
+     "subscription_end_month": 12,
+     "disable_account_creation": false,
+     "force_account_creation": false,
+     "default_payment_category": "a1000000-0000-4000-8000-000000977004",
+     "default_payment_category_courses": null,
+     "current_year": {
+      "$current_year": [
+       15,
+       3
+      ]
+     },
+     "table_settings": {},
+     "membership_card_configuration": {
+      "emit_only_on_approval": false,
+      "customized_template": null
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-post-form-saves-user-then-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {
+      "enumerate_invoices": [
+       "True",
+       "False"
+      ],
+      "temporary_invoice_deletion": [
+       "True",
+       "False"
+      ],
+      "medical_certificate_notifications": [
+       "True",
+       "False"
+      ],
+      "subscription_duration_equal_sport_year": [
+       "True",
+       "False"
+      ],
+      "custom_end_date": [
+       "True",
+       "False"
+      ],
+      "balance_sheet_year": [
+       "2",
+       "3"
+      ],
+      "online_payments": [
+       "False",
+       "True"
+      ],
+      "default_membership_type": [
+       "None",
+       ""
+      ],
+      "default_payment_category": [
+       "a1000000-0000-4000-8000-000000977004",
+       "None"
+      ],
+      "default_payment_category_courses": [
+       "None",
+       "a1000000-0000-4000-8000-000000977001"
+      ]
+     },
+     "stored": {
+      "enumerate_invoices": false,
+      "online_payments": true,
+      "balance_sheet_year": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "temporary_invoice_deletion": false,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": false,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": false,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": false,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": null,
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977001"
+     }
+    }
+   },
+   "raw_body": "balance_sheet_year=3&balance_sheet_start_day=15&balance_sheet_start_month=3&starting_number_invoices=-5&subscription_duration=4&membership_duration=5&membership_starting_number=120&default_membership_type=&subscription_start_day=1&subscription_start_month=1&subscription_end_day=7&subscription_end_month=12&default_payment_category=&default_payment_category_courses=a1000000-0000-4000-8000-000000977001&online_payments=true&dark_mode=x&dark_mode=off&membership_card_configuration=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-post-form-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "dark_mode": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "raw_body": "balance_sheet_year=&dark_mode=maybe&subscription_end_day=&default_payment_category=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-post-multipart-file-fields-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "dark_mode": [
+     "Must be a valid boolean."
+    ],
+    "balance_sheet_year": [
+     "\"nota.txt\" is not a valid choice."
+    ],
+    "membership_starting_number": [
+     "A valid integer is required."
+    ],
+    "default_membership_type": [
+     "Not a valid string."
+    ],
+    "default_payment_category": [
+     "“nota.txt” is not a valid UUID."
+    ],
+    "default_payment_category_courses": [
+     "“nota.txt” is not a valid UUID."
+    ]
+   },
+   "effect": null,
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"auto_archive\"\r\n\r\ntrue\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"dark_mode\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_year\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_starting_number\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_membership_type\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category_courses\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-post-multipart-file-saves-user-then-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/settings",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "user": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "enumerate_invoices": false,
+      "online_payments": true,
+      "balance_sheet_year": 3,
+      "balance_sheet_start_day": 15,
+      "balance_sheet_start_month": 3,
+      "temporary_invoice_deletion": false,
+      "auto_archive": false,
+      "auto_mark_attendance": false,
+      "payment_date_equal_invoice_date": false,
+      "starting_number_invoices": -5,
+      "auto_paid_payment": false,
+      "full_installments_plan": false,
+      "show_zero_payments": false,
+      "dark_mode": false,
+      "medical_certificate_notifications": false,
+      "hide_category_name": false,
+      "subscription_duration_equal_sport_year": false,
+      "subscription_duration": 4,
+      "membership_duration": 5,
+      "membership_starting_number": 120,
+      "default_membership_type": "",
+      "subscription_start_day": 1,
+      "subscription_start_month": 1,
+      "custom_end_date": false,
+      "subscription_end_day": 7,
+      "subscription_end_month": 12,
+      "disable_account_creation": false,
+      "force_account_creation": false,
+      "default_payment_category": null,
+      "default_payment_category_courses": "a1000000-0000-4000-8000-000000977001"
+     }
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_year\"\r\n\r\n3\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_start_day\"\r\n\r\n15\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"balance_sheet_start_month\"\r\n\r\n3\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"starting_number_invoices\"\r\n\r\n-5\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_duration\"\r\n\r\n4\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_duration\"\r\n\r\n5\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_starting_number\"\r\n\r\n120\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_membership_type\"\r\n\r\n\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_start_day\"\r\n\r\n1\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_start_month\"\r\n\r\n1\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_end_day\"\r\n\r\n7\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"subscription_end_month\"\r\n\r\n12\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category\"\r\n\r\n\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"default_payment_category_courses\"\r\n\r\na1000000-0000-4000-8000-000000977001\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"online_payments\"\r\n\r\ntrue\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"dark_mode\"\r\n\r\nx\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"dark_mode\"\r\n\r\noff\r\n--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"membership_card_configuration\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-settings-integrations-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/integrations",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-association-session-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Torna al tuo account per gestire le credenziali."
+   },
+   "effect": null,
+   "body": {
+    "review_url": "x"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "profile-settings-integrations-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Profile Integrations",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-athlete-denied",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {
+    "review_url": "x"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-owner-get",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": null,
+    "review_url_enabled": false
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-foreign-owner-get",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "https://foreign.example.test/review",
+    "review_url_enabled": true
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-admin-impersonating-owner-get",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/profile/integrations",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "review_url": null,
+    "review_url_enabled": false
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-owner-patch",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "https://example.test/recensioni",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "None",
+       "https://example.test/recensioni"
+      ],
+      "review_url_enabled": [
+       "False",
+       "True"
+      ]
+     },
+     "stored": {
+      "review_url": "https://example.test/recensioni",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "body": {
+    "review_url": "https://example.test/recensioni",
+    "review_url_enabled": true,
+    "other": 1
+   }
+  },
+  {
+   "name": "profile-settings-integrations-empty-patch-no-audit",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "https://example.test/recensioni",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "full_collaborator",
+     "changes": {},
+     "stored": {
+      "review_url": "https://example.test/recensioni",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "body": {}
+  },
+  {
+   "name": "profile-settings-integrations-string-true-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "https://example.test/recensioni",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "review_url": "https://example.test/recensioni",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "body": {
+    "review_url_enabled": "True"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-restricted-read-patches",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "5",
+    "review_url_enabled": false
+   },
+   "effect": {
+    "association": {
+     "actor": "restricted_collaborator",
+     "changes": {
+      "review_url": [
+       "https://example.test/recensioni",
+       "5"
+      ],
+      "review_url_enabled": [
+       "True",
+       "False"
+      ]
+     },
+     "stored": {
+      "review_url": "5",
+      "review_url_enabled": false
+     }
+    }
+   },
+   "body": {
+    "review_url": 5,
+    "review_url_enabled": 0
+   }
+  },
+  {
+   "name": "profile-settings-integrations-invalid-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url_enabled": "maybe"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-null-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "This field may not be null."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url_enabled": null
+   }
+  },
+  {
+   "name": "profile-settings-integrations-too-long-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Ensure this field has no more than 255 characters."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-list-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": [
+     "a"
+    ]
+   }
+  },
+  {
+   "name": "profile-settings-integrations-object-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": {
+     "a": 1
+    }
+   }
+  },
+  {
+   "name": "profile-settings-integrations-boolean-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": true
+   }
+  },
+  {
+   "name": "profile-settings-integrations-null-character-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Null characters are not allowed."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": "a\u0000b"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-list-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url_enabled": [
+     true
+    ]
+   }
+  },
+  {
+   "name": "profile-settings-integrations-valid-url-with-invalid-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": "https://after.example.test/",
+    "review_url_enabled": "maybe"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-both-invalid-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Ensure this field has no more than 255 characters."
+    ],
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "review_url": "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu",
+    "review_url_enabled": "maybe"
+   }
+  },
+  {
+   "name": "profile-settings-integrations-list-body-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "profile-settings-integrations-null-body-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "No data provided"
+    ]
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "profile-settings-integrations-form-patch",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "modulo è",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "5",
+       "modulo è"
+      ],
+      "review_url_enabled": [
+       "False",
+       "True"
+      ]
+     },
+     "stored": {
+      "review_url": "modulo è",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "raw_body": "review_url=modulo+%C3%A8&review_url_enabled=1&review_url_enabled=True",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-integrations-form-without-boolean-keeps-it",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "solo testo",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "modulo è",
+       "solo testo"
+      ]
+     },
+     "stored": {
+      "review_url": "solo testo",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "raw_body": "review_url=solo+testo",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-integrations-form-empty-boolean-keeps-it",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": "nuovo",
+    "review_url_enabled": true
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {
+      "review_url": [
+       "solo testo",
+       "nuovo"
+      ]
+     },
+     "stored": {
+      "review_url": "nuovo",
+      "review_url_enabled": true
+     }
+    }
+   },
+   "raw_body": "review_url=nuovo&review_url_enabled=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-integrations-form-invalid-boolean-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "raw_body": "review_url=altro&review_url_enabled=forse",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "profile-settings-integrations-null-url",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": null,
+    "review_url_enabled": false
+   },
+   "effect": {
+    "association": {
+     "actor": "full_collaborator",
+     "changes": {
+      "review_url": [
+       "nuovo",
+       "None"
+      ],
+      "review_url_enabled": [
+       "True",
+       "False"
+      ]
+     },
+     "stored": {
+      "review_url": null,
+      "review_url_enabled": false
+     }
+    }
+   },
+   "body": {
+    "review_url": null,
+    "review_url_enabled": false
+   }
+  },
+  {
+   "name": "profile-settings-integrations-get-after-patch",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": null,
+    "review_url_enabled": false
+   },
+   "effect": null
+  },
+  {
+   "name": "profile-settings-integrations-multipart-unrelated-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "review_url": null,
+    "review_url_enabled": false
+   },
+   "effect": {
+    "association": {
+     "actor": "owner",
+     "changes": {},
+     "stored": {
+      "review_url": null,
+      "review_url_enabled": false
+     }
+    }
+   },
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-multipart-file-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-multipart-empty-file-url-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url\"; filename=\"vuoto.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  },
+  {
+   "name": "profile-settings-integrations-multipart-file-enabled-answers-400",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/profile/integrations",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "review_url_enabled": [
+     "Must be a valid boolean."
+    ]
+   },
+   "effect": null,
+   "raw_body": "--profilesettingsboundary\r\nContent-Disposition: form-data; name=\"review_url_enabled\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--profilesettingsboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=profilesettingsboundary"
+  }
+ ]
+}

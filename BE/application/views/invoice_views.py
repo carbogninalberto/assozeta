@@ -32,7 +32,7 @@ from application.serializers.invoice_serializers import InvoiceSerializer, Invoi
     CustomerInvoiceSerializer, generate_invoice_xml, generate_invoice_json
 from application.serializers.payment_serializers import PaymentSerializer, PaymentEntrySerializer, \
     PaymentInvoiceSerializer
-from application.utils.api_utils import is_valid_uuid, KTDatatablePagination, BalanceSheetData
+from application.utils.api_utils import is_valid_uuid, KTDatatablePagination, BalanceSheetData, checked_ordering
 from application.utils.excel_utils import get_excel_base64
 from application.printing_tasks import print_document_invoice, print_document_customer_invoice
 from application.tasks import export_invoices_to_zip
@@ -150,7 +150,7 @@ def invoice_list(request):
             invoices = smart_search(invoices, general_search)
     # sort by field
     if sort_field:
-        invoices = invoices.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+        invoices = invoices.order_by(checked_ordering(invoices, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
     # pagination
     invoices = paginator.paginate_queryset(queryset=invoices, request=request)
@@ -248,7 +248,10 @@ def invoice_update(request, uid):
             invoice.cancelled = bool(cancelled)
             if 'selected_tutor' in data.keys():
                 # get the selected tutor
-                selected_tutor = scoped_queryset(request, Associate.objects).filter(associate_id=data['selected_tutor']).first()
+                selected_tutor = scoped_queryset(request, Associate.objects).filter(
+                    associate_id=data['selected_tutor'],
+                    sport_association=sport_association,
+                ).first()
                 if selected_tutor is not None:
                     invoice.selected_tutor = selected_tutor
             else:
@@ -627,7 +630,7 @@ def invoice_suppliers_list(request):
                 )
     # sort by field
     if sort_field:
-        invoices = invoices.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+        invoices = invoices.order_by(checked_ordering(invoices, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
     # pagination
     invoices = paginator.paginate_queryset(queryset=invoices, request=request)
@@ -650,7 +653,10 @@ def invoice_suppliers_add(request):
     data = request.data
 
     data['sport_association'] = request.user.sport_association.sport_association_id
-    invoice = InvoiceSuppliersSerializer(data=data)
+    invoice = InvoiceSuppliersSerializer(
+        data=data,
+        context={'request': request, 'sport_association': request.user.sport_association}
+    )
 
     if data['custom_accounts'] is None:
         custom_accounts = CustomAccounts.objects.filter(
@@ -737,7 +743,12 @@ def invoice_suppliers_update(request, uid):
             sport_association=sport_association
         ).first()
         if invoice is not None:
-            invoice = InvoiceSuppliersSerializer(invoice, data=data, partial=True)
+            invoice = InvoiceSuppliersSerializer(
+                invoice,
+                data=data,
+                partial=True,
+                context={'request': request, 'sport_association': sport_association}
+            )
             if invoice.is_valid(raise_exception=True):
                 invoice = invoice.save()
                 if invoice.payment:
@@ -817,10 +828,14 @@ def invoice_customers_stats(request):
 # @cache_endpoint('invoice_customers_list', timeout=60 * 60 * 24 * 7)
 def invoice_customers_list(request):
 
+    sport_association = request.user.sport_association
+
     # TODO: remove this code once we implement a proper system
+    # Regenerate the listed invoices of the caller's association that have no PDF yet.
     invoices = CustomerInvoice.objects.filter(
+        sport_association=sport_association,
         pdf__isnull=True,
-    )
+    ).order_by('-creation_date', 'customer_invoice_id')
     for invoice in invoices:
         try:
             # store the xml in the invoice
@@ -836,7 +851,7 @@ def invoice_customers_list(request):
 
     # get all invoices
     invoices = CustomerInvoice.objects.filter(
-        sport_association=request.user.sport_association
+        sport_association=sport_association
     ).order_by('-creation_date').iterator(chunk_size=100)
 
     return Response({'data': [CustomerInvoiceSerializer(invoice).data for invoice in invoices]},

@@ -1,0 +1,1731 @@
+{
+ "matrix_version": 1,
+ "scope": "subscription/<uid>/transfer authored sequence with row, audit, Celery and notification effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011",
+  "season_owner": "a1000000-0000-4000-8000-000000997024"
+ },
+ "associates": {
+  "adult": {
+   "id": "a1000000-0000-4000-8000-000000997001",
+   "first": "Lino",
+   "last": "Adulto",
+   "user": "owner"
+  },
+  "minor": {
+   "id": "a1000000-0000-4000-8000-000000997002",
+   "first": "Mia",
+   "last": "Minore",
+   "user": "owner"
+  },
+  "minor_tutor": {
+   "id": "a1000000-0000-4000-8000-000000997003",
+   "first": "Teresa",
+   "last": "Tutrice",
+   "user": null
+  },
+  "family": {
+   "id": "a1000000-0000-4000-8000-000000997004",
+   "first": "Fabio",
+   "last": "Famiglia",
+   "user": "owner"
+  },
+  "family_tutor": {
+   "id": "a1000000-0000-4000-8000-000000997005",
+   "first": "Gianni",
+   "last": "Genitore",
+   "user": "owner"
+  },
+  "pending": {
+   "id": "a1000000-0000-4000-8000-000000997006",
+   "first": "Paolo",
+   "last": "Pendente",
+   "user": "owner"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000997007",
+   "first": "Furio",
+   "last": "Fuori",
+   "user": "foreign_owner",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  "athletes": {
+   "id": "a1000000-0000-4000-8000-000000997008",
+   "first": "Ada",
+   "last": "Atleta",
+   "user": "athlete"
+  },
+  "form": {
+   "id": "a1000000-0000-4000-8000-000000997009",
+   "first": "Fede",
+   "last": "Form",
+   "user": "owner"
+  },
+  "bare": {
+   "id": "a1000000-0000-4000-8000-000000997010",
+   "first": "Nora",
+   "last": "Nuova",
+   "user": null
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000997026",
+   "first": "Sara",
+   "last": "Stagione",
+   "user": "season_owner",
+   "association": "a1000000-0000-4000-8000-000000997025"
+  },
+  "accented": {
+   "id": "a1000000-0000-4000-8000-000000997028",
+   "first": "Émile",
+   "last": "Çelik",
+   "user": "owner"
+  },
+  "casefold": {
+   "id": "a1000000-0000-4000-8000-000000997029",
+   "first": "ßöra",
+   "last": "ǆukić",
+   "user": "owner"
+  },
+  "undated": {
+   "id": "a1000000-0000-4000-8000-000000997032",
+   "first": "Dora",
+   "last": "Senzadate",
+   "user": "owner"
+  }
+ },
+ "relations": {
+  "minor": {
+   "associate": "minor",
+   "tutor": "minor_tutor",
+   "primary": false
+  },
+  "family": {
+   "associate": "family",
+   "tutor": "family_tutor",
+   "primary": true
+  }
+ },
+ "subscriptions": {
+  "adult": {
+   "id": "a1000000-0000-4000-8000-000000997011",
+   "associate": "adult",
+   "user": "owner"
+  },
+  "minor": {
+   "id": "a1000000-0000-4000-8000-000000997012",
+   "associate": "minor",
+   "user": "owner"
+  },
+  "family": {
+   "id": "a1000000-0000-4000-8000-000000997013",
+   "associate": "family",
+   "user": "owner"
+  },
+  "pending": {
+   "id": "a1000000-0000-4000-8000-000000997014",
+   "associate": "pending",
+   "user": "owner"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000997015",
+   "associate": "foreign",
+   "user": "foreign_owner",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  },
+  "athlete_email": {
+   "id": "a1000000-0000-4000-8000-000000997016",
+   "associate": "athletes",
+   "user": "athlete"
+  },
+  "athlete_recipient": {
+   "id": "a1000000-0000-4000-8000-000000997017",
+   "associate": "athletes",
+   "user": "athlete"
+  },
+  "form": {
+   "id": "a1000000-0000-4000-8000-000000997018",
+   "associate": "form",
+   "user": "owner"
+  },
+  "bare": {
+   "id": "a1000000-0000-4000-8000-000000997019",
+   "associate": "bare",
+   "user": "owner"
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000997027",
+   "associate": "season",
+   "user": "season_owner",
+   "association": "a1000000-0000-4000-8000-000000997025"
+  },
+  "accented": {
+   "id": "a1000000-0000-4000-8000-000000997030",
+   "associate": "accented",
+   "user": "owner"
+  },
+  "casefold": {
+   "id": "a1000000-0000-4000-8000-000000997031",
+   "associate": "casefold",
+   "user": "owner"
+  },
+  "undated": {
+   "id": "a1000000-0000-4000-8000-000000997033",
+   "associate": "undated",
+   "user": "owner",
+   "undated": true,
+   "created": "2022-05-05T10:00:00Z"
+  }
+ },
+ "transfers": {
+  "pending_future": {
+   "id": "a1000000-0000-4000-8000-000000997020",
+   "subscription": "pending",
+   "status": 1,
+   "expires": "future",
+   "recipient": "athlete"
+  },
+  "pending_past": {
+   "id": "a1000000-0000-4000-8000-000000997021",
+   "subscription": "adult",
+   "status": 1,
+   "expires": "past",
+   "recipient": "athlete"
+  },
+  "accepted_past": {
+   "id": "a1000000-0000-4000-8000-000000997022",
+   "subscription": "foreign",
+   "status": 2,
+   "expires": "past",
+   "recipient": null
+  },
+  "rejected_future": {
+   "id": "a1000000-0000-4000-8000-000000997023",
+   "subscription": "pending",
+   "status": 3,
+   "expires": "future",
+   "recipient": null
+  }
+ },
+ "denomination": "Message reads own",
+ "season": {
+  "owner": "a1000000-0000-4000-8000-000000997024",
+  "association": "a1000000-0000-4000-8000-000000997025",
+  "start_day": 31,
+  "start_month": 4,
+  "denomination": "Subscription transfer season"
+ },
+ "unknown": "a1000000-0000-4000-8000-000000997999",
+ "cases": [
+  {
+   "name": "subscription-transfer-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Transfer",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-transfer-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-transfer-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-malformed-uuid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/not-a-uuid/transfer",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-unknown-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997999/transfer",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Subscription not found."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-group-header-filters",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 404,
+   "response": {
+    "msg": "Subscription not found."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-other-user-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997015/transfer",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "You are not the owner of the subscription."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-athlete-not-owner",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "You are not the owner of the subscription."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700001"
+   }
+  },
+  {
+   "name": "subscription-transfer-pending-transfer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997014/transfer",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "C'è già una richiesta di trasferimento in attesa di essere approvata."
+   },
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-recipient-self",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 409,
+   "response": {
+    "msg": "You cannot transfer the subscription to yourself."
+   },
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700001"
+   }
+  },
+  {
+   "name": "subscription-transfer-recipient-self-upper-case",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "recipient": "A1000000-0000-4000-8000-000000700001"
+   }
+  },
+  {
+   "name": "subscription-transfer-recipient-unknown",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000997999"
+   }
+  },
+  {
+   "name": "subscription-transfer-recipient-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 400,
+   "response": "<empty>",
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "recipient": 7
+   }
+  },
+  {
+   "name": "subscription-transfer-recipient-malformed-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "recipient": "nessuno"
+   }
+  },
+  {
+   "name": "subscription-transfer-recipient-float-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "recipient": 1.5
+   }
+  },
+  {
+   "name": "subscription-transfer-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "expire": true
+   },
+   "body": [
+    "a1000000-0000-4000-8000-000000700004"
+   ]
+  },
+  {
+   "name": "subscription-transfer-email-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Email is required."
+   },
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "email": null
+   }
+  },
+  {
+   "name": "subscription-transfer-email-not-text-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "expire": true
+   },
+   "body": {
+    "email": 5
+   }
+  },
+  {
+   "name": "subscription-transfer-to-recipient",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997011",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "a1000000-0000-4000-8000-000000700004",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "adult",
+     "recipient": "athlete",
+     "requester": "owner"
+    },
+    "subscription": "adult",
+    "associates": [
+     "adult"
+    ],
+    "relation": null,
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "adult",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "adult",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "athlete",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Lino Adulto al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-collaborator-tutor-made-primary",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997012/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997012",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "a1000000-0000-4000-8000-000000700004",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "minor",
+     "recipient": "athlete",
+     "requester": "owner"
+    },
+    "subscription": "minor",
+    "associates": [
+     "minor",
+     "minor_tutor"
+    ],
+    "relation": "minor",
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "minor",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "minor",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associatetutorrelation",
+      "action": 1,
+      "ref": "minor",
+      "changes": {
+       "is_primary": [
+        "False",
+        "True"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "associate.sport_association"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "minor_tutor",
+      "changes": {
+       "user": [
+        "None",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "athlete",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Mia Minore al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004",
+    "email": "ignored@example.test"
+   }
+  },
+  {
+   "name": "subscription-transfer-form-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997018/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997018",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "a1000000-0000-4000-8000-000000700004",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "form",
+     "recipient": "athlete",
+     "requester": "owner"
+    },
+    "subscription": "form",
+    "associates": [
+     "form"
+    ],
+    "relation": null,
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "form",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "form",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "athlete",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Fede Form al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "raw_body": "recipient=a1000000-0000-4000-8000-000000997999&recipient=a1000000-0000-4000-8000-000000700004",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-transfer-athlete-to-owner",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997017/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997017",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700004",
+    "recipient": "a1000000-0000-4000-8000-000000700001",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "athlete_recipient",
+     "recipient": "owner",
+     "requester": "athlete"
+    },
+    "subscription": "athlete_recipient",
+    "associates": [
+     "athletes"
+    ],
+    "relation": null,
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": null
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": null
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "athlete_recipient",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700004",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "athletes",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700004",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "owner",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Ada Atleta al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700001"
+   }
+  },
+  {
+   "name": "subscription-transfer-email-new-account",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997013/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997013",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "$new",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "family",
+     "recipient": "$new_user",
+     "requester": "owner"
+    },
+    "subscription": "family",
+    "associates": [
+     "family",
+     "family_tutor"
+    ],
+    "relation": null,
+    "new_user": {
+     "first_name": "Gianni",
+     "last_name": "Genitore",
+     "email": "Nuovo.Utente@example.test",
+     "prefix": "GIAGEN"
+    },
+    "welcome": true,
+    "audit": [
+     {
+      "model": "user",
+      "action": 0,
+      "ref": "$new_user",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "family",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "family",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "family_tutor",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "$new_user",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Fabio Famiglia al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "email": "Nuovo.Utente@Example.TEST"
+   }
+  },
+  {
+   "name": "subscription-transfer-email-new-account-associate-names",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997019/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997019",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "$new",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "bare",
+     "recipient": "$new_user",
+     "requester": "owner"
+    },
+    "subscription": "bare",
+    "associates": [
+     "bare"
+    ],
+    "relation": null,
+    "new_user": {
+     "first_name": "Nora",
+     "last_name": "Nuova",
+     "email": "",
+     "prefix": "NORNUO"
+    },
+    "welcome": true,
+    "audit": [
+     {
+      "model": "user",
+      "action": 0,
+      "ref": "$new_user",
+      "changes": "$created",
+      "index": null
+     },
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": null
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": null
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "bare",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "bare",
+      "changes": {
+       "user": [
+        "None",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "$new_user",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Nora Nuova al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "email": ""
+   }
+  },
+  {
+   "name": "subscription-transfer-email-new-account-accented-names",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997030/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997030",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "$new",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "accented",
+     "recipient": "$new_user",
+     "requester": "owner"
+    },
+    "subscription": "accented",
+    "associates": [
+     "accented"
+    ],
+    "relation": null,
+    "new_user": {
+     "first_name": "Émile",
+     "last_name": "Çelik",
+     "email": "Émile@exämple.test",
+     "prefix": "ÉMIÇEL"
+    },
+    "welcome": true,
+    "audit": [
+     {
+      "model": "user",
+      "action": 0,
+      "ref": "$new_user",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "accented",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "accented",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "$new_user",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Émile Çelik al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "email": "Émile@Exämple.TEST"
+   }
+  },
+  {
+   "name": "subscription-transfer-email-new-account-expanding-names",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997031/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997031",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "$new",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "casefold",
+     "recipient": "$new_user",
+     "requester": "owner"
+    },
+    "subscription": "casefold",
+    "associates": [
+     "casefold"
+    ],
+    "relation": null,
+    "new_user": {
+     "first_name": "ßöra",
+     "last_name": "ǆukić",
+     "email": "ǅ@i̇stanbul.test",
+     "prefix": "SSÖRDŽUK"
+    },
+    "welcome": true,
+    "audit": [
+     {
+      "model": "user",
+      "action": 0,
+      "ref": "$new_user",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "notificationsbroadcast",
+      "action": 0,
+      "ref": "$notificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "usernotificationsbroadcast",
+      "action": 0,
+      "ref": "$usernotificationsbroadcast",
+      "changes": "$created",
+      "app": "notifications",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "actor.sport_association"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "casefold",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "casefold",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "$new_user",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione ßöra ǆukić al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "email": " ǅ@İSTANBUL.Test "
+   }
+  },
+  {
+   "name": "subscription-transfer-athlete-email-denied-after-account",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997016/transfer",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": {
+    "expire": true,
+    "new_user": {
+     "first_name": "Ada",
+     "last_name": "Atleta",
+     "email": "creato@example.test",
+     "prefix": "ADAATL"
+    },
+    "audit": [
+     {
+      "model": "user",
+      "action": 0,
+      "ref": "$new_user",
+      "changes": "$created",
+      "index": null
+     }
+    ]
+   },
+   "body": {
+    "email": "creato@example.test"
+   }
+  },
+  {
+   "name": "subscription-transfer-invalid-season-settings-after-transfer-server-error",
+   "actor": "season_owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997027/transfer",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "season",
+     "recipient": "athlete",
+     "requester": "season_owner",
+     "status": 1
+    },
+    "associates": [],
+    "relation": null,
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000997025",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "athlete",
+     "association": "a1000000-0000-4000-8000-000000997025",
+     "msg": "l'associazione Subscription transfer season ha trasferito l'iscrizione Sara Stagione al tuo account"
+    }
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-undated-subscription-dates-filled",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997033/transfer",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription": "a1000000-0000-4000-8000-000000997033",
+    "expires_at": "$now",
+    "requester": "a1000000-0000-4000-8000-000000700001",
+    "recipient": "a1000000-0000-4000-8000-000000700004",
+    "token": "$new",
+    "status": 2
+   },
+   "effect": {
+    "expire": true,
+    "transfer": {
+     "subscription": "undated",
+     "recipient": "athlete",
+     "requester": "owner"
+    },
+    "subscription": "undated",
+    "associates": [
+     "undated"
+    ],
+    "relation": null,
+    "new_user": null,
+    "welcome": false,
+    "audit": [
+     {
+      "model": "subscriptiontransfer",
+      "action": 0,
+      "ref": "$transfer",
+      "changes": "$created",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 1,
+      "ref": "undated",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ],
+       "start_date": [
+        "None",
+        "2022-01-01"
+       ],
+       "end_date": [
+        "None",
+        "2022-12-31"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "associate",
+      "action": 1,
+      "ref": "undated",
+      "changes": {
+       "user": [
+        "a1000000-0000-4000-8000-000000700001",
+        "$recipient"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscriptiontransfer",
+      "action": 1,
+      "ref": "$transfer",
+      "changes": "$accepted",
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "notification": {
+     "user": "athlete",
+     "msg": "l'associazione Message reads own ha trasferito l'iscrizione Dora Senzadate al tuo account",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    },
+    "dates": {
+     "start_date": "2022-01-01",
+     "end_date": "2022-12-31"
+    }
+   },
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  },
+  {
+   "name": "subscription-transfer-transferred-no-longer-owned",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000997011/transfer",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "msg": "You are not the owner of the subscription."
+   },
+   "effect": null,
+   "body": {
+    "recipient": "a1000000-0000-4000-8000-000000700004"
+   }
+  }
+ ]
+}

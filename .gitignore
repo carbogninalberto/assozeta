@@ -5,7 +5,8 @@ __pycache__/
 *.py[cod]
 
 # Deprecated / local-only project artifacts
-/.claude/
+/.claude/*
+!/.claude/skills/
 /.idea/
 /.vscode/
 /.vs/

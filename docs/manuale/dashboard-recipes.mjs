@@ -1,22 +1,27 @@
+// Profile, association and mapped-owner table mutations commit with their audit indexes;
+// any index exception rolls back the mutation. Locked reads and selected columns preserve
+// concurrent changes. Successful settings and registration workflows remain unchanged.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
+// Reviewed: request identity resolution is unchanged; the list of accounts an owner
+// can impersonate is limited to the members and subscribers of the own association.
 const reviewed = {
-  "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+  "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/routes/dashboard/Dashboard.svelte": "d5cd8e48b8fb6f07c310735ae87169911c145daae237a5e84ec21d1876e41f9a",
   "UI/src/components/modals/WidgetModal.svelte": "49dcfaaf9fbb33e2b3503b9d6dd1bfdc64551a251fa97a9a32729638b1ea525a",
   "UI/src/components/widgets/StaffBoard.svelte": "1e22ec4c29067df662454be5e7acccc81388ae2717b86a0ab742818be0b6ffc0",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
-  "BE/application/views/statistic_views.py": "9d528567f5bd542ec80ce77c2dc4569aea5f61665aaa4584bf7080ffdcc87a0a",
-  "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
-  "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
+  "BE/application/views/statistic_views.py": "ef067ca1027ba67f32d04e20df927ae5b3c5bf85a48b2f4fa4dae5f12b40783f",
+  "BE/application/views/profile_views.py": "adea11d45c4364fe508860db111f574d1e99a752bb5e792309d1a74ae6200c09",
+  "BE/application/serializers/auth_serializers.py": "06b647dcce4c370545bdb0c61e23a5a48c3c56e2c4878b7197fb8b3d9dd62d1e",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
-  "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
-  "BE/application/models/courses_models.py": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6",
+  "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
+  "BE/application/models/courses_models.py": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671",
   "BE/application/models/carnet_models.py": "3e3cb2cfb3d2be09cc5db6b97b43e2a2f391d91ccb61dfb38c99bf0ec7913713",
-  "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
+  "BE/application/utils/api_utils.py": "dbbdaa92161a01903c58b40be6135466df85f4780128b23175da236ae69c4c43",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-  "BE/application/impersonation.py": "85e8a9e4d7daf129cb51d6f009a6d597b79e98b5dccbf6bac28bf0d77e0cd0d1",
+  "BE/application/impersonation.py": "760fd6e63c6baebee14744cbdfe571ac4aa4e0fb1a5e0ac9b6147dfcf299cced",
   "UI/src/components/widgets/Associates.svelte": "5bb400b1d4716eaa0a8fb48186f328ecedddf2b0ab2aab66893ba426acf2eeab",
   "UI/src/components/widgets/Payments.svelte": "4e3e6fe698b9208613e9a2ee270294b601ab5a5b89abb7ba3a48c7eec86328b5",
   "UI/src/components/widgets/BestCourses.svelte": "345edb15c8c27c746c2bb2d88da65293d257d59f12a2761ea19d4549c2e0cdb0",

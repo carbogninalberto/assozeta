@@ -1,0 +1,6879 @@
+{
+ "matrix_version": 1,
+ "scope": "Course attendance listing, update, subscription history and check-in with carnet and audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "instructor": {
+  "id": "a1000000-0000-4000-8000-000000950001",
+  "first": "Ivo",
+  "last": "Insegnante"
+ },
+ "other_instructor": {
+  "id": "a1000000-0000-4000-8000-000000950002",
+  "first": "Olga",
+  "last": "Altrove",
+  "owner": "foreign_owner"
+ },
+ "payments": {
+  "unpaid": {
+   "id": "a1000000-0000-4000-8000-000000950003",
+   "paid": false
+  },
+  "paid": {
+   "id": "a1000000-0000-4000-8000-000000950004",
+   "paid": true
+  }
+ },
+ "carnet": "a1000000-0000-4000-8000-000000950005",
+ "medical": {
+  "id": "a1000000-0000-4000-8000-000000950006",
+  "expiration": "2030-12-31",
+  "competitive": true
+ },
+ "associates": {
+  "anna": {
+   "id": "a1000000-0000-4000-8000-000000950007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Anna",
+   "last": "Rossi",
+   "born": "1990-01-01",
+   "tax": "TAX0000000000000"
+  },
+  "bruno": {
+   "id": "a1000000-0000-4000-8000-000000950008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Bruno",
+   "last": "Verdi",
+   "born": "1985-05-05",
+   "tax": "TAX0000000000001"
+  },
+  "dario": {
+   "id": "a1000000-0000-4000-8000-000000950009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Dario",
+   "last": "Neri",
+   "born": "1992-02-02",
+   "tax": "TAX0000000000002"
+  },
+  "elena": {
+   "id": "a1000000-0000-4000-8000-000000950010",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Elena",
+   "last": "Grigi",
+   "born": "1993-03-03",
+   "tax": "TAX0000000000003"
+  },
+  "gina": {
+   "id": "a1000000-0000-4000-8000-000000950011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Gina",
+   "last": "Gialli",
+   "born": "1994-04-04",
+   "tax": "TAX0000000000004"
+  },
+  "hugo": {
+   "id": "a1000000-0000-4000-8000-000000950012",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Hugo",
+   "last": "Blu",
+   "born": "1995-05-05",
+   "tax": "TAX0000000000005"
+  },
+  "ivan": {
+   "id": "a1000000-0000-4000-8000-000000950013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Ivan",
+   "last": "Viola",
+   "born": "1996-06-06",
+   "tax": "TAX0000000000006"
+  },
+  "lia": {
+   "id": "a1000000-0000-4000-8000-000000950014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Lia",
+   "last": "Rosa",
+   "born": "1997-07-07",
+   "tax": "TAX0000000000007"
+  },
+  "franco": {
+   "id": "a1000000-0000-4000-8000-000000950015",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "first": "Franco",
+   "last": "Esteri",
+   "born": "1980-08-08",
+   "tax": "TAX0000000000008"
+  },
+  "ugo": {
+   "id": "a1000000-0000-4000-8000-000000950618",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Ugo",
+   "last": "Verdi",
+   "born": "1999-09-09",
+   "tax": "TAX0000000000099"
+  },
+  "vera": {
+   "id": "a1000000-0000-4000-8000-000000950621",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Vera",
+   "last": "Neri",
+   "born": "1999-09-09",
+   "tax": "TAX0000000000100"
+  },
+  "wanda": {
+   "id": "a1000000-0000-4000-8000-000000950625",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Wanda",
+   "last": "Gialli",
+   "born": "1999-09-09",
+   "tax": "TAX0000000000101"
+  },
+  "xena": {
+   "id": "a1000000-0000-4000-8000-000000950629",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Xena",
+   "last": "Blu",
+   "born": "1999-09-09",
+   "tax": "TAX0000000000102"
+  },
+  "yara": {
+   "id": "a1000000-0000-4000-8000-000000950633",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Yara",
+   "last": "Rosa",
+   "born": "1999-09-09",
+   "tax": "TAX0000000000103"
+  },
+  "zoe": {
+   "id": "a1000000-0000-4000-8000-000000950637",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Zoe",
+   "last": "Viola",
+   "born": "1999-09-09",
+   "tax": "TAX0000000000104"
+  },
+  "ned": {
+   "id": "a1000000-0000-4000-8000-000000950641",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "first": "Ned",
+   "last": "Grigi",
+   "born": "1999-09-09",
+   "tax": "TAX0000000000105"
+  }
+ },
+ "subscriptions": {
+  "anna": {
+   "id": "a1000000-0000-4000-8000-000000950016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "anna",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "bruno": {
+   "id": "a1000000-0000-4000-8000-000000950017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "bruno",
+   "user": "owner",
+   "medical": "a1000000-0000-4000-8000-000000950006",
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "dario": {
+   "id": "a1000000-0000-4000-8000-000000950018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "dario",
+   "user": "athlete",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "elena": {
+   "id": "a1000000-0000-4000-8000-000000950019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "elena",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "gina": {
+   "id": "a1000000-0000-4000-8000-000000950020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "gina",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "hugo": {
+   "id": "a1000000-0000-4000-8000-000000950021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "hugo",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "ivan": {
+   "id": "a1000000-0000-4000-8000-000000950022",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "ivan",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "lia": {
+   "id": "a1000000-0000-4000-8000-000000950023",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "lia",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "franco": {
+   "id": "a1000000-0000-4000-8000-000000950024",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "associate": "franco",
+   "user": "foreign_owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "ugo": {
+   "id": "a1000000-0000-4000-8000-000000950619",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "ugo",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "vera": {
+   "id": "a1000000-0000-4000-8000-000000950622",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "vera",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "wanda": {
+   "id": "a1000000-0000-4000-8000-000000950626",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "wanda",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "xena": {
+   "id": "a1000000-0000-4000-8000-000000950630",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "xena",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "yara": {
+   "id": "a1000000-0000-4000-8000-000000950634",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "yara",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "zoe": {
+   "id": "a1000000-0000-4000-8000-000000950638",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "zoe",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  },
+  "ned": {
+   "id": "a1000000-0000-4000-8000-000000950642",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "ned",
+   "user": "owner",
+   "medical": null,
+   "created": "2026-01-10T10:00:00Z"
+  }
+ },
+ "courses": {
+  "a": {
+   "id": "a1000000-0000-4000-8000-000000950025",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Nuoto",
+   "deleted": false
+  },
+  "b": {
+   "id": "a1000000-0000-4000-8000-000000950026",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Yoga",
+   "deleted": false
+  },
+  "c": {
+   "id": "a1000000-0000-4000-8000-000000950027",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Pilates",
+   "deleted": false
+  },
+  "m": {
+   "id": "a1000000-0000-4000-8000-000000950028",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Corsa",
+   "deleted": false
+  },
+  "n": {
+   "id": "a1000000-0000-4000-8000-000000950029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Danza",
+   "deleted": false
+  },
+  "o": {
+   "id": "a1000000-0000-4000-8000-000000950030",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Tennis",
+   "deleted": false
+  },
+  "empty": {
+   "id": "a1000000-0000-4000-8000-000000950031",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Senza registro",
+   "deleted": false
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000950032",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Eliminato",
+   "deleted": true
+  },
+  "f": {
+   "id": "a1000000-0000-4000-8000-000000950033",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "title": "Estero",
+   "deleted": false
+  },
+  "p": {
+   "id": "a1000000-0000-4000-8000-000000950401",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico",
+   "deleted": false
+  },
+  "q": {
+   "id": "a1000000-0000-4000-8000-000000950412",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico intero",
+   "deleted": false
+  },
+  "s0": {
+   "id": "a1000000-0000-4000-8000-000000950416",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 0",
+   "deleted": false
+  },
+  "s1": {
+   "id": "a1000000-0000-4000-8000-000000950420",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 1",
+   "deleted": false
+  },
+  "s2": {
+   "id": "a1000000-0000-4000-8000-000000950424",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 2",
+   "deleted": false
+  },
+  "s3": {
+   "id": "a1000000-0000-4000-8000-000000950428",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 3",
+   "deleted": false
+  },
+  "s4": {
+   "id": "a1000000-0000-4000-8000-000000950432",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 4",
+   "deleted": false
+  },
+  "s5": {
+   "id": "a1000000-0000-4000-8000-000000950436",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 5",
+   "deleted": false
+  },
+  "s6": {
+   "id": "a1000000-0000-4000-8000-000000950440",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 6",
+   "deleted": false
+  },
+  "s7": {
+   "id": "a1000000-0000-4000-8000-000000950444",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico forma 7",
+   "deleted": false
+  },
+  "u": {
+   "id": "a1000000-0000-4000-8000-000000950601",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Judo",
+   "deleted": false
+  },
+  "w": {
+   "id": "a1000000-0000-4000-8000-000000950614",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Karate",
+   "deleted": false
+  },
+  "r": {
+   "id": "a1000000-0000-4000-8000-000000950448",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico cifre",
+   "deleted": false
+  },
+  "s_month": {
+   "id": "a1000000-0000-4000-8000-000000950452",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico mese",
+   "deleted": false
+  },
+  "y999": {
+   "id": "a1000000-0000-4000-8000-000000950456",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "title": "Storico anno 999",
+   "deleted": false
+  }
+ },
+ "course_subscriptions": {
+  "a_anna": {
+   "id": "a1000000-0000-4000-8000-000000950034",
+   "course": "a",
+   "subscription": "anna",
+   "deleted": false
+  },
+  "a_bruno": {
+   "id": "a1000000-0000-4000-8000-000000950035",
+   "course": "a",
+   "subscription": "bruno",
+   "deleted": false
+  },
+  "a_gone": {
+   "id": "a1000000-0000-4000-8000-000000950036",
+   "course": "a",
+   "subscription": "bruno",
+   "deleted": true
+  },
+  "b_anna": {
+   "id": "a1000000-0000-4000-8000-000000950037",
+   "course": "b",
+   "subscription": "anna",
+   "deleted": false
+  },
+  "c_anna": {
+   "id": "a1000000-0000-4000-8000-000000950038",
+   "course": "c",
+   "subscription": "anna",
+   "deleted": false
+  },
+  "c_bruno": {
+   "id": "a1000000-0000-4000-8000-000000950039",
+   "course": "c",
+   "subscription": "bruno",
+   "deleted": false
+  },
+  "c_dario": {
+   "id": "a1000000-0000-4000-8000-000000950040",
+   "course": "c",
+   "subscription": "dario",
+   "deleted": false
+  },
+  "m_anna": {
+   "id": "a1000000-0000-4000-8000-000000950041",
+   "course": "m",
+   "subscription": "anna",
+   "deleted": false
+  },
+  "n_anna": {
+   "id": "a1000000-0000-4000-8000-000000950042",
+   "course": "n",
+   "subscription": "anna",
+   "deleted": false
+  },
+  "n_elena": {
+   "id": "a1000000-0000-4000-8000-000000950043",
+   "course": "n",
+   "subscription": "elena",
+   "deleted": false
+  },
+  "m_gina": {
+   "id": "a1000000-0000-4000-8000-000000950044",
+   "course": "m",
+   "subscription": "gina",
+   "deleted": false
+  },
+  "m_hugo": {
+   "id": "a1000000-0000-4000-8000-000000950045",
+   "course": "m",
+   "subscription": "hugo",
+   "deleted": false
+  },
+  "m_ivan": {
+   "id": "a1000000-0000-4000-8000-000000950046",
+   "course": "m",
+   "subscription": "ivan",
+   "deleted": false
+  },
+  "m_lia": {
+   "id": "a1000000-0000-4000-8000-000000950047",
+   "course": "m",
+   "subscription": "lia",
+   "deleted": false
+  },
+  "f_franco": {
+   "id": "a1000000-0000-4000-8000-000000950048",
+   "course": "f",
+   "subscription": "franco",
+   "deleted": false
+  },
+  "orphan": {
+   "id": "a1000000-0000-4000-8000-000000950049",
+   "course": "f",
+   "subscription": null,
+   "deleted": false
+  },
+  "f_lia": {
+   "id": "a1000000-0000-4000-8000-000000950050",
+   "course": "f",
+   "subscription": "lia",
+   "deleted": false
+  },
+  "c_franco": {
+   "id": "a1000000-0000-4000-8000-000000950051",
+   "course": "c",
+   "subscription": "franco",
+   "deleted": false
+  },
+  "u_ugo": {
+   "id": "00000000-0000-0000-0000-00000000002a",
+   "course": "u",
+   "subscription": "ugo",
+   "deleted": false
+  },
+  "u_vera": {
+   "id": "a1000000-0000-4000-8000-000000950623",
+   "course": "u",
+   "subscription": "vera",
+   "deleted": false
+  },
+  "u_wanda": {
+   "id": "a1000000-0000-4000-8000-000000950627",
+   "course": "u",
+   "subscription": "wanda",
+   "deleted": false
+  },
+  "u_xena": {
+   "id": "a1000000-0000-4000-8000-000000950631",
+   "course": "u",
+   "subscription": "xena",
+   "deleted": false
+  },
+  "u_yara": {
+   "id": "a1000000-0000-4000-8000-000000950635",
+   "course": "u",
+   "subscription": "yara",
+   "deleted": false
+  },
+  "u_zoe": {
+   "id": "a1000000-0000-4000-8000-000000950639",
+   "course": "u",
+   "subscription": "zoe",
+   "deleted": false
+  },
+  "u_ned": {
+   "id": "a1000000-0000-4000-8000-000000950643",
+   "course": "u",
+   "subscription": "ned",
+   "deleted": false
+  }
+ },
+ "registries": {
+  "a": {
+   "id": "a1000000-0000-4000-8000-000000950057",
+   "course": "a",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950052",
+     "title": "Lezione",
+     "start": "2020-03-02T17:00:00.000Z",
+     "end": "2020-03-02T18:00:00.000Z",
+     "allDay": false,
+     "extendedProps": {
+      "instructor": {
+       "instructor_id": "a1000000-0000-4000-8000-000000950001",
+       "label": "vecchio"
+      },
+      "description": "Prima"
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950053",
+     "title": "Libera",
+     "start": "2020-03-09T17:00:00.000Z",
+     "end": "2020-03-09T18:00:00.000Z",
+     "allDay": true
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950054",
+     "title": "Gruppo",
+     "start": "2020-03-16T17:30:00.000Z",
+     "end": "2020-03-16T18:30:00.000Z",
+     "extendedProps": {
+      "instructor": [
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000950001"
+       },
+       {
+        "name": "esterno"
+       },
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000950002"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "b": {
+   "id": "a1000000-0000-4000-8000-000000950058",
+   "course": "b",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950055",
+     "title": "Yoga",
+     "start": "2020-04-06T18:00:00.000Z",
+     "end": "2020-04-06T19:00:00.000Z",
+     "allDay": false,
+     "extendedProps": {
+      "description": "Respiro"
+     }
+    },
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950056",
+     "title": "Yoga due",
+     "start": "2020-04-13T18:00:00.000Z",
+     "end": "2020-04-13T19:00:00.000Z"
+    }
+   ]
+  },
+  "c": {
+   "id": "a1000000-0000-4000-8000-000000950059",
+   "course": "c",
+   "events": []
+  },
+  "m": {
+   "id": "a1000000-0000-4000-8000-000000950060",
+   "course": "m",
+   "events": []
+  },
+  "n": {
+   "id": "a1000000-0000-4000-8000-000000950061",
+   "course": "n",
+   "events": []
+  },
+  "o": {
+   "id": "a1000000-0000-4000-8000-000000950062",
+   "course": "o",
+   "events": []
+  },
+  "f": {
+   "id": "a1000000-0000-4000-8000-000000950063",
+   "course": "f",
+   "events": []
+  },
+  "p": {
+   "id": "a1000000-0000-4000-8000-000000950402",
+   "course": "p",
+   "events": [
+    {
+     "event_id": "vecchio-1",
+     "title": "Vecchia",
+     "start": "2020-06-08T09:00:00.000Z",
+     "end": "2020-06-08T10:00:00.000Z",
+     "extendedProps": "nota"
+    },
+    {
+     "event_id": 7,
+     "title": "Vecchia",
+     "start": "2020-06-15T09:00:00.000Z",
+     "end": "2020-06-15T10:00:00.000Z",
+     "extendedProps": [
+      "a",
+      {
+       "b": 1
+      }
+     ]
+    },
+    {
+     "event_id": 1.5,
+     "title": "Vecchia",
+     "start": "2020-06-22T09:00:00.000Z",
+     "end": "2020-06-22T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": "esterno"
+     }
+    },
+    {
+     "event_id": [
+      "x"
+     ],
+     "title": "Vecchia",
+     "start": "2020-06-29T09:00:00.000Z",
+     "end": "2020-06-29T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": [
+       "esterno",
+       [
+        "x"
+       ],
+       {
+        "instructor_id": "a1000000-0000-4000-8000-000000950001"
+       }
+      ]
+     }
+    },
+    {
+     "event_id": null,
+     "title": "Vecchia",
+     "start": "2020-07-01T09:00:00.000Z",
+     "end": "2020-07-01T10:00:00.000Z",
+     "extendedProps": {
+      "description": "senza id"
+     }
+    },
+    {
+     "event_id": {
+      "k": 1
+     },
+     "title": "Vecchia",
+     "start": "2020-07-08T09:00:00.000Z",
+     "end": "2020-07-08T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": 0,
+      "description": "d"
+     }
+    },
+    {
+     "event_id": true,
+     "title": "Vecchia",
+     "start": "2020-07-15T09:00:00.000Z",
+     "end": "2020-07-15T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": {
+       "name": "n"
+      }
+     }
+    },
+    {
+     "event_id": 340282366920938463463374607431768211456,
+     "title": "Vecchia",
+     "start": "2020-07-22T09:00:00.000Z",
+     "end": "2020-07-22T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": []
+     }
+    }
+   ]
+  },
+  "q": {
+   "id": "a1000000-0000-4000-8000-000000950413",
+   "course": "q",
+   "events": [
+    {
+     "event_id": 9,
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z"
+    }
+   ]
+  },
+  "s0": {
+   "id": "a1000000-0000-4000-8000-000000950417",
+   "course": "s0",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950415",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": 5
+    }
+   ]
+  },
+  "s1": {
+   "id": "a1000000-0000-4000-8000-000000950421",
+   "course": "s1",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950419",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": "senza instructor"
+    }
+   ]
+  },
+  "s2": {
+   "id": "a1000000-0000-4000-8000-000000950425",
+   "course": "s2",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950423",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": [
+      "instructor"
+     ]
+    }
+   ]
+  },
+  "s3": {
+   "id": "a1000000-0000-4000-8000-000000950429",
+   "course": "s3",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950427",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": "instructor_id esterno"
+     }
+    }
+   ]
+  },
+  "s4": {
+   "id": "a1000000-0000-4000-8000-000000950433",
+   "course": "s4",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950431",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": 3
+     }
+    }
+   ]
+  },
+  "s5": {
+   "id": "a1000000-0000-4000-8000-000000950437",
+   "course": "s5",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950435",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": [
+       5
+      ]
+     }
+    }
+   ]
+  },
+  "s6": {
+   "id": "a1000000-0000-4000-8000-000000950441",
+   "course": "s6",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950439",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": [
+       "instructor_id"
+      ]
+     }
+    }
+   ]
+  },
+  "s7": {
+   "id": "a1000000-0000-4000-8000-000000950445",
+   "course": "s7",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950443",
+     "title": "Vecchia",
+     "start": "2020-06-01T09:00:00.000Z",
+     "end": "2020-06-01T10:00:00.000Z",
+     "extendedProps": {
+      "instructor": [
+       "x",
+       "instructor_id y"
+      ]
+     }
+    }
+   ]
+  },
+  "u": {
+   "id": "a1000000-0000-4000-8000-000000950602",
+   "course": "u",
+   "events": []
+  },
+  "w": {
+   "id": "a1000000-0000-4000-8000-000000950615",
+   "course": "w",
+   "events": []
+  },
+  "r": {
+   "id": "a1000000-0000-4000-8000-000000950449",
+   "course": "r",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950447",
+     "title": "Vecchia",
+     "start": "２０２０-06-1５T0９:3０:0０.000Z",
+     "end": "2020-06-15T10:00:00.000Z"
+    }
+   ]
+  },
+  "s_month": {
+   "id": "a1000000-0000-4000-8000-000000950453",
+   "course": "s_month",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950451",
+     "title": "Vecchia",
+     "start": "2020-０６-15T09:30:00.000Z",
+     "end": "2020-06-15T10:00:00.000Z"
+    }
+   ]
+  },
+  "y999": {
+   "id": "a1000000-0000-4000-8000-000000950457",
+   "course": "y999",
+   "events": [
+    {
+     "event_id": "a1000000-0000-4000-8000-000000950455",
+     "title": "Vecchia",
+     "start": "0999-06-15T09:30:00.000Z",
+     "end": "0999-06-15T10:00:00.000Z"
+    }
+   ]
+  }
+ },
+ "days": {
+  "a1": {
+   "id": "a1000000-0000-4000-8000-000000950064",
+   "registry": "a",
+   "title": "Lezione",
+   "date": "2020-03-02T17:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+    }
+   ],
+   "expected_absences": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950035"
+    },
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950036"
+    }
+   ],
+   "associated_event": "a1000000-0000-4000-8000-000000950052"
+  },
+  "a2": {
+   "id": "a1000000-0000-4000-8000-000000950065",
+   "registry": "a",
+   "title": "Libera",
+   "date": "2020-03-09T17:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950053"
+  },
+  "a3": {
+   "id": "a1000000-0000-4000-8000-000000950066",
+   "registry": "a",
+   "title": "Gruppo",
+   "date": "2020-03-16T17:00:00Z",
+   "attendees": [],
+   "expected_absences": [],
+   "associated_event": "a1000000-0000-4000-8000-000000950054"
+  },
+  "a4": {
+   "id": "a1000000-0000-4000-8000-000000950067",
+   "registry": "a",
+   "title": "Spostata",
+   "date": "2020-03-25T10:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950054"
+  },
+  "a5": {
+   "id": "a1000000-0000-4000-8000-000000950068",
+   "registry": "a",
+   "title": "Doppia",
+   "date": "2020-03-02T17:45:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950053"
+  },
+  "a6": {
+   "id": "a1000000-0000-4000-8000-000000950069",
+   "registry": "a",
+   "title": "Futura",
+   "date": "2031-01-10T10:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+    },
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+    }
+   ],
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950053"
+  },
+  "b0": {
+   "id": "a1000000-0000-4000-8000-000000950070",
+   "registry": "b",
+   "title": "Yoga bis",
+   "date": "2020-04-06T18:20:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950055"
+  },
+  "b1": {
+   "id": "a1000000-0000-4000-8000-000000950071",
+   "registry": "b",
+   "title": "Yoga",
+   "date": "2020-04-06T18:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+    }
+   ],
+   "expected_absences": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+    }
+   ],
+   "associated_event": null
+  },
+  "b2": {
+   "id": "a1000000-0000-4000-8000-000000950072",
+   "registry": "b",
+   "title": "Yoga due",
+   "date": "2020-04-13T18:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "c1": {
+   "id": "a1000000-0000-4000-8000-000000950073",
+   "registry": "c",
+   "title": "Pilates base",
+   "date": "2020-05-04T09:00:00Z",
+   "attendees": [],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "c2": {
+   "id": "a1000000-0000-4000-8000-000000950074",
+   "registry": "c",
+   "title": "Pilates due",
+   "date": "2020-05-11T09:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
+    }
+   ],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "c3": {
+   "id": "a1000000-0000-4000-8000-000000950075",
+   "registry": "c",
+   "title": "Pilates tre",
+   "date": "2020-05-18T09:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000959999"
+    }
+   ],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "c4": {
+   "id": "a1000000-0000-4000-8000-000000950076",
+   "registry": "c",
+   "title": "Pilates quattro",
+   "date": "2020-05-25T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "m_today": {
+   "id": "a1000000-0000-4000-8000-000000950077",
+   "registry": "m",
+   "title": "Corsa oggi",
+   "date": "{today}T12:00:00Z",
+   "attendees": [],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "n_today": {
+   "id": "a1000000-0000-4000-8000-000000950078",
+   "registry": "n",
+   "title": "Danza oggi",
+   "date": "{today}T15:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "o_today": {
+   "id": "a1000000-0000-4000-8000-000000950079",
+   "registry": "o",
+   "title": "Tennis oggi",
+   "date": "{today}T08:00:00Z",
+   "attendees": [],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "f_today": {
+   "id": "a1000000-0000-4000-8000-000000950080",
+   "registry": "f",
+   "title": "Estero oggi",
+   "date": "{today}T08:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "f_old": {
+   "id": "a1000000-0000-4000-8000-000000950081",
+   "registry": "f",
+   "title": "Estero vecchio",
+   "date": "2020-02-01T08:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950049"
+    }
+   ],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p0": {
+   "id": "a1000000-0000-4000-8000-000000950403",
+   "registry": "p",
+   "title": "Giorno p0",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p1": {
+   "id": "a1000000-0000-4000-8000-000000950404",
+   "registry": "p",
+   "title": "Giorno p1",
+   "date": "2020-06-08T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p2": {
+   "id": "a1000000-0000-4000-8000-000000950405",
+   "registry": "p",
+   "title": "Giorno p2",
+   "date": "2020-06-15T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p3": {
+   "id": "a1000000-0000-4000-8000-000000950406",
+   "registry": "p",
+   "title": "Giorno p3",
+   "date": "2020-06-22T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p4": {
+   "id": "a1000000-0000-4000-8000-000000950407",
+   "registry": "p",
+   "title": "Giorno p4",
+   "date": "2020-06-29T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p5": {
+   "id": "a1000000-0000-4000-8000-000000950408",
+   "registry": "p",
+   "title": "Giorno p5",
+   "date": "2020-07-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p6": {
+   "id": "a1000000-0000-4000-8000-000000950409",
+   "registry": "p",
+   "title": "Giorno p6",
+   "date": "2020-07-08T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p7": {
+   "id": "a1000000-0000-4000-8000-000000950410",
+   "registry": "p",
+   "title": "Giorno p7",
+   "date": "2020-07-15T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "p8": {
+   "id": "a1000000-0000-4000-8000-000000950411",
+   "registry": "p",
+   "title": "Giorno p8",
+   "date": "2020-07-22T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "q1": {
+   "id": "a1000000-0000-4000-8000-000000950414",
+   "registry": "q",
+   "title": "Giorno q1",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "s0": {
+   "id": "a1000000-0000-4000-8000-000000950418",
+   "registry": "s0",
+   "title": "Giorno s0",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950415"
+  },
+  "s1": {
+   "id": "a1000000-0000-4000-8000-000000950422",
+   "registry": "s1",
+   "title": "Giorno s1",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950419"
+  },
+  "s2": {
+   "id": "a1000000-0000-4000-8000-000000950426",
+   "registry": "s2",
+   "title": "Giorno s2",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950423"
+  },
+  "s3": {
+   "id": "a1000000-0000-4000-8000-000000950430",
+   "registry": "s3",
+   "title": "Giorno s3",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950427"
+  },
+  "s4": {
+   "id": "a1000000-0000-4000-8000-000000950434",
+   "registry": "s4",
+   "title": "Giorno s4",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950431"
+  },
+  "s5": {
+   "id": "a1000000-0000-4000-8000-000000950438",
+   "registry": "s5",
+   "title": "Giorno s5",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950435"
+  },
+  "s6": {
+   "id": "a1000000-0000-4000-8000-000000950442",
+   "registry": "s6",
+   "title": "Giorno s6",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950439"
+  },
+  "s7": {
+   "id": "a1000000-0000-4000-8000-000000950446",
+   "registry": "s7",
+   "title": "Giorno s7",
+   "date": "2020-06-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": "a1000000-0000-4000-8000-000000950443"
+  },
+  "u1": {
+   "id": "a1000000-0000-4000-8000-000000950603",
+   "registry": "u",
+   "title": "Giorno u1",
+   "date": "2020-07-06T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "uA": {
+   "id": "00000000-0000-0000-0000-00000000002b",
+   "registry": "u",
+   "title": "Giorno uA",
+   "date": "2020-07-07T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u2": {
+   "id": "a1000000-0000-4000-8000-000000950604",
+   "registry": "u",
+   "title": "Giorno u2",
+   "date": "2020-07-08T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u3": {
+   "id": "a1000000-0000-4000-8000-000000950605",
+   "registry": "u",
+   "title": "Giorno u3",
+   "date": "2020-07-09T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u_today": {
+   "id": "a1000000-0000-4000-8000-000000950606",
+   "registry": "u",
+   "title": "Giorno u_today",
+   "date": "{today}T10:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u_big": {
+   "id": "a1000000-0000-4000-8000-000000950607",
+   "registry": "u",
+   "title": "Giorno u_big",
+   "date": "2020-07-10T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u9": {
+   "id": "a1000000-0000-4000-8000-000000950608",
+   "registry": "u",
+   "title": "Giorno u9",
+   "date": "0999-03-01T09:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950631"
+    }
+   ],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u12": {
+   "id": "a1000000-0000-4000-8000-000000950609",
+   "registry": "u",
+   "title": "Giorno u12",
+   "date": "0999-04-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u10": {
+   "id": "a1000000-0000-4000-8000-000000950610",
+   "registry": "u",
+   "title": "Giorno u10",
+   "date": "2020-07-13T09:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950635"
+    }
+   ],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u11": {
+   "id": "a1000000-0000-4000-8000-000000950611",
+   "registry": "u",
+   "title": "Giorno u11",
+   "date": "2020-07-14T09:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": "a1000000-0000-4000-8000-000000950639"
+    }
+   ],
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u13": {
+   "id": "a1000000-0000-4000-8000-000000950612",
+   "registry": "u",
+   "title": "Giorno u13",
+   "date": "0999-05-01T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "u14": {
+   "id": "a1000000-0000-4000-8000-000000950613",
+   "registry": "u",
+   "title": "Giorno u14",
+   "date": "2020-07-15T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "wE": {
+   "id": "a1000000-0000-4000-8000-000000950616",
+   "registry": "w",
+   "title": "Giorno wE",
+   "date": "2020-08-03T09:00:00Z",
+   "attendees": [
+    {
+     "course_subscription_id": 42
+    }
+   ],
+   "expected_absences": [
+    {
+     "course_subscription_id": 42
+    },
+    {
+     "course_subscription_id": 99
+    }
+   ],
+   "associated_event": null
+  },
+  "wN": {
+   "id": "a1000000-0000-4000-8000-000000950617",
+   "registry": "w",
+   "title": "Giorno wN",
+   "date": "2020-08-04T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "r1": {
+   "id": "a1000000-0000-4000-8000-000000950450",
+   "registry": "r",
+   "title": "Giorno r1",
+   "date": "2020-06-15T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "s_month1": {
+   "id": "a1000000-0000-4000-8000-000000950454",
+   "registry": "s_month",
+   "title": "Giorno s_month1",
+   "date": "2020-06-15T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  },
+  "y1": {
+   "id": "a1000000-0000-4000-8000-000000950458",
+   "registry": "y999",
+   "title": "Giorno y1",
+   "date": "0999-06-15T09:00:00Z",
+   "attendees": null,
+   "expected_absences": null,
+   "associated_event": null
+  }
+ },
+ "holdings": {
+  "anna_1": {
+   "id": "a1000000-0000-4000-8000-000000950082",
+   "subscription": "anna",
+   "cs": [
+    "c_anna"
+   ],
+   "created": "2026-01-02T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 2,
+    "lessons_registry": []
+   }
+  },
+  "anna_2": {
+   "id": "a1000000-0000-4000-8000-000000950083",
+   "subscription": "anna",
+   "cs": [],
+   "created": "2026-01-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 5,
+    "lessons_registry": [
+     {
+      "date": "2020-04-01 09:00:00+00:00",
+      "course": {
+       "id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      },
+      "title": "vecchia"
+     },
+     {
+      "date": "2020-05-11 09:00:00+00:00",
+      "course": {
+       "id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      },
+      "title": "Pilates due"
+     }
+    ]
+   }
+  },
+  "bruno": {
+   "id": "a1000000-0000-4000-8000-000000950084",
+   "subscription": "bruno",
+   "cs": [
+    "c_bruno"
+   ],
+   "created": "2026-01-03T10:00:00Z",
+   "payment": "unpaid",
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 3,
+    "lessons_registry": []
+   }
+  },
+  "dario": {
+   "id": "a1000000-0000-4000-8000-000000950085",
+   "subscription": "dario",
+   "cs": [
+    "c_dario"
+   ],
+   "created": "2026-01-04T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 0,
+    "lessons_registry": []
+   }
+  },
+  "elena": {
+   "id": "a1000000-0000-4000-8000-000000950086",
+   "subscription": "elena",
+   "cs": [
+    "n_elena"
+   ],
+   "created": "2026-01-05T10:00:00Z",
+   "payment": "paid",
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 3,
+    "lessons_registry": []
+   }
+  },
+  "gina": {
+   "id": "a1000000-0000-4000-8000-000000950087",
+   "subscription": "gina",
+   "cs": [],
+   "created": "2026-01-06T10:00:00Z",
+   "payment": "unpaid",
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 4,
+    "lessons_registry": []
+   }
+  },
+  "hugo": {
+   "id": "a1000000-0000-4000-8000-000000950088",
+   "subscription": "hugo",
+   "cs": [],
+   "created": "2026-01-07T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 0,
+    "lessons_registry": []
+   }
+  },
+  "franco": {
+   "id": "a1000000-0000-4000-8000-000000950089",
+   "subscription": "franco",
+   "cs": [
+    "c_franco"
+   ],
+   "created": "2026-01-08T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 3,
+    "lessons_registry": []
+   }
+  },
+  "ugo": {
+   "id": "a1000000-0000-4000-8000-000000950620",
+   "subscription": "ugo",
+   "cs": [],
+   "created": "2026-02-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 2.5,
+    "lessons_registry": []
+   }
+  },
+  "vera": {
+   "id": "a1000000-0000-4000-8000-000000950624",
+   "subscription": "vera",
+   "cs": [],
+   "created": "2026-02-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": true,
+    "lessons_registry": []
+   }
+  },
+  "wanda": {
+   "id": "a1000000-0000-4000-8000-000000950628",
+   "subscription": "wanda",
+   "cs": [],
+   "created": "2026-02-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 3.0,
+    "lessons_registry": []
+   }
+  },
+  "xena": {
+   "id": "a1000000-0000-4000-8000-000000950632",
+   "subscription": "xena",
+   "cs": [],
+   "created": "2026-02-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 1,
+    "lessons_registry": [
+     {
+      "date": "0999-03-01 09:00:00+00:00",
+      "attendance_day_id": "a1000000-0000-4000-8000-000000950608",
+      "course": {
+       "id": "a1000000-0000-4000-8000-000000950601",
+       "title": "Judo"
+      },
+      "title": "Giorno u9"
+     }
+    ]
+   }
+  },
+  "yara": {
+   "id": "a1000000-0000-4000-8000-000000950636",
+   "subscription": "yara",
+   "cs": [],
+   "created": "2026-02-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 1,
+    "lessons_registry": [
+     {
+      "date": "２０２０-07-13 09:00:00+00:00",
+      "attendance_day_id": null,
+      "course": {
+       "id": "a1000000-0000-4000-8000-000000950601",
+       "title": "Judo"
+      },
+      "title": "x"
+     }
+    ]
+   }
+  },
+  "zoe": {
+   "id": "a1000000-0000-4000-8000-000000950640",
+   "subscription": "zoe",
+   "cs": [],
+   "created": "2026-02-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 1,
+    "lessons_registry": [
+     {
+      "date": "2020-07-14T09:00:00",
+      "course": {
+       "id": "a1000000-0000-4000-8000-000000950601",
+       "title": "Judo"
+      },
+      "title": "y"
+     }
+    ]
+   }
+  },
+  "ned": {
+   "id": "a1000000-0000-4000-8000-000000950644",
+   "subscription": "ned",
+   "cs": [],
+   "created": "2026-02-01T10:00:00Z",
+   "payment": null,
+   "meta": {
+    "lessons_counter": 10,
+    "lessons_left": 2,
+    "lessons_registry": []
+   }
+  }
+ },
+ "cases": [
+  {
+   "name": "course-attendance-history-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [
+      {
+       "title": "Futura",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "title": "Nuoto"
+       },
+       "date": "2031-01-10T10:00:00Z"
+      },
+      {
+       "title": "Futura",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "title": "Nuoto"
+       },
+       "date": "2031-01-10T10:00:00Z"
+      },
+      {
+       "title": "Pilates due",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950027",
+        "title": "Pilates"
+       },
+       "date": "2020-05-11T09:00:00Z"
+      },
+      {
+       "title": "Yoga",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "title": "Yoga"
+       },
+       "date": "2020-04-06T18:00:00Z"
+      },
+      {
+       "title": "Lezione",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "title": "Nuoto"
+       },
+       "date": "2020-03-02T17:00:00Z"
+      }
+     ],
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950025",
+       "title": "Nuoto"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "title": "Yoga"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950028",
+       "title": "Corsa"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950029",
+       "title": "Danza"
+      }
+     ],
+     "stats": {
+      "total_attendance_last_30_days": 2,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 5,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [
+      {
+       "title": "Futura",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "title": "Nuoto"
+       },
+       "date": "2031-01-10T10:00:00Z"
+      },
+      {
+       "title": "Futura",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "title": "Nuoto"
+       },
+       "date": "2031-01-10T10:00:00Z"
+      },
+      {
+       "title": "Pilates due",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950027",
+        "title": "Pilates"
+       },
+       "date": "2020-05-11T09:00:00Z"
+      },
+      {
+       "title": "Yoga",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "title": "Yoga"
+       },
+       "date": "2020-04-06T18:00:00Z"
+      },
+      {
+       "title": "Lezione",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "title": "Nuoto"
+       },
+       "date": "2020-03-02T17:00:00Z"
+      }
+     ],
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950025",
+       "title": "Nuoto"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950026",
+       "title": "Yoga"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950028",
+       "title": "Corsa"
+      },
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950029",
+       "title": "Danza"
+      }
+     ],
+     "stats": {
+      "total_attendance_last_30_days": 2,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 5,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-course-filter",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950027",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [
+      {
+       "title": "Pilates due",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950027",
+        "title": "Pilates"
+       },
+       "date": "2020-05-11T09:00:00Z"
+      }
+     ],
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      }
+     ],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 1,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-course-filter-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950033",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [],
+     "courses": [],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 0,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-course-filter-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=nope",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-athlete-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950018/attendance",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [],
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      }
+     ],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 0,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-athlete-not-own",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [],
+     "courses": [],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 0,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-owner-other-association",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950024/attendance",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [],
+     "courses": [],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 0,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-owner-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000959998/attendance",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [],
+     "courses": [],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 0,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-group-hidden",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [],
+     "courses": [],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 0,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-group-malformed-ignored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950027",
+   "headers": {
+    "X-Group-Id": "nope"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [
+      {
+       "title": "Pilates due",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950027",
+        "title": "Pilates"
+       },
+       "date": "2020-05-11T09:00:00Z"
+      }
+     ],
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      }
+     ],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 1,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-scoped-athlete-own",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950018/attendance",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [],
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      }
+     ],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 0,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-scoped-athlete-other",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-scoped-full",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance?course=a1000000-0000-4000-8000-000000950027",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "attendance_days": [
+      {
+       "title": "Pilates due",
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950074",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950059",
+       "course": {
+        "course_id": "a1000000-0000-4000-8000-000000950027",
+        "title": "Pilates"
+       },
+       "date": "2020-05-11T09:00:00Z"
+      }
+     ],
+     "courses": [
+      {
+       "course_id": "a1000000-0000-4000-8000-000000950027",
+       "title": "Pilates"
+      }
+     ],
+     "stats": {
+      "total_attendance_last_30_days": 0,
+      "total_absences_last_30_days": 0,
+      "total_attendance": 1,
+      "total_absences": 0
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/nope/attendance",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-restricted",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-history-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-history-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000950016/attendance",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Attendance",
+    "description": "API endpoint to get the attendance registry for the current course",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {
+        "title": "Lezione",
+        "allDay": false,
+        "extended_props": {
+         "instructor": {
+          "instructor_id": "a1000000-0000-4000-8000-000000950001",
+          "label": "Ivo Insegnante"
+         },
+         "description": "Prima"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+        "date": "2020-03-02T17:00:00Z",
+        "start": "2020-03-02T17:00:00.000Z",
+        "end": "2020-03-02T18:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "total_attendees": 1,
+        "total_expected_absences": 2,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         },
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
+          "subscription": {
+           "associate": {
+            "first_name": "Bruno",
+            "last_name": "Verdi",
+            "tax_code": "TAX0000000000001",
+            "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2030-12-31} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 0,
+        "attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+         }
+        ],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-02T17:00:00Z",
+       "start": "2020-03-02T17:00:00.000Z",
+       "end": "2020-03-02T18:00:00.000Z",
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        }
+       ],
+       "expected_absences": [
+        "Bruno Verdi",
+        "<rimosso>"
+       ]
+      },
+      {
+       "title": "Doppia",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-02T17:45:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Libera",
+       "allDay": true,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-09T17:00:00Z",
+       "start": "2020-03-09T17:00:00.000Z",
+       "end": "2020-03-09T18:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Gruppo",
+       "allDay": false,
+       "extended_props": {
+        "title": "Gruppo",
+        "allDay": false,
+        "extended_props": {
+         "instructor": [
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950001",
+           "label": "Ivo Insegnante"
+          },
+          {
+           "name": "esterno"
+          },
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950002"
+          }
+         ]
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+        "date": "2020-03-16T17:00:00Z",
+        "start": "2020-03-16T17:30:00.000Z",
+        "end": "2020-03-16T18:30:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         },
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
+          "subscription": {
+           "associate": {
+            "first_name": "Bruno",
+            "last_name": "Verdi",
+            "tax_code": "TAX0000000000001",
+            "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2030-12-31} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 2,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-16T17:00:00Z",
+       "start": "2020-03-16T17:30:00.000Z",
+       "end": "2020-03-16T18:30:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Spostata",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-25T10:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Futura",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2031-01-10T10:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        },
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        }
+       ],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {
+        "title": "Lezione",
+        "allDay": false,
+        "extended_props": {
+         "instructor": {
+          "instructor_id": "a1000000-0000-4000-8000-000000950001",
+          "label": "Ivo Insegnante"
+         },
+         "description": "Prima"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+        "date": "2020-03-02T17:00:00Z",
+        "start": "2020-03-02T17:00:00.000Z",
+        "end": "2020-03-02T18:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "total_attendees": 1,
+        "total_expected_absences": 2,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         },
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
+          "subscription": {
+           "associate": {
+            "first_name": "Bruno",
+            "last_name": "Verdi",
+            "tax_code": "TAX0000000000001",
+            "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2030-12-31} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 0,
+        "attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+         }
+        ],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-02T17:00:00Z",
+       "start": "2020-03-02T17:00:00.000Z",
+       "end": "2020-03-02T18:00:00.000Z",
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        }
+       ],
+       "expected_absences": [
+        "Bruno Verdi",
+        "<rimosso>"
+       ]
+      },
+      {
+       "title": "Doppia",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-02T17:45:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Libera",
+       "allDay": true,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-09T17:00:00Z",
+       "start": "2020-03-09T17:00:00.000Z",
+       "end": "2020-03-09T18:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Gruppo",
+       "allDay": false,
+       "extended_props": {
+        "title": "Gruppo",
+        "allDay": false,
+        "extended_props": {
+         "instructor": [
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950001",
+           "label": "Ivo Insegnante"
+          },
+          {
+           "name": "esterno"
+          },
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950002"
+          }
+         ]
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+        "date": "2020-03-16T17:00:00Z",
+        "start": "2020-03-16T17:30:00.000Z",
+        "end": "2020-03-16T18:30:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         },
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
+          "subscription": {
+           "associate": {
+            "first_name": "Bruno",
+            "last_name": "Verdi",
+            "tax_code": "TAX0000000000001",
+            "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2030-12-31} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 2,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-16T17:00:00Z",
+       "start": "2020-03-16T17:30:00.000Z",
+       "end": "2020-03-16T18:30:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Spostata",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-25T10:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Futura",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2031-01-10T10:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        },
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        }
+       ],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-scoped-full",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Lezione",
+       "allDay": false,
+       "extended_props": {
+        "title": "Lezione",
+        "allDay": false,
+        "extended_props": {
+         "instructor": {
+          "instructor_id": "a1000000-0000-4000-8000-000000950001",
+          "label": "Ivo Insegnante"
+         },
+         "description": "Prima"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+        "date": "2020-03-02T17:00:00Z",
+        "start": "2020-03-02T17:00:00.000Z",
+        "end": "2020-03-02T18:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "total_attendees": 1,
+        "total_expected_absences": 2,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         },
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
+          "subscription": {
+           "associate": {
+            "first_name": "Bruno",
+            "last_name": "Verdi",
+            "tax_code": "TAX0000000000001",
+            "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2030-12-31} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 0,
+        "attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+         }
+        ],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950064",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-02T17:00:00Z",
+       "start": "2020-03-02T17:00:00.000Z",
+       "end": "2020-03-02T18:00:00.000Z",
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        }
+       ],
+       "expected_absences": [
+        "Bruno Verdi",
+        "<rimosso>"
+       ]
+      },
+      {
+       "title": "Doppia",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950068",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-02T17:45:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Libera",
+       "allDay": true,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950065",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-09T17:00:00Z",
+       "start": "2020-03-09T17:00:00.000Z",
+       "end": "2020-03-09T18:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Gruppo",
+       "allDay": false,
+       "extended_props": {
+        "title": "Gruppo",
+        "allDay": false,
+        "extended_props": {
+         "instructor": [
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950001",
+           "label": "Ivo Insegnante"
+          },
+          {
+           "name": "esterno"
+          },
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950002"
+          }
+         ]
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+        "date": "2020-03-16T17:00:00Z",
+        "start": "2020-03-16T17:30:00.000Z",
+        "end": "2020-03-16T18:30:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950025",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950034",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         },
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950035",
+          "subscription": {
+           "associate": {
+            "first_name": "Bruno",
+            "last_name": "Verdi",
+            "tax_code": "TAX0000000000001",
+            "medical_label": "<span class=\"text-success font-weight-boldest\"><i class=\"ph-bold ph-first-aid-kit\"></i>{until:2030-12-31} rimanenti</span><span class=\"badge badge-info ml-1\" title=\"Certificato Medico Agonistico\">AG</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 2,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950066",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-16T17:00:00Z",
+       "start": "2020-03-16T17:30:00.000Z",
+       "end": "2020-03-16T18:30:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Spostata",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950067",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2020-03-25T10:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Futura",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950069",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950057",
+       "date": "2031-01-10T10:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        },
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950034"
+        }
+       ],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-links-through-extended-props",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Yoga",
+       "allDay": false,
+       "extended_props": {
+        "title": "Yoga",
+        "allDay": false,
+        "extended_props": {
+         "description": "Respiro"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+        "date": "2020-04-06T18:00:00Z",
+        "start": "2020-04-06T18:00:00.000Z",
+        "end": "2020-04-06T19:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "total_attendees": 1,
+        "total_expected_absences": 1,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 0,
+        "attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+         }
+        ],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-06T18:00:00Z",
+       "start": "2020-04-06T18:00:00.000Z",
+       "end": "2020-04-06T19:00:00.000Z",
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+        }
+       ],
+       "expected_absences": [
+        "Anna Rossi"
+       ]
+      },
+      {
+       "title": "Yoga bis",
+       "allDay": false,
+       "extended_props": {
+        "title": "Yoga bis",
+        "allDay": false,
+        "extended_props": {
+         "description": "Respiro"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+        "date": "2020-04-06T18:20:00Z",
+        "start": "2020-04-06T18:00:00.000Z",
+        "end": "2020-04-06T19:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 1,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-06T18:20:00Z",
+       "start": "2020-04-06T18:00:00.000Z",
+       "end": "2020-04-06T19:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Yoga due",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950072",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-13T18:00:00Z",
+       "start": "2020-04-13T18:00:00.000Z",
+       "end": "2020-04-13T19:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": {
+    "days": {
+     "b1": {
+      "associated_event": "a1000000-0000-4000-8000-000000950055",
+      "expected_absences": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
+        "associate_name": "Anna Rossi"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "b1",
+      "changes": {
+       "associated_event": [
+        "None",
+        "a1000000-0000-4000-8000-000000950055"
+       ],
+       "expected_absences": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950037\"}]",
+        "[{\"associate_name\": \"Anna Rossi\", \"course_subscription_id\": \"a1000000-0000-4000-8000-000000950037\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   }
+  },
+  {
+   "name": "course-attendance-attendees-maps-unlinked",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Yoga",
+       "allDay": false,
+       "extended_props": {
+        "title": "Yoga",
+        "allDay": false,
+        "extended_props": {
+         "description": "Respiro"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+        "date": "2020-04-06T18:00:00Z",
+        "start": "2020-04-06T18:00:00.000Z",
+        "end": "2020-04-06T19:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "total_attendees": 1,
+        "total_expected_absences": 1,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 0,
+        "attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+         }
+        ],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-06T18:00:00Z",
+       "start": "2020-04-06T18:00:00.000Z",
+       "end": "2020-04-06T19:00:00.000Z",
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+        }
+       ],
+       "expected_absences": [
+        "Anna Rossi"
+       ]
+      },
+      {
+       "title": "Yoga bis",
+       "allDay": false,
+       "extended_props": {
+        "title": "Yoga bis",
+        "allDay": false,
+        "extended_props": {
+         "description": "Respiro"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+        "date": "2020-04-06T18:20:00Z",
+        "start": "2020-04-06T18:00:00.000Z",
+        "end": "2020-04-06T19:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 1,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-06T18:20:00Z",
+       "start": "2020-04-06T18:00:00.000Z",
+       "end": "2020-04-06T19:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Yoga due",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950072",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-13T18:00:00Z",
+       "start": "2020-04-13T18:00:00.000Z",
+       "end": "2020-04-13T19:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": {
+    "days": {
+     "b2": {
+      "associated_event": "a1000000-0000-4000-8000-000000950056"
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "b2",
+      "changes": {
+       "associated_event": [
+        "None",
+        "a1000000-0000-4000-8000-000000950056"
+       ]
+      },
+      "actor": "full_collaborator",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   }
+  },
+  {
+   "name": "course-attendance-attendees-linked-no-writes",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950026/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Yoga",
+       "allDay": false,
+       "extended_props": {
+        "title": "Yoga",
+        "allDay": false,
+        "extended_props": {
+         "description": "Respiro"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+        "date": "2020-04-06T18:00:00Z",
+        "start": "2020-04-06T18:00:00.000Z",
+        "end": "2020-04-06T19:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "total_attendees": 1,
+        "total_expected_absences": 1,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 0,
+        "attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+         }
+        ],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950071",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-06T18:00:00Z",
+       "start": "2020-04-06T18:00:00.000Z",
+       "end": "2020-04-06T19:00:00.000Z",
+       "attendees": [
+        {
+         "course_subscription_id": "a1000000-0000-4000-8000-000000950037"
+        }
+       ],
+       "expected_absences": [
+        "Anna Rossi"
+       ]
+      },
+      {
+       "title": "Yoga bis",
+       "allDay": false,
+       "extended_props": {
+        "title": "Yoga bis",
+        "allDay": false,
+        "extended_props": {
+         "description": "Respiro"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+        "date": "2020-04-06T18:20:00Z",
+        "start": "2020-04-06T18:00:00.000Z",
+        "end": "2020-04-06T19:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950026",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [
+         {
+          "course_subscription_id": "a1000000-0000-4000-8000-000000950037",
+          "subscription": {
+           "associate": {
+            "first_name": "Anna",
+            "last_name": "Rossi",
+            "tax_code": "TAX0000000000000",
+            "medical_label": "<span class=\"text-warning font-weight-boldest\">Mancante da {missing:2026-01-10T10:00:00Z}</span>"
+           }
+          }
+         }
+        ],
+        "total_expected_total": 1,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950070",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-06T18:20:00Z",
+       "start": "2020-04-06T18:00:00.000Z",
+       "end": "2020-04-06T19:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Yoga due",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950072",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950058",
+       "date": "2020-04-13T18:00:00Z",
+       "start": "2020-04-13T18:00:00.000Z",
+       "end": "2020-04-13T19:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-without-registry",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950031/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": []
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-deleted-course",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950032/attendees",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-foreign-course",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950033/attendees",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-unknown-course",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000959998/attendees",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-group-hidden",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 404,
+   "response": {
+    "detail": "Course not found."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/nope/attendees",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-restricted",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.attendance.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-attendees-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/a1000000-0000-4000-8000-000000950025/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Attendees",
+    "description": "API endpoint to get the attendance registry for the current course",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-update-adds-attendee-consumes-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "c1": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "anna_1": {
+      "lessons_counter": 10,
+      "lessons_left": 1,
+      "lessons_registry": [
+       {
+        "date": "2020-05-04 09:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950073",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950027",
+         "title": "Pilates"
+        },
+        "title": "Pilates base"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "anna_1",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950073\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "c1",
+      "changes": {
+       "attendees": [
+        "[]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950038\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-same-attendees-no-change",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-removes-attendee-returns-lesson",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "c1": {
+      "attendees": []
+     }
+    },
+    "holdings": {
+     "anna_1": {
+      "lessons_counter": 10,
+      "lessons_left": 2,
+      "lessons_registry": []
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "anna_1",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950073\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}"
+       ]
+      },
+      "actor": "full_collaborator",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "c1",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950038\"}]",
+        "[]"
+       ]
+      },
+      "actor": "full_collaborator",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-unpaid-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "msg": "Il carnet non è ancora stato pagato."
+   },
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950039"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-finished-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "message": "Carnet is already finished.",
+    "associate_name": "Dario Neri"
+   },
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950040"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-partial-keeps-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "msg": "Il carnet non è ancora stato pagato."
+   },
+   "effect": {
+    "days": {},
+    "holdings": {
+     "anna_1": {
+      "lessons_counter": 10,
+      "lessons_left": 1,
+      "lessons_registry": [
+       {
+        "date": "2020-05-04 09:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950073",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950027",
+         "title": "Pilates"
+        },
+        "title": "Pilates base"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "anna_1",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950073\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-04 09:00:00+00:00\", \"title\": \"Pilates base\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950038"
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950039"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-removes-legacy-lesson",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950074/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "c2": {
+      "attendees": []
+     }
+    },
+    "holdings": {
+     "anna_2": {
+      "lessons_counter": 10,
+      "lessons_left": 6,
+      "lessons_registry": [
+       {
+        "date": "2020-04-01 09:00:00+00:00",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950027",
+         "title": "Pilates"
+        },
+        "title": "vecchia",
+        "attendance_day_id": null
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "anna_2",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 5, \"lessons_registry\": [{\"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-04-01 09:00:00+00:00\", \"title\": \"vecchia\"}, {\"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-05-11 09:00:00+00:00\", \"title\": \"Pilates due\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 6, \"lessons_registry\": [{\"attendance_day_id\": null, \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950027\", \"title\": \"Pilates\"}, \"date\": \"2020-04-01 09:00:00+00:00\", \"title\": \"vecchia\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "c2",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950038\"}]",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-unknown-subscription-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950076/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "c4": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000959997"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "c4",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000959997\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000959997"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-other-association-carnet-unused",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950076/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "c4": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000959997"
+       },
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950051"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "c4",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000959997\"}]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000959997\"}, {\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950051\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000959997"
+     },
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950051"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-removed-unknown-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950075/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-attendee-not-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": [
+     "x"
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-attendee-malformed-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "nope"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-attendee-without-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": [
+     {}
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-attendees-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950074/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": null
+   }
+  },
+  {
+   "name": "course-attendance-update-empty-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Missing or wrong events data."
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-update-extra-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "Missing or wrong events data."
+   ],
+   "effect": null,
+   "body": {
+    "attendees": [],
+    "other": 1
+   }
+  },
+  {
+   "name": "course-attendance-update-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "course-attendance-update-malformed-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/nope/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-update-malformed-day",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/nope/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-update-unknown-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000959998/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Course not found."
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-foreign-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950033/attendees/a1000000-0000-4000-8000-000000950081/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Course not found."
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-without-registry",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950031/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Course Attendance Registry not found."
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-day-of-other-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950064/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Course Event day not found."
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-scoped-full-foreign-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950048"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-restricted",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.attendance.update"
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/course/a1000000-0000-4000-8000-000000950027/attendees/a1000000-0000-4000-8000-000000950073/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Attendees Update",
+    "description": "API endpoint to update an attendance registry event",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-mark-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/nope/mark",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-unknown-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000959998/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Iscrizione non trovata."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-group-hidden",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 404,
+   "response": {
+    "msg": "Iscrizione non trovata."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-selected-day",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950022/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Check-in effettuato! Ciao Ivan Viola."
+   },
+   "effect": {
+    "days": {
+     "m_today": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950046"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "m_today",
+      "changes": {
+       "attendees": [
+        "[]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950046\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950077"
+   }
+  },
+  {
+   "name": "course-attendance-mark-today",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950023/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Check-in effettuato! Ciao Lia Rosa."
+   },
+   "effect": {
+    "days": {
+     "m_today": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950046"
+       },
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950047"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "m_today",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950046\"}]",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950046\"}, {\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950047\"}]"
+       ]
+      },
+      "actor": "full_collaborator",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-already-checked-in",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950023/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Ciao Lia Rosa, hai già effettuato il check-in."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-no-course-today",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Ciao Dario Neri, non hai corsi oggi."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-choose-course",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950016/mark",
+   "headers": {},
+   "status": 207,
+   "response": {
+    "msg": "Seleziona il corso per il check-in.",
+    "data": [
+     {
+      "attendance_day_id": "a1000000-0000-4000-8000-000000950077",
+      "date": "{today}T12:00:00Z",
+      "course": {
+       "course_id": "a1000000-0000-4000-8000-000000950028",
+       "title": "Corsa"
+      }
+     },
+     {
+      "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
+      "date": "{today}T15:00:00Z",
+      "course": {
+       "course_id": "a1000000-0000-4000-8000-000000950029",
+       "title": "Danza"
+      }
+     }
+    ]
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-selected-day-with-attendees",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950016/mark",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950077"
+   }
+  },
+  {
+   "name": "course-attendance-mark-consumes-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950019/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Check-in effettuato! Ciao Elena Grigi."
+   },
+   "effect": {
+    "days": {
+     "n_today": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950043"
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "elena": {
+      "lessons_counter": 10,
+      "lessons_left": 2,
+      "lessons_registry": [
+       {
+        "date": "{today} 15:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950078",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950029",
+         "title": "Danza"
+        },
+        "title": "Danza oggi"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "elena",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 3, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950078\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950029\", \"title\": \"Danza\"}, \"date\": \"{today} 15:00:00+00:00\", \"title\": \"Danza oggi\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "n_today",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950043\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendance_day_id": null
+   }
+  },
+  {
+   "name": "course-attendance-mark-unpaid-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950020/mark",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "msg": "Caro Gina Gialli, non hai ancora pagato il carnet."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-finished-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950021/mark",
+   "headers": {},
+   "status": 412,
+   "response": {
+    "msg": "Caro Hugo Blu, hai finito il carnet."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-other-association-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950024/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Iscrizione non trovata."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-selected-day-other-association",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Giorno di presenza non trovato."
+   },
+   "effect": null,
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950080"
+   }
+  },
+  {
+   "name": "course-attendance-mark-franco-own-association",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950024/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Check-in effettuato! Ciao Franco Esteri."
+   },
+   "effect": {
+    "days": {
+     "f_today": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950048"
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "f_today",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950048\"}]"
+       ]
+      },
+      "actor": "foreign_owner",
+      "index": [
+       "foreign_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-selected-day-without-course-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950079"
+   }
+  },
+  {
+   "name": "course-attendance-mark-selected-day-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Giorno di presenza non trovato."
+   },
+   "effect": null,
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000959998"
+   }
+  },
+  {
+   "name": "course-attendance-mark-selected-day-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendance_day_id": "nope"
+   }
+  },
+  {
+   "name": "course-attendance-mark-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "course-attendance-mark-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Iscrizione non trovata."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Iscrizione non trovata."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-scoped-full-foreign-day",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "attendance_day_id": "a1000000-0000-4000-8000-000000950080"
+   }
+  },
+  {
+   "name": "course-attendance-mark-restricted",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.courses.attendance.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-mark-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Attendance Mark",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-event-ids",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950401/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Giorno p0",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950403",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-01T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p1",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p1",
+        "allDay": false,
+        "extended_props": "nota",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950404",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-06-08T09:00:00Z",
+        "start": "2020-06-08T09:00:00.000Z",
+        "end": "2020-06-08T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950404",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-08T09:00:00Z",
+       "start": "2020-06-08T09:00:00.000Z",
+       "end": "2020-06-08T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p2",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p2",
+        "allDay": false,
+        "extended_props": [
+         "a",
+         {
+          "b": 1
+         }
+        ],
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950405",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-06-15T09:00:00Z",
+        "start": "2020-06-15T09:00:00.000Z",
+        "end": "2020-06-15T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950405",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-15T09:00:00Z",
+       "start": "2020-06-15T09:00:00.000Z",
+       "end": "2020-06-15T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p3",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p3",
+        "allDay": false,
+        "extended_props": {
+         "instructor": "esterno"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950406",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-06-22T09:00:00Z",
+        "start": "2020-06-22T09:00:00.000Z",
+        "end": "2020-06-22T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950406",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-22T09:00:00Z",
+       "start": "2020-06-22T09:00:00.000Z",
+       "end": "2020-06-22T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p4",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p4",
+        "allDay": false,
+        "extended_props": {
+         "instructor": [
+          "esterno",
+          [
+           "x"
+          ],
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950001",
+           "label": "Ivo Insegnante"
+          }
+         ]
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950407",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-06-29T09:00:00Z",
+        "start": "2020-06-29T09:00:00.000Z",
+        "end": "2020-06-29T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950407",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-29T09:00:00Z",
+       "start": "2020-06-29T09:00:00.000Z",
+       "end": "2020-06-29T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p5",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p5",
+        "allDay": false,
+        "extended_props": {
+         "description": "senza id"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950408",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-07-01T09:00:00Z",
+        "start": "2020-07-01T09:00:00.000Z",
+        "end": "2020-07-01T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950408",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-01T09:00:00Z",
+       "start": "2020-07-01T09:00:00.000Z",
+       "end": "2020-07-01T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p6",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p6",
+        "allDay": false,
+        "extended_props": {
+         "instructor": 0,
+         "description": "d"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950409",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-07-08T09:00:00Z",
+        "start": "2020-07-08T09:00:00.000Z",
+        "end": "2020-07-08T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950409",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-08T09:00:00Z",
+       "start": "2020-07-08T09:00:00.000Z",
+       "end": "2020-07-08T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p7",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p7",
+        "allDay": false,
+        "extended_props": {
+         "instructor": {
+          "name": "n"
+         }
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950410",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-07-15T09:00:00Z",
+        "start": "2020-07-15T09:00:00.000Z",
+        "end": "2020-07-15T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950410",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-15T09:00:00Z",
+       "start": "2020-07-15T09:00:00.000Z",
+       "end": "2020-07-15T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p8",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p8",
+        "allDay": false,
+        "extended_props": {
+         "instructor": []
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950411",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-07-22T09:00:00Z",
+        "start": "2020-07-22T09:00:00.000Z",
+        "end": "2020-07-22T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950411",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-22T09:00:00Z",
+       "start": "2020-07-22T09:00:00.000Z",
+       "end": "2020-07-22T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": {
+    "days": {
+     "p2": {
+      "associated_event": "00000000-0000-0000-0000-000000000007",
+      "expected_absences": []
+     },
+     "p5": {
+      "associated_event": null,
+      "expected_absences": []
+     },
+     "p7": {
+      "associated_event": "00000000-0000-0000-0000-000000000001",
+      "expected_absences": []
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "p2",
+      "changes": {
+       "associated_event": [
+        "None",
+        "7"
+       ],
+       "expected_absences": [
+        "null",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "p5",
+      "changes": {
+       "expected_absences": [
+        "null",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "p7",
+      "changes": {
+       "associated_event": [
+        "None",
+        "True"
+       ],
+       "expected_absences": [
+        "null",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   }
+  },
+  {
+   "name": "course-attendance-attendees-old-event-ids-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950401/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Giorno p0",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950403",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-01T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p1",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p1",
+        "allDay": false,
+        "extended_props": "nota",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950404",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-06-08T09:00:00Z",
+        "start": "2020-06-08T09:00:00.000Z",
+        "end": "2020-06-08T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950404",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-08T09:00:00Z",
+       "start": "2020-06-08T09:00:00.000Z",
+       "end": "2020-06-08T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p2",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950405",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-15T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p3",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p3",
+        "allDay": false,
+        "extended_props": {
+         "instructor": "esterno"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950406",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-06-22T09:00:00Z",
+        "start": "2020-06-22T09:00:00.000Z",
+        "end": "2020-06-22T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950406",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-22T09:00:00Z",
+       "start": "2020-06-22T09:00:00.000Z",
+       "end": "2020-06-22T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p4",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p4",
+        "allDay": false,
+        "extended_props": {
+         "instructor": [
+          "esterno",
+          [
+           "x"
+          ],
+          {
+           "instructor_id": "a1000000-0000-4000-8000-000000950001",
+           "label": "Ivo Insegnante"
+          }
+         ]
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950407",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-06-29T09:00:00Z",
+        "start": "2020-06-29T09:00:00.000Z",
+        "end": "2020-06-29T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950407",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-06-29T09:00:00Z",
+       "start": "2020-06-29T09:00:00.000Z",
+       "end": "2020-06-29T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p5",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p5",
+        "allDay": false,
+        "extended_props": {
+         "description": "senza id"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950408",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-07-01T09:00:00Z",
+        "start": "2020-07-01T09:00:00.000Z",
+        "end": "2020-07-01T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950408",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-01T09:00:00Z",
+       "start": "2020-07-01T09:00:00.000Z",
+       "end": "2020-07-01T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p6",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p6",
+        "allDay": false,
+        "extended_props": {
+         "instructor": 0,
+         "description": "d"
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950409",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-07-08T09:00:00Z",
+        "start": "2020-07-08T09:00:00.000Z",
+        "end": "2020-07-08T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950409",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-08T09:00:00Z",
+       "start": "2020-07-08T09:00:00.000Z",
+       "end": "2020-07-08T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p7",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950410",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-15T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      },
+      {
+       "title": "Giorno p8",
+       "allDay": false,
+       "extended_props": {
+        "title": "Giorno p8",
+        "allDay": false,
+        "extended_props": {
+         "instructor": []
+        },
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950411",
+        "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+        "date": "2020-07-22T09:00:00Z",
+        "start": "2020-07-22T09:00:00.000Z",
+        "end": "2020-07-22T10:00:00.000Z",
+        "course_id": "a1000000-0000-4000-8000-000000950401",
+        "total_attendees": 0,
+        "total_expected_absences": 0,
+        "potential_attendees": [],
+        "total_expected_total": 0,
+        "attendees": [],
+        "expected_absences": []
+       },
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950411",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950402",
+       "date": "2020-07-22T09:00:00Z",
+       "start": "2020-07-22T09:00:00.000Z",
+       "end": "2020-07-22T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-integer-id-mapped",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950412/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Giorno q1",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950414",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950413",
+       "date": "2020-06-01T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": {
+    "days": {
+     "q1": {
+      "associated_event": "00000000-0000-0000-0000-000000000009"
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "q1",
+      "changes": {
+       "associated_event": [
+        "None",
+        "9"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   }
+  },
+  {
+   "name": "course-attendance-attendees-old-integer-id-mapped-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950412/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Giorno q1",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950414",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950413",
+       "date": "2020-06-01T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-number-props",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950416/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-text-props-naming-instructor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950420/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-list-props-naming-instructor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950424/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-text-instructor-naming-id",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950428/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-number-instructor",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950432/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-instructor-list-of-numbers",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950436/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-instructor-list-naming-id",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950440/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-old-instructor-list-text-naming-id",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950444/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-update-float-carnet-consumed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950603/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u1": {
+      "attendees": [
+       {
+        "course_subscription_id": "00000000-0000-0000-0000-00000000002a"
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "ugo": {
+      "lessons_counter": 10,
+      "lessons_left": 1.5,
+      "lessons_registry": [
+       {
+        "date": "2020-07-06 09:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950603",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950601",
+         "title": "Judo"
+        },
+        "title": "Giorno u1"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "ugo",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 2.5, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1.5, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950603\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-06 09:00:00+00:00\", \"title\": \"Giorno u1\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u1",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"00000000-0000-0000-0000-00000000002a\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "00000000-0000-0000-0000-00000000002a"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-float-carnet-given-back",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950603/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u1": {
+      "attendees": []
+     }
+    },
+    "holdings": {
+     "ugo": {
+      "lessons_counter": 10,
+      "lessons_left": 2.5,
+      "lessons_registry": []
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "ugo",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 1.5, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950603\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-06 09:00:00+00:00\", \"title\": \"Giorno u1\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 2.5, \"lessons_registry\": []}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u1",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"00000000-0000-0000-0000-00000000002a\"}]",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-whole-float-carnet-consumed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950605/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u3": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950627"
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "wanda": {
+      "lessons_counter": 10,
+      "lessons_left": 2.0,
+      "lessons_registry": [
+       {
+        "date": "2020-07-09 09:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950605",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950601",
+         "title": "Judo"
+        },
+        "title": "Giorno u3"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "wanda",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 3.0, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 2.0, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950605\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-09 09:00:00+00:00\", \"title\": \"Giorno u3\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u3",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950627\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950627"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-boolean-carnet-consumed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950604/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u2": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950623"
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "vera": {
+      "lessons_counter": 10,
+      "lessons_left": 0,
+      "lessons_registry": [
+       {
+        "date": "2020-07-08 09:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950604",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950601",
+         "title": "Judo"
+        },
+        "title": "Giorno u2"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "vera",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": true, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 0, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950604\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-08 09:00:00+00:00\", \"title\": \"Giorno u2\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u2",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950623\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950623"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-boolean-carnet-given-back",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950604/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u2": {
+      "attendees": []
+     }
+    },
+    "holdings": {
+     "vera": {
+      "lessons_counter": 10,
+      "lessons_left": 1,
+      "lessons_registry": []
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "vera",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 0, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950604\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-08 09:00:00+00:00\", \"title\": \"Giorno u2\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": []}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u2",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950623\"}]",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-finds-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/00000000-0000-0000-0000-00000000002b/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "uA": {
+      "attendees": [
+       {
+        "course_subscription_id": 42
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "ugo": {
+      "lessons_counter": 10,
+      "lessons_left": 1.5,
+      "lessons_registry": [
+       {
+        "date": "2020-07-07 09:00:00+00:00",
+        "attendance_day_id": "00000000-0000-0000-0000-00000000002b",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950601",
+         "title": "Judo"
+        },
+        "title": "Giorno uA"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "ugo",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 2.5, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1.5, \"lessons_registry\": [{\"attendance_day_id\": \"00000000-0000-0000-0000-00000000002b\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-07 09:00:00+00:00\", \"title\": \"Giorno uA\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "uA",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": 42}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": 42
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-same-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/00000000-0000-0000-0000-00000000002b/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": 42
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-removed-gives-back",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/00000000-0000-0000-0000-00000000002b/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "uA": {
+      "attendees": []
+     }
+    },
+    "holdings": {
+     "ugo": {
+      "lessons_counter": 10,
+      "lessons_left": 2.5,
+      "lessons_registry": []
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "ugo",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 1.5, \"lessons_registry\": [{\"attendance_day_id\": \"00000000-0000-0000-0000-00000000002b\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-07 09:00:00+00:00\", \"title\": \"Giorno uA\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 2.5, \"lessons_registry\": []}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "uA",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": 42}]",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-unknown-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950607/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u_big": {
+      "attendees": [
+       {
+        "course_subscription_id": 7
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "u_big",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": 7}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": 7
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-unknown-removed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950607/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-boolean-id-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950609/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u12": {
+      "attendees": [
+       {
+        "course_subscription_id": true
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "u12",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": true}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-one-equals-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950609/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u12": {
+      "attendees": [
+       {
+        "course_subscription_id": 1
+       }
+      ]
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "u12",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": true}]",
+        "[{\"course_subscription_id\": 1}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-past-128-bits",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950613/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": 340282366920938463463374607431768211456
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-negative",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950613/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": -1
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950613/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": 1.5
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-update-integer-id-whole-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950613/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": 2.0
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-mark-float-carnet",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950619/mark",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "Check-in effettuato! Ciao Ugo Verdi."
+   },
+   "effect": {
+    "days": {
+     "u_today": {
+      "attendees": [
+       {
+        "course_subscription_id": "00000000-0000-0000-0000-00000000002a"
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "ugo": {
+      "lessons_counter": 10,
+      "lessons_left": 1.5,
+      "lessons_registry": [
+       {
+        "date": "{today} 10:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950606",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950601",
+         "title": "Judo"
+        },
+        "title": "Giorno u_today"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "ugo",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 2.5, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1.5, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950606\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"{today} 10:00:00+00:00\", \"title\": \"Giorno u_today\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u_today",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"00000000-0000-0000-0000-00000000002a\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {}
+  },
+  {
+   "name": "course-attendance-mark-selected-day-integer-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Giorno di presenza non trovato."
+   },
+   "effect": null,
+   "body": {
+    "attendance_day_id": 5
+   }
+  },
+  {
+   "name": "course-attendance-mark-selected-day-boolean-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "msg": "Giorno di presenza non trovato."
+   },
+   "effect": null,
+   "body": {
+    "attendance_day_id": false
+   }
+  },
+  {
+   "name": "course-attendance-mark-selected-day-integer-existing-without-course-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendance_day_id": 43
+   }
+  },
+  {
+   "name": "course-attendance-mark-selected-day-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendance_day_id": 1.5
+   }
+  },
+  {
+   "name": "course-attendance-mark-selected-day-past-128-bits",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/attendance/a1000000-0000-4000-8000-000000950018/mark",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendance_day_id": 340282366920938463463374607431768211456
+   }
+  },
+  {
+   "name": "course-attendance-attendees-integer-ids",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950614/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Giorno wE",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950616",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950615",
+       "date": "2020-08-03T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [
+        {
+         "course_subscription_id": 42
+        }
+       ],
+       "expected_absences": [
+        "Ugo Verdi",
+        "<rimosso>"
+       ]
+      },
+      {
+       "title": "Giorno wN",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950617",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950615",
+       "date": "2020-08-04T09:00:00Z",
+       "start": null,
+       "end": null,
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "course-attendance-update-removes-lesson-year-999",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950608/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u9": {
+      "attendees": []
+     }
+    },
+    "holdings": {
+     "xena": {
+      "lessons_counter": 10,
+      "lessons_left": 2,
+      "lessons_registry": []
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "xena",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950608\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"0999-03-01 09:00:00+00:00\", \"title\": \"Giorno u9\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u9",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950631\"}]",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-lesson-date-full-width-digits",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950610/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-removes-lesson-naive-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950611/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u11": {
+      "attendees": []
+     }
+    },
+    "holdings": {
+     "zoe": {
+      "lessons_counter": 10,
+      "lessons_left": 2,
+      "lessons_registry": []
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "zoe",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"2020-07-14T09:00:00\", \"title\": \"y\"}]}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u11",
+      "changes": {
+       "attendees": [
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950639\"}]",
+        "[]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": []
+   }
+  },
+  {
+   "name": "course-attendance-update-adds-attendee-on-year-999-day",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/course/a1000000-0000-4000-8000-000000950601/attendees/a1000000-0000-4000-8000-000000950612/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Attendance Registry updated."
+   },
+   "effect": {
+    "days": {
+     "u13": {
+      "attendees": [
+       {
+        "course_subscription_id": "a1000000-0000-4000-8000-000000950643"
+       }
+      ]
+     }
+    },
+    "holdings": {
+     "ned": {
+      "lessons_counter": 10,
+      "lessons_left": 1,
+      "lessons_registry": [
+       {
+        "date": "0999-05-01 09:00:00+00:00",
+        "attendance_day_id": "a1000000-0000-4000-8000-000000950612",
+        "course": {
+         "id": "a1000000-0000-4000-8000-000000950601",
+         "title": "Judo"
+        },
+        "title": "Giorno u13"
+       }
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "carnetsubscription",
+      "label": "ned",
+      "changes": {
+       "meta": [
+        "{\"lessons_counter\": 10, \"lessons_left\": 2, \"lessons_registry\": []}",
+        "{\"lessons_counter\": 10, \"lessons_left\": 1, \"lessons_registry\": [{\"attendance_day_id\": \"a1000000-0000-4000-8000-000000950612\", \"course\": {\"id\": \"a1000000-0000-4000-8000-000000950601\", \"title\": \"Judo\"}, \"date\": \"0999-05-01 09:00:00+00:00\", \"title\": \"Giorno u13\"}]}"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "subscription.sport_association"
+      ]
+     },
+     {
+      "model": "attendanceday",
+      "label": "u13",
+      "changes": {
+       "attendees": [
+        "null",
+        "[{\"course_subscription_id\": \"a1000000-0000-4000-8000-000000950643\"}]"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   },
+   "body": {
+    "attendees": [
+     {
+      "course_subscription_id": "a1000000-0000-4000-8000-000000950643"
+     }
+    ]
+   }
+  },
+  {
+   "name": "course-attendance-attendees-event-start-full-width-digits",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950448/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Giorno r1",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950450",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950449",
+       "date": "2020-06-15T09:00:00Z",
+       "start": "２０２０-06-1５T0９:3０:0０.000Z",
+       "end": "2020-06-15T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": {
+    "days": {
+     "r1": {
+      "associated_event": "a1000000-0000-4000-8000-000000950447"
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "r1",
+      "changes": {
+       "associated_event": [
+        "None",
+        "a1000000-0000-4000-8000-000000950447"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   }
+  },
+  {
+   "name": "course-attendance-attendees-event-start-full-width-month",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950452/attendees",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "course-attendance-attendees-event-start-year-999",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/course/a1000000-0000-4000-8000-000000950456/attendees",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "events": [
+      {
+       "title": "Giorno y1",
+       "allDay": false,
+       "extended_props": {},
+       "attendance_day_id": "a1000000-0000-4000-8000-000000950458",
+       "attendance_registry": "a1000000-0000-4000-8000-000000950457",
+       "date": "0999-06-15T09:00:00Z",
+       "start": "0999-06-15T09:30:00.000Z",
+       "end": "0999-06-15T10:00:00.000Z",
+       "attendees": [],
+       "expected_absences": []
+      }
+     ]
+    }
+   },
+   "effect": {
+    "days": {
+     "y1": {
+      "associated_event": "a1000000-0000-4000-8000-000000950455"
+     }
+    },
+    "holdings": {},
+    "audit": [
+     {
+      "model": "attendanceday",
+      "label": "y1",
+      "changes": {
+       "associated_event": [
+        "None",
+        "a1000000-0000-4000-8000-000000950455"
+       ]
+      },
+      "actor": "owner",
+      "index": [
+       "own_association",
+       "attendance_registry.course.sport_association"
+      ]
+     }
+    ],
+    "impersonation": null
+   }
+  }
+ ]
+}

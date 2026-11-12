@@ -3,7 +3,7 @@ import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.m
 const reviewed = {
   "UI/src/App.svelte": "fa45b87b4a3d2daa5f430852ce81dd5843719e0d5b5942304893731fa7322720",
   "UI/src/components/Header.svelte": "0273165f624534e66e53888c62f7f405f5efd0f1cd85bc65664ffb214f88e972",
-  "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+  "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
   "UI/src/routes/manuale/Manuale.svelte": "e6981a17b7bef6bf32a798f5d469d9acdfa78ea9eff9b8bb081e649f51138b7d",
   "UI/src/routes/manuale/ManualContent.svelte": "b3d31df4c3d47770c335078e7edd89026b423e2ccdd160b767cb3f8d885e84c8",
@@ -29,9 +29,9 @@ const reviewed = {
   "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359",
-  "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
+  "BE/application/views/profile_views.py": "adea11d45c4364fe508860db111f574d1e99a752bb5e792309d1a74ae6200c09",
   "BE/application/views/search_views.py": "0cc8b4378133ef496ae8d193ad0904456dc92f394f8a04aebf9a5e3d58e1e380",
-  "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
+  "BE/application/serializers/auth_serializers.py": "06b647dcce4c370545bdb0c61e23a5a48c3c56e2c4878b7197fb8b3d9dd62d1e",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
@@ -40,13 +40,13 @@ const reviewed = {
   "UI/src/routes/association/Members/detail/sections/Cloud.svelte": "dc79dccd5dd5c90a20903493c5483d8cb84eab327f33fc7ee3f47512e46d8896",
   "UI/src/routes/association/archive/modals/GenerateFromTemplateModal.svelte": "d68a581779ef24b65f2ed0afa0de99ee880079d1b7a6cab218f05b5dfa064c81",
   "BE/application/views/archive_views.py": "4507583ea5811c7a0287ea0e83456f6a5b1707efe38bb950cedb23a0efcfae96",
-  "BE/docmanager/views/printing_views.py": "f9127869836c46408d9e5f48fc16733c6fce66efedb2e2fa7f96344095e01753"
+  "BE/docmanager/views/printing_views.py": "2986b9d21dbbc85f46d779880e692f700f421136d597a41f16d9cf6f64343e26"
 };
 const contracts = [
   ["UI/src/App.svelte","{:else if isManualPage}",20],
-  ["UI/src/components/Header.svelte","aria-label=\"Manuale d'uso\"",16],
+  ["UI/src/components/Header.svelte","{#if $role !== 'athlete' && $manualEnabled}",19],
   ["UI/src/routes.js","'/manuale':",13],
-  ["UI/src/components/Sidebar.svelte","id=\"manuale_assozeta\"",16],
+  ["UI/src/components/Sidebar.svelte","{#if $manualEnabled}",18],
   ["UI/src/routes/manuale/Manuale.svelte","async function load()",40],
   ["UI/src/routes/manuale/ManualContent.svelte","part.kind === 'cards'",22],
   ["UI/src/routes/manuale/manualPresentation.js","export function manualLinkUrl(",22],

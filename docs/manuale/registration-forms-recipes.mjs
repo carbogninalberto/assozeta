@@ -1,8 +1,11 @@
+// Profile, association and mapped-owner table mutations commit with their audit indexes;
+// any index exception rolls back the mutation. Locked reads and selected columns preserve
+// concurrent changes. Successful settings and registration workflows remain unchanged.
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
-  "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+  "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/routes/association/Members/subscription/Template.svelte": "e01e73eb4435b7ea9ecf35971dd59182c4b6752fd404921e44a0770a64682903",
   "UI/src/routes/association/Members/subscription/partials/TypesModule.svelte": "f83c5113b5bf8ce41420ceafe5a8311802284cb4c9e4ca2891e94c0cca5924bd",
   "UI/src/routes/association/Members/subscription/partials/QuoteIscrizione.svelte": "c9d41719a3ec8cff5fd5d7896564d7a6c471f8904cae7d3765ceb36ae2d0351c",
@@ -23,9 +26,9 @@ const reviewed = {
   "UI/src/routes/subscribe/wizard/Step2.svelte": "871d4ff3b52672efd93b0348c3b587d355aeaa31edd60696d777e1b5db35a128",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "BE/application/urls.py": "b475e7ed8c26a891854c4021d7308aefb192d2a26df8b3ee916a33f88e7cc359",
-  "BE/application/views/profile_views.py": "37aca983a9edb10673bd76786b7f8efce7adfeaa129e9d4848df85ead31936d1",
+  "BE/application/views/profile_views.py": "adea11d45c4364fe508860db111f574d1e99a752bb5e792309d1a74ae6200c09",
   "BE/application/views/search_views.py": "0cc8b4378133ef496ae8d193ad0904456dc92f394f8a04aebf9a5e3d58e1e380",
-  "BE/application/serializers/auth_serializers.py": "9285271db47ebe8dce875986175892991e868ff207f4d4f0d29fe69051aaf56a",
+  "BE/application/serializers/auth_serializers.py": "06b647dcce4c370545bdb0c61e23a5a48c3c56e2c4878b7197fb8b3d9dd62d1e",
   "BE/application/models/user_models.py": "4800cd1f7a757e9e7d5203d1ea086d58e92ac4592e43c7fa7758103071336c96",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
@@ -34,7 +37,7 @@ const reviewed = {
   "UI/src/routes/association/Members/detail/sections/Cloud.svelte": "dc79dccd5dd5c90a20903493c5483d8cb84eab327f33fc7ee3f47512e46d8896",
   "UI/src/routes/association/archive/modals/GenerateFromTemplateModal.svelte": "d68a581779ef24b65f2ed0afa0de99ee880079d1b7a6cab218f05b5dfa064c81",
   "BE/application/views/archive_views.py": "4507583ea5811c7a0287ea0e83456f6a5b1707efe38bb950cedb23a0efcfae96",
-  "BE/docmanager/views/printing_views.py": "f9127869836c46408d9e5f48fc16733c6fce66efedb2e2fa7f96344095e01753"
+  "BE/docmanager/views/printing_views.py": "2986b9d21dbbc85f46d779880e692f700f421136d597a41f16d9cf6f64343e26"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte",">Modulo Iscrizioni",7],

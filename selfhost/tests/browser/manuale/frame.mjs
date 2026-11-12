@@ -81,13 +81,23 @@ export async function captureFrame({page, run, relative, checkpoint, locator, cl
     // Retain both images: this is same-state stability, not fresh-run identity.
     let previous = await page.screenshot(options);
     let stable;
+    let unequalPair;
     for (let attempt = 0; attempt < 5; attempt++) {
         await page.waitForTimeout(100);
         const next = await page.screenshot(options);
         if (previous.equals(next)) { stable = next; break; }
+        unequalPair = [previous, next];
         previous = next;
     }
-    if (!stable) throw new Error('Manual checkpoint did not reach a stable rendered state: ' + checkpoint);
+    if (!stable) {
+        // Retain the actual last comparison for diagnosis. These are rejected
+        // frames, never capture evidence; keep the same budget and exact match.
+        const diagnostic = path.join(run, 'diagnostics', 'unstable', relative);
+        fs.mkdirSync(diagnostic, {recursive: true});
+        fs.writeFileSync(path.join(diagnostic, 'previous.png'), unequalPair[0]);
+        fs.writeFileSync(path.join(diagnostic, 'current.png'), unequalPair[1]);
+        throw new Error('Manual checkpoint did not reach a stable rendered state: ' + checkpoint);
+    }
     const repeatPath = 'masters/repeats/' + relative;
     const repeatFile = path.join(run, repeatPath);
     fs.mkdirSync(path.dirname(repeatFile), {recursive: true});

@@ -19,7 +19,7 @@ from TESTS.performance import benchmark
 def tests(base_url, fixture_path, module):
     os.environ['TESTS_BASE_URL'] = base_url
     os.environ['TESTS_FIXTURE'] = str(fixture_path)
-    suite = unittest.defaultTestLoader.loadTestsFromName(module)
+    suite = unittest.defaultTestLoader.loadTestsFromNames(module if isinstance(module, list) else [module])
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     return {'run': result.testsRun, 'failures': len(result.failures),
             'errors': len(result.errors), 'skipped': len(result.skipped), 'success': result.wasSuccessful()}
@@ -80,7 +80,7 @@ def main():
     report = {'suite': args.suite, 'adapter': 'external' if args.base_url else args.adapter, 'checks': []}
     scenarios = ([args.scenario or 'configured'] if args.scenario or args.base_url else
                  ['configured', 'fresh', 'import'] if args.suite in ('regression', 'all') else ['configured'])
-    modules = {'configured': 'TESTS.contracts.test_access', 'fresh': 'TESTS.contracts.test_lifecycle',
+    modules = {'configured': ['TESTS.contracts.test_access', 'TESTS.contracts.test_health'], 'fresh': 'TESTS.contracts.test_lifecycle',
                'import': 'TESTS.contracts.test_initial_import'}
     try:
         for scenario in scenarios:

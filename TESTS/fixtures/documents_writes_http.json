@@ -1,0 +1,5488 @@
+{
+ "matrix_version": 1,
+ "scope": "Document uploads: archive add/update, subscription files and medical certificates",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "location": "documents-writes",
+ "folders": [
+  [
+   "own",
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "abroad",
+   "a1000000-0000-4000-8000-000000701002"
+  ]
+ ],
+ "documents": {
+  "u1": {
+   "id": "a1000000-0000-4000-8000-000000352001",
+   "token": "a1000000-0000-4000-8000-000000352002",
+   "filename": "u1.pdf",
+   "created": "2026-08-01T08:00:00Z"
+  },
+  "u2": {
+   "id": "a1000000-0000-4000-8000-000000352003",
+   "token": "a1000000-0000-4000-8000-000000352004",
+   "filename": "u2.pdf",
+   "created": "2026-08-01T08:00:00Z"
+  },
+  "uf": {
+   "id": "a1000000-0000-4000-8000-000000352005",
+   "token": "a1000000-0000-4000-8000-000000352006",
+   "filename": "uf.pdf",
+   "created": "2026-08-01T08:00:00Z"
+  },
+  "ud": {
+   "id": "a1000000-0000-4000-8000-000000352007",
+   "token": "a1000000-0000-4000-8000-000000352008",
+   "filename": "ud.pdf",
+   "created": "2026-08-01T08:00:00Z"
+  },
+  "upk": {
+   "id": "a1000000-0000-4000-8000-000000352009",
+   "token": "a1000000-0000-4000-8000-000000352010",
+   "filename": "upk.pdf",
+   "created": "2026-08-01T08:00:00Z"
+  },
+  "old": {
+   "id": "a1000000-0000-4000-8000-000000352011",
+   "token": "a1000000-0000-4000-8000-000000352012",
+   "filename": "old.pdf",
+   "created": "2026-08-01T08:00:00Z"
+  }
+ },
+ "archives": {
+  "u1": {
+   "id": "a1000000-0000-4000-8000-000000352013",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "document": "u1",
+   "date": "2026-09-01",
+   "folder": null
+  },
+  "u2": {
+   "id": "a1000000-0000-4000-8000-000000352014",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "document": "u2",
+   "date": "2026-09-02",
+   "folder": "own"
+  },
+  "uf": {
+   "id": "a1000000-0000-4000-8000-000000352015",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "document": "uf",
+   "date": "2026-09-03",
+   "folder": "abroad"
+  },
+  "ud": {
+   "id": "a1000000-0000-4000-8000-000000352016",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "document": "ud",
+   "date": "2026-09-04",
+   "folder": null
+  },
+  "upk": {
+   "id": "a1000000-0000-4000-8000-000000352017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "document": "upk",
+   "date": "2026-09-05",
+   "folder": null
+  }
+ },
+ "certificates": {
+  "old": {
+   "id": "a1000000-0000-4000-8000-000000352018",
+   "user": "owner",
+   "document": "old",
+   "created": "2026-01-10T09:00:00Z"
+  }
+ },
+ "subscriptions": {
+  "main": {
+   "id": "a1000000-0000-4000-8000-000000352019",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "withcert": {
+   "id": "a1000000-0000-4000-8000-000000352020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": "old",
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "nodates": {
+   "id": "a1000000-0000-4000-8000-000000352021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "group": null,
+   "start": null,
+   "end": null,
+   "created": "2026-03-15T10:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000352022",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000352023",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "athlete",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000352024",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "group": "own_group",
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "files": {
+   "id": "a1000000-0000-4000-8000-000000352025",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "ampersand": {
+   "id": "a1000000-0000-4000-8000-000000352030",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "owner",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  },
+  "season": {
+   "id": "a1000000-0000-4000-8000-000000352031",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "foreign_owner",
+   "medical": null,
+   "group": null,
+   "start": "2026-01-01",
+   "end": "2026-12-31",
+   "created": "2026-02-01T09:00:00Z"
+  }
+ },
+ "drafts": {
+  "none": {
+   "id": "a1000000-0000-4000-8000-000000352026",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "associate": {
+     "first_name": "Ada"
+    }
+   }
+  },
+  "withmc": {
+   "id": "a1000000-0000-4000-8000-000000352027",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": {
+    "medical_certificate": {
+     "medical_id": null,
+     "filename": "x.pdf",
+     "certificate_expring_date": "01/01/2027",
+     "k": 1
+    }
+   }
+  },
+  "abroad_draft": {
+   "id": "a1000000-0000-4000-8000-000000352028",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "data": {}
+  },
+  "list": {
+   "id": "a1000000-0000-4000-8000-000000352029",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "data": [
+    1,
+    2
+   ]
+  }
+ },
+ "unknown": "a1000000-0000-4000-8000-000000352999",
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000352997",
+   "username": "documents-writes-member",
+   "email": "documents-writes-member@example.test"
+  }
+ },
+ "season": {
+  "user": "foreign_owner",
+  "day": 30,
+  "month": 2
+ },
+ "certificate_limit": 4096,
+ "cases": [
+  {
+   "name": "documents-writes-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.archive.update"
+   },
+   "effect": null,
+   "body": {
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-restricted-before-method",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.archive.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Archive",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ],
+    "actions": {
+     "POST": {
+      "sport_association_documents_archive_id": {
+       "type": "string",
+       "required": false,
+       "read_only": true,
+       "label": "Sport association documents archive id"
+      },
+      "sport_association": {
+       "type": "field",
+       "required": true,
+       "read_only": false,
+       "label": "Sport association"
+      },
+      "document": {
+       "type": "field",
+       "required": false,
+       "read_only": true,
+       "label": "Document",
+       "child": {
+        "type": "nested object",
+        "required": false,
+        "read_only": true,
+        "children": {
+         "document_id": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Document id"
+         },
+         "creation_date": {
+          "type": "datetime",
+          "required": false,
+          "read_only": false,
+          "label": "Creation date"
+         },
+         "filepath": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Filepath",
+          "max_length": 1000
+         },
+         "filename": {
+          "type": "string",
+          "required": true,
+          "read_only": false,
+          "label": "Filename",
+          "max_length": 255
+         },
+         "file_size_bytes": {
+          "type": "integer",
+          "required": false,
+          "read_only": false,
+          "label": "File size bytes",
+          "min_value": 0,
+          "max_value": 9223372036854775807
+         },
+         "token": {
+          "type": "string",
+          "required": false,
+          "read_only": false,
+          "label": "Token"
+         }
+        }
+       }
+      },
+      "date": {
+       "type": "date",
+       "required": false,
+       "read_only": false,
+       "label": "Date"
+      },
+      "folder": {
+       "type": "field",
+       "required": false,
+       "read_only": false,
+       "label": "Folder"
+      }
+     }
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-add-delete-without-pk-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "documents-writes-add-form-unsupported-media",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "effect": null,
+   "raw_body": "files=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "documents-writes-add-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{bad",
+   "content_type": "application/json"
+  },
+  {
+   "name": "documents-writes-add-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "documents-writes-add-unknown-folder-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "folder": 999999,
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-text-folder-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "folder": "abc",
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-athlete-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-owner-without-association-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "files": []
+   }
+  },
+  {
+   "name": "documents-writes-add-number-files-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "files": 5
+   }
+  },
+  {
+   "name": "documents-writes-add-null-files-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "files": null
+   }
+  },
+  {
+   "name": "documents-writes-add-no-files",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": []
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-add-empty-files",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": []
+   },
+   "effect": null,
+   "body": {
+    "files": [],
+    "folder": null
+   }
+  },
+  {
+   "name": "documents-writes-add-missing-filename",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "{'exception': ErrorDetail(string='document or filename key not present', code='invalid')}"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": "eA=="
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-text-files-iterates-characters",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "{'exception': ErrorDetail(string='document or filename key not present', code='invalid')}"
+   },
+   "effect": null,
+   "body": {
+    "files": "ab"
+   }
+  },
+  {
+   "name": "documents-writes-add-dict-files-iterates-keys",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "{'exception': ErrorDetail(string='document or filename key not present', code='invalid')}"
+   },
+   "effect": null,
+   "body": {
+    "files": {
+     "document": 1,
+     "filename": 2
+    }
+   }
+  },
+  {
+   "name": "documents-writes-add-number-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "argument of type 'int' is not iterable"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     5
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-null-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "argument of type 'NoneType' is not iterable"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     null
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-text-item-with-both-keys",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "string indices must be integers, not 'str'"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     "documentfilename"
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-list-item-with-both-keys",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "list indices must be integers or slices, not str"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     [
+      "document",
+      "filename"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-base64-one-extra-character",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "Invalid base64-encoded string: number of data characters (5) cannot be 1 more than a multiple of 4"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": "abcde",
+      "filename": "a.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-base64-incorrect-padding",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "Incorrect padding"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": "YQ==x",
+      "filename": "a.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-base64-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "argument should be a bytes-like object or ASCII string, not 'int'"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": 5,
+      "filename": "a.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-base64-non-ascii",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "string argument should contain only ASCII characters"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": "è",
+      "filename": "a.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-filename-too-long",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "value too long for type character varying(255)\n"
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": "eA==",
+      "filename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-filename-nul",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "A string literal cannot contain NUL (0x00) characters."
+   },
+   "effect": null,
+   "body": {
+    "files": [
+     {
+      "document": "eA==",
+      "filename": "a\u0000b.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-filename-lone-surrogate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "'utf-8' codec can't encode character '\\ud800' in position 2: surrogates not allowed"
+   },
+   "effect": null,
+   "raw_body": "{\"files\": [{\"document\": \"eA==\", \"filename\": \"\\ud83d\\ude00a\\ud800.pdf\"}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "documents-writes-add-filename-surrogate-run-before-nul",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "'utf-8' codec can't encode characters in position 1-2: surrogates not allowed"
+   },
+   "effect": null,
+   "raw_body": "{\"files\": [{\"document\": \"eA==\", \"filename\": \"è\\udfff\\ud800\\u0000.pdf\"}]}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "documents-writes-add-owner-one-root-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "$archive0",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "$doc0",
+       "creation_date": "$doc0.created",
+       "filepath": null,
+       "filename": "statuto è.pdf",
+       "file_size_bytes": null,
+       "token": "$doc0.token"
+      },
+      "date": "$archive0.date",
+      "folder": null
+     }
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "statuto è.pdf",
+      "body_b64": "JVBERi0xLjQgc3RhdHV0bw==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [
+     {
+      "document": 0,
+      "folder": null
+     }
+    ],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "$archive0",
+      "action": 0,
+      "changes": "$created",
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "files": [
+     {
+      "document": "JVBERi0xLjQgc3RhdHV0bw==",
+      "filename": "statuto è.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-collaborator-two-files-into-folder",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "$archive0",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "$doc0",
+       "creation_date": "$doc0.created",
+       "filepath": null,
+       "filename": "note.txt",
+       "file_size_bytes": null,
+       "token": "$doc0.token"
+      },
+      "date": "$archive0.date",
+      "folder": "$folder:own"
+     },
+     {
+      "sport_association_documents_archive_id": "$archive1",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "$doc1",
+       "creation_date": "$doc1.created",
+       "filepath": null,
+       "filename": "backup.tar.gz",
+       "file_size_bytes": null,
+       "token": "$doc1.token"
+      },
+      "date": "$archive1.date",
+      "folder": "$folder:own"
+     }
+    ]
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "documents": [
+     {
+      "filename": "note.txt",
+      "body_b64": "cmlnYSB1bm8K",
+      "content_type": "text/plain",
+      "encoding": null,
+      "kept": true
+     },
+     {
+      "filename": "backup.tar.gz",
+      "body_b64": "dGFyYmFsbA==",
+      "content_type": "application/x-tar",
+      "encoding": "gzip",
+      "kept": true
+     }
+    ],
+    "archives": [
+     {
+      "document": 0,
+      "folder": "own"
+     },
+     {
+      "document": 1,
+      "folder": "own"
+     }
+    ],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "$archive0",
+      "action": 0,
+      "changes": "$created",
+      "index": "direct"
+     },
+     {
+      "model": "Document",
+      "key": "$doc1",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "$archive1",
+      "action": 0,
+      "changes": "$created",
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "folder": "$folder:own",
+    "files": [
+     {
+      "document": "cmlnYSB1bm8K",
+      "filename": "note.txt"
+     },
+     {
+      "document": "dGFyYmFsbA==",
+      "filename": "backup.tar.gz",
+      "extra": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-folder-resolved-by-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "$archive0",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "$doc0",
+       "creation_date": "$doc0.created",
+       "filepath": null,
+       "filename": "senza estensione",
+       "file_size_bytes": null,
+       "token": "$doc0.token"
+      },
+      "date": "$archive0.date",
+      "folder": "$folder:abroad"
+     }
+    ]
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "senza estensione",
+      "body_b64": "c2VuemE=",
+      "content_type": "application/octet-stream",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [
+     {
+      "document": 0,
+      "folder": "abroad"
+     }
+    ],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "$archive0",
+      "action": 0,
+      "changes": "$created",
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "folder": "$folder:abroad",
+    "files": [
+     {
+      "document": "c2Vu\nemE=",
+      "filename": "senza estensione"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 201,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "$archive0",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "$doc0",
+       "creation_date": "$doc0.created",
+       "filepath": null,
+       "filename": "scan.png",
+       "file_size_bytes": null,
+       "token": "$doc0.token"
+      },
+      "date": "$archive0.date",
+      "folder": null
+     }
+    ]
+   },
+   "effect": {
+    "actor": "admin",
+    "documents": [
+     {
+      "filename": "scan.png",
+      "body_b64": "cG5nLWJ5dGVz",
+      "content_type": "image/png",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [
+     {
+      "document": 0,
+      "folder": null
+     }
+    ],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "$archive0",
+      "action": 0,
+      "changes": "$created",
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "files": [
+     {
+      "document": "cG5nLWJ5dGVz",
+      "filename": "scan.png"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-second-item-error-removes-last-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "Incorrect padding"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "primo.pdf",
+      "body_b64": "cHJpbW8=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": false
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "$archive0",
+      "action": 0,
+      "changes": "$created",
+      "index": "direct"
+     },
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "$archive0",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "changes"
+     },
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "files": [
+     {
+      "document": "cHJpbW8=",
+      "filename": "primo.pdf"
+     },
+     {
+      "document": "abc",
+      "filename": "secondo.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-absolute-filename-removes-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "Detected path traversal attempt in '/etc/x.pdf'"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "/etc/x.pdf",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": false
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "files": [
+     {
+      "document": "eA==",
+      "filename": "/etc/x.pdf"
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-add-number-filename-removes-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "join() argument must be str, bytes, or os.PathLike object, not 'int'"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "7",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": false
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "files": [
+     {
+      "document": "eA==",
+      "filename": 7
+     }
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-admin-without-session",
+   "actor": "admin",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.archive.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Archive",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-update-form-unsupported-media",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "effect": null,
+   "raw_body": "date=01%2F02%2F2026",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "documents-writes-update-malformed-pk",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/abc/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Not found."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352999/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-foreign",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352015/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "No SportAssociationDocumentsArchive matches the given query."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-athlete-server-error",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-update-list-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "documents-writes-update-iso-date-rejected",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "date": "2026-02-01"
+   }
+  },
+  {
+   "name": "documents-writes-update-unknown-folder",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "folder": [
+     "Invalid pk \"999999\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "folder": 999999
+   }
+  },
+  {
+   "name": "documents-writes-update-text-folder",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "folder": [
+     "Incorrect type. Expected pk value, received str."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "folder": "abc"
+   }
+  },
+  {
+   "name": "documents-writes-update-foreign-folder-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "folder": "$folder:abroad"
+   }
+  },
+  {
+   "name": "documents-writes-update-foreign-association-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "documents-writes-update-unknown-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000352999\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000352999"
+   }
+  },
+  {
+   "name": "documents-writes-update-null-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "This field may not be null."
+    ]
+   },
+   "effect": null,
+   "body": {
+    "sport_association": null
+   }
+  },
+  {
+   "name": "documents-writes-update-other-row-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "u1",
+      "action": 1,
+      "changes": {
+       "date": [
+        "2026-09-01",
+        "2026-09-06"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {
+     "u1": {
+      "date": "2026-09-06"
+     }
+    },
+    "archive_deleted": []
+   },
+   "body": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000352014",
+    "date": "06/09/2026"
+   }
+  },
+  {
+   "name": "documents-writes-update-no-change-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document": "ignored"
+   }
+  },
+  {
+   "name": "documents-writes-update-date-saved-before-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "u1",
+      "action": 1,
+      "changes": {
+       "date": [
+        "2026-09-06",
+        "2026-02-01"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {
+     "u1": {
+      "date": "2026-02-01"
+     }
+    },
+    "archive_deleted": []
+   },
+   "body": {
+    "date": "01/02/2026"
+   }
+  },
+  {
+   "name": "documents-writes-update-folder-saved-before-server-error",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352013/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "full_collaborator",
+    "documents": [],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "u1",
+      "action": 1,
+      "changes": {
+       "folder": [
+        "None",
+        "$folder-text:own"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {
+     "u1": {
+      "folder": "$folder:own"
+     }
+    },
+    "archive_deleted": []
+   },
+   "body": {
+    "folder": "$folder:own",
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "documents-writes-update-folder-cleared-before-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352014/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "u2",
+      "action": 1,
+      "changes": {
+       "folder": [
+        "$folder-text:own",
+        "None"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {
+     "u2": {
+      "folder": null
+     }
+    },
+    "archive_deleted": []
+   },
+   "body": {
+    "folder": null
+   }
+  },
+  {
+   "name": "documents-writes-update-new-primary-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352017/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "upk",
+      "action": 1,
+      "changes": {
+       "date": [
+        "2026-09-05",
+        "2026-09-07"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {
+     "upk": {
+      "date": "2026-09-07"
+     }
+    },
+    "archive_deleted": []
+   },
+   "body": {
+    "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000352998",
+    "date": "07/09/2026"
+   }
+  },
+  {
+   "name": "documents-writes-update-malformed-primary-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352017/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association_documents_archive_id": "abc"
+   }
+  },
+  {
+   "name": "documents-writes-update-null-primary-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352017/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association_documents_archive_id": null
+   }
+  },
+  {
+   "name": "documents-writes-update-boolean-primary-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/documents/a1000000-0000-4000-8000-000000352017/update",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "sport_association_documents_archive_id": true
+   }
+  },
+  {
+   "name": "documents-writes-update-route-delete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/a1000000-0000-4000-8000-000000352016/update",
+   "headers": {},
+   "status": 204,
+   "response": "<empty>",
+   "effect": {
+    "actor": "owner",
+    "documents": [],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "SportAssociationDocumentsArchive",
+      "key": "ud",
+      "action": 2,
+      "changes": "$deleted",
+      "index": "changes"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": [
+     "ud"
+    ]
+   }
+  },
+  {
+   "name": "documents-writes-upload-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-upload-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-upload-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-upload-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-upload-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Upload Document",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-upload-malformed-uid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/abc/upload-document",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-upload-unknown-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352999/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document": "eA==",
+    "filename": "a.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-grouped-foreign-group-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352024/upload-document",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document": "eA==",
+    "filename": "a.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-missing-filename",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "exception": "document key not present"
+   },
+   "effect": null,
+   "body": {
+    "document": "eA=="
+   }
+  },
+  {
+   "name": "documents-writes-upload-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "documents-writes-upload-filename-nul-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document": "eA==",
+    "filename": "a\u0000b.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-filename-lone-surrogate-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "{\"document\": \"eA==\", \"filename\": \"a\\udc00.pdf\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "documents-writes-upload-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{bad",
+   "content_type": "application/json"
+  },
+  {
+   "name": "documents-writes-upload-owner-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "tessera.pdf",
+      "body_b64": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "files"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:files"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+    "filename": "tessera.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-collaborator-form",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "documents": [
+     {
+      "filename": "modulo.txt",
+      "body_b64": "cmlnYQ==",
+      "content_type": "text/plain",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "files"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:files"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "filename=ignored.txt&document=cmlnYQ==&filename=modulo.txt",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "documents-writes-upload-resolves-subscription-by-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352022/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "estero.csv",
+      "body_b64": "ZXN0ZXJv",
+      "content_type": "text/csv",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "abroad"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:abroad"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "document": "ZXN0ZXJv",
+    "filename": "estero.csv"
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-own-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352023/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "athlete",
+    "documents": [
+     {
+      "filename": "certificato.jpg",
+      "body_b64": "Y2VydGlmaWNhdG8=",
+      "content_type": "image/jpeg",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "athlete"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:athlete"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "document": "Y2VydGlmaWNhdG8=",
+    "filename": "certificato.jpg"
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "Y2VydGlmaWNhdG8=",
+    "filename": "certificato.jpg"
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-subscription-form",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "raw_body": "document=cmlnYQ==&filename=modulo.txt",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-subscription-missing-filename",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "eA=="
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-other-association-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352022/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "ZXN0ZXJv",
+    "filename": "estero.csv"
+   }
+  },
+  {
+   "name": "documents-writes-upload-athlete-unknown-server-error",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352999/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "document": "eA==",
+    "filename": "a.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-member-athlete-subscription",
+   "actor": "member",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352023/upload-document",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "Y2VydGlmaWNhdG8=",
+    "filename": "certificato.jpg"
+   }
+  },
+  {
+   "name": "documents-writes-upload-owner-full-session",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/upload-document",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "sessione.pdf",
+      "body_b64": "c2Vzc2lvbmU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "main"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:main"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "document": "c2Vzc2lvbmU=",
+    "filename": "sessione.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-owner-full-session-foreign-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352022/upload-document",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null,
+   "body": {
+    "document": "eA==",
+    "filename": "x.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-bad-base64-keeps-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "rotto.pdf",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "document": "abc",
+    "filename": "rotto.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-number-filename-keeps-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "12",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "document": "eA==",
+    "filename": 12
+   }
+  },
+  {
+   "name": "documents-writes-upload-traversal-filename-keeps-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 400,
+   "response": "<bad-request-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "../x.pdf",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "body": {
+    "document": "eA==",
+    "filename": "../x.pdf"
+   }
+  },
+  {
+   "name": "documents-writes-upload-document-as-file-keeps-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "allegato.pdf",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"filename\"\r\n\r\nallegato.pdf\r\n--documentswritesboundary\r\nContent-Disposition: form-data; name=\"document\"; filename=\"scansione.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-upload-filename-as-file-keeps-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "nome file.pdf",
+      "body_b64": null,
+      "content_type": null,
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"document\"\r\n\r\neA==\r\n--documentswritesboundary\r\nContent-Disposition: form-data; name=\"filename\"; filename=\"nome file.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-certificate-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Medical Certificate Document",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-certificate-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"certificato medico.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 certificato\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-missing-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-certificate-text-value-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "medical_certificate": "x"
+   }
+  },
+  {
+   "name": "documents-writes-certificate-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "documents-writes-certificate-dot-dot-filename-skipped-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"..\"\r\n\r\nx\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "certificato medico.pdf",
+      "body_b64": "JVBERi0xLjQgY2VydGlmaWNhdG8=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"certificato medico.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 certificato\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": null,
+    "documents": [
+     {
+      "filename": "visita.png",
+      "body_b64": "cG5n",
+      "content_type": "image/png",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": null
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": null
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": null
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"note\"\r\n\r\nignorata\r\n--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"C:\\scan\\visita.png\"\r\nContent-Type: image/png\r\n\r\npng\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-collaborator-path-filename",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "documents": [
+     {
+      "filename": "ultimo.JPG",
+      "body_b64": "ZHVl",
+      "content_type": "image/jpeg",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"cartella/primo.pdf\"\r\n\r\nuno\r\n--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"cartella/ultimo.JPG\"\r\n\r\ndue\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-text-not-accepted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Seleziona un file PDF o un’immagine."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"note.txt\"\r\nContent-Type: text/plain\r\n\r\ncontenuto\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-declared-pdf-not-accepted",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Seleziona un file PDF o un’immagine."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"referto.html\"\r\nContent-Type: application/pdf\r\n\r\ncontenuto\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-no-extension-not-accepted",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Seleziona un file PDF o un’immagine."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"certificato\"\r\nContent-Type: image/png\r\n\r\ncontenuto\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-archive-not-accepted",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Seleziona un file PDF o un’immagine."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"scan.pdf.zip\"\r\n\r\ncontenuto\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-at-the-limit",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "limite.pdf",
+      "body_b64": "JVBERi0xLjQgeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"limite.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-above-the-limit",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 413,
+   "response": {
+    "error": "Il file supera la dimensione massima consentita (4096 byte)."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"grande.png\"\r\nContent-Type: image/png\r\n\r\n%PDF-1.4 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-anonymous-over-the-rate",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "detail": "Request was throttled. Expected available in 3590 seconds."
+   },
+   "effect": null,
+   "throttle": {
+    "preload": 60,
+    "age": 10.2
+   },
+   "retry_after": "3590",
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"certificato medico.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 certificato\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-anonymous-wrong-method-over-the-rate",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "detail": "Request was throttled. Expected available in 3590 seconds."
+   },
+   "effect": null,
+   "throttle": {
+    "preload": 60,
+    "age": 10.2
+   },
+   "retry_after": "3590"
+  },
+  {
+   "name": "documents-writes-certificate-anonymous-below-the-rate",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": null,
+    "documents": [
+     {
+      "filename": "visita.png",
+      "body_b64": "cG5n",
+      "content_type": "image/png",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": null
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": null
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": null
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "throttle": {
+    "preload": 59,
+    "age": 10.2
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.png\"\r\nContent-Type: image/png\r\n\r\npng\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-anonymous-old-history",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "throttle": {
+    "preload": 60,
+    "age": 3601
+   }
+  },
+  {
+   "name": "documents-writes-certificate-owner-full-history",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "certificato medico.pdf",
+      "body_b64": "JVBERi0xLjQgY2VydGlmaWNhdG8=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "throttle": {
+    "preload": 60,
+    "age": 10.2
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"certificato medico.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 certificato\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-owner-full-session-remembered",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "certificato medico.pdf",
+      "body_b64": "JVBERi0xLjQgY2VydGlmaWNhdG8=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": {
+     "session": "owner_full",
+     "certificate": 0
+    },
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"certificato medico.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 certificato\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-ampersand-bare",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "Rossi & Bianchi.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"Rossi & Bianchi.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-ampersand-references",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "a&b<c&d&e¬it;&fÆ.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"a&amp;b&lt;c&#38;d&#x26;e&notit;&ampf&AElig&#13;.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-ampersand-unknown-reference",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "referto &xyz; &#; &#x;.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"referto &xyz; &#; &#x;.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-ampersand-solidus",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgZQ==",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"cartella&sol;visita&period;pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 e\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-utf8-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "ricevuta è.pdf",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPXV0Zi04JydyaWNldnV0YSUyMCVDMyVBOC5wZGYNCkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vcGRmDQoNCiVQREYtMS40IHBhcnRlDQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-continuations",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqMD0idmlzaXRhIjsgZmlsZW5hbWUqMT0iLnBkZiINCkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vcGRmDQoNCiVQREYtMS40IHBhcnRlDQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-continuations-out-of-order",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "scanè.pdf",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqMSo9JUMzJUE4LnBkZjsgZmlsZW5hbWUqMCo9dXRmLTgnJ3NjYW4NCkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vcGRmDQoNCiVQREYtMS40IHBhcnRlDQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-latin1-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "scanè.png",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "image/png",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPWlzby04ODU5LTEnJ3NjYW4lRTgucG5nDQoNCiVQREYtMS40IHBhcnRlDQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-ascii-name-replaces",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "scan�.png",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "image/png",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPXVzLWFzY2lpJydzY2FuJUU4LnBuZw0KDQolUERGLTEuNCBwYXJ0ZQ0KLS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-invalid-utf8-name-replaces",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "scan��.png",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "image/png",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPXV0Zi04JydzY2FuJUZGJUUyJTgyLnBuZw0KDQolUERGLTEuNCBwYXJ0ZQ0KLS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-rfc2231-unknown-charset-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWUqPWJvZ3VzJyd2aXNpdGEucGRmDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3BkZg0KDQolUERGLTEuNCBwYXJ0ZQ0KLS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-invalid-utf8-disposition-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9InZpc2l0Yf8ucGRmIg0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9wZGYNCg0KJVBERi0xLjQgcGFydGUNCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-invalid-utf8-other-header-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgcGFydGU=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9InZpc2l0YS5wZGYiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3BkZjsgeD3/DQoNCiVQREYtMS40IHBhcnRlDQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-base64-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "b64.pdf",
+      "body_b64": "JVBERi0xLjQgYmFzZTY0",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9ImI2NC5wZGYiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL3BkZg0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogYmFzZTY0DQoNCkpWQkVSaTB4TGpRZw0KWW1GelpUWTAgDQoNCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-base64-file-upper-case-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "b64.pdf",
+      "body_b64": "JVBERi0xLjQgYmFzZTY0",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9ImI2NC5wZGYiDQpjb250ZW50LXRyYW5zZmVyLWVuY29kaW5nOiAgQkFTRTY0IA0KDQpKVkJFUmkweExqUWdZbUZ6WlRZMA0KLS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-base64-file-padded-pairs",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "b64.pdf",
+      "body_b64": "JVBERi0xLjQ=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9ImI2NC5wZGYiDQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiBiYXNlNjQNCg0KSlZCRVJpMHhMalE9DQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-base64-file-skips-other-characters",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "b64.pdf",
+      "body_b64": "JVBERi0xLjQ=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9ImI2NC5wZGYiDQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiBiYXNlNjQNCg0KSlZCRSpSaTB4JExqUT0NCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-base64-file-padding-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "Multipart form parse error - Could not decode base64 data."
+   },
+   "effect": null,
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9ImI2NC5wZGYiDQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiBiYXNlNjQNCg0KSlZCRVJpMHhMalENCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-base64-file-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "b64.pdf",
+      "body_b64": "",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9ImI2NC5wZGYiDQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiBiYXNlNjQNCg0KDQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-certificate-quoted-printable-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/medical/certificate/",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "success!",
+    "uid": "$cert0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "qp.pdf",
+      "body_b64": "JVBERj0zRDE=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJtZWRpY2FsX2NlcnRpZmljYXRlIjsgZmlsZW5hbWU9InFwLnBkZiINCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IHF1b3RlZC1wcmludGFibGUNCg0KJVBERj0zRDENCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-upload-field-base64",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "cte.txt",
+      "body_b64": "Y2FtcG8gYmFzZTY0",
+      "content_type": "text/plain",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "files"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:files"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJkb2N1bWVudCINCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IGJhc2U2NA0KDQpXVEpHZEdOSE9HZFpiVVo2V2xSWk1BPT0NCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnkNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0iZmlsZW5hbWUiDQoNCmN0ZS50eHQNCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnktLQ0K",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-upload-field-base64-undecodable-kept",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "raw.txt",
+      "body_b64": "Y2FtcG8gZ3Jlenpv",
+      "content_type": "text/plain",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "files"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:files"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJkb2N1bWVudCINCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IGJhc2U2NA0KDQpXVEpHZEdOSE9HZGFNMHBzWlc1d2RnPT0NCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnkNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0iZmlsZW5hbWUiDQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiBiYXNlNjQNCg0KcmF3LnR4dA0KLS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeS0tDQo=",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-upload-field-invalid-utf8-replaced",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352025/upload-document",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "mgs": "file uploaded"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "caf�.pdf",
+      "body_b64": "bGF0aW4=",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [
+     {
+      "document": 0,
+      "subscription": "files"
+     }
+    ],
+    "certificates": [],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "SubscriptionFile",
+      "key": "$file0",
+      "action": 0,
+      "changes": "$created",
+      "index": "subscription:files"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_b64": "LS1kb2N1bWVudHN3cml0ZXNib3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJkb2N1bWVudCINCg0KYkdGMGFXND0NCi0tZG9jdW1lbnRzd3JpdGVzYm91bmRhcnkNCkNvbnRlbnQtRGlzcG9zaXRpb246IGZvcm0tZGF0YTsgbmFtZT0iZmlsZW5hbWUiDQoNCmNhZukucGRmDQotLWRvY3VtZW50c3dyaXRlc2JvdW5kYXJ5LS0NCg==",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-medical-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Medical Certificate Upload",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "documents-writes-medical-malformed-uid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/abc/medical-certificate/upload",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-unknown",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352999/medical-certificate/upload",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Subscription not found"
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-foreign-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352022/medical-certificate/upload",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Subscription not found"
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-foreign-draft",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352028/medical-certificate/upload",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Subscription not found"
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-grouped-foreign-group",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352024/medical-certificate/upload",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "error": "Subscription not found"
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-athlete-other-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Subscription not found"
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-athlete-no-drafts",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352026/medical-certificate/upload",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Subscription not found"
+   },
+   "effect": null,
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-missing-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "medical_certificate key not present!"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "documents-writes-medical-text-value",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'str' object has no attribute 'name'"
+   },
+   "effect": null,
+   "body": {
+    "medical_certificate": "x"
+   }
+  },
+  {
+   "name": "documents-writes-medical-number-value",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'int' object has no attribute 'name'"
+   },
+   "effect": null,
+   "body": {
+    "medical_certificate": 3
+   }
+  },
+  {
+   "name": "documents-writes-medical-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'list' object has no attribute 'get'"
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "documents-writes-medical-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "JSON parse error - Expecting property name enclosed in double quotes: line 1 column 2 (char 1)"
+   },
+   "effect": null,
+   "raw_body": "{bad",
+   "content_type": "application/json"
+  },
+  {
+   "name": "documents-writes-medical-owner-subscription",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352019/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "medical": "$doc0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {
+     "main": {
+      "medical_id": "$cert0"
+     }
+    },
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Subscription",
+      "key": "main",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "None",
+        "$cert0"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-collaborator-replaces-certificate",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352020/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "medical": "$doc0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {
+     "withcert": {
+      "medical_id": "$cert0"
+     }
+    },
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Subscription",
+      "key": "withcert",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "a1000000-0000-4000-8000-000000352018",
+        "$cert0"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-save-fills-dates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352021/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "medical": "$doc0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {
+     "nodates": {
+      "medical_id": "$cert0",
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31"
+     }
+    },
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Subscription",
+      "key": "nodates",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "None",
+        "$cert0"
+       ],
+       "start_date": [
+        "None",
+        "2026-01-01"
+       ],
+       "end_date": [
+        "None",
+        "2026-12-31"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-athlete-own-subscription",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352023/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "medical": "$doc0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "athlete",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "athlete"
+     }
+    ],
+    "subscriptions": {
+     "athlete": {
+      "medical_id": "$cert0"
+     }
+    },
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Subscription",
+      "key": "athlete",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "None",
+        "$cert0"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-owner-full-session",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352024/medical-certificate/upload",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "medical": "$doc0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {
+     "grouped": {
+      "medical_id": "$cert0"
+     }
+    },
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Subscription",
+      "key": "grouped",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "None",
+        "$cert0"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-ampersand-filename",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352030/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "medical": "$doc0",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "Rossi & Bianchi.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {
+     "ampersand": {
+      "medical_id": "$cert0"
+     }
+    },
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "Subscription",
+      "key": "ampersand",
+      "action": 1,
+      "changes": {
+       "medical": [
+        "None",
+        "$cert0"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"Rossi & Bianchi.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-season-error-keeps-certificate",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352031/medical-certificate/upload",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Invalid date combination: day is out of range for month"
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "foreign_owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-draft-adds-entry",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352026/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "updated draft",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {
+     "none": {
+      "associate": {
+       "first_name": "Ada"
+      },
+      "medical_certificate": {
+       "medical_id": "$cert0",
+       "filename": "visita.pdf",
+       "certificate_expring_date": null
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "AssociateImportDraft",
+      "key": "none",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"associate\": {\"first_name\": \"Ada\"}}",
+        "{\"associate\": {\"first_name\": \"Ada\"}, \"medical_certificate\": {\"certificate_expring_date\": null, \"filename\": \"visita.pdf\", \"medical_id\": \"$cert0\"}}"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-draft-keeps-entry-keys",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352027/medical-certificate/upload",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "updated draft",
+    "expiring_date": null
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "documents": [
+     {
+      "filename": "referto.txt",
+      "body_b64": "cmVmZXJ0bw==",
+      "content_type": "text/plain",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {
+     "withmc": {
+      "medical_certificate": {
+       "medical_id": "$cert0",
+       "filename": "referto.txt",
+       "certificate_expring_date": "01/01/2027",
+       "k": 1
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "AssociateImportDraft",
+      "key": "withmc",
+      "action": 1,
+      "changes": {
+       "data": [
+        "{\"medical_certificate\": {\"certificate_expring_date\": \"01/01/2027\", \"filename\": \"x.pdf\", \"k\": 1, \"medical_id\": null}}",
+        "{\"medical_certificate\": {\"certificate_expring_date\": \"01/01/2027\", \"filename\": \"referto.txt\", \"k\": 1, \"medical_id\": \"$cert0\"}}"
+       ]
+      },
+      "index": "direct"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"referto.txt\"\r\nContent-Type: text/plain\r\n\r\nreferto\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  },
+  {
+   "name": "documents-writes-medical-draft-list-data-keeps-certificate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/a1000000-0000-4000-8000-000000352029/medical-certificate/upload",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'list' object has no attribute 'keys'"
+   },
+   "effect": {
+    "actor": "owner",
+    "documents": [
+     {
+      "filename": "visita.pdf",
+      "body_b64": "JVBERi0xLjQgdmlzaXRh",
+      "content_type": "application/pdf",
+      "encoding": null,
+      "kept": true
+     }
+    ],
+    "archives": [],
+    "files": [],
+    "certificates": [
+     {
+      "document": 0,
+      "user": "owner"
+     }
+    ],
+    "subscriptions": {},
+    "drafts": {},
+    "audit": [
+     {
+      "model": "Document",
+      "key": "$doc0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     },
+     {
+      "model": "MedicalCertificate",
+      "key": "$cert0",
+      "action": 0,
+      "changes": "$created",
+      "index": "actor"
+     }
+    ],
+    "cache": null,
+    "archive_updates": {},
+    "archive_deleted": []
+   },
+   "raw_body": "--documentswritesboundary\r\nContent-Disposition: form-data; name=\"medical_certificate\"; filename=\"visita.pdf\"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1.4 visita\r\n--documentswritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=documentswritesboundary"
+  }
+ ]
+}

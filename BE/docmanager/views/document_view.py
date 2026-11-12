@@ -1,12 +1,15 @@
 import logging
+import mimetypes
 
+from django.conf import settings as django_settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.clickjacking import xframe_options_exempt
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 
-from rest_framework.decorators import permission_classes, api_view
+from rest_framework.decorators import permission_classes, api_view, throttle_classes
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
@@ -22,6 +25,7 @@ from core.settings import STORAGE_DIR
 import os
 from django.core.files.storage import default_storage
 
+from docmanager.access import require_document_access
 from docmanager.models import Document
 from docmanager.download_tokens import load_document_download_token
 
@@ -125,12 +129,14 @@ def retrieve_document(request, uid):
             # Token is not a valid UUID (e.g., JWT token), skip this lookup
             pass
 
+    by_account = False
     if document is None:
         # Support authenticated access via document ID and legacy related-resource IDs.
         if request.user and request.user.is_authenticated:
             document = _get_document_from_related_uid(uid)
             if document is None:
                 return Response({'error': 'Document not found.'}, status.HTTP_404_NOT_FOUND)
+            by_account = True
         else:
             return Response({'error': 'Invalid token. Not Authorized.'}, status.HTTP_401_UNAUTHORIZED)
 
@@ -150,6 +156,10 @@ def retrieve_document(request, uid):
                     {'error': 'Not authorized to access this export.'},
                     status.HTTP_403_FORBIDDEN,
                 )
+
+    if by_account:
+        # Without a document token, documents are served to the association's staff and to the member they belong to.
+        require_document_access(request, document)
 
     if getattr(request, 'impersonation_association', None):
         from application.impersonation_scope import visible_documents
@@ -179,8 +189,29 @@ def delete_document(request, uid):
         return Response({'error': 'Document not found.'}, status.HTTP_404_NOT_FOUND)
 
 
+class MedicalCertificateUploadThrottle(AnonRateThrottle):
+    """Uploads sent without an account, counted per address and hour."""
+    scope = 'medical-certificate-upload'
+
+    def get_rate(self):
+        return f'{django_settings.MEDICAL_CERTIFICATE_UPLOADS_PER_HOUR}/hour'
+
+
+def medical_certificate_type_allowed(filename):
+    """A PDF or an image, by the type of the file name (the type the stored file is served with)."""
+    guessed = mimetypes.guess_type(filename)[0] or ''
+    return guessed == 'application/pdf' or guessed.startswith('image/')
+
+
+def medical_certificate_too_large_message(limit):
+    mebibyte = 1024 * 1024
+    size = f'{limit // mebibyte} MB' if limit % mebibyte == 0 else f'{limit} byte'
+    return f'Il file supera la dimensione massima consentita ({size}).'
+
+
 @api_view(['POST'])
 # @permission_classes([IsAuthenticated])
+@throttle_classes([MedicalCertificateUploadThrottle])
 def medical_certificate_document(request):
 
 
@@ -192,6 +223,13 @@ def medical_certificate_document(request):
         medical_certificate = data['medical_certificate']
         logger.info(medical_certificate)
         # template = os.path.join(BASE_DIR, 'templates/document/application/subscription.html')
+
+        if not medical_certificate_type_allowed(medical_certificate.name):
+            return Response({'error': 'Seleziona un file PDF o un’immagine.'}, status=status.HTTP_400_BAD_REQUEST)
+        limit = django_settings.MEDICAL_CERTIFICATE_MAX_UPLOAD_BYTES
+        if medical_certificate.size > limit:
+            return Response({'error': medical_certificate_too_large_message(limit)},
+                            status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
 
         document = Document.objects.create(filename=medical_certificate.name)
         document.save()

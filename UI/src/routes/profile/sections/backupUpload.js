@@ -10,15 +10,27 @@ export function uploadProblem(file, free = null) {
     return '';
 }
 
+export const TOO_LARGE = 'Il file supera la dimensione massima consentita per il caricamento.';
+
+function parseBody(text) {
+    try { return JSON.parse(text || '{}') || {}; } catch { return {}; /* Non-JSON error page. */ }
+}
+
+// The message for a failed upload; a 413 from a proxy has no JSON body.
+export function uploadError(status, body = {}) {
+    if (body?.error || body?.detail) return body.error || body.detail;
+    if (status === 413) return TOO_LARGE;
+    return 'Caricamento non riuscito. Riprova.';
+}
+
 export function uploadArchive(url, file, {token = null, onProgress = () => {}} = {}) {
     const xhr = new XMLHttpRequest();
     const done = new Promise((resolve, reject) => {
         xhr.upload.addEventListener('progress', event => { if (event.lengthComputable) onProgress(event.loaded / event.total); });
         xhr.addEventListener('load', () => {
-            let body = {};
-            try { body = JSON.parse(xhr.responseText || '{}'); } catch { /* Non-JSON error page. */ }
+            const body = parseBody(xhr.responseText);
             if (xhr.status >= 200 && xhr.status < 300) resolve(body);
-            else reject(new Error(body.error || body.detail || 'Caricamento non riuscito. Riprova.'));
+            else reject(Object.assign(new Error(uploadError(xhr.status, body)), {status: xhr.status}));
         });
         xhr.addEventListener('error', () => reject(new Error('Caricamento non riuscito. Controlla la connessione e riprova.')));
         xhr.addEventListener('abort', () => reject(Object.assign(new Error('Caricamento annullato.'), {aborted: true})));

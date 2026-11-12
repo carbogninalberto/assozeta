@@ -17,9 +17,10 @@ from application.serializers.personas_serializers import AssociateTutorRelationS
 from application.serializers.user_serializers import AssociateSerializer, AssociateSerializerInfo, InstructorSerializer
 from core.settings import STORAGE_DIR
 from docmanager.models import Document
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
-class SupplierSerializer(serializers.ModelSerializer):
+class SupplierSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = SupplierAndCustomers.objects.create(**validated_data)
@@ -604,6 +605,28 @@ class VatManagementSerializer(serializers.ModelSerializer):
 
 class PaymentCategorySerializer(serializers.ModelSerializer):
     vat_management = VatManagementSerializer()
+
+    def get_fields(self):
+        fields = super().get_fields()
+        if self.instance is not None:
+            from rest_framework.validators import UniqueValidator
+            # An update must retain its primary key, whether the replacement
+            # already exists or not. Creation still checks UUID uniqueness.
+            fields['payment_category_id'].validators = [
+                validator for validator in fields['payment_category_id'].validators
+                if not isinstance(validator, UniqueValidator)
+            ]
+        return fields
+
+    def validate_payment_category_id(self, value):
+        if self.instance is not None and value != self.instance.pk:
+            raise serializers.ValidationError("L'identificativo della categoria non può essere modificato.")
+        return value
+
+    def validate_sport_association(self, value):
+        if self.instance is not None and (value.pk if value else None) != self.instance.sport_association_id:
+            raise serializers.ValidationError("L'associazione della categoria non può essere modificata.")
+        return value
 
     def create(self, validated_data):
         # Get and validate vat management data

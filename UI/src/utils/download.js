@@ -1,3 +1,5 @@
+import {rewriteApiUrl} from './apiVersion.js';
+
 export function downloadFile(filename, base64, filetype = 'text/csv') {
     const a = document.createElement("a");
     a.href = `data:${filetype};base64,${base64}`;
@@ -12,7 +14,7 @@ export function downloadCSV(filename, base64) {
 
 export function downloadPdf(url) {
     const token = localStorage.getItem('sessionToken').replaceAll('"', '');
-    window.open(url + '?download=true&token=' + token, '_blank');
+    window.open(rewriteApiUrl(url) + '?download=true&token=' + token, '_blank');
 }
 
 export function downloadZip(filename, base64) {

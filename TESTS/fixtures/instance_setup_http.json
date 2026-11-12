@@ -1,0 +1,4070 @@
+{
+ "matrix_version": 1,
+ "scope": "instance setup, reconfigure, setup-token validation and logo uploads",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "location": "instance-setup-fixture",
+ "import_tasks": {
+  "own": {
+   "task_id": "b3000000-0000-4000-8000-000000000100",
+   "status": "SUCCESS",
+   "result": "{\"success\": true, \"sport_association_id\": \"a1000000-0000-4000-8000-000000701001\", \"counts\": {}}"
+  },
+  "alias": {
+   "task_id": "b3000000-0000-4000-8000-000000000101",
+   "status": "SUCCESS",
+   "result": "{\"association_id\": \"a1000000-0000-4000-8000-000000701002\"}"
+  },
+  "deleted": {
+   "task_id": "b3000000-0000-4000-8000-000000000102",
+   "status": "SUCCESS",
+   "result": "{\"success\": 1, \"sport_association_id\": \"A1000000-0000-4000-8000-000000701003\"}"
+  },
+  "fallback": {
+   "task_id": "b3000000-0000-4000-8000-000000000103",
+   "status": "SUCCESS",
+   "result": "{\"success\": true, \"sport_association_id\": \"\"}"
+  },
+  "text": {
+   "task_id": "b3000000-0000-4000-8000-000000000104",
+   "status": "SUCCESS",
+   "result": "\"Import completato\""
+  },
+  "null": {
+   "task_id": "b3000000-0000-4000-8000-000000000105",
+   "status": "SUCCESS",
+   "result": null
+  },
+  "failed": {
+   "task_id": "b3000000-0000-4000-8000-000000000106",
+   "status": "SUCCESS",
+   "result": "{\"success\": false, \"error\": \"Archivio non valido\"}"
+  },
+  "failed_plain": {
+   "task_id": "b3000000-0000-4000-8000-000000000107",
+   "status": "SUCCESS",
+   "result": "{\"success\": 0}"
+  },
+  "failed_null": {
+   "task_id": "b3000000-0000-4000-8000-000000000108",
+   "status": "SUCCESS",
+   "result": "{\"success\": null, \"error\": null}"
+  },
+  "unknown": {
+   "task_id": "b3000000-0000-4000-8000-000000000109",
+   "status": "SUCCESS",
+   "result": "{\"success\": true, \"sport_association_id\": \"b3000000-0000-4000-8000-00000000ffff\"}"
+  },
+  "running": {
+   "task_id": "b3000000-0000-4000-8000-000000000110",
+   "status": "STARTED",
+   "result": "{\"pid\": 1}"
+  },
+  "progress": {
+   "task_id": "b3000000-0000-4000-8000-000000000111",
+   "status": "PROGRESS",
+   "result": "{\"percent\": 50}"
+  }
+ },
+ "cases": [
+  {
+   "name": "instance-setup-validate-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-wrong-token",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "not-the-setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-owner-without-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-admin-without-token",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-token",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "valid": true
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-owner-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "valid": true
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-token-get",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-token-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "name": "Instance Setup Token Validate",
+    "description": "Validate the first-run setup token without changing instance state.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-anonymous-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-anonymous-get",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-validate-owner-impersonation",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "$setup-token",
+    "X-Impersonation-Id": "$session:admin_owner"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Esci dall’impersonificazione per accedere all’amministrazione."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-reconfigure-anonymous",
+   "actor": "anonymous",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {},
+   "body": {}
+  },
+  {
+   "name": "instance-setup-reconfigure-unconfigured-owner",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "success": false,
+    "error": "Instance not configured"
+   },
+   "effect": null,
+   "storage": {},
+   "body": {
+    "meta_title": "x"
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-unconfigured-admin",
+   "actor": "admin",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "success": false,
+    "error": "Instance not configured"
+   },
+   "effect": null,
+   "storage": {},
+   "raw_body": "name=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-setup-reconfigure-owner-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instance Reconfigure",
+    "description": "PUT /instance/reconfigure\nUpdate instance configuration.\nRequires authentication and admin privileges.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-reconfigure-owner-get",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-logo-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {},
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-owner-without-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {},
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "name": "Instance Logo Upload",
+    "description": "POST /instance/logo\nUpload instance logo.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "multipart/form-data",
+     "application/x-www-form-urlencoded"
+    ]
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-logo-token-get",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-logo-token-json",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/json\" in request."
+   },
+   "effect": null,
+   "storage": {},
+   "body": {
+    "file": "x"
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-form",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "No file provided"
+   },
+   "effect": null,
+   "storage": {},
+   "raw_body": "file=logo.png",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-setup-logo-token-empty",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "No file provided"
+   },
+   "effect": null,
+   "storage": {}
+  },
+  {
+   "name": "instance-setup-logo-token-field-only",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "No file provided"
+   },
+   "effect": null,
+   "storage": {},
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "value": "not-a-file"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-other-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "No file provided"
+   },
+   "effect": null,
+   "storage": {},
+   "upload": {
+    "parts": [
+     {
+      "name": "logo",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-svg",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "Invalid file type. Use PNG, JPG, or WebP."
+   },
+   "effect": null,
+   "storage": {},
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/svg+xml",
+      "fill": "s",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-no-type",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "Invalid file type. Use PNG, JPG, or WebP."
+   },
+   "effect": null,
+   "storage": {},
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": null,
+      "fill": "s",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-too-large",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "File too large. Maximum size is 5MB."
+   },
+   "effect": null,
+   "storage": {},
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "L",
+      "size": 5242881
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-png",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "logo_url": "/api/instance/logo.png"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 4096,
+     "sha256": "c93eee2d0db02f10acc7460d9576e122dcf8cd53c4bf8dfcae1b3e74ebcfff5a",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "note",
+      "value": "ignored"
+     },
+     {
+      "name": "file",
+      "filename": "brand.PNG",
+      "content_type": "image/png",
+      "fill": "a",
+      "size": 4096
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-jpeg-replaces",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "logo_url": "/api/instance/logo.png"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.jpg": {
+     "size": 2048,
+     "sha256": "80c58fc1932767b113819b033e1874d8de05e8809534590db9d01510abc8ed6b",
+     "content_type": "image/jpeg",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "brand.jpeg",
+      "content_type": "image/jpeg",
+      "fill": "b",
+      "size": 2048
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-logo-token-webp-limit",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "logo_url": "/api/instance/logo.png"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "x",
+      "size": 10
+     },
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "IMAGE/WEBP; charset=binary",
+      "fill": "w",
+      "size": 5242880
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-configure-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-wrong-token",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "not-the-setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-owner-without-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-token-get",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-token-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "name": "Instance Setup",
+    "description": "POST /instance/configure\nInitial instance setup (only works once).\nProtected by setup token during first-run setup wizard.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-token-form",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "raw_body": "domain=setup.example.test",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-setup-configure-empty",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "domain": [
+      "This field is required."
+     ],
+     "oem": [
+      "This field is required."
+     ],
+     "initialization": [
+      "This field is required."
+     ]
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {}
+  },
+  {
+   "name": "instance-setup-configure-list",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "non_field_errors": [
+      "Invalid data. Expected a dictionary, but got list."
+     ]
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": []
+  },
+  {
+   "name": "instance-setup-configure-short-domain-and-nested-types",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "domain": [
+      "Domain must be at least 3 characters."
+     ],
+     "oem": {
+      "non_field_errors": [
+       "Invalid data. Expected a dictionary, but got str."
+      ]
+     },
+     "oauth": [
+      "This field may not be null."
+     ],
+     "initialization": {
+      "type": [
+       "This field is required."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": " ab ",
+    "oem": "brand",
+    "oauth": null,
+    "initialization": {}
+   }
+  },
+  {
+   "name": "instance-setup-configure-field-rules",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "domain": [
+      "This field may not be blank."
+     ],
+     "oem": {
+      "name": [
+       "This field may not be blank."
+      ],
+      "abbreviation": [
+       "Ensure this field has no more than 50 characters."
+      ],
+      "primaryColor": [
+       "This value does not match the required pattern."
+      ],
+      "supportEmail": [
+       "Enter a valid email address."
+      ],
+      "logo": [
+       "Logo must be /api/instance/logo.png."
+      ]
+     },
+     "oauth": {
+      "googleClientId": [
+       "Ensure this field has no more than 255 characters."
+      ],
+      "appleClientId": [
+       "Not a valid string."
+      ]
+     },
+     "stripe": {
+      "clientPortal": [
+       "Enter a valid URL."
+      ],
+      "publicKey": [
+       "This field may not be null."
+      ]
+     },
+     "initialization": {
+      "type": [
+       "\"restore\" is not a valid choice."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "   ",
+    "oem": {
+     "name": " ",
+     "abbreviation": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+     "primaryColor": "#12345G",
+     "supportEmail": "no-at",
+     "logo": "/oem/other.png"
+    },
+    "oauth": {
+     "googleClientId": "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+     "appleClientId": {
+      "id": 1
+     }
+    },
+    "stripe": {
+     "clientPortal": "not a url",
+     "publicKey": null
+    },
+    "initialization": {
+     "type": "restore"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-client-portal-idn-valid",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "oem": {
+      "name": [
+       "This field may not be blank."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " "
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    },
+    "stripe": {
+     "clientPortal": "https://portale.bücher.example/area"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-client-portal-idn-invalid",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "stripe": {
+      "clientPortal": [
+       "Enter a valid URL."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    },
+    "stripe": {
+     "clientPortal": "https://éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé.example"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-long-domain",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "domain": [
+      "Ensure this field has no more than 255 characters."
+     ],
+     "oem": [
+      "This field may not be null."
+     ]
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "oem": null,
+    "initialization": {
+     "type": "fresh",
+     "associationName": "A",
+     "ownerEmail": "a@b.example",
+     "ownerPassword": "12345678"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-fresh-missing-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "initialization": {
+      "associationName": [
+       "Required for fresh initialization."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-fresh-missing-email",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "initialization": {
+      "ownerEmail": [
+       "Required for fresh initialization."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "A",
+     "ownerPassword": "x"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-fresh-missing-password",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "initialization": {
+      "ownerPassword": [
+       "Required for fresh initialization."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "A",
+     "ownerEmail": "a@b.example"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-fresh-short-trimmed-password",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "initialization": {
+      "ownerPassword": [
+       "Password must be at least 8 characters."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "A",
+     "ownerEmail": "a@b.example",
+     "ownerPassword": "  1234567  "
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-fresh-field-errors",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "initialization": {
+      "associationName": [
+       "Ensure this field has no more than 150 characters."
+      ],
+      "ownerEmail": [
+       "Enter a valid email address."
+      ],
+      "ownerPassword": [
+       "Ensure this field has no more than 128 characters."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+     "ownerEmail": "owner@",
+     "ownerPassword": "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-missing-task",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "initialization": {
+      "importTaskId": [
+       "Required for import initialization."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "import"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-blank-task",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "initialization": {
+      "importTaskId": [
+       "This field may not be blank."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": " "
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-pending-task",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task is still in progress. Please wait for completion."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000001"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-linked",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000100",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-association-id-key",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701002"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000101",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-deleted-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701003"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000102",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-latest-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "$latest"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000103",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-text-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "$latest"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000104",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-empty-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "$latest"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000105",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failed-result",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import failed: Archivio non valido"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000106",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failed-without-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import failed: Unknown error"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000107",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-failed-null-error",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import failed: None"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000108",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-unknown-association",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Association b3000000-0000-4000-8000-00000000ffff not found after import."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000109",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-running-task",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task is still in progress. Please wait for completion."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000110",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-progress-task",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "Import task is still in progress. Please wait for completion."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000111",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-owner-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "import",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Importata",
+     "abbreviation": "",
+     "primary_color": "#123ABC",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "import",
+     "onboarding_completed": true,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": " Istanza Importata ",
+     "primaryColor": "#123ABC"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000100",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-support-email-too-long",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "value too long for type character varying(254)\n"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup",
+     "supportEmail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@setup.example.test"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-owner-email-too-long",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "value too long for type character varying(254)\n"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-import-support-email-too-long",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "value too long for type character varying(254)\n"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Import",
+     "supportEmail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@setup.example.test"
+    },
+    "initialization": {
+     "type": "import",
+     "importTaskId": "b3000000-0000-4000-8000-000000000100",
+     "associationName": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-owner-email-grows-when-lowercased",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "value too long for type character varying(254)\n"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@İ.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-domain-grows-when-lowercased",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 500,
+   "response": {
+    "success": false,
+    "error": "value too long for type character varying(255)\n"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "İİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİİ",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-email-over-validator-limit",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "oem": {
+      "supportEmail": [
+       "Enter a valid email address."
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup",
+     "supportEmail": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx@setup.example.test"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configure-fresh",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Istanza configurata con successo",
+    "association_id": "$new",
+    "redirect": "/login"
+   },
+   "effect": {
+    "kind": "configure",
+    "config": {
+     "domain": "setup.example.test",
+     "name": "Istanza Setup",
+     "abbreviation": "IS",
+     "primary_color": "#0a1B2c",
+     "support_email": "help@setup.example.test",
+     "logo_path": "",
+     "setup_provenance": "fresh",
+     "onboarding_completed": false,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "google-setup-id",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "owner": {
+     "email": "Owner.Setup@setup.example.test",
+     "password": "setup-password-1"
+    },
+    "association": {
+     "denomination": "Associazione Setup"
+    }
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "  Setup.Example.TEST ",
+    "oem": {
+     "name": " Istanza Setup ",
+     "abbreviation": " IS ",
+     "primaryColor": "#0a1B2c",
+     "supportEmail": " help@setup.example.test ",
+     "logo": null,
+     "ignored": true
+    },
+    "oauth": {
+     "googleClientId": " google-setup-id ",
+     "appleClientId": null
+    },
+    "stripe": {
+     "publicKey": "pk_test_placeholder",
+     "clientPortal": ""
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": " Associazione Setup ",
+     "ownerEmail": " Owner.Setup@Setup.EXAMPLE.test ",
+     "ownerPassword": "  setup-password-1  ",
+     "importTaskId": "ignored"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-configure-token",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-configure-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-configure-setup-owner",
+   "actor": "setup_owner",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "Instance already configured. Use /instance/reconfigure to update."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "domain": "setup.example.test",
+    "oem": {
+     "name": "Istanza Setup"
+    },
+    "initialization": {
+     "type": "fresh",
+     "associationName": "Associazione Setup",
+     "ownerEmail": "owner@setup.example.test",
+     "ownerPassword": "setup-password-1"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-configure-admin-form",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/configure",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "Instance already configured. Use /instance/reconfigure to update."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "raw_body": "domain=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-setup-configured-configure-setup-owner-options",
+   "actor": "setup_owner",
+   "method": "OPTIONS",
+   "path": "/instance/configure",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instance Setup",
+    "description": "POST /instance/configure\nInitial instance setup (only works once).\nProtected by setup token during first-run setup wizard.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-validate-token",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-validate-owner-token",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-validate-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-validate-setup-owner",
+   "actor": "setup_owner",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "valid": true
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-validate-admin",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/setup-token/validate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "valid": true
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-owner",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "success": false,
+    "error": "Only the instance owner can reconfigure"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "meta_title": "x"
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "success": false,
+    "error": "Only the instance owner can reconfigure"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {}
+  },
+  {
+   "name": "instance-setup-reconfigure-athlete",
+   "actor": "athlete",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "success": false,
+    "error": "Only the instance owner can reconfigure"
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {}
+  },
+  {
+   "name": "instance-setup-reconfigure-setup-owner-form",
+   "actor": "setup_owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/x-www-form-urlencoded\" in request."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "raw_body": "meta_title=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instance-setup-reconfigure-list",
+   "actor": "setup_owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "non_field_errors": [
+      "Invalid data. Expected a dictionary, but got list."
+     ]
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": [
+    "oem"
+   ]
+  },
+  {
+   "name": "instance-setup-reconfigure-field-rules",
+   "actor": "setup_owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "oem": {
+      "name": [
+       "This field may not be blank."
+      ],
+      "primaryColor": [
+       "This value does not match the required pattern."
+      ]
+     },
+     "oauth": {
+      "googleClientId": [
+       "Ensure this field has no more than 255 characters."
+      ]
+     },
+     "stripe": {
+      "clientPortal": [
+       "Enter a valid URL."
+      ]
+     },
+     "display_settings": [
+      "This field may not be null."
+     ],
+     "meta_title": [
+      "Ensure this field has no more than 255 characters."
+     ],
+     "meta_description": [
+      "Not a valid string."
+     ],
+     "show_tutorial": [
+      "Must be a valid boolean."
+     ],
+     "show_minor_exemption": [
+      "This field may not be null."
+     ]
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "oem": {
+     "name": "",
+     "primaryColor": "red"
+    },
+    "oauth": {
+     "googleClientId": "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"
+    },
+    "stripe": {
+     "clientPortal": "ftp//nowhere"
+    },
+    "display_settings": null,
+    "meta_title": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "meta_description": [
+     "x"
+    ],
+    "show_tutorial": "maybe",
+    "show_minor_exemption": null
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-oem-not-dict",
+   "actor": "setup_owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "success": false,
+    "errors": {
+     "oem": {
+      "non_field_errors": [
+       "Invalid data. Expected a dictionary, but got int."
+      ]
+     },
+     "oauth": [
+      "This field may not be null."
+     ]
+    }
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "oem": 5,
+    "oauth": null
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-empty",
+   "actor": "setup_owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Configurazione aggiornata"
+   },
+   "effect": {
+    "kind": "config",
+    "fields": {
+     "domain": "setup.example.test",
+     "name": "Istanza Setup",
+     "abbreviation": "IS",
+     "primary_color": "#0a1B2c",
+     "support_email": "help@setup.example.test",
+     "logo_path": "",
+     "setup_provenance": "fresh",
+     "onboarding_completed": false,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "google-setup-id",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": true,
+     "show_minor_exemption": true,
+     "show_tutorial": true,
+     "meta_title": "",
+     "meta_description": "",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "touched": true
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {}
+  },
+  {
+   "name": "instance-setup-reconfigure-setup-owner",
+   "actor": "setup_owner",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Configurazione aggiornata"
+   },
+   "effect": {
+    "kind": "config",
+    "fields": {
+     "domain": "setup.example.test",
+     "name": "Istanza Setup",
+     "abbreviation": "IS",
+     "primary_color": "#ABCDEF",
+     "support_email": "help@setup.example.test",
+     "logo_path": "",
+     "setup_provenance": "fresh",
+     "onboarding_completed": false,
+     "display_settings": {
+      "general": {
+       "searchBar": true,
+       "cookieConsent": true,
+       "showDemoButton": false
+      },
+      "login": {
+       "showSportAssociationCreation": false,
+       "allowOauthLogin": true,
+       "showFooterInfo": true,
+       "allowOnlyAthletes": false,
+       "showTestimonials": false,
+       "termsAndConditionsUrl": ""
+      },
+      "navbar": {
+       "showAffiliateLink": false,
+       "showReview": false,
+       "showNotifications": true
+      },
+      "sidebar": {
+       "showPlanUpgrades": false,
+       "showPrivacyPolicy": true,
+       "showTermsOfService": true,
+       "showPreferences": true
+      }
+     },
+     "google_client_id": "",
+     "apple_client_id": "apple-setup-id",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": false,
+     "show_minor_exemption": true,
+     "show_tutorial": false,
+     "meta_title": "Titolo",
+     "meta_description": "Descrizione",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "touched": true
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "oem": {
+     "primaryColor": "#ABCDEF"
+    },
+    "oauth": {
+     "appleClientId": " apple-setup-id "
+    },
+    "stripe": {
+     "secretKey": "sk_test_placeholder"
+    },
+    "display_settings": {},
+    "meta_title": " Titolo ",
+    "meta_description": " Descrizione ",
+    "show_tutorial": "false",
+    "show_course_athletes": 0,
+    "domain": "ignored.example.test",
+    "self_hosted": false
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-admin",
+   "actor": "admin",
+   "method": "PUT",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "message": "Configurazione aggiornata"
+   },
+   "effect": {
+    "kind": "config",
+    "fields": {
+     "domain": "setup.example.test",
+     "name": "Istanza Admin",
+     "abbreviation": "",
+     "primary_color": "#ABCDEF",
+     "support_email": "",
+     "logo_path": "",
+     "setup_provenance": "fresh",
+     "onboarding_completed": false,
+     "display_settings": {
+      "login": {
+       "allowOauthLogin": false
+      },
+      "extra": [
+       1,
+       "two"
+      ]
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": false,
+     "show_minor_exemption": false,
+     "show_tutorial": false,
+     "meta_title": "Titolo",
+     "meta_description": "Descrizione",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "touched": true
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {
+    "oem": {
+     "name": "Istanza Admin",
+     "abbreviation": "",
+     "supportEmail": ""
+    },
+    "oauth": {
+     "googleClientId": null
+    },
+    "display_settings": {
+     "login": {
+      "allowOauthLogin": false
+     },
+     "extra": [
+      1,
+      "two"
+     ]
+    },
+    "show_minor_exemption": "off"
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-anonymous-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-reconfigure-collaborator-options",
+   "actor": "full_collaborator",
+   "method": "OPTIONS",
+   "path": "/instance/reconfigure",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instance Reconfigure",
+    "description": "PUT /instance/reconfigure\nUpdate instance configuration.\nRequires authentication and admin privileges.",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-configured-logo-token",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-configured-logo-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Setup token missing or invalid."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-configured-logo-setup-owner-invalid",
+   "actor": "setup_owner",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "Invalid file type. Use PNG, JPG, or WebP."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.webp": {
+     "size": 5242880,
+     "sha256": "d2456dc1153ae0bb2416945a59cd9f5d970206f5a2627dfd8d682e9e5956d8f1",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/gif",
+      "fill": "g",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-configured-logo-setup-owner",
+   "actor": "setup_owner",
+   "method": "POST",
+   "path": "/instance/logo",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "logo_url": "$logo-version"
+   },
+   "effect": {
+    "kind": "config",
+    "fields": {
+     "domain": "setup.example.test",
+     "name": "Istanza Admin",
+     "abbreviation": "",
+     "primary_color": "#ABCDEF",
+     "support_email": "",
+     "logo_path": "/api/instance/logo.png",
+     "setup_provenance": "fresh",
+     "onboarding_completed": false,
+     "display_settings": {
+      "login": {
+       "allowOauthLogin": false
+      },
+      "extra": [
+       1,
+       "two"
+      ]
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": false,
+     "show_minor_exemption": false,
+     "show_tutorial": false,
+     "meta_title": "Titolo",
+     "meta_description": "Descrizione",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "touched": true
+   },
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "c",
+      "size": 1500
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instance/admin/logo",
+   "headers": {
+    "X-Setup-Token": "$setup-token"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Only the instance owner or an administrator can administer this installation."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/png",
+      "fill": "p",
+      "size": 64
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-options",
+   "actor": "setup_owner",
+   "method": "OPTIONS",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Owner Logo",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "multipart/form-data",
+     "application/x-www-form-urlencoded"
+    ]
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-get",
+   "actor": "setup_owner",
+   "method": "GET",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-json",
+   "actor": "setup_owner",
+   "method": "POST",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 415,
+   "response": {
+    "detail": "Unsupported media type \"application/json\" in request."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "body": {}
+  },
+  {
+   "name": "instance-setup-owner-logo-too-large",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "success": false,
+    "error": "File too large. Maximum size is 5MB."
+   },
+   "effect": null,
+   "storage": {
+    "instance/logo.png": {
+     "size": 1500,
+     "sha256": "4de888c64e92be273b7745bc4e078d2f752a8f950c76abc9d8ef5e8aa5d966e7",
+     "content_type": "image/png",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/jpeg",
+      "fill": "L",
+      "size": 5242881
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-setup-owner",
+   "actor": "setup_owner",
+   "method": "POST",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "logo_url": "$logo-version"
+   },
+   "effect": {
+    "kind": "config",
+    "fields": {
+     "domain": "setup.example.test",
+     "name": "Istanza Admin",
+     "abbreviation": "",
+     "primary_color": "#ABCDEF",
+     "support_email": "",
+     "logo_path": "/api/instance/logo.png",
+     "setup_provenance": "fresh",
+     "onboarding_completed": false,
+     "display_settings": {
+      "login": {
+       "allowOauthLogin": false
+      },
+      "extra": [
+       1,
+       "two"
+      ]
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": false,
+     "show_minor_exemption": false,
+     "show_tutorial": false,
+     "meta_title": "Titolo",
+     "meta_description": "Descrizione",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "touched": true
+   },
+   "storage": {
+    "instance/logo.jpg": {
+     "size": 3000,
+     "sha256": "e603919774622332eae74156ea5d0b51f5a5d98fe2fc2e79c8ac0fe72800e756",
+     "content_type": "image/jpeg",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/jpeg",
+      "fill": "d",
+      "size": 3000
+     }
+    ]
+   }
+  },
+  {
+   "name": "instance-setup-owner-logo-admin",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instance/admin/logo",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true,
+    "logo_url": "$logo-version"
+   },
+   "effect": {
+    "kind": "config",
+    "fields": {
+     "domain": "setup.example.test",
+     "name": "Istanza Admin",
+     "abbreviation": "",
+     "primary_color": "#ABCDEF",
+     "support_email": "",
+     "logo_path": "/api/instance/logo.png",
+     "setup_provenance": "fresh",
+     "onboarding_completed": false,
+     "display_settings": {
+      "login": {
+       "allowOauthLogin": false
+      },
+      "extra": [
+       1,
+       "two"
+      ]
+     },
+     "google_client_id": "",
+     "apple_client_id": "",
+     "stripe_public_key": "",
+     "stripe_secret_key": "",
+     "stripe_webhook_secret": "",
+     "stripe_pricing_table": "",
+     "stripe_client_portal": "",
+     "self_hosted": true,
+     "support_multiple_associations": false,
+     "is_reseller": false,
+     "show_course_athletes": false,
+     "show_minor_exemption": false,
+     "show_tutorial": false,
+     "meta_title": "Titolo",
+     "meta_description": "Descrizione",
+     "email_settings": {},
+     "email_password_encrypted": "",
+     "email_revision": 0,
+     "diagnostic_results": {},
+     "integration_settings": {}
+    },
+    "touched": true
+   },
+   "storage": {
+    "instance/logo.webp": {
+     "size": 700,
+     "sha256": "cd64e4049aaf42f6379886a174cff9ddf56667eac47414e0abb2937aa942aece",
+     "content_type": "image/webp",
+     "cache_control": "max-age=86400"
+    }
+   },
+   "upload": {
+    "parts": [
+     {
+      "name": "file",
+      "filename": "logo.bin",
+      "content_type": "image/webp",
+      "fill": "e",
+      "size": 700
+     }
+    ]
+   }
+  }
+ ]
+}

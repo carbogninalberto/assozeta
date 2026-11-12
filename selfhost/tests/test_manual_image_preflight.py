@@ -25,7 +25,7 @@ from pathlib import Path
 args = sys.argv[1:]
 Path(os.environ['CALLS']).write_text(json.dumps(args))
 command = args[args.index('-ec') + 1].replace('/app/', os.environ['APP'] + '/')
-sys.exit(subprocess.run(['sh', '-ec', command, 'fixture', args[-1]]).returncode)
+sys.exit(subprocess.run(['sh', '-ec', command, *args[args.index('-ec') + 2:]]).returncode)
 ''')
         docker.chmod(0o755)
         # The bundle itself is covered by its real integrity tests. Record that
@@ -37,6 +37,8 @@ Path(os.environ['VALIDATOR']).write_text(json.dumps(sys.argv[1:]))
 sys.exit(int(os.environ.get('VALIDATOR_EXIT', '0')))
 ''')
         python.chmod(0o755)
+        (self.app / 'check-manual').write_bytes(python.read_bytes())
+        (self.app / 'check-manual').chmod(0o755)
         self.validator = self.root / 'validator.json'
         self.environment = {**os.environ, 'PATH': f'{self.root}:{os.environ["PATH"]}',
                             'APP': str(self.app), 'CALLS': str(self.calls),
@@ -89,6 +91,50 @@ sys.exit(int(os.environ.get('VALIDATOR_EXIT', '0')))
                                 env=self.environment, capture_output=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertFalse(self.validator.exists())
+
+    def check_go(self, version='1.0.18', required='true', **environment):
+        (self.app / 'VERSION').write_text(version)
+        (self.app / 'CODE_REVISION').write_text('a' * 40)
+        if required is not None:
+            (self.app / 'MANUAL_REQUIRED').write_text(required)
+        return subprocess.run(['sh', str(CHECK), 'go-candidate@sha256:abc', version, 'go'],
+                              env=self.environment | environment, capture_output=True, text=True)
+
+    def test_go_dispatch_uses_packaged_checker_and_image_metadata(self):
+        result = self.check_go()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(self.validator.read_text()), [
+            '--root', str(self.app / 'release-manual'), '--revision', 'a' * 40,
+            '--release', '1.0.18', '--required', 'true'])
+        calls = json.loads(self.calls.read_text())
+        self.assertEqual(calls[calls.index('--network') + 1], 'none')
+        self.assertIn('--read-only', calls)
+        self.assertNotIn('--volume', calls)
+        self.assertNotIn('--env-file', calls)
+
+    def test_go_optional_image_still_invokes_checker(self):
+        result = self.check_go(required='false')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(self.validator.read_text())[-2:], ['--required', 'false'])
+
+    def test_go_cannot_use_historical_django_marker_exemption(self):
+        self.assertNotEqual(self.check_go(version='1.0.17', required=None).returncode, 0)
+        self.assertFalse(self.validator.exists())
+
+    def test_go_missing_checker_and_invalid_package_fail(self):
+        result = self.check_go(VALIDATOR_EXIT='1')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(self.validator.exists(), 'must reach actual checker boundary')
+        self.validator.unlink()
+        (self.app / 'check-manual').unlink()
+        self.assertNotEqual(self.check_go(required='false').returncode, 0)
+        self.assertFalse(self.validator.exists())
+
+    def test_unknown_backend_is_rejected_before_docker(self):
+        result = subprocess.run(['sh', str(CHECK), 'candidate', '1.0.18', 'unknown'],
+                                env=self.environment, capture_output=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.calls.exists())
 
 
 if __name__ == '__main__':

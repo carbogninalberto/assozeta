@@ -30,6 +30,11 @@ def scoped_queryset(identity, manager):
     queryset = manager.filter(**{relation: association.pk})
     if model._meta.model_name == 'coursesubscription':
         queryset = queryset.filter(course__sport_association=association)
+    elif model._meta.model_name == 'coursesubscriptioninstallment':
+        # A subscription in this association cannot authorize its related
+        # course from another association. Keep the same nested boundary as
+        # direct course subscriptions without inheriting FK soft-delete filters.
+        queryset = queryset.filter(course_subscription__course__sport_association=association)
     elif model._meta.model_name == 'carnetsubscription':
         queryset = queryset.filter(carnet_id__sport_association=association)
     from django.db.models import Q
@@ -38,8 +43,8 @@ def scoped_queryset(identity, manager):
     if person.role != User.ATHLETE:
         return queryset
     # Match the application's family subscription visibility inside this tenant.
-    tax_codes = Subscription.objects.filter(user=person, sport_association=association).exclude(
-        associate__tax_code__isnull=True).exclude(associate__tax_code='').values('associate__tax_code')
+    from application.utils.subscriptions_utils import family_tax_codes
+    tax_codes = family_tax_codes(Subscription.objects.filter(user=person, sport_association=association))
     members = Associate.objects.filter(sport_association=association).filter(
         Q(user=person) | Q(tax_code__in=tax_codes))
     subscriptions = Subscription.objects.filter(sport_association=association).filter(

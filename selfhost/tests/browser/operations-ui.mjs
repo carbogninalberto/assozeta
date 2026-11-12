@@ -30,7 +30,7 @@ const server = await createServer({
         },
         load(id) {
             if (id === '\0fixture-api') return `export const originalFetch = window.fetch.bind(window); export async function apiFetch(url, options) { const r = await fetch(url, options); return {error: !r.ok, response: await r.json()}; }`;
-            if (id === '\0fixture-store') return `import {writable} from 'svelte/store'; export const oemConfig = writable({logo: '/oem/assozeta/brand/logo.svg'}); export const getApiHost = () => '/api'; export const saveRuntimeConfig = () => {}; export const clearInstanceCache = () => {}; export const uploadInstanceLogo = async () => {};`;
+            if (id === '\0fixture-store') return `import {writable} from 'svelte/store'; export const oemConfig = writable({logo: '/oem/assozeta/brand/logo.svg'}); export const getApiHost = () => '/api'; export const saveRuntimeConfig = () => {}; export const clearInstanceCache = () => {}; export const uploadInstanceLogo = async () => {}; export const applyApiVersion = async () => 'v1';`;
             if (id === '\0fixture-entry') return `import SelfInstance from '/src/routes/profile/sections/SelfInstance.svelte'; new SelfInstance({target: document.getElementById('app')});`;
         },
         configureServer(vite) {
@@ -123,6 +123,7 @@ try {
             }
             else if (endpoint.startsWith('/admin/backups/assozeta-') && method === 'DELETE') {
                 const name = endpoint.split('/').at(-1);
+                assert.equal(request.postDataJSON().password, 'fixture-secret');
                 backupCalls.push(`delete:${name}`);
                 backupArchives = backupArchives.filter(item => item.name !== name);
                 value = {deleted: name};
@@ -370,6 +371,8 @@ try {
         await page.getByRole('menuitem', {name: 'Elimina', exact: true}).click();
         const remove = page.getByRole('dialog', {name: 'Eliminare il backup?'});
         await expect(remove.getByRole('button', {name: 'Annulla'})).toBeFocused();
+        await expect(remove.getByRole('button', {name: 'Elimina'})).toBeDisabled();
+        await remove.getByLabel('Conferma la tua password').fill('fixture-secret');
         await remove.getByRole('button', {name: 'Elimina'}).click();
         await expect(backupRows).toHaveCount(2);
 
@@ -413,21 +416,25 @@ try {
                     value = {...backupOverview(), remote: remoteSummary(), archives: remoteArchives()};
                 } else if (endpoint === '/admin/backups/remote' && method === 'GET') value = remoteConfig;
                 else if (endpoint === '/admin/backups/remote' && method === 'PUT') {
-                    const {secret_key: secret, ...input} = request.postDataJSON();
+                    const {secret_key: secret, password, ...input} = request.postDataJSON();
+                    assert.equal(password, 'fixture-secret');
                     remoteCalls.push(`put:${Object.keys(input).sort().join(',')}${secret ? ':secret' : ''}`);
                     remoteConfig = {...remoteConfig, ...input, secret_configured: remoteConfig.secret_configured || !!secret};
                     remoteConfig.configured = !!(remoteConfig.bucket && remoteConfig.access_key && remoteConfig.secret_configured);
                     value = remoteConfig;
                 } else if (endpoint === '/admin/backups/remote/test') {
+                    assert.equal(request.postDataJSON().password, 'fixture-secret');
                     remoteCalls.push(`test:${request.postDataJSON().bucket}`);
                     value = {ok: true, message: 'Connessione riuscita: scrittura, lettura ed eliminazione funzionano.'};
                 } else if (endpoint === '/admin/backups/remote/key') {
+                    assert.equal(request.postDataJSON().password, 'fixture-secret');
                     remoteCalls.push('key');
                     remoteConfig = {...remoteConfig, pending_key: {id: 'abcd1234'}};
                     value = {key_id: 'abcd1234', recovery_key: remoteKey};
                     status = 201;
                 } else if (endpoint === '/admin/backups/remote/key/confirm') {
                     const input = request.postDataJSON();
+                    assert.equal(input.password, 'fixture-secret');
                     if (input.tail.toUpperCase() !== remoteKey.slice(-6)) {status = 400; value = {error: 'I caratteri non corrispondono alla chiave.'};}
                     else {
                         remoteCalls.push('confirm');
@@ -456,6 +463,9 @@ try {
             await remoteDrawer.getByLabel('Bucket').fill('club-backups');
             await remoteDrawer.getByLabel('Access key').fill('AKIAFIXTURE');
             await remoteDrawer.getByLabel('Secret key').fill('fixture-s3-secret');
+            await expect(remoteDrawer.getByRole('button', {name: 'Prova connessione'})).toBeDisabled();
+            await expect(remoteDrawer.getByRole('button', {name: 'Salva', exact: true})).toBeDisabled();
+            await remoteDrawer.getByLabel('Conferma la tua password').fill('fixture-secret');
             await remoteDrawer.getByRole('button', {name: 'Prova connessione'}).click();
             await expect(remoteDrawer.getByText(/^Connessione riuscita/)).toBeVisible();
             await noOverflow('remote-drawer');

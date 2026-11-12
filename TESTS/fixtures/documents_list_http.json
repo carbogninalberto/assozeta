@@ -1,0 +1,456 @@
+{
+ "matrix_version": 1,
+ "scope": "Documents archive list authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "folders": [
+  [
+   "a",
+   null,
+   "a1000000-0000-4000-8000-000000701001"
+  ],
+  [
+   "f",
+   null,
+   "a1000000-0000-4000-8000-000000701002"
+  ]
+ ],
+ "archives": [
+  {
+   "label": "root1",
+   "id": "a1000000-0000-4000-8000-000000840001",
+   "document": "a1000000-0000-4000-8000-000000840002",
+   "token": "a1000000-0000-4000-8000-000000840003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": null,
+   "filename": "statuto è.pdf",
+   "date": "2026-09-01",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": 1234,
+   "filepath": null
+  },
+  {
+   "label": "root2",
+   "id": "a1000000-0000-4000-8000-000000840004",
+   "document": "a1000000-0000-4000-8000-000000840005",
+   "token": "a1000000-0000-4000-8000-000000840006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": null,
+   "filename": "verbale.pdf",
+   "date": "2026-09-02",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": null,
+   "filepath": "docs/verbale.pdf"
+  },
+  {
+   "label": "in_a",
+   "id": "a1000000-0000-4000-8000-000000840007",
+   "document": "a1000000-0000-4000-8000-000000840008",
+   "token": "a1000000-0000-4000-8000-000000840009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "folder": "a",
+   "filename": "bilancio.pdf",
+   "date": "2026-09-03",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": 0,
+   "filepath": null
+  },
+  {
+   "label": "foreign",
+   "id": "a1000000-0000-4000-8000-000000840010",
+   "document": "a1000000-0000-4000-8000-000000840011",
+   "token": "a1000000-0000-4000-8000-000000840012",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "folder": null,
+   "filename": "estero.pdf",
+   "date": "2026-09-04",
+   "created": "2026-10-01T08:00:00.500000Z",
+   "size": null,
+   "filepath": null
+  }
+ ],
+ "cases": [
+  {
+   "name": "documents-list-owner-root",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840002",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": null,
+       "filename": "statuto è.pdf",
+       "file_size_bytes": 1234,
+       "token": "a1000000-0000-4000-8000-000000840003"
+      },
+      "date": "2026-09-01",
+      "folder": null
+     },
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840005",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": "docs/verbale.pdf",
+       "filename": "verbale.pdf",
+       "file_size_bytes": null,
+       "token": "a1000000-0000-4000-8000-000000840006"
+      },
+      "date": "2026-09-02",
+      "folder": null
+     }
+    ],
+    "pagination": {
+     "page": 0,
+     "total_pages": 1,
+     "total_items": 2,
+     "has_next": false
+    }
+   }
+  },
+  {
+   "name": "documents-list-owner-empty-folder-root",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?folder=",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840002",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": null,
+       "filename": "statuto è.pdf",
+       "file_size_bytes": 1234,
+       "token": "a1000000-0000-4000-8000-000000840003"
+      },
+      "date": "2026-09-01",
+      "folder": null
+     },
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840005",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": "docs/verbale.pdf",
+       "filename": "verbale.pdf",
+       "file_size_bytes": null,
+       "token": "a1000000-0000-4000-8000-000000840006"
+      },
+      "date": "2026-09-02",
+      "folder": null
+     }
+    ],
+    "pagination": {
+     "page": 0,
+     "total_pages": 1,
+     "total_items": 2,
+     "has_next": false
+    }
+   }
+  },
+  {
+   "name": "documents-list-owner-folder",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?folder=$folder:a",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840007",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840008",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": null,
+       "filename": "bilancio.pdf",
+       "file_size_bytes": 0,
+       "token": "a1000000-0000-4000-8000-000000840009"
+      },
+      "date": "2026-09-03",
+      "folder": "$folder:a"
+     }
+    ],
+    "pagination": {
+     "page": 0,
+     "total_pages": 1,
+     "total_items": 1,
+     "has_next": false
+    }
+   }
+  },
+  {
+   "name": "documents-list-owner-second-page-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?page=1",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [],
+    "pagination": {
+     "page": 1,
+     "total_pages": 1,
+     "total_items": 2,
+     "has_next": false
+    }
+   }
+  },
+  {
+   "name": "documents-list-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840001",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840002",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": null,
+       "filename": "statuto è.pdf",
+       "file_size_bytes": 1234,
+       "token": "a1000000-0000-4000-8000-000000840003"
+      },
+      "date": "2026-09-01",
+      "folder": null
+     },
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840004",
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840005",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": "docs/verbale.pdf",
+       "filename": "verbale.pdf",
+       "file_size_bytes": null,
+       "token": "a1000000-0000-4000-8000-000000840006"
+      },
+      "date": "2026-09-02",
+      "folder": null
+     }
+    ],
+    "pagination": {
+     "page": 0,
+     "total_pages": 1,
+     "total_items": 2,
+     "has_next": false
+    }
+   }
+  },
+  {
+   "name": "documents-list-foreign-owner-root",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "sport_association_documents_archive_id": "a1000000-0000-4000-8000-000000840010",
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "document": {
+       "document_id": "a1000000-0000-4000-8000-000000840011",
+       "creation_date": "2026-10-01T08:00:00.500000Z",
+       "filepath": null,
+       "filename": "estero.pdf",
+       "file_size_bytes": null,
+       "token": "a1000000-0000-4000-8000-000000840012"
+      },
+      "date": "2026-09-04",
+      "folder": null
+     }
+    ],
+    "pagination": {
+     "page": 0,
+     "total_pages": 1,
+     "total_items": 1,
+     "has_next": false
+    }
+   }
+  },
+  {
+   "name": "documents-list-foreign-folder-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?folder=$folder:f",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Cannot access folder from different sport association."
+   }
+  },
+  {
+   "name": "documents-list-missing-folder-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?folder=999999999",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "documents-list-non-integer-folder-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?folder=abc",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "documents-list-non-integer-page-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?page=x",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "documents-list-negative-page-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/documents/list?page=-1",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "documents-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.archive.read"
+   }
+  },
+  {
+   "name": "documents-list-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "documents-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "documents-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "documents-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "documents-list-delete-method-server-error",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "documents-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/documents/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Document Archive",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json"
+    ]
+   }
+  }
+ ]
+}

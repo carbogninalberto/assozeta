@@ -405,15 +405,17 @@
         'other.notifications': 'Notifiche',
     };
 
-    function updatePermissions(permissions) {
-        if (!currentCollaboratorPermissions) currentCollaboratorPermissions = [];
+    function selectedPermissions() {
+        return Array.isArray(currentCollaboratorPermissions) ? currentCollaboratorPermissions : [];
+    }
+
+    function updatePermissions(permission) {
+        let permissions = selectedPermissions();
         // if permission is already in the list, remove it from the list
-        if (currentCollaboratorPermissions.includes(permissions)) {
-            currentCollaboratorPermissions = currentCollaboratorPermissions.filter(
-                permission => permission !== permissions
-            );
+        if (permissions.includes(permission)) {
+            currentCollaboratorPermissions = permissions.filter(item => item !== permission);
         } else {
-            currentCollaboratorPermissions = [...currentCollaboratorPermissions, permissions];
+            currentCollaboratorPermissions = [...permissions, permission];
         }
     }
 
@@ -426,15 +428,15 @@
     }
 
     function assignAllSubPermissions(subpath) {
+        let permissions = selectedPermissions();
         let subPermissions = collaboratorPermissions.filter(permission => checkIfIncludedResource(subpath, permission));
-        currentCollaboratorPermissions = [...currentCollaboratorPermissions, ...subPermissions];
+        currentCollaboratorPermissions = [...permissions, ...subPermissions];
     }
 
     function removeAllSubPermissions(subpath) {
+        let permissions = selectedPermissions();
         let subPermissions = collaboratorPermissions.filter(permission => checkIfIncludedResource(subpath, permission));
-        currentCollaboratorPermissions = currentCollaboratorPermissions.filter(
-            permission => !subPermissions.includes(permission)
-        );
+        currentCollaboratorPermissions = permissions.filter(permission => !subPermissions.includes(permission));
     }
 
     function checkIfIncludedResource(resource, permission) {
@@ -484,7 +486,8 @@
                             <label class="checkbox checkbox-rounded font-weight-bold" style="font-size:1rem;">
                                 <input
                                     type="checkbox"
-                                    checked={currentCollaboratorPermissions?.includes(permission)}
+                                    checked={Array.isArray(currentCollaboratorPermissions) &&
+                                        currentCollaboratorPermissions.includes(permission)}
                                     name={permission}
                                     on:click={() => updatePermissions(permission)} />
                                 <span />

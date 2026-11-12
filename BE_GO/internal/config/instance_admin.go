@@ -1,0 +1,175 @@
+package config
+
+import (
+	"math"
+	"math/big"
+	"strings"
+	"unicode"
+)
+
+// InstanceAdminSettings are the core.settings values read by the owner-only
+// instance administration views (BE/instance/administration.py,
+// operations.py, integrations.py, diagnostics.py). Invalid* flags record
+// values Django would reject while computing a response; the service answers
+// those requests with the server error page instead of failing startup.
+type InstanceAdminSettings struct {
+	AppURL            string `json:"-"`
+	ConfiguredVersion string
+	DeploymentMode    string
+	// UpdaterDirectory is ASSOZETA_UPDATER_DIRECTORY (env.str, default
+	// '/run/assozeta-updater'): the update runner's socket and token.
+	UpdaterDirectory string
+	// BackupUploadMaxBytes is ASSOZETA_BACKUP_UPLOAD_MAX_BYTES (backups.upload_max_bytes:
+	// os.environ, ASCII digits after trimming, else 50 GiB).
+	BackupUploadMaxBytes int64
+	// BackupRemoteAllowHTTP is ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP (1, true, yes or on):
+	// plain http:// endpoints for the remote copy.
+	BackupRemoteAllowHTTP bool
+	// Environment email (email_configuration.effective_email).
+	EmailHost, EmailUsername string `json:"-"`
+	EmailPassword            string `json:"-"`
+	EmailPort                int64
+	EmailPortInvalid         bool
+	EmailUseTLS, EmailUseSSL bool
+	// parseaddr(DEFAULT_FROM_EMAIL), DEFAULT_FROM_EMAIL being
+	// f"{WHITELABEL_NAME} <{EMAIL_HOST_USER}>" (an unset user is 'None').
+	FromName, FromAddress string `json:"-"`
+	// Environment integrations (integration_configuration.PROVIDERS).
+	AIAPIKey, AIModel, AICheapModel, AIBaseURL string `json:"-"`
+	// MCP_AGENT_* in AI_FIELDS order; AIIntegersInvalid when env.int fails.
+	AIIntegers                                      [6]int64
+	AIIntegersInvalid                               bool
+	StripePublicKey, StripeKey, StripeWebhookSecret string `json:"-"`
+	// SetupToken is INSTANCE_SETUP_TOKEN (env.str, default ''), read by
+	// SetupTokenOrAuthenticated before the instance is configured.
+	SetupToken string `json:"-"`
+	// BAKNEY_SSO_API_BASE and BAKNEY_SSO_UI_ORIGIN (env.str, trailing '/'
+	// stripped), read by the Bakney pairing/SSO views.
+	BakneySSOAPIBase, BakneySSOUIOrigin string
+}
+
+func parseInstanceAdmin(values map[string]string) (InstanceAdminSettings, error) {
+	var s InstanceAdminSettings
+	var err error
+	host, err := environmentString(values, "APP_HOST", "", false)
+	if err != nil {
+		return s, err
+	}
+	if s.AppURL, err = environmentString(values, "APP_URL", "https://"+host, false); err != nil {
+		return s, err
+	}
+	s.AppURL = strings.TrimRight(s.AppURL, "/")
+	if s.ConfiguredVersion, err = environmentString(values, "ASSOZETA_VERSION", "", false); err != nil {
+		return s, err
+	}
+	if s.DeploymentMode, err = environmentString(values, "ASSOZETA_DEPLOYMENT_MODE", "development", false); err != nil {
+		return s, err
+	}
+	if s.UpdaterDirectory, err = environmentString(values, "ASSOZETA_UPDATER_DIRECTORY", "/run/assozeta-updater", false); err != nil {
+		return s, err
+	}
+	s.BackupUploadMaxBytes = backupUploadMaxBytes(values["ASSOZETA_BACKUP_UPLOAD_MAX_BYTES"])
+	switch strings.ToLower(strings.Trim(values["ASSOZETA_BACKUP_REMOTE_ALLOW_HTTP"], " \t\r\n")) {
+	case "1", "true", "yes", "on":
+		s.BackupRemoteAllowHTTP = true
+	}
+	// EMAIL_HOST, EMAIL_PORT, EMAIL_HOST_USER and EMAIL_HOST_PASSWORD are
+	// os.environ.get values (no proxies); the TLS/SSL flags use env.bool.
+	s.EmailHost, s.EmailPassword = values["EMAIL_HOST"], values["EMAIL_HOST_PASSWORD"]
+	user, present := values["EMAIL_HOST_USER"]
+	s.EmailUsername = user
+	if !present {
+		user = "None"
+	}
+	s.EmailPort = 465
+	if port := values["EMAIL_PORT"]; port != "" {
+		number, ok := pythonInt(port)
+		s.EmailPort, s.EmailPortInvalid = number, !ok
+	}
+	if s.EmailUseTLS, err = registrationFlag(values, "EMAIL_USE_TLS", false); err != nil {
+		return s, err
+	}
+	if s.EmailUseSSL, err = registrationFlag(values, "EMAIL_USE_SSL", true); err != nil {
+		return s, err
+	}
+	whitelabel, err := environmentString(values, "WHITELABEL_NAME", "Bakney Sport", false)
+	if err != nil {
+		return s, err
+	}
+	s.FromName, s.FromAddress = ParseAddr(whitelabel + " <" + user + ">")
+	targets := []*string{&s.AIAPIKey, &s.AIModel, &s.AICheapModel, &s.AIBaseURL, &s.StripePublicKey, &s.StripeKey, &s.StripeWebhookSecret}
+	names := []string{"AI_API_KEY", "AI_MODEL", "AI_CHEAP_MODEL", "AI_BASE_URL", "STRIPE_PUBLIC_KEY", "STRIPE_KEY", "STRIPE_WEBHOOK_SECRET"}
+	defaults := []string{"", "deepseek-v4-flash", "deepseek-v4-flash", "https://api.deepseek.com", "", "", ""}
+	for index, target := range targets {
+		if *target, err = environmentString(values, names[index], defaults[index], false); err != nil {
+			return s, err
+		}
+	}
+	for index, name := range []string{"MCP_AGENT_MAX_ITERATIONS", "MCP_AGENT_MAX_RESULTS", "MCP_AGENT_QUERY_TIMEOUT",
+		"MCP_AGENT_WS_RATE_LIMIT", "MCP_AGENT_WS_TIMEOUT", "MCP_AGENT_HISTORY_CAP"} {
+		fallback := []int64{15, 5000, 10, 10, 240, 50}[index]
+		text, err := environmentString(values, name, "", false)
+		if err != nil {
+			return s, err
+		}
+		s.AIIntegers[index] = fallback
+		if _, ok := values[name]; ok {
+			number, valid := pythonInt(text)
+			s.AIIntegers[index] = number
+			s.AIIntegersInvalid = s.AIIntegersInvalid || !valid
+		}
+	}
+	if s.SetupToken, err = environmentString(values, "INSTANCE_SETUP_TOKEN", "", false); err != nil {
+		return s, err
+	}
+	if s.BakneySSOAPIBase, err = environmentString(values, "BAKNEY_SSO_API_BASE", "https://app.bakney.com/api", false); err != nil {
+		return s, err
+	}
+	if s.BakneySSOUIOrigin, err = environmentString(values, "BAKNEY_SSO_UI_ORIGIN", "https://app.bakney.com", false); err != nil {
+		return s, err
+	}
+	s.BakneySSOAPIBase, s.BakneySSOUIOrigin = strings.TrimRight(s.BakneySSOAPIBase, "/"), strings.TrimRight(s.BakneySSOUIOrigin, "/")
+	return s, nil
+}
+
+// DefaultBackupUploadMaxBytes is backups.UPLOAD_MAX_BYTES.
+const DefaultBackupUploadMaxBytes = 50 << 30
+
+// backupUploadMaxBytes is backups.upload_max_bytes for an environment value:
+// ASCII digits once spaces, tabs and line breaks are trimmed, above zero.
+func backupUploadMaxBytes(value string) int64 {
+	value = strings.Trim(value, " \t\r\n")
+	if value == "" || strings.TrimLeft(value, "0123456789") != "" {
+		return DefaultBackupUploadMaxBytes
+	}
+	number, ok := new(big.Int).SetString(value, 10)
+	if !ok || number.Sign() <= 0 {
+		return DefaultBackupUploadMaxBytes
+	}
+	if !number.IsInt64() {
+		return math.MaxInt64 // Python's int has no ceiling; no Content-Length exceeds this
+	}
+	return number.Int64()
+}
+
+// pythonInt is int(text) for decimal text that fits an int64.
+func pythonInt(text string) (int64, bool) {
+	text = strings.TrimFunc(text, unicode.IsSpace)
+	sign := ""
+	if strings.HasPrefix(text, "+") || strings.HasPrefix(text, "-") {
+		sign, text = text[:1], text[1:]
+	}
+	if text == "" || strings.HasPrefix(text, "_") || strings.HasSuffix(text, "_") || strings.Contains(text, "__") {
+		return 0, false
+	}
+	for _, r := range text {
+		if (r < '0' || r > '9') && r != '_' {
+			return 0, false
+		}
+	}
+	number, ok := new(big.Int).SetString(sign+strings.ReplaceAll(text, "_", ""), 10)
+	if !ok || !number.IsInt64() {
+		return 0, false
+	}
+	return number.Int64(), true
+}

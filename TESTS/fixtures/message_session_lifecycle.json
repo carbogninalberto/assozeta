@@ -1,0 +1,169 @@
+{
+  "matrix_version": 1,
+  "scope": "Bounded warm message-read session invalidation; parent-owned runtime only.",
+  "read_effects": {
+    "managed_models": 128,
+    "audit_rows_created": 0,
+    "session_writes": 0,
+    "cache_exclusions": []
+  },
+  "scenarios": [
+    {
+      "name": "message-session-revoke-list",
+      "session": "admin_owner",
+      "transition": "revoke",
+      "phases": [
+        {
+          "name": "message-session-revoke-list-warm",
+          "actor": "admin",
+          "effective": "owner",
+          "scope": "owner",
+          "method": "GET",
+          "path": "/communications/messages/list",
+          "headers": {
+            "User-Id": "a1000000-0000-4000-8000-000000700001",
+            "X-Impersonation-Id": "$session:admin_owner"
+          },
+          "status": 200,
+          "response": [
+            {
+              "message_id": "a1000000-0000-4000-8000-000000702002",
+              "sport_association": "a1000000-0000-4000-8000-000000701001",
+              "type": "INSIDE_APP",
+              "message": "Post senza data",
+              "subject": "None",
+              "created_at": null
+            },
+            {
+              "message_id": "a1000000-0000-4000-8000-000000702001",
+              "sport_association": "a1000000-0000-4000-8000-000000701001",
+              "type": "EMAIL",
+              "message": "&lt;p&gt;Prova &lt;strong&gt;A &amp; B&lt;/strong&gt; &quot;quoted&quot; &#x27;single&#x27;&lt;/p&gt;",
+              "subject": "  Quote &amp; attività &lt;2026&gt;  ",
+              "created_at": "2026-10-23T08:09:10.123456Z"
+            },
+            {
+              "message_id": "a1000000-0000-4000-8000-000000702003",
+              "sport_association": "a1000000-0000-4000-8000-000000701001",
+              "type": "EMAIL",
+              "message": "Avviso più vecchio",
+              "subject": "old",
+              "created_at": "2026-10-23T07:00:00Z"
+            },
+            {
+              "message_id": "a1000000-0000-4000-8000-000000702006",
+              "sport_association": "a1000000-0000-4000-8000-000000701001",
+              "type": "EMAIL",
+              "message": "No delivery history",
+              "subject": "empty",
+              "created_at": "2026-10-23T04:00:00Z"
+            }
+          ],
+          "check": "allowed.target-owner",
+          "reason": "Warm the actual server process using the valid administrator to owner session."
+        },
+        {
+          "name": "message-session-revoke-list-denied",
+          "actor": "admin",
+          "effective": null,
+          "scope": null,
+          "method": "GET",
+          "path": "/communications/messages/list",
+          "headers": {
+            "User-Id": "a1000000-0000-4000-8000-000000700001",
+            "X-Impersonation-Id": "$session:admin_owner"
+          },
+          "status": 403,
+          "response": {
+            "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+            "impersonation_invalid": "True"
+          },
+          "check": "denied.invalid-session",
+          "reason": "The next read must resolve the same credential and effective headers against the now absent session."
+        }
+      ]
+    },
+    {
+      "name": "message-session-expire-detail",
+      "session": "admin_owner",
+      "transition": "expire",
+      "phases": [
+        {
+          "name": "message-session-expire-detail-warm",
+          "actor": "admin",
+          "effective": "owner",
+          "scope": "owner",
+          "method": "GET",
+          "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+          "headers": {
+            "User-Id": "a1000000-0000-4000-8000-000000700001",
+            "X-Impersonation-Id": "$session:admin_owner"
+          },
+          "status": 200,
+          "response": [
+            {
+              "message_transaction_id": "a1000000-0000-4000-8000-000000703001",
+              "message": "a1000000-0000-4000-8000-000000702001",
+              "recipient": "first@example.test",
+              "sent_on": "2026-10-23T12:00:00.123456Z",
+              "delivered_on": "2026-10-23T12:00:01.123456Z",
+              "opened_on": "2026-10-23T12:01:00.000001Z",
+              "clicked_on": null,
+              "bounced_on": null,
+              "bounced_reason": null,
+              "bounced_type": null,
+              "bounced_status": null
+            },
+            {
+              "message_transaction_id": "a1000000-0000-4000-8000-000000703002",
+              "message": "a1000000-0000-4000-8000-000000702001",
+              "recipient": "second@example.test",
+              "sent_on": "2026-10-23T12:00:00.123456Z",
+              "delivered_on": null,
+              "opened_on": null,
+              "clicked_on": null,
+              "bounced_on": null,
+              "bounced_reason": null,
+              "bounced_type": null,
+              "bounced_status": null
+            },
+            {
+              "message_transaction_id": "a1000000-0000-4000-8000-000000703003",
+              "message": "a1000000-0000-4000-8000-000000702001",
+              "recipient": "bounced@example.test",
+              "sent_on": "2026-10-23T11:00:00Z",
+              "delivered_on": null,
+              "opened_on": null,
+              "clicked_on": null,
+              "bounced_on": "2026-10-23T11:00:02Z",
+              "bounced_reason": "Mailbox full",
+              "bounced_type": "permanent",
+              "bounced_status": "5.2.2"
+            }
+          ],
+          "check": "allowed.target-owner",
+          "reason": "Warm the actual server process using the valid administrator to owner session."
+        },
+        {
+          "name": "message-session-expire-detail-denied",
+          "actor": "admin",
+          "effective": null,
+          "scope": null,
+          "method": "GET",
+          "path": "/communications/messages/a1000000-0000-4000-8000-000000702001/detail",
+          "headers": {
+            "User-Id": "a1000000-0000-4000-8000-000000700001",
+            "X-Impersonation-Id": "$session:admin_owner"
+          },
+          "status": 403,
+          "response": {
+            "detail": "Sessione di impersonificazione scaduta o revocata. Torna al tuo account.",
+            "impersonation_invalid": "True"
+          },
+          "check": "denied.invalid-session",
+          "reason": "The next read must resolve the same credential and effective headers against the now absent session."
+        }
+      ]
+    }
+  ]
+}

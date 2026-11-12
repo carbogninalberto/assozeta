@@ -94,12 +94,12 @@ def stripe_multiple_pay(request):
         # check if payments is a list of strings or objects
         if isinstance(payments, list) and len(payments) > 0:
             # check if first element is a string (payment ID) or object
-            if isinstance(payments[0], str):
-                # get all payments by IDs
-                payments = scoped_queryset(request, Payment.objects).filter(payment_id__in=payments)
-                # serialize payments
-                payments = PaymentSerializer(payments, many=True).data
-            # if it's already a list of objects, keep as is
+            # payments sent as objects are only a list of ids: the rows are loaded here and
+            # the association and amounts come from them, not from the request
+            payment_ids = payments if isinstance(payments[0], str) else [item['payment_id'] for item in payments]
+            payments = scoped_queryset(request, Payment.objects).filter(payment_id__in=payment_ids)
+            # serialize payments
+            payments = PaymentSerializer(payments, many=True).data
 
         for payment in payments:
             if payment['sport_association'] not in payments_groups.keys():

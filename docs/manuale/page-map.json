@@ -966,7 +966,7 @@
         "/members/modules",
         "/members/modules/composer/:id?",
         "/members/modules/overview/:module_id?",
-        "/forms/:custom_link/:response_id?"
+        "/forms/:custom_link/:response_id?/:attachment_token?"
       ],
       "handlers": [
         {

@@ -13,6 +13,7 @@ from application.serializers.user_serializers import AssociateSerializer, Associ
 from application.serializers.personas_serializers import AssociateSerializer as AssociatePersonaSerializer
 from core.settings import STORAGE_DIR
 from docmanager.models import Document
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 SUBSCRIPTION_INTERNAL_FIELDS = ('signature_storage_key',)
 
@@ -30,7 +31,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = '__all__'
 
-class SubscriptionMembershipSerializer(serializers.ModelSerializer):
+class SubscriptionMembershipSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     attached_membership_documents = DocumentSerializer(many=True, read_only=True)
     associate_id = serializers.UUIDField(read_only=True)
     documents_data = serializers.ListField(

@@ -1,0 +1,7195 @@
+{
+ "matrix_version": 1,
+ "scope": "subscription-misc",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "users": {
+  "a1000000-0000-4000-8000-000000700001": {
+   "first_name": "Message",
+   "last_name": "Fixture",
+   "email": "message-reads-700001@example.test",
+   "phone": null,
+   "username": "message-reads-700001",
+   "role": 1
+  },
+  "a1000000-0000-4000-8000-000000700007": {
+   "first_name": "Message",
+   "last_name": "Fixture",
+   "email": "message-reads-700007@example.test",
+   "phone": null,
+   "username": "message-reads-700007",
+   "role": 1
+  }
+ },
+ "statuses": {
+  "own_newest": {
+   "id": "a1000000-0000-4000-8000-000001410001",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "type": 1,
+   "doing": true,
+   "created": "2025-06-01T08:00:00Z"
+  },
+  "own_older": {
+   "id": "a1000000-0000-4000-8000-000001410002",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "type": 1,
+   "doing": false,
+   "created": "2020-01-01T08:00:00Z"
+  },
+  "own_approving": {
+   "id": "a1000000-0000-4000-8000-000001410003",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "type": 2,
+   "doing": false,
+   "created": "2099-01-01T08:00:00Z"
+  },
+  "foreign_unknown": {
+   "id": "a1000000-0000-4000-8000-000001410004",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "type": 1,
+   "doing": null,
+   "created": "2024-01-01T08:00:00Z"
+  }
+ },
+ "associates": {
+  "rossi": {
+   "address": "Via Roma 1",
+   "address_cap": "37121",
+   "address_city": "Verona",
+   "born_city": "Verona",
+   "born_date": null,
+   "email": "mario@example.test",
+   "first_name": "Mario",
+   "last_name": "Rossi",
+   "is_minor": false,
+   "sex": "M",
+   "tax_code": "RSSMRA90E10H501Z",
+   "phone": "3331112222",
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "picture_path": null,
+   "id": "a1000000-0000-4000-8000-000001410005",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2023-01-01T08:00:00Z"
+  },
+  "verdi": {
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "born_date": null,
+   "email": null,
+   "first_name": "Giulia",
+   "last_name": "Verdi",
+   "is_minor": false,
+   "sex": "F",
+   "tax_code": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "picture_path": null,
+   "id": "a1000000-0000-4000-8000-000001410006",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2023-01-01T08:00:00Z"
+  },
+  "bianchi": {
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "born_date": null,
+   "email": null,
+   "first_name": "Luca",
+   "last_name": "Bianchi",
+   "is_minor": false,
+   "sex": "A",
+   "tax_code": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "picture_path": null,
+   "id": "a1000000-0000-4000-8000-000001410007",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2023-01-01T08:00:00Z"
+  },
+  "neri": {
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "born_date": null,
+   "email": null,
+   "first_name": "Anna",
+   "last_name": "Neri",
+   "is_minor": false,
+   "sex": "A",
+   "tax_code": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": "casa",
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "picture_path": null,
+   "id": "a1000000-0000-4000-8000-000001410008",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2023-01-01T08:00:00Z"
+  },
+  "gallo": {
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "born_date": null,
+   "email": null,
+   "first_name": "Paolo",
+   "last_name": "Gallo",
+   "is_minor": false,
+   "sex": "A",
+   "tax_code": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "picture_path": null,
+   "id": "a1000000-0000-4000-8000-000001410009",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "created": "2023-01-01T08:00:00Z",
+   "group": "a1000000-0000-4000-8000-000000714001"
+  },
+  "kodokan": {
+   "address": null,
+   "address_cap": null,
+   "address_city": null,
+   "born_city": null,
+   "born_date": null,
+   "email": null,
+   "first_name": "Jigoro",
+   "last_name": "Kano",
+   "is_minor": false,
+   "sex": "A",
+   "tax_code": null,
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "phone_label": null,
+   "phone_2_label": null,
+   "phone_3_label": null,
+   "phone_4_label": null,
+   "picture_path": null,
+   "id": "a1000000-0000-4000-8000-000001410010",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "created": "2023-01-01T08:00:00Z"
+  }
+ },
+ "payments": {
+  "rossi": {
+   "id": "a1000000-0000-4000-8000-000001410011",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "associate": "rossi",
+   "amount": "25.00",
+   "paid": true,
+   "created": "2020-02-01T08:00:00Z"
+  }
+ },
+ "documents": {
+  "privacy": {
+   "id": "a1000000-0000-4000-8000-000001410012",
+   "token": "a1000000-0000-4000-8000-000001410013",
+   "filename": "privacy.pdf",
+   "created": "2024-03-01T08:00:00Z"
+  },
+  "impersonated": {
+   "id": "a1000000-0000-4000-8000-000001410014",
+   "token": "a1000000-0000-4000-8000-000001410015",
+   "filename": "impersonated.pdf",
+   "created": "2024-03-01T08:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000001410016",
+   "token": "a1000000-0000-4000-8000-000001410017",
+   "filename": "grouped.pdf",
+   "created": "2024-03-01T08:00:00Z"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000001410018",
+   "token": "a1000000-0000-4000-8000-000001410019",
+   "filename": "foreign.pdf",
+   "created": "2024-03-01T08:00:00Z"
+  },
+  "shared": {
+   "id": "a1000000-0000-4000-8000-000001410020",
+   "token": "a1000000-0000-4000-8000-000001410021",
+   "filename": "shared.pdf",
+   "created": "2024-03-01T08:00:00Z"
+  }
+ },
+ "subscriptions": {
+  "fed_asd": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": "ASD Alpha"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410022"
+  },
+  "fed_asd_twin": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "denomination": "ASD Alpha",
+    "type_of_associate": "asd-o-ssd",
+    "note": "twin"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410023"
+  },
+  "fed_school": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "scuola-asc",
+    "denomination": "Scuola Beta"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410024"
+  },
+  "fed_upper": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "TYPE_OF_ASSOCIATE": "ASD-O-SSD",
+    "denomination": "Delta"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410025"
+  },
+  "fed_nested": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "meta": {
+     "type_of_associate": "scuola-asc"
+    },
+    "denomination": "Nested"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410026"
+  },
+  "fed_number": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": 5
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410027"
+  },
+  "fed_null": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "scuola-asc",
+    "denomination": null
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410028"
+  },
+  "fed_dict": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": {
+     "name": "Unhashable"
+    }
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410029"
+  },
+  "fed_list": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": [
+    {
+     "type_of_associate": "asd-o-ssd",
+     "denomination": "In a list"
+    }
+   ],
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410030"
+  },
+  "fed_unnamed": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410031"
+  },
+  "fed_suffix": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd-extra",
+    "denomination": "Suffix"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410032"
+  },
+  "fed_other": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "atleta",
+    "denomination": "Gamma"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410033"
+  },
+  "fed_deleted": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": "Removed"
+   },
+   "deleted": true,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410034"
+  },
+  "fed_grouped": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "scuola-asc",
+    "denomination": "Grouped"
+   },
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714001",
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410035"
+  },
+  "fed_foreign": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": null,
+   "start": null,
+   "end": null,
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "type_of_associate": "asd-o-ssd",
+    "denomination": "Abroad"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410036"
+  },
+  "v_olimpia": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "rossi",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palestra Olimpia",
+    "school_teacher_name": "Mario Bianchi",
+    "principal_style": "Karate",
+    "type_of_associate": "atleta"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410037"
+  },
+  "v_olimpya": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "verdi",
+   "start": "2021-01-01",
+   "end": "2021-12-31",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "denomination": "Palestra Olimpya"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410038"
+  },
+  "v_palazzo": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "verdi",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palazzo dello Sport"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410039"
+  },
+  "v_note": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "note": "Palestra"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410040"
+  },
+  "v_future": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "verdi",
+   "start": "2099-01-01",
+   "end": "2099-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palestra Olimpia",
+    "school_teacher_name": "Mario Bianchi",
+    "principal_style": "Karate",
+    "type_of_associate": "atleta"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410041"
+  },
+  "v_bianchi_now": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "bianchi",
+   "start": "2000-01-01",
+   "end": "2099-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": null,
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410042"
+  },
+  "v_bianchi_old": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "bianchi",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palestra Olimpia",
+    "school_teacher_name": "Mario Bianchi",
+    "principal_style": "Karate",
+    "type_of_associate": "atleta"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410043"
+  },
+  "v_neri_next": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "neri",
+   "start": "2098-01-01",
+   "end": "2099-12-31",
+   "status": 2,
+   "type": 2,
+   "role": 1,
+   "custom_data": null,
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410044"
+  },
+  "v_neri_old": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "neri",
+   "start": "2019-01-01",
+   "end": "2019-12-31",
+   "status": 1,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palestra Olimpia",
+    "school_teacher_name": "Mario Bianchi",
+    "principal_style": "Karate",
+    "type_of_associate": "atleta"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410045"
+  },
+  "v_unlinked_now": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": "2000-01-01",
+   "end": "2099-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": null,
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410046"
+  },
+  "v_unlinked": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "denomination": "Palestra Olimpia "
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410047"
+  },
+  "v_deleted": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "rossi",
+   "start": "2018-01-01",
+   "end": "2018-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palestra Olimpia",
+    "school_teacher_name": "Mario Bianchi",
+    "principal_style": "Karate",
+    "type_of_associate": "atleta"
+   },
+   "deleted": true,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410048"
+  },
+  "v_grouped": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "gallo",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palestra Olimpia",
+    "school_teacher_name": "Mario Bianchi",
+    "principal_style": "Karate",
+    "type_of_associate": "atleta"
+   },
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714001",
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410049"
+  },
+  "v_ali": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "ali",
+    "denomination": "Ali"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410050"
+  },
+  "v_empty": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "denomination": ""
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410051"
+  },
+  "v_abroad_school": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "kodokan",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": "Palestra Olimpia",
+    "school_teacher_name": "Mario Bianchi",
+    "principal_style": "Karate",
+    "type_of_associate": "atleta"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410052"
+  },
+  "v_kodokan": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": "kodokan",
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "denomination": "Kodokan Roma"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410053"
+  },
+  "v_numbers": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": null,
+   "start": "2020-01-01",
+   "end": "2020-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": {
+    "school_name": 7,
+    "tag": "Numeri"
+   },
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410054"
+  },
+  "d_own": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": "rossi",
+   "start": "2024-01-01",
+   "end": "2024-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": null,
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410055"
+  },
+  "d_grouped": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "user": "a1000000-0000-4000-8000-000000700001",
+   "associate": null,
+   "start": "2024-01-01",
+   "end": "2024-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": null,
+   "deleted": false,
+   "group": "a1000000-0000-4000-8000-000000714001",
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410056"
+  },
+  "d_foreign": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "user": "a1000000-0000-4000-8000-000000700007",
+   "associate": null,
+   "start": "2024-01-01",
+   "end": "2024-12-31",
+   "status": 4,
+   "type": 2,
+   "role": 1,
+   "custom_data": null,
+   "deleted": false,
+   "group": null,
+   "created": "2020-01-01T08:00:00Z",
+   "id": "a1000000-0000-4000-8000-000001410057"
+  }
+ },
+ "files": {
+  "privacy": {
+   "id": "a1000000-0000-4000-8000-000001410058",
+   "subscription": "d_own",
+   "document": "privacy",
+   "created": "2024-03-02T08:00:00Z"
+  },
+  "impersonated": {
+   "id": "a1000000-0000-4000-8000-000001410059",
+   "subscription": "d_own",
+   "document": "impersonated",
+   "created": "2024-03-02T09:00:00Z"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000001410060",
+   "subscription": "d_grouped",
+   "document": "grouped",
+   "created": "2024-03-02T10:00:00Z"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000001410061",
+   "subscription": "d_foreign",
+   "document": "foreign",
+   "created": "2024-03-02T11:00:00Z"
+  },
+  "shared_own": {
+   "id": "b3000000-0000-4000-8000-000000970901",
+   "subscription": "d_own",
+   "document": "shared",
+   "created": "2024-03-02T12:00:00Z"
+  },
+  "shared_grouped": {
+   "id": "b3000000-0000-4000-8000-000000970902",
+   "subscription": "d_grouped",
+   "document": "shared",
+   "created": "2024-03-02T13:00:00Z"
+  }
+ },
+ "links": {
+  "olimpia": {
+   "id": "a1000000-0000-4000-8000-000001410069",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "token": "a1000000-0000-4000-8000-000001410062",
+   "gym_name": "Palestra Olimpia",
+   "expires": "2099-01-01T00:00:00Z"
+  },
+  "expired": {
+   "id": "a1000000-0000-4000-8000-000001410070",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "token": "a1000000-0000-4000-8000-000001410063",
+   "gym_name": "Palestra Olimpia",
+   "expires": "2020-01-01T00:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000001410071",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "token": "a1000000-0000-4000-8000-000001410064",
+   "gym_name": "Kodokan Roma",
+   "expires": "2099-01-01T00:00:00Z"
+  },
+  "unnamed": {
+   "id": "a1000000-0000-4000-8000-000001410072",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "token": "a1000000-0000-4000-8000-000001410065",
+   "gym_name": null,
+   "expires": "2099-01-01T00:00:00Z"
+  },
+  "numbers": {
+   "id": "a1000000-0000-4000-8000-000001410073",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "token": "a1000000-0000-4000-8000-000001410066",
+   "gym_name": "Numeri",
+   "expires": "2099-01-01T00:00:00Z"
+  },
+  "ali": {
+   "id": "a1000000-0000-4000-8000-000001410074",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "token": "a1000000-0000-4000-8000-000001410067",
+   "gym_name": "ALI",
+   "expires": "2099-01-01T00:00:00Z"
+  },
+  "empty": {
+   "id": "a1000000-0000-4000-8000-000001410075",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "token": "a1000000-0000-4000-8000-000001410068",
+   "gym_name": "",
+   "expires": "2099-01-01T00:00:00Z"
+  }
+ },
+ "cases": [
+  {
+   "name": "subscription-misc-tax-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-wrong-method",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-tax-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Calculate Tax Code",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-tax-without-last-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": null
+   },
+   "effect": null,
+   "body": {
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-without-first-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": null
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-without-sex",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": null
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-without-born-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": null
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-without-born-city",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": null
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-empty-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": null
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-misc-tax-blank-last-name-empty",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati sono mancanti."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-blank-first-name-none",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati sono mancanti."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": null,
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-blank-sex-X",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati sono mancanti."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "X",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-blank-sex-M",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati sono mancanti."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": " M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-blank-born-date-empty",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati sono mancanti."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-blank-born-city-none",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati sono mancanti."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": null
+   }
+  },
+  {
+   "name": "subscription-misc-tax-sex-not-string",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": 1,
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-sex-not-string-after-missing-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati sono mancanti."
+   },
+   "effect": null,
+   "body": {
+    "last_name": null,
+    "first_name": "Mario",
+    "sex": 1,
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-sex-lower-case",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "m",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-female",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E50H501K"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Maria",
+    "sex": "F",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-iso-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "1990-05-10",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-dashed-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10-05-1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-dotted-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10.5.1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-compact-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90R05H501Q"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "19900510",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-impossible-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "31/02/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-month-day-swapped",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E13H501M"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "05/13/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-symbols-only-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "//",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-names-with-accents",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "DNGNCL90E10H501M"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "D'Angelo",
+    "first_name": "Nicolò",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-long-first-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSGFR90E10H501W"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Gianfranco",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-short-names",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "FOXLAX90E10H501J"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Fo",
+    "first_name": "Al",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-city-with-province",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10F205J"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Milano (MI)"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-city-with-comma",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10L781W"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "verona, VR"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-city-wrong-province",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10L781W"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Verona (MI)"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-foreign-country",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10Z112R"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Germania"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-city-code",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "h501"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-unknown-city",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Città non mappata."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Atlantide"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-city-before-creation",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Città non mappata."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "01/01/1880",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-deleted-municipality",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA50A01B283P"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "01/01/1950",
+    "born_city": "Busana"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-deleted-municipality-decoded-later",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "01/01/1920",
+    "born_city": "Busana"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-last-name-not-string",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": 5,
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-born-date-not-string",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": 1990,
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-born-city-not-string",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": [
+     "Roma"
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-tax-cjk-last-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "MZDMRA90E10H501S"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "毛泽东",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-cyrillic-first-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSRIU90E10H501Q"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Юрий",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-entity-last-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "R&amp;ssi &eacute;",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-numeric-reference-first-name",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSAXX90E10H501I"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "&#x41;&#66;&#1114112;",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-surrogate-city",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "raw_body": "{\"last_name\": \"Rossi\", \"first_name\": \"Mario\", \"sex\": \"M\", \"born_date\": \"10/05/1990\", \"born_city\": \"Roma\\ud800\"}",
+   "content_type": "application/json"
+  },
+  {
+   "name": "subscription-misc-tax-combining-run",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Marí́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́́o",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-kana-city",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10/05/1990",
+    "born_city": "ローマ"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-month-name-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "May 10, 1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-month-first-year-first-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90H05H501Z"
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "june-5-1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-iso-time-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "1990-05-10T10:00:00Z",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-italian-month-date",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "alcuni dati non sono validi."
+   },
+   "effect": null,
+   "body": {
+    "last_name": "Rossi",
+    "first_name": "Mario",
+    "sex": "M",
+    "born_date": "10 maggio 1990",
+    "born_city": "Roma"
+   }
+  },
+  {
+   "name": "subscription-misc-tax-list-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "Rossi"
+   ]
+  },
+  {
+   "name": "subscription-misc-tax-form-body",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/calculate-tax-code",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "tax_code": "RSSMRA90E10H501G"
+   },
+   "effect": null,
+   "raw_body": "last_name=Rossi&first_name=Mario&sex=M&born_date=10%2F05%2F1990&born_city=Roma",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-misc-status-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "importing": true
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "importing": true
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "importing": true
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "importing": null
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-deleted-association",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-status-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-misc-status-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/import/status",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Import Status",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "denomination": "ASD Alpha",
+     "id": [
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
+     ]
+    },
+    {
+     "denomination": "Scuola Beta",
+     "id": "a1000000-0000-4000-8000-000001410024"
+    },
+    {
+     "denomination": "Delta",
+     "id": "a1000000-0000-4000-8000-000001410025"
+    },
+    {
+     "denomination": "Nested",
+     "id": "a1000000-0000-4000-8000-000001410026"
+    },
+    {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
+     "denomination": "Removed",
+     "id": "a1000000-0000-4000-8000-000001410034"
+    },
+    {
+     "denomination": "Grouped",
+     "id": "a1000000-0000-4000-8000-000001410035"
+    }
+   ],
+   "effect": null,
+   "unordered": "denomination"
+  },
+  {
+   "name": "subscription-misc-federation-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "denomination": "ASD Alpha",
+     "id": [
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
+     ]
+    },
+    {
+     "denomination": "Scuola Beta",
+     "id": "a1000000-0000-4000-8000-000001410024"
+    },
+    {
+     "denomination": "Delta",
+     "id": "a1000000-0000-4000-8000-000001410025"
+    },
+    {
+     "denomination": "Nested",
+     "id": "a1000000-0000-4000-8000-000001410026"
+    },
+    {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
+     "denomination": "Removed",
+     "id": "a1000000-0000-4000-8000-000001410034"
+    },
+    {
+     "denomination": "Grouped",
+     "id": "a1000000-0000-4000-8000-000001410035"
+    }
+   ],
+   "effect": null,
+   "unordered": "denomination"
+  },
+  {
+   "name": "subscription-misc-federation-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": [
+    {
+     "denomination": "ASD Alpha",
+     "id": [
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
+     ]
+    },
+    {
+     "denomination": "Scuola Beta",
+     "id": "a1000000-0000-4000-8000-000001410024"
+    },
+    {
+     "denomination": "Delta",
+     "id": "a1000000-0000-4000-8000-000001410025"
+    },
+    {
+     "denomination": "Nested",
+     "id": "a1000000-0000-4000-8000-000001410026"
+    },
+    {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
+     "denomination": "Removed",
+     "id": "a1000000-0000-4000-8000-000001410034"
+    },
+    {
+     "denomination": "Grouped",
+     "id": "a1000000-0000-4000-8000-000001410035"
+    }
+   ],
+   "effect": null,
+   "unordered": "denomination"
+  },
+  {
+   "name": "subscription-misc-federation-own-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": [
+    {
+     "denomination": "Grouped",
+     "id": "a1000000-0000-4000-8000-000001410035"
+    }
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-foreign-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": [],
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-malformed-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {
+    "X-Group-Id": "not-a-uuid"
+   },
+   "status": 200,
+   "response": [
+    {
+     "denomination": "ASD Alpha",
+     "id": [
+      "a1000000-0000-4000-8000-000001410022",
+      "a1000000-0000-4000-8000-000001410023"
+     ]
+    },
+    {
+     "denomination": "Scuola Beta",
+     "id": "a1000000-0000-4000-8000-000001410024"
+    },
+    {
+     "denomination": "Delta",
+     "id": "a1000000-0000-4000-8000-000001410025"
+    },
+    {
+     "denomination": "Nested",
+     "id": "a1000000-0000-4000-8000-000001410026"
+    },
+    {
+     "denomination": 5,
+     "id": "a1000000-0000-4000-8000-000001410027"
+    },
+    {
+     "denomination": null,
+     "id": "a1000000-0000-4000-8000-000001410028"
+    },
+    {
+     "denomination": "Removed",
+     "id": "a1000000-0000-4000-8000-000001410034"
+    },
+    {
+     "denomination": "Grouped",
+     "id": "a1000000-0000-4000-8000-000001410035"
+    }
+   ],
+   "effect": null,
+   "unordered": "denomination"
+  },
+  {
+   "name": "subscription-misc-federation-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 200,
+   "response": [
+    {
+     "denomination": "Abroad",
+     "id": "a1000000-0000-4000-8000-000001410036"
+    }
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-deleted-association",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-federation-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-misc-federation-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/get-associations-for-federation",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Get Associations For Federation",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-generate-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "Palestra Nuova",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "Palestra Nuova",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": "Palestra Nuova"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "Dojo",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "Dojo",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": "Dojo"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "Dojo Ristretto",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "Dojo Ristretto",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": "Dojo Ristretto"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "Dojo Admin",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "Dojo Admin",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": "Dojo Admin"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-number",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": 5,
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "5",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": 5
+   }
+  },
+  {
+   "name": "subscription-misc-generate-file-lines",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [
+     "uno\n",
+     "due\r\n",
+     "tre\r",
+     "quattro"
+    ],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "palestra.txt",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\nuno\ndue\r\ntre\rquattro\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "palestra.txt",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-accents",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [
+     "caffè\n"
+    ],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "palestra.txt",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\ncaffè\n\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-path-name",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [
+     "x"
+    ],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "percorso.csv",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"a/b/../percorso.csv\"\r\nContent-Type: text/csv\r\n\r\nx\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-then-text",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": [
+     "x"
+    ],
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "bin.dat",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"bin.dat\"\r\nContent-Type: application/octet-stream\r\n\r\nx\r\n--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"\r\n\r\ndopo\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-other-key",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "gym_name is required"
+   },
+   "effect": null,
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"other\"; filename=\"a.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-file-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "raw_body": "--submiscboundary\r\nContent-Disposition: form-data; name=\"gym_name\"; filename=\"palestra.txt\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--submiscboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=submiscboundary"
+  },
+  {
+   "name": "subscription-misc-generate-float",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": 1.5,
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "1.5",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": 1.5
+   }
+  },
+  {
+   "name": "subscription-misc-generate-boolean",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": true,
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "True",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": true
+   }
+  },
+  {
+   "name": "subscription-misc-generate-object",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": {
+     "a": [
+      1,
+      null
+     ]
+    },
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "{'a': [1, None]}",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": {
+     "a": [
+      1,
+      null
+     ]
+    }
+   }
+  },
+  {
+   "name": "subscription-misc-generate-empty",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": ""
+   }
+  },
+  {
+   "name": "subscription-misc-generate-unicode",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "Palestra è ok",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "Palestra è ok",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": "Palestra è ok"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-max-length",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "body": {
+    "gym_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-form-last-value",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "token": "$new",
+    "gym_name": "Ultima",
+    "expires_at": "$later"
+   },
+   "effect": {
+    "kind": "link",
+    "gym_name": "Ultima",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   },
+   "raw_body": "gym_name=Prima&gym_name=Ultima",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-misc-generate-missing",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "gym_name is required"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-misc-generate-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "gym_name is required"
+   },
+   "effect": null,
+   "body": {
+    "gym_name": null
+   }
+  },
+  {
+   "name": "subscription-misc-generate-too-long",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "gym_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-nul-character",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "gym_name": "a\u0000b"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": [
+    "gym_name"
+   ]
+  },
+  {
+   "name": "subscription-misc-generate-athlete",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User is not a sport association"
+   },
+   "effect": null,
+   "body": {
+    "gym_name": "Palestra"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-athlete-without-name",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "gym_name is required"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-misc-generate-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "gym_name": "P"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-deleted-association",
+   "actor": "deleted_association_owner",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "gym_name": "P"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {
+    "gym_name": "P"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {
+    "gym_name": "P"
+   }
+  },
+  {
+   "name": "subscription-misc-generate-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-generate-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/generate-token-link",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Generate Token Link",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-unknown-token-removes-expired",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001419999",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": {
+    "kind": "expired-links"
+   }
+  },
+  {
+   "name": "subscription-misc-validate-expired-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410063",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410006",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpya"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 2,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410008",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Anna",
+       "last_name": "Neri",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 1,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpia "
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": true,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "unordered": "subscription_id"
+  },
+  {
+   "name": "subscription-misc-validate-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410006",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpya"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 2,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410008",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Anna",
+       "last_name": "Neri",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 1,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpia "
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": true,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "unordered": "subscription_id"
+  },
+  {
+   "name": "subscription-misc-validate-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410006",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpya"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 2,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410008",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Anna",
+       "last_name": "Neri",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 1,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpia "
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": true,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "unordered": "subscription_id"
+  },
+  {
+   "name": "subscription-misc-validate-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410006",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpya"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 2,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410008",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Anna",
+       "last_name": "Neri",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 1,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpia "
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": true,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "unordered": "subscription_id"
+  },
+  {
+   "name": "subscription-misc-validate-own-group",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-foreign-group",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [],
+    "default_custom_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-foreign-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410064",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410053",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700007@example.test",
+       "phone": null,
+       "username": "message-reads-700007",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410010",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Jigoro",
+       "last_name": "Kano",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Kodokan Roma"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     }
+    ],
+    "default_custom_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-short-name",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410067",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410050",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "ali",
+       "denomination": "Ali"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "ali",
+     "school_teacher_name": "",
+     "responsible_instructor_name": "",
+     "principal_style": "",
+     "type_of_associate": "atleta",
+     "denomination": "Ali",
+     "type": 2
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-empty-name",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410068",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410051",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": ""
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     }
+    ],
+    "default_custom_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-upper-case-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=A1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-braced-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token={a1000000-0000-4000-8000-000001410062}",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-repeated-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=bad&token=a1000000-0000-4000-8000-000001410064",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410053",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700007@example.test",
+       "phone": null,
+       "username": "message-reads-700007",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410010",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Jigoro",
+       "last_name": "Kano",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Kodokan Roma"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     }
+    ],
+    "default_custom_data": null
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-null-gym-name",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410065",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-number-school-name",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410066",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-vouches",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410037",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410038",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410006",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Giulia",
+       "last_name": "Verdi",
+       "is_minor": false,
+       "sex": "F",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpya"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 2,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2021-01-01",
+      "end_date": "2021-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410045",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410008",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Anna",
+       "last_name": "Neri",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": "casa",
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 1,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2019-01-01",
+      "end_date": "2019-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410047",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": null,
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": null,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Palestra Olimpia "
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410048",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410005",
+       "address": "Via Roma 1",
+       "address_cap": "37121",
+       "address_city": "Verona",
+       "born_city": "Verona",
+       "born_date": null,
+       "email": "mario@example.test",
+       "first_name": "Mario",
+       "last_name": "Rossi",
+       "is_minor": false,
+       "sex": "M",
+       "tax_code": "RSSMRA90E10H501Z",
+       "phone": "3331112222",
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 25.0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2018-01-01",
+      "end_date": "2018-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": true,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     },
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "unordered": "subscription_id",
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-pending-pairing-vouches-group",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410049",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700001@example.test",
+       "phone": null,
+       "username": "message-reads-700001",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410009",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Paolo",
+       "last_name": "Gallo",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "school_name": "Palestra Olimpia",
+       "school_teacher_name": "Mario Bianchi",
+       "principal_style": "Karate",
+       "type_of_associate": "atleta"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": "a1000000-0000-4000-8000-000000714001"
+     }
+    ],
+    "default_custom_data": {
+     "school_name": "Palestra Olimpia",
+     "school_teacher_name": "Mario Bianchi",
+     "responsible_instructor_name": "",
+     "principal_style": "Karate",
+     "type_of_associate": "atleta",
+     "denomination": "",
+     "type": 2
+    }
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "pending",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-rejects",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 401,
+       "json": {
+        "error": "unknown"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-unavailable",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 500,
+       "raw": "error"
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-card-kind",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "card",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-without-gym-name",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-gym-name-number",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": 7
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-gym-name-too-long",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-expired-grant",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701001",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso-60",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-server-other-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": [
+     {
+      "path": "/pairing/v1/public-token",
+      "reply": {
+       "status": 200,
+       "json": {
+        "protocol": "bakney-pairing-v1",
+        "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+        "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+        "association_id": "a1000000-0000-4000-8000-000000701002",
+        "origin": "http://localhost",
+        "callback_uri": "http://localhost/bakney/v1/callback",
+        "kind": "cumulative",
+        "generation": "a1000000-0000-4000-8000-0000e1880004",
+        "expires_at": "$iso+600",
+        "gym_name": "Palestra Olimpia"
+       }
+      },
+      "body": {
+       "kind": "cumulative",
+       "token": "a1000000-0000-4000-8000-0000e1880020",
+       "pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+       "secret": "$secret"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-upper-case-token-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=A1000000-0000-4000-8000-0000E1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": []
+   }
+  },
+  {
+   "name": "subscription-misc-validate-pairing-disconnected-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "disconnected",
+    "authority": []
+   }
+  },
+  {
+   "name": "subscription-misc-validate-pairing-not-self-hosted-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-0000e1880020",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": true
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "self_hosted": false,
+    "authority": []
+   }
+  },
+  {
+   "name": "subscription-misc-validate-paired-local-token-not-asked",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410064",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "expired": false,
+    "subscriptions": [
+     {
+      "subscription_id": "a1000000-0000-4000-8000-000001410053",
+      "user": {
+       "first_name": "Message",
+       "last_name": "Fixture",
+       "email": "message-reads-700007@example.test",
+       "phone": null,
+       "username": "message-reads-700007",
+       "role": 1
+      },
+      "associate": {
+       "associate_id": "a1000000-0000-4000-8000-000001410010",
+       "address": null,
+       "address_cap": null,
+       "address_city": null,
+       "born_city": null,
+       "born_date": null,
+       "email": null,
+       "first_name": "Jigoro",
+       "last_name": "Kano",
+       "is_minor": false,
+       "sex": "A",
+       "tax_code": null,
+       "phone": null,
+       "phone_2": null,
+       "phone_3": null,
+       "phone_4": null,
+       "phone_label": null,
+       "phone_2_label": null,
+       "phone_3_label": null,
+       "phone_4_label": null,
+       "picture_path": null
+      },
+      "tags": [],
+      "all_payments_paid": true,
+      "payments_info": {
+       "total": 0,
+       "to_be_paid": 0
+      },
+      "age": 0,
+      "current_year": false,
+      "next_years": false,
+      "medical": null,
+      "medical_token": null,
+      "medical_expiration_date": null,
+      "document": null,
+      "document_token": null,
+      "signature_present": false,
+      "custom_data": {
+       "denomination": "Kodokan Roma"
+      },
+      "additional_fields": null,
+      "type": 2,
+      "role": 1,
+      "acceptance_date": null,
+      "resignation_date": null,
+      "status_flag": 4,
+      "creation_date": "2020-01-01T08:00:00Z",
+      "start_date": "2020-01-01",
+      "end_date": "2020-12-31",
+      "signature_url": null,
+      "archived": false,
+      "draft": true,
+      "trial": false,
+      "meta": null,
+      "subscription_number": "0",
+      "subscription_type": null,
+      "deleted": false,
+      "competitive": false,
+      "notes": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701002",
+      "supplier": null,
+      "instructor": null,
+      "document_pdf": null,
+      "payment": null,
+      "group": null
+     }
+    ],
+    "default_custom_data": null
+   },
+   "effect": null,
+   "pairing": {
+    "instance_id": "a1000000-0000-4000-8000-0000e1880001",
+    "pairing_id": "a1000000-0000-4000-8000-0000e1880002",
+    "remote_pairing_id": "a1000000-0000-4000-8000-0000e1880003",
+    "generation": "a1000000-0000-4000-8000-0000e1880004",
+    "state": "paired",
+    "authority": []
+   }
+  },
+  {
+   "name": "subscription-misc-validate-without-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "one of the hex, bytes, bytes_le, fields, or int arguments must be given"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-malformed-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=abc",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-validate-wrong-method",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/subscription/validate-token-link-and-get-subscriptions?token=a1000000-0000-4000-8000-000001410062",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "subscription-misc-validate-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/subscription/validate-token-link-and-get-subscriptions",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Validate Token Link And Get Subscriptions",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.members.update"
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-owner-scoped-athlete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Subscription Delete Document",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-malformed-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/nope/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-malformed-file",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/nope",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-athlete",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-deleted-association",
+   "actor": "deleted_association_owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "User not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-unknown-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001419999/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-foreign-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410057/delete-document/a1000000-0000-4000-8000-000001410061",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-unknown-file",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001419999",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-file-of-another-subscription",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410060",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-group-hidden",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/a1000000-0000-4000-8000-000001410060",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "subscription file deleted"
+   },
+   "effect": {
+    "kind": "document",
+    "file": "privacy",
+    "document": true,
+    "actor": "owner",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "subscription-misc-delete-owner-again",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410058",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-association-scoped-session",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/a1000000-0000-4000-8000-000001410059",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_full",
+    "User-Id": "a1000000-0000-4000-8000-000000700002"
+   },
+   "status": 200,
+   "response": {
+    "msg": "subscription file deleted"
+   },
+   "effect": {
+    "kind": "document",
+    "file": "impersonated",
+    "document": false,
+    "actor": "owner",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "subscription-misc-delete-admin-impersonating-owner-grouped",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/a1000000-0000-4000-8000-000001410060",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001",
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "subscription file deleted"
+   },
+   "effect": {
+    "kind": "document",
+    "file": "grouped",
+    "document": true,
+    "actor": "admin",
+    "association": "a1000000-0000-4000-8000-000000711001"
+   }
+  },
+  {
+   "name": "subscription-misc-delete-document-of-two-files",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/b3000000-0000-4000-8000-000000970901",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "subscription file deleted"
+   },
+   "effect": {
+    "kind": "document",
+    "file": "shared_own",
+    "document": false,
+    "actor": "owner",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "subscription-misc-delete-document-of-two-files-again",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410055/delete-document/b3000000-0000-4000-8000-000000970901",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "subscription-misc-delete-document-of-two-files-last-link",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/subscription/a1000000-0000-4000-8000-000001410056/delete-document/b3000000-0000-4000-8000-000000970902",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "subscription file deleted"
+   },
+   "effect": {
+    "kind": "document",
+    "file": "shared_grouped",
+    "document": true,
+    "actor": "owner",
+    "association": "a1000000-0000-4000-8000-000000701001"
+   }
+  }
+ ]
+}

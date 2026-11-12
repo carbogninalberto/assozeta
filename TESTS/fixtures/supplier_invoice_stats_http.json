@@ -1,0 +1,256 @@
+{
+ "matrix_version": 1,
+ "scope": "Supplier invoice stats authored sequence",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "supplier": {
+  "id": "a1000000-0000-4000-8000-000000800001",
+  "association": "a1000000-0000-4000-8000-000000701001",
+  "name": "Fornitore è"
+ },
+ "invoices": {
+  "own_paid": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "100.50",
+   "paid": true,
+   "expire": -5,
+   "identifier": "F-1",
+   "supplier": true,
+   "id": "a1000000-0000-4000-8000-000000800002"
+  },
+  "own_unpaid_soon": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "20.25",
+   "paid": false,
+   "expire": 10,
+   "identifier": "F-2 à",
+   "supplier": true,
+   "id": "a1000000-0000-4000-8000-000000800003"
+  },
+  "own_unpaid_past": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "5.00",
+   "paid": false,
+   "expire": -40,
+   "identifier": "F-3",
+   "supplier": false,
+   "id": "a1000000-0000-4000-8000-000000800004"
+  },
+  "own_unpaid_late": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "7.10",
+   "paid": false,
+   "expire": 40,
+   "identifier": "F-4",
+   "supplier": true,
+   "id": "a1000000-0000-4000-8000-000000800005"
+  },
+  "own_unpaid_undated": {
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": false,
+   "expire": null,
+   "identifier": "F-5",
+   "supplier": false,
+   "id": "a1000000-0000-4000-8000-000000800006"
+  },
+  "foreign": {
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "amount": "999.99",
+   "paid": false,
+   "expire": 50,
+   "identifier": "X-1",
+   "supplier": false,
+   "id": "a1000000-0000-4000-8000-000000800007"
+  }
+ },
+ "window_days": 30,
+ "cases": [
+  {
+   "name": "supplier-invoice-stats-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "invoices_total": 135.85,
+    "invoices_paid": 100.5,
+    "invoices_unpaid": 35.35,
+    "invoices_expiring": [
+     "$row:own_unpaid_soon",
+     "$row:own_unpaid_past"
+    ]
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-full-collaborator-owner-scope",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "invoices_total": 135.85,
+    "invoices_paid": 100.5,
+    "invoices_unpaid": 35.35,
+    "invoices_expiring": [
+     "$row:own_unpaid_soon",
+     "$row:own_unpaid_past"
+    ]
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "invoices_total": 135.85,
+    "invoices_paid": 100.5,
+    "invoices_unpaid": 35.35,
+    "invoices_expiring": [
+     "$row:own_unpaid_soon",
+     "$row:own_unpaid_past"
+    ]
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-foreign-owner-nothing-paid",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "invoices_total": 999.99,
+    "invoices_paid": 0,
+    "invoices_unpaid": 999.99,
+    "invoices_expiring": []
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: bookeeping.documents.supplierinvoices.read"
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-athlete-server-error",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "supplier-invoice-stats-deleted-association-server-error",
+   "actor": "deleted_association_owner",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>"
+  },
+  {
+   "name": "supplier-invoice-stats-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   }
+  },
+  {
+   "name": "supplier-invoice-stats-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/invoice-suppliers/stats",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Invoice Suppliers Stats",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   }
+  }
+ ]
+}

@@ -7,6 +7,7 @@ from application.models.subscriptions_models import MedicalAppointments
 from application.models.user_models import Associate, Instructor, EmailLog, InstructorHours, \
     Folder, SportAssociationDocumentsArchive, SportAssociationModuleTemplates
 from docmanager.models import Document
+from application.serializers.primary_key import ReadOnlyPrimaryKeyMixin
 
 
 class EmailLogSerializer(serializers.ModelSerializer):
@@ -22,7 +23,7 @@ class EmailLogSerializer(serializers.ModelSerializer):
         )
 
 
-class InstructorSerializer(serializers.ModelSerializer):
+class InstructorSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     # expand validation
 
     def create(self, validated_data):
@@ -34,7 +35,7 @@ class InstructorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class InstructorHoursSerializer(serializers.ModelSerializer):
+class InstructorHoursSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     document_token = serializers.SerializerMethodField(required=False, read_only=True)
 
     def get_document_token(self, obj):
@@ -369,7 +370,7 @@ class AssociateSerializerInfo(serializers.ModelSerializer):
         )
 
 
-class MedicalAppointmentsSerializer(serializers.ModelSerializer):
+class MedicalAppointmentsSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     document_token = serializers.SerializerMethodField()
     appointment_region = serializers.SerializerMethodField()
 
@@ -391,7 +392,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = '__all__'
 
-class SportAssociationModuleTemplatesSerializer(serializers.ModelSerializer):
+class SportAssociationModuleTemplatesSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     class Meta:
         model = SportAssociationModuleTemplates
         fields = '__all__'
@@ -407,7 +408,7 @@ class FolderSerializer(serializers.ModelSerializer):
     def get_children(self, obj):
         return FolderSerializer(obj.get_children(), many=True).data
 
-class DocumentArchiveSerializer(serializers.ModelSerializer):
+class DocumentArchiveSerializer(ReadOnlyPrimaryKeyMixin, serializers.ModelSerializer):
     document = DocumentSerializer(many=True, read_only=True)
 
     class Meta:

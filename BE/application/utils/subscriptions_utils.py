@@ -1,4 +1,5 @@
 from application.impersonation_scope import scoped_queryset
+from application.utils.person_dates import person_date
 """
 @ copyright: Bakney SRL
 """
@@ -21,7 +22,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.timezone import make_aware
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from application.models import CourseSubscription, CourseSubscriptionInstallment, Course
@@ -574,8 +575,7 @@ def get_membership_fee(data, sport_association: SportAssociation, subscription_t
                 membership_category = PaymentCategory.objects.filter(
                     payment_category_id=sport_association.user.default_payment_category.payment_category_id).first()
             else:
-                membership_category = PaymentCategory.objects.filter(
-                    name__iexact='entrate e proventi da attività tipiche').first()
+                membership_category = PaymentCategory.default_for(sport_association)
             # create categories
             meta_payment_categories = [
                 {
@@ -599,8 +599,7 @@ def get_membership_fee(data, sport_association: SportAssociation, subscription_t
                 membership_category = PaymentCategory.objects.filter(
                     payment_category_id=sport_association.user.default_payment_category.payment_category_id).first()
             else:
-                membership_category = PaymentCategory.objects.filter(
-                    name__iexact='entrate e proventi da attività tipiche').first()
+                membership_category = PaymentCategory.default_for(sport_association)
             # create categories
             meta_payment_categories = [
                 {
@@ -687,6 +686,25 @@ def fill_data_preregisration(data, user=None, requester=None):
         raise ValidationError({'msg': 'Iscrizione da rinnovare non trovata.', "code": 400})
 
 
+def _linkable_medical_certificates(medical_id, sport_association, requester):
+    """The certificate a registration links, by id.
+
+    It is one of: a certificate of the association account or of the requester,
+    the certificate of a subscription of this association, or an upload without
+    an account that no other association's subscription uses. Any other id is
+    treated like an unknown one.
+    """
+    accounts = [sport_association.user_id]
+    if requester is not None and getattr(requester, 'is_authenticated', False):
+        accounts.append(requester.pk)
+    used = Subscription._base_manager.filter(medical_id=OuterRef('pk'))
+    return MedicalCertificate.objects.filter(medical_id=medical_id).filter(
+        Q(user_id__in=accounts)
+        | Exists(used.filter(sport_association=sport_association))
+        | (Q(user__isnull=True) & ~Exists(used.exclude(sport_association=sport_association)))
+    )
+
+
 def safe_int(value, default=0):
     """Convert any value to int safely, returning default if conversion fails."""
     if value is None:
@@ -737,7 +755,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         preregistration = True
 
     now = date.today()
-    age = relativedelta(now, parser.parse(str(data['associate_data']['born_date'])).date()).years
+    age = relativedelta(now, person_date(str(data['associate_data']['born_date'])).date()).years
 
     if 'associate_tutor_data' in data.keys() and data['associate_tutor_data'] is not None:
         # smart check if associate_data has & associate_tutor_data have
@@ -813,10 +831,13 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         if (sport_association is None or 'sport_association' in data) and 'sport_association' in data:
             try:
                 sport_association_user = User.objects.get(username=data['sport_association'])
-                sport_association = SportAssociation.objects.get(user=sport_association_user)
-                logger.debug(f'Using sport association from request data: {sport_association.denomination}')
+                named_association = SportAssociation.objects.get(user=sport_association_user)
             except (User.DoesNotExist, SportAssociation.DoesNotExist):
                 pass  # Keep the original user.sport_association
+            else:
+                # An association account only names its own association.
+                if sport_association is None or named_association.sport_association_id != sport_association.sport_association_id:
+                    raise PermissionDenied("User not allowed.")
 
     # set sport_association to associate_data & associate_tutor_data
     associate_data.initial_data['sport_association'] = sport_association.sport_association_id
@@ -853,9 +874,9 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
         # extract the new user data and validate id
         logger.debug('new user account')
         new_member_info = UserSerializer(data=data['new_user_account']['new_member_info'])
-        # try getting the user
-        user = User.objects.filter(email=new_member_info.initial_data['email']).first()
-        if user is None:
+        # An account that already has this e-mail is never attached here: the member
+        # stays with the account of the request and is linked by the account holder.
+        if not User.objects.filter(email=new_member_info.initial_data['email']).exists():
             new_member_info.is_valid(raise_exception=True)
             user = new_member_info.save()
             alphabet = string.ascii_letters + string.digits
@@ -902,7 +923,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
 
     medical = None
     if medical_certificate is not None:
-        medical = MedicalCertificate.objects.filter(medical_id=medical_certificate)
+        medical = _linkable_medical_certificates(medical_certificate, sport_association, requester)
 
         if medical.exists():
             medical = medical.latest('creation_date')
@@ -1020,8 +1041,7 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
             payment_category = PaymentCategory.objects.filter(
                 payment_category_id=sport_association.user.default_payment_category.payment_category_id).first()
         else:
-            payment_category = PaymentCategory.objects.filter(
-                name__iexact='entrate e proventi da attività tipiche').first()
+            payment_category = PaymentCategory.default_for(sport_association)
 
         if fee_amount > 0 or sport_association.user.show_zero_payments:
             payment_date = timezone.now().date()
@@ -1251,11 +1271,15 @@ def _create_subscription_impl(data, user, auth_token, is_athlete_request=False, 
     return True, subscription
 
 
+def family_tax_codes(subscriptions):
+    """Tax codes that link these subscriptions to their family's: only filled-in ones."""
+    return subscriptions.exclude(associate__tax_code__isnull=True).exclude(
+        associate__tax_code='').values_list('associate__tax_code', flat=True).distinct()
+
+
 def get_optimized_subscriptions(user):
     # get tax_code of the user
-    tax_codes = scoped_queryset(user, Subscription.objects).filter(user=user).values_list('associate__tax_code', flat=True).distinct()
-    if len(tax_codes) == 0:
-        []
+    tax_codes = family_tax_codes(scoped_queryset(user, Subscription.objects).filter(user=user))
     subscriptions = scoped_queryset(user, Subscription.objects).filter(
         Q(user=user) | Q(associate__tax_code__in=tax_codes)
     ).select_related(
@@ -1344,8 +1368,7 @@ def add_course_to_subscription(course, sub, sport_association, data=None, is_ath
         payment_category = PaymentCategory.objects.filter(
             payment_category_id=sport_association.user.default_payment_category_courses.payment_category_id).first()
     else:
-        payment_category = PaymentCategory.objects.filter(
-            name__iexact='entrate e proventi da attività tipiche').first()
+        payment_category = PaymentCategory.default_for(sport_association)
 
     if 'one_fee_payment' in data and data['one_fee_payment'] and\
             course.one_fee > 0:
@@ -1485,8 +1508,7 @@ def add_course_subscription(course_subscription: CourseSubscription, sport_assoc
         payment_category = PaymentCategory.objects.filter(
             payment_category_id=sport_association.user.default_payment_category_courses.payment_category_id).first()
     else:
-        payment_category = PaymentCategory.objects.filter(
-            name__iexact='entrate e proventi da attività tipiche').first()
+        payment_category = PaymentCategory.default_for(sport_association)
 
     if course.course_type == Course.DEFAULT_TYPE:
         if data and data.get('one_fee_payment') and course.one_fee > 0:

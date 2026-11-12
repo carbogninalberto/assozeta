@@ -4,45 +4,45 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "UI/src/routes/association/course/add/sections/Section1.svelte": "f3e456ade95d87006f5a490dfef3ce9dd0e1f49ace814205a4cca049bb7622f7",
     "UI/src/routes/association/course/add/sections/partials/multiple-quotes.svelte": "45ce4aa40b75354452632c655f11f424854901e3085b2a6540dd151a875d64a0",
     "UI/src/routes/association/course/add/sections/partials/membership.svelte": "9ac492d36a980b8889b36e3d414033041f8ad6d342d99927aad8aca92c43acf0",
-    "BE/application/models/courses_models.py": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6",
+    "BE/application/models/courses_models.py": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671",
     "UI/src/routes/association/course/overview/components/CourseNavigationTab.svelte": "d93d905aada618ee7254ff78c57808f100a32dcdd426ecd64ddc42aba84e1bf3",
     "UI/src/routes/association/course/CourseList.svelte": "d68233a0b121dcbf15b840ea120348b331d017b4dd7ab936da95c46f1c50ad84",
     "UI/src/routes/association/course/overview/OverviewCourse.svelte": "5aed27d46e9ce99c75452e3cd766db412daaaeca7ac2084a20581358195c06ce",
-    "BE/application/views/course_views.py": "79bfbd622601a9d17c811c76cc99e2a4b1ac9d38a05a67b190e0b233c2672baa",
+    "BE/application/views/course_views.py": "28ce719b7f6897bccde939737866533899649def382f68a47def300a5dbc1c66",
     "BE/application/mixin.py": "ff5595da40005a0b91d599cfb5c95833a05069f28507635b67113a6490e1cb82",
-    "BE/application/serializers/courses_serializers.py": "45dc937b0da921f8466e4c21d22bedb8e74a52bd62b66f41f60e3c42b0320632",
+    "BE/application/serializers/courses_serializers.py": "6b5ed962bb1aaf588e04ecffba1f6bcedd26f8a5d55c8e9a0d97430c893a1481",
     "UI/src/routes/association/course/overview/modals/AddEditCourseSubscriptionModal.svelte": "cdb4e69ab6a4b231385aecacdd8c427aa0ca03652c79e50bee154ee3626ea7d7",
     "UI/src/routes/association/course/overview/partials/course-subscriptions-list.svelte": "061c496436d114b9ed587e8c9f5c8b83ab94a518a142e5118f0a911f3be6ea93",
     "BE/application/tasks.py": "36e3babcc1d2ff6692e322560948ed96c0fc8274958f438a84c4b69e1bad247c",
-    "BE/application/signals.py": "8eb91525ccd5dcc248bd6e88aca6f9184309728c4aed57d54d410b0185a92ce7",
+    "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
     "UI/src/components/eventgenerator/EventGenerator.svelte": "ce771bd5b1543d294f59094218cabe6a19ac15571e92de91dd12210eb7738af9",
     "UI/src/components/eventgenerator/RateElement.svelte": "fb5f41fdcd81fa3a2628ba8e5031f895542b21614e7587ada586cf711192f77b",
     "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
     "UI/src/routes/association/course/overview/components/Calendar.svelte": "5cdbdd7e450b7ccbcc87eee2349be0b156e9bdb2b79f79f750da99656fb6224e",
     "UI/src/routes/association/course/overview/components/modals/EditCalendarEvent.svelte": "9e524c5317b89a1c86c0d5153ba07b9286c9acbb560cef636324d302905819d3",
     "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-    "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "b40fb3c86aa525f87e4f7268ddb7dede3f544e959d28e6baa227419d615a009e",
-    "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
-    "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
-    "BE/application/serializers/payment_serializers.py": "abc31bd21b536db8cfe5972c24d0befed834914fb8bdeb832205c2e8b62b4e4f",
+    "UI/src/routes/accounting/payment/modals/AddEditModal.svelte": "a10e4ff9329c1ef31e51e1d07bd5aa203d6d5f08bddd2ca96f300ea1eea3f406",
+    "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
+    "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
+    "BE/application/serializers/payment_serializers.py": "7381f90ea6fdec4ac99e8198deb8fe107cd0ad54fbce3625932a13035f2d179b",
     "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
     "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",
     "UI/src/routes/accounting/receipts/modals/ShareModal.svelte": "0c86445d001a0d9141f26b673471a5b8b1ed1b9f15dc22264e125dc34d61bda3",
-    "BE/application/views/invoice_views.py": "500cf26719455a1a86aacb63e5c99bc9cbcc470a0bb1d275df926fbb884c8260",
+    "BE/application/views/invoice_views.py": "efaa933dd75f26a644a617ea7a604493936b737cd5ad458bd0239cfb98ce439e",
     "UI/src/routes/profile/sections/Stripe.svelte": "75899c0eb6ed827a07b0d2ad47ea102353a25a0c575c941757a828d5c65529be",
-    "UI/src/routes/profile/sections/SelfInstance.svelte": "4122a6d9bfddac1f5f61f90bd72d1cbb778530927af7f68ff611f3d57972d6c0",
+    "UI/src/routes/profile/sections/SelfInstance.svelte": "13b31bc8ee3d904cb0d18f4a531bc7b91ee7c5f1f30361c262a40c3448aa6ab7",
     "UI/src/routes/profile/sections/InstanceIntegrations.svelte": "3fb8d12712e3088142b367b144dca0c70151a2c2692ad8dd69eacc88a4720332",
     "UI/src/routes/profile/sections/InstanceIntegration.svelte": "2da3929b737ab1d7c7ee43d9a4b7f96666e382228eac579fde7976730666c3eb",
     "BE/instance/integrations.py": "c7bb11e0eb4e587b5334b2661c6ca2def5118b93c4dcb12373cc399e83a8ef59",
     "BE/instance/permissions.py": "ce413a53cb3dcf3cca2478c4df656078cd105f6faff868b53a4073e973885f58",
     "BE/application/utils/stripe_utils.py": "5eb9238ba059bd0e2247235dc33cbd2502c38d8cb1e81f793583b34e270b9bab",
-    "BE/application/views/stripe_views.py": "eaf4b2f4bdd43c12bb90c15096c6bbfac4de1997432fd6b72bf2f1a734f4565f",
+    "BE/application/views/stripe_views.py": "4501535744d50336d5a3a041552c9543c94c8b2d84dd7e4a631245960bb1df1f",
     "UI/src/routes/activities/payment/PaymentList.svelte": "9f913de33eea435d9a5c0487f28b1df466ee8198d66564fd7ffdeee817256151",
     "UI/src/routes/stripe/Checkout.svelte": "3c619dd299432dadf62a76649f9f55318f526ea477835618d32457c0a8f776b2",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa"
 });
 
-const sourceKeys = Object.freeze(["course_types", "course_fee", "course_quotes", "course_membership", "course_model", "course_navigation", "course_list", "course_delete_ui", "course_overview", "course_update", "course_status", "course_delete", "group_mixin", "course_subscription_model", "course_subscription_delete", "course_subscription_scope", "course_subscription_update", "course_explicit_rates", "course_select_rates", "course_select_quote", "course_subscription_submit", "course_bulk_operations", "course_operations_menu", "course_remove_ui", "course_bulk_update", "course_renew", "course_initial_membership", "course_cascade", "installment_delete", "installment_generator", "installment_row", "full_plan", "calendar_series", "calendar_series_start", "calendar_save", "calendar_edit", "calendar_delete_ui", "calendar_delete_warning", "calendar_share", "payment_methods", "payment_fields", "payment_ui_delete", "payment_delete", "payment_bulk_delete", "payment_add", "payment_model", "payment_serializer", "payment_export_ui", "payment_export_current", "payment_export_menu", "payment_export", "payment_columns", "payment_columns_load", "payment_reminder_ui", "payment_reminder", "payment_future_window", "payment_stripe_stats", "category_form", "category_update", "category_model", "receipt_share", "receipt_send", "profile_stripe", "profile_settings_online", "instance_sections", "instance_integrations", "instance_stripe_ui", "instance_stripe_save", "instance_stripe_verify", "instance_stripe_controls", "instance_stripe_backend", "instance_stripe_tests", "instance_permissions", "stripe_availability", "stripe_connect_disabled", "stripe_payment", "stripe_methods", "stripe_webhook", "athlete_pay", "stripe_checkout", "course_permissions", "payment_permissions", "receipt_permissions", "payment_filters_ui", "payment_method_filter_ui", "payment_state_filter_ui", "payment_filters_backend"]);
+const sourceKeys = Object.freeze(["course_types", "course_fee", "course_quotes", "course_membership", "course_model", "course_navigation", "course_list", "course_delete_ui", "course_overview", "course_update", "course_status", "course_delete", "group_mixin", "course_subscription_model", "course_subscription_delete", "course_subscription_scope", "course_subscription_update", "course_explicit_rates", "course_select_rates", "course_select_quote", "course_subscription_submit", "course_bulk_operations", "course_operations_menu", "course_remove_ui", "course_bulk_update", "course_renew", "course_initial_membership", "course_cascade", "installment_delete", "installment_generator", "installment_row", "full_plan", "calendar_series", "calendar_series_start", "calendar_save", "calendar_edit", "calendar_delete_ui", "calendar_delete_warning", "calendar_share", "payment_methods", "payment_fields", "payment_ui_delete", "payment_delete", "payment_bulk_delete", "payment_add", "payment_model", "payment_serializer", "payment_export_ui", "payment_export_current", "payment_export_menu", "payment_export", "payment_columns", "payment_columns_load", "payment_reminder_ui", "payment_reminder", "payment_future_window", "payment_stripe_stats", "category_form", "category_update", "category_model", "receipt_share", "receipt_send", "profile_stripe", "profile_settings_online", "instance_sections", "instance_integrations", "instance_stripe_ui", "instance_stripe_save", "instance_stripe_verify", "instance_stripe_controls", "instance_stripe_backend", "instance_stripe_tests", "instance_permissions", "stripe_availability", "stripe_connect_disabled", "stripe_payment", "stripe_methods", "stripe_webhook", "athlete_pay", "stripe_checkout", "course_permissions", "payment_permissions", "receipt_permissions", "payment_filters_ui", "payment_method_filter_ui", "payment_state_filter_ui", "payment_filters_backend", "payment_athlete_course_subscription"]);
 export const coursePaymentAdditionalSourceContracts = Object.freeze([
     [
         "UI/src/routes/association/course/add/sections/Section1.svelte",
@@ -478,6 +478,11 @@ export const coursePaymentAdditionalSourceContracts = Object.freeze([
         "BE/application/views/payment_views.py",
         "if type is not None:",
         24
+    ],
+    [
+        "BE/application/views/payment_views.py",
+        "# case athlete is asking for his payments",
+        15
     ]
 ].map(contract => Object.freeze(contract)));
 
@@ -823,7 +828,8 @@ const sections = [
             "course_explicit_rates",
             "course_select_rates",
             "course_subscription_update",
-            "payment_future_window"
+            "payment_future_window",
+            "payment_athlete_course_subscription"
         ]
     },
     {

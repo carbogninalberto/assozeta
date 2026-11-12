@@ -1,0 +1,5748 @@
+{
+ "matrix_version": 1,
+ "scope": "Instructor hours authored sequence with hour, document and audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "documents": {
+  "d1": "a1000000-0000-4000-8000-000000950001",
+  "d2": "a1000000-0000-4000-8000-000000950002"
+ },
+ "instructors": {
+  "full": {
+   "id": "a1000000-0000-4000-8000-000000950003",
+   "owner": "owner",
+   "documents": [
+    "d1",
+    "d2"
+   ],
+   "first_name": "Anna è",
+   "last_name": "Rossi",
+   "email": "anna@example.test",
+   "born_date": "1985-04-03",
+   "born_city": "Roma",
+   "born_province": null,
+   "tax_code": "RSSNNA85D43H501X",
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": "ISEF",
+   "role": null,
+   "phone": "+39 1",
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": "a1000000-0000-4000-8000-000000700002",
+   "is_volunteer": true,
+   "stipulated_contract_in": "2026-01-15",
+   "default_hourly_billing": "25.50",
+   "default_percentage_billing": null
+  },
+  "draft": {
+   "id": "a1000000-0000-4000-8000-000000950004",
+   "owner": "owner",
+   "documents": [],
+   "first_name": "Bruno",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": true,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "12.50"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000950005",
+   "owner": "foreign_owner",
+   "documents": [],
+   "first_name": "Carla",
+   "last_name": "Rossi",
+   "email": null,
+   "born_date": null,
+   "born_city": null,
+   "born_province": null,
+   "tax_code": null,
+   "address_city": null,
+   "address": null,
+   "address_province": null,
+   "civic_number": null,
+   "study_title": null,
+   "role": "Istruttore",
+   "phone": null,
+   "phone_2": null,
+   "phone_3": null,
+   "phone_4": null,
+   "draft": false,
+   "associated_user_id": null,
+   "is_volunteer": false,
+   "stipulated_contract_in": null,
+   "default_hourly_billing": "0.00",
+   "default_percentage_billing": "0.00"
+  }
+ },
+ "hour_documents": {
+  "doc_synced": {
+   "id": "a1000000-0000-4000-8000-000000966001",
+   "token": "a1000000-0000-4000-8000-000000966002",
+   "filename": "doc_synced.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  },
+  "doc_detailed": {
+   "id": "a1000000-0000-4000-8000-000000966003",
+   "token": "a1000000-0000-4000-8000-000000966004",
+   "filename": "doc_detailed.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  },
+  "doc_orphan": {
+   "id": "a1000000-0000-4000-8000-000000966005",
+   "token": "a1000000-0000-4000-8000-000000966006",
+   "filename": "doc_orphan.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  },
+  "doc_removable": {
+   "id": "a1000000-0000-4000-8000-000000966007",
+   "token": "a1000000-0000-4000-8000-000000966008",
+   "filename": "doc_removable.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  },
+  "doc_free": {
+   "id": "a1000000-0000-4000-8000-000000966009",
+   "token": "a1000000-0000-4000-8000-000000966010",
+   "filename": "doc_free.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  },
+  "doc_twin": {
+   "id": "a1000000-0000-4000-8000-000000966011",
+   "token": "a1000000-0000-4000-8000-000000966012",
+   "filename": "doc_twin.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  },
+  "doc_linked": {
+   "id": "a1000000-0000-4000-8000-000000966013",
+   "token": "a1000000-0000-4000-8000-000000966014",
+   "filename": "doc_linked.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  },
+  "doc_linked_list": {
+   "id": "a1000000-0000-4000-8000-000000966015",
+   "token": "a1000000-0000-4000-8000-000000966016",
+   "filename": "doc_linked_list.pdf",
+   "created": "2026-09-01T08:00:00Z"
+  }
+ },
+ "document_links": [
+  {
+   "instructor": "abroad",
+   "document": "doc_linked"
+  },
+  {
+   "instructor": "abroad",
+   "document": "doc_linked_list"
+  }
+ ],
+ "payments": {
+  "paid": {
+   "id": "a1000000-0000-4000-8000-000000966017",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "25.00",
+   "paid": true,
+   "date": null,
+   "deleted": false,
+   "group": null
+  },
+  "unpaid": {
+   "id": "a1000000-0000-4000-8000-000000966018",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "10.50",
+   "paid": false,
+   "date": null,
+   "deleted": false,
+   "group": null
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000966019",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "amount": "5.00",
+   "paid": true,
+   "date": null,
+   "deleted": false,
+   "group": null
+  },
+  "removed": {
+   "id": "a1000000-0000-4000-8000-000000966020",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "5.00",
+   "paid": true,
+   "date": null,
+   "deleted": true,
+   "group": null
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000966021",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "7.00",
+   "paid": true,
+   "date": null,
+   "deleted": false,
+   "group": "own_group"
+  },
+  "comp_paid": {
+   "id": "a1000000-0000-4000-8000-000000966037",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "15.00",
+   "paid": true,
+   "date": null,
+   "deleted": false,
+   "group": null
+  },
+  "comp_unpaid": {
+   "id": "a1000000-0000-4000-8000-000000966038",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "8.00",
+   "paid": false,
+   "date": null,
+   "deleted": false,
+   "group": null
+  },
+  "mp1": {
+   "id": "a1000000-0000-4000-8000-000000966053",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "30.00",
+   "paid": true,
+   "date": "2026-09-10T10:00:00.250000Z",
+   "deleted": false,
+   "group": null
+  },
+  "mp2": {
+   "id": "a1000000-0000-4000-8000-000000966054",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": false,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "mp3": {
+   "id": "a1000000-0000-4000-8000-000000966055",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": true,
+   "date": "2026-10-02T10:00:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "mp4": {
+   "id": "a1000000-0000-4000-8000-000000966056",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": true,
+   "group": null
+  },
+  "mp5": {
+   "id": "a1000000-0000-4000-8000-000000966057",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "7.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": "own_group"
+  },
+  "mp6": {
+   "id": "a1000000-0000-4000-8000-000000966058",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "pi1": {
+   "id": "a1000000-0000-4000-8000-000000966059",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "20.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "pi2": {
+   "id": "a1000000-0000-4000-8000-000000966060",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": false,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "pi3": {
+   "id": "a1000000-0000-4000-8000-000000966061",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "pi4": {
+   "id": "a1000000-0000-4000-8000-000000966062",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "2.50",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": true,
+   "group": null
+  },
+  "pi6": {
+   "id": "a1000000-0000-4000-8000-000000966063",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "4.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "ps1": {
+   "id": "a1000000-0000-4000-8000-000000966064",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "50.50",
+   "paid": true,
+   "date": "2026-09-20T00:00:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "ps3": {
+   "id": "a1000000-0000-4000-8000-000000966065",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": false,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "ps4": {
+   "id": "a1000000-0000-4000-8000-000000966066",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "0.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "ps5": {
+   "id": "a1000000-0000-4000-8000-000000966067",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "5.00",
+   "paid": true,
+   "date": "2026-09-30T00:00:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "ps6": {
+   "id": "a1000000-0000-4000-8000-000000966068",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": true,
+   "date": "2026-09-30T00:00:01Z",
+   "deleted": false,
+   "group": null
+  },
+  "ps7": {
+   "id": "a1000000-0000-4000-8000-000000966069",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": true,
+   "date": null,
+   "deleted": false,
+   "group": null
+  },
+  "ps8": {
+   "id": "a1000000-0000-4000-8000-000000966070",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "1.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": true,
+   "group": null
+  },
+  "pg": {
+   "id": "a1000000-0000-4000-8000-000000966071",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "9.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "pr": {
+   "id": "a1000000-0000-4000-8000-000000966072",
+   "association": "a1000000-0000-4000-8000-000000701001",
+   "amount": "3.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  },
+  "pf": {
+   "id": "a1000000-0000-4000-8000-000000966073",
+   "association": "a1000000-0000-4000-8000-000000701002",
+   "amount": "11.00",
+   "paid": true,
+   "date": "2026-09-15T08:30:00Z",
+   "deleted": false,
+   "group": null
+  }
+ },
+ "hours": {
+  "today": {
+   "id": "a1000000-0000-4000-8000-000000966022",
+   "instructor": "full",
+   "date": "$today",
+   "hours": "1.25",
+   "amount": "5.00",
+   "created": "2026-01-01T00:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": "oggi",
+   "calculation_data": [],
+   "document": null
+  },
+  "synced": {
+   "id": "a1000000-0000-4000-8000-000000966023",
+   "instructor": "full",
+   "date": "2026-10-05",
+   "hours": "2.50",
+   "amount": "25.00",
+   "created": "2026-09-01T08:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": "paid",
+   "notes": null,
+   "calculation_data": [],
+   "document": "doc_synced"
+  },
+  "detailed": {
+   "id": "a1000000-0000-4000-8000-000000966024",
+   "instructor": "full",
+   "date": "2026-09-20",
+   "hours": "1.00",
+   "amount": "10.50",
+   "created": "2026-09-21T09:30:00.123456Z",
+   "compensation_type": "percentage",
+   "hourly_billing": "10.00",
+   "percentage_billing": null,
+   "courses": [
+    {
+     "course_id": "c1",
+     "title": "Corso è"
+    }
+   ],
+   "period": "2026/09/01 al 2026/09/30",
+   "paid": false,
+   "payment": "unpaid",
+   "notes": "Lezione è 50%",
+   "calculation_data": [
+    {
+     "amount": 10.5,
+     "course": "Corso"
+    }
+   ],
+   "document": "doc_detailed"
+  },
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000966025",
+   "instructor": "full",
+   "date": "2026-08-01",
+   "hours": "3.00",
+   "amount": "30.00",
+   "created": "2026-08-02T10:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "10.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [],
+   "document": null
+  },
+  "orphan": {
+   "id": "a1000000-0000-4000-8000-000000966026",
+   "instructor": "full",
+   "date": "2025-12-31",
+   "hours": "0.50",
+   "amount": "5.50",
+   "created": "2026-01-02T10:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [],
+   "document": "doc_orphan"
+  },
+  "removable": {
+   "id": "a1000000-0000-4000-8000-000000966027",
+   "instructor": "full",
+   "date": "2025-06-01",
+   "hours": "1.00",
+   "amount": "1.00",
+   "created": "2025-06-02T10:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [],
+   "document": null
+  },
+  "with_doc": {
+   "id": "a1000000-0000-4000-8000-000000966028",
+   "instructor": "full",
+   "date": "2025-05-01",
+   "hours": "2.00",
+   "amount": "2.00",
+   "created": "2025-05-02T10:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": "unpaid",
+   "notes": null,
+   "calculation_data": [],
+   "document": "doc_removable"
+  },
+  "draft_row": {
+   "id": "a1000000-0000-4000-8000-000000966029",
+   "instructor": "draft",
+   "date": "2026-09-10",
+   "hours": "1.00",
+   "amount": "12.00",
+   "created": "2026-09-10T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [],
+   "document": null
+  },
+  "movable": {
+   "id": "a1000000-0000-4000-8000-000000966030",
+   "instructor": "draft",
+   "date": "2026-09-11",
+   "hours": "1.00",
+   "amount": "12.00",
+   "created": "2026-09-11T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [],
+   "document": null
+  },
+  "copyable": {
+   "id": "a1000000-0000-4000-8000-000000966031",
+   "instructor": "draft",
+   "date": "2026-09-12",
+   "hours": "1.50",
+   "amount": "18.00",
+   "created": "2026-09-12T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": {
+    "k": [
+     1,
+     "è"
+    ]
+   },
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": "copia",
+   "calculation_data": [],
+   "document": null
+  },
+  "abroad_row": {
+   "id": "a1000000-0000-4000-8000-000000966032",
+   "instructor": "abroad",
+   "date": "2026-09-15",
+   "hours": "4.00",
+   "amount": "40.00",
+   "created": "2026-09-15T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": null,
+   "calculation_data": [],
+   "document": null
+  },
+  "twin_a": {
+   "id": "a1000000-0000-4000-8000-000000966033",
+   "instructor": "abroad",
+   "date": "2026-09-16",
+   "hours": "1.00",
+   "amount": "1.00",
+   "created": "2026-09-16T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": "comune",
+   "calculation_data": [],
+   "document": "doc_twin"
+  },
+  "twin_b": {
+   "id": "a1000000-0000-4000-8000-000000966034",
+   "instructor": "abroad",
+   "date": "2026-09-17",
+   "hours": "1.00",
+   "amount": "1.00",
+   "created": "2026-09-17T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": "comune",
+   "calculation_data": [],
+   "document": "doc_twin"
+  },
+  "linked_del": {
+   "id": "a1000000-0000-4000-8000-000000966035",
+   "instructor": "abroad",
+   "date": "2026-09-18",
+   "hours": "1.00",
+   "amount": "1.00",
+   "created": "2026-09-18T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": "linkdel",
+   "calculation_data": [],
+   "document": "doc_linked"
+  },
+  "linked_list": {
+   "id": "a1000000-0000-4000-8000-000000966036",
+   "instructor": "abroad",
+   "date": "2026-09-19",
+   "hours": "1.00",
+   "amount": "1.00",
+   "created": "2026-09-19T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": null,
+   "notes": "linklist",
+   "calculation_data": [],
+   "document": "doc_linked_list"
+  },
+  "print_paid": {
+   "id": "a1000000-0000-4000-8000-000000966039",
+   "instructor": "draft",
+   "date": "2026-09-14",
+   "hours": "1.00",
+   "amount": "15.00",
+   "created": "2026-09-14T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": "comp_paid",
+   "notes": null,
+   "calculation_data": [],
+   "document": null
+  },
+  "print_unpaid": {
+   "id": "a1000000-0000-4000-8000-000000966040",
+   "instructor": "draft",
+   "date": "2026-09-13",
+   "hours": "1.00",
+   "amount": "8.00",
+   "created": "2026-09-13T18:00:00Z",
+   "compensation_type": "hourly",
+   "hourly_billing": "0.00",
+   "percentage_billing": "0.00",
+   "courses": null,
+   "period": null,
+   "paid": false,
+   "payment": "comp_unpaid",
+   "notes": null,
+   "calculation_data": [],
+   "document": null
+  }
+ },
+ "associates": {
+  "maria": {
+   "id": "a1000000-0000-4000-8000-000000966041",
+   "first": "Maria",
+   "last": "Bianchi"
+  },
+  "luca": {
+   "id": "a1000000-0000-4000-8000-000000966042",
+   "first": "Luca",
+   "last": "Verdi"
+  },
+  "sara": {
+   "id": "a1000000-0000-4000-8000-000000966043",
+   "first": " Sara",
+   "last": "Neri "
+  }
+ },
+ "subscriptions": {
+  "maria": {
+   "id": "a1000000-0000-4000-8000-000000966044",
+   "associate": "maria"
+  },
+  "luca": {
+   "id": "a1000000-0000-4000-8000-000000966045",
+   "associate": "luca"
+  },
+  "sara": {
+   "id": "a1000000-0000-4000-8000-000000966046",
+   "associate": "sara"
+  }
+ },
+ "courses": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000966047",
+   "title": "Abbonamento è",
+   "type": 3,
+   "multi": false,
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "multi": {
+   "id": "a1000000-0000-4000-8000-000000966048",
+   "title": "Quote",
+   "type": 2,
+   "multi": true,
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "single": {
+   "id": "a1000000-0000-4000-8000-000000966049",
+   "title": "Singolo",
+   "type": 1,
+   "multi": false,
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "grouped": {
+   "id": "a1000000-0000-4000-8000-000000966050",
+   "title": "Gruppo",
+   "type": 1,
+   "multi": false,
+   "deleted": false,
+   "group": "own_group",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "removed": {
+   "id": "a1000000-0000-4000-8000-000000966051",
+   "title": "Rimosso",
+   "type": 1,
+   "multi": false,
+   "deleted": true,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000966052",
+   "title": "Estero",
+   "type": 1,
+   "multi": false,
+   "deleted": false,
+   "group": null,
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "course_subscriptions": {
+  "cs_m": {
+   "id": "a1000000-0000-4000-8000-000000966074",
+   "course": "member",
+   "subscription": "maria",
+   "payment": null,
+   "deleted": false,
+   "memberships": [
+    "mp1",
+    "mp2",
+    "mp3",
+    "mp4",
+    "mp5"
+   ]
+  },
+  "cs_m_removed": {
+   "id": "a1000000-0000-4000-8000-000000966075",
+   "course": "member",
+   "subscription": "maria",
+   "payment": null,
+   "deleted": true,
+   "memberships": [
+    "mp6"
+   ]
+  },
+  "cs_q": {
+   "id": "a1000000-0000-4000-8000-000000966076",
+   "course": "multi",
+   "subscription": "luca",
+   "payment": null,
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s1": {
+   "id": "a1000000-0000-4000-8000-000000966077",
+   "course": "single",
+   "subscription": "sara",
+   "payment": "ps1",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s2": {
+   "id": "a1000000-0000-4000-8000-000000966078",
+   "course": "single",
+   "subscription": "sara",
+   "payment": null,
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s3": {
+   "id": "a1000000-0000-4000-8000-000000966079",
+   "course": "single",
+   "subscription": "sara",
+   "payment": "ps3",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s4": {
+   "id": "a1000000-0000-4000-8000-000000966080",
+   "course": "single",
+   "subscription": "sara",
+   "payment": "ps4",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s5": {
+   "id": "a1000000-0000-4000-8000-000000966081",
+   "course": "single",
+   "subscription": "sara",
+   "payment": "ps5",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s6": {
+   "id": "a1000000-0000-4000-8000-000000966082",
+   "course": "single",
+   "subscription": "sara",
+   "payment": "ps6",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s7": {
+   "id": "a1000000-0000-4000-8000-000000966083",
+   "course": "single",
+   "subscription": "sara",
+   "payment": "ps7",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_s8": {
+   "id": "a1000000-0000-4000-8000-000000966084",
+   "course": "single",
+   "subscription": "sara",
+   "payment": "ps8",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_g": {
+   "id": "a1000000-0000-4000-8000-000000966085",
+   "course": "grouped",
+   "subscription": "sara",
+   "payment": "pg",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_r": {
+   "id": "a1000000-0000-4000-8000-000000966086",
+   "course": "removed",
+   "subscription": "sara",
+   "payment": "pr",
+   "deleted": false,
+   "memberships": []
+  },
+  "cs_f": {
+   "id": "a1000000-0000-4000-8000-000000966087",
+   "course": "abroad",
+   "subscription": "sara",
+   "payment": "pf",
+   "deleted": false,
+   "memberships": []
+  }
+ },
+ "installments": {
+  "i1": {
+   "id": "a1000000-0000-4000-8000-000000966088",
+   "course_subscription": "cs_q",
+   "payment": "pi1",
+   "deleted": false,
+   "group": null
+  },
+  "i2": {
+   "id": "a1000000-0000-4000-8000-000000966089",
+   "course_subscription": "cs_q",
+   "payment": "pi2",
+   "deleted": false,
+   "group": null
+  },
+  "i3": {
+   "id": "a1000000-0000-4000-8000-000000966090",
+   "course_subscription": "cs_q",
+   "payment": "pi3",
+   "deleted": true,
+   "group": null
+  },
+  "i4": {
+   "id": "a1000000-0000-4000-8000-000000966091",
+   "course_subscription": "cs_q",
+   "payment": "pi4",
+   "deleted": false,
+   "group": null
+  },
+  "i5": {
+   "id": "a1000000-0000-4000-8000-000000966092",
+   "course_subscription": "cs_q",
+   "payment": null,
+   "deleted": false,
+   "group": null
+  },
+  "i6": {
+   "id": "a1000000-0000-4000-8000-000000966093",
+   "course_subscription": "cs_q",
+   "payment": "pi6",
+   "deleted": false,
+   "group": "own_group"
+  }
+ },
+ "cases": [
+  {
+   "name": "instructor-hours-list-iso-range",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5Bdate_range%5D=2026/09/01%20al%202026/09/30",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966024",
+      "document_token": "a1000000-0000-4000-8000-000000966004",
+      "creation_date": "2026-09-21T09:30:00.123456Z",
+      "date": "2026-09-20",
+      "compensation_type": "percentage",
+      "hours": "1.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": null,
+      "courses": [
+       {
+        "course_id": "c1",
+        "title": "Corso è"
+       }
+      ],
+      "period": "2026/09/01 al 2026/09/30",
+      "amount": "10.50",
+      "paid": false,
+      "notes": "Lezione è 50%",
+      "calculation_data": [
+       {
+        "amount": 10.5,
+        "course": "Corso"
+       }
+      ],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966003"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966024"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-italian-range",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5Bdate_range%5D=01/08/2026%20al%2030/09/2026",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966024",
+      "document_token": "a1000000-0000-4000-8000-000000966004",
+      "creation_date": "2026-09-21T09:30:00.123456Z",
+      "date": "2026-09-20",
+      "compensation_type": "percentage",
+      "hours": "1.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": null,
+      "courses": [
+       {
+        "course_id": "c1",
+        "title": "Corso è"
+       }
+      ],
+      "period": "2026/09/01 al 2026/09/30",
+      "amount": "10.50",
+      "paid": false,
+      "notes": "Lezione è 50%",
+      "calculation_data": [
+       {
+        "amount": 10.5,
+        "course": "Corso"
+       }
+      ],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966003"
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966025",
+      "document_token": null,
+      "creation_date": "2026-08-02T10:00:00Z",
+      "date": "2026-08-01",
+      "compensation_type": "hourly",
+      "hours": "3.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "30.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 2,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966024",
+      "a1000000-0000-4000-8000-000000966025"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-search-notes-case-insensitive",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5BgeneralSearch%5D=LEZIONE",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966024",
+      "document_token": "a1000000-0000-4000-8000-000000966004",
+      "creation_date": "2026-09-21T09:30:00.123456Z",
+      "date": "2026-09-20",
+      "compensation_type": "percentage",
+      "hours": "1.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": null,
+      "courses": [
+       {
+        "course_id": "c1",
+        "title": "Corso è"
+       }
+      ],
+      "period": "2026/09/01 al 2026/09/30",
+      "amount": "10.50",
+      "paid": false,
+      "notes": "Lezione è 50%",
+      "calculation_data": [
+       {
+        "amount": 10.5,
+        "course": "Corso"
+       }
+      ],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966003"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966024"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-search-literal-percent",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5BgeneralSearch%5D=0%25",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966024",
+      "document_token": "a1000000-0000-4000-8000-000000966004",
+      "creation_date": "2026-09-21T09:30:00.123456Z",
+      "date": "2026-09-20",
+      "compensation_type": "percentage",
+      "hours": "1.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": null,
+      "courses": [
+       {
+        "course_id": "c1",
+        "title": "Corso è"
+       }
+      ],
+      "period": "2026/09/01 al 2026/09/30",
+      "amount": "10.50",
+      "paid": false,
+      "notes": "Lezione è 50%",
+      "calculation_data": [
+       {
+        "amount": 10.5,
+        "course": "Corso"
+       }
+      ],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966003"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966024"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-search-literal-underscore",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5BgeneralSearch%5D=_",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [],
+    "meta": {
+     "total": 0,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": []
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-search-date-deletes-orphan-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5BgeneralSearch%5D=2025-12",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966026",
+      "document_token": "a1000000-0000-4000-8000-000000966006",
+      "creation_date": "2026-01-02T10:00:00Z",
+      "date": "2025-12-31",
+      "compensation_type": "hourly",
+      "hours": "0.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "5.50",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": "a1000000-0000-4000-8000-000000966005"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966026"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "orphan": {
+      "document_id": null
+     }
+    },
+    "documents": {
+     "doc_orphan": null
+    },
+    "audit": [
+     {
+      "model": "Document",
+      "key": "a1000000-0000-4000-8000-000000966005",
+      "action": 2,
+      "changes": "$deleted"
+     }
+    ],
+    "links": []
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-second-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?pagination%5Bperpage%5D=2&pagination%5Bpage%5D=2",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966024",
+      "document_token": "a1000000-0000-4000-8000-000000966004",
+      "creation_date": "2026-09-21T09:30:00.123456Z",
+      "date": "2026-09-20",
+      "compensation_type": "percentage",
+      "hours": "1.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": null,
+      "courses": [
+       {
+        "course_id": "c1",
+        "title": "Corso è"
+       }
+      ],
+      "period": "2026/09/01 al 2026/09/30",
+      "amount": "10.50",
+      "paid": false,
+      "notes": "Lezione è 50%",
+      "calculation_data": [
+       {
+        "amount": 10.5,
+        "course": "Corso"
+       }
+      ],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966003"
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966025",
+      "document_token": null,
+      "creation_date": "2026-08-02T10:00:00Z",
+      "date": "2026-08-01",
+      "compensation_type": "hourly",
+      "hours": "3.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "30.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 7,
+     "page": 2,
+     "pages": 4,
+     "perpage": 2,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966024",
+      "a1000000-0000-4000-8000-000000966025"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-owner-syncs-paid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966022",
+      "document_token": null,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "date": "$today",
+      "compensation_type": "hourly",
+      "hours": "1.25",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "5.00",
+      "paid": false,
+      "notes": "oggi",
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966023",
+      "document_token": "a1000000-0000-4000-8000-000000966002",
+      "creation_date": "2026-09-01T08:00:00Z",
+      "date": "2026-10-05",
+      "compensation_type": "hourly",
+      "hours": "2.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "25.00",
+      "paid": true,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966017",
+      "document": "a1000000-0000-4000-8000-000000966001"
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966024",
+      "document_token": "a1000000-0000-4000-8000-000000966004",
+      "creation_date": "2026-09-21T09:30:00.123456Z",
+      "date": "2026-09-20",
+      "compensation_type": "percentage",
+      "hours": "1.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": null,
+      "courses": [
+       {
+        "course_id": "c1",
+        "title": "Corso è"
+       }
+      ],
+      "period": "2026/09/01 al 2026/09/30",
+      "amount": "10.50",
+      "paid": false,
+      "notes": "Lezione è 50%",
+      "calculation_data": [
+       {
+        "amount": 10.5,
+        "course": "Corso"
+       }
+      ],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966003"
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966025",
+      "document_token": null,
+      "creation_date": "2026-08-02T10:00:00Z",
+      "date": "2026-08-01",
+      "compensation_type": "hourly",
+      "hours": "3.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "30.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966026",
+      "document_token": null,
+      "creation_date": "2026-01-02T10:00:00Z",
+      "date": "2025-12-31",
+      "compensation_type": "hourly",
+      "hours": "0.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "5.50",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966027",
+      "document_token": null,
+      "creation_date": "2025-06-02T10:00:00Z",
+      "date": "2025-06-01",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "1.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966028",
+      "document_token": "a1000000-0000-4000-8000-000000966008",
+      "creation_date": "2025-05-02T10:00:00Z",
+      "date": "2025-05-01",
+      "compensation_type": "hourly",
+      "hours": "2.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "2.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966007"
+     }
+    ],
+    "meta": {
+     "total": 7,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966022",
+      "a1000000-0000-4000-8000-000000966023",
+      "a1000000-0000-4000-8000-000000966024",
+      "a1000000-0000-4000-8000-000000966025",
+      "a1000000-0000-4000-8000-000000966026",
+      "a1000000-0000-4000-8000-000000966027",
+      "a1000000-0000-4000-8000-000000966028"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "synced": {
+      "paid": true
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966023",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-last-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?pagination%5Bperpage%5D=3&pagination%5Bpage%5D=last",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966028",
+      "document_token": "a1000000-0000-4000-8000-000000966008",
+      "creation_date": "2025-05-02T10:00:00Z",
+      "date": "2025-05-01",
+      "compensation_type": "hourly",
+      "hours": "2.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "2.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966007"
+     }
+    ],
+    "meta": {
+     "total": 7,
+     "page": 3,
+     "pages": 3,
+     "perpage": 3,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966028"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-invalid-page",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?pagination%5Bpage%5D=9",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "detail": "Invalid page."
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-zero-perpage-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?pagination%5Bperpage%5D=0&query%5BgeneralSearch%5D=25.0",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966023",
+      "document_token": "a1000000-0000-4000-8000-000000966002",
+      "creation_date": "2026-09-01T08:00:00Z",
+      "date": "2026-10-05",
+      "compensation_type": "hourly",
+      "hours": "2.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "25.00",
+      "paid": true,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966017",
+      "document": "a1000000-0000-4000-8000-000000966001"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966023"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-unparsed-range-last-year",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5Bdate_range%5D=ieri%20al%20domani&query%5BgeneralSearch%5D=oggi",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966022",
+      "document_token": null,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "date": "$today",
+      "compensation_type": "hourly",
+      "hours": "1.25",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "5.00",
+      "paid": false,
+      "notes": "oggi",
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966022"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-empty-range-ignored-already-paid",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5Bdate_range%5D=",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966022",
+      "document_token": null,
+      "creation_date": "2026-01-01T00:00:00Z",
+      "date": "$today",
+      "compensation_type": "hourly",
+      "hours": "1.25",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "5.00",
+      "paid": false,
+      "notes": "oggi",
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966023",
+      "document_token": "a1000000-0000-4000-8000-000000966002",
+      "creation_date": "2026-09-01T08:00:00Z",
+      "date": "2026-10-05",
+      "compensation_type": "hourly",
+      "hours": "2.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "25.00",
+      "paid": true,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966017",
+      "document": "a1000000-0000-4000-8000-000000966001"
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966024",
+      "document_token": "a1000000-0000-4000-8000-000000966004",
+      "creation_date": "2026-09-21T09:30:00.123456Z",
+      "date": "2026-09-20",
+      "compensation_type": "percentage",
+      "hours": "1.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": null,
+      "courses": [
+       {
+        "course_id": "c1",
+        "title": "Corso è"
+       }
+      ],
+      "period": "2026/09/01 al 2026/09/30",
+      "amount": "10.50",
+      "paid": false,
+      "notes": "Lezione è 50%",
+      "calculation_data": [
+       {
+        "amount": 10.5,
+        "course": "Corso"
+       }
+      ],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966003"
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966025",
+      "document_token": null,
+      "creation_date": "2026-08-02T10:00:00Z",
+      "date": "2026-08-01",
+      "compensation_type": "hourly",
+      "hours": "3.00",
+      "hourly_billing": "10.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "30.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966026",
+      "document_token": null,
+      "creation_date": "2026-01-02T10:00:00Z",
+      "date": "2025-12-31",
+      "compensation_type": "hourly",
+      "hours": "0.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "5.50",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966027",
+      "document_token": null,
+      "creation_date": "2025-06-02T10:00:00Z",
+      "date": "2025-06-01",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "1.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966028",
+      "document_token": "a1000000-0000-4000-8000-000000966008",
+      "creation_date": "2025-05-02T10:00:00Z",
+      "date": "2025-05-01",
+      "compensation_type": "hourly",
+      "hours": "2.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "2.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950003",
+      "payment": "a1000000-0000-4000-8000-000000966018",
+      "document": "a1000000-0000-4000-8000-000000966007"
+     }
+    ],
+    "meta": {
+     "total": 7,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966022",
+      "a1000000-0000-4000-8000-000000966023",
+      "a1000000-0000-4000-8000-000000966024",
+      "a1000000-0000-4000-8000-000000966025",
+      "a1000000-0000-4000-8000-000000966026",
+      "a1000000-0000-4000-8000-000000966027",
+      "a1000000-0000-4000-8000-000000966028"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-range-without-separator-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5Bdate_range%5D=2026/09/01",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-range-two-separators-server-error",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list?query%5Bdate_range%5D=a%20al%20b%20al%20c",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-athlete-empty",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [],
+    "meta": {
+     "total": 0,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": []
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-foreign-instructor-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [],
+    "meta": {
+     "total": 0,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": []
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/list?query%5BgeneralSearch%5D=40.00",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966032",
+      "document_token": null,
+      "creation_date": "2026-09-15T18:00:00Z",
+      "date": "2026-09-15",
+      "compensation_type": "hourly",
+      "hours": "4.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "40.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950005",
+      "payment": null,
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966032"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-rows-sharing-a-document-server-error",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/list?query%5BgeneralSearch%5D=comune",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "actor": "foreign_owner",
+    "rows": {
+     "twin_a": {
+      "document_id": null
+     },
+     "twin_b": {
+      "document_id": null
+     }
+    },
+    "documents": {
+     "doc_twin": null
+    },
+    "audit": [
+     {
+      "model": "Document",
+      "key": "a1000000-0000-4000-8000-000000966011",
+      "action": 2,
+      "changes": "$deleted"
+     }
+    ],
+    "links": []
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-orphan-document-with-link",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/list?query%5BgeneralSearch%5D=linklist",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966036",
+      "document_token": "a1000000-0000-4000-8000-000000966016",
+      "creation_date": "2026-09-19T18:00:00Z",
+      "date": "2026-09-19",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "1.00",
+      "paid": false,
+      "notes": "linklist",
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950005",
+      "payment": null,
+      "document": "a1000000-0000-4000-8000-000000966015"
+     }
+    ],
+    "meta": {
+     "total": 1,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966036"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "rows": {
+     "linked_list": {
+      "document_id": null
+     }
+    },
+    "documents": {
+     "doc_linked_list": null
+    },
+    "audit": [
+     {
+      "model": "Document",
+      "key": "a1000000-0000-4000-8000-000000966015",
+      "action": 2,
+      "changes": "$deleted"
+     }
+    ],
+    "links": [
+     "doc_linked_list"
+    ]
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-owner-prints-compensations",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966039",
+      "document_token": null,
+      "creation_date": "2026-09-14T18:00:00Z",
+      "date": "2026-09-14",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "15.00",
+      "paid": true,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": "a1000000-0000-4000-8000-000000966037",
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966040",
+      "document_token": null,
+      "creation_date": "2026-09-13T18:00:00Z",
+      "date": "2026-09-13",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "8.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": "a1000000-0000-4000-8000-000000966038",
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966031",
+      "document_token": null,
+      "creation_date": "2026-09-12T18:00:00Z",
+      "date": "2026-09-12",
+      "compensation_type": "hourly",
+      "hours": "1.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": {
+       "k": [
+        1,
+        "è"
+       ]
+      },
+      "period": null,
+      "amount": "18.00",
+      "paid": false,
+      "notes": "copia",
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966030",
+      "document_token": null,
+      "creation_date": "2026-09-11T18:00:00Z",
+      "date": "2026-09-11",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "12.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966029",
+      "document_token": null,
+      "creation_date": "2026-09-10T18:00:00Z",
+      "date": "2026-09-10",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "12.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 5,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966039",
+      "a1000000-0000-4000-8000-000000966040",
+      "a1000000-0000-4000-8000-000000966031",
+      "a1000000-0000-4000-8000-000000966030",
+      "a1000000-0000-4000-8000-000000966029"
+     ]
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "print_paid": {
+      "paid": true
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966039",
+      "action": 1,
+      "changes": {
+       "paid": [
+        "False",
+        "True"
+       ]
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [
+    {
+     "path": "/document/compensation/a1000000-0000-4000-8000-000000966037",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    },
+    {
+     "path": "/document/compensation/a1000000-0000-4000-8000-000000966038",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "instructor-hours-list-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966039",
+      "document_token": null,
+      "creation_date": "2026-09-14T18:00:00Z",
+      "date": "2026-09-14",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "15.00",
+      "paid": true,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": "a1000000-0000-4000-8000-000000966037",
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966040",
+      "document_token": null,
+      "creation_date": "2026-09-13T18:00:00Z",
+      "date": "2026-09-13",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "8.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": "a1000000-0000-4000-8000-000000966038",
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966031",
+      "document_token": null,
+      "creation_date": "2026-09-12T18:00:00Z",
+      "date": "2026-09-12",
+      "compensation_type": "hourly",
+      "hours": "1.50",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": {
+       "k": [
+        1,
+        "è"
+       ]
+      },
+      "period": null,
+      "amount": "18.00",
+      "paid": false,
+      "notes": "copia",
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966030",
+      "document_token": null,
+      "creation_date": "2026-09-11T18:00:00Z",
+      "date": "2026-09-11",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "12.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966029",
+      "document_token": null,
+      "creation_date": "2026-09-10T18:00:00Z",
+      "date": "2026-09-10",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "12.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 5,
+     "page": 1,
+     "pages": 1,
+     "perpage": 10,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966039",
+      "a1000000-0000-4000-8000-000000966040",
+      "a1000000-0000-4000-8000-000000966031",
+      "a1000000-0000-4000-8000-000000966030",
+      "a1000000-0000-4000-8000-000000966029"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [
+    {
+     "path": "/document/compensation/a1000000-0000-4000-8000-000000966037",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    },
+    {
+     "path": "/document/compensation/a1000000-0000-4000-8000-000000966038",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "instructor-hours-list-prints-only-page-rows",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/list?pagination%5Bperpage%5D=1&pagination%5Bpage%5D=2",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966040",
+      "document_token": null,
+      "creation_date": "2026-09-13T18:00:00Z",
+      "date": "2026-09-13",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "8.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": "a1000000-0000-4000-8000-000000966038",
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 5,
+     "page": 2,
+     "pages": 5,
+     "perpage": 1,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966040"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": [
+    {
+     "path": "/document/compensation/a1000000-0000-4000-8000-000000966038",
+     "reply": {
+      "status": 200,
+      "body": "printed"
+     }
+    }
+   ]
+  },
+  {
+   "name": "instructor-hours-list-page-without-compensation-no-print",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/list?pagination%5Bperpage%5D=3&pagination%5Bpage%5D=2",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966030",
+      "document_token": null,
+      "creation_date": "2026-09-11T18:00:00Z",
+      "date": "2026-09-11",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "12.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     },
+     {
+      "instructor_hours_id": "a1000000-0000-4000-8000-000000966029",
+      "document_token": null,
+      "creation_date": "2026-09-10T18:00:00Z",
+      "date": "2026-09-10",
+      "compensation_type": "hourly",
+      "hours": "1.00",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "12.00",
+      "paid": false,
+      "notes": null,
+      "calculation_data": [],
+      "instructor": "a1000000-0000-4000-8000-000000950004",
+      "payment": null,
+      "document": null
+     }
+    ],
+    "meta": {
+     "total": 5,
+     "page": 2,
+     "pages": 2,
+     "perpage": 3,
+     "rowIds": [
+      "a1000000-0000-4000-8000-000000966030",
+      "a1000000-0000-4000-8000-000000966029"
+     ]
+    }
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/abc/hours/list",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.hours.read"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Hours List",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-add-minimal",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "0.00",
+      "paid": false,
+      "payment_id": null,
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "hours": "1.50",
+      "date": "$today"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "percentage_billing": "0.0",
+       "amount": "0.0",
+       "date": "$now"
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": "1.5"
+   }
+  },
+  {
+   "name": "instructor-hours-add-full",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "percentage",
+      "hourly_billing": "12.50",
+      "percentage_billing": "7.50",
+      "courses": [
+       {
+        "course_id": "c1"
+       },
+       null
+      ],
+      "period": "Settembre",
+      "amount": "30.00",
+      "paid": true,
+      "payment_id": "a1000000-0000-4000-8000-000000966018",
+      "notes": "Nota è",
+      "calculation_data": {
+       "b": 1.5,
+       "a": [
+        "x"
+       ]
+      },
+      "document_id": "a1000000-0000-4000-8000-000000966009",
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "creation_date": "2026-09-01T08:00:00Z",
+      "date": "2026-09-15",
+      "hours": "2.00"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {}
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000966095",
+    "instructor": "a1000000-0000-4000-8000-000000950005",
+    "document_token": "ignored",
+    "creation_date": "2026-09-01T10:00:00+02:00",
+    "date": "15/09/2026",
+    "compensation_type": "percentage",
+    "hours": 2,
+    "hourly_billing": "12.5",
+    "percentage_billing": 7.5,
+    "courses": [
+     {
+      "course_id": "c1"
+     },
+     null
+    ],
+    "period": "Settembre",
+    "amount": 30,
+    "paid": "true",
+    "payment": "a1000000-0000-4000-8000-000000966018",
+    "notes": "  Nota è ",
+    "calculation_data": {
+     "b": 1.5,
+     "a": [
+      "x"
+     ]
+    },
+    "document": "a1000000-0000-4000-8000-000000966009"
+   }
+  },
+  {
+   "name": "instructor-hours-add-null-percentage-and-amount-given",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": null,
+      "courses": null,
+      "period": "",
+      "amount": "10.00",
+      "paid": false,
+      "payment_id": null,
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "hours": "0.50",
+      "date": "$today"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "date": "$now"
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": " 0.5 ",
+    "percentage_billing": null,
+    "amount": "1e1",
+    "period": "",
+    "notes": null,
+    "courses": null
+   }
+  },
+  {
+   "name": "instructor-hours-add-other-association-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": 1,
+    "date": "01/09/2026"
+   }
+  },
+  {
+   "name": "instructor-hours-add-other-owner-instructor",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "0.00",
+      "paid": false,
+      "payment_id": null,
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950005",
+      "hours": "1.00",
+      "date": "2026-09-01"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "percentage_billing": "0.0",
+       "amount": "0.0"
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": 1,
+    "date": "01/09/2026"
+   }
+  },
+  {
+   "name": "instructor-hours-add-athlete-not-found",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-add-grouped-payment-with-group-header",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "0.00",
+      "paid": false,
+      "payment_id": "a1000000-0000-4000-8000-000000966021",
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "hours": "1.00",
+      "date": "$today"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "percentage_billing": "0.0",
+       "amount": "0.0",
+       "date": "$now"
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": "1",
+    "payment": "a1000000-0000-4000-8000-000000966021"
+   }
+  },
+  {
+   "name": "instructor-hours-add-validation-errors",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "creation_date": [
+     "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+    ],
+    "date": [
+     "Date has wrong format. Use one of these formats instead: DD/MM/YYYY."
+    ],
+    "compensation_type": [
+     "Ensure this field has no more than 15 characters."
+    ],
+    "hours": [
+     "Ensure that there are no more than 2 decimal places."
+    ],
+    "hourly_billing": [
+     "A valid number is required."
+    ],
+    "percentage_billing": [
+     "Ensure that there are no more than 2 digits before the decimal point."
+    ],
+    "amount": [
+     "This field may not be null."
+    ],
+    "paid": [
+     "Must be a valid boolean."
+    ],
+    "payment": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000966998\" - object does not exist."
+    ],
+    "document": [
+     "“abc” is not a valid UUID."
+    ],
+    "period": [
+     "Ensure this field has no more than 50 characters."
+    ],
+    "notes": [
+     "Not a valid string."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "instructor_hours_id": "nope",
+    "creation_date": "ieri",
+    "date": "2026-09-01",
+    "compensation_type": "xxxxxxxxxxxxxxxx",
+    "hours": "1.234",
+    "hourly_billing": "dieci",
+    "percentage_billing": "123",
+    "amount": null,
+    "paid": "forse",
+    "payment": "a1000000-0000-4000-8000-000000966998",
+    "document": "abc",
+    "period": "ppppppppppppppppppppppppppppppppppppppppppppppppppp",
+    "notes": true
+   }
+  },
+  {
+   "name": "instructor-hours-add-hours-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "hours": [
+     "This field is required."
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-add-hours-total-digits",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "hours": [
+     "Ensure that there are no more than 4 digits in total."
+    ],
+    "compensation_type": [
+     "This field may not be blank."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "12345",
+    "compensation_type": " "
+   }
+  },
+  {
+   "name": "instructor-hours-add-blank-hours",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "hours": [
+     "A valid number is required."
+    ],
+    "percentage_billing": [
+     "A valid number is required."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "",
+    "percentage_billing": "x"
+   }
+  },
+  {
+   "name": "instructor-hours-add-existing-key-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "0.00",
+      "paid": false,
+      "payment_id": null,
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "hours": "1.00",
+      "date": "$today"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "percentage_billing": "0.0",
+       "amount": "0.0",
+       "date": "$now"
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": "1",
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000966025"
+   }
+  },
+  {
+   "name": "instructor-hours-add-malformed-key-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours added."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "$new": {
+      "compensation_type": "hourly",
+      "hourly_billing": "0.00",
+      "percentage_billing": "0.00",
+      "courses": null,
+      "period": null,
+      "amount": "0.00",
+      "paid": false,
+      "payment_id": null,
+      "notes": null,
+      "calculation_data": [],
+      "document_id": null,
+      "instructor_id": "a1000000-0000-4000-8000-000000950004",
+      "hours": "1.00",
+      "date": "$today"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "$new",
+      "action": 0,
+      "changes": "$created",
+      "overrides": {
+       "hourly_billing": "0.0",
+       "percentage_billing": "0.0",
+       "amount": "0.0",
+       "date": "$now"
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": "1",
+    "instructor_hours_id": "nope"
+   }
+  },
+  {
+   "name": "instructor-hours-add-removed-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "payment": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000966020\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1",
+    "payment": "a1000000-0000-4000-8000-000000966020"
+   }
+  },
+  {
+   "name": "instructor-hours-add-group-header-hides-payment",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 400,
+   "response": {
+    "payment": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000966021\" - object does not exist."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1",
+    "payment": "a1000000-0000-4000-8000-000000966021"
+   }
+  },
+  {
+   "name": "instructor-hours-add-unknown-document",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "document": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000966998\" - object does not exist."
+    ],
+    "payment": [
+     "Incorrect type. Expected pk value, received bool."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1",
+    "document": "a1000000-0000-4000-8000-000000966998",
+    "payment": true
+   }
+  },
+  {
+   "name": "instructor-hours-add-foreign-payment-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "x",
+    "payment": "a1000000-0000-4000-8000-000000966019"
+   }
+  },
+  {
+   "name": "instructor-hours-add-unknown-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000966998/hours/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-add-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/abc/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "prints": [],
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-hours-add-malformed-json",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000966998/hours/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting value: line 1 column 1 (char 0)"
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-hours-add-form-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "hours=1",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-hours-add-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": []
+  },
+  {
+   "name": "instructor-hours-add-null-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-hours-add-list-body-unknown-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000966998/hours/add",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": []
+  },
+  {
+   "name": "instructor-hours-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.hours.create"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Hours Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-update-fields",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "draft_row": {
+      "hours": "2.00",
+      "notes": "Aggiornato",
+      "date": "2026-02-01",
+      "paid": true,
+      "percentage_billing": null,
+      "courses": {
+       "a": [
+        1,
+        "è"
+       ]
+      },
+      "payment_id": "a1000000-0000-4000-8000-000000966018"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966029",
+      "action": 1,
+      "changes": {
+       "hours": [
+        "1.00",
+        "2.00"
+       ],
+       "notes": [
+        "None",
+        "Aggiornato"
+       ],
+       "date": [
+        "2026-09-10",
+        "2026-02-01"
+       ],
+       "paid": [
+        "False",
+        "True"
+       ],
+       "percentage_billing": [
+        "0.00",
+        "None"
+       ],
+       "courses": [
+        "null",
+        "{\"a\": [1, \"\\u00e8\"]}"
+       ],
+       "payment": [
+        "None",
+        "a1000000-0000-4000-8000-000000966018"
+       ]
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": "2",
+    "notes": "Aggiornato",
+    "date": "01/02/2026",
+    "paid": "true",
+    "percentage_billing": null,
+    "courses": {
+     "a": [
+      1,
+      "è"
+     ]
+    },
+    "payment": "a1000000-0000-4000-8000-000000966018",
+    "creation_date": "2026-09-10T18:00:00Z",
+    "document_token": "ignored"
+   }
+  },
+  {
+   "name": "instructor-hours-update-same-values-no-audit",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "documents": {},
+    "audit": [],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "hours": "2.0",
+    "notes": "Aggiornato",
+    "courses": {
+     "a": [
+      1,
+      "è"
+     ]
+    },
+    "paid": 1
+   }
+  },
+  {
+   "name": "instructor-hours-update-form",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "draft_row": {
+      "notes": "Modulo",
+      "period": "",
+      "calculation_data": [
+       1,
+       2.5
+      ],
+      "payment_id": null
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966029",
+      "action": 1,
+      "changes": {
+       "notes": [
+        "Aggiornato",
+        "Modulo"
+       ],
+       "period": [
+        "None",
+        ""
+       ],
+       "calculation_data": [
+        "[]",
+        "[1, 2.5]"
+       ],
+       "payment": [
+        "a1000000-0000-4000-8000-000000966018",
+        "None"
+       ]
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "raw_body": "notes=Modulo&percentage_billing=&period=&calculation_data=%5B1%2C+2.5%5D&payment=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-hours-update-form-invalid-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "courses": [
+     "Value must be valid JSON."
+    ],
+    "instructor": [
+     "This field may not be null."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "courses=nope&instructor=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-hours-update-validation-errors",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "hours": [
+     "This field may not be null."
+    ],
+    "date": [
+     "This field may not be null."
+    ],
+    "paid": [
+     "This field may not be null."
+    ],
+    "instructor": [
+     "Invalid pk \"a1000000-0000-4000-8000-000000966998\" - object does not exist."
+    ],
+    "compensation_type": [
+     "Not a valid string."
+    ],
+    "amount": [
+     "Ensure that there are no more than 9 digits in total."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": null,
+    "date": null,
+    "paid": null,
+    "instructor": "a1000000-0000-4000-8000-000000966998",
+    "compensation_type": [
+     "x"
+    ],
+    "amount": "1234567890"
+   }
+  },
+  {
+   "name": "instructor-hours-update-foreign-payment-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": null,
+    "payment": "a1000000-0000-4000-8000-000000966019"
+   }
+  },
+  {
+   "name": "instructor-hours-update-other-association-instructor-denied",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": null,
+    "instructor": "a1000000-0000-4000-8000-000000950005"
+   }
+  },
+  {
+   "name": "instructor-hours-update-list-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "Invalid data. Expected a dictionary, but got list."
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "body": [
+    "hours"
+   ]
+  },
+  {
+   "name": "instructor-hours-update-null-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "non_field_errors": [
+     "No data provided"
+    ]
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-hours-update-empty-body-no-audit",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {},
+    "documents": {},
+    "audit": [],
+    "links": []
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-update-existing-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "documents": {},
+    "audit": [],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000966025"
+   }
+  },
+  {
+   "name": "instructor-hours-update-own-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {},
+    "documents": {},
+    "audit": [],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "instructor_hours_id": "A1000000-0000-4000-8000-000000966029"
+   }
+  },
+  {
+   "name": "instructor-hours-update-move-to-other-instructor",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966030/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "movable": {
+      "instructor_id": "a1000000-0000-4000-8000-000000950003",
+      "amount": "0.00"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966030",
+      "action": 1,
+      "changes": {
+       "instructor": [
+        "a1000000-0000-4000-8000-000000950004",
+        "a1000000-0000-4000-8000-000000950003"
+       ],
+       "amount": [
+        "12.00",
+        "0.00"
+       ]
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "instructor": "a1000000-0000-4000-8000-000000950003",
+    "amount": 0
+   }
+  },
+  {
+   "name": "instructor-hours-update-new-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966031/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "success": true
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "copyable": {
+      "hours": "9.50"
+     }
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966031",
+      "action": 1,
+      "changes": {
+       "hours": [
+        "1.50",
+        "9.50"
+       ]
+      }
+     }
+    ],
+    "links": []
+   },
+   "prints": [],
+   "body": {
+    "instructor_hours_id": "a1000000-0000-4000-8000-000000966094",
+    "hours": "9.5"
+   }
+  },
+  {
+   "name": "instructor-hours-update-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966998/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-hours-update-other-instructor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-update-foreign-instructor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/a1000000-0000-4000-8000-000000966032/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-update-unknown-instructor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000966998/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-update-malformed-instructor",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/abc/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-update-malformed-hours",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-update-malformed-json",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "detail": "JSON parse error - Expecting value: line 1 column 1 (char 0)"
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "nope",
+   "content_type": "application/json"
+  },
+  {
+   "name": "instructor-hours-update-athlete-not-found",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "hours": "1"
+   }
+  },
+  {
+   "name": "instructor-hours-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.hours.update"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966029/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Hours Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966998/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-other-instructor",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/a1000000-0000-4000-8000-000000966027/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-foreign-instructor",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/a1000000-0000-4000-8000-000000966032/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-athlete-not-found",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966027/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966027/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.hours.delete"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966027/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966027/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Hours Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966027/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours deleted."
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "removable": null
+    },
+    "documents": {},
+    "audit": [
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966027",
+      "action": 2,
+      "changes": "$deleted"
+     }
+    ],
+    "links": []
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-with-document",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966028/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours deleted."
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "with_doc": null
+    },
+    "documents": {
+     "doc_removable": null
+    },
+    "audit": [
+     {
+      "model": "Document",
+      "key": "a1000000-0000-4000-8000-000000966007",
+      "action": 2,
+      "changes": "$deleted"
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966028",
+      "action": 2,
+      "changes": "$deleted"
+     }
+    ],
+    "links": []
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-document-with-link",
+   "actor": "foreign_owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/a1000000-0000-4000-8000-000000966035/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "msg": "hours deleted."
+   },
+   "effect": {
+    "actor": "foreign_owner",
+    "rows": {
+     "linked_del": null
+    },
+    "documents": {
+     "doc_linked": null
+    },
+    "audit": [
+     {
+      "model": "Document",
+      "key": "a1000000-0000-4000-8000-000000966013",
+      "action": 2,
+      "changes": "$deleted"
+     },
+     {
+      "model": "InstructorHours",
+      "key": "a1000000-0000-4000-8000-000000966035",
+      "action": 2,
+      "changes": "$deleted"
+     }
+    ],
+    "links": [
+     "doc_linked"
+    ]
+   },
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-delete-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/a1000000-0000-4000-8000-000000966028/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "hours not found"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-calculate",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 129.0,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 30.0,
+        "payment_date": "2026-09-10T10:00:00.250000Z"
+       },
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 7.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966088",
+        "amount": 20.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966091",
+        "amount": 2.5,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966093",
+        "amount": 4.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966077",
+        "full_athlete_name": "Sara Neri",
+        "amount": 50.5,
+        "payment_date": "2026-09-20T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966081",
+        "full_athlete_name": "Sara Neri",
+        "amount": 5.0,
+        "payment_date": "2026-09-30T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966084",
+        "full_athlete_name": "Sara Neri",
+        "amount": 1.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Gruppo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966085",
+        "full_athlete_name": "Sara Neri",
+        "amount": 9.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966998"
+     },
+     {
+      "course_id": null,
+      "title": "x"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966052"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-other-association-course-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 0,
+     "calculation_data": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966052"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-other-owner",
+   "actor": "foreign_owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 11.0,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Estero",
+        "course_subscription": "a1000000-0000-4000-8000-000000966087",
+        "full_athlete_name": "Sara Neri",
+        "amount": 11.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966052"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-other-association-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950005/hours/calculate",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-percentage",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950004/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 15.0,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 30.0,
+        "payment_date": "2026-09-10T10:00:00.250000Z"
+       },
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 7.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966088",
+        "amount": 20.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966091",
+        "amount": 2.5,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966093",
+        "amount": 4.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966077",
+        "full_athlete_name": "Sara Neri",
+        "amount": 50.5,
+        "payment_date": "2026-09-20T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966081",
+        "full_athlete_name": "Sara Neri",
+        "amount": 5.0,
+        "payment_date": "2026-09-30T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966084",
+        "full_athlete_name": "Sara Neri",
+        "amount": 1.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "01/09/2026 al 30/09/2026",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     }
+    ],
+    "percentage": " 12.5 "
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-integer-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 39.6,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 30.0,
+        "payment_date": "2026-09-10T10:00:00.250000Z"
+       },
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 7.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966088",
+        "amount": 20.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966091",
+        "amount": 2.5,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966093",
+        "amount": 4.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966077",
+        "full_athlete_name": "Sara Neri",
+        "amount": 50.5,
+        "payment_date": "2026-09-20T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966081",
+        "full_athlete_name": "Sara Neri",
+        "amount": 5.0,
+        "payment_date": "2026-09-30T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966084",
+        "full_athlete_name": "Sara Neri",
+        "amount": 1.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     }
+    ],
+    "percentage": 33
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-boolean-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 1.2,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 30.0,
+        "payment_date": "2026-09-10T10:00:00.250000Z"
+       },
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 7.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966088",
+        "amount": 20.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966091",
+        "amount": 2.5,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966093",
+        "amount": 4.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966077",
+        "full_athlete_name": "Sara Neri",
+        "amount": 50.5,
+        "payment_date": "2026-09-20T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966081",
+        "full_athlete_name": "Sara Neri",
+        "amount": 5.0,
+        "payment_date": "2026-09-30T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966084",
+        "full_athlete_name": "Sara Neri",
+        "amount": 1.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     }
+    ],
+    "percentage": true
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-zero-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 0.0,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 30.0,
+        "payment_date": "2026-09-10T10:00:00.250000Z"
+       },
+       {
+        "course": "Abbonamento è",
+        "course_subscription": "a1000000-0000-4000-8000-000000966074",
+        "full_athlete_name": "Maria Bianchi",
+        "amount": 7.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966088",
+        "amount": 20.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966091",
+        "amount": 2.5,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Quote",
+        "course_subscription": "a1000000-0000-4000-8000-000000966076",
+        "full_athlete_name": "Luca Verdi",
+        "course_subscription_installment": "a1000000-0000-4000-8000-000000966093",
+        "amount": 4.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966077",
+        "full_athlete_name": "Sara Neri",
+        "amount": 50.5,
+        "payment_date": "2026-09-20T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966081",
+        "full_athlete_name": "Sara Neri",
+        "amount": 5.0,
+        "payment_date": "2026-09-30T00:00:00Z"
+       },
+       {
+        "course": "Singolo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966084",
+        "full_athlete_name": "Sara Neri",
+        "amount": 1.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     }
+    ],
+    "percentage": "0"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-group-header",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 9.0,
+     "calculation_data": {
+      "$unordered": [
+       {
+        "course": "Gruppo",
+        "course_subscription": "a1000000-0000-4000-8000-000000966085",
+        "full_athlete_name": "Sara Neri",
+        "amount": 9.0,
+        "payment_date": "2026-09-15T08:30:00Z"
+       }
+      ]
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2026/09/01 al 2026/09/30",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-no-payments",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 0,
+     "calculation_data": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2020/01/01 al 2020/12/31",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-no-payments-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "amount": 0.0,
+     "calculation_data": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "period": "2020/01/01 al 2020/12/31",
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "percentage": 50
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-courses-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "courses is required"
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-calculate-empty-courses",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000966998/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "courses is required"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [],
+    "period": "2026/09/01 al 2026/09/30"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-unknown-instructor",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000966998/hours/calculate",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "instructor not found"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": "x"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-string-courses",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid courses format"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": "abc"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-courses-without-id",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid courses format"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966998"
+     },
+     {
+      "id": 1
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-number-courses",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid courses format"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": 5
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-form-courses",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid courses format"
+   },
+   "effect": null,
+   "prints": [],
+   "raw_body": "courses=abc&period=2026/09/01%20al%202026/09/30",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "instructor-hours-calculate-malformed-course-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "abc"
+     }
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-period-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Periodo di pagamento non valido"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "percentage": "x"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-empty-period",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "msg": "Periodo di pagamento non valido"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": ""
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-period-without-separator",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid period format"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-period-two-separators",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid period format"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "a al b al c"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-period-dates",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid date format"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "01/09/2026 al 2026/09/30"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-period-mixed-formats-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01 al 30/09/2026"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-number-period-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": 5
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-invalid-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid percentage"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01 al 2026/09/30",
+    "percentage": "dieci"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-list-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Invalid percentage"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01 al 2026/09/30",
+    "percentage": [
+     10
+    ]
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-percentage-above-range",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Percentage must be 0-100"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01 al 2026/09/30",
+    "percentage": "100.5"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-negative-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Percentage must be 0-100"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01 al 2026/09/30",
+    "percentage": -1
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-infinite-percentage",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "Percentage must be 0-100"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01 al 2026/09/30",
+    "percentage": "inf"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-nan-percentage-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": {
+    "courses": [
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966047"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966048"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966049"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966050"
+     },
+     {
+      "course_id": "a1000000-0000-4000-8000-000000966051"
+     }
+    ],
+    "period": "2026/09/01 al 2026/09/30",
+    "percentage": "nan"
+   }
+  },
+  {
+   "name": "instructor-hours-calculate-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "prints": [],
+   "body": [
+    1
+   ]
+  },
+  {
+   "name": "instructor-hours-calculate-malformed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/abc/hours/calculate",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-calculate-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.instructor.hours.read"
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-calculate-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-calculate-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-calculate-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "prints": [],
+   "body": {}
+  },
+  {
+   "name": "instructor-hours-calculate-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null,
+   "prints": []
+  },
+  {
+   "name": "instructor-hours-calculate-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/instructor/a1000000-0000-4000-8000-000000950003/hours/calculate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Instructor Hours Calculate",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null,
+   "prints": []
+  }
+ ]
+}

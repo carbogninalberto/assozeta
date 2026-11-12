@@ -1,0 +1,5587 @@
+{
+ "matrix_version": 1,
+ "scope": "Camps and retreats periods and period services authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "categories": {
+  "own": {
+   "id": "a1000000-0000-4000-8000-000000985004",
+   "name": "Servizi campo",
+   "created": "2026-05-01T08:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000985005",
+   "name": "Servizi esteri",
+   "created": "2026-05-02T08:00:00.250000Z",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "camps": {
+  "camp": {
+   "id": "a1000000-0000-4000-8000-000000985006",
+   "title": "Campo estivo è",
+   "description": "Mare e monti",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000985007",
+   "title": null,
+   "description": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000985008",
+   "title": "Campo estero",
+   "description": "Lontano",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "periods": {
+  "july": {
+   "id": "a1000000-0000-4000-8000-000000985009",
+   "camp": "camp",
+   "start": "2026-07-01T08:00:00Z",
+   "end": "2026-07-15T18:00:00Z",
+   "title": "Luglio",
+   "description": "Prima settimana",
+   "fee": "100.00",
+   "max": 20,
+   "created": "2026-06-01T10:00:00Z"
+  },
+  "august": {
+   "id": "a1000000-0000-4000-8000-000000985010",
+   "camp": "camp",
+   "start": "2026-08-01T00:00:00Z",
+   "end": "2026-08-10T00:00:00Z",
+   "title": null,
+   "description": null,
+   "fee": "0.00",
+   "max": null,
+   "created": "2026-06-02T10:00:00.250000Z"
+  },
+  "june": {
+   "id": "a1000000-0000-4000-8000-000000985011",
+   "camp": "camp",
+   "start": "2026-06-10T07:00:00Z",
+   "end": "2026-06-20T07:00:00Z",
+   "title": "Giugno",
+   "description": "Breve",
+   "fee": "55.50",
+   "max": 0,
+   "created": "2026-06-03T10:00:00Z"
+  },
+  "sept": {
+   "id": "a1000000-0000-4000-8000-000000985012",
+   "camp": "plain",
+   "start": "2026-09-01T07:00:00Z",
+   "end": "2026-09-05T07:00:00Z",
+   "title": "Settembre",
+   "description": null,
+   "fee": "10.00",
+   "max": 5,
+   "created": "2026-06-04T10:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000985013",
+   "camp": "abroad",
+   "start": "2026-07-01T07:00:00Z",
+   "end": "2026-07-02T07:00:00Z",
+   "title": "Estero",
+   "description": null,
+   "fee": "1.00",
+   "max": null,
+   "created": "2026-06-05T10:00:00Z"
+  },
+  "october": {
+   "id": "a1000000-0000-4000-8000-000000985031",
+   "camp": "camp",
+   "start": "2026-10-01T07:00:00Z",
+   "end": "2026-10-05T07:00:00Z",
+   "title": "Ottobre",
+   "description": null,
+   "fee": "40.00",
+   "max": null,
+   "created": "2026-06-06T10:00:00Z"
+  },
+  "november": {
+   "id": "a1000000-0000-4000-8000-000000985201",
+   "camp": "camp",
+   "start": "2026-11-01T08:00:00Z",
+   "end": "2026-11-05T18:00:00Z",
+   "title": "Novembre",
+   "description": "Autunno",
+   "fee": "20.00",
+   "max": null,
+   "created": "2026-06-14T09:00:00Z"
+  },
+  "december": {
+   "id": "a1000000-0000-4000-8000-000000985202",
+   "camp": "camp",
+   "start": "2026-12-01T08:00:00Z",
+   "end": "2026-12-05T18:00:00Z",
+   "title": "Dicembre",
+   "description": null,
+   "fee": "25.00",
+   "max": null,
+   "created": "2026-06-14T10:00:00Z"
+  },
+  "winter": {
+   "id": "a1000000-0000-4000-8000-000000985203",
+   "camp": "plain",
+   "start": "2027-01-01T08:00:00Z",
+   "end": "2027-01-05T18:00:00Z",
+   "title": "Inverno",
+   "description": null,
+   "fee": "30.00",
+   "max": null,
+   "created": "2026-06-14T11:00:00Z"
+  }
+ },
+ "services": {
+  "kayak": {
+   "id": "a1000000-0000-4000-8000-000000985014",
+   "period": "july",
+   "title": "Kayak",
+   "description": "Mezza giornata",
+   "fee": "12.50",
+   "category": "own",
+   "created": "2026-06-05T09:00:00Z"
+  },
+  "bus": {
+   "id": "a1000000-0000-4000-8000-000000985015",
+   "period": "july",
+   "title": "Bus",
+   "description": null,
+   "fee": "30.00",
+   "category": null,
+   "created": "2026-06-06T09:00:00.000001Z"
+  },
+  "umbrella": {
+   "id": "a1000000-0000-4000-8000-000000985016",
+   "period": "july",
+   "title": "Ombrellone",
+   "description": "Spiaggia",
+   "fee": "5.00",
+   "category": "own",
+   "created": "2026-06-07T09:00:00Z"
+  },
+  "tent": {
+   "id": "a1000000-0000-4000-8000-000000985017",
+   "period": "june",
+   "title": "Tenda",
+   "description": null,
+   "fee": "7.00",
+   "category": null,
+   "created": "2026-06-08T09:00:00Z"
+  },
+  "guide": {
+   "id": "a1000000-0000-4000-8000-000000985018",
+   "period": "sept",
+   "title": "Guida",
+   "description": null,
+   "fee": "15.00",
+   "category": "own",
+   "created": "2026-06-09T09:00:00Z"
+  },
+  "snack": {
+   "id": "a1000000-0000-4000-8000-000000985019",
+   "period": "august",
+   "title": "Merenda",
+   "description": null,
+   "fee": "2.00",
+   "category": null,
+   "created": "2026-06-10T09:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000985020",
+   "period": "abroad",
+   "title": "Estero",
+   "description": null,
+   "fee": "3.00",
+   "category": "foreign",
+   "created": "2026-06-11T09:00:00Z"
+  },
+  "canoe": {
+   "id": "a1000000-0000-4000-8000-000000985032",
+   "period": "october",
+   "title": "Canoa",
+   "description": null,
+   "fee": "8.00",
+   "category": null,
+   "created": "2026-06-11T10:00:00Z"
+  },
+  "sled": {
+   "id": "a1000000-0000-4000-8000-000000985204",
+   "period": "november",
+   "title": "Slitta",
+   "description": null,
+   "fee": "5.00",
+   "category": "own",
+   "created": "2026-06-14T12:00:00Z"
+  },
+  "skates": {
+   "id": "a1000000-0000-4000-8000-000000985205",
+   "period": "december",
+   "title": "Pattini",
+   "description": null,
+   "fee": "6.00",
+   "category": "own",
+   "created": "2026-06-14T12:00:01Z"
+  },
+  "boots": {
+   "id": "a1000000-0000-4000-8000-000000985206",
+   "period": "winter",
+   "title": "Scarponi",
+   "description": null,
+   "fee": "7.00",
+   "category": "own",
+   "created": "2026-06-14T12:00:02Z"
+  }
+ },
+ "subscriptions": {
+  "camp": {
+   "id": "a1000000-0000-4000-8000-000000985021",
+   "camp": "camp",
+   "created": "2026-06-12T09:00:00Z"
+  },
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000985022",
+   "camp": "plain",
+   "created": "2026-06-12T10:00:00Z"
+  }
+ },
+ "payments": {
+  "july": {
+   "id": "a1000000-0000-4000-8000-000000985023",
+   "amount": "172.50",
+   "paid": false,
+   "subject": 1,
+   "description": "Iscrizione",
+   "category": "own",
+   "notes": "Vecchie note",
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+     "title": "Kayak",
+     "amount": 12.5,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    },
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+     "title": "Bus",
+     "amount": 30,
+     "payment_category_id": "None"
+    }
+   ],
+   "created": "2026-06-13T09:00:00Z"
+  },
+  "paid": {
+   "id": "a1000000-0000-4000-8000-000000985024",
+   "amount": "100.00",
+   "paid": true,
+   "subject": 1,
+   "description": "Pagato",
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+     "title": "Kayak",
+     "amount": 12.5,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "created": "2026-06-13T10:00:00Z"
+  },
+  "sept": {
+   "id": "a1000000-0000-4000-8000-000000985025",
+   "amount": "10.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Settembre",
+   "category": "own",
+   "notes": null,
+   "meta": null,
+   "created": "2026-06-13T11:00:00Z"
+  },
+  "gone": {
+   "id": "a1000000-0000-4000-8000-000000985033",
+   "amount": "48.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Ottobre",
+   "category": "own",
+   "notes": "Note",
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985032",
+     "title": "Canoa",
+     "amount": 8.0,
+     "payment_category_id": "None"
+    }
+   ],
+   "created": "2026-06-13T12:00:00Z",
+   "deleted": true
+  },
+  "november_1": {
+   "id": "a1000000-0000-4000-8000-000000985207",
+   "amount": "25.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Novembre",
+   "category": "own",
+   "notes": null,
+   "meta": null,
+   "created": "2026-06-14T13:00:00Z"
+  },
+  "november_2": {
+   "id": "a1000000-0000-4000-8000-000000985208",
+   "amount": "25.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Novembre",
+   "category": "own",
+   "notes": null,
+   "meta": null,
+   "created": "2026-06-14T13:00:01Z"
+  },
+  "december": {
+   "id": "a1000000-0000-4000-8000-000000985209",
+   "amount": "31.00",
+   "paid": false,
+   "subject": 1,
+   "description": "Quota Corso",
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985205",
+     "title": "Pattini",
+     "amount": 6.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "payment_meta": [
+    "description"
+   ],
+   "created": "2026-06-14T13:00:02Z"
+  },
+  "winter_1": {
+   "id": "a1000000-0000-4000-8000-000000985210",
+   "amount": "37.00",
+   "paid": false,
+   "subject": 3,
+   "description": null,
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985206",
+     "title": "Scarponi",
+     "amount": 7.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "created": "2026-06-14T13:00:03Z"
+  },
+  "winter_2": {
+   "id": "a1000000-0000-4000-8000-000000985211",
+   "amount": "37.00",
+   "paid": false,
+   "subject": 3,
+   "description": null,
+   "category": "own",
+   "notes": null,
+   "meta": [
+    {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985206",
+     "title": "Scarponi",
+     "amount": 7.0,
+     "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+    }
+   ],
+   "created": "2026-06-14T13:00:04Z"
+  }
+ },
+ "subscription_periods": {
+  "july": {
+   "id": "a1000000-0000-4000-8000-000000985026",
+   "period": "july",
+   "subscription": "camp",
+   "payment": "july",
+   "services": [
+    "kayak",
+    "umbrella"
+   ]
+  },
+  "july_paid": {
+   "id": "a1000000-0000-4000-8000-000000985027",
+   "period": "july",
+   "subscription": "camp",
+   "payment": "paid",
+   "services": []
+  },
+  "july_unlinked": {
+   "id": "a1000000-0000-4000-8000-000000985028",
+   "period": "july",
+   "subscription": "camp",
+   "payment": null,
+   "services": []
+  },
+  "june": {
+   "id": "a1000000-0000-4000-8000-000000985029",
+   "period": "june",
+   "subscription": "camp",
+   "payment": null,
+   "services": [
+    "tent"
+   ]
+  },
+  "sept": {
+   "id": "a1000000-0000-4000-8000-000000985030",
+   "period": "sept",
+   "subscription": "plain",
+   "payment": "sept",
+   "services": [
+    "guide"
+   ]
+  },
+  "october": {
+   "id": "a1000000-0000-4000-8000-000000985034",
+   "period": "october",
+   "subscription": "camp",
+   "payment": "gone",
+   "services": [
+    "canoe"
+   ]
+  },
+  "november_1": {
+   "id": "a1000000-0000-4000-8000-000000985212",
+   "period": "november",
+   "subscription": "camp",
+   "payment": "november_1",
+   "services": [
+    "sled"
+   ]
+  },
+  "november_2": {
+   "id": "a1000000-0000-4000-8000-000000985213",
+   "period": "november",
+   "subscription": "camp",
+   "payment": "november_2",
+   "services": [
+    "sled"
+   ]
+  },
+  "december": {
+   "id": "a1000000-0000-4000-8000-000000985214",
+   "period": "december",
+   "subscription": "camp",
+   "payment": "december",
+   "services": [
+    "skates"
+   ]
+  },
+  "winter_1": {
+   "id": "a1000000-0000-4000-8000-000000985215",
+   "period": "winter",
+   "subscription": "plain",
+   "payment": "winter_1",
+   "services": [
+    "boots"
+   ]
+  },
+  "winter_2": {
+   "id": "a1000000-0000-4000-8000-000000985216",
+   "period": "winter",
+   "subscription": "plain",
+   "payment": "winter_2",
+   "services": [
+    "boots"
+   ]
+  }
+ },
+ "period_links": {
+  "july": [
+   "kayak",
+   "umbrella"
+  ],
+  "june": [
+   "tent"
+  ],
+  "august": [
+   "snack"
+  ],
+  "november": [
+   "sled"
+  ],
+  "december": [
+   "skates"
+  ],
+  "winter": [
+   "boots"
+  ]
+ },
+ "cases": [
+  {
+   "name": "camps-periods-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.create"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Periods Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-add-athlete-forbidden",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "You are not a sport association."
+   },
+   "effect": null,
+   "body": {
+    "title": ""
+   }
+  },
+  {
+   "name": "camps-periods-add-missing-required",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'start_date': [ErrorDetail(string='This field is required.', code='required')], 'end_date': [ErrorDetail(string='This field is required.', code='required')], 'camps_and_retreats': [ErrorDetail(string='This field is required.', code='required')]}"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-add-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'start_date': [ErrorDetail(string='Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', code='invalid')], 'end_date': [ErrorDetail(string='Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', code='invalid')], 'title': [ErrorDetail(string='This field may not be blank.', code='blank')], 'description': [ErrorDetail(string='Ensure this field has no more than 2048 characters.', code='max_length')], 'fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'max_participants': [ErrorDetail(string='Ensure this value is greater than or equal to 0.', code='min_value')], 'created_at': [ErrorDetail(string='This field may not be null.', code='null')], 'camps_and_retreats': [ErrorDetail(string='Invalid pk \"a1000000-0000-4000-8000-000000985001\" - object does not exist.', code='does_not_exist')], 'camps_and_Retreats_period_services': [ErrorDetail(string='Expected a list of items but got type \"str\".', code='not_a_list')]}"
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_period_id": "abc",
+    "start_date": "luglio",
+    "end_date": 5,
+    "title": "",
+    "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "fee": "abc",
+    "max_participants": -1,
+    "created_at": null,
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985001",
+    "camps_and_Retreats_period_services": "x"
+   }
+  },
+  {
+   "name": "camps-periods-add-invalid-precision-and-relations",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'start_date': [ErrorDetail(string='Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', code='invalid')], 'title': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')], 'fee': [ErrorDetail(string='Ensure that there are no more than 2 decimal places.', code='max_decimal_places')], 'max_participants': [ErrorDetail(string='Ensure this value is less than or equal to 2147483647.', code='max_value')], 'camps_and_retreats': [ErrorDetail(string='“abc” is not a valid UUID.', code='invalid')], 'camps_and_Retreats_period_services': [ErrorDetail(string='Invalid pk \"a1000000-0000-4000-8000-000000985001\" - object does not exist.', code='does_not_exist')]}"
+   },
+   "effect": null,
+   "body": {
+    "start_date": "2026-13-01",
+    "end_date": "2026-10-05T00:00:00Z",
+    "title": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+    "fee": "1.234",
+    "max_participants": 2147483648,
+    "camps_and_retreats": "abc",
+    "camps_and_Retreats_period_services": [
+     "a1000000-0000-4000-8000-000000985001"
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-add-invalid-digits-and-types",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')], 'fee': [ErrorDetail(string='Ensure that there are no more than 7 digits before the decimal point.', code='max_whole_digits')], 'max_participants': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'camps_and_retreats': [ErrorDetail(string='Incorrect type. Expected pk value, received bool.', code='incorrect_type')]}"
+   },
+   "effect": null,
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "title": true,
+    "fee": "12345678",
+    "max_participants": "1.5",
+    "camps_and_retreats": true
+   }
+  },
+  {
+   "name": "camps-periods-add-blank-fee-is-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "fee": "",
+    "max_participants": "",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985006"
+   }
+  },
+  {
+   "name": "camps-periods-add-list-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got list.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "camps-periods-add-null-body",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='No data provided', code='null')]}"
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "camps-periods-add-string-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "string indices must be integers, not 'str'"
+   },
+   "effect": null,
+   "body": "fee"
+  },
+  {
+   "name": "camps-periods-add-number-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "argument of type 'int' is not iterable"
+   },
+   "effect": null,
+   "body": 5
+  },
+  {
+   "name": "camps-periods-add-foreign-camp-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "title": "",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985008"
+   }
+  },
+  {
+   "name": "camps-periods-add-foreign-service-server-error",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+    "camps_and_Retreats_period_services": [
+     "a1000000-0000-4000-8000-000000985020"
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-add-services-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Direct assignment to the forward side of a many-to-many set is prohibited. Use camps_and_Retreats_period_services.set() instead."
+   },
+   "effect": null,
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+    "camps_and_Retreats_period_services": []
+   }
+  },
+  {
+   "name": "camps-periods-add-form-blank-fee-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "This QueryDict instance is immutable"
+   },
+   "effect": null,
+   "raw_body": "title=Form&fee=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-form-services-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Direct assignment to the forward side of a many-to-many set is prohibited. Use camps_and_Retreats_period_services.set() instead."
+   },
+   "effect": null,
+   "raw_body": "start_date=2026-10-01&end_date=2026-10-02&camps_and_retreats=a1000000-0000-4000-8000-000000985006&title=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-form-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'start_date': [ErrorDetail(string='Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', code='invalid')], 'end_date': [ErrorDetail(string='This field is required.', code='required')], 'max_participants': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'camps_and_retreats': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "raw_body": "start_date=&max_participants=x&camps_and_retreats=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "period": {
+     "camps_and_retreats_period_id": "$new",
+     "start_date": "2026-10-01T08:00:00Z",
+     "end_date": "2026-10-05T00:00:00Z",
+     "title": "Ottobre è",
+     "description": "Autunno",
+     "fee": "12.50",
+     "max_participants": 7,
+     "created_at": "$now",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "$new": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985006",
+       "start_date": "2026-10-01T08:00:00Z",
+       "end_date": "2026-10-05T00:00:00Z",
+       "title": "Ottobre è",
+       "description": "Autunno",
+       "fee": "12.50",
+       "max_participants": 7
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats": [
+        "None",
+        "a1000000-0000-4000-8000-000000985006"
+       ],
+       "start_date": [
+        "None",
+        "2026-10-01 08:00:00"
+       ],
+       "end_date": [
+        "None",
+        "2026-10-05 00:00:00"
+       ],
+       "fee": [
+        "None",
+        "12.5"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ],
+       "title": [
+        "None",
+        "Ottobre è"
+       ],
+       "description": [
+        "None",
+        "Autunno"
+       ],
+       "max_participants": [
+        "None",
+        "7"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "12.50",
+        "12.5"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "title": " Ottobre è ",
+    "description": "Autunno",
+    "fee": "12.5",
+    "max_participants": "7",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+    "ignored": "x"
+   }
+  },
+  {
+   "name": "camps-periods-add-full-collaborator-defaults",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "period": {
+     "camps_and_retreats_period_id": "$new",
+     "start_date": "2026-11-01T00:00:00Z",
+     "end_date": "2026-11-02T00:00:00Z",
+     "title": null,
+     "description": null,
+     "fee": "0.00",
+     "max_participants": 0,
+     "created_at": "$now",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": []
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "$new": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-11-01T00:00:00Z",
+       "end_date": "2026-11-02T00:00:00Z",
+       "title": null,
+       "description": null,
+       "fee": "0.00",
+       "max_participants": 0
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats": [
+        "None",
+        "a1000000-0000-4000-8000-000000985007"
+       ],
+       "start_date": [
+        "None",
+        "2026-11-01 00:00:00"
+       ],
+       "end_date": [
+        "None",
+        "2026-11-02 00:00:00"
+       ],
+       "fee": [
+        "None",
+        "0.0"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ],
+       "max_participants": [
+        "None",
+        "0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "start_date": "2026-11-01T00:00:00",
+    "end_date": "2026-11-02T00:00:00Z",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985007"
+   }
+  },
+  {
+   "name": "camps-periods-add-explicit-id-ignored-and-created",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "period": {
+     "camps_and_retreats_period_id": "$new",
+     "start_date": "2026-12-01T00:00:00Z",
+     "end_date": "2026-12-03T00:00:00Z",
+     "title": "5",
+     "description": null,
+     "fee": "12.34",
+     "max_participants": null,
+     "created_at": "2026-06-30T12:00:00.123456Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "$new": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985006",
+       "start_date": "2026-12-01T00:00:00Z",
+       "end_date": "2026-12-03T00:00:00Z",
+       "title": "5",
+       "description": null,
+       "fee": "12.34",
+       "max_participants": null,
+       "created_at": "2026-06-30T12:00:00.123456Z"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats": [
+        "None",
+        "a1000000-0000-4000-8000-000000985006"
+       ],
+       "start_date": [
+        "None",
+        "2026-12-01 00:00:00"
+       ],
+       "end_date": [
+        "None",
+        "2026-12-03 00:00:00"
+       ],
+       "fee": [
+        "None",
+        "12.34"
+       ],
+       "created_at": [
+        "None",
+        "2026-06-30 12:00:00.123456"
+       ],
+       "title": [
+        "None",
+        "5"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985002",
+    "created_at": "2026-06-30T12:00:00.123456Z",
+    "start_date": "2026-12-01",
+    "end_date": "2026-12-03T01:00:00+01:00",
+    "title": 5,
+    "fee": 12.34,
+    "max_participants": "",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985006"
+   }
+  },
+  {
+   "name": "camps-periods-add-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "period": {
+     "camps_and_retreats_period_id": "$new",
+     "start_date": "2026-10-01T08:00:00Z",
+     "end_date": "2026-10-05T00:00:00Z",
+     "title": null,
+     "description": null,
+     "fee": "0.00",
+     "max_participants": 0,
+     "created_at": "$now",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": []
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "$new": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985006",
+       "start_date": "2026-10-01T08:00:00Z",
+       "end_date": "2026-10-05T00:00:00Z",
+       "title": null,
+       "description": null,
+       "fee": "0.00",
+       "max_participants": 0
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats": [
+        "None",
+        "a1000000-0000-4000-8000-000000985006"
+       ],
+       "start_date": [
+        "None",
+        "2026-10-01 08:00:00"
+       ],
+       "end_date": [
+        "None",
+        "2026-10-05 00:00:00"
+       ],
+       "fee": [
+        "None",
+        "0.0"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ],
+       "max_participants": [
+        "None",
+        "0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985006"
+   }
+  },
+  {
+   "name": "camps-periods-add-unassociated-owner",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "period": {
+     "camps_and_retreats_period_id": "$new",
+     "start_date": "2026-10-01T08:00:00Z",
+     "end_date": "2026-10-05T00:00:00Z",
+     "title": null,
+     "description": null,
+     "fee": "-3.00",
+     "max_participants": 2,
+     "created_at": "$now",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985008",
+     "camps_and_Retreats_period_services": []
+    }
+   },
+   "effect": {
+    "actor": "owner_without_association",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "$new": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985008",
+       "start_date": "2026-10-01T08:00:00Z",
+       "end_date": "2026-10-05T00:00:00Z",
+       "title": null,
+       "description": null,
+       "fee": "-3.00",
+       "max_participants": 2
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats": [
+        "None",
+        "a1000000-0000-4000-8000-000000985008"
+       ],
+       "start_date": [
+        "None",
+        "2026-10-01 08:00:00"
+       ],
+       "end_date": [
+        "None",
+        "2026-10-05 00:00:00"
+       ],
+       "fee": [
+        "None",
+        "-3.0"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ],
+       "max_participants": [
+        "None",
+        "2"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "camps_and_retreats.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "-3.00",
+        "-3.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "start_date": "2026-10-01T10:00:00+02:00",
+    "end_date": "2026-10-05",
+    "fee": -3,
+    "max_participants": 2.0,
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985008"
+   }
+  },
+  {
+   "name": "camps-periods-info-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985009/info",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985009/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985009/info",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-info-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985009/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Periods Info",
+    "description": "This method is used to get a list of all camps and retreats",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-athlete-before-uuid",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/abc/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Only sport associations can view camps or retreats"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/abc/info",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985001/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-foreign-forbidden",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985013/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed to view this"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985009/info",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985009/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+     "start_date": "01/07/2026",
+     "end_date": "15/07/2026",
+     "title": "Luglio",
+     "description": "Prima settimana",
+     "fee": "100,00",
+     "max_participants": 20,
+     "created_at": "2026-06-01T10:00:00Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985014",
+       "a1000000-0000-4000-8000-000000985016"
+      ]
+     },
+     "services": [
+      {
+       "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985016",
+       "payment_category_info": {
+        "payment_category_id": "a1000000-0000-4000-8000-000000985004",
+        "name": "Servizi campo",
+        "creation_date": "2026-05-01T08:00:00Z",
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "expense": false,
+        "tax_deductible": false,
+        "archived": false,
+        "type": 1,
+        "vat_management": null,
+        "deleted": false
+       },
+       "fee": "5,00",
+       "title": "Ombrellone",
+       "description": "Spiaggia",
+       "created_at": "2026-06-07T09:00:00Z",
+       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+       "payment_category": "a1000000-0000-4000-8000-000000985004"
+      },
+      {
+       "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+       "payment_category_info": {
+        "payment_category_id": null,
+        "name": "",
+        "creation_date": null,
+        "sport_association": null,
+        "expense": false,
+        "tax_deductible": false,
+        "archived": false,
+        "type": null,
+        "vat_management": {
+         "vat_management_id": null,
+         "vat": null,
+         "deduction": null
+        },
+        "deleted": false
+       },
+       "fee": "30,00",
+       "title": "Bus",
+       "description": null,
+       "created_at": "2026-06-06T09:00:00.000001Z",
+       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+       "payment_category": null
+      },
+      {
+       "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+       "payment_category_info": {
+        "payment_category_id": "a1000000-0000-4000-8000-000000985004",
+        "name": "Servizi campo",
+        "creation_date": "2026-05-01T08:00:00Z",
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "expense": false,
+        "tax_deductible": false,
+        "archived": false,
+        "type": 1,
+        "vat_management": null,
+        "deleted": false
+       },
+       "fee": "12,50",
+       "title": "Kayak",
+       "description": "Mezza giornata",
+       "created_at": "2026-06-05T09:00:00Z",
+       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+       "payment_category": "a1000000-0000-4000-8000-000000985004"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-collaborator-null-fields",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "01/08/2026",
+     "end_date": "10/08/2026",
+     "title": null,
+     "description": null,
+     "fee": "0,00",
+     "max_participants": null,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985019"
+      ]
+     },
+     "services": [
+      {
+       "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985019",
+       "payment_category_info": {
+        "payment_category_id": null,
+        "name": "",
+        "creation_date": null,
+        "sport_association": null,
+        "expense": false,
+        "tax_deductible": false,
+        "archived": false,
+        "type": null,
+        "vat_management": {
+         "vat_management_id": null,
+         "vat": null,
+         "deduction": null
+        },
+        "deleted": false
+       },
+       "fee": "2,00",
+       "title": "Merenda",
+       "description": null,
+       "created_at": "2026-06-10T09:00:00Z",
+       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985010",
+       "payment_category": null
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-info-hex-uid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/A1000000000040008000000000985012/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+     "start_date": "01/09/2026",
+     "end_date": "05/09/2026",
+     "title": "Settembre",
+     "description": null,
+     "fee": "10,00",
+     "max_participants": 5,
+     "created_at": "2026-06-04T10:00:00Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": []
+     },
+     "services": [
+      {
+       "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985018",
+       "payment_category_info": {
+        "payment_category_id": "a1000000-0000-4000-8000-000000985004",
+        "name": "Servizi campo",
+        "creation_date": "2026-05-01T08:00:00Z",
+        "sport_association": "a1000000-0000-4000-8000-000000701001",
+        "expense": false,
+        "tax_deductible": false,
+        "archived": false,
+        "type": 1,
+        "vat_management": null,
+        "deleted": false
+       },
+       "fee": "15,00",
+       "title": "Guida",
+       "description": null,
+       "created_at": "2026-06-09T09:00:00Z",
+       "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+       "payment_category": "a1000000-0000-4000-8000-000000985004"
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Periods Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-update-malformed-before-role",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-services-segment-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-athlete-forbidden",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "You are not a sport association."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985001/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Not found"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-foreign-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985013/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed editing this."
+   },
+   "effect": null,
+   "body": {
+    "title": "X"
+   }
+  },
+  {
+   "name": "camps-periods-update-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-update-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'start_date': [ErrorDetail(string='This field may not be null.', code='null')], 'fee': [ErrorDetail(string='Ensure that there are no more than 9 digits in total.', code='max_digits')], 'max_participants': [ErrorDetail(string='A valid integer is required.', code='invalid')], 'camps_and_retreats': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "body": {
+    "start_date": null,
+    "fee": "1234567.891",
+    "max_participants": "x",
+    "camps_and_retreats": null
+   }
+  },
+  {
+   "name": "camps-periods-update-foreign-service-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "title": "",
+    "camps_and_Retreats_period_services": [
+     "a1000000-0000-4000-8000-000000985014",
+     "a1000000-0000-4000-8000-000000985020"
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-update-foreign-camp-forbidden",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985008"
+   }
+  },
+  {
+   "name": "camps-periods-update-form-blank-fee-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "This QueryDict instance is immutable"
+   },
+   "effect": null,
+   "raw_body": "fee=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-owner",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-10T00:00:00Z",
+     "title": "Agosto",
+     "description": null,
+     "fee": "20.00",
+     "max_participants": 15,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015",
+       "a1000000-0000-4000-8000-000000985014"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985006",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-10T00:00:00Z",
+       "title": "Agosto",
+       "description": null,
+       "fee": "20.00",
+       "max_participants": 15
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "start_date": [
+        "2026-08-01 00:00:00",
+        "2026-08-02 09:30:00.500000"
+       ],
+       "title": [
+        "None",
+        "Agosto"
+       ],
+       "fee": [
+        "0.00",
+        "20.0"
+       ],
+       "max_participants": [
+        "None",
+        "15"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985015"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985014"
+       ]
+      ],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985019"
+       ]
+      ]
+     }
+    }
+   },
+   "body": {
+    "title": "Agosto",
+    "fee": "20",
+    "max_participants": 15,
+    "start_date": "2026-08-02T09:30:00.5Z",
+    "camps_and_Retreats_period_services": [
+     "a1000000-0000-4000-8000-000000985014",
+     "a1000000-0000-4000-8000-000000985015"
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-update-same-values-no-audit",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-10T00:00:00Z",
+     "title": "Agosto",
+     "description": null,
+     "fee": "20.00",
+     "max_participants": 15,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985006",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-10T00:00:00Z",
+       "title": "Agosto",
+       "description": null,
+       "fee": "20.00",
+       "max_participants": 15
+      }
+     }
+    },
+    "audit": [],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985014"
+       ]
+      ]
+     }
+    }
+   },
+   "body": {
+    "title": "Agosto",
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+    "camps_and_Retreats_period_services": [
+     "a1000000-0000-4000-8000-000000985015"
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-update-same-fee-audited",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-10T00:00:00Z",
+     "title": "Agosto",
+     "description": null,
+     "fee": "20.00",
+     "max_participants": 15,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985006",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985006",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-10T00:00:00Z",
+       "title": "Agosto",
+       "description": null,
+       "fee": "20.00",
+       "max_participants": 15
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "20.00",
+        "20.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "fee": "20.00"
+   }
+  },
+  {
+   "name": "camps-periods-update-move-camp-and-nulls",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-10T00:00:00Z",
+     "title": null,
+     "description": null,
+     "fee": "20.00",
+     "max_participants": null,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-10T00:00:00Z",
+       "title": null,
+       "description": null,
+       "fee": "20.00",
+       "max_participants": null
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "camps_and_retreats": [
+        "a1000000-0000-4000-8000-000000985006",
+        "a1000000-0000-4000-8000-000000985007"
+       ],
+       "title": [
+        "Agosto",
+        "None"
+       ],
+       "max_participants": [
+        "15",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985015"
+       ]
+      ]
+     }
+    }
+   },
+   "body": {
+    "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+    "title": null,
+    "max_participants": "",
+    "camps_and_Retreats_period_services": []
+   }
+  },
+  {
+   "name": "camps-periods-update-form",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": null,
+     "description": "Form è",
+     "fee": "20.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": null,
+       "description": "Form è",
+       "fee": "20.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "end_date": [
+        "2026-08-10 00:00:00",
+        "2026-08-20 00:00:00"
+       ],
+       "description": [
+        "None",
+        "Form è"
+       ],
+       "max_participants": [
+        "None",
+        "3"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "description=Form+%C3%A8&end_date=2026-08-20T00%3A00%3A00Z&max_participants=3",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-new-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto bis",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto bis",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "title": [
+        "None",
+        "Agosto bis"
+       ],
+       "fee": [
+        "20.00",
+        "21.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985015"
+       ]
+      ],
+      "remove": []
+     }
+    }
+   },
+   "body": {
+    "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985090",
+    "title": "Agosto bis",
+    "fee": "21",
+    "camps_and_Retreats_period_services": [
+     "a1000000-0000-4000-8000-000000985015"
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-update-other-row-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto bis",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto bis",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": []
+   },
+   "body": {
+    "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009"
+   }
+  },
+  {
+   "name": "camps-periods-update-malformed-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto bis",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto bis",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": []
+   },
+   "body": {
+    "camps_and_retreats_period_id": "x"
+   }
+  },
+  {
+   "name": "camps-periods-update-same-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto bis",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto bis",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": []
+   },
+   "body": {
+    "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.create"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-add-wrong-method",
+   "actor": "owner",
+   "method": "PUT",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PUT\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Periods Services Add",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-add-athlete-forbidden",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "You are not a sport association."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-add-missing-period",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'camps_and_retreats_period': [ErrorDetail(string='This field is required.', code='required')]}"
+   },
+   "effect": null,
+   "body": {
+    "title": "X"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-invalid",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='This field may not be blank.', code='blank')], 'fee': [ErrorDetail(string='A valid number is required.', code='invalid')], 'created_at': [ErrorDetail(string='Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', code='invalid')], 'camps_and_retreats_period': [ErrorDetail(string='Invalid pk \"a1000000-0000-4000-8000-000000985001\" - object does not exist.', code='does_not_exist')], 'payment_category': [ErrorDetail(string='“abc” is not a valid UUID.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_period_service_id": 1.5,
+    "title": "",
+    "fee": "",
+    "created_at": "ieri",
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985001",
+    "payment_category": "abc"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-foreign-period-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985013",
+    "fee": "x"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-foreign-category-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+    "payment_category": "a1000000-0000-4000-8000-000000985005"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": "Pranzo",
+     "description": "Al sacco",
+     "fee": "8.50",
+     "created_at": "$now",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+     "payment_category": "a1000000-0000-4000-8000-000000985004"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": "Pranzo",
+       "description": "Al sacco",
+       "fee": "8.50",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985012"
+       ],
+       "fee": [
+        "None",
+        "8.50"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ],
+       "title": [
+        "None",
+        "Pranzo"
+       ],
+       "description": [
+        "None",
+        "Al sacco"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+    "title": "Pranzo",
+    "description": "Al sacco",
+    "fee": "8.5",
+    "payment_category": "a1000000-0000-4000-8000-000000985004"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-collaborator-defaults",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": null,
+     "description": null,
+     "fee": "0.00",
+     "created_at": "$now",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": null,
+       "description": null,
+       "fee": "0.00",
+       "payment_category_id": null
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985012"
+       ],
+       "fee": [
+        "None",
+        "0.0"
+       ],
+       "payment_category": [
+        "None",
+        "None"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+    "payment_category": null
+   }
+  },
+  {
+   "name": "camps-periods-services-add-form",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": null,
+     "description": null,
+     "fee": "3.00",
+     "created_at": "$now",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": null,
+       "description": null,
+       "fee": "3.00",
+       "payment_category_id": null
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985012"
+       ],
+       "fee": [
+        "None",
+        "3.00"
+       ],
+       "payment_category": [
+        "None",
+        "None"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "camps_and_retreats_period=a1000000-0000-4000-8000-000000985012&title=&description=&fee=3&payment_category=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-services-add-explicit-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": "Cena",
+     "description": null,
+     "fee": "1234567.89",
+     "created_at": "2026-06-20T06:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+     "payment_category": "a1000000-0000-4000-8000-000000985004"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": "Cena",
+       "description": null,
+       "fee": "1234567.89",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004",
+       "created_at": "2026-06-20T06:00:00Z"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985012"
+       ],
+       "fee": [
+        "None",
+        "1234567.89"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "created_at": [
+        "None",
+        "2026-06-20 06:00:00"
+       ],
+       "title": [
+        "None",
+        "Cena"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985003",
+    "created_at": "2026-06-20T08:00:00+02:00",
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+    "title": "Cena",
+    "fee": 1234567.89,
+    "payment_category": "a1000000-0000-4000-8000-000000985004"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": null,
+     "description": null,
+     "fee": "0.00",
+     "created_at": "$now",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": null,
+       "description": null,
+       "fee": "0.00",
+       "payment_category_id": null
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985012"
+       ],
+       "fee": [
+        "None",
+        "0.0"
+       ],
+       "payment_category": [
+        "None",
+        "None"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "0.00",
+        "0.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012"
+   }
+  },
+  {
+   "name": "camps-periods-services-add-unassociated-owner",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": null,
+     "description": null,
+     "fee": "3.10",
+     "created_at": "$now",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985013",
+     "payment_category": "a1000000-0000-4000-8000-000000985005"
+    }
+   },
+   "effect": {
+    "actor": "owner_without_association",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985013",
+       "title": null,
+       "description": null,
+       "fee": "3.10",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985005"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985013"
+       ],
+       "fee": [
+        "None",
+        "3.10"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985005"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701002",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985013",
+    "fee": "3.1",
+    "payment_category": "a1000000-0000-4000-8000-000000985005"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-update-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Periods Services Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-update-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-update-athlete-forbidden",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "You are not a sport association."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-update-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985001/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Not found"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-update-foreign-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985020/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed editing this."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-update-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-update-invalid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')], 'fee': [ErrorDetail(string='This field may not be null.', code='null')], 'camps_and_retreats_period': [ErrorDetail(string='This field may not be null.', code='null')], 'payment_category': [ErrorDetail(string='Incorrect type. Expected pk value, received bool.', code='incorrect_type')]}"
+   },
+   "effect": null,
+   "body": {
+    "title": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+    "fee": null,
+    "camps_and_retreats_period": null,
+    "payment_category": false
+   }
+  },
+  {
+   "name": "camps-periods-services-update-foreign-category-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "payment_category": "a1000000-0000-4000-8000-000000985005"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-foreign-period-forbidden",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985013",
+    "fee": "x"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-owner-payments",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+     "title": "Kayak doppio",
+     "description": "Mezza giornata",
+     "fee": "15.00",
+     "created_at": "2026-06-05T09:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": "a1000000-0000-4000-8000-000000985004"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985014": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Kayak doppio",
+       "description": "Mezza giornata",
+       "fee": "15.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "145.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 15.0€\nBus - 30€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak doppio",
+         "amount": 15.0,
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985014",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Kayak",
+        "Kayak doppio"
+       ],
+       "fee": [
+        "12.50",
+        "15.00"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 12.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Kayak\"}, {\"amount\": 30, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 15.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Kayak doppio\"}, {\"amount\": 30, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "172.50",
+        "145.0"
+       ],
+       "notes": [
+        "Vecchie note",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 15.0€\nBus - 30€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "fee": "15",
+    "title": "Kayak doppio"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-collaborator-payments",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985015/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+     "title": "Bus",
+     "description": "Andata",
+     "fee": "30.00",
+     "created_at": "2026-06-06T09:00:00.000001Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985015": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Bus",
+       "description": "Andata",
+       "fee": "30.00",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "145.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 15.0€\nBus - 30.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak doppio",
+         "amount": 15.0,
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985015",
+      "action": 1,
+      "changes": {
+       "description": [
+        "None",
+        "Andata"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 15.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Kayak doppio\"}, {\"amount\": 30, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 15.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "145.00",
+        "145.0"
+       ],
+       "notes": [
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 15.0€\nBus - 30€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 15.0€\nBus - 30.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "description": "Andata",
+    "payment_category": null
+   }
+  },
+  {
+   "name": "camps-periods-services-update-move-period-recomputes",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985019/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985019",
+     "title": "Merenda",
+     "description": null,
+     "fee": "2.00",
+     "created_at": "2026-06-10T09:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985019": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Merenda",
+       "description": null,
+       "fee": "2.00",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "145.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 15.0€\nBus - 30.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak doppio",
+         "amount": 15.0,
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985019",
+      "action": 1,
+      "changes": {
+       "camps_and_retreats_period": [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985009"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "145.00",
+        "145.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-form",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+     "title": "Kayak doppio",
+     "description": "Mezza giornata",
+     "fee": "16.00",
+     "created_at": "2026-06-05T09:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985014": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Kayak doppio",
+       "description": "Mezza giornata",
+       "fee": "16.00",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "146.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak doppio",
+         "amount": 16.0,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985014",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "15.00",
+        "16.00"
+       ],
+       "payment_category": [
+        "a1000000-0000-4000-8000-000000985004",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 15.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "145.00",
+        "146.0"
+       ],
+       "notes": [
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 15.0€\nBus - 30.0€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "fee=16&payment_category=",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-services-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+     "title": "Kayak con allegato",
+     "description": "Mezza giornata",
+     "fee": "16.00",
+     "created_at": "2026-06-05T09:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985014": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Kayak con allegato",
+       "description": "Mezza giornata",
+       "fee": "16.00",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "146.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak con allegato",
+         "amount": 16.0,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985014",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Kayak doppio",
+        "Kayak con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak doppio\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "146.00",
+        "146.0"
+       ],
+       "notes": [
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak doppio - 16.0€\nBus - 30.0€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nKayak con allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-services-update-multipart-file-as-fee",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='A valid number is required.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"; filename=\"f.txt\"\r\n\r\n3\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-services-update-deleted-payment",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985032/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985032",
+     "title": "Canoa doppia",
+     "description": null,
+     "fee": "9.50",
+     "created_at": "2026-06-11T10:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985031",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985032": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985031",
+       "title": "Canoa doppia",
+       "description": null,
+       "fee": "9.50",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985033": {
+       "amount": "49.50",
+       "notes": "Iscrizione al periodo Ottobre del campo Campo estivo è\nMare e monti\n\nCanoa doppia - 9.5€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985032",
+         "title": "Canoa doppia",
+         "amount": 9.5,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985032",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Canoa",
+        "Canoa doppia"
+       ],
+       "fee": [
+        "8.00",
+        "9.50"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985033",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985033"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Ottobre"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "True"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-13 12:00:00"
+       ],
+       "amount": [
+        "None",
+        "48.00"
+       ],
+       "notes": [
+        "None",
+        "Note"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 9.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985032\", \"payment_category_id\": \"None\", \"title\": \"Canoa doppia\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985033",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985033"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Ottobre"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "True"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-13 12:00:00"
+       ],
+       "amount": [
+        "None",
+        "49.5"
+       ],
+       "notes": [
+        "None",
+        "Iscrizione al periodo Ottobre del campo Campo estivo è\nMare e monti\n\nCanoa doppia - 9.5€"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 9.5, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985032\", \"payment_category_id\": \"None\", \"title\": \"Canoa doppia\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "fee": "9.50",
+    "title": "Canoa doppia"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-other-group-payment",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/update",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985016",
+     "title": "Ombrellone",
+     "description": "Spiaggia",
+     "fee": "6.00",
+     "created_at": "2026-06-07T09:00:00Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": "a1000000-0000-4000-8000-000000985004"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985016": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Ombrellone",
+       "description": "Spiaggia",
+       "fee": "6.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "146.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak con allegato",
+         "amount": 16.0,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Bus",
+         "amount": 30.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985016",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "5.00",
+        "6.00"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "payment_id": [
+        "None",
+        "a1000000-0000-4000-8000-000000985023"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "user": [
+        "None",
+        "None"
+       ],
+       "associate": [
+        "None",
+        "None"
+       ],
+       "instructor": [
+        "None",
+        "None"
+       ],
+       "supplier": [
+        "None",
+        "None"
+       ],
+       "invoice": [
+        "None",
+        "None"
+       ],
+       "group": [
+        "None",
+        "None"
+       ],
+       "signature": [
+        "None",
+        "None"
+       ],
+       "custom_accounts": [
+        "None",
+        "None"
+       ],
+       "payment_date": [
+        "None",
+        "None"
+       ],
+       "payment_category": [
+        "None",
+        "a1000000-0000-4000-8000-000000985004"
+       ],
+       "subject": [
+        "None",
+        "1"
+       ],
+       "description": [
+        "None",
+        "Iscrizione"
+       ],
+       "paid": [
+        "None",
+        "False"
+       ],
+       "type": [
+        "None",
+        "default"
+       ],
+       "expense": [
+        "None",
+        "False"
+       ],
+       "archived": [
+        "None",
+        "False"
+       ],
+       "deleted": [
+        "None",
+        "False"
+       ],
+       "meta": [
+        "None",
+        "null"
+       ],
+       "course": [
+        "None",
+        "null"
+       ],
+       "creation_date": [
+        "None",
+        "2026-06-13 09:00:00"
+       ],
+       "amount": [
+        "None",
+        "146.0"
+       ],
+       "notes": [
+        "None",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€"
+       ],
+       "meta_payment_categories": [
+        "None",
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "fee": "6.00"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-new-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985015/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+     "title": "Corriera",
+     "description": "Andata",
+     "fee": "4.00",
+     "created_at": "2026-06-06T09:00:00.000001Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985015": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Corriera",
+       "description": "Andata",
+       "fee": "4.00",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "120.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nCorriera - 4.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak con allegato",
+         "amount": 16.0,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Corriera",
+         "amount": 4.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985015",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Bus",
+        "Corriera"
+       ],
+       "fee": [
+        "30.00",
+        "4.00"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 30.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Bus\"}]",
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 4.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Corriera\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "146.00",
+        "120.0"
+       ],
+       "notes": [
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nBus - 30.0€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nCorriera - 4.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985091",
+    "title": "Corriera",
+    "fee": "4"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-other-row-key-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985015/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+     "title": "Corriera",
+     "description": "Andata",
+     "fee": "4.00",
+     "created_at": "2026-06-06T09:00:00.000001Z",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985009",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985015": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Corriera",
+       "description": "Andata",
+       "fee": "4.00",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "amount": "120.00",
+       "notes": "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nCorriera - 4.0€",
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak con allegato",
+         "amount": 16.0,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Corriera",
+         "amount": 4.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "120.00",
+        "120.0"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-amount-overflow",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985014/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "numeric field overflow\nDETAIL:  A field with precision 9, scale 2 must round to an absolute value less than 10^7.\n"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985014": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985009",
+       "title": "Kayak con allegato",
+       "description": "Mezza giornata",
+       "fee": "9999999.99",
+       "payment_category_id": null
+      }
+     },
+     "application.Payment": {
+      "a1000000-0000-4000-8000-000000985023": {
+       "meta_payment_categories": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985014",
+         "title": "Kayak con allegato",
+         "amount": 9999999.99,
+         "payment_category_id": "None"
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985015",
+         "title": "Corriera",
+         "amount": 4.0,
+         "payment_category_id": "None"
+        }
+       ]
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985014",
+      "action": 1,
+      "changes": {
+       "fee": [
+        "16.00",
+        "9999999.99"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "meta_payment_categories": [
+        "[{\"amount\": 16.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 4.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Corriera\"}]",
+        "[{\"amount\": 9999999.99, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985014\", \"payment_category_id\": \"None\", \"title\": \"Kayak con allegato\"}, {\"amount\": 4.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985015\", \"payment_category_id\": \"None\", \"title\": \"Corriera\"}]"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     },
+     {
+      "model": "Payment",
+      "key": "a1000000-0000-4000-8000-000000985023",
+      "action": 1,
+      "changes": {
+       "amount": [
+        "120.00",
+        "10000103.99"
+       ],
+       "notes": [
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 16.0€\nCorriera - 4.0€",
+        "Iscrizione al periodo Luglio del campo Campo estivo è\nMare e monti\n\nKayak con allegato - 9999999.99€\nCorriera - 4.0€"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "fee": "9999999.99"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-null-metas-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985018/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'NoneType' object is not iterable"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985018": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": "Guida alpina",
+       "description": null,
+       "fee": "15.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985018",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Guida",
+        "Guida alpina"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "title": "Guida alpina"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-null-metas-two-payments-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985204/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'NoneType' object is not iterable"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985204": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985201",
+       "title": "Slitta nuova",
+       "description": null,
+       "fee": "5.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985204",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Slitta",
+        "Slitta nuova"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "title": "Slitta nuova"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-description-failure-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985205/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "list indices must be integers or slices, not str"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985205": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985202",
+       "title": "Pattini nuovi",
+       "description": null,
+       "fee": "6.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985205",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Pattini",
+        "Pattini nuovi"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "title": "Pattini nuovi"
+   }
+  },
+  {
+   "name": "camps-periods-services-update-transfer-description-two-payments-server-error",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985206/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'NoneType' object has no attribute 'name'"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985206": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985203",
+       "title": "Scarponi nuovi",
+       "description": null,
+       "fee": "7.00",
+       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985206",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Scarponi",
+        "Scarponi nuovi"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "body": {
+    "title": "Scarponi nuovi"
+   }
+  },
+  {
+   "name": "camps-periods-services-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-delete-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-services-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Periods Services Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-delete-malformed",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/services/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-delete-athlete-forbidden",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "You are not a sport association."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-delete-foreign-forbidden",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985020/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed deleting this."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-delete-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/delete",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-services-delete-owner",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Deleted successfully"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985016": null
+     }
+    },
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985009",
+        "a1000000-0000-4000-8000-000000985016"
+       ]
+      ]
+     },
+     "application.CampsAndRetreatsSubscriptionPeriod_camps_and_retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985026",
+        "a1000000-0000-4000-8000-000000985016"
+       ]
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985016",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-services-delete-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/services/a1000000-0000-4000-8000-000000985016/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-add-form-services-list-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Direct assignment to the forward side of a many-to-many set is prohibited. Use camps_and_Retreats_period_services.set() instead."
+   },
+   "effect": null,
+   "raw_body": "start_date=2026-10-01&end_date=2026-10-05&camps_and_retreats=a1000000-0000-4000-8000-000000985006&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985015",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-form-services-foreign-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "raw_body": "start_date=2026-10-01&end_date=2026-10-05&camps_and_retreats=a1000000-0000-4000-8000-000000985006&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985020",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-form-services-invalid-item",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'camps_and_Retreats_period_services': [ErrorDetail(string='“x” is not a valid UUID.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "start_date=2026-10-01&end_date=2026-10-05&camps_and_retreats=a1000000-0000-4000-8000-000000985006&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=x",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "Direct assignment to the forward side of a many-to-many set is prohibited. Use camps_and_Retreats_period_services.set() instead."
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-blank-fee-is-null",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-as-title",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"; filename=\"titolo.txt\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-file-as-date",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'start_date': [ErrorDetail(string='Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"; filename=\"inizio.txt\"\r\n\r\nx\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-add-multipart-without-file-blank-fee-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "This QueryDict instance is immutable"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"start_date\"\r\n\r\n2026-10-01\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"end_date\"\r\n\r\n2026-10-05\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats\"\r\n\r\na1000000-0000-4000-8000-000000985006\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-multipart-file-blank-fee-is-null",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-multipart-file-as-max-participants",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'max_participants': [ErrorDetail(string='A valid integer is required.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"max_participants\"; filename=\"n.txt\"\r\n\r\n3\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto con allegato",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto con allegato",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Agosto bis",
+        "Agosto con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nAgosto con allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-update-form-services-repeated",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto con allegato",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985015",
+       "a1000000-0000-4000-8000-000000985014"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto con allegato",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985014"
+       ]
+      ],
+      "remove": []
+     }
+    }
+   },
+   "raw_body": "camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014&camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985015",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-form-services-single",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto con allegato",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985014"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto con allegato",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985015"
+       ]
+      ]
+     }
+    }
+   },
+   "raw_body": "camps_and_Retreats_period_services=a1000000-0000-4000-8000-000000985014",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-form-services-none-partial",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto due",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": [
+       "a1000000-0000-4000-8000-000000985014"
+      ]
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto due",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Agosto con allegato",
+        "Agosto due"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "title=Agosto+due",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-periods-update-services-cleared-again",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Updated successfully",
+    "period": {
+     "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985010",
+     "start_date": "2026-08-02T09:30:00.500000Z",
+     "end_date": "2026-08-20T00:00:00Z",
+     "title": "Agosto due",
+     "description": "Form è",
+     "fee": "21.00",
+     "max_participants": 3,
+     "created_at": "2026-06-02T10:00:00.250000Z",
+     "camps_and_retreats": "a1000000-0000-4000-8000-000000985007",
+     "camps_and_Retreats_period_services": {
+      "$unordered": []
+     }
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": {
+       "camps_and_retreats_id": "a1000000-0000-4000-8000-000000985007",
+       "start_date": "2026-08-02T09:30:00.500000Z",
+       "end_date": "2026-08-20T00:00:00Z",
+       "title": "Agosto due",
+       "description": "Form è",
+       "fee": "21.00",
+       "max_participants": 3
+      }
+     }
+    },
+    "audit": [],
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985010",
+        "a1000000-0000-4000-8000-000000985014"
+       ]
+      ]
+     }
+    }
+   },
+   "body": {
+    "camps_and_Retreats_period_services": []
+   }
+  },
+  {
+   "name": "camps-periods-services-add-multipart-file-as-fee",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'fee': [ErrorDetail(string='A valid number is required.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats_period\"\r\n\r\na1000000-0000-4000-8000-000000985012\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"; filename=\"f.txt\"\r\n\r\n3\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-services-add-multipart-with-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/periods/services/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Added successfully",
+    "service": {
+     "camps_and_retreats_period_service_id": "$new",
+     "title": "Con allegato",
+     "description": null,
+     "fee": "4.00",
+     "created_at": "$now",
+     "camps_and_retreats_period": "a1000000-0000-4000-8000-000000985012",
+     "payment_category": null
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriodsService": {
+      "$new": {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985012",
+       "title": "Con allegato",
+       "description": null,
+       "fee": "4.00",
+       "payment_category_id": null
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_period_service_id": [
+        "None",
+        "$key"
+       ],
+       "camps_and_retreats_period": [
+        "None",
+        "a1000000-0000-4000-8000-000000985012"
+       ],
+       "fee": [
+        "None",
+        "4.00"
+       ],
+       "payment_category": [
+        "None",
+        "None"
+       ],
+       "created_at": [
+        "None",
+        "$created"
+       ],
+       "title": [
+        "None",
+        "Con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "period.camps_and_retreats.sport_association"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats_period\"\r\n\r\na1000000-0000-4000-8000-000000985012\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nCon allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"fee\"\r\n\r\n4\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"payment_category\"\r\n\r\n\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-periods-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985011/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-delete-wrong-method",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985011/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-periods-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985011/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Periods Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-delete-malformed",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "camps-periods-delete-athlete-forbidden",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985011/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "You are not a sport association."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985001/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-delete-foreign-forbidden",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985013/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed deleting this."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-delete-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985011/delete",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-periods-delete-owner-cascade",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985011/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Deleted successfully"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985011": null
+     },
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000985017": null
+     },
+     "application.CampsAndRetreatsSubscriptionPeriod": {
+      "a1000000-0000-4000-8000-000000985029": null
+     }
+    },
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985011",
+        "a1000000-0000-4000-8000-000000985017"
+       ]
+      ]
+     },
+     "application.CampsAndRetreatsSubscriptionPeriod_camps_and_retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000985029",
+        "a1000000-0000-4000-8000-000000985017"
+       ]
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000985017",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsSubscriptionPeriod",
+      "key": "a1000000-0000-4000-8000-000000985029",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985011",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-delete-collaborator-unindexed",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985010/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Deleted successfully"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000985010": null
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000985010",
+      "action": 2,
+      "changes": "$deleted",
+      "association": null,
+      "path": null
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-periods-delete-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/periods/a1000000-0000-4000-8000-000000985011/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Not found"
+   },
+   "effect": null
+  }
+ ]
+}

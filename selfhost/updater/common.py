@@ -14,6 +14,9 @@ def update_eligibility_reason(values):
         key = f'ASSOZETA_{service}_IMAGE'
         if values.get(key) != f'ghcr.io/carbogninalberto/assozeta-{service.lower()}':
             return f'Aggiornamenti automatici non disponibili: {key} deve indicare il repository ufficiale.'
+    # Historical installations omit Go; Compose defaults absent/blank values to the official image.
+    if values.get('ASSOZETA_BACKEND_GO_IMAGE') not in (None, '', 'ghcr.io/carbogninalberto/assozeta-backend-go'):
+        return 'Aggiornamenti automatici non disponibili: ASSOZETA_BACKEND_GO_IMAGE deve indicare il repository ufficiale.'
     if version_tuple(values.get('ASSOZETA_VERSION')) is None:
         return 'Aggiornamenti automatici non disponibili: ASSOZETA_VERSION deve indicare una release stabile.'
     return None
@@ -83,7 +86,17 @@ def compose_command(root, env_file, updater=False):
     external = Path(root) / '.updater' / 'env-mount.json'
     if updater and external.exists():
         command += ['-f', str(external)]
+    if not updater and go_tasks_enabled(env_file):
+        # Same opt-in Go task consumer profile as bin/assozeta.
+        command += ['--profile', GO_TASKS_PROFILE]
     return command
+
+
+GO_TASKS_PROFILE = 'go-tasks'
+
+
+def go_tasks_enabled(env_file):
+    return read_env(env_file).get('ASSOZETA_GO_TASKS') == '1'
 
 
 def compose_environment(root, env_file):

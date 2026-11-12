@@ -34,6 +34,15 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertEqual(candidate['with']['if-no-files-found'], 'error')
         self.assertEqual(candidate['with']['retention-days'], 90)
         self.assertEqual(shared['jobs']['appliance']['needs'], 'verify')
+    def test_installable_images_require_complete_current_go_inventory(self):
+        jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
+        self.assertEqual(jobs['go-quality']['uses'], './.github/workflows/go-quality.yml')
+        self.assertIn('go-quality', jobs['publish']['needs'])
+        quality = yaml.safe_load((ROOT / '.github/workflows/go-quality.yml').read_text())['jobs']['golang']
+        inventory_gate = next(step for step in quality['steps']
+                              if step.get('run') == 'python3 -m TESTS.inventory.release_gate')
+        self.assertEqual(inventory_gate['if'], "github.event_name == 'release'")
+        self.assertFalse(inventory_gate.get('continue-on-error', False))
 
     def test_release_images_bundle_a_fresh_or_carried_manual(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
@@ -46,13 +55,22 @@ class ReleaseWorkflowTests(unittest.TestCase):
         steps = jobs['publish']['steps']
         download = next(step for step in steps if step.get('uses', '').startswith('actions/download-artifact@'))
         self.assertEqual(download['with']['name'], 'manuale-release-runtime')
-        self.assertEqual(download['with']['path'], 'BE/release-manual')
+        self.assertEqual(download['with']['path'], '${{ matrix.context }}/release-manual')
         self.assertIn("needs.manual-release.result == 'success'", download['if'])
+        for backend, context in (('backend', './BE'), ('backend-go', './BE_GO')):
+            self.assertIn("matrix.name == '" + backend + "'", download['if'])
+            entry = next(item for item in jobs['publish']['strategy']['matrix']['include']
+                         if item['name'] == backend)
+            self.assertEqual(entry['context'], context)
         carried = next(step for step in steps if step.get('id') == 'carried')
         self.assertIn("needs.manual-release.result != 'success'", carried['if'])
         self.assertIn("env.RELEASE_TAG != ''", carried['if'])
         self.assertIn('assozeta-backend:latest', carried['env']['SOURCE_IMAGE'])
-        self.assertIn('BE/release-manual', carried['run'])
+        # Both backend images carry the same package into their own context.
+        for backend in ('backend', 'backend-go'):
+            self.assertIn("matrix.name == '" + backend + "'", carried['if'])
+        self.assertEqual(carried['env']['DESTINATION'], '${{ matrix.context }}/release-manual')
+        self.assertIn('"$DESTINATION"', carried['run'])
         build = next(step for step in steps if step.get('uses', '').startswith('docker/build-push-action@'))
         args = build['with']['build-args']
         self.assertIn("REQUIRE_MANUAL=${{ needs.manual-release.result == 'success' || steps.carried.outputs.origin != '' }}", args)
@@ -81,15 +99,15 @@ class ReleaseWorkflowTests(unittest.TestCase):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']
         expression = jobs['publish']['if'].strip().removeprefix('${{').removesuffix('}}').strip()
         results = ('success', 'failure', 'cancelled', 'skipped')
-        for event, manual, quality, target, include, tag, cancelled in itertools.product(
-                ('release', 'workflow_dispatch', 'push'), results, results, results,
+        for event, manual, quality, target, go_quality, include, tag, cancelled in itertools.product(
+                ('release', 'workflow_dispatch', 'push'), results, results, results, results,
                 (True, False), ('', 'v1.0.0'), (True, False)):
             if event != 'workflow_dispatch' and (include or tag):
                 continue  # inputs exist only on manual dispatch
             with self.subTest(event=event, manual=manual, quality=quality, target=target,
-                              include=include, tag=tag, cancelled=cancelled):
+                              go_quality=go_quality, include=include, tag=tag, cancelled=cancelled):
                 values = {'validate': 'success', 'production-smoke': 'success', 'release-target': target,
-                          'manual-release': manual, 'selfhost-quality': quality}
+                          'manual-release': manual, 'selfhost-quality': quality, 'go-quality': go_quality}
                 source = re.sub(r'needs\.([a-z-]+)\.result', lambda match: repr(values[match[1]]), expression)
                 source = source.replace('github.event_name', repr(event))
                 source = source.replace('inputs.include_manual', repr(include)).replace('inputs.release_tag', repr(tag))
@@ -103,7 +121,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
                 permitted = eval(compile(tree, '<publication guard>', 'eval'), {'__builtins__': {}})
                 release_mode = event == 'release' or bool(tag)
                 requested = event == 'workflow_dispatch' and include
-                expected = not cancelled and (
+                expected = not cancelled and go_quality == 'success' and (
                     target == 'success' or not release_mode and target == 'skipped') and (
                     manual == 'success' or not requested and manual == 'skipped') and (
                     quality == 'success' or event == 'push' and quality == 'skipped')

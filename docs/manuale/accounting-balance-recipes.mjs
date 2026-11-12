@@ -1,8 +1,10 @@
 // Implementation contracts only. User-facing prose is maintained in Bakney/manuale MDX.
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
+// Reviewed: request identity resolution is unchanged; the list of accounts an owner
+// can impersonate is limited to the members and subscribers of the own association.
 const reviewed = {
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
-  "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+  "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "UI/src/routes/accounting/accounts/Accounts.svelte": "c8cd2533480465f1abd729ac3b822dfd2d1b967a48140d1081d6bc6664bf3d56",
   "UI/src/routes/accounting/accounts/modals/EditModal.svelte": "a1b92bebde85ff40520c7f563d7cbec3c6786f47426c12f8a77566cd85a9a413",
@@ -11,20 +13,22 @@ const reviewed = {
   "UI/src/routes/accounting/balanceSheet/balanceInputs/EditableSection.svelte": "b7d892a8b298248a9f028c3e3c9988a42848bf3b0b5153aa08690111b71eef25",
   "UI/src/routes/accounting/balanceSheet/balanceInputs/NumericInput.svelte": "a50bcd1a4fab2f6da29ca726604bc69228c3b12dcc45cafae45a1d9a4d20ae73",
   "UI/src/routes/profile/sections/Settings.svelte": "aed683b4bbb10c7a226a6eed573d1d748defc4d8baa7c13fd121e833b6561901",
-  "BE/application/views/balance_sheet_views.py": "2156393491297da7d0414f693564f905b295bb7ed33cefe1452182e85cf26070",
-  "BE/application/serializers/balance_sheet.py": "718b937c896e289fcf232351859da538de98ea829511f1b93baefdbf45d7019e",
+  "BE/application/views/balance_sheet_views.py": "136153e66f60f7aaa9533b8f3c8f5b1b276e5c1ccf35eba402c1b810fe63efe2",
+  "BE/application/serializers/balance_sheet.py": "a24d31da2347f0b3252bacb96482595e2cd877a2576e6e698019b4fe09b8e3e0",
   "BE/application/models/balance_sheet_models.py": "08aef0835594ebea11087743e7e327289c2682a0944bc492eb9b2739c72b2aca",
   "BE/application/utils/balance_sheet_utils.py": "16edc940ec32f5a0ec086edd1a8b1852af19994a4f8499441297b2b7e79cd317",
-  "BE/application/utils/api_utils.py": "5db286fc73e92356b476514f4d6561a3300b36668ee99831ca1b197835a5cabf",
+  "BE/application/utils/api_utils.py": "dbbdaa92161a01903c58b40be6135466df85f4780128b23175da236ae69c4c43",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
-  "BE/application/impersonation.py": "85e8a9e4d7daf129cb51d6f009a6d597b79e98b5dccbf6bac28bf0d77e0cd0d1",
-  "BE/application/models/payment_models.py": "9dbcab8698adbde447a9c4f6eb52143409cf197fde3ce90d0aa8da56a1f8ebda",
+  "BE/application/impersonation.py": "760fd6e63c6baebee14744cbdfe571ac4aa4e0fb1a5e0ac9b6147dfcf299cced",
+  "BE/application/models/payment_models.py": "30d4c9c5bf5b21d78a0fdda78edb45edc9266e9c0fc42e2ff83a3c9e3fcf0a4b",
   "UI/src/routes/accounting/payment/category/Categories.svelte": "e358b8768d55f757cada0af4dabd2443e2168248057f5442f428a6bed58ad768",
   "UI/src/routes/accounting/payment/category/modals/EditModal.svelte": "270b2663c133c813a352959e9b4177ae4f6361ce879537242a7d9af06bed51a8",
   "UI/src/routes/accounting/payment/modals/partials/meta-payment-categories.svelte": "f308dd00d75f43f09aa620da3aea449bfa3a3fc42f60e037c6d72ac670a50602",
-  "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
-  "BE/application/serializers/payment_serializers.py": "abc31bd21b536db8cfe5972c24d0befed834914fb8bdeb832205c2e8b62b4e4f",
-  "BE/application/views/supplier_views.py": "a332d25f18ba6b713cf75785aa58194bdf1165e313f8c3981efd33f3d3628321",
+  "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
+  "BE/application/serializers/payment_serializers.py": "7381f90ea6fdec4ac99e8198deb8fe107cd0ad54fbce3625932a13035f2d179b",
+  "BE/application/audit_context.py": "8609c865f5b2d5c4f818cd6b4fe6620ec9504fae2d5a2368fccb5745cbce25ff",
+  "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1",
+  "BE/application/views/supplier_views.py": "71e116323c758560c1330e44c1971b425351a6c180c751ea97571fe47e8f36cb",
   "UI/src/routes/accounting/suppliers-and-customers/partials/supplier-customer-form.svelte": "05845d83a87bccabdf06c33a7cef340d146030056e6209f629da5f3ed9f92d0f",
   "UI/src/routes/accounting/suppliers-and-customers/detail/sections/Info.svelte": "424373aefff1e91347540e0c6f6236fd0a8bafc7e1859e559c3d3420b88602e6",
   "UI/src/routes/accounting/customersInvoice/CustomersInvoiceList.svelte": "5d9c9df2b2e8c6d57cbfb7736ca4da707b8b0ced3954317e456e2c52ddf5aade",
@@ -32,8 +36,8 @@ const reviewed = {
   "UI/src/components/invoice/InvoiceForm.svelte": "2038f91a400229decbec387a661cdc95336afea0c2c2c565253826db67955b30",
   "UI/src/routes/accounting/suppliersInvoice/SuppliersInvoiceList.svelte": "d75d7352440b1a92ffe9b392b0cb0757605a96e3f64d638891a9db209872c5d5",
   "UI/src/routes/accounting/suppliersInvoice/modals/EditModal.svelte": "edaee3b087e7bc1d36b324e8328cb337979af4c2ac9ccea2bc4959ba0f86a6f6",
-  "BE/application/views/invoice_views.py": "500cf26719455a1a86aacb63e5c99bc9cbcc470a0bb1d275df926fbb884c8260",
-  "BE/application/serializers/invoice_serializers.py": "3a52147b36fe7977661358f629cfc45101aa59d15aae06f5f7078c1662ff3fb9",
+  "BE/application/views/invoice_views.py": "efaa933dd75f26a644a617ea7a604493936b737cd5ad458bd0239cfb98ce439e",
+  "BE/application/serializers/invoice_serializers.py": "ad677c34483dfa07b2bbe9b8f17c3283600b0ab58620f0d784dde4051da52aed",
   "BE/application/models/invoices_models.py": "5848c1bcdbafdd6d644f5dd70e82979095d1bdbe85c989075784e54418fc1af6"
 };
 const contracts = [
@@ -63,7 +67,7 @@ const contracts = [
   ["UI/src/routes/accounting/payment/category/Categories.svelte","async function create(data)",434],
   ["UI/src/routes/accounting/payment/category/modals/EditModal.svelte","async function update(data)",253],
   ["UI/src/routes/accounting/payment/modals/partials/meta-payment-categories.svelte","function addMetaPaymentCategory(",149],
-  ["BE/application/views/payment_views.py","def payment_category_add(request):",87],
+  ["BE/application/views/payment_views.py","def payment_category_add(request):",94],
   ["BE/application/serializers/payment_serializers.py","class SupplierSerializer(",23],
   ["BE/application/views/supplier_views.py","def supplier_add(request):",135],
   ["UI/src/routes/accounting/suppliers-and-customers/partials/supplier-customer-form.svelte","function initForm()",380],
@@ -76,7 +80,12 @@ const contracts = [
   ["BE/application/views/invoice_views.py","def invoice_suppliers_add(request):",133],
   ["BE/application/views/invoice_views.py","def invoice_customers_add(request):",103],
   ["BE/application/serializers/invoice_serializers.py","class CustomerInvoiceSerializer(",67],
-  ["BE/application/models/invoices_models.py","class CustomerInvoice(",159]
+  ["BE/application/models/invoices_models.py","class CustomerInvoice(",159],
+  ["BE/application/serializers/payment_serializers.py","class VatManagementSerializer(",71],
+  ["BE/application/views/payment_views.py","def _locked_payment_category_association(",8],
+  ["BE/application/audit_context.py","_strict_audit_indexes = ContextVar(",20],
+  ["BE/application/signals.py","def create_audit_log_index(",37],
+  ["BE/application/views/payment_views.py","def payment_category_list(request):",18]
 ];
 const sections = [
   {
@@ -245,7 +254,7 @@ const sections = [
     "title": "Causali di pagamento",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -253,7 +262,7 @@ const sections = [
     "title": "Tipologie di causali",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -261,7 +270,7 @@ const sections = [
     "title": "Creare una causale",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -269,7 +278,7 @@ const sections = [
     "title": "Modificare una causale",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -277,7 +286,7 @@ const sections = [
     "title": "Causali aggiuntive nei pagamenti",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/contabilita-avanzata.mdx",
@@ -285,7 +294,7 @@ const sections = [
     "title": "Causali detraibili 730",
     "status": "pending",
     "reason": "Procedura non esercitata in questo flusso; occorrono salvataggio, controllo dopo il ricaricamento e prova dei permessi.",
-    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
+    "contracts": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]
   },
   {
     "path": "docs/bilancio.mdx",

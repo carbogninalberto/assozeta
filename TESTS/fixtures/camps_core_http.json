@@ -1,0 +1,2607 @@
+{
+ "matrix_version": 1,
+ "scope": "Camps and retreats list, add, info, update and delete authored sequence with audit effects",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "categories": {
+  "own": {
+   "id": "a1000000-0000-4000-8000-000000987003",
+   "name": "Servizi campo",
+   "created": "2026-05-01T08:00:00Z",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  }
+ },
+ "camps": {
+  "summer": {
+   "id": "a1000000-0000-4000-8000-000000987004",
+   "title": "Campo estivo è",
+   "description": "Mare e monti",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "winter": {
+   "id": "a1000000-0000-4000-8000-000000987005",
+   "title": null,
+   "description": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "spring": {
+   "id": "a1000000-0000-4000-8000-000000987006",
+   "title": "Primavera",
+   "description": "Colline",
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "autumn": {
+   "id": "a1000000-0000-4000-8000-000000987007",
+   "title": "Autunno",
+   "description": null,
+   "association": "a1000000-0000-4000-8000-000000701001"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000987008",
+   "title": "Campo estero",
+   "description": "Lontano",
+   "association": "a1000000-0000-4000-8000-000000701002"
+  }
+ },
+ "periods": {
+  "july": {
+   "id": "a1000000-0000-4000-8000-000000987009",
+   "camp": "summer",
+   "start": "2026-07-01T08:00:00Z",
+   "end": "2026-07-15T18:00:00Z",
+   "title": "Luglio",
+   "description": "Prima settimana",
+   "fee": "100.00",
+   "max": 20,
+   "created": "2026-06-01T10:00:00Z"
+  },
+  "june": {
+   "id": "a1000000-0000-4000-8000-000000987010",
+   "camp": "summer",
+   "start": "2026-06-10T07:00:00Z",
+   "end": "2026-06-20T07:00:00Z",
+   "title": null,
+   "description": null,
+   "fee": "55.50",
+   "max": null,
+   "created": "2026-06-03T10:00:00.250000Z"
+  },
+  "october": {
+   "id": "a1000000-0000-4000-8000-000000987011",
+   "camp": "autumn",
+   "start": "2026-10-01T07:00:00Z",
+   "end": "2026-10-05T07:00:00Z",
+   "title": "Ottobre",
+   "description": null,
+   "fee": "10.00",
+   "max": 5,
+   "created": "2026-06-04T10:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000987012",
+   "camp": "abroad",
+   "start": "2026-07-01T07:00:00Z",
+   "end": "2026-07-02T07:00:00Z",
+   "title": "Estero",
+   "description": null,
+   "fee": "1.00",
+   "max": null,
+   "created": "2026-06-05T10:00:00Z"
+  }
+ },
+ "services": {
+  "kayak": {
+   "id": "a1000000-0000-4000-8000-000000987013",
+   "period": "july",
+   "title": "Kayak",
+   "description": "Mezza giornata",
+   "fee": "12.50",
+   "category": "own",
+   "created": "2026-06-05T09:00:00Z"
+  },
+  "bus": {
+   "id": "a1000000-0000-4000-8000-000000987014",
+   "period": "july",
+   "title": "Bus",
+   "description": null,
+   "fee": "30.00",
+   "category": null,
+   "created": "2026-06-06T09:00:00.000001Z"
+  },
+  "tent": {
+   "id": "a1000000-0000-4000-8000-000000987015",
+   "period": "june",
+   "title": "Tenda",
+   "description": null,
+   "fee": "7.00",
+   "category": null,
+   "created": "2026-06-08T09:00:00Z"
+  },
+  "guide": {
+   "id": "a1000000-0000-4000-8000-000000987016",
+   "period": "october",
+   "title": "Guida",
+   "description": null,
+   "fee": "15.00",
+   "category": "own",
+   "created": "2026-06-09T09:00:00Z"
+  },
+  "abroad": {
+   "id": "a1000000-0000-4000-8000-000000987017",
+   "period": "abroad",
+   "title": "Estero",
+   "description": null,
+   "fee": "3.00",
+   "category": null,
+   "created": "2026-06-11T09:00:00Z"
+  }
+ },
+ "subscriptions": {
+  "summer": {
+   "id": "a1000000-0000-4000-8000-000000987018",
+   "camp": "summer",
+   "created": "2026-06-12T09:00:00Z"
+  },
+  "autumn": {
+   "id": "a1000000-0000-4000-8000-000000987019",
+   "camp": "autumn",
+   "created": "2026-06-12T10:00:00.500000Z"
+  }
+ },
+ "payments": {
+  "july": {
+   "id": "a1000000-0000-4000-8000-000000987020",
+   "amount": "112.50",
+   "paid": false,
+   "subject": 1,
+   "description": "Iscrizione",
+   "category": "own",
+   "notes": null,
+   "meta": null,
+   "created": "2026-06-13T09:00:00Z"
+  }
+ },
+ "subscription_periods": {
+  "july": {
+   "id": "a1000000-0000-4000-8000-000000987021",
+   "period": "july",
+   "subscription": "summer",
+   "payment": "july",
+   "services": [
+    "kayak"
+   ]
+  },
+  "june": {
+   "id": "a1000000-0000-4000-8000-000000987022",
+   "period": "june",
+   "subscription": "summer",
+   "payment": null,
+   "services": [
+    "tent"
+   ]
+  },
+  "cross": {
+   "id": "a1000000-0000-4000-8000-000000987023",
+   "period": "october",
+   "subscription": "summer",
+   "payment": null,
+   "services": [
+    "guide",
+    "kayak"
+   ]
+  },
+  "reverse": {
+   "id": "a1000000-0000-4000-8000-000000987024",
+   "period": "june",
+   "subscription": "autumn",
+   "payment": null,
+   "services": []
+  },
+  "october": {
+   "id": "a1000000-0000-4000-8000-000000987025",
+   "period": "october",
+   "subscription": "autumn",
+   "payment": null,
+   "services": [
+    "guide"
+   ]
+  }
+ },
+ "period_links": {
+  "july": [
+   "kayak",
+   "bus"
+  ],
+  "june": [
+   "tent"
+  ],
+  "october": [
+   "guide",
+   "kayak"
+  ]
+ },
+ "cases": [
+  {
+   "name": "camps-core-list-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-wrong-method",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-list-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats List",
+    "description": "This method is used to get a list of all camps and retreats",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-athlete-forbidden",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Only sport associations can view camps or retreats"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987004",
+      "title": "Campo estivo è",
+      "description": "Mare e monti",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+      "title": null,
+      "description": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+      "title": "Primavera",
+      "description": "Colline",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987007",
+      "title": "Autunno",
+      "description": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-list-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/camps-and-retreats/list",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": [
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987004",
+      "title": "Campo estivo è",
+      "description": "Mare e monti",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+      "title": null,
+      "description": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+      "title": "Primavera",
+      "description": "Colline",
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     },
+     {
+      "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987007",
+      "title": "Autunno",
+      "description": null,
+      "sport_association": "a1000000-0000-4000-8000-000000701001"
+     }
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.read"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-wrong-method",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-info-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Info",
+    "description": "This method is used to get a list of all camps and retreats",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-athlete-malformed",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/camps-and-retreats/abc/info",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-owner-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/abc/info",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-periods-segment-malformed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/periods/info",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-athlete-public",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987004",
+     "title": "Campo estivo è",
+     "description": "Mare e monti",
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701001",
+      "denomination": "Message reads own",
+      "username": "message-reads-700001"
+     },
+     "periods": [
+      {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000987010",
+       "start_date": "10/06/2026",
+       "end_date": "20/06/2026",
+       "title": null,
+       "description": null,
+       "fee": "55,50",
+       "max_participants": null,
+       "created_at": "2026-06-03T10:00:00.250000Z",
+       "camps_and_retreats": "a1000000-0000-4000-8000-000000987004",
+       "camps_and_Retreats_period_services": {
+        "$unordered": [
+         "a1000000-0000-4000-8000-000000987015"
+        ]
+       },
+       "services": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987015",
+         "payment_category_info": {
+          "payment_category_id": null,
+          "name": "",
+          "creation_date": null,
+          "sport_association": null,
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": null,
+          "vat_management": {
+           "vat_management_id": null,
+           "vat": null,
+           "deduction": null
+          },
+          "deleted": false
+         },
+         "fee": "7,00",
+         "title": "Tenda",
+         "description": null,
+         "created_at": "2026-06-08T09:00:00Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987010",
+         "payment_category": null
+        }
+       ]
+      },
+      {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000987009",
+       "start_date": "01/07/2026",
+       "end_date": "15/07/2026",
+       "title": "Luglio",
+       "description": "Prima settimana",
+       "fee": "100,00",
+       "max_participants": 20,
+       "created_at": "2026-06-01T10:00:00Z",
+       "camps_and_retreats": "a1000000-0000-4000-8000-000000987004",
+       "camps_and_Retreats_period_services": {
+        "$unordered": [
+         "a1000000-0000-4000-8000-000000987013",
+         "a1000000-0000-4000-8000-000000987014"
+        ]
+       },
+       "services": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987014",
+         "payment_category_info": {
+          "payment_category_id": null,
+          "name": "",
+          "creation_date": null,
+          "sport_association": null,
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": null,
+          "vat_management": {
+           "vat_management_id": null,
+           "vat": null,
+           "deduction": null
+          },
+          "deleted": false
+         },
+         "fee": "30,00",
+         "title": "Bus",
+         "description": null,
+         "created_at": "2026-06-06T09:00:00.000001Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987009",
+         "payment_category": null
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987013",
+         "payment_category_info": {
+          "payment_category_id": "a1000000-0000-4000-8000-000000987003",
+          "name": "Servizi campo",
+          "creation_date": "2026-05-01T08:00:00Z",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": 1,
+          "vat_management": null,
+          "deleted": false
+         },
+         "fee": "12,50",
+         "title": "Kayak",
+         "description": "Mezza giornata",
+         "created_at": "2026-06-05T09:00:00Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987009",
+         "payment_category": "a1000000-0000-4000-8000-000000987003"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-athlete-public-foreign",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987008/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987008",
+     "title": "Campo estero",
+     "description": "Lontano",
+     "sport_association": {
+      "sport_association_id": "a1000000-0000-4000-8000-000000701002",
+      "denomination": "Message reads foreign",
+      "username": "message-reads-700007"
+     },
+     "periods": [
+      {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000987012",
+       "start_date": "01/07/2026",
+       "end_date": "02/07/2026",
+       "title": "Estero",
+       "description": null,
+       "fee": "1,00",
+       "max_participants": null,
+       "created_at": "2026-06-05T10:00:00Z",
+       "camps_and_retreats": "a1000000-0000-4000-8000-000000987008",
+       "camps_and_Retreats_period_services": {
+        "$unordered": []
+       },
+       "services": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987017",
+         "payment_category_info": {
+          "payment_category_id": null,
+          "name": "",
+          "creation_date": null,
+          "sport_association": null,
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": null,
+          "vat_management": {
+           "vat_management_id": null,
+           "vat": null,
+           "deduction": null
+          },
+          "deleted": false
+         },
+         "fee": "3,00",
+         "title": "Estero",
+         "description": null,
+         "created_at": "2026-06-11T09:00:00Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987012",
+         "payment_category": null
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987001/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987001/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-foreign-forbidden",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987008/info",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed to view this camp or retreat"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-unassociated-owner-unknown",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987001/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987004",
+     "title": "Campo estivo è",
+     "description": "Mare e monti",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "periods": [
+      {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000987010",
+       "start_date": "10/06/2026",
+       "end_date": "20/06/2026",
+       "title": null,
+       "description": null,
+       "fee": "55,50",
+       "max_participants": null,
+       "created_at": "2026-06-03T10:00:00.250000Z",
+       "camps_and_retreats": "a1000000-0000-4000-8000-000000987004",
+       "camps_and_Retreats_period_services": {
+        "$unordered": [
+         "a1000000-0000-4000-8000-000000987015"
+        ]
+       },
+       "services": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987015",
+         "payment_category_info": {
+          "payment_category_id": null,
+          "name": "",
+          "creation_date": null,
+          "sport_association": null,
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": null,
+          "vat_management": {
+           "vat_management_id": null,
+           "vat": null,
+           "deduction": null
+          },
+          "deleted": false
+         },
+         "fee": "7,00",
+         "title": "Tenda",
+         "description": null,
+         "created_at": "2026-06-08T09:00:00Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987010",
+         "payment_category": null
+        }
+       ]
+      },
+      {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000987009",
+       "start_date": "01/07/2026",
+       "end_date": "15/07/2026",
+       "title": "Luglio",
+       "description": "Prima settimana",
+       "fee": "100,00",
+       "max_participants": 20,
+       "created_at": "2026-06-01T10:00:00Z",
+       "camps_and_retreats": "a1000000-0000-4000-8000-000000987004",
+       "camps_and_Retreats_period_services": {
+        "$unordered": [
+         "a1000000-0000-4000-8000-000000987013",
+         "a1000000-0000-4000-8000-000000987014"
+        ]
+       },
+       "services": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987014",
+         "payment_category_info": {
+          "payment_category_id": null,
+          "name": "",
+          "creation_date": null,
+          "sport_association": null,
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": null,
+          "vat_management": {
+           "vat_management_id": null,
+           "vat": null,
+           "deduction": null
+          },
+          "deleted": false
+         },
+         "fee": "30,00",
+         "title": "Bus",
+         "description": null,
+         "created_at": "2026-06-06T09:00:00.000001Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987009",
+         "payment_category": null
+        },
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987013",
+         "payment_category_info": {
+          "payment_category_id": "a1000000-0000-4000-8000-000000987003",
+          "name": "Servizi campo",
+          "creation_date": "2026-05-01T08:00:00Z",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": 1,
+          "vat_management": null,
+          "deleted": false
+         },
+         "fee": "12,50",
+         "title": "Kayak",
+         "description": "Mezza giornata",
+         "created_at": "2026-06-05T09:00:00Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987009",
+         "payment_category": "a1000000-0000-4000-8000-000000987003"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-collaborator-empty",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987005/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+     "title": null,
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "periods": []
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-hex-uid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/A1000000000040008000000000987007/info",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "data": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987007",
+     "title": "Autunno",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "periods": [
+      {
+       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000987011",
+       "start_date": "01/10/2026",
+       "end_date": "05/10/2026",
+       "title": "Ottobre",
+       "description": null,
+       "fee": "10,00",
+       "max_participants": 5,
+       "created_at": "2026-06-04T10:00:00Z",
+       "camps_and_retreats": "a1000000-0000-4000-8000-000000987007",
+       "camps_and_Retreats_period_services": {
+        "$unordered": [
+         "a1000000-0000-4000-8000-000000987016",
+         "a1000000-0000-4000-8000-000000987013"
+        ]
+       },
+       "services": [
+        {
+         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000987016",
+         "payment_category_info": {
+          "payment_category_id": "a1000000-0000-4000-8000-000000987003",
+          "name": "Servizi campo",
+          "creation_date": "2026-05-01T08:00:00Z",
+          "sport_association": "a1000000-0000-4000-8000-000000701001",
+          "expense": false,
+          "tax_deductible": false,
+          "archived": false,
+          "type": 1,
+          "vat_management": null,
+          "deleted": false
+         },
+         "fee": "15,00",
+         "title": "Guida",
+         "description": null,
+         "created_at": "2026-06-09T09:00:00Z",
+         "camps_and_retreats_period": "a1000000-0000-4000-8000-000000987011",
+         "payment_category": "a1000000-0000-4000-8000-000000987003"
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-add-anonymous",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-add-admin-without-session",
+   "actor": "admin",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-add-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.create"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-add-owner-scoped-athlete-denied",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-add-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-add-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Add",
+    "description": "This method is used to add a new camp or retreat",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-add-athlete-forbidden",
+   "actor": "athlete",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Only sport associations can add camps or retreats"
+   },
+   "effect": null,
+   "body": {
+    "title": ""
+   }
+  },
+  {
+   "name": "camps-core-add-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null,
+   "body": {
+    "title": "x"
+   }
+  },
+  {
+   "name": "camps-core-add-form-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null,
+   "raw_body": "title=Form",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-core-add-form-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "This QueryDict instance is immutable"
+   },
+   "effect": null,
+   "raw_body": "title=Form",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-core-add-list-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "list indices must be integers or slices, not str"
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "camps-core-add-string-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'str' object does not support item assignment"
+   },
+   "effect": null,
+   "body": "title"
+  },
+  {
+   "name": "camps-core-add-number-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'int' object does not support item assignment"
+   },
+   "effect": null,
+   "body": 5
+  },
+  {
+   "name": "camps-core-add-float-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'float' object does not support item assignment"
+   },
+   "effect": null,
+   "body": 1.5
+  },
+  {
+   "name": "camps-core-add-null-body-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "'NoneType' object does not support item assignment"
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "camps-core-add-invalid-fields",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='This field may not be blank.', code='blank')], 'description': [ErrorDetail(string='Ensure this field has no more than 2048 characters.', code='max_length')]}"
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_id": "abc",
+    "title": "",
+    "description": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+   }
+  },
+  {
+   "name": "camps-core-add-invalid-types",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Ensure this field has no more than 255 characters.', code='max_length')], 'description': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_id": 1.5,
+    "title": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+    "description": true
+   }
+  },
+  {
+   "name": "camps-core-add-owner",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": "Campo invernale",
+     "description": "Neve è",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "Campo invernale",
+       "description": "Neve è",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Campo invernale"
+       ],
+       "description": [
+        "None",
+        "Neve è"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "title": " Campo invernale ",
+    "description": "Neve è",
+    "ignored": "x"
+   }
+  },
+  {
+   "name": "camps-core-add-full-collaborator-defaults",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": null,
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": null,
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "camps-core-add-existing-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": "Copia",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "Copia",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Copia"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+    "title": "Copia"
+   }
+  },
+  {
+   "name": "camps-core-add-explicit-id-ignored",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": "5",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "5",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "5"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_id": "A1000000000040008000000000987002",
+    "title": 5,
+    "description": null
+   }
+  },
+  {
+   "name": "camps-core-update-anonymous",
+   "actor": "anonymous",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-update-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.update"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-update-wrong-method",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-update-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Update",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-update-athlete-malformed",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/abc/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-update-periods-segment-malformed",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/periods/update",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-update-athlete-forbidden",
+   "actor": "athlete",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Only sport associations can update camps or retreats"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-update-unknown",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987001/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null,
+   "body": {
+    "title": "x"
+   }
+  },
+  {
+   "name": "camps-core-update-foreign-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987008/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed to update this camp or retreat"
+   },
+   "effect": null,
+   "body": {
+    "title": "x"
+   }
+  },
+  {
+   "name": "camps-core-update-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-update-unassociated-owner-unknown",
+   "actor": "owner_without_association",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987001/update",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-update-invalid-fields",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='This field may not be blank.', code='blank')], 'description': [ErrorDetail(string='Ensure this field has no more than 2048 characters.', code='max_length')], 'sport_association': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "body": {
+    "title": "",
+    "description": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+    "sport_association": null
+   }
+  },
+  {
+   "name": "camps-core-update-invalid-relations",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')], 'sport_association': [ErrorDetail(string='“abc” is not a valid UUID.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": {
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+    "title": false,
+    "sport_association": "abc"
+   }
+  },
+  {
+   "name": "camps-core-update-unknown-association",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': [ErrorDetail(string='Invalid pk \"a1000000-0000-4000-8000-000000987001\" - object does not exist.', code='does_not_exist')]}"
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000987001"
+   }
+  },
+  {
+   "name": "camps-core-update-bool-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': [ErrorDetail(string='Incorrect type. Expected pk value, received bool.', code='incorrect_type')]}"
+   },
+   "effect": null,
+   "body": {
+    "sport_association": true
+   }
+  },
+  {
+   "name": "camps-core-update-blank-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'sport_association': [ErrorDetail(string='This field may not be null.', code='null')]}"
+   },
+   "effect": null,
+   "body": {
+    "sport_association": ""
+   }
+  },
+  {
+   "name": "camps-core-update-foreign-association-forbidden",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "title": "",
+    "sport_association": "a1000000-0000-4000-8000-000000701002"
+   }
+  },
+  {
+   "name": "camps-core-update-deleted-association-forbidden",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You do not have permission to perform this action."
+   },
+   "effect": null,
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701003"
+   }
+  },
+  {
+   "name": "camps-core-update-list-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got list.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": []
+  },
+  {
+   "name": "camps-core-update-string-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='Invalid data. Expected a dictionary, but got str.', code='invalid')]}"
+   },
+   "effect": null,
+   "body": "title"
+  },
+  {
+   "name": "camps-core-update-null-body",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'non_field_errors': [ErrorDetail(string='No data provided', code='null')]}"
+   },
+   "effect": null,
+   "raw_body": "null",
+   "content_type": "application/json"
+  },
+  {
+   "name": "camps-core-update-owner",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+     "title": "Primavera 2026",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987006": {
+       "title": "Primavera 2026",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987006",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Primavera",
+        "Primavera 2026"
+       ],
+       "description": [
+        "Colline",
+        "None"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "title": " Primavera 2026 ",
+    "description": null,
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+    "ignored": 1
+   }
+  },
+  {
+   "name": "camps-core-update-collaborator-form",
+   "actor": "full_collaborator",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+     "title": null,
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987006": {
+       "title": null,
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987006",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Primavera 2026",
+        "None"
+       ],
+       "description": [
+        "None",
+        "Dal modulo"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "title=&description=Dal+modulo",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "camps-core-update-own-association-unchanged",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987007/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987007",
+     "title": "Autunno",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987007": {
+       "title": "Autunno",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": []
+   },
+   "body": {
+    "sport_association": "a1000000-0000-4000-8000-000000701001"
+   }
+  },
+  {
+   "name": "camps-core-update-hex-uid",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/A1000000000040008000000000987005/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+     "title": "12",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987005": {
+       "title": "12",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987005",
+      "action": 1,
+      "changes": {
+       "title": [
+        "None",
+        "12"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "title": 12
+   }
+  },
+  {
+   "name": "camps-core-update-new-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+     "title": "Copia",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987006": {
+       "title": "Copia",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987006",
+      "action": 1,
+      "changes": {
+       "title": [
+        "None",
+        "Copia"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-0000007a9901",
+    "title": "Copia"
+   }
+  },
+  {
+   "name": "camps-core-update-other-row-id-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+     "title": "Altra",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987006": {
+       "title": "Altra",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987006",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Copia",
+        "Altra"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "body": {
+    "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987005",
+    "title": "Altra"
+   }
+  },
+  {
+   "name": "camps-core-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-restricted-missing-permission",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Missing permission: association.campsandretreats.delete"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-wrong-method",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"PATCH\" not allowed."
+   },
+   "effect": null,
+   "body": {}
+  },
+  {
+   "name": "camps-core-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Camps And Retreats Delete",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-athlete-malformed",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/abc/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-athlete-forbidden",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Only sport associations can delete camps or retreats"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987001/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-foreign-forbidden",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987008/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "You are not allowed to delete this camp or retreat"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-unassociated-owner-server-error",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "SportAssociation matching query does not exist."
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-delete-owner-cascade",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat deleted successfully"
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987004": null
+     },
+     "application.CampsAndRetreatsPeriod": {
+      "a1000000-0000-4000-8000-000000987009": null,
+      "a1000000-0000-4000-8000-000000987010": null
+     },
+     "application.CampsAndRetreatsPeriodsService": {
+      "a1000000-0000-4000-8000-000000987013": null,
+      "a1000000-0000-4000-8000-000000987014": null,
+      "a1000000-0000-4000-8000-000000987015": null
+     },
+     "application.CampsAndRetreatsSubscription": {
+      "a1000000-0000-4000-8000-000000987018": null
+     },
+     "application.CampsAndRetreatsSubscriptionPeriod": {
+      "a1000000-0000-4000-8000-000000987021": null,
+      "a1000000-0000-4000-8000-000000987022": null,
+      "a1000000-0000-4000-8000-000000987023": null,
+      "a1000000-0000-4000-8000-000000987024": null
+     }
+    },
+    "links": {
+     "application.CampsAndRetreatsPeriod_camps_and_Retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000987009",
+        "a1000000-0000-4000-8000-000000987013"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000987009",
+        "a1000000-0000-4000-8000-000000987014"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000987010",
+        "a1000000-0000-4000-8000-000000987015"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000987011",
+        "a1000000-0000-4000-8000-000000987013"
+       ]
+      ]
+     },
+     "application.CampsAndRetreatsSubscriptionPeriod_camps_and_retreats_period_services": {
+      "add": [],
+      "remove": [
+       [
+        "a1000000-0000-4000-8000-000000987021",
+        "a1000000-0000-4000-8000-000000987013"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000987022",
+        "a1000000-0000-4000-8000-000000987015"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000987023",
+        "a1000000-0000-4000-8000-000000987016"
+       ],
+       [
+        "a1000000-0000-4000-8000-000000987023",
+        "a1000000-0000-4000-8000-000000987013"
+       ]
+      ]
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987004",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000987009",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriod",
+      "key": "a1000000-0000-4000-8000-000000987010",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000987013",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000987014",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsPeriodsService",
+      "key": "a1000000-0000-4000-8000-000000987015",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsSubscription",
+      "key": "a1000000-0000-4000-8000-000000987018",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsSubscriptionPeriod",
+      "key": "a1000000-0000-4000-8000-000000987021",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsSubscriptionPeriod",
+      "key": "a1000000-0000-4000-8000-000000987022",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsSubscriptionPeriod",
+      "key": "a1000000-0000-4000-8000-000000987023",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     },
+     {
+      "model": "CampsAndRetreatsSubscriptionPeriod",
+      "key": "a1000000-0000-4000-8000-000000987024",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "actor.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-core-delete-collaborator",
+   "actor": "full_collaborator",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987005/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat deleted successfully"
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987005": null
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987005",
+      "action": 2,
+      "changes": "$deleted",
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "changes_json.sport_association"
+     }
+    ]
+   }
+  },
+  {
+   "name": "camps-core-delete-again-not-found",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-info-after-delete-not-found",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987004/info",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Camp or retreat not found"
+   },
+   "effect": null
+  },
+  {
+   "name": "camps-core-add-multipart-with-file",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": "Campo con allegato",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "Campo con allegato",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Campo con allegato"
+       ],
+       "description": [
+        "None",
+        "Dal modulo"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nCampo con allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"a.txt\"\r\n\r\ndati\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"description\"\r\n\r\nDal modulo\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-add-multipart-file-as-title",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"; filename=\"titolo.txt\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-add-multipart-file-as-id-ignored",
+   "actor": "full_collaborator",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "message": "Camp or retreat added successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "$new",
+     "title": "Ok",
+     "description": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "full_collaborator",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "$new": {
+       "title": "Ok",
+       "description": null,
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "$new",
+      "action": 0,
+      "changes": {
+       "camps_and_retreats_id": [
+        "None",
+        "$key"
+       ],
+       "sport_association": [
+        "None",
+        "a1000000-0000-4000-8000-000000701001"
+       ],
+       "title": [
+        "None",
+        "Ok"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"camps_and_retreats_id\"; filename=\"id.bin\"\r\n\r\nx\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nOk\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-add-multipart-text-without-file-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/camps-and-retreats/add",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "This QueryDict instance is immutable"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nSenza file\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-update-multipart-with-file",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "message": "Camp or retreat updated successfully",
+    "camp_and_retreat": {
+     "camps_and_retreats_id": "a1000000-0000-4000-8000-000000987006",
+     "title": "Con allegato",
+     "description": "Dal modulo",
+     "sport_association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "effect": {
+    "actor": "owner",
+    "rows": {
+     "application.CampsAndRetreats": {
+      "a1000000-0000-4000-8000-000000987006": {
+       "title": "Con allegato",
+       "description": "Dal modulo",
+       "sport_association_id": "a1000000-0000-4000-8000-000000701001"
+      }
+     }
+    },
+    "audit": [
+     {
+      "model": "CampsAndRetreats",
+      "key": "a1000000-0000-4000-8000-000000987006",
+      "action": 1,
+      "changes": {
+       "title": [
+        "Altra",
+        "Con allegato"
+       ]
+      },
+      "association": "a1000000-0000-4000-8000-000000701001",
+      "path": "direct"
+     }
+    ]
+   },
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"\r\n\r\nCon allegato\r\n--testboundary4f2a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"b.txt\"\r\n\r\ndati\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  },
+  {
+   "name": "camps-core-update-multipart-file-as-title",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/camps-and-retreats/a1000000-0000-4000-8000-000000987006/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "error": "{'title': [ErrorDetail(string='Not a valid string.', code='invalid')]}"
+   },
+   "effect": null,
+   "raw_body": "--testboundary4f2a\r\nContent-Disposition: form-data; name=\"title\"; filename=\"titolo.txt\"\r\n\r\nx\r\n--testboundary4f2a--\r\n",
+   "content_type": "multipart/form-data; boundary=testboundary4f2a"
+  }
+ ]
+}

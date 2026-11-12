@@ -113,6 +113,8 @@ export const communicationAuthAuthoredWorkflows = Object.freeze({
             'UI/src/utils/loginSession.js',
             'UI/src/utils/ApiMiddleware.js',
             'BE/application/views/two_fa_views.py',
+            'BE/application/audit_context.py',
+            'BE/application/signals.py',
             'BE/application/views/auth_views.py',
             'BE/application/models/user_models.py',
             'BE/application/services/jwt_token_service.py',

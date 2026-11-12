@@ -138,6 +138,37 @@ class RestartTests(unittest.TestCase):
         self.assertTrue((self.root / '.operations/maintenance.flag').is_file())
         self.assertEqual(self.journal.records()[0]['status'], 'failed')
 
+    def test_dual_api_restart_checks_both_versions_and_go_failure_keeps_maintenance(self):
+        application = [{'Id': name, 'Config': {'Labels': {'com.docker.compose.service': name}}}
+                       for name in ('postgres', 'api', 'api-go', 'worker', 'web')]
+        commands = []
+        def run(args, **kwargs):
+            self.assertTrue((self.root / '.operations/maintenance.flag').is_file())
+            commands.append(args)
+            if args[0] == 'curl' and args[-1].endswith('/api/v2/readyz'):
+                raise TimeoutError('Go readiness deadline exceeded')
+            return ''
+        with patch.object(Restart, 'inventory', side_effect=[application, []]), \
+                patch.object(Restart, 'run', side_effect=run), \
+                patch.object(Restart, 'wait_healthy'):
+            execute_restart(self.root, self.env, self.operation['id'])
+        self.assertEqual(commands[:4], [['docker', 'stop', '--time', '60', name]
+                                       for name in ('worker', 'api-go', 'api', 'postgres')])
+        self.assertEqual([command[-1] for command in commands if command[0] == 'curl'],
+                         ['http://fixture.test/healthz', 'http://fixture.test/api/readyz',
+                          'http://fixture.test/api/v1/readyz', 'http://fixture.test/api/v2/readyz'])
+        self.assertTrue((self.root / '.operations/maintenance.flag').is_file())
+        self.assertEqual(self.journal.records()[0]['status'], 'failed')
+
+    def test_go_restart_cannot_treat_absent_healthcheck_as_healthy(self):
+        restart = Restart(self.root, self.env, self.journal, self.operation['id'])
+        original = {'Id': 'api-go', 'Image': 'same', 'State': {'StartedAt': 'before'},
+                    'Config': {'Labels': {'com.docker.compose.service': 'api-go'}}}
+        current = {**original, 'State': {'Running': True, 'StartedAt': 'after'}}
+        with patch.object(restart, 'run', return_value=json.dumps([current])):
+            with self.assertRaisesRegex(RuntimeError, 'readiness'):
+                restart.wait_healthy(original)
+
     def test_health_does_not_accept_unchanged_start_time_or_changed_image(self):
         restart = Restart(self.root, self.env, self.journal, self.operation['id'])
         original = {'Id': 'api', 'Image': 'old-image', 'State': {'StartedAt': 'before'}}

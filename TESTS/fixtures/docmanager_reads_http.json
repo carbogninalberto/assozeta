@@ -1,0 +1,4828 @@
+{
+ "matrix_version": 1,
+ "scope": "document retrieve streaming and document delete pre-checks",
+ "ids": {
+  "owner": "a1000000-0000-4000-8000-000000700001",
+  "full_collaborator": "a1000000-0000-4000-8000-000000700002",
+  "restricted_collaborator": "a1000000-0000-4000-8000-000000700003",
+  "athlete": "a1000000-0000-4000-8000-000000700004",
+  "owner_without_association": "a1000000-0000-4000-8000-000000700005",
+  "deleted_association_owner": "a1000000-0000-4000-8000-000000700006",
+  "own_association": "a1000000-0000-4000-8000-000000701001",
+  "foreign_association": "a1000000-0000-4000-8000-000000701002",
+  "deleted_association": "a1000000-0000-4000-8000-000000701003",
+  "newest_email": "a1000000-0000-4000-8000-000000702001",
+  "null_date_post": "a1000000-0000-4000-8000-000000702002",
+  "older_email": "a1000000-0000-4000-8000-000000702003",
+  "foreign_email": "a1000000-0000-4000-8000-000000702004",
+  "unsupported_type": "a1000000-0000-4000-8000-000000702005",
+  "empty_email": "a1000000-0000-4000-8000-000000702006",
+  "unsupported_type_transaction": "a1000000-0000-4000-8000-000000703007",
+  "foreign_owner": "a1000000-0000-4000-8000-000000700007",
+  "admin": "a1000000-0000-4000-8000-000000710001",
+  "admin_association": "a1000000-0000-4000-8000-000000711001",
+  "admin_message": "a1000000-0000-4000-8000-000000712001",
+  "admin_delivery": "a1000000-0000-4000-8000-000000713001",
+  "own_group": "a1000000-0000-4000-8000-000000714001",
+  "foreign_group": "a1000000-0000-4000-8000-000000714002",
+  "own_delivery": "a1000000-0000-4000-8000-000000703001",
+  "foreign_delivery": "a1000000-0000-4000-8000-000000703004",
+  "delete_email": "a1000000-0000-4000-8000-000000720001",
+  "delete_post": "a1000000-0000-4000-8000-000000720002",
+  "delete_legacy": "a1000000-0000-4000-8000-000000720003",
+  "delete_full": "a1000000-0000-4000-8000-000000720004",
+  "delete_admin": "a1000000-0000-4000-8000-000000720005",
+  "delete_owner_session": "a1000000-0000-4000-8000-000000720006",
+  "fault_delete": "a1000000-0000-4000-8000-000000720007",
+  "workflow": "a1000000-0000-4000-8000-000000720008",
+  "missing": "a1000000-0000-4000-8000-000000720009",
+  "delete_foreign_owner": "a1000000-0000-4000-8000-000000720010",
+  "delete_foreign_admin": "a1000000-0000-4000-8000-000000720011"
+ },
+ "location": "docs-fixture",
+ "documents": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000983001",
+   "token": "a1000000-0000-4000-8000-000000983101",
+   "filename": "report.pdf",
+   "filepath": null,
+   "created": "2026-02-03T04:05:06.123456+00:00"
+  },
+  "comma": {
+   "id": "a1000000-0000-4000-8000-000000983002",
+   "token": "a1000000-0000-4000-8000-000000983102",
+   "filename": "notes, final.txt",
+   "filepath": "archive/custom/notes-final.txt",
+   "created": "2026-02-04T10:00:00+00:00"
+  },
+  "unicode": {
+   "id": "a1000000-0000-4000-8000-000000983003",
+   "token": "a1000000-0000-4000-8000-000000983103",
+   "filename": "ricevuta è.pdf",
+   "filepath": null,
+   "created": "2026-02-05T10:00:00+00:00"
+  },
+  "quote": {
+   "id": "a1000000-0000-4000-8000-000000983004",
+   "token": "a1000000-0000-4000-8000-000000983104",
+   "filename": "say \"hi\" \\ there.png",
+   "filepath": null,
+   "created": "2026-02-06T10:00:00+00:00"
+  },
+  "noext": {
+   "id": "a1000000-0000-4000-8000-000000983005",
+   "token": "a1000000-0000-4000-8000-000000983105",
+   "filename": "README",
+   "filepath": null,
+   "created": "2026-02-07T10:00:00+00:00"
+  },
+  "unknown": {
+   "id": "a1000000-0000-4000-8000-000000983006",
+   "token": "a1000000-0000-4000-8000-000000983106",
+   "filename": "data.zzq",
+   "filepath": null,
+   "created": "2026-02-08T10:00:00+00:00"
+  },
+  "gzip": {
+   "id": "a1000000-0000-4000-8000-000000983007",
+   "token": "a1000000-0000-4000-8000-000000983107",
+   "filename": "table.csv.gz",
+   "filepath": null,
+   "created": "2026-02-09T10:00:00+00:00"
+  },
+  "upper": {
+   "id": "a1000000-0000-4000-8000-000000983008",
+   "token": "a1000000-0000-4000-8000-000000983108",
+   "filename": "Photo.JPG",
+   "filepath": null,
+   "created": "2026-02-10T10:00:00+00:00"
+  },
+  "tarball": {
+   "id": "a1000000-0000-4000-8000-000000983009",
+   "token": "a1000000-0000-4000-8000-000000983109",
+   "filename": "backup.tgz",
+   "filepath": null,
+   "created": "2026-02-11T10:00:00+00:00"
+  },
+  "hidden": {
+   "id": "a1000000-0000-4000-8000-000000983010",
+   "token": "a1000000-0000-4000-8000-000000983110",
+   "filename": ".hidden",
+   "filepath": null,
+   "created": "2026-02-12T10:00:00+00:00"
+  },
+  "missing": {
+   "id": "a1000000-0000-4000-8000-000000983011",
+   "token": "a1000000-0000-4000-8000-000000983111",
+   "filename": "gone.pdf",
+   "filepath": null,
+   "created": "2026-02-13T10:00:00+00:00"
+  },
+  "escape": {
+   "id": "a1000000-0000-4000-8000-000000983012",
+   "token": "a1000000-0000-4000-8000-000000983112",
+   "filename": "escape.pdf",
+   "filepath": "../outside.pdf",
+   "created": "2026-02-14T10:00:00+00:00"
+  },
+  "export": {
+   "id": "a1000000-0000-4000-8000-000000983013",
+   "token": "a1000000-0000-4000-8000-000000983113",
+   "filename": "export_own.zip",
+   "filepath": "exports/own/export_own.zip",
+   "created": "2026-02-15T10:00:00+00:00"
+  },
+  "export_foreign": {
+   "id": "a1000000-0000-4000-8000-000000983014",
+   "token": "a1000000-0000-4000-8000-000000983114",
+   "filename": "export_foreign.zip",
+   "filepath": "exports/foreign/export_foreign.zip",
+   "created": "2026-02-16T10:00:00+00:00"
+  },
+  "orphan_export": {
+   "id": "a1000000-0000-4000-8000-000000983015",
+   "token": "a1000000-0000-4000-8000-000000983115",
+   "filename": "export_orphan.zip",
+   "filepath": null,
+   "created": "2026-02-17T10:00:00+00:00"
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983016",
+   "token": "a1000000-0000-4000-8000-000000983116",
+   "filename": "athlete.pdf",
+   "filepath": null,
+   "created": "2026-02-18T10:00:00+00:00"
+  },
+  "group": {
+   "id": "a1000000-0000-4000-8000-000000983017",
+   "token": "a1000000-0000-4000-8000-000000983117",
+   "filename": "group.pdf",
+   "filepath": null,
+   "created": "2026-02-19T10:00:00+00:00"
+  },
+  "medical": {
+   "id": "a1000000-0000-4000-8000-000000983018",
+   "token": "a1000000-0000-4000-8000-000000983118",
+   "filename": "certificato.pdf",
+   "filepath": null,
+   "created": "2026-02-20T10:00:00+00:00"
+  },
+  "invoice": {
+   "id": "a1000000-0000-4000-8000-000000983019",
+   "token": "a1000000-0000-4000-8000-000000983119",
+   "filename": "ricevuta.pdf",
+   "filepath": null,
+   "created": "2026-02-21T10:00:00+00:00"
+  },
+  "deleted_invoice": {
+   "id": "a1000000-0000-4000-8000-000000983020",
+   "token": "a1000000-0000-4000-8000-000000983120",
+   "filename": "annullata.pdf",
+   "filepath": null,
+   "created": "2026-02-22T10:00:00+00:00"
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000983021",
+   "token": "a1000000-0000-4000-8000-000000983121",
+   "filename": "foreign.pdf",
+   "filepath": null,
+   "created": "2026-02-23T10:00:00+00:00"
+  },
+  "docx": {
+   "id": "a1000000-0000-4000-8000-000000983022",
+   "token": "a1000000-0000-4000-8000-000000983122",
+   "filename": "lettera.docx",
+   "filepath": null,
+   "created": "2026-02-24T10:00:00+00:00"
+  },
+  "same_associate": {
+   "id": "a1000000-0000-4000-8000-000000983023",
+   "token": "a1000000-0000-4000-8000-000000983123",
+   "filename": "same-associate.pdf",
+   "filepath": null,
+   "created": "2026-03-01T10:00:00+00:00"
+  },
+  "same_tax": {
+   "id": "a1000000-0000-4000-8000-000000983024",
+   "token": "a1000000-0000-4000-8000-000000983124",
+   "filename": "same-tax.pdf",
+   "filepath": null,
+   "created": "2026-03-02T10:00:00+00:00"
+  },
+  "linked_associate": {
+   "id": "a1000000-0000-4000-8000-000000983025",
+   "token": "a1000000-0000-4000-8000-000000983125",
+   "filename": "linked-associate.pdf",
+   "filepath": null,
+   "created": "2026-03-03T10:00:00+00:00"
+  },
+  "athlete_medical": {
+   "id": "a1000000-0000-4000-8000-000000983026",
+   "token": "a1000000-0000-4000-8000-000000983126",
+   "filename": "athlete-medical.pdf",
+   "filepath": null,
+   "created": "2026-03-04T10:00:00+00:00"
+  },
+  "associate_medical": {
+   "id": "a1000000-0000-4000-8000-000000983027",
+   "token": "a1000000-0000-4000-8000-000000983127",
+   "filename": "associate-medical.pdf",
+   "filepath": null,
+   "created": "2026-03-05T10:00:00+00:00"
+  },
+  "attached": {
+   "id": "a1000000-0000-4000-8000-000000983028",
+   "token": "a1000000-0000-4000-8000-000000983128",
+   "filename": "attached.pdf",
+   "filepath": null,
+   "created": "2026-03-06T10:00:00+00:00"
+  },
+  "attached_other": {
+   "id": "a1000000-0000-4000-8000-000000983029",
+   "token": "a1000000-0000-4000-8000-000000983129",
+   "filename": "attached-other.pdf",
+   "filepath": null,
+   "created": "2026-03-07T10:00:00+00:00"
+  },
+  "athlete_invoice": {
+   "id": "a1000000-0000-4000-8000-000000983030",
+   "token": "a1000000-0000-4000-8000-000000983130",
+   "filename": "athlete-invoice.pdf",
+   "filepath": null,
+   "created": "2026-03-08T10:00:00+00:00"
+  },
+  "associate_invoice": {
+   "id": "a1000000-0000-4000-8000-000000983031",
+   "token": "a1000000-0000-4000-8000-000000983131",
+   "filename": "associate-invoice.pdf",
+   "filepath": null,
+   "created": "2026-03-09T10:00:00+00:00"
+  },
+  "other_tax": {
+   "id": "a1000000-0000-4000-8000-000000983032",
+   "token": "a1000000-0000-4000-8000-000000983132",
+   "filename": "other-tax.pdf",
+   "filepath": null,
+   "created": "2026-03-10T10:00:00+00:00"
+  },
+  "reprint_sub": {
+   "id": "a1000000-0000-4000-8000-000000983033",
+   "token": "a1000000-0000-4000-8000-000000983133",
+   "filename": "tessera.pdf",
+   "filepath": null,
+   "created": "2026-04-01T10:00:00.250000+00:00"
+  },
+  "reprint_inv": {
+   "id": "a1000000-0000-4000-8000-000000983034",
+   "token": "a1000000-0000-4000-8000-000000983134",
+   "filename": "ricevuta è.pdf",
+   "filepath": null,
+   "created": "2026-04-02T10:00:00.250000+00:00"
+  },
+  "reprint_both": {
+   "id": "a1000000-0000-4000-8000-000000983035",
+   "token": "a1000000-0000-4000-8000-000000983135",
+   "filename": "entrambi.pdf",
+   "filepath": null,
+   "created": "2026-04-03T10:00:00.250000+00:00"
+  },
+  "reprint_two": {
+   "id": "a1000000-0000-4000-8000-000000983036",
+   "token": "a1000000-0000-4000-8000-000000983136",
+   "filename": "doppia.pdf",
+   "filepath": null,
+   "created": "2026-04-04T10:00:00.250000+00:00"
+  },
+  "reprint_three": {
+   "id": "a1000000-0000-4000-8000-000000983037",
+   "token": "a1000000-0000-4000-8000-000000983137",
+   "filename": "tripla.pdf",
+   "filepath": null,
+   "created": "2026-04-05T10:00:00.250000+00:00"
+  },
+  "reprint_group": {
+   "id": "a1000000-0000-4000-8000-000000983038",
+   "token": "a1000000-0000-4000-8000-000000983138",
+   "filename": "gruppo.pdf",
+   "filepath": null,
+   "created": "2026-04-06T10:00:00.250000+00:00"
+  },
+  "reprint_filepath": {
+   "id": "a1000000-0000-4000-8000-000000983039",
+   "token": "a1000000-0000-4000-8000-000000983139",
+   "filename": "percorso.pdf",
+   "filepath": "archive/custom/percorso.pdf",
+   "created": "2026-04-07T10:00:00.250000+00:00"
+  },
+  "reprint_deleted": {
+   "id": "a1000000-0000-4000-8000-000000983040",
+   "token": "a1000000-0000-4000-8000-000000983140",
+   "filename": "annullata bis.pdf",
+   "filepath": null,
+   "created": "2026-04-08T10:00:00.250000+00:00"
+  },
+  "urlname": {
+   "id": "a1000000-0000-4000-8000-000000983041",
+   "token": "a1000000-0000-4000-8000-000000983141",
+   "filename": "Nota:spese.pdf",
+   "filepath": null,
+   "created": "2026-03-20T10:00:00+00:00"
+  },
+  "urlparts": {
+   "id": "a1000000-0000-4000-8000-000000983042",
+   "token": "a1000000-0000-4000-8000-000000983142",
+   "filename": "ab:c.pdf;v.txt?x#y.png",
+   "filepath": null,
+   "created": "2026-03-21T10:00:00+00:00"
+  },
+  "dataname": {
+   "id": "a1000000-0000-4000-8000-000000983043",
+   "token": "a1000000-0000-4000-8000-000000983143",
+   "filename": "data:text/css,body.pdf",
+   "filepath": null,
+   "created": "2026-03-22T10:00:00+00:00"
+  },
+  "netloc-open": {
+   "id": "a1000000-0000-4000-8000-000000983044",
+   "token": "a1000000-0000-4000-8000-000000983144",
+   "filename": "ab://[::1",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "netloc-ipv4": {
+   "id": "a1000000-0000-4000-8000-000000983045",
+   "token": "a1000000-0000-4000-8000-000000983145",
+   "filename": "ab://[1.2.3.4]",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "netloc-host": {
+   "id": "a1000000-0000-4000-8000-000000983046",
+   "token": "a1000000-0000-4000-8000-000000983146",
+   "filename": "ab://[abc]",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "netloc-future": {
+   "id": "a1000000-0000-4000-8000-000000983047",
+   "token": "a1000000-0000-4000-8000-000000983147",
+   "filename": "ab://[vz.x]",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "netloc-after": {
+   "id": "a1000000-0000-4000-8000-000000983048",
+   "token": "a1000000-0000-4000-8000-000000983148",
+   "filename": "ab://[::1]x",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "netloc-nfkc": {
+   "id": "a1000000-0000-4000-8000-000000983049",
+   "token": "a1000000-0000-4000-8000-000000983149",
+   "filename": "ab://h℀st",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "netloc-fullwidth": {
+   "id": "a1000000-0000-4000-8000-000000983050",
+   "token": "a1000000-0000-4000-8000-000000983150",
+   "filename": "ab://x／",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "netloc-missing": {
+   "id": "a1000000-0000-4000-8000-000000983051",
+   "token": "a1000000-0000-4000-8000-000000983151",
+   "filename": "ab://[::1",
+   "filepath": "named/netloc-missing",
+   "created": "2026-03-25T11:00:00+00:00"
+  },
+  "netloc-valid": {
+   "id": "a1000000-0000-4000-8000-000000983052",
+   "token": "a1000000-0000-4000-8000-000000983152",
+   "filename": "ab://[::1]:80/c.pdf",
+   "filepath": null,
+   "created": "2026-03-25T12:00:00+00:00"
+  },
+  "netloc-unicode": {
+   "id": "a1000000-0000-4000-8000-000000983053",
+   "token": "a1000000-0000-4000-8000-000000983153",
+   "filename": "ab://hôst/c.pdf",
+   "filepath": null,
+   "created": "2026-03-25T13:00:00+00:00"
+  },
+  "netloc-compat": {
+   "id": "a1000000-0000-4000-8000-000000983054",
+   "token": "a1000000-0000-4000-8000-000000983154",
+   "filename": "ab://ｈ/c.png",
+   "filepath": null,
+   "created": "2026-03-25T14:00:00+00:00"
+  },
+  "dataname-unicode": {
+   "id": "a1000000-0000-4000-8000-000000983055",
+   "token": "a1000000-0000-4000-8000-000000983155",
+   "filename": "data:text/hé,x",
+   "filepath": null,
+   "created": "2026-03-25T15:00:00+00:00"
+  },
+  "webpage": {
+   "id": "a1000000-0000-4000-8000-000000983056",
+   "token": "a1000000-0000-4000-8000-000000983156",
+   "filename": "pagina.html",
+   "filepath": null,
+   "created": "2026-03-23T10:00:00+00:00"
+  },
+  "drawing": {
+   "id": "a1000000-0000-4000-8000-000000983057",
+   "token": "a1000000-0000-4000-8000-000000983157",
+   "filename": "disegno.svg",
+   "filepath": null,
+   "created": "2026-03-24T10:00:00+00:00"
+  },
+  "datapage": {
+   "id": "a1000000-0000-4000-8000-000000983058",
+   "token": "a1000000-0000-4000-8000-000000983158",
+   "filename": "data:text/html,x",
+   "filepath": null,
+   "created": "2026-03-25T10:00:00+00:00"
+  },
+  "datapng": {
+   "id": "a1000000-0000-4000-8000-000000983059",
+   "token": "a1000000-0000-4000-8000-000000983159",
+   "filename": "data:image/png,x",
+   "filepath": null,
+   "created": "2026-03-26T10:00:00+00:00"
+  },
+  "gif": {
+   "id": "a1000000-0000-4000-8000-000000983060",
+   "token": "a1000000-0000-4000-8000-000000983160",
+   "filename": "animazione.GIF",
+   "filepath": null,
+   "created": "2026-03-27T10:00:00+00:00"
+  },
+  "webp": {
+   "id": "a1000000-0000-4000-8000-000000983061",
+   "token": "a1000000-0000-4000-8000-000000983161",
+   "filename": "foto.webp",
+   "filepath": null,
+   "created": "2026-03-28T10:00:00+00:00"
+  },
+  "script": {
+   "id": "a1000000-0000-4000-8000-000000983062",
+   "token": "a1000000-0000-4000-8000-000000983162",
+   "filename": "codice.js",
+   "filepath": null,
+   "created": "2026-03-29T10:00:00+00:00"
+  },
+  "markup": {
+   "id": "a1000000-0000-4000-8000-000000983063",
+   "token": "a1000000-0000-4000-8000-000000983163",
+   "filename": "dati.xml",
+   "filepath": null,
+   "created": "2026-03-30T10:00:00+00:00"
+  },
+  "bitmap": {
+   "id": "a1000000-0000-4000-8000-000000983064",
+   "token": "a1000000-0000-4000-8000-000000983164",
+   "filename": "foto.bmp",
+   "filepath": null,
+   "created": "2026-03-31T10:00:00+00:00"
+  },
+  "newline": {
+   "id": "a1000000-0000-4000-8000-000000983065",
+   "token": "a1000000-0000-4000-8000-000000983165",
+   "filename": "verbale.pdf\n",
+   "filepath": "named/newline",
+   "created": "2026-04-01T10:00:00+00:00"
+  },
+  "newline_accent": {
+   "id": "a1000000-0000-4000-8000-000000983066",
+   "token": "a1000000-0000-4000-8000-000000983166",
+   "filename": "verbalè.pdf\n",
+   "filepath": "named/newline-accent",
+   "created": "2026-04-02T10:00:00+00:00"
+  },
+  "newline_inside": {
+   "id": "a1000000-0000-4000-8000-000000983067",
+   "token": "a1000000-0000-4000-8000-000000983167",
+   "filename": "ver\nbale.pdf",
+   "filepath": "named/newline-inside",
+   "created": "2026-04-03T10:00:00+00:00"
+  },
+  "newline_missing": {
+   "id": "a1000000-0000-4000-8000-000000983068",
+   "token": "a1000000-0000-4000-8000-000000983168",
+   "filename": "assente.pdf\n",
+   "filepath": "named/newline-missing",
+   "created": "2026-04-04T10:00:00+00:00"
+  },
+  "blank": {
+   "id": "a1000000-0000-4000-8000-000000983069",
+   "token": "a1000000-0000-4000-8000-000000983169",
+   "filename": "",
+   "filepath": "named/blank",
+   "created": "2026-04-05T10:00:00+00:00"
+  },
+  "longkey": {
+   "id": "a1000000-0000-4000-8000-000000983070",
+   "token": "a1000000-0000-4000-8000-000000983170",
+   "filename": "lungo.pdf",
+   "filepath": "lungo/èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+   "created": "2026-04-06T10:00:00+00:00"
+  }
+ },
+ "objects": {
+  "plain": {
+   "key": "docs-fixture/1770091506.123456/a1000000-0000-4000-8000-000000983001/report.pdf",
+   "body_b64": "JVBERi1maXh0dXJlIHBsYWluIHJlcG9ydA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "comma": {
+   "key": "docs-fixture/archive/custom/notes-final.txt",
+   "body_b64": "cGxhaW4gdGV4dCBub3Rlcw==",
+   "content_type": "text/plain",
+   "encoding": null
+  },
+  "unicode": {
+   "key": "docs-fixture/1770285600.0/a1000000-0000-4000-8000-000000983003/ricevuta è.pdf",
+   "body_b64": "JVBERi1maXh0dXJlIHVuaWNvZGU=",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "quote": {
+   "key": "docs-fixture/1770372000.0/a1000000-0000-4000-8000-000000983004/say \"hi\" / there.png",
+   "body_b64": "UE5HLWZpeHR1cmU=",
+   "content_type": "image/png",
+   "encoding": null
+  },
+  "noext": {
+   "key": "docs-fixture/1770458400.0/a1000000-0000-4000-8000-000000983005/README",
+   "body_b64": "bm8gZXh0ZW5zaW9u",
+   "content_type": "application/x-fixture-readme",
+   "encoding": null
+  },
+  "unknown": {
+   "key": "docs-fixture/1770544800.0/a1000000-0000-4000-8000-000000983006/data.zzq",
+   "body_b64": "dW5rbm93biBleHRlbnNpb24=",
+   "content_type": "application/x-fixture-unknown",
+   "encoding": null
+  },
+  "gzip": {
+   "key": "docs-fixture/1770631200.0/a1000000-0000-4000-8000-000000983007/table.csv.gz",
+   "body_b64": "H4sIAAAAAAAC/0vUSeIy1DHiAgB7B5cKCAAAAA==",
+   "content_type": "application/gzip",
+   "encoding": "gzip"
+  },
+  "upper": {
+   "key": "docs-fixture/1770717600.0/a1000000-0000-4000-8000-000000983008/Photo.JPG",
+   "body_b64": "SlBFRy1maXh0dXJl",
+   "content_type": "image/jpeg",
+   "encoding": null
+  },
+  "tarball": {
+   "key": "docs-fixture/1770804000.0/a1000000-0000-4000-8000-000000983009/backup.tgz",
+   "body_b64": "dGFyLWZpeHR1cmU=",
+   "content_type": "application/x-fixture-tar",
+   "encoding": null
+  },
+  "hidden": {
+   "key": "docs-fixture/1770890400.0/a1000000-0000-4000-8000-000000983010/.hidden",
+   "body_b64": "ZG90IGZpbGU=",
+   "content_type": "application/x-fixture-hidden",
+   "encoding": null
+  },
+  "export": {
+   "key": "docs-fixture/exports/own/export_own.zip",
+   "body_b64": "UEstZXhwb3J0IG93bg==",
+   "content_type": "application/zip",
+   "encoding": null
+  },
+  "export_foreign": {
+   "key": "docs-fixture/exports/foreign/export_foreign.zip",
+   "body_b64": "UEstZXhwb3J0IGZvcmVpZ24=",
+   "content_type": "application/zip",
+   "encoding": null
+  },
+  "orphan_export": {
+   "key": "docs-fixture/1771322400.0/a1000000-0000-4000-8000-000000983015/export_orphan.zip",
+   "body_b64": "UEstb3JwaGFu",
+   "content_type": "application/zip",
+   "encoding": null
+  },
+  "athlete": {
+   "key": "docs-fixture/1771408800.0/a1000000-0000-4000-8000-000000983016/athlete.pdf",
+   "body_b64": "JVBERi1hdGhsZXRl",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "group": {
+   "key": "docs-fixture/1771495200.0/a1000000-0000-4000-8000-000000983017/group.pdf",
+   "body_b64": "JVBERi1ncm91cA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "medical": {
+   "key": "docs-fixture/1771581600.0/a1000000-0000-4000-8000-000000983018/certificato.pdf",
+   "body_b64": "JVBERi1tZWRpY2Fs",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "invoice": {
+   "key": "docs-fixture/1771668000.0/a1000000-0000-4000-8000-000000983019/ricevuta.pdf",
+   "body_b64": "JVBERi1pbnZvaWNl",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "deleted_invoice": {
+   "key": "docs-fixture/1771754400.0/a1000000-0000-4000-8000-000000983020/annullata.pdf",
+   "body_b64": "JVBERi1kZWxldGVk",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "foreign": {
+   "key": "docs-fixture/1771840800.0/a1000000-0000-4000-8000-000000983021/foreign.pdf",
+   "body_b64": "JVBERi1mb3JlaWdu",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "docx": {
+   "key": "docs-fixture/1771927200.0/a1000000-0000-4000-8000-000000983022/lettera.docx",
+   "body_b64": "ZG9jeC1maXh0dXJl",
+   "content_type": "application/x-fixture-docx",
+   "encoding": null
+  },
+  "same_associate": {
+   "key": "docs-fixture/1772359200.0/a1000000-0000-4000-8000-000000983023/same-associate.pdf",
+   "body_b64": "JVBERi1zYW1lX2Fzc29jaWF0ZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "same_tax": {
+   "key": "docs-fixture/1772445600.0/a1000000-0000-4000-8000-000000983024/same-tax.pdf",
+   "body_b64": "JVBERi1zYW1lX3RheA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "linked_associate": {
+   "key": "docs-fixture/1772532000.0/a1000000-0000-4000-8000-000000983025/linked-associate.pdf",
+   "body_b64": "JVBERi1saW5rZWRfYXNzb2NpYXRl",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "athlete_medical": {
+   "key": "docs-fixture/1772618400.0/a1000000-0000-4000-8000-000000983026/athlete-medical.pdf",
+   "body_b64": "JVBERi1hdGhsZXRlX21lZGljYWw=",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "associate_medical": {
+   "key": "docs-fixture/1772704800.0/a1000000-0000-4000-8000-000000983027/associate-medical.pdf",
+   "body_b64": "JVBERi1hc3NvY2lhdGVfbWVkaWNhbA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "attached": {
+   "key": "docs-fixture/1772791200.0/a1000000-0000-4000-8000-000000983028/attached.pdf",
+   "body_b64": "JVBERi1hdHRhY2hlZA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "attached_other": {
+   "key": "docs-fixture/1772877600.0/a1000000-0000-4000-8000-000000983029/attached-other.pdf",
+   "body_b64": "JVBERi1hdHRhY2hlZF9vdGhlcg==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "athlete_invoice": {
+   "key": "docs-fixture/1772964000.0/a1000000-0000-4000-8000-000000983030/athlete-invoice.pdf",
+   "body_b64": "JVBERi1hdGhsZXRlX2ludm9pY2U=",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "associate_invoice": {
+   "key": "docs-fixture/1773050400.0/a1000000-0000-4000-8000-000000983031/associate-invoice.pdf",
+   "body_b64": "JVBERi1hc3NvY2lhdGVfaW52b2ljZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "other_tax": {
+   "key": "docs-fixture/1773136800.0/a1000000-0000-4000-8000-000000983032/other-tax.pdf",
+   "body_b64": "JVBERi1vdGhlcl90YXg=",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "urlname": {
+   "key": "docs-fixture/1774000800.0/a1000000-0000-4000-8000-000000983041/Nota:spese.pdf",
+   "body_b64": "JVBERi11cmwgbmFtZQ==",
+   "content_type": "application/x-fixture-url",
+   "encoding": null
+  },
+  "urlparts": {
+   "key": "docs-fixture/1774087200.0/a1000000-0000-4000-8000-000000983042/ab:c.pdf;v.txt?x#y.png",
+   "body_b64": "dXJsIHBhcnRz",
+   "content_type": "application/x-fixture-parts",
+   "encoding": null
+  },
+  "dataname": {
+   "key": "docs-fixture/1774173600.0/a1000000-0000-4000-8000-000000983043/data:text/css,body.pdf",
+   "body_b64": "Ym9keSB7fQ==",
+   "content_type": "application/x-fixture-data",
+   "encoding": null
+  },
+  "netloc-open": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983044/ab:/[::1",
+   "body_b64": "bmV0bG9j",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-ipv4": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983045/ab:/[1.2.3.4]",
+   "body_b64": "bmV0bG9j",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-host": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983046/ab:/[abc]",
+   "body_b64": "bmV0bG9j",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-future": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983047/ab:/[vz.x]",
+   "body_b64": "bmV0bG9j",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-after": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983048/ab:/[::1]x",
+   "body_b64": "bmV0bG9j",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-nfkc": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983049/ab:/h℀st",
+   "body_b64": "bmV0bG9j",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-fullwidth": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983050/ab:/x／",
+   "body_b64": "bmV0bG9j",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-valid": {
+   "key": "docs-fixture/1774440000.0/a1000000-0000-4000-8000-000000983052/ab:/[::1]:80/c.pdf",
+   "body_b64": "JVBERi1uZXRsb2M=",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-unicode": {
+   "key": "docs-fixture/1774443600.0/a1000000-0000-4000-8000-000000983053/ab:/hôst/c.pdf",
+   "body_b64": "JVBERi11bmljb2RlIGhvc3Q=",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "netloc-compat": {
+   "key": "docs-fixture/1774447200.0/a1000000-0000-4000-8000-000000983054/ab:/ｈ/c.png",
+   "body_b64": "cG5n",
+   "content_type": "application/x-fixture-netloc",
+   "encoding": null
+  },
+  "dataname-unicode": {
+   "key": "docs-fixture/1774450800.0/a1000000-0000-4000-8000-000000983055/data:text/hé,x",
+   "body_b64": "ZGF0YQ==",
+   "content_type": "application/x-fixture-data",
+   "encoding": null
+  },
+  "webpage": {
+   "key": "docs-fixture/1774260000.0/a1000000-0000-4000-8000-000000983056/pagina.html",
+   "body_b64": "PHA+cGFnaW5hPC9wPg==",
+   "content_type": "text/html",
+   "encoding": null
+  },
+  "drawing": {
+   "key": "docs-fixture/1774346400.0/a1000000-0000-4000-8000-000000983057/disegno.svg",
+   "body_b64": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=",
+   "content_type": "image/svg+xml",
+   "encoding": null
+  },
+  "datapage": {
+   "key": "docs-fixture/1774432800.0/a1000000-0000-4000-8000-000000983058/data:text/html,x",
+   "body_b64": "PHA+eDwvcD4=",
+   "content_type": "text/html",
+   "encoding": null
+  },
+  "datapng": {
+   "key": "docs-fixture/1774519200.0/a1000000-0000-4000-8000-000000983059/data:image/png,x",
+   "body_b64": "UE5HLWRhdGEgbmFtZQ==",
+   "content_type": "text/html",
+   "encoding": null
+  },
+  "gif": {
+   "key": "docs-fixture/1774605600.0/a1000000-0000-4000-8000-000000983060/animazione.GIF",
+   "body_b64": "R0lGODlhLWZpeHR1cmU=",
+   "content_type": "image/gif",
+   "encoding": null
+  },
+  "webp": {
+   "key": "docs-fixture/1774692000.0/a1000000-0000-4000-8000-000000983061/foto.webp",
+   "body_b64": "UklGRi1maXh0dXJl",
+   "content_type": "image/webp",
+   "encoding": null
+  },
+  "script": {
+   "key": "docs-fixture/1774778400.0/a1000000-0000-4000-8000-000000983062/codice.js",
+   "body_b64": "dm9pZCAw",
+   "content_type": "text/javascript",
+   "encoding": null
+  },
+  "markup": {
+   "key": "docs-fixture/1774864800.0/a1000000-0000-4000-8000-000000983063/dati.xml",
+   "body_b64": "PGEvPg==",
+   "content_type": "application/xml",
+   "encoding": null
+  },
+  "bitmap": {
+   "key": "docs-fixture/1774951200.0/a1000000-0000-4000-8000-000000983064/foto.bmp",
+   "body_b64": "Qk0tZml4dHVyZQ==",
+   "content_type": "image/bmp",
+   "encoding": null
+  },
+  "newline": {
+   "key": "docs-fixture/named/newline",
+   "body_b64": "JVBERi1uZXdsaW5l",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "newline_accent": {
+   "key": "docs-fixture/named/newline-accent",
+   "body_b64": "JVBERi1uZXdsaW5lIGFjY2VudA==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "newline_inside": {
+   "key": "docs-fixture/named/newline-inside",
+   "body_b64": "JVBERi1uZXdsaW5lIGluc2lkZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  },
+  "blank": {
+   "key": "docs-fixture/named/blank",
+   "body_b64": "YmxhbmsgbmFtZQ==",
+   "content_type": "application/pdf",
+   "encoding": null
+  }
+ },
+ "archives": {
+  "export": {
+   "id": "a1000000-0000-4000-8000-000000983300",
+   "association": "own_association",
+   "document": "export",
+   "date": "2026-02-15"
+  },
+  "export_foreign": {
+   "id": "a1000000-0000-4000-8000-000000983301",
+   "association": "foreign_association",
+   "document": "export_foreign",
+   "date": "2026-02-16"
+  }
+ },
+ "subscriptions": {
+  "plain": {
+   "id": "a1000000-0000-4000-8000-000000983400",
+   "association": "own_association",
+   "user": "owner",
+   "document": "plain",
+   "group": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983401",
+   "association": "own_association",
+   "user": "athlete",
+   "document": "athlete",
+   "group": null,
+   "associate": "person"
+  },
+  "group": {
+   "id": "a1000000-0000-4000-8000-000000983402",
+   "association": "own_association",
+   "user": "owner",
+   "document": "group",
+   "group": "own_group"
+  },
+  "nodoc": {
+   "id": "a1000000-0000-4000-8000-000000983403",
+   "association": "own_association",
+   "user": "owner",
+   "document": null,
+   "group": null
+  },
+  "foreign": {
+   "id": "a1000000-0000-4000-8000-000000983404",
+   "association": "foreign_association",
+   "user": "foreign_owner",
+   "document": "foreign",
+   "group": null
+  },
+  "same_associate": {
+   "id": "a1000000-0000-4000-8000-000000983405",
+   "association": "own_association",
+   "user": "owner",
+   "document": "same_associate",
+   "group": null,
+   "associate": "person",
+   "medical": "associate"
+  },
+  "same_tax": {
+   "id": "a1000000-0000-4000-8000-000000983406",
+   "association": "foreign_association",
+   "user": "foreign_owner",
+   "document": "same_tax",
+   "group": null,
+   "associate": "elsewhere"
+  },
+  "linked_associate": {
+   "id": "a1000000-0000-4000-8000-000000983407",
+   "association": "own_association",
+   "user": "owner",
+   "document": "linked_associate",
+   "group": null,
+   "associate": "linked"
+  },
+  "blank": {
+   "id": "a1000000-0000-4000-8000-000000983408",
+   "association": "own_association",
+   "user": "athlete",
+   "document": null,
+   "group": null,
+   "associate": "blank"
+  },
+  "blank_elsewhere": {
+   "id": "a1000000-0000-4000-8000-000000983409",
+   "association": "foreign_association",
+   "user": "foreign_owner",
+   "document": "other_tax",
+   "group": null,
+   "associate": "blank_elsewhere"
+  },
+  "reprint_sub": {
+   "id": "a1000000-0000-4000-8000-000000983420",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_sub",
+   "group": null
+  },
+  "reprint_both": {
+   "id": "a1000000-0000-4000-8000-000000983421",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_both",
+   "group": null
+  },
+  "reprint_two_a": {
+   "id": "a1000000-0000-4000-8000-000000983422",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_two",
+   "group": null
+  },
+  "reprint_two_b": {
+   "id": "a1000000-0000-4000-8000-000000983423",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_two",
+   "group": null
+  },
+  "reprint_three_a": {
+   "id": "a1000000-0000-4000-8000-000000983424",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_three",
+   "group": null
+  },
+  "reprint_three_b": {
+   "id": "a1000000-0000-4000-8000-000000983425",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_three",
+   "group": null
+  },
+  "reprint_group": {
+   "id": "a1000000-0000-4000-8000-000000983426",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_group",
+   "group": "own_group"
+  },
+  "reprint_group_other": {
+   "id": "a1000000-0000-4000-8000-000000983427",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_group",
+   "group": null
+  },
+  "reprint_filepath": {
+   "id": "a1000000-0000-4000-8000-000000983428",
+   "association": "own_association",
+   "user": "owner",
+   "document": "reprint_filepath",
+   "group": null
+  }
+ },
+ "medicals": {
+  "medical": {
+   "id": "a1000000-0000-4000-8000-000000983500",
+   "document": "medical"
+  },
+  "empty": {
+   "id": "a1000000-0000-4000-8000-000000983501",
+   "document": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983502",
+   "document": "athlete_medical",
+   "user": "athlete"
+  },
+  "associate": {
+   "id": "a1000000-0000-4000-8000-000000983503",
+   "document": "associate_medical"
+  }
+ },
+ "invoices": {
+  "invoice": {
+   "id": "a1000000-0000-4000-8000-000000983600",
+   "association": "own_association",
+   "document": "invoice",
+   "deleted": false
+  },
+  "deleted": {
+   "id": "a1000000-0000-4000-8000-000000983601",
+   "association": "own_association",
+   "document": "deleted_invoice",
+   "deleted": true
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983602",
+   "association": "own_association",
+   "document": "athlete_invoice",
+   "deleted": false
+  },
+  "associate": {
+   "id": "a1000000-0000-4000-8000-000000983603",
+   "association": "own_association",
+   "document": "associate_invoice",
+   "deleted": false
+  },
+  "reprint_inv": {
+   "id": "a1000000-0000-4000-8000-000000983620",
+   "association": "own_association",
+   "document": "reprint_inv",
+   "deleted": false
+  },
+  "reprint_both": {
+   "id": "a1000000-0000-4000-8000-000000983621",
+   "association": "own_association",
+   "document": "reprint_both",
+   "deleted": false
+  },
+  "reprint_three": {
+   "id": "a1000000-0000-4000-8000-000000983622",
+   "association": "own_association",
+   "document": "reprint_three",
+   "deleted": false
+  },
+  "reprint_deleted": {
+   "id": "a1000000-0000-4000-8000-000000983623",
+   "association": "own_association",
+   "document": "reprint_deleted",
+   "deleted": true
+  }
+ },
+ "extra_users": {
+  "member": {
+   "id": "a1000000-0000-4000-8000-000000983700",
+   "username": "docmanager-reads-member",
+   "email": "docmanager-reads-member@example.test"
+  },
+  "primary_athlete": {
+   "id": "a1000000-0000-4000-8000-000000983701",
+   "username": "docmanager-reads-primary_athlete",
+   "email": "docmanager-reads-primary_athlete@example.test"
+  }
+ },
+ "primary": {
+  "association": "a1000000-0000-4000-8000-000000983710",
+  "user": "primary_athlete",
+  "denomination": "Associazione principale"
+ },
+ "instance": {
+  "id": 983090,
+  "domain": "docmanager-reads.example.test",
+  "name": "Docmanager reads",
+  "self_hosted": true,
+  "setup_provenance": "fresh"
+ },
+ "associates": {
+  "person": {
+   "id": "a1000000-0000-4000-8000-000000983720",
+   "association": "own_association",
+   "user": null,
+   "tax_code": "DCMRDS80A01H501A"
+  },
+  "elsewhere": {
+   "id": "a1000000-0000-4000-8000-000000983721",
+   "association": "foreign_association",
+   "user": null,
+   "tax_code": "DCMRDS80A01H501A"
+  },
+  "linked": {
+   "id": "a1000000-0000-4000-8000-000000983722",
+   "association": "own_association",
+   "user": "athlete",
+   "tax_code": "DCMRDS81B02H501B"
+  },
+  "blank": {
+   "id": "a1000000-0000-4000-8000-000000983723",
+   "association": "own_association",
+   "user": null,
+   "tax_code": ""
+  },
+  "blank_elsewhere": {
+   "id": "a1000000-0000-4000-8000-000000983724",
+   "association": "foreign_association",
+   "user": null,
+   "tax_code": ""
+  }
+ },
+ "files": {
+  "attached": {
+   "id": "a1000000-0000-4000-8000-000000983730",
+   "subscription": "athlete",
+   "document": "attached"
+  },
+  "attached_other": {
+   "id": "a1000000-0000-4000-8000-000000983731",
+   "subscription": "plain",
+   "document": "attached_other"
+  }
+ },
+ "payments": {
+  "invoice": {
+   "id": "a1000000-0000-4000-8000-000000983740",
+   "association": "own_association",
+   "invoice": "invoice",
+   "user": "owner",
+   "associate": null
+  },
+  "athlete": {
+   "id": "a1000000-0000-4000-8000-000000983741",
+   "association": "own_association",
+   "invoice": "athlete",
+   "user": "athlete",
+   "associate": null
+  },
+  "associate": {
+   "id": "a1000000-0000-4000-8000-000000983742",
+   "association": "own_association",
+   "invoice": "associate",
+   "user": "owner",
+   "associate": "person"
+  }
+ },
+ "cases": [
+  {
+   "name": "docmanager-reads-retrieve-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid token. Not Authorized."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-anonymous-unknown",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983999",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid token. Not Authorized."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-invalid-bearer",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "Authorization": "Bearer not-a-jwt"
+   },
+   "status": 401,
+   "response": {
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+     {
+      "token_class": "AccessToken",
+      "token_type": "access",
+      "message": "Token is invalid"
+     }
+    ]
+   },
+   "challenge": true,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-basic-scheme-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "Authorization": "Basic Zm9vOmJhcg=="
+   },
+   "status": 401,
+   "response": {
+    "error": "Invalid token. Not Authorized."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-admin-without-session",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/retrieve/a1000000-0000-4000-8000-000000983001'. Contact administrator to grant access."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-scoped-athlete-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/not-a-uuid",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-invalid-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/not-a-uuid",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-invalid-uuid-anonymous",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/zzaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "invalid literal for int() with base 16: 'zzaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'"
+   ],
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-post-not-allowed",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"POST\" not allowed."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-options",
+   "actor": "anonymous",
+   "method": "OPTIONS",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Retrieve Document",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-download-false",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-download-one",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "attachment; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-download-capital-false",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=False",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "attachment; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-download-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-download-repeated",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=1&download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-uppercase-uuid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/A1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983400",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-group-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983402",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "group",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"group.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-group-subscription-own-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983402",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "group",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"group.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-group-subscription-other-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983402",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-group-subscription-malformed-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983402",
+   "headers": {
+    "X-Group-Id": "not-a-group"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "group",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"group.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-document-other-group",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983017",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714002"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "group",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"group.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-subscription-without-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983403",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-medical",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983500",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"certificato.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-medical-without-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983501",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-invoice",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983600",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"ricevuta.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-by-deleted-invoice",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983601",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-deleted-invoice-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983020",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "deleted_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"annullata.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-foreign-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983021",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "foreign",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"foreign.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-foreign-owner-by-foreign-subscription",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983404",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "foreign",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"foreign.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-cookie-owner",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "Cookie": "BKN_AUTH=$jwt:owner"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-cookie-invalid",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "Cookie": "BKN_AUTH=garbage"
+   },
+   "status": 401,
+   "response": {
+    "error": "Invalid token. Not Authorized."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-query-jwt-owner",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=$jwt:owner",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-query-jwt-restricted-collaborator",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=$jwt:restricted_collaborator",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-query-jwt-admin",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=$jwt:admin",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-query-jwt-unknown",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983999?token=$jwt:owner",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=a1000000-0000-4000-8000-000000983101",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-document-token-hex",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=A1000000000040008000000000983101",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-document-token-braces",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=%7Ba1000000-0000-4000-8000-000000983101%7D",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-document-token-download-false",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=false&token=a1000000-0000-4000-8000-000000983101",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-document-token-of-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=a1000000-0000-4000-8000-000000983102",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid token. Not Authorized."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-document-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid token. Not Authorized."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-document-token-empty",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid token. Not Authorized."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-owner-with-other-token",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=a1000000-0000-4000-8000-000000983102",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-export-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-export-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Not authorized to access this export."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-export-full-collaborator",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Not authorized to access this export."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-export-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Not authorized to access this export."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-export-admin-impersonating-owner",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-export-query-jwt-owner",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?token=$jwt:owner",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-export-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?token=a1000000-0000-4000-8000-000000983113",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "error": "Not authorized to access this export."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-orphan-export-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983015",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "orphan_export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_orphan.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-orphan-export-athlete",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983015",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:export",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-attachment",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download=1&download_token=$download:export",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-foreign-owner",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:export",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-compressed",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:compressed",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download_token=$download:export",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-expired",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:expired",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-tampered",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:tampered",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-wrong-purpose",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:wrong_purpose",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-wrong-salt",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:wrong_salt",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-not-dict",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:not_dict",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-empty-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:empty_association",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-garbage",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=garbage",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-bad-signature",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=a:b:c",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-uppercase-path",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/A1000000-0000-4000-8000-000000983013?download_token=$download:export",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "error": "Invalid download token."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-foreign-export",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983014?download_token=$download:foreign_export_own_association",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-non-export",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download_token=$download:plain_own_association",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-int-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:int_association",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-malformed-association",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:malformed_association",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-without-timestamp",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:without_timestamp",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-bad-timestamp",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:bad_timestamp",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-download-token-empty-with-owner",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "export",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"export_own.zip\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983401",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-associate-subscription-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983023",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "same_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-associate-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983405",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "same_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-same-tax-code-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983024",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "same_tax",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-tax.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-linked-associate-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983025",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "linked_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"linked-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-own-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983026",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-own-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983502",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-associate-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983027",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "associate_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-associate-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983503",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "associate_medical",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-medical.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-attached-file",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983028",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "attached",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"attached.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-own-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983030",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-own-invoice",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983602",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-associate-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983031",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "associate_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-associate-invoice",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983603",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "associate_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"associate-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-view",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-cookie",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {
+    "Cookie": "BKN_AUTH=$jwt:athlete"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-query-jwt",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983023?token=$jwt:athlete",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "same_associate",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"same-associate.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-other-subscription",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983400",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-group-subscription-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983017",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983018",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-other-certificate",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983500",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-attached-file",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983029",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-receipt",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983019",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-by-other-invoice",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983600",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-unlinked-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983022",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-blank-tax-code-document",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983032",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-document-view",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?download=false",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-missing-object-of-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983011",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-unknown",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983999",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-cookie-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "Cookie": "BKN_AUTH=$jwt:athlete"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-query-jwt-other-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=$jwt:athlete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-document-token-of-other",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=a1000000-0000-4000-8000-000000983101",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-athlete-other-document-token-mismatch",
+   "actor": "athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001?token=a1000000-0000-4000-8000-000000983102",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-athlete-document",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-by-athlete-subscription",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983401",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-athlete-certificate",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983026",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-athlete-receipt",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983030",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Risorsa non disponibile per questo utente e associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-member-document-token",
+   "actor": "member",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016?token=a1000000-0000-4000-8000-000000983116",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-primary-association-account",
+   "actor": "primary_athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "plain",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"report.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-primary-association-account-by-invoice",
+   "actor": "primary_athlete",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983602",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-full-collaborator-athlete-document",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-foreign-owner-athlete-receipt",
+   "actor": "foreign_owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983030",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete_invoice",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete-invoice.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-query-jwt-admin-athlete-document",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016?token=$jwt:admin",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-admin-impersonating-owner-athlete-document",
+   "actor": "admin",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {
+    "X-Impersonation-Id": "$session:admin_owner",
+    "User-Id": "a1000000-0000-4000-8000-000000700001"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-scoped-athlete-own-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983016",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-scoped-athlete-by-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983401",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "athlete",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"athlete.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-scoped-athlete-other-document",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983001",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Documento non disponibile per questa associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-scoped-athlete-download-token",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013?download_token=$download:export",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Documento non disponibile per questa associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-scoped-athlete-export",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983013",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "error": "Not authorized to access this export."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-scoped-athlete-unknown",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983999",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-filepath-comma",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983002",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "comma",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"notes  final.txt\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-filepath-comma-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983002?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "comma",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"notes, final.txt\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-unicode-filename",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983003",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "unicode",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename*=utf-8''ricevuta%20%C3%A8.pdf"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-quoted-filename",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983004?download=yes",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "quote",
+    "content_type": "image/png",
+    "encoding": null,
+    "disposition": "attachment; filename=\"say \\\"hi\\\" \\\\ there.png\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-no-extension",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983005",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "noext",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"README\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-unknown-extension",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983006",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "unknown",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"data.zzq\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-gzip-encoding",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983007",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "gzip",
+    "content_type": "application/octet-stream",
+    "encoding": "gzip",
+    "disposition": "attachment; filename=\"table.csv.gz\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-uppercase-extension",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983008",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "upper",
+    "content_type": "image/jpeg",
+    "encoding": null,
+    "disposition": "inline; filename=\"Photo.JPG\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-suffix-map",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983009",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "tarball",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"backup.tgz\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-dot-file",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983010",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "hidden",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\".hidden\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-missing-object",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983011",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-missing-object-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983011?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-key-outside-location",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983012",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Attempted access to '../outside.pdf' denied."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-reprint-subscription-first-try",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983033",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983420/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_sub",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-subscription-stored",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983033",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "$rendered",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"tessera.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-view-query-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983034?download=false&token=$jwt:owner",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000983620/view",
+     "authorization": "Bearer $jwt:owner",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_inv",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-stored-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983034?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "$rendered",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-renderer-failure",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 500,
+      "content_type": "text/plain",
+      "body": "renderer failed"
+     }
+    }
+   ],
+   "effect": {
+    "published": null,
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-renderer-not-pdf",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "text/html",
+      "body": "<html>busy</html>"
+     }
+    }
+   ],
+   "effect": {
+    "published": null,
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-subscription-before-invoice-cookie",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035",
+   "headers": {
+    "Cookie": "BKN_AUTH=$jwt:owner"
+   },
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": null,
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_both",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-not-stored-yet-prints-again",
+   "actor": "full_collaborator",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983035?download=1",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983421/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_both",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-two-subscriptions-file-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983036",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-after-two-subscriptions-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983037?token=a1000000-0000-4000-8000-000000983137",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/invoice/a1000000-0000-4000-8000-000000983622/view",
+     "authorization": "Bearer a1000000-0000-4000-8000-000000983137",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_three",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-group-two-subscriptions-file-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983038",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-reprint-group-header-one-subscription",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983038",
+   "headers": {
+    "X-Group-Id": "a1000000-0000-4000-8000-000000714001"
+   },
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983426/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_group",
+    "store": false
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-filepath-first-try",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983039",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983428/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_filepath",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-filepath-prints-again",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983039?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist."
+   },
+   "challenge": false,
+   "renders": [
+    {
+     "url": "document/subscription/a1000000-0000-4000-8000-000000983428/view",
+     "authorization": "$bearer",
+     "reply": {
+      "status": 200,
+      "content_type": "application/pdf",
+      "body": "$pdf"
+     }
+    }
+   ],
+   "effect": {
+    "published": "reprint_filepath",
+    "store": true
+   }
+  },
+  {
+   "name": "docmanager-reads-reprint-invoice-out-of-the-list-file-not-found",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983040",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-anonymous",
+   "actor": "anonymous",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {},
+   "status": 401,
+   "response": {
+    "detail": "Authentication credentials were not provided."
+   },
+   "challenge": true,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-admin-without-session",
+   "actor": "admin",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Seleziona un utente da impersonificare per accedere a questa sezione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-restricted-collaborator",
+   "actor": "restricted_collaborator",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {},
+   "status": 403,
+   "response": {
+    "detail": "Access denied: No permission mapping for endpoint 'document/a1000000-0000-4000-8000-000000983001/delete'. Contact administrator to grant access."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-scoped-athlete",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {
+    "X-Impersonation-Id": "$session:owner_athlete",
+    "User-Id": "a1000000-0000-4000-8000-000000700004"
+   },
+   "status": 403,
+   "response": {
+    "detail": "Operazione non disponibile nel contesto dell’associazione."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-get-not-allowed",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {},
+   "status": 405,
+   "response": {
+    "detail": "Method \"GET\" not allowed."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-options",
+   "actor": "owner",
+   "method": "OPTIONS",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "name": "Delete Document",
+    "description": "",
+    "renders": [
+     "application/json"
+    ],
+    "parses": [
+     "application/json",
+     "application/x-www-form-urlencoded",
+     "multipart/form-data"
+    ]
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-invalid-uuid",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/not-a-uuid/delete",
+   "headers": {},
+   "status": 400,
+   "response": [
+    "badly formed hexadecimal UUID string"
+   ],
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-unknown",
+   "actor": "owner",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000983999/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-athlete",
+   "actor": "athlete",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-delete-owner-without-association",
+   "actor": "owner_without_association",
+   "method": "DELETE",
+   "path": "/document/a1000000-0000-4000-8000-000000983001/delete",
+   "headers": {},
+   "status": 404,
+   "response": {
+    "error": "Document not found."
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-url-name",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983041",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "urlname",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"Nota:spese.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-url-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983041?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "urlname",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-url-name-parts",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983042?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "urlparts",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"ab:c.pdf;v.txt?x#y.png\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983043?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "dataname",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"data:text/css,body.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-name-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983043",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "dataname",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"data:text/css body.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-open",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983044",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Invalid IPv6 URL"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-ipv4",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983045",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An IPv4 address cannot be in brackets"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-host",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983046",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "'abc' does not appear to be an IPv4 or IPv6 address"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-future",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983047",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "IPvFuture address is invalid"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-after",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983048",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Invalid IPv6 URL"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-nfkc",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983049",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "netloc 'h℀st' contains invalid characters under NFKC normalization"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-fullwidth",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983050",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "netloc 'x／' contains invalid characters under NFKC normalization"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-open-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983044?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Invalid IPv6 URL"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-missing-object",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983051",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-valid",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983052",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "netloc-valid",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename=\"ab://[::1]:80/c.pdf\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-unicode",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983053",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "netloc-unicode",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "inline; filename*=utf-8''ab%3A//h%C3%B4st/c.pdf"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-netloc-compat-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983054?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "netloc-compat",
+    "content_type": "image/png",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-name-unicode-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983055?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "dataname-unicode",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''data%3Atext/h%C3%A9%2Cx"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983056?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-download-empty",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983056?download=",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983056?download=true",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-html-document-token-view",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983056?download=false&token=a1000000-0000-4000-8000-000000983156",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webpage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"pagina.html\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-svg-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983057?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "drawing",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"disegno.svg\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-svg-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983057",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "drawing",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"disegno.svg\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-html-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983058?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "datapage",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"data:text/html,x\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-data-png-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983059?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "datapng",
+    "content_type": "image/png",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-script-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983062?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "script",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"codice.js\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-xml-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983063?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "markup",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"dati.xml\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-bmp-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983064?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "bitmap",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename=\"foto.bmp\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-gif-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983060?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "gif",
+    "content_type": "image/gif",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-webp-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983061?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webp",
+    "content_type": "image/webp",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-webp-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983061",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "webp",
+    "content_type": "image/webp",
+    "encoding": null,
+    "disposition": "inline; filename=\"foto.webp\""
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983065?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983065",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-document-token",
+   "actor": "anonymous",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983065?download=1&token=a1000000-0000-4000-8000-000000983165",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "Header values can't contain newlines (got 'attachment; filename=\"verbale.pdf\\n\"')"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-accent-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983066?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_accent",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''verbal%C3%A8.pdf%0A"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-accent-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983066",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_accent",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''verbal%C3%A8.pdf%0A"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-inside-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983067?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_inside",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": null
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-inside-name-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983067?download=1",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "newline_inside",
+    "content_type": "application/pdf",
+    "encoding": null,
+    "disposition": "attachment; filename*=utf-8''ver%0Abale.pdf"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-newline-name-missing-object",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983068",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "File not found"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-blank-name-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983069?download=false",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "blank",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-blank-name-default",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983069",
+   "headers": {},
+   "status": 200,
+   "response": "<stream>",
+   "challenge": false,
+   "renders": [],
+   "effect": null,
+   "stream": {
+    "object": "blank",
+    "content_type": "application/octet-stream",
+    "encoding": null,
+    "disposition": "attachment"
+   }
+  },
+  {
+   "name": "docmanager-reads-retrieve-storage-head-refused-view",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983070?download=false",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (400) when calling the HeadObject operation: Bad Request"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  },
+  {
+   "name": "docmanager-reads-retrieve-storage-head-refused-download",
+   "actor": "owner",
+   "method": "GET",
+   "path": "/document/retrieve/a1000000-0000-4000-8000-000000983070?download=1",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "exception": "An error occurred (400) when calling the HeadObject operation: Bad Request"
+   },
+   "challenge": false,
+   "renders": [],
+   "effect": null
+  }
+ ]
+}

@@ -2,7 +2,7 @@
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
-  "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+  "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/utils/Permissions.js": "bf5966b4e5f67d53a7e59e84433e144bfeb5cbbea8a1842f13c10376f8405644",
   "UI/src/utils/enumUtils.js": "75b14f5fad15f456e7ad15ae691978698c5ef973bfb1ead9105c48fe815dd811",
   "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
@@ -14,15 +14,15 @@ const reviewed = {
   "UI/src/components/signature/SmoothSignature.svelte": "c451cf360e2c9bc68340407e1169ce3b6f91d07ae364932e7fe5253c354e4ff6",
   "UI/src/routes/association/Members/add/sections/Section4.svelte": "645c70a5c555ba94b378df755549fa8455d6e4ee64fbb1cb108a3ffad3da5863",
   "UI/src/routes/association/Members/add/sections/Section6.svelte": "97c429b3fe14f919e8c877251eb7bd9d794afdf0da88b61c74758ddace4d5a46",
-  "BE/application/views/subscriptions_views.py": "5b7de613eec3deb9e154352eb900ba7ef791d03a56d206c01a96281ab153e8f5",
-  "BE/application/utils/subscriptions_utils.py": "01555509691b282190e09a21771aa920c19a677c63823a01ab7a73602273554e",
-  "BE/application/serializers/subscriptions_serializers.py": "dcad47643b654acc19e687561f1231b63392bf4315e74110b69a75e20f9d0edc",
+  "BE/application/views/subscriptions_views.py": "5fb701ca27d2ca4bbf9a11b0a6f374cd79f6db6bb556f52e10b441aae06f064c",
+  "BE/application/utils/subscriptions_utils.py": "2befe90fee8d12947e43ce809973792bc84a5600d768bc4ba9b4a7f6709ea2ef",
+  "BE/application/serializers/subscriptions_serializers.py": "19b0a153b95d3d82599820ce3d41ecc4e9ab73e335a7924c389203b1a3ee4904",
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/components/buttons/ApproveButton.svelte": "4531bd12ab2764ec6069c516c8797660122deea749f26516ea0851dad58f4f0f",
   "UI/src/routes/accounting/payment/PaymentList.svelte": "31d3e103a34980df77ffe1178198789c0411f819f3ade64baba89ab0dcf3870a",
-  "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d",
-  "BE/application/signals.py": "8eb91525ccd5dcc248bd6e88aca6f9184309728c4aed57d54d410b0185a92ce7"
+  "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae",
+  "BE/application/signals.py": "a14dd1d21a83573a8d2da26ca6da76c2c090d6bc419b51d593a7ead1012d2ff1"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Organizzazione</span>",50],

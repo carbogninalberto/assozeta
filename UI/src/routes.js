@@ -330,7 +330,7 @@ export default {
         ],
     }),
 
-    '/forms/:custom_link/:response_id?': wrap({
+    '/forms/:custom_link/:response_id?/:attachment_token?': wrap({
         asyncComponent: () => import('./routes/forms/PublicModule.svelte'),
     }),
     '/members/add': wrap({

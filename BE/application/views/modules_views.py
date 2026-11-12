@@ -3,7 +3,10 @@
 """
 import base64
 import datetime
+import hashlib
+import hmac
 import os
+import secrets
 import uuid
 
 import pandas
@@ -12,15 +15,19 @@ from django.core.files.storage import default_storage
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from django.conf import settings as django_settings
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 
 from application.models import Module, ModuleResponses
 from application.serializers.modules_serializers import ModulesSerializer, ModulesSerializerWithResponses, \
-    ModuleResponseSerializer, ModulesAddSerializer
+    ModuleResponseSerializer, ModulesAddSerializer, PublicModuleSerializer, PublicModuleResponseSerializer
+from application.public_limits import (PublicModuleAttachmentThrottle, PublicModuleResponseThrottle, body_too_large,
+                                       upload_too_large_message)
 from core.middleware import IsAuthenticated
 
 import logging
 
+from application.utils.xlsx_text import xlsx_safe_frame
 from application.utils.api_utils import is_valid_uuid
 
 from core.settings import STORAGE_DIR
@@ -171,19 +178,27 @@ def modules_custom_link_info(request, custom_link):
     if not module:
         return Response({'error': 'module not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    association = module.sport_association
+    if association is not None and association.deleted:
+        return Response({'error': 'module not found'}, status=status.HTTP_404_NOT_FOUND)
+
     response_data = None
 
     # check if the is response_id in the query params
     response_id = request.query_params.get('response_id', None)
     if response_id is not None and is_valid_uuid(response_id):
-        response = ModuleResponses.objects.filter(module_response_id=response_id).first()
-        response_data = ModuleResponseSerializer(response).data
+        # The public module page only reads responses of its own module.
+        response = ModuleResponses.objects.filter(module_response_id=response_id, module=module).first()
+        # The attachment list is shown to the respondent (token), the response's own user or the module's association.
+        if response is not None and _can_manage_response_attachments(
+                request, response, token=request.query_params.get('attachment_token', '')):
+            response_data = PublicModuleResponseSerializer(response).data
 
     # check if module is active
     if not module.enabled:
         return Response({'error': 'module not active'}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response({'data': ModulesSerializer(module).data, 'response_data': response_data}, status=status.HTTP_200_OK)
+    return Response({'data': PublicModuleSerializer(module).data, 'response_data': response_data}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -201,9 +216,42 @@ def modules_overview(request, module_id):
     return Response({'data': ModulesSerializerWithResponses(module).data}, status=status.HTTP_200_OK)
 
 
+def _attachment_token_hash(token):
+    return hashlib.sha256(token.encode('utf-8')).hexdigest()
+
+
+def _can_manage_response_attachments(request, module_response, token=None):
+    """Who may attach to, or remove from, a response's attachments.
+
+    The respondent proves it with the token returned when the response was
+    created; signed-in callers act through their association or as the
+    response's own user.
+    """
+    user = request.user
+    if user is not None and user.is_authenticated:
+        if module_response.user_id is not None and module_response.user_id == user.pk:
+            return True
+        try:
+            association_id = user.sport_association.pk
+        except Exception:
+            association_id = None
+        if association_id is not None and module_response.module.sport_association_id == association_id:
+            return True
+
+    if token is None:
+        token = request.data.get('attachment_token') if isinstance(request.data, dict) else None
+    if not isinstance(token, str) or not token or not module_response.attachment_token_hash:
+        return False
+    return hmac.compare_digest(_attachment_token_hash(token), module_response.attachment_token_hash)
+
+
 @api_view(['POST'])
+@throttle_classes([PublicModuleResponseThrottle])
 def modules_response_add(request, module_id):
 
+    if body_too_large(request):
+        return Response({'error': upload_too_large_message(django_settings.PUBLIC_UPLOAD_MAX_BYTES)},
+                        status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
     is_valid_uuid(module_id)
     logger.info("Adding module response", extra={'module_id': module_id, 'user_authenticated': request.user.is_authenticated if hasattr(request, 'user') else False})
 
@@ -254,13 +302,15 @@ def modules_response_add(request, module_id):
         else:
             queue_position = last_queue_position.queue_position + 1
 
+    attachment_token = secrets.token_urlsafe(32)
     module_response = ModuleResponses.objects.create(
         module=module,
         response=request.data,
         payment=None,
         approved=not module.require_approval,
         progressive_response_number=progressive_response_number,
-        queue_position=queue_position
+        queue_position=queue_position,
+        attachment_token_hash=_attachment_token_hash(attachment_token)
     )
 
     if request.user and request.user.is_authenticated:
@@ -272,7 +322,11 @@ def modules_response_add(request, module_id):
         update_queue(module)
 
     logger.info("Module response added successfully", extra={'module_id': module_id, 'module_response_id': str(module_response.module_response_id), 'queue_position': queue_position, 'requires_approval': module.require_approval})
-    return Response({'msg': 'response added', 'module_response_id': module_response.module_response_id}, status=status.HTTP_200_OK)
+    return Response({
+        'msg': 'response added',
+        'module_response_id': module_response.module_response_id,
+        'attachment_token': attachment_token,
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -327,20 +381,38 @@ def modules_response_delete(request, module_response_id):
     return Response({'msg': 'response deleted'}, status=status.HTTP_200_OK)
 
 
+def _decode_base64(data):
+    # Remove data URI prefix if it exists
+    if ';base64,' in data:
+        data = data.split(';base64,')[1]
+
+    # Add necessary padding
+    missing_padding = len(data) % 4
+    if missing_padding:
+        data += '=' * (4 - missing_padding)
+
+    return base64.b64decode(data)
+
+
 @api_view(['POST', 'DELETE'])
+@throttle_classes([PublicModuleAttachmentThrottle])
 def modules_response_add_attachment(request, module_response_id):
 
     is_valid_uuid(module_response_id)
 
     module_response = ModuleResponses.objects.filter(
         module_response_id=module_response_id
-    ).first()
+    ).select_related('module').first()
+
+    if module_response is None or not _can_manage_response_attachments(request, module_response):
+        return Response({'error': 'response not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # if DELETE
     if request.method == 'DELETE':
         # get document_id from request
         if 'document_id' in request.data:
-            document = Document.objects.filter(document_id=request.data['document_id']).first()
+            # only a document attached to this response can be removed
+            document = module_response.attachments.filter(document_id=request.data['document_id']).first()
             if document:
                 # remove the document from the module response
                 module_response.attachments.remove(document)
@@ -352,25 +424,21 @@ def modules_response_add_attachment(request, module_response_id):
     if 'filename' in request.data and \
             'base64' in request.data:
 
+        try:
+            content = _decode_base64(request.data['base64'])
+        except Exception:
+            content = None
+        limit = django_settings.PUBLIC_UPLOAD_MAX_BYTES
+        if content is not None and len(content) > limit:
+            return Response({'error': upload_too_large_message(limit)}, status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+
         document = Document.objects.create(filename=request.data['filename'])
         document.save()
 
         storing_path = os.path.join(STORAGE_DIR, str(document.creation_date.timestamp()), str(document.document_id))
         file = os.path.join(storing_path, document.filename)
 
-        def decode_base64(data):
-            # Remove data URI prefix if it exists
-            if ';base64,' in data:
-                data = data.split(';base64,')[1]
-
-            # Add necessary padding
-            missing_padding = len(data) % 4
-            if missing_padding:
-                data += '=' * (4 - missing_padding)
-
-            return base64.b64decode(data)
-
-        default_storage.save(file, ContentFile(decode_base64(request.data['base64'])))
+        default_storage.save(file, ContentFile(_decode_base64(request.data['base64'])))
         module_response.attachments.add(document)
         module_response.save()
 
@@ -454,7 +522,7 @@ def modules_response_export(request, module_id):
     data['type'] = 'xlsx'
     f = io.BytesIO()
     writer = pandas.ExcelWriter(f, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='Risposte', index=False)
+    xlsx_safe_frame(df).to_excel(writer, sheet_name='Risposte', index=False)
     worksheet = writer.sheets['Risposte']
     for i, col in enumerate(df.columns):
         column_len = len(col) + 10

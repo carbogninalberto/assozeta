@@ -34,7 +34,7 @@ from application.serializers.courses_serializers import CourseSerializer, Course
 
 import logging
 
-from application.utils.api_utils import is_valid_uuid, BalanceSheetData, KTDatatablePagination
+from application.utils.api_utils import is_valid_uuid, BalanceSheetData, KTDatatablePagination, checked_ordering
 
 logger = logging.getLogger(__name__)
 
@@ -552,9 +552,9 @@ def course_list(request):
 
     if sort_field and sort_type:
         if sort_type == 'asc':
-            courses = courses.order_by(sort_field)
+            courses = courses.order_by(checked_ordering(courses, sort_field))
         else:
-            courses = courses.order_by(f'-{sort_field}')
+            courses = courses.order_by(checked_ordering(courses, f'-{sort_field}'))
 
     if all is not None and all == '1':
         if optimized is not None and optimized == '1':
@@ -835,13 +835,16 @@ def course_overview_add(request, uid, uid_subscription):
     course = scoped_queryset(request, Course.objects).filter(course_id=uid).first()
     sub = scoped_queryset(request, Subscription.objects).filter(subscription_id=uid_subscription).first()
     is_athlete = request.user.role == User.ATHLETE
-    if sport_association is not None and \
-            course.sport_association.sport_association_id != sport_association.sport_association_id:  # pragma: no cover
+    if is_athlete:
+        # Athletes enrol their own subscriptions, as in course_overview_update.
+        if sub.user_id != request.user.user_id:
+            raise PermissionDenied("User not allowed.")
+    elif sport_association is None or \
+            course.sport_association.sport_association_id != sport_association.sport_association_id:
         raise PermissionDenied("User not allowed.")
-    else:
-        sport_association = sub.sport_association
-        if sport_association is None:  # pragma: no cover
-            raise Exception("Error in adding user.")
+    sport_association = sub.sport_association
+    if sport_association is None:  # pragma: no cover
+        raise Exception("Error in adding user.")
 
     data = add_course_to_subscription(course, sub, sport_association, data=data, is_athlete=is_athlete)
 
@@ -864,6 +867,16 @@ def course_installment_make_payment(request, uid):
     # get the course subscription
     course_subscription = installment.course_subscription
     course = course_subscription.course
+
+    # The course's association, or the athlete the course subscription belongs to.
+    if request.user.role == User.ATHLETE:
+        subscription = course_subscription.subscription
+        if subscription is None or subscription.user_id != request.user.user_id:
+            raise PermissionDenied("User not allowed.")
+    else:
+        sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+        if sport_association is None or course.sport_association_id != sport_association.sport_association_id:
+            raise PermissionDenied("User not allowed.")
 
     # make the payment
     payment = Payment.objects.create(
@@ -1239,6 +1252,7 @@ class CourseSubscriptionViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @transaction.atomic
     def delete(self, request, pk=None):
         """
         Soft delete a course subscription

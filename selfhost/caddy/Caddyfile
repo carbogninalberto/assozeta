@@ -12,7 +12,7 @@
         X-Content-Type-Options "nosniff"
     }
 
-    @bakney_protocol path /bakney/v1/* /api/instance/admin/bakney-pairing
+    @bakney_protocol path /bakney/v1/* /api/bakney/v1/* /api/v1/bakney/v1/* /api/v2/bakney/v1/* /api/instance/admin/bakney-pairing /api/v1/instance/admin/bakney-pairing /api/v2/instance/admin/bakney-pairing
     header @bakney_protocol {
         defer
         Cache-Control "no-store"
@@ -45,6 +45,16 @@
         handle /api/readyz {
             rewrite * /readyz
             reverse_proxy api:8000
+        }
+
+        handle /api/v1/readyz {
+            rewrite * /readyz
+            reverse_proxy api:8000
+        }
+
+        handle /api/v2/readyz {
+            rewrite * /readyz
+            reverse_proxy api-go:8000
         }
 
         handle /sw.js {
@@ -80,6 +90,26 @@
         # Bakney contracts use root paths, without the /api prefix.
         handle /bakney/v1/* {
             reverse_proxy api:8000
+        }
+
+        # Versioned routes must precede the compatibility alias. Root protocols
+        # and WebSockets also work under these prefixes, without upstream changes.
+        handle /api/v1 {
+            rewrite * /
+            reverse_proxy api:8000
+        }
+
+        handle /api/v2 {
+            rewrite * /
+            reverse_proxy api-go:8000
+        }
+
+        handle_path /api/v1/* {
+            reverse_proxy api:8000
+        }
+
+        handle_path /api/v2/* {
+            reverse_proxy api-go:8000
         }
 
         handle_path /api/* {

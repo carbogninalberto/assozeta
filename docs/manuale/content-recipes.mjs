@@ -2,20 +2,20 @@
 import {editorialDescriptors, referenceDescriptors} from './evidence-contracts.mjs';
 const reviewed = {
   "UI/src/components/Sidebar.svelte": "261e159d3c922f77a6ab19e5b04cdbdeae4ca09c70f1c0abbf4815b8a51be571",
-  "UI/src/routes.js": "955b24fdb6a39ee1e4a59b37bc94ca10d3245c03af469e10114e3c369d706a59",
+  "UI/src/routes.js": "65c76943b3751fb41201069b7c74d16ef31ca9fc28c86f45c2081fd3fe8876b4",
   "UI/src/routes/association/course/CourseList.svelte": "d68233a0b121dcbf15b840ea120348b331d017b4dd7ab936da95c46f1c50ad84",
   "UI/src/routes/association/course/add/AddCourse.svelte": "c1e10ddcd4c3f258a6e3f4fe387b77a68a85b0ff74191701e169dfad2d38f4a5",
   "UI/src/routes/association/course/add/sections/Section1.svelte": "f3e456ade95d87006f5a490dfef3ce9dd0e1f49ace814205a4cca049bb7622f7",
   "UI/src/routes/association/course/overview/OverviewCourse.svelte": "5aed27d46e9ce99c75452e3cd766db412daaaeca7ac2084a20581358195c06ce",
-  "BE/application/views/course_views.py": "79bfbd622601a9d17c811c76cc99e2a4b1ac9d38a05a67b190e0b233c2672baa",
-  "BE/application/models/courses_models.py": "6a9cd0b923ab5b6a9dd120bcb7f81c1dac30914657fcd14b3fdb9e9c427d78c6",
+  "BE/application/views/course_views.py": "28ce719b7f6897bccde939737866533899649def382f68a47def300a5dbc1c66",
+  "BE/application/models/courses_models.py": "58b9f15cc8b2a946469685305b924aa5db38043ba6197c894bd25c9006819671",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/routes/association/Members/shared/NavigationTab.svelte": "b00baefb6bd572542cf2b6d2cd74ba67b6bcd87085b923088156617374b9b432",
   "UI/src/routes/association/Members/MembersList.svelte": "2205d4071d49dc3c96bad02299dd157668037807f33811b395f811197841650a",
   "UI/src/routes/association/Members/MembersListArchive.svelte": "8426ce4abf1e1146aaf85d87a983642170548305820bbdb8590813fe666e3578",
   "UI/src/components/buttons/ArchiveButton.svelte": "1586f271e9651a1126b3f2662d32808de697c4d8b1cccd95150b6371ed32f4bb",
-  "BE/application/views/subscriptions_views.py": "5b7de613eec3deb9e154352eb900ba7ef791d03a56d206c01a96281ab153e8f5",
-  "BE/application/views/payment_views.py": "b77adc66fa09d235fbd16162c1226e916e47690e64a77e4cb4f02267d3ebee7d"
+  "BE/application/views/subscriptions_views.py": "5fb701ca27d2ca4bbf9a11b0a6f374cd79f6db6bb556f52e10b441aae06f064c",
+  "BE/application/views/payment_views.py": "7d63fd98c253499dbb7d2be9026f1fd2921f89518e7aa854713e29642d88afae"
 };
 const contracts = [
   ["UI/src/components/Sidebar.svelte","<span class=\"menu-text\">Attività</span>",45],

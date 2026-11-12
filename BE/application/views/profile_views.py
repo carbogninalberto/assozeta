@@ -1,5 +1,6 @@
 from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
+from application.audit_context import atomic_audit_mutation
 """
 @ copyright: Bakney SRL
 """
@@ -10,8 +11,9 @@ import logging
 import re
 from datetime import datetime
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from django.conf import settings
+from django.db import transaction
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -27,7 +29,7 @@ from application.models.payment_models import PaymentCategory, SupplierAndCustom
 from application.models.subscriptions_models import Subscription
 from application.models.user_models import SportAssociation, SportAssociationMembershipCardConfiguration, User, Associate, \
     Testimonial, Instructor
-from application.serializers.auth_serializers import UserAuthSerializer, SportAssociationSerializer, \
+from application.serializers.auth_serializers import ProfileIntegrationsSerializer, UserAuthSerializer, SportAssociationSerializer, \
     UserAuthUpdateSerializer, UserSettingsSerializer, UserTablesSettingsSerializer, SportAssociationToolSerializer
 from application.utils.api_utils import ApiMessages, is_valid_uuid, BalanceSheetData, compress_base64
 from core.middleware import IsAuthenticated
@@ -43,109 +45,145 @@ def profile_update(request):
     user_data = UserAuthUpdateSerializer(data=request.data['user_data'])
     user = request.user if request.collaborator is None or request.collaborator is False else acting_user(request)
 
-    if user_data.initial_data['first_name'] is not None:
-        user.first_name = user_data.initial_data['first_name']
+    # Person, association and both audit records belong to one mutation.
+    # Read current values under locks so audit diffs cannot use stale profiles.
+    with atomic_audit_mutation():
+        user = User.objects.select_for_update().get(pk=user.pk)
+        updated_fields = []
+        if user_data.initial_data['first_name'] is not None:
+            user.first_name = user_data.initial_data['first_name']
+            updated_fields.append('first_name')
 
-    if user_data.initial_data['last_name'] is not None:
-        user.last_name = user_data.initial_data['last_name']
+        if user_data.initial_data['last_name'] is not None:
+            user.last_name = user_data.initial_data['last_name']
+            updated_fields.append('last_name')
 
-    if user_data.initial_data['username'] is not None:
-        user.username = user_data.initial_data['username'].upper()
+        if user_data.initial_data['username'] is not None:
+            user.username = user_data.initial_data['username'].upper()
+            updated_fields.append('username')
 
-    if user_data.initial_data['avatar_image'] is not None:
-        user.avatar_image = compress_base64(user_data.initial_data['avatar_image'], max_size=(512, 512))
-    user.save()
+        if user_data.initial_data['avatar_image'] is not None:
+            user.avatar_image = compress_base64(user_data.initial_data['avatar_image'], max_size=(512, 512))
+            updated_fields.append('avatar_image')
+        user.save(update_fields=updated_fields)
 
-    if user_data.initial_data['sport_association'] is not None and user.role == User.ASSOCIATION:
-        sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
-        if user_data.initial_data['sport_association']['denomination'] is not None:
-            sport_association.denomination = user_data.initial_data['sport_association']['denomination']
+        if user_data.initial_data['sport_association'] is not None and user.role == User.ASSOCIATION:
+            sport_association = scoped_queryset(request, SportAssociation.objects).select_for_update().get(user=user)
+            association_fields = []
+            if user_data.initial_data['sport_association']['denomination'] is not None:
+                sport_association.denomination = user_data.initial_data['sport_association']['denomination']
+                association_fields.append('denomination')
 
-        if user_data.initial_data['sport_association']['tax_code'] is not None:
-            sport_association.tax_code = user_data.initial_data['sport_association']['tax_code']
+            if user_data.initial_data['sport_association']['tax_code'] is not None:
+                sport_association.tax_code = user_data.initial_data['sport_association']['tax_code']
+                association_fields.append('tax_code')
 
-        if user_data.initial_data['sport_association']['address'] is not None:
-            sport_association.address = user_data.initial_data['sport_association']['address']
+            if user_data.initial_data['sport_association']['address'] is not None:
+                sport_association.address = user_data.initial_data['sport_association']['address']
+                association_fields.append('address')
 
-        if user_data.initial_data['sport_association']['address_cap'] is not None:
-            sport_association.address_cap = user_data.initial_data['sport_association']['address_cap']
+            if user_data.initial_data['sport_association']['address_cap'] is not None:
+                sport_association.address_cap = user_data.initial_data['sport_association']['address_cap']
+                association_fields.append('address_cap')
 
-        if user_data.initial_data['sport_association']['address_city'] is not None:
-            sport_association.address_city = user_data.initial_data['sport_association']['address_city']
+            if user_data.initial_data['sport_association']['address_city'] is not None:
+                sport_association.address_city = user_data.initial_data['sport_association']['address_city']
+                association_fields.append('address_city')
 
-        if 'document_header' in user_data.initial_data['sport_association']:
-            sport_association.document_header = user_data.initial_data['sport_association']['document_header']
+            if 'document_header' in user_data.initial_data['sport_association']:
+                sport_association.document_header = user_data.initial_data['sport_association']['document_header']
+                association_fields.append('document_header')
 
-        if 'invoice_footer' in user_data.initial_data['sport_association']:
-            sport_association.invoice_footer = user_data.initial_data['sport_association']['invoice_footer']
+            if 'invoice_footer' in user_data.initial_data['sport_association']:
+                sport_association.invoice_footer = user_data.initial_data['sport_association']['invoice_footer']
+                association_fields.append('invoice_footer')
 
-        if user_data.initial_data['sport_association']['enable_quotes_management'] is not None:
-            sport_association.enable_quotes_management = user_data.initial_data['sport_association']['enable_quotes_management']
+            if user_data.initial_data['sport_association']['enable_quotes_management'] is not None:
+                sport_association.enable_quotes_management = user_data.initial_data['sport_association']['enable_quotes_management']
+                association_fields.append('enable_quotes_management')
 
-        if user_data.initial_data['sport_association']['configuration'] is not None:
-            sport_association.configuration = user_data.initial_data['sport_association']['configuration']
+            if user_data.initial_data['sport_association']['configuration'] is not None:
+                sport_association.configuration = user_data.initial_data['sport_association']['configuration']
+                association_fields.append('configuration')
 
-        if user_data.initial_data['sport_association']['federation'] is not None:
-            sport_association.federation = user_data.initial_data['sport_association']['federation']
+            if user_data.initial_data['sport_association']['federation'] is not None:
+                sport_association.federation = user_data.initial_data['sport_association']['federation']
+                association_fields.append('federation')
 
-        if user_data.initial_data['sport_association']['enroll_number'] is not None:
-            sport_association.enroll_number = user_data.initial_data['sport_association']['enroll_number']
+            if user_data.initial_data['sport_association']['enroll_number'] is not None:
+                sport_association.enroll_number = user_data.initial_data['sport_association']['enroll_number']
+                association_fields.append('enroll_number')
 
-        if user_data.initial_data['sport_association']['sport'] is not None:
-            sport_association.sport = user_data.initial_data['sport_association']['sport']
+            if user_data.initial_data['sport_association']['sport'] is not None:
+                sport_association.sport = user_data.initial_data['sport_association']['sport']
+                association_fields.append('sport')
 
-        if 'president_signature' in user_data.initial_data['sport_association']:
-            sport_association.president_signature = user_data.initial_data['sport_association']['president_signature']
+            if 'president_signature' in user_data.initial_data['sport_association']:
+                sport_association.president_signature = user_data.initial_data['sport_association']['president_signature']
+                association_fields.append('president_signature')
 
-        if 'stamp' in user_data.initial_data['sport_association']:
-            sport_association.stamp = user_data.initial_data['sport_association']['stamp']
+            if 'stamp' in user_data.initial_data['sport_association']:
+                sport_association.stamp = user_data.initial_data['sport_association']['stamp']
+                association_fields.append('stamp')
 
-        if user_data.initial_data['sport_association']['president_first_name'] is not None:
-            sport_association.president_first_name = user_data.initial_data['sport_association']['president_first_name']
+            if user_data.initial_data['sport_association']['president_first_name'] is not None:
+                sport_association.president_first_name = user_data.initial_data['sport_association']['president_first_name']
+                association_fields.append('president_first_name')
 
-        if user_data.initial_data['sport_association']['president_last_name'] is not None:
-            sport_association.president_last_name = user_data.initial_data['sport_association']['president_last_name']
+            if user_data.initial_data['sport_association']['president_last_name'] is not None:
+                sport_association.president_last_name = user_data.initial_data['sport_association']['president_last_name']
+                association_fields.append('president_last_name')
 
-        if user_data.initial_data['sport_association']['stripe_available_methods'] is not None:
-            sport_association.stripe_available_methods = user_data.initial_data['sport_association'][
-                'stripe_available_methods']
+            if user_data.initial_data['sport_association']['stripe_available_methods'] is not None:
+                sport_association.stripe_available_methods = user_data.initial_data['sport_association'][
+                    'stripe_available_methods']
+                association_fields.append('stripe_available_methods')
 
-        if user_data.initial_data['sport_association']['invoice_template'] is not None:
-            sport_association.invoice_template = user_data.initial_data['sport_association'][
-                'invoice_template']
+            if user_data.initial_data['sport_association']['invoice_template'] is not None:
+                sport_association.invoice_template = user_data.initial_data['sport_association'][
+                    'invoice_template']
+                association_fields.append('invoice_template')
 
-        if user_data.initial_data['sport_association']['subscription_template'] is not None:
-            sport_association.subscription_template = user_data.initial_data['sport_association'][
-                'subscription_template']
+            if user_data.initial_data['sport_association']['subscription_template'] is not None:
+                sport_association.subscription_template = user_data.initial_data['sport_association'][
+                    'subscription_template']
+                association_fields.append('subscription_template')
 
-        if user_data.initial_data['sport_association']['extra_text_invoices'] is not None:
-            sport_association.extra_text_invoices = user_data.initial_data['sport_association'][
-                'extra_text_invoices']
+            if user_data.initial_data['sport_association']['extra_text_invoices'] is not None:
+                sport_association.extra_text_invoices = user_data.initial_data['sport_association'][
+                    'extra_text_invoices']
+                association_fields.append('extra_text_invoices')
 
-        if 'iban' in user_data.initial_data['sport_association'] and \
-                user_data.initial_data['sport_association']['iban'] is not None:
-            sport_association.iban = user_data.initial_data['sport_association']['iban']
+            if 'iban' in user_data.initial_data['sport_association'] and \
+                    user_data.initial_data['sport_association']['iban'] is not None:
+                sport_association.iban = user_data.initial_data['sport_association']['iban']
+                association_fields.append('iban')
 
-        if 'abbreviated' in user_data.initial_data['sport_association'] and \
-                user_data.initial_data['sport_association']['abbreviated'] is not None:
-            sport_association.abbreviated = user_data.initial_data['sport_association']['abbreviated']
+            if 'abbreviated' in user_data.initial_data['sport_association'] and \
+                    user_data.initial_data['sport_association']['abbreviated'] is not None:
+                sport_association.abbreviated = user_data.initial_data['sport_association']['abbreviated']
+                association_fields.append('abbreviated')
 
-        if 'vat_number' in user_data.initial_data['sport_association'] and \
-                user_data.initial_data['sport_association']['vat_number'] is not None:
-            sport_association.vat_number = user_data.initial_data['sport_association']['vat_number']
+            if 'vat_number' in user_data.initial_data['sport_association'] and \
+                    user_data.initial_data['sport_association']['vat_number'] is not None:
+                sport_association.vat_number = user_data.initial_data['sport_association']['vat_number']
+                association_fields.append('vat_number')
 
-        if 'website' in user_data.initial_data['sport_association'] and \
-                user_data.initial_data['sport_association']['website'] is not None:
-            sport_association.website = user_data.initial_data['sport_association']['website']
+            if 'website' in user_data.initial_data['sport_association'] and \
+                    user_data.initial_data['sport_association']['website'] is not None:
+                sport_association.website = user_data.initial_data['sport_association']['website']
+                association_fields.append('website')
 
-        if 'whatsapp' in user_data.initial_data['sport_association'] and \
-                user_data.initial_data['sport_association']['whatsapp'] is not None:
-            sport_association.whatsapp = user_data.initial_data['sport_association']['whatsapp']
+            if 'whatsapp' in user_data.initial_data['sport_association'] and \
+                    user_data.initial_data['sport_association']['whatsapp'] is not None:
+                sport_association.whatsapp = user_data.initial_data['sport_association']['whatsapp']
+                association_fields.append('whatsapp')
 
-        sport_association.checkout_info = user_data.initial_data['sport_association']['checkout_info']
+            sport_association.checkout_info = user_data.initial_data['sport_association']['checkout_info']
+            association_fields.append('checkout_info')
 
-        logger.info("Saving sport association profile updates", extra={'user_id': str(user.user_id), 'sport_association_id': str(sport_association.sport_association_id)})
-        sport_association.save()
+            logger.info("Saving sport association profile updates", extra={'user_id': str(user.user_id), 'sport_association_id': str(sport_association.sport_association_id)})
+            sport_association.save(update_fields=association_fields)
 
     logger.info("Profile updated successfully", extra={'user_id': str(user.user_id)})
     content = {}
@@ -165,8 +203,57 @@ def profile_update(request):
                 content['user_data']['sport_association']['logo'])
 
         content['user_data']['preview_and_custom_features'] = user.get_preveiw_and_custom_features()
+    elif user.role == User.COLLABORATOR:
+        # The frontend replaces its cached profile with this response. Retain
+        # the admitted tenant without ever replacing the selected person.
+        # The locked User may be newer than the admission snapshot: fail closed
+        # after the existing commit boundary if its connected owner changed.
+        if user.connected_user_id != request.user.pk:
+            raise SportAssociation.DoesNotExist
+        sport_association = scoped_queryset(request, SportAssociation.objects).select_related('user').get(
+            user_id=user.connected_user_id)
+        content['user_data']['sport_association'] = SportAssociationSerializer(sport_association).data
+        if content['user_data']['sport_association']['logo'] is not None:
+            content['user_data']['sport_association']['logo'] = compress_base64(
+                content['user_data']['sport_association']['logo'])
 
     return Response(content, status=status.HTTP_200_OK)
+
+
+PROFILE_TEMPLATE_MAX_TEXT_LENGTH = 500_000   # characters (len() of the str)
+PROFILE_TEMPLATE_MAX_HTML_DEPTH = 32         # nested tags
+
+
+class ProfileTemplateTextRejected(Exception):
+    def __init__(self, field, message):
+        super().__init__(message)
+        self.field = field
+        self.message = message
+
+
+def _html_depth(soup):
+    """Deepest tag nesting of a parsed document (a top-level tag is 1); iterative."""
+    deepest = 0
+    stack = [(soup, 0)]
+    while stack:
+        node, depth = stack.pop()
+        if depth > deepest:
+            deepest = depth
+        for child in node.contents:
+            if isinstance(child, Tag):
+                stack.append((child, depth + 1))
+    return deepest
+
+
+def _prettify_template_text(text, field):
+    if isinstance(text, str) and len(text) > PROFILE_TEMPLATE_MAX_TEXT_LENGTH:
+        raise ProfileTemplateTextRejected(
+            field, f'Il testo è troppo lungo (massimo {PROFILE_TEMPLATE_MAX_TEXT_LENGTH} caratteri).')
+    soup = BeautifulSoup(text, features="html.parser")
+    if _html_depth(soup) > PROFILE_TEMPLATE_MAX_HTML_DEPTH:
+        raise ProfileTemplateTextRejected(
+            field, f'Il testo contiene troppi livelli annidati (massimo {PROFILE_TEMPLATE_MAX_HTML_DEPTH}).')
+    return soup.prettify()
 
 
 @api_view(['PATCH'])
@@ -179,33 +266,35 @@ def profile_update_subscription_template(request):
     if sport_association_data.initial_data is not None:
         sport_association = scoped_queryset(request, SportAssociation.objects).get(user=user)
         # update additional_sections
-        if sport_association_data.initial_data['additional_sections'] is not None:
-            # loop through additional_sections and remove if json field name or text is empty or if there are different
-            # json field names with the same name
-            additional_sections = sport_association_data.initial_data['additional_sections']
+        try:
+            if sport_association_data.initial_data['additional_sections'] is not None:
+                # loop through additional_sections and remove if json field name or text is empty or if there are different
+                # json field names with the same name
+                additional_sections = sport_association_data.initial_data['additional_sections']
 
-            if len(additional_sections) > 0:
-                sport_association.additional_sections = []
-                for section in additional_sections:
-                    if 'name' in section.keys() and 'text' in section.keys():
-                        if section['name'] == '' and len(section['name']) <= 3:
-                            continue
-                        if section['text'] == '' and len(section['text']) <= 3:
-                            continue
-                        section['text'] = BeautifulSoup(section['text'], features="html.parser").prettify()
-                        section['name'] = section['name'].upper()
-                        sport_association.additional_sections.append(section)
-            else:
-                sport_association.additional_sections = []
+                if len(additional_sections) > 0:
+                    sport_association.additional_sections = []
+                    for section in additional_sections:
+                        if 'name' in section.keys() and 'text' in section.keys():
+                            if section['name'] == '' and len(section['name']) <= 3:
+                                continue
+                            if section['text'] == '' and len(section['text']) <= 3:
+                                continue
+                            section['text'] = _prettify_template_text(section['text'], 'additional_sections')
+                            section['name'] = section['name'].upper()
+                            sport_association.additional_sections.append(section)
+                else:
+                    sport_association.additional_sections = []
 
-        if sport_association_data.initial_data['regulation'] is not None:
-            sport_association.regulation = BeautifulSoup(sport_association_data.initial_data['regulation'],
-            features="html.parser").\
-                prettify()
+            if sport_association_data.initial_data['regulation'] is not None:
+                sport_association.regulation = _prettify_template_text(
+                    sport_association_data.initial_data['regulation'], 'regulation')
 
-        if sport_association_data.initial_data['demand'] is not None:
-            sport_association.demand = BeautifulSoup(sport_association_data.initial_data['demand'],
-            features="html.parser").prettify()
+            if sport_association_data.initial_data['demand'] is not None:
+                sport_association.demand = _prettify_template_text(
+                    sport_association_data.initial_data['demand'], 'demand')
+        except ProfileTemplateTextRejected as e:
+            return Response({e.field: [e.message]}, status=status.HTTP_400_BAD_REQUEST)
 
         # add the visibility settings
         if sport_association_data.initial_data['show_demand_to_athletes'] is not None:
@@ -444,19 +533,21 @@ def profile_update_password(request):
     password_validated = re.search(password_pattern, password_data['new_password'])
 
     content = {}
-    if user.check_password(password_data['current_password']) and password_validated:
-        logger.info("Password updated successfully", extra={'user_id': str(user.user_id)})
-        user.set_password(password_data['new_password'])
-        content['msg'] = "password updated with success."
-        user.save()
-    elif password_validated is None:
-        logger.warning("Password update failed - invalid format", extra={'user_id': str(user.user_id)})
-        content['msg'] = "password not valid."
-        return Response(content, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        logger.warning("Password update failed - incorrect current password", extra={'user_id': str(user.user_id)})
-        content['code'] = ApiMessages.PASSWORD_NOT_VALID
-        content['msg'] = "old password not correct."
+    with transaction.atomic():
+        user = User.objects.select_for_update().get(pk=user.pk)
+        if user.check_password(password_data['current_password']) and password_validated:
+            logger.info("Password updated successfully", extra={'user_id': str(user.user_id)})
+            user.set_password(password_data['new_password'])
+            content['msg'] = "password updated with success."
+            user.save(update_fields=['password'])
+        elif password_validated is None:
+            logger.warning("Password update failed - invalid format", extra={'user_id': str(user.user_id)})
+            content['msg'] = "password not valid."
+            return Response(content, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.warning("Password update failed - incorrect current password", extra={'user_id': str(user.user_id)})
+            content['code'] = ApiMessages.PASSWORD_NOT_VALID
+            content['msg'] = "old password not correct."
 
     # logger.info(content)
     content['role'] = User.ROLE_CHOICES[user.role - 1][1]
@@ -480,10 +571,15 @@ def profile_update_password(request):
 @permission_classes([IsAuthenticated])
 def profile_settings_tables(request):
 
-    user = UserTablesSettingsSerializer(request.user, data=request.data, partial=True)
-
-    if user.is_valid(raise_exception=True):
-        user.save()
+    preferences = UserTablesSettingsSerializer(request.user, data=request.data, partial=True)
+    preferences.is_valid(raise_exception=True)
+    if 'tables_settings' in preferences.validated_data:
+        # Preserve the mapped association owner for collaborators. Lock fresh
+        # values for the audit diff and commit only this preference with its audit.
+        with atomic_audit_mutation():
+            user = User.objects.select_for_update().get(pk=request.user.pk)
+            user.tables_settings = preferences.validated_data['tables_settings']
+            user.save(update_fields=['tables_settings'])
 
     return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
@@ -608,9 +704,13 @@ def profile_integrations(request):
 
     if request.method == 'PATCH':
         sport_association = request.user.sport_association
-        sport_association.review_url = request.data.get('review_url', sport_association.review_url)
-        sport_association.review_url_enabled = request.data.get('review_url_enabled', sport_association.review_url_enabled)
-        sport_association.save()
+        serializer = ProfileIntegrationsSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        values = serializer.validated_data
+        sport_association.review_url = values.get('review_url', sport_association.review_url)
+        sport_association.review_url_enabled = values.get('review_url_enabled', sport_association.review_url_enabled)
+        with transaction.atomic():
+            sport_association.save()
         return Response({
             'review_url': sport_association.review_url,
             'review_url_enabled': sport_association.review_url_enabled

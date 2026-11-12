@@ -1,0 +1,195 @@
+# Docmanager reads — document retrieve streaming and delete pre-checks
+
+`document/retrieve/<uid>` (`retrieve_document`, `BE/docmanager/views/document_view.py`) is implemented in Go
+(`BE_GO/internal/{domain,repository,service,handler}/docmanager_reads.go`), including the object stream from S3.
+`document/<uid>/delete` (`application.document_scope.delete_document`) is implemented too: its pre-checks are covered here, the
+ownership walk and the deletion by [document-delete.md](document-delete.md).
+The rendering routes of `BE/docmanager/urls.py` are not part of this family (see below). Django remains the execution owner.
+
+## Retrieve behaviour
+
+- `@api_view(['GET'])` with the default `AllowAny`: `Allow: GET, OPTIONS`. OPTIONS is `Retrieve Document` with an empty
+  description. Other methods, HEAD included, are 405. An invalid `Authorization` bearer is DRF's 401 (with the challenge).
+  Admin and restricted-collaborator denials come from identity resolution as usual (the path has no registry key).
+- `is_valid_uuid(uid)` first: 400 with the `ValueError` text as a one-item list.
+- `?download`: only the exact value `false` selects `view_file` (no `Content-Disposition`). Any other value, or none,
+  selects `download_file`. Its header is `content_disposition_header(bool(?download), filename)`, with commas in the stored
+  filename replaced by spaces: `inline`/`attachment`, a quoted ASCII filename, or `filename*=utf-8''<quote()>`.
+- Without an impersonation session, `request.user` is recomputed with plain `JWTAuthentication` from the
+  `Authorization` header, then the `BKN_AUTH` cookie, then `?token`. Identity resolution and collaborator mapping do not
+  run here, so a collaborator stays the collaborator account. Invalid cookie or query tokens are ignored. With a session,
+  the scoped user is kept.
+- `?download_token` is `django.core.signing.loads` (salt `docmanager.association-export-download`, `max_age` 3600):
+  - A bad signature, an expired token, a wrong purpose, a non-dict payload, falsy ids, or a `document_id` other than the
+    raw path segment give `401 {"error": "Invalid download token."}`.
+  - A signed value without a timestamp or with an invalid base62 timestamp raises, and so does an association value
+    `UUIDField` rejects. Each is the 500 page.
+  - The archive row of the token's association for this document, with a filename starting with `export_`, comes first
+    by primary key. Without it the answer is `404 {"error": "Document not found."}`.
+  - Compressed (`.`-prefixed zlib) payloads and integer association values (`UUID(int=n)`) are supported.
+- Next, `?token` looks up the Document by `(uid, token)` when the token parses as a UUID (Python's `uuid.UUID` grammar).
+  Other values are ignored.
+- Otherwise an authenticated user resolves the uid as a Document id. Then it tries a Subscription id (`GroupAwareManager`,
+  `X-Group-Id`; a malformed header is ignored), a MedicalCertificate id and an Invoice id (not deleted, group). Each needs
+  its document. Without a match the answer is 404. An anonymous request is `401 {"error": "Invalid token. Not Authorized."}`,
+  a view response without the challenge.
+- A document whose filename starts with `export_`, reached without a download token, has its first archive row checked:
+  `request.user` must be an association account owning that row's association. Otherwise the answer is
+  `403 {"error": "Not authorized to access this export."}`.
+- An association-scoped impersonation session requires the document among `visible_documents`: the scoped subscriptions'
+  PDF, medical-certificate and file documents and the scoped invoices' PDFs, with the athlete family scope. Otherwise the
+  answer is `403 {"detail": "Documento non disponibile per questa associazione."}`.
+- Stream (`PrintingService._stream_file_response`):
+  - The storage name is `filepath` when truthy, otherwise `<str(creation_date.timestamp())>/<id>/<filename>`
+    (`documentkey.StoredName`). The key is `clean_name` and then `safe_join(AWS_LOCATION, …)` (`documentkey.S3Key`).
+  - A key outside the location is `500 {"exception": "Attempted access to '<name>' denied."}`.
+  - `exists` is a HEAD where only 404 means absent. An absent object linked to no single subscription or invoice is
+    `500 {"exception": "File not found"}`.
+  - An absent object that exactly one subscription (`GroupAwareManager`), or else exactly one listed invoice, has as its
+    PDF is printed again: `print_and_store_pdf` asks the renderer for `document/subscription/<id>/view` or
+    `document/invoice/<id>/view` with the request's `Authorization` header (or `Bearer <?token>` when the header is absent,
+    `null` when both are), and on a PDF answer publishes `save_to_storage('<creation timestamp>/<id>/<filename>',
+    <base64 PDF>)`. Its outcome is not read (a renderer failure or a failed publish changes nothing), and the stream is
+    still attempted: until the worker has stored the file the answer is `500 {"exception": "An error occurred
+    (NoSuchKey) when calling the GetObject operation: The specified key does not exist."}`, and every request prints
+    again. The next request after the task has run streams the stored PDF. A document with a `filepath` is read from
+    it while the task stores under the creation timestamp, so it prints on every request. Go:
+    `DocmanagerReadsStore.RenderSource` returns the view, `DocumentRender.PrintAndStore` renders and publishes, and
+    `documentobjects.NoSuchKeyError` carries the provider text. The names Go refuses (below) are refused before printing.
+  - `Content-Type` is `mimetypes.guess_type(name)[0]` (`pkg/pymime`: Python 3.13's built-in table plus every existing
+    `mimetypes.knownfiles` file, read once per process, with suffix and encoding maps) when it is one of the inline
+    types: `application/pdf`, `image/png`, `image/jpeg`, `image/gif`, `image/webp` (`INLINE_DOCUMENT_TYPES` in
+    `BE/application/utils/printing.py`, `docmanagerInlineTypes` in Go). Every other file is `application/octet-stream`
+    with an `attachment` `Content-Disposition`, on the view path too. The object's own type is not used.
+  - `X-Content-Type-Options: nosniff` is always sent.
+  - `Content-Length` and `Content-Encoding` come from the object. Bytes are streamed unchanged, and there is no gzip.
+
+## Delete behaviour (pre-checks)
+
+`IsAuthenticated` (anonymous 401 with the challenge). `Allow: DELETE, OPTIONS`, OPTIONS `Delete Document`, other methods
+405. The path has no registry key, and `delete_document` is not an athlete operation in a scoped session. Next comes
+`is_valid_uuid` (400). An unknown document, or a requester (`request.user`, the owner for collaborators) without an
+active `SportAssociation`, gets `404 {"error": "Document not found."}`. The ownership walk and `Document.delete()` are in
+[document-delete.md](document-delete.md).
+
+## Not ported (refused with the 500 page before any write)
+
+- **Retrieve** provider errors other than a client-error HEAD answer: a HEAD failing with 429 or a 5xx status or without
+  an answer, and a `GetObject` failure other than a missing key. Django answers `500 {"exception": "<botocore text>"}`;
+  the text carries botocore's retry count or the storage endpoint.
+- **Retrieve** names outside the modelled grammar: none left (t2docs ported the bracketed and non-ASCII network locations and the `data:` types).
+- Rows Django cannot read either (both sides answer the 500 page): creation dates outside Python's range. Invalid UTF-8
+  and NUL cannot be stored in the database.
+- **Retrieve** download-token payloads using JSON that Go's decoder rejects but Python accepts, such as `NaN` or
+  `Infinity`. Only a holder of `SECRET_KEY` can produce them.
+- `SECRET_KEY_FALLBACKS` are not consulted (they are not configured).
+
+## Routes not in this family
+
+- `document/{subscription,invoice,einvoice,compensation,template,medical-appointment}/<uid>` (GET/POST): every success
+  path creates a Document and renders a PDF (Puppeteer, the Celery storage task). The invoice route can also send email.
+- Their `/view/` variants render the Django HTML templates that Puppeteer prints. `einvoice/view` renders
+  `generate_invoice_html`. The only non-template answer is `medical-appointment/view`'s 303 for unsupported regions.
+- `document/subscription/preview/` renders a template or, with `?print`, a Puppeteer PDF.
+- `document/medical/certificate/` uploads a file to storage and creates Document and MedicalCertificate rows. It is a
+  storage write, not a read.
+
+## Evidence (TDD)
+
+`TESTS/fixtures/docmanager_reads_http.json` (generator alongside) authors 110 cases: 100 retrieve and 10 delete. The
+adapter seeds 22 documents, 2 archive rows, 5 subscriptions, 2 medical certificates and 2 invoices. Every case must leave
+all models and the cache unchanged. Download tokens are signed per workload with the running `SECRET_KEY`: fresh, expired,
+tampered, compressed, other salt or purpose, and crafted payloads.
+
+The runner owns a private MinIO through a new optional `service_context` hook in `staff_board_http_acceptance.py`. It
+reuses the instance-logo image and lifetime. Before either server starts, the hook stores 20 objects under
+`AWS_LOCATION` and switches Django's default storage to `S3Boto3Storage`, so the Go server gets the same `AWS_*`
+settings. Afterwards the object listing must be unchanged.
+
+The contract (`TESTS/contracts/test_docmanager_reads_http.py`) compares streamed bytes and the exact `Content-Type`,
+`Content-Length`, `Content-Disposition` and `Content-Encoding`. It checks the 401 challenge per case.
+
+RED: Django 110/110 and Go 404 on the first case (`native-r2`). GREEN: 110/110 on native Django and Go (`native-r3`)
+and on Caddy `/api/v1` and `/api/v2` (`versioned-r1`). Mutation: dropping the invoice soft-delete filter fails
+`docmanager-reads-retrieve-owner-by-deleted-invoice` on Go (`mutation-deleted-invoice`). The shared driver change was
+re-run on `association-transfer` (146/146) and `documents-list` (18/18). Go unit tests compare `pkg/pymime`,
+`documentkey.S3Key`, signing and `Content-Disposition` with values produced by Python, Django 5.2.18 and django-storages
+1.14.5.
+
+Member documents (`secdoc-*`): documents are served to the association's staff and to the member they belong to.
+`docmanager.access` (Django, with `docmanager.test_document_access`) and `memberDocumentAccess` with
+`repository.MemberDocuments` (Go) decide it the same way: accounts other than athletes, superusers and the instance owner
+(`is_instance_owner`) reach every record; an athlete account reaches the records of its user, of the associates of its
+subscriptions, of associates whose account it is and of associates sharing a non-empty tax code with those (base managers:
+no group or soft-delete filter). Anything else answers `403 {"detail": "Risorsa non disponibile per questo utente e
+associazione."}`. Association-scoped sessions keep their own boundary, and requests admitted without an account (a document
+token, the renderer header) are decided by the view's permission classes as before.
+
+In `retrieve_document` the rule applies to a document reached by account (neither `?download_token` nor a matching
+`?token`), after the export check and before the scoped-session check: the document must be the PDF, the medical certificate
+document or an attached file of one of the member's subscriptions, the document of a certificate of the member's user, or the
+PDF of an invoice of one of the member's payments. `document/<uid>/delete` is unchanged (accounts without an association get
+the 404 of a missing document).
+
+The fixture now has 155 cases (45 new) with associates, attached files, payments, two more athlete accounts and a self-hosted
+`InstanceConfiguration` whose primary association belongs to one of them: the member's own, associate, tax code, linked
+associate, certificate, attached file and receipt documents by document id and by subscription, certificate and invoice id;
+other members' documents (403, also through the cookie and `?token` JWT and for a missing object); blank tax codes; document
+tokens used by an athlete; the primary association's account; collaborators, owners and administrators unchanged.
+RED `secdoc-red-r1`: Django 155/155, Go 200 on `docmanager-reads-retrieve-orphan-export-athlete` with the check switched off.
+GREEN `secdoc-versioned-final` (after merging the base; `secdoc-versioned-r1` before): 155/155 on the four transports.
+Mutations, all CAUGHT: `secdoc-mutation-r1` (retrieve without the member check), `secdoc-mutation-r2` (the instance owner
+never matched: `docmanager-reads-retrieve-primary-association-account`) and `secdoc-mutation-r3` (blank tax codes joined:
+`docmanager-reads-retrieve-athlete-blank-tax-code-document`).
+
+Missing PDFs printed again (`v2doc2-*`): 15 more cases (170 in all) over 8 documents without an object. The runner also
+owns the renderer stub of document-render and the run's Celery broker; a case must send exactly the authored renderer
+request and publish exactly the authored `save_to_storage` message, and `effect.store` then runs
+`docmanager.tasks.save_to_storage` as the worker would, so the following case streams the stored PDF. The stored
+objects are removed before and after each workload. Covered: the first try and the stored retry (download and view), the
+query token and the document token as bearer, a cookie session (`null` header), a renderer failure and a non-PDF answer
+(nothing published), repeated printing until the task runs, two subscriptions (not found), two subscriptions and an
+invoice (the invoice), the `X-Group-Id` count, a `filepath` document and an invoice out of the list. RED `v2doc2-red-r1`:
+Django 170/170, Go the 500 page on `reprint-subscription-first-try`. GREEN `v2doc2-versioned-r1`: 170/170 on native
+Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc2-mutation-r1`: storing under the document's
+`filepath` fails `reprint-filepath-first-try` (`celery.headers:0`). Re-run green (`v2doc2-rerun-r1`): document-render
+and documents-writes. Final run on the current base (`v2doc2-final-r1`): 170/170 on the four transports.
+
+URL-like names (`v2doc2-*`): 5 more cases (175) over three documents (`Nota:spese.pdf`, `ab:c.pdf;v.txt?x#y.png`,
+`data:text/css,body.pdf`). `pkg/pymime` now follows `guess_type`'s URL branch: the path after the scheme and the network
+location, cut at `#`, `?` and, for `urllib.parse.uses_params` schemes, the `;` of the last segment; a `data:` name answers
+the text before its first `;` or `,` (`text/plain` when that has an `=` or no `/`, nothing without a comma). Its unit test
+holds 37 answers of CPython 3.13. Still refused: a network location with brackets or non-ASCII text, and a `data:` type
+outside printable ASCII. RED `v2doc2-red-r2`: Django 175/175, Go the 500 page on `retrieve-url-name`. GREEN
+`v2doc2-versioned-r2`: 175/175 on the four transports. Mutation `v2doc2-mutation-r2` (the query left in the path) fails
+`retrieve-url-name-parts`. documents-writes re-run green (`v2doc2-rerun-r3`).
+
+Inline types (`v2doc3-*`): documents are served with a fixed set of inline types. Django changed first
+(`application.tests.test_printing_service`, 5 new tests red, then green), then Go. 14 more cases (189) over nine
+documents (`.html`, `.svg`, `.js`, `.xml`, `.bmp`, `.GIF`, `.webp` and two `data:` names); the contract also checks
+`X-Content-Type-Options`. The UI opens documents as links and in the PDF preview frames
+(`DocumentPreviewModal.svelte`, `InvoicePreviewModal.svelte`): PDFs and images keep their inline answer. RED
+`v2doc3-red-r1`: Django 189/189, Go fails `retrieve-export-owner` (`stream.content-type`). GREEN `v2doc3-versioned-r1`:
+189/189 on native Django, native Go, Caddy `/api/v1` and `/api/v2`. Mutation `v2doc3-mutation-r1` (the type list not
+consulted) fails `retrieve-export-owner`.
+
+Header and storage answers (`v2doc3-*`): 12 more cases (201) over six documents. A quotable name ending in a newline
+answers `500 {"exception": "Header values can't contain newlines (got '<header>')"}` once the object is open (a missing
+object answers first); other line breaks and non-ASCII names use the percent-encoded header; an empty name is an
+`attachment` without a filename. A HEAD answered with a client error other than 404 (400, 401, 403, 405, 409-412; the
+fixture uses a key longer than the storage accepts) answers botocore's text, `An error occurred (400) when calling the
+HeadObject operation: Bad Request` (`documentobjects.HeadStatusError`). RED `v2doc3-red-r2`: Django 201/201, Go the 500
+page on `retrieve-newline-name-view`. GREEN `v2doc3-versioned-r2`: 201/201 on the four transports. Mutation
+`v2doc3-mutation-r2` (the header check ignoring `\n`) fails `retrieve-newline-name-view`.
+Final run on the merged base (`v2doc3-final-r1`): 201/201 on the four transports; documents-writes re-run green natively
+(`v2doc3-rerun-r1`, 141/141).
+
+## Ported in t2docs
+
+`pkg/pymime` follows `urlsplit`'s network-location checks (Python 3.13.16): unbalanced brackets or data around them are
+`Invalid IPv6 URL`, a bracketed host is an IPvFuture literal or an IPv6 address (`ipaddress` grammar with scope ids), an IPv4
+address in brackets and any other host are `ValueError`s with their texts, and a non-ASCII location whose NFKC form gains one of
+`/?#@:` is the NFKC message. The retrieve view fetches the object first (a missing key answers its exception), then
+`guess_type` raises: `500 {"exception": "<text>"}`. Valid bracketed hosts and non-ASCII locations are plain URLs; a `data:` type
+of any text is the guessed type (never inline, so an octet-stream download). Unit test: 63 CPython answers
+(`pkg/pymime/testdata/url_vectors.json`). Cases added to `docmanager-reads`.

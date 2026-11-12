@@ -7,12 +7,13 @@ repository contents. New commits cancel obsolete runs for the same PR.
 | Changed files | Selected checks |
 | --- | --- |
 | Ordinary `BE/**` code, dependencies or tests | Full backend pytest suite; no Node, UI build or browser setup |
+| `BE_GO/**`, Go contracts/adapters or inventory changes | Reusable Go quality job with portable, PostgreSQL, image and race checks |
 | `BE/instance/**`, backend Dockerfile or entrypoint | Backend suite plus static self-host validation |
 | `UI/**` | All Node tests and the isolated operations browser fixture; no backend build/services |
 | UI Dockerfile or Caddyfile | UI checks plus static self-host validation |
 | `selfhost/tests/browser/**` | UI checks |
 | Browser dependencies/config or `self-instance.spec.js` | Also smoke and upgrade matrix, which executes the full-stack browser spec |
-| `selfhost/**` runtime or integration harness | Static self-host validation, development/production smoke, and legacy/recovery upgrade matrix |
+| `selfhost/**` runtime or integration harness | Static self-host validation, development/production smoke, and legacy application/controller/recovery upgrade matrix |
 | `selfhost/tests/test_*.py` | Static self-host validation including the Python regression suites |
 | Development Compose, CLI, required environment config/examples | Also backend tests because these configure the backend test environment |
 | `Makefile` | Static self-host validation, smoke and upgrade matrix |
@@ -35,11 +36,19 @@ Publishing remains a separate workflow triggered by matching main pushes,
 published releases or manual dispatch. Its complete quality gates remain enabled
 by default. PRs cannot trigger image publishing, release assets, contributor
 updates or the published-release rehearsal.
+The reusable `go-quality.yml` runs for PRs and publication. Release events also
+require its compatibility inventory gate; the current incomplete Go ledger is
+deliberately denied. Passing inventory alone does not prove complete migration
+acceptance.
+The Go job also requires native worker/migration process checks and execution of
+the packaged commands in private PostgreSQL containers. The image fixture verifies
+non-root/read-only execution, maintenance exclusion and shutdown/crash recovery;
+it does not activate a backend or prove scheduler and Celery handoff parity.
 
 Releases do not rebuild the manual. A published release copies the verified
-manual of the current `:latest` backend image into its own image unchanged and
-records its origin in `MANUAL_CARRIED_FROM`; the reader keeps reporting the
-release the manual was verified for. To rebuild, verify and bundle a new
+manual of the current `:latest` backend image unchanged into both its Django and
+Go backend images and records its origin in `MANUAL_CARRIED_FROM`; both readers
+keep reporting the release the manual was verified for. To rebuild, verify and bundle a new
 manual, publish the release, then run **Build and publish images** manually
 from the release tag with `release_tag` set to that tag and `include_manual`
 checked:

@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 from urllib.request import Request, urlopen
 
-from distribution import unpack
+from distribution import unpack, validate_manifest
 from release_catalog import IMAGE_NAMES, REPOSITORY, image_version, read_json
 
 
@@ -25,12 +25,14 @@ def image_reference(name, tag):
 
 def build(tag, archive):
     content = Path(archive).read_bytes()
-    return {
+    manifest = {
         'schema_version': 1, 'version': image_version(tag),
         'bundle_sha256': hashlib.sha256(content).hexdigest(),
         'images': {name: image_reference(name, tag) for name in IMAGE_NAMES},
+        'extensions': {'go_backend': {'schema_version': 1, 'image': image_reference('backend-go', tag)}},
         'files': {name: hashlib.sha256(value[0]).hexdigest() for name, value in unpack(content).items()},
     }
+    return validate_manifest(manifest, tag, require_go_backend=True)
 
 
 if __name__ == '__main__':

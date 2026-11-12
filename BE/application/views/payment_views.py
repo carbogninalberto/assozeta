@@ -1,5 +1,6 @@
 from application.impersonation_scope import scoped_queryset
 from application.impersonation import acting_user
+from application.audit_context import atomic_audit_mutation
 """
 @ copyright: Bakney SRL
 """
@@ -43,7 +44,7 @@ from application.serializers.subscriptions_serializers import SignatureRequestSe
 from application.serializers.auth_serializers import SportAssociationBasicInfo
 from application.models.subscriptions_models import Subscription
 from application.utils import api_utils
-from application.utils.api_utils import is_valid_uuid, KTDatatablePagination
+from application.utils.api_utils import is_valid_uuid, KTDatatablePagination, checked_ordering
 from application.utils.excel_utils import get_excel_base64
 from application.utils.notification_utils import NotificationUtils
 from application.utils.payments_utils import calculate_simulation, generate_invoice_description
@@ -57,6 +58,35 @@ from application.printing_tasks import print_document_invoice, print_document_co
 from application.services import InvoiceService
 
 logger = logging.getLogger(__name__)
+
+
+def _payment_party(request, sport_association, item):
+    """Resolve the complex_item party; payment parties only apply to the caller's association."""
+    if item['group'] == 'Istruttori':
+        instructor = Instructor.objects.get(instructor_id=item['instructor_id'])
+        if instructor.user_id != sport_association.user_id:
+            raise PermissionDenied("User not allowed.")
+        return 'instructor', instructor
+    if item['group'] == 'Fornitori':
+        supplier = SupplierAndCustomers.objects.get(supplier_id=item['supplier_id'])
+        if supplier.sport_association_id != sport_association.sport_association_id:
+            raise PermissionDenied("User not allowed.")
+        return 'supplier', supplier
+    if item['group'] == 'Iscrizioni':
+        return 'associate', _payment_subscription_associate(request, sport_association, item['subscription_id'])
+    if item['group'] == 'Persone':
+        associate = scoped_queryset(request, Associate.objects).get(associate_id=item['associate_id'])
+        if associate.sport_association_id != sport_association.sport_association_id:
+            raise PermissionDenied("User not allowed.")
+        return 'associate', associate
+    return None, None
+
+
+def _payment_subscription_associate(request, sport_association, subscription_id):
+    subscription = scoped_queryset(request, Subscription.objects).get(subscription_id=subscription_id)
+    if subscription.sport_association_id != sport_association.sport_association_id:
+        raise PermissionDenied("User not allowed.")
+    return subscription.associate
 
 
 @api_view(['POST'])
@@ -109,15 +139,9 @@ def payment_add(request):
         payment.sport_association = sport_association
         # checking the complex_item
         if data['complex_item']:
-            if data['complex_item']['group'] == 'Istruttori':
-                payment.instructor = Instructor.objects.get(instructor_id=data['complex_item']['instructor_id'])
-            if data['complex_item']['group'] == 'Fornitori':
-                payment.supplier = SupplierAndCustomers.objects.get(supplier_id=data['complex_item']['supplier_id'])
-            if data['complex_item']['group'] == 'Iscrizioni':
-                payment.associate = scoped_queryset(request, Subscription.objects).get(
-                    subscription_id=data['complex_item']['subscription_id']).associate
-            if data['complex_item']['group'] == 'Persone':
-                payment.associate = scoped_queryset(request, Associate.objects).get(associate_id=data['complex_item']['associate_id'])
+            field, party = _payment_party(request, sport_association, data['complex_item'])
+            if field is not None:
+                setattr(payment, field, party)
 
         payment.save()
 
@@ -278,11 +302,9 @@ def payment_bulk_add(request):
     # Payment category
     payment_category_id = data.get('payment_category')
     if payment_category_id:
-        payment_category = PaymentCategory.objects.filter(pk=payment_category_id).first()
+        payment_category = PaymentCategory.get_all_categories(sport_association).filter(pk=payment_category_id).first()
     else:
-        payment_category = PaymentCategory.objects.filter(
-            name__iexact='entrate e proventi da attività tipiche'
-        ).first()
+        payment_category = PaymentCategory.default_for(sport_association)
 
     # Description - generate based on subject if not provided
     description = data.get('description')
@@ -399,6 +421,9 @@ def payment_sign(request):
             payment = scoped_queryset(request, Payment.objects).filter(payment_id=data['payment_id']).first()
             if payment is None:
                 raise ValidationError('payment not found')
+            # payment signing only applies to the caller's association
+            if payment.sport_association_id != request.user.sport_association.sport_association_id:
+                raise PermissionDenied("User not allowed.")
 
         signature = SignatureRequestSerializer(data=data['signature'])
 
@@ -532,6 +557,10 @@ def payment_update(request, uid):
 
     if 'payment_date' in data.keys() and data['payment_date'] == '':
         del data['payment_date']
+
+    # the row is the one named by the path; a key in the body never moves the update to another row
+    if 'payment_id' in data.keys():
+        del data['payment_id']
     # update fields with serializer, if not valid return error
     serializer = PaymentEntrySerializer(payment, data=data, partial=True)
     if serializer.is_valid(raise_exception=True):
@@ -542,18 +571,12 @@ def payment_update(request, uid):
             payment.instructor = None
             payment.supplier = None
             payment.associate = None
-            if data['complex_item']['group'] == 'Istruttori':
-                payment.instructor = Instructor.objects.get(instructor_id=data['complex_item']['instructor_id'])
-            if data['complex_item']['group'] == 'Fornitori':
-                payment.supplier = SupplierAndCustomers.objects.get(supplier_id=data['complex_item']['supplier_id'])
-            if data['complex_item']['group'] == 'Iscrizioni':
-                payment.associate = scoped_queryset(request, Subscription.objects).get(
-                    subscription_id=data['complex_item']['subscription_id']).associate
-            if data['complex_item']['group'] == 'Persone':
-                payment.associate = scoped_queryset(request, Associate.objects).get(associate_id=data['complex_item']['associate_id'])
+            field, party = _payment_party(request, sport_association, data['complex_item'])
+            if field is not None:
+                setattr(payment, field, party)
 
         if 'subscription_id' in data.keys() and data['subscription_id']:
-            payment.associate = scoped_queryset(request, Subscription.objects).get(subscription_id=data['subscription_id']).associate
+            payment.associate = _payment_subscription_associate(request, sport_association, data['subscription_id'])
         payment.payment_intent_id = None # reset payment intent id if changing the payment info
         serializer.save()
         # get the invoice for the payment and refresh the document
@@ -757,9 +780,19 @@ def payment_list(request):
     payments = []
     # case athlete is asking for his payments
     if User.ATHLETE == request.user.role and course_subscription_id is not None:
-        course_subscription = scoped_queryset(request, CourseSubscription.objects).filter(
+        course_subscriptions = scoped_queryset(request, CourseSubscription.objects).filter(
             course_subscription_id=course_subscription_id
-        ).select_related('course').first()
+        )
+        if getattr(request, 'impersonation_association', None) is None:
+            # The same people as the list below: the athlete's subscriptions and those of their associates.
+            own_subscriptions = scoped_queryset(request, Subscription.objects).filter(user=request.user)
+            course_subscriptions = course_subscriptions.filter(
+                Q(subscription__user=request.user) |
+                Q(subscription__associate__in=own_subscriptions.filter(associate__isnull=False).values('associate'))
+            )
+        course_subscription = course_subscriptions.select_related('course').first()
+        if course_subscription is None:
+            raise PermissionDenied('Risorsa non disponibile per questo utente e associazione.')
         if course_subscription.multi_payments:
             installments = scoped_queryset(request, CourseSubscriptionInstallment.objects).filter(course_subscription=course_subscription)
             for installment in installments:
@@ -947,7 +980,7 @@ def payment_list(request):
                 payments = smart_search(payments, general_search)
         # sort by field
         if sort_field:
-            payments = payments.order_by(f"{'-' if sort_type == 'desc' else ''}{sort_field}")
+            payments = payments.order_by(checked_ordering(payments, f"{'-' if sort_type == 'desc' else ''}{sort_field}"))
 
         # pagination
         payments = paginator.paginate_queryset(queryset=payments, request=request)
@@ -2073,17 +2106,19 @@ def payment_category_add(request):
         logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    serializer = PaymentCategorySerializer(data=request.data)
-    # get the sport association of the user
-    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+    with atomic_audit_mutation():
+        sport_association = _locked_payment_category_association(request)
+        if sport_association is None:
+            return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # set the sport association of the payment category
-    serializer.initial_data['sport_association'] = sport_association.sport_association_id
+        serializer = PaymentCategorySerializer(data=request.data)
+        # New categories always belong to the current association.
+        serializer.initial_data['sport_association'] = sport_association.sport_association_id
 
-    if serializer.is_valid():
-        serializer.save()
-        logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
-        return Response({'data': serializer.data, 'msg': 'payment category created'}, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
+            return Response({'data': serializer.data, 'msg': 'payment category created'}, status=status.HTTP_200_OK)
 
     logger.info("payment_category_add -> ended -> user: {}".format(request.user.user_id))
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -2100,24 +2135,26 @@ def payment_category_update(request, uid):
         logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # get the sport association of the user
-    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user).first()
+    with atomic_audit_mutation():
+        sport_association = _locked_payment_category_association(request)
+        if sport_association is None:
+            return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # check that the payment category is of the sport association
-    payment_category = PaymentCategory.objects.filter(
-        payment_category_id=uid,
-        sport_association=sport_association
-    ).first()
+        # Validate and audit current values after concurrent mutations finish.
+        payment_category = PaymentCategory.objects.select_for_update().filter(
+            payment_category_id=uid,
+            sport_association=sport_association
+        ).first()
 
-    if not payment_category:
-        logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
-        return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
+        if payment_category is None:
+            logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
+            return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = PaymentCategorySerializer(payment_category, data=request.data, partial=True)
-    if serializer.is_valid():
-        serializer.save()
-        logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
-        return Response({'data': serializer.data, 'msg': 'payment category updated'}, status=status.HTTP_200_OK)
+        serializer = PaymentCategorySerializer(payment_category, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
+            return Response({'data': serializer.data, 'msg': 'payment category updated'}, status=status.HTTP_200_OK)
 
     logger.info("payment_category_update -> ended -> user: {}".format(request.user.user_id))
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -2134,22 +2171,33 @@ def payment_category_delete(request, uid):
         logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
         return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # get the sport association of the user
-    sport_association = scoped_queryset(request, SportAssociation.objects).filter(user=request.user). first()
+    with atomic_audit_mutation():
+        sport_association = _locked_payment_category_association(request)
+        if sport_association is None:
+            return Response({'error': 'user not authorized'}, status=status.HTTP_403_FORBIDDEN)
 
-    # check that the payment category sport association is the same of the user
-    payment_category = PaymentCategory.objects.filter(
-        payment_category_id=uid,
-        sport_association=sport_association
-    ).first()
+        payment_category = PaymentCategory.objects.select_for_update().filter(
+            payment_category_id=uid,
+            sport_association=sport_association
+        ).first()
 
-    if payment_category is None:
-        logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
-        return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
+        if payment_category is None:
+            logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
+            return Response({'error': 'payment category not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    payment_category.deleted = True
-    payment_category.save()
+        payment_category.deleted = True
+        payment_category.save()
 
     logger.info("payment_category_delete -> ended -> user: {}".format(request.user.user_id))
 
     return Response({'msg': 'payment category deleted'}, status=status.HTTP_200_OK)
+
+
+def _locked_payment_category_association(request):
+    # Match profile_update's user -> association lock order before locking a
+    # category. Audit writes also reference the user and association, so taking
+    # their locks first avoids reversing that order during FK checks.
+    user = User.objects.select_for_update().filter(pk=request.user.pk).first()
+    if user is None or not user.is_active or user.role != User.ASSOCIATION:
+        return None
+    return scoped_queryset(request, SportAssociation.objects).select_for_update().filter(user=user).first()
