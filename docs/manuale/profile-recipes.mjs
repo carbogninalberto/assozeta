@@ -14,7 +14,7 @@ const reviewed = {
   "BE/application/models/subscriptions_models.py": "348705bf0908ccd489167eb26c4975dc51ddfd77d82d7699f7cc1dbf69c17c7c",
   "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa",
   "UI/src/routes/association/Members/detail/sections/Medical.svelte": "e577b134442d77f32b4950935b9efd2e650cb6d3248c2f9c481bf0eae6bef2c5",
-  "UI/src/routes/association/Members/detail/sections/modals/AddMedicalCertificate.svelte": "95803afa6d9e428067e18c4f560c5e70bffa01a57360f0ee8eac746bd2dcf3e8",
+  "UI/src/routes/association/Members/detail/sections/modals/AddMedicalCertificate.svelte": "5f24574bfba22af294439d2844ff6ada728fbc9ed483dac5f0d22badf54ec7ae",
   "UI/src/routes/association/Members/detail/sections/modals/medicalCertificateUpload.js": "8b78ae7aaf29c309c5eaf6d8f2ed00078a085beba54ef7316675a585f2a83f21"
 };
 const contracts = [

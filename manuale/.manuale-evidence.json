@@ -3163,11 +3163,11 @@
       "title": "Consigli per una gestione efficiente",
       "content_sha256": "f729345b2224cfb21a7db1b57fce3a3e770a37e8024e8e2e2c1c75eacc76a520",
       "recipe_module": "docs/manuale/profile-recipes.mjs",
-      "recipe_sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+      "recipe_sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "10c8cc8db7b6d8a4c6318f929bc01c7fe0d4c94f562dd1fe816940e9b57fb9f6",
-        "sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+        "sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
         "purpose": "editorial-review-only"
       }
     },
@@ -3175,11 +3175,11 @@
       "title": "Dal profilo dell'atleta",
       "content_sha256": "43d5dbfe2f7bd342b80b75c89c9dd33bb18ea0249eea04069d08dbc07c359423",
       "recipe_module": "docs/manuale/profile-recipes.mjs",
-      "recipe_sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+      "recipe_sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "10c8cc8db7b6d8a4c6318f929bc01c7fe0d4c94f562dd1fe816940e9b57fb9f6",
-        "sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+        "sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
         "purpose": "editorial-review-only"
       }
     },
@@ -3187,11 +3187,11 @@
       "title": "Impostare la data di scadenza",
       "content_sha256": "26b00057a3718068cdd30b4ef1a7771a195cfbc8a54b8f6ec12e0a83328b14ce",
       "recipe_module": "docs/manuale/profile-recipes.mjs",
-      "recipe_sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+      "recipe_sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "10c8cc8db7b6d8a4c6318f929bc01c7fe0d4c94f562dd1fe816940e9b57fb9f6",
-        "sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+        "sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
         "purpose": "editorial-review-only"
       }
     },
@@ -3199,11 +3199,11 @@
       "title": "Tieni traccia dei certificati agonistici",
       "content_sha256": "9c6c681f1b2b568cc42a69836735ea5a92393723a0645ab63f9d5227281c1ef4",
       "recipe_module": "docs/manuale/profile-recipes.mjs",
-      "recipe_sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+      "recipe_sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "10c8cc8db7b6d8a4c6318f929bc01c7fe0d4c94f562dd1fe816940e9b57fb9f6",
-        "sha256": "01383d39659f8a1d8230a2f2a876127a2acbf91ec1a17cf63b567e301fc6399e",
+        "sha256": "4a657059c4ad40ce96a16aff66bb8d92747330b6ab811e7e025d2add308723ce",
         "purpose": "editorial-review-only"
       }
     },
@@ -4315,11 +4315,11 @@
       "title": "Caricare un certificato medico",
       "content_sha256": "d96bd20cbd67986b9ce21a2e9d4bfad5cdd5b1ebe32d6fff3fb28679764f350f",
       "recipe_module": "docs/manuale/member-additional-reference-recipes.mjs",
-      "recipe_sha256": "5f0478e008acabc6af3c0fdc4e5c26cf513f2126bf0c2d250f082ac1bdf63e43",
+      "recipe_sha256": "6fbc97c3149da4c05c4de66ba6eca098272c038ba9203fbf574bafcf06c99495",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "e5c402a10c2821d324cefc377b1379252000390cd6840b404a676e276cbc71d0",
-        "sha256": "5f0478e008acabc6af3c0fdc4e5c26cf513f2126bf0c2d250f082ac1bdf63e43",
+        "sha256": "6fbc97c3149da4c05c4de66ba6eca098272c038ba9203fbf574bafcf06c99495",
         "purpose": "editorial-review-only"
       }
     },
@@ -4351,11 +4351,11 @@
       "title": "Aggiornare un certificato medico",
       "content_sha256": "547a8da5df934053ce4743ec29d9b02db75692451b8c66dd0079333d569b6fa9",
       "recipe_module": "docs/manuale/member-additional-reference-recipes.mjs",
-      "recipe_sha256": "8209fd001ef160ed270e824f85ed8b42864734acb8d431afd5ce0e4e6922fb34",
+      "recipe_sha256": "8f2f3efc96cf12d59d52ea0f72271811b18fc3a02b536025028e63aee371d0fa",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "7bd5fb9be3cfb5be65a9f7f15a9d6a7f6b447ef658c983590862ad8a770628ca",
-        "sha256": "8209fd001ef160ed270e824f85ed8b42864734acb8d431afd5ce0e4e6922fb34",
+        "sha256": "8f2f3efc96cf12d59d52ea0f72271811b18fc3a02b536025028e63aee371d0fa",
         "purpose": "editorial-review-only"
       }
     },
@@ -4375,11 +4375,11 @@
       "title": "Caricare un certificato medico",
       "content_sha256": "a7edcbd5dd869104105464b1b8dc3722a3d44a877200bc2e4ca347f65023792b",
       "recipe_module": "docs/manuale/member-additional-reference-recipes.mjs",
-      "recipe_sha256": "29e644784733d5fabb50715d1224ab190cde6652d6c674aad4b8f8378de425f8",
+      "recipe_sha256": "5c9ea656db7a4be4511e2d133adc8dabd7dcc2362b732bdb78ca23592fa62bda",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "852803e3c408068a45fb5326dcfaf5755e591692c2c722c5e9a8515d547fab03",
-        "sha256": "29e644784733d5fabb50715d1224ab190cde6652d6c674aad4b8f8378de425f8",
+        "sha256": "5c9ea656db7a4be4511e2d133adc8dabd7dcc2362b732bdb78ca23592fa62bda",
         "purpose": "editorial-review-only"
       }
     },

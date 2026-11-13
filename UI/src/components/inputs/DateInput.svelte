@@ -144,6 +144,23 @@
         -webkit-appearance: textfield;
     }
 
+    /* iOS Safari renders the value in an inner box that ignores the input's
+       alignment: left-align it and centre it vertically. */
+    input[type='date'],
+    input[type='datetime-local'] {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        min-width: 0;
+    }
+
+    input[type='date']::-webkit-date-and-time-value,
+    input[type='datetime-local']::-webkit-date-and-time-value {
+        text-align: left;
+        margin: 0;
+        min-height: 1.5em;
+    }
+
     .input-group {
         flex-wrap: nowrap;
     }

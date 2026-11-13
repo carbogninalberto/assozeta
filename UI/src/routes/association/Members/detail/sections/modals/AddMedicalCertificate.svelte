@@ -33,7 +33,7 @@
 
     async function handleSubmit(e) {
         e.preventDefault();
-        if (saving || uploading || (mode === 'all' && !uploadedFile)) return;
+        if (saving || uploading) return;
         if (!expirationFromResponse(certificate_expiring_date)) {
             toast.error('Inserisci una data di scadenza valida.');
             return;
@@ -227,7 +227,7 @@
             <button type="button" disabled={saving} class="btn btn-light-primary font-weight-bold" on:click={() => (show = false)}>
                 {uploadedFile ? 'Chiudi' : 'Annulla'}
             </button>
-            <button type="submit" disabled={saving || uploading || (mode === 'all' && !uploadedFile)} class="btn btn-primary font-weight-bold"> {saving ? 'Salvataggio...' : 'Salva'} </button>
+            <button type="submit" disabled={saving || uploading} class="btn btn-primary font-weight-bold"> {saving ? 'Salvataggio...' : 'Salva'} </button>
         </div>
     </form>
 </BasicModal>
