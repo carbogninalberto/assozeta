@@ -45,7 +45,6 @@ BLOCKED_EXTERNAL_RESOURCES = (
      'method': 'GET', 'resource_type': 'stylesheet'},
     {'url': 'https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700',
      'method': 'GET', 'resource_type': 'stylesheet'},
-    {'url': 'https://js.stripe.com/v3/', 'method': 'GET', 'resource_type': 'script'},
     {'url': 'https://accounts.google.com/gsi/client', 'method': 'GET', 'resource_type': 'script'},
 )
 EXPECTED_PRECONNECT_HINTS = ('https://fonts.gstatic.com', 'https://fonts.googleapis.com')

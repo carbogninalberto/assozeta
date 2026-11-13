@@ -38,7 +38,7 @@ export const coursePaymentAdditionalReviewedSources = Object.freeze({
     "BE/application/utils/stripe_utils.py": "5eb9238ba059bd0e2247235dc33cbd2502c38d8cb1e81f793583b34e270b9bab",
     "BE/application/views/stripe_views.py": "4501535744d50336d5a3a041552c9543c94c8b2d84dd7e4a631245960bb1df1f",
     "UI/src/routes/activities/payment/PaymentList.svelte": "9f913de33eea435d9a5c0487f28b1df466ee8198d66564fd7ffdeee817256151",
-    "UI/src/routes/stripe/Checkout.svelte": "3c619dd299432dadf62a76649f9f55318f526ea477835618d32457c0a8f776b2",
+    "UI/src/routes/stripe/Checkout.svelte": "bfe206182d72ed3ce6ee1efb85517e1653b9af80e8c68760cad1169be38f7d73",
     "BE/application/permissions_registry.py": "b8318ad63daa9452ac736b2152449b14c49f73bc1417622a4181b7c3ceb3b1fa"
 });
 

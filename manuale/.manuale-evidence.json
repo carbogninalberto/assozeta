@@ -5071,7 +5071,7 @@
       "title": "Come pagano gli atleti",
       "content_sha256": "b35a85b0d1ef0590691a892e2cfd38113f726d358e550cf0332133ef0ae4dc85",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "d2e0ef8c1ad182891f023318f1fcc7c40847f09f2636e3a6f92ea25ddc56f679",
+      "recipe_sha256": "29bd99295bc6ea40f8e456e9b27de4ddcddee08d06904a54e29bf0823806e68e",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "4ee63caa3701db3691a269f2825da9d5fb4d9b0fb6a46ce7af2f6568dcee9a2d",
@@ -5167,7 +5167,7 @@
       "title": "Come funziona per i tuoi atleti?",
       "content_sha256": "6fe7f2fd3393d4c2a8d863b1994c93961a32bbc6f0d6dcb4a68667ca0f4b9eea",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "d2e0ef8c1ad182891f023318f1fcc7c40847f09f2636e3a6f92ea25ddc56f679",
+      "recipe_sha256": "29bd99295bc6ea40f8e456e9b27de4ddcddee08d06904a54e29bf0823806e68e",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "4ee63caa3701db3691a269f2825da9d5fb4d9b0fb6a46ce7af2f6568dcee9a2d",
@@ -5203,7 +5203,7 @@
       "title": "I pagamenti sono sicuri?",
       "content_sha256": "c5755aa6b736278d337b07936c486bb24d2835d1c2718c77ef01af3820cd3477",
       "recipe_module": "docs/manuale/course-payment-additional-reference-recipes.mjs",
-      "recipe_sha256": "dd054c7470f8a1a6c6c1323609622caf8055e547ec33f07090567c0bd2fcd7eb",
+      "recipe_sha256": "baadb7642afbb2534320c1a46ff34ed1a8794f6034a46b236e2cf179ff384e56",
       "content_source": "authored-mdx",
       "recipe_review": {
         "previous_sha256": "5cf49452acd85b720410781c25dd4dc93ef1f4c68d069f308332d9ecf34a64fd",

@@ -17,6 +17,7 @@ No third-party license listed below grants rights to this application's own sour
 | @ernane/svelte-star-rating | MIT |
 | @event-calendar/build | MIT |
 | @sveltejs/vite-plugin-svelte | MIT |
+| @stripe/stripe-js | MIT |
 | @tiptap/core | MIT |
 | @tiptap/extension-bubble-menu | MIT |
 | @tiptap/extension-dropcursor | MIT |

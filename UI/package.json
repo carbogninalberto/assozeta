@@ -51,6 +51,7 @@
     "@capacitor/core": "^8.5.3",
     "@ernane/svelte-star-rating": "^1.1.4",
     "@event-calendar/build": "^5.7.1",
+    "@stripe/stripe-js": "^2.4.0",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@tiptap/core": "^3.32.0",
     "@tiptap/extension-dropcursor": "^3.32.0",
