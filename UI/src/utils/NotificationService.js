@@ -170,7 +170,8 @@ class NotificationService {
 
     async syncActiveExport() {
         // Athlete notifications share this socket but have no association exports.
-        if (get(role) !== 'association') return;
+        // Administrators manage the main association's data, so they sync too.
+        if (!['association', 'administrator'].includes(get(role))) return;
         if (this.activeExportSync) return this.activeExportSync;
         this.activeExportSync = (async () => {
             try {
