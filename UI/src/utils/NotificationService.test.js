@@ -20,3 +20,6 @@ test('athlete notification connections do not request association export state',
 test('association connections still recover their export state',async()=>{
     const f=fixture('association');await f.service.syncActiveExport();assert.equal(f.calls(),1);assert.equal(f.resets(),1);
 });
+test('administrator connections recover the managed association export state',async()=>{
+    const f=fixture('administrator');await f.service.syncActiveExport();assert.equal(f.calls(),1);assert.equal(f.resets(),1);
+});
