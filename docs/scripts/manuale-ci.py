@@ -469,7 +469,29 @@ def sanitize(text):
     return re.sub(r'(?:/[^\s:]+)+', '[local path]', str(text))
 
 
-def cache_report(run=None, admission=None, previous=None):
+def reason_category(reason):
+    """Low-cardinality label for one workflow capture reason (never a local path).
+
+    The detail that follows a stable prefix is dropped so the job summary shows
+    a handful of buckets instead of one row per workflow.
+    """
+    text = ' '.join(str(reason if reason is not None else '').split())
+    rejected = re.match(r'^(rejected \([^()]*\))', text)
+    if rejected:
+        # Keep the exception name in parentheses, drop everything after it.
+        category = rejected.group(1)
+    elif text.startswith(('impact:', 'miss:', 'cold:')):
+        category = text
+    elif text.startswith('fingerprint unavailable'):
+        category = 'fingerprint unavailable'
+    elif ' (' in text:
+        category = text.split(' (', 1)[0]
+    else:
+        category = text[:60]
+    return sanitize(category)
+
+
+def cache_report(run=None, admission=None, previous=None, store_plan=None):
     """Hit/miss and fresh/reused facts recorded by the run; nothing estimated."""
     report = {'format': 1, 'hits': [], 'misses': [], 'artifacts': {}}
     if previous and Path(previous).is_file():
@@ -509,6 +531,26 @@ def cache_report(run=None, admission=None, previous=None):
             if decision.get('kind') == 'frontend':
                 target = report['hits'] if decision.get('result') == 'reused' else report['misses']
                 target.append({'name': 'frontend build', 'detail': sanitize(decision.get('reason', decision.get('result')))})
+    plan = None
+    if store_plan:
+        try:
+            value = json.loads(Path(store_plan).read_text())
+        except (OSError, ValueError):
+            value = None
+        if isinstance(value, dict) and isinstance(value.get('workflows'), list):
+            plan = value
+    if plan is not None:
+        counts, reused = {}, 0
+        for item in plan['workflows']:
+            if not isinstance(item, dict):
+                continue
+            if item.get('decision') == 'reuse':
+                reused += 1
+            elif item.get('decision') == 'capture':
+                category = reason_category(item.get('reason'))
+                counts[category] = counts.get(category, 0) + 1
+        report['fresh_reasons'] = dict(sorted(counts.items(), key=lambda pair: (-pair[1], pair[0])))
+        report['reused_count'] = reused
     return report
 
 
@@ -799,6 +841,7 @@ def main():
     parser.add_argument('--with-browser', action='store_true', help='offline: include Chromium helper tests')
     parser.add_argument('--admission', help='report: baseline admission report')
     parser.add_argument('--merge', help='report: earlier cache report to extend')
+    parser.add_argument('--store-plan', help='report: evidence-store plan with per-workflow decisions')
     parser.add_argument('--needs-json', help='gate: toJSON(needs) of the gating job')
     parser.add_argument('--comprehensive', default='true', help='gate: true for release (Mode C) verification')
     parser.add_argument('--revision', help='gate: exact application revision')
@@ -817,7 +860,7 @@ def main():
         offline(args)
         return
     if args.command == 'report':
-        write(args.output, cache_report(args.run, args.admission, args.merge))
+        write(args.output, cache_report(args.run, args.admission, args.merge, args.store_plan))
         return
     if args.command == 'gate':
         if not args.revision:

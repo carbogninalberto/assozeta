@@ -123,6 +123,35 @@ class SummaryTests(unittest.TestCase):
         self.assertIn('(full verification required)', report)
         self.assertIn('**Mode:** `unknown`', timing.summarize('/nonexistent', '/nonexistent', '/nonexistent'))
 
+    def test_summary_renders_why_workflows_were_captured_fresh(self):
+        report = timing.summarize(None, {'mode': 'full'}, {
+            'fresh_workflows': ['a', 'b', 'c'], 'reused_workflows': [], 'reused_count': 2,
+            'fresh_reasons': {'miss: no evidence at this fingerprint': 2,
+                              'impact: full verification required': 1}})
+        self.assertIn('**Why workflows were captured fresh:**', report)
+        self.assertIn('| Reason | Workflows |', report)
+        self.assertIn('| miss: no evidence at this fingerprint | 2 |', report)
+        self.assertIn('| impact: full verification required | 1 |', report)
+        self.assertLess(report.index('miss: no evidence'), report.index('impact: full'))
+        self.assertLess(report.index('**Evidence:**'), report.index('**Why workflows were captured fresh:**'))
+
+    def test_fresh_reason_table_is_bounded_at_ten_rows_and_sanitizes_paths(self):
+        reasons = {f'reason {index:02d}': 1 for index in range(12)}
+        reasons['changed /home/runner/work/x'] = 5
+        report = timing.summarize(None, None, {'fresh_reasons': reasons})
+        rows = [line for line in report.splitlines() if line.startswith('| reason ') or line.startswith('| changed ')]
+        self.assertEqual(len(rows), 10)
+        self.assertIn('| changed [local path] | 5 |', report)
+        self.assertIn('... 3 more', report)
+        self.assertNotIn('/home/runner', report)
+
+    def test_summary_without_fresh_reasons_is_unchanged(self):
+        cache = {'fresh_workflows': ['a'], 'reused_workflows': []}
+        self.assertNotIn('Why workflows were captured fresh', timing.summarize(None, None, cache))
+        self.assertNotIn('Why workflows were captured fresh',
+                         timing.summarize(None, None, {**cache, 'fresh_reasons': {}}))
+        self.assertEqual(timing.summarize(None, None, cache), timing.summarize(None, None, dict(cache)))
+
     def test_cli_summary_appends_to_the_step_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'summary.md'
