@@ -111,8 +111,11 @@ export async function scenario({id, actions}) {
         browserLaunchMs = performance.now() - launchMark;
         const owner = await actor();
         const actionsMark = performance.now();
-        await actions({...owner, actor, input, capture, report});
-        actionsMs = performance.now() - actionsMark;
+        try {
+            await actions({...owner, actor, input, capture, report});
+        } finally {
+            actionsMs = performance.now() - actionsMark;
+        }
         expect(report.screenshots.map(image => image.checkpoint).sort()).toEqual(checkpoints.map(point => point.id).sort());
         expect(errors).toEqual([]);
         const denials = reconcileBrowserDenials(failedResponses, report.expected_denials);

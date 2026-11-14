@@ -135,5 +135,130 @@ class SummaryTests(unittest.TestCase):
         self.assertIn('| offline:python | passed | 1.2 s |', text)
 
 
+SPANS = (
+    {'scope': 'scenario', 'scenario': 'alpha', 'status': 'passed', 'browser_launch_ms': 1000,
+     'actions_ms': 4000, 'total_ms': 5500, 'checkpoints': 2},
+    {'scope': 'scenario', 'scenario': 'beta', 'status': 'failed', 'browser_launch_ms': 500,
+     'actions_ms': 1000, 'total_ms': 2000, 'checkpoints': 1},
+    {'scope': 'checkpoint', 'scenario': 'alpha', 'checkpoint': 'first', 'settle_ms': 100, 'ready_ms': 200,
+     'first_shot_ms': 300, 'stability_ms': 300, 'stability_shots': 4, 'write_ms': 100, 'crop_ms': 100,
+     'hash_ms': 100, 'total_ms': 1200},
+    {'scope': 'checkpoint', 'scenario': 'alpha', 'checkpoint': 'second', 'settle_ms': 100, 'ready_ms': 100,
+     'first_shot_ms': 200, 'stability_ms': 300, 'stability_shots': 3, 'write_ms': 100, 'crop_ms': 100,
+     'hash_ms': 100, 'total_ms': 1000},
+    {'scope': 'checkpoint', 'scenario': 'beta', 'checkpoint': 'only', 'settle_ms': 100, 'ready_ms': 100,
+     'first_shot_ms': 100, 'stability_ms': 100, 'stability_shots': 2, 'write_ms': 100, 'crop_ms': 100,
+     'hash_ms': 100, 'total_ms': 700},
+)
+
+
+def write_spans(path, spans):
+    Path(path).write_text(''.join(json.dumps(span) + '\n' for span in spans))
+    return Path(path)
+
+
+class SpanTests(unittest.TestCase):
+    def test_span_file_sits_beside_the_timing_file_only_when_one_is_named(self):
+        self.assertIsNone(timing.span_file_for(None))
+        self.assertIsNone(timing.span_file_for(''))
+        self.assertEqual(timing.span_file_for(Path('/run/timings.jsonl')),
+                         Path('/run/timings.jsonl' + timing.SPAN_SUFFIX))
+        self.assertEqual(timing.span_file_for('run/timings.jsonl'),
+                         Path('run/timings.jsonl.spans.jsonl'))
+
+    def test_read_spans_ignores_missing_files_unusable_lines_and_string_numbers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'run.spans.jsonl'
+            self.assertEqual(timing.read_spans(path), [])
+            self.assertEqual(timing.read_spans(None), [])
+            path.write_text(
+                json.dumps(SPANS[2]) + '\n'
+                + '{"scope": "other", "scenario": "alpha"}\n'
+                + '[1]\n'
+                + '{"scope": "checkpoint", "scenario": "alpha", "checkpoint": "string", "settle_ms": "100", '
+                  '"ready_ms": 200, "first_shot_ms": 300, "stability_ms": 300, "write_ms": 100, '
+                  '"crop_ms": 100, "hash_ms": 100, "total_ms": 1200}\n'
+                + '{"scope": "scenario", "scenario": "truncated", "browser_launch_ms": 100,\n')
+            spans = timing.read_spans(path)
+        self.assertEqual([(span['scope'], span['checkpoint']) for span in spans], [('checkpoint', 'first')])
+
+    def test_summarize_spans_splits_capture_cost_in_seconds(self):
+        self.assertEqual(timing.summarize_spans(SPANS), {
+            'scenarios': 2, 'checkpoints': 3,
+            'scenario_total': 7.5, 'browser_launch': 1.5, 'actions': 5.0, 'capture': 2.9,
+            'non_capture_actions': 2.1,
+            'settle': 0.3, 'ready': 0.4, 'first_shot': 0.6, 'stability': 0.7,
+            'write': 0.3, 'crop': 0.3, 'hash': 0.3,
+            'stability_shots': 9,
+            'slowest': [{'scenario': 'alpha', 'total': 5.5, 'capture': 2.2, 'checkpoints': 2},
+                        {'scenario': 'beta', 'total': 2.0, 'capture': 0.7, 'checkpoints': 1}],
+        })
+
+    def test_summarize_spans_of_empty_input_is_zeros_and_never_divides_by_zero(self):
+        zeros = {'scenarios': 0, 'checkpoints': 0, 'scenario_total': 0.0, 'browser_launch': 0.0,
+                 'actions': 0.0, 'capture': 0.0, 'non_capture_actions': 0.0, 'settle': 0.0, 'ready': 0.0,
+                 'first_shot': 0.0, 'stability': 0.0, 'write': 0.0, 'crop': 0.0, 'hash': 0.0,
+                 'stability_shots': 0, 'slowest': []}
+        self.assertEqual(timing.summarize_spans([]), zeros)
+        self.assertEqual(timing.summarize_spans(None), zeros)
+        report = timing.summarize(None, {'mode': 'behavioral'}, None)
+        self.assertNotIn('Capture cost split', report)
+
+    def test_slowest_scenarios_are_bounded_and_ties_break_on_name(self):
+        spans = [{'scope': 'scenario', 'scenario': 's' + str(index), 'status': 'passed',
+                  'browser_launch_ms': 0, 'actions_ms': 0, 'total_ms': (7 - index) * 1000, 'checkpoints': 0}
+                 for index in range(1, 7)]
+        spans.append({'scope': 'scenario', 'scenario': 'zzz', 'status': 'passed', 'browser_launch_ms': 0,
+                      'actions_ms': 0, 'total_ms': 6000, 'checkpoints': 0})
+        slowest = timing.summarize_spans(spans)['slowest']
+        self.assertEqual([item['scenario'] for item in slowest], ['s1', 'zzz', 's2', 's3', 's4'])
+
+
+class SpanSummaryTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.directory = Path(self.temporary.name)
+        self.file = self.directory / 'timings.jsonl'
+        timing.record('capture', 30.0, {'status': 'passed'}, file=self.file)
+        self.spans = self.directory / 'timings.jsonl.spans.jsonl'
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def test_capture_split_is_appended_only_when_the_spans_file_exists(self):
+        baseline = timing.summarize(self.file, None, None)
+        self.assertNotIn('Capture cost split', baseline)
+        write_spans(self.spans, SPANS)
+        report = timing.summarize(self.file, None, None)
+        self.assertTrue(report.startswith(baseline.rstrip('\n') + '\n\n**Capture cost split (summed over 2 scenarios, 3 checkpoints):**'))
+        self.assertIn('| Browser launch | 1.5 s | 20.0% |', report)
+        self.assertIn('| Actions outside screenshots | 2.1 s | 28.0% |', report)
+        self.assertIn('| Screenshot capture (total) | 2.9 s | 38.7% |', report)
+        self.assertIn('| &nbsp;&nbsp;settle | 0.3 s | 4.0% |', report)
+        self.assertIn('| &nbsp;&nbsp;first shot | 0.6 s | 8.0% |', report)
+        self.assertIn('| &nbsp;&nbsp;stability | 0.7 s | 9.3% |', report)
+        self.assertIn('- `alpha` - 5.5 s total, 2.2 s capture, 2 checkpoints', report)
+        self.assertIn('- `beta` - 2.0 s total, 0.7 s capture, 1 checkpoint', report)
+        self.assertIn('stability includes the fixed 100 ms waits', report)
+        self.spans.unlink()
+        self.assertEqual(timing.summarize(self.file, None, None), baseline)
+
+    def test_capture_split_publishes_ids_without_local_paths_or_secrets(self):
+        write_spans(self.spans, [
+            {'scope': 'scenario', 'scenario': '/home/runner/work/assozeta/assozeta', 'status': 'passed',
+             'browser_launch_ms': 1000, 'actions_ms': 1000, 'total_ms': 2000, 'checkpoints': 1},
+            {'scope': 'checkpoint', 'scenario': '/home/runner/work/assozeta/assozeta', 'checkpoint': 'members',
+             'settle_ms': 100, 'ready_ms': 100, 'first_shot_ms': 100, 'stability_ms': 100,
+             'stability_shots': 2, 'write_ms': 100, 'crop_ms': 100, 'hash_ms': 100, 'total_ms': 700},
+        ])
+        report = timing.summarize(self.file, None, None)
+        section = report[report.index('**Capture cost split'):]
+        self.assertIn('[local path]', section)
+        for forbidden in ('/home/runner', str(self.directory)):
+            self.assertNotIn(forbidden, section)
+        for forbidden in ('secret', 'token', 'password', 'api_key'):
+            self.assertNotIn(forbidden, section.lower())
+
+
 if __name__ == '__main__':
     unittest.main()
