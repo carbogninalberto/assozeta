@@ -19,6 +19,9 @@ export function pngDimensions(contents) {
     return {width: contents.readUInt32BE(16), height: contents.readUInt32BE(20)};
 }
 const hash = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+// Opt-in timing spans are plain milliseconds rounded to one decimal; they never
+// enter the returned evidence object or any file written by this module.
+const roundMs = value => Math.round(value * 10) / 10;
 async function settleRequests(page) {
     const instrumented = await page.evaluate(() => Boolean(window.__manualeRequestActivity));
     if (instrumented) {
@@ -32,7 +35,17 @@ async function settleRequests(page) {
     }
 }
 export async function captureFrame({page, run, relative, checkpoint, locator, clip, mask = [],
-    redactionReason = '', animations = 'disabled', blurEditableFocus = false}) {
+    redactionReason = '', animations = 'disabled', blurEditableFocus = false, onTiming}) {
+    const startedAt = performance.now();
+    const elapsed = since => performance.now() - since;
+    let settleMs = 0;
+    let readyMs = 0;
+    let firstShotMs = 0;
+    let stabilityMs = 0;
+    let stabilityShots = 0;
+    let writeMs = 0;
+    let cropMs = 0;
+    let hashMs = 0;
     const viewport = page.viewportSize();
     if (viewport?.width !== FULL_HD.width || viewport?.height !== FULL_HD.height
         || await page.evaluate(() => window.devicePixelRatio) !== 1) {
@@ -44,7 +57,10 @@ export async function captureFrame({page, run, relative, checkpoint, locator, cl
     // Wait for real reads and their dependent requests before documenting the UI.
     // A visible table can precede its totals/cards; that intermediate state is not
     // a completed manual step. Completed downloads are not application reads.
+    const settleMark = performance.now();
     await settleRequests(page);
+    settleMs = elapsed(settleMark);
+    const readyMark = performance.now();
     await page.mouse.move(0, 0);
     await page.evaluate(() => document.fonts.ready);
     if (locator) {
@@ -66,6 +82,7 @@ export async function captureFrame({page, run, relative, checkpoint, locator, cl
         });
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(resolve)));
     }
+    readyMs = elapsed(readyMark);
     if (locator) {
         clip = await locator.boundingBox();
         if (!clip) throw new Error('Screenshot focus is not visible');
@@ -74,21 +91,28 @@ export async function captureFrame({page, run, relative, checkpoint, locator, cl
     const masterPath = 'masters/' + relative;
     const masterFile = path.join(run, masterPath);
     const file = path.join(run, 'captures', relative);
+    const mkdirMark = performance.now();
     fs.mkdirSync(path.dirname(masterFile), {recursive: true});
     fs.mkdirSync(path.dirname(file), {recursive: true});
+    writeMs += elapsed(mkdirMark);
     const options = {animations, caret: 'hide', mask, maskColor: '#CBD5E1', fullPage: false};
     // Prove the checkpoint is visually settled with consecutive real captures.
     // Retain both images: this is same-state stability, not fresh-run identity.
+    const firstShotMark = performance.now();
     let previous = await page.screenshot(options);
+    firstShotMs = elapsed(firstShotMark);
     let stable;
     let unequalPair;
+    const stabilityMark = performance.now();
     for (let attempt = 0; attempt < 5; attempt++) {
         await page.waitForTimeout(100);
         const next = await page.screenshot(options);
+        stabilityShots++;
         if (previous.equals(next)) { stable = next; break; }
         unequalPair = [previous, next];
         previous = next;
     }
+    stabilityMs = elapsed(stabilityMark);
     if (!stable) {
         // Retain the actual last comparison for diagnosis. These are rejected
         // frames, never capture evidence; keep the same budget and exact match.
@@ -100,21 +124,34 @@ export async function captureFrame({page, run, relative, checkpoint, locator, cl
     }
     const repeatPath = 'masters/repeats/' + relative;
     const repeatFile = path.join(run, repeatPath);
+    const writeMark = performance.now();
     fs.mkdirSync(path.dirname(repeatFile), {recursive: true});
     fs.writeFileSync(masterFile, previous);
     fs.writeFileSync(repeatFile, stable);
     const masterSize = pngDimensions(fs.readFileSync(masterFile));
+    writeMs += elapsed(writeMark);
     if (masterSize.width !== FULL_HD.width || masterSize.height !== FULL_HD.height) {
         throw new Error('Captured master is not Full HD');
     }
+    const cropMark = performance.now();
     if (crop) await page.screenshot({...options, path: file, clip: crop});
     else fs.copyFileSync(masterFile, file);
     const size = pngDimensions(fs.readFileSync(file));
+    cropMs = elapsed(cropMark);
     if (crop && (size.width !== crop.width || size.height !== crop.height)) throw new Error('Crop dimensions differ from its bounds');
-    return {path: relative, sha256: hash(file), checkpoint, ...size,
-        master: {path: masterPath, sha256: hash(masterFile), ...masterSize},
+    const hashMark = performance.now();
+    const fileSha = hash(file);
+    const masterSha = hash(masterFile);
+    const repeatSha = hash(repeatFile);
+    hashMs = elapsed(hashMark);
+    if (onTiming) onTiming({settle_ms: roundMs(settleMs), ready_ms: roundMs(readyMs),
+        first_shot_ms: roundMs(firstShotMs), stability_ms: roundMs(stabilityMs),
+        stability_shots: stabilityShots, write_ms: roundMs(writeMs), crop_ms: roundMs(cropMs),
+        hash_ms: roundMs(hashMs), total_ms: roundMs(elapsed(startedAt))});
+    return {path: relative, sha256: fileSha, checkpoint, ...size,
+        master: {path: masterPath, sha256: masterSha, ...masterSize},
         stability: {scope: 'same-state-consecutive-captures', path: repeatPath,
-            sha256: hash(repeatFile), changed_pixel_fraction: 0},
+            sha256: repeatSha, changed_pixel_fraction: 0},
         ...(crop ? {clip: crop} : {}),
         ...(mask.length ? {redaction_reason: redactionReason || 'private field'} : {})};
 }

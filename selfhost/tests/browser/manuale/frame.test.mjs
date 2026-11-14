@@ -84,6 +84,35 @@ test('editable focus is preserved unless a completed-form capture explicitly rel
 });
 
 
+test('opt-in timing spans describe the capture without changing its evidence', async () => {
+    const run = fs.mkdtempSync(path.join(os.tmpdir(), 'manual-frame-timing-unit-'));
+    const browser = await chromium.launch();
+    try {
+        const page = await browser.newPage({viewport: {width: 1920, height: 1080}, deviceScaleFactor: 1});
+        await page.setContent('<style>body{margin:0}</style><main>Scheda associazione</main>');
+        const untimed = await captureFrame({page, run, relative: 'images/unit-untimed.png',
+            checkpoint: 'unit-timed'});
+        const timings = [];
+        const timed = await captureFrame({page, run, relative: 'images/unit-timed.png',
+            checkpoint: 'unit-timed', onTiming: numbers => timings.push(numbers)});
+        assert.deepEqual(Object.keys(timed), Object.keys(untimed));
+        assert.equal(timed.master.sha256, untimed.master.sha256);
+        assert.equal(timed.stability.sha256, untimed.stability.sha256);
+        assert.equal(timings.length, 1);
+        const numbers = timings[0];
+        const fields = ['settle_ms', 'ready_ms', 'first_shot_ms', 'stability_ms', 'stability_shots',
+            'write_ms', 'crop_ms', 'hash_ms', 'total_ms'];
+        assert.deepEqual(Object.keys(numbers).sort(), [...fields].sort());
+        for (const field of fields) {
+            assert.equal(typeof numbers[field], 'number', field);
+            assert.ok(Number.isFinite(numbers[field]), field);
+            assert.ok(numbers[field] >= 0, field);
+        }
+        assert.ok(numbers.stability_shots >= 1);
+        assert.ok(numbers.total_ms >= numbers.first_shot_ms);
+    } finally { await browser.close(); fs.rmSync(run, {recursive: true, force: true}); }
+});
+
 test('unstable captures retain the last unequal frames without accepting evidence', async () => {
     const run = fs.mkdtempSync(path.join(os.tmpdir(), 'manual-frame-unstable-unit-'));
     const browser = await chromium.launch();
