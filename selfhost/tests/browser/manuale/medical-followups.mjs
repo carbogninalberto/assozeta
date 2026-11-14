@@ -221,7 +221,7 @@ await scenario({id, actions: async ({page, api, open, actor, input, capture, rep
             const uploadProfile = async (actionName, name, date, checkpoint) => {
                 await drawer.getByRole('button', {name: actionName, exact: true}).click();
                 const modal = page.locator('#add-medical-certificate-modal'); await expect(modal).toBeVisible();
-                await expect(modal.getByRole('button', {name: 'Salva', exact: true})).toBeDisabled();
+                await expect(modal.getByRole('button', {name: 'Salva', exact: true})).toBeEnabled();
                 const pending = responseFor(`subscription/${memberId}/medical-certificate/upload`);
                 await modal.locator('input[type="file"]').setInputFiles({name, mimeType: 'application/pdf', buffer: fixtureBytes});
                 const response = await pending; expect(response.status()).toBe(200);

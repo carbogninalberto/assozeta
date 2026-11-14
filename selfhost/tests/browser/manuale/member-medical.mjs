@@ -18,7 +18,7 @@ await scenario({id: 'members-medical-manage', actions: async ({page, api, open, 
         await drawer.getByRole('button', {name: 'Nuovo Certificato', exact: true}).click();
         const modal = page.locator('#add-medical-certificate-modal');
         await expect(modal).toBeVisible();
-        await expect(modal.getByRole('button', {name: 'Salva', exact: true})).toBeDisabled();
+        await expect(modal.getByRole('button', {name: 'Salva', exact: true})).toBeEnabled();
         const document = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/documento-medico-demo.pdf');
         const uploaded = page.waitForResponse(response =>
             new URL(response.url()).pathname === `/api/subscription/${id}/medical-certificate/upload`
