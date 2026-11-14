@@ -29,6 +29,9 @@ ROOT = Path(__file__).resolve().parents[2]
 _shards_spec = importlib.util.spec_from_file_location('manuale_capture_shards', Path(__file__).with_name('manuale_capture_shards.py'))
 capture_shards = importlib.util.module_from_spec(_shards_spec)
 _shards_spec.loader.exec_module(capture_shards)
+_timing_spec = importlib.util.spec_from_file_location('manuale_timing', Path(__file__).with_name('manuale_timing.py'))
+manuale_timing = importlib.util.module_from_spec(_timing_spec)
+_timing_spec.loader.exec_module(manuale_timing)
 
 
 def runtime_check(root=None):
@@ -1154,6 +1157,10 @@ def capture_batch(state):
     """The sequential capture: one shared service stack, reseeded before every workflow."""
     run = Path(state['run'])
     environment = {**os.environ, 'ASSOZETA_MANUAL_RUN': str(run), 'ASSOZETA_MANUAL_APPLICATION': state['application']}
+    if os.environ.get('MANUALE_TIMING_FILE'):
+        # The harness writes per-checkpoint spans only when told where; they sit
+        # beside the stage timings so the job summary can split capture cost.
+        environment['MANUALE_SPAN_FILE'] = str(manuale_timing.span_file_for(os.environ['MANUALE_TIMING_FILE']))
     capture_error = None
     batch = {'format': 1, 'status': 'running', 'capture_id': state['capture_id'], 'scenarios': []}
     try:

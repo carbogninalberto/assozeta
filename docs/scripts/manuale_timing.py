@@ -23,6 +23,14 @@ import sys
 import time
 
 FILE_ENVIRONMENT = 'MANUALE_TIMING_FILE'
+# The browser harness appends per-checkpoint spans when MANUALE_SPAN_FILE is set.
+# They live next to the stage timings so one run owns one diagnostic file pair.
+SPAN_SUFFIX = '.spans.jsonl'
+_SPAN_CAPTURE = (('settle', 'settle_ms'), ('ready', 'ready_ms'), ('first_shot', 'first_shot_ms'),
+                 ('stability', 'stability_ms'), ('write', 'write_ms'), ('crop', 'crop_ms'), ('hash', 'hash_ms'))
+_SPAN_CHECKPOINT_NUMBERS = tuple(key for _, key in _SPAN_CAPTURE) + ('total_ms',)
+_SPAN_SCENARIO_NUMBERS = ('browser_launch_ms', 'actions_ms', 'total_ms')
+_SPAN_SLOWEST = 5
 
 
 def _clean(value):
@@ -94,6 +102,95 @@ def read(timing_file):
             entry.setdefault('detail', {})
             entries.append(entry)
     return entries
+
+
+def span_file_for(timing_file):
+    """The span file (named by ``MANUALE_SPAN_FILE``) beside a timing file."""
+    return Path(str(timing_file) + SPAN_SUFFIX) if timing_file else None
+
+
+def _is_number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _span_number(span, key):
+    value = span.get(key)
+    return float(value) if _is_number(value) else 0.0
+
+
+def _usable_span(span):
+    """True for one harness line carrying the ids and numbers we aggregate."""
+    if not isinstance(span, dict) or not isinstance(span.get('scenario'), str):
+        return False
+    if span.get('scope') == 'checkpoint':
+        return isinstance(span.get('checkpoint'), str) and all(
+            _is_number(span.get(key)) for key in _SPAN_CHECKPOINT_NUMBERS)
+    if span.get('scope') == 'scenario':
+        return all(_is_number(span.get(key)) for key in _SPAN_SCENARIO_NUMBERS)
+    return False
+
+
+def read_spans(path):
+    """Read capture spans, ignoring a missing file or any unusable line."""
+    spans = []
+    if not path:
+        return spans
+    try:
+        text = Path(path).read_text(encoding='utf-8')
+    except (OSError, ValueError):
+        return spans
+    for line in text.splitlines():
+        try:
+            span = json.loads(line)
+        except (json.JSONDecodeError, ValueError):
+            continue
+        if _usable_span(span):
+            spans.append(span)
+    return spans
+
+
+def _seconds(milliseconds):
+    return round(milliseconds / 1000.0, 1)
+
+
+def summarize_spans(spans):
+    """Aggregate capture spans into seconds; empty input yields zeros."""
+    spans = [span for span in (spans or []) if isinstance(span, dict)]
+    checkpoints = [span for span in spans if span.get('scope') == 'checkpoint']
+    scenarios = {}
+    for span in spans:
+        if span.get('scope') == 'scenario' and isinstance(span.get('scenario'), str):
+            # A repeated scenario line replaces the earlier one, never doubles it.
+            scenarios[span['scenario']] = span
+    millis = {key: sum(_span_number(span, source) for span in checkpoints)
+              for key, source in _SPAN_CAPTURE}
+    actions = sum(_span_number(span, 'actions_ms') for span in scenarios.values())
+    capture = sum(_span_number(span, 'total_ms') for span in checkpoints)
+    per_scenario = {}
+    for span in checkpoints:
+        name = span.get('scenario')
+        if isinstance(name, str):
+            record = per_scenario.setdefault(name, {'capture': 0.0, 'checkpoints': 0})
+            record['capture'] += _span_number(span, 'total_ms')
+            record['checkpoints'] += 1
+    slowest = []
+    for name, span in scenarios.items():
+        record = per_scenario.get(name, {'capture': 0.0, 'checkpoints': 0})
+        slowest.append({'scenario': name, 'total': _seconds(_span_number(span, 'total_ms')),
+                        'capture': _seconds(record['capture']), 'checkpoints': record['checkpoints']})
+    slowest.sort(key=lambda item: (-item['total'], item['scenario']))
+    return {
+        'scenarios': len(scenarios),
+        'checkpoints': len(checkpoints),
+        'scenario_total': _seconds(sum(_span_number(span, 'total_ms') for span in scenarios.values())),
+        'browser_launch': _seconds(sum(_span_number(span, 'browser_launch_ms') for span in scenarios.values())),
+        'actions': _seconds(actions),
+        'capture': _seconds(capture),
+        'non_capture_actions': _seconds(max(actions - capture, 0.0)),
+        **{key: _seconds(value) for key, value in millis.items()},
+        'stability_shots': int(sum(_span_number(span, 'stability_shots') for span in checkpoints)),
+        'slowest': slowest[:_SPAN_SLOWEST],
+    }
 
 
 def _load(path):
@@ -224,6 +321,31 @@ def summarize(timing_file, impact_json, cache_json, *, title='Manual CI timing',
         lines.append(line)
     else:
         lines.append('No stage timings were recorded.')
+    spans = read_spans(span_file_for(timing_file))
+    if spans:
+        split = summarize_spans(spans)
+        total = split['scenario_total']
+
+        def share(seconds):
+            # Guard the empty/degenerate case: the split is diagnostic, never an error.
+            return f'{100.0 * seconds / total:.1f}%' if total else '0.0%'
+
+        rows = [('Browser launch', split['browser_launch']),
+                ('Actions outside screenshots', split['non_capture_actions']),
+                ('Screenshot capture (total)', split['capture'])]
+        rows += [('&nbsp;&nbsp;' + label, split[key]) for key, label in (
+            ('settle', 'settle'), ('ready', 'ready'), ('first_shot', 'first shot'), ('stability', 'stability'),
+            ('write', 'write'), ('crop', 'crop'), ('hash', 'hash'))]
+        lines += ['', f"**Capture cost split (summed over {split['scenarios']} scenarios, "
+                      f"{split['checkpoints']} checkpoints):**", '',
+                  '| Phase | Time | Share |', '| --- | --- | --- |']
+        lines += [f'| {label} | {_duration(seconds)} | {share(seconds)} |' for label, seconds in rows]
+        lines += ['', '**Slowest scenarios:**']
+        for item in split['slowest']:
+            count = item['checkpoints']
+            lines.append(f"- `{_cell(item['scenario'])}` - {_duration(item['total'])} total, "
+                         f"{_duration(item['capture'])} capture, {count} checkpoint{'s' if count != 1 else ''}")
+        lines += ['', 'Note: stability includes the fixed 100 ms waits between screenshots.']
     return '\n'.join(lines) + '\n'
 
 

@@ -194,6 +194,29 @@ class ManualRunnerTests(unittest.TestCase):
                 if not seed_fails:
                     self.assertEqual(batch['scenarios'], [{'id': 'first', 'status': 'failed'}, {'id': 'second', 'status': 'passed'}])
 
+    def test_capture_environment_carries_the_span_file_only_with_a_timing_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            timing_file = str(Path(temporary) / 'timings.jsonl')
+            state = {'run': temporary, 'application': temporary, 'selected_recipes': ['guide'],
+                     'tooling_hashes': {}, 'origin': 'http://127.0.0.1:5010', 'reference_date': '2026-09-30',
+                     'capture_id': 'fixture'}
+            seen = []
+
+            def execute(command, run, label, **kwargs):
+                if label == 'Verify real application scenario guide':
+                    seen.append(kwargs['env'])
+
+            with patch.object(runner, 'recipe_registry', return_value={'recipes': [
+                        {'id': 'guide', 'script': 'guide.mjs'}]}), \
+                    patch.object(runner, 'management', return_value=['seed-fixture']), \
+                    patch.object(runner, 'execute', side_effect=execute):
+                with patch.dict(runner.os.environ, {}, clear=True):
+                    runner.capture_batch(state)
+                with patch.dict(runner.os.environ, {'MANUALE_TIMING_FILE': timing_file}):
+                    runner.capture_batch(state)
+        self.assertNotIn('MANUALE_SPAN_FILE', seen[0])
+        self.assertEqual(seen[1]['MANUALE_SPAN_FILE'], timing_file + '.spans.jsonl')
+
     def bootstrap_fixture(self, root):
         """Real Git/Node preparation fixture, with no application services."""
         application, manual = root / 'application-input', root / 'manual-input'

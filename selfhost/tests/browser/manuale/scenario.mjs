@@ -34,6 +34,12 @@ export async function scenario({id, actions}) {
     const actorPages = [];
     const errors = [];
     const failedResponses = [];
+    // Opt-in timing spans: in memory only, never part of the report or the run
+    // directory. Written elsewhere only when MANUALE_SPAN_FILE is set.
+    const scenarioStart = performance.now();
+    const checkpointTimings = [];
+    let browserLaunchMs = 0;
+    let actionsMs = 0;
     async function actor(name) {
         const identity = name ? input.identities[name] : input;
         const context = await browser.newContext(manualConfig.use);
@@ -96,12 +102,20 @@ export async function scenario({id, actions}) {
         if (!number || report.screenshots.some(image => image.checkpoint === checkpoint))
             throw new Error('Unknown or repeated workflow checkpoint: ' + id + ':' + checkpoint);
         report.screenshots.push(await captureFrame({page, run, relative: `${prefix}${number}.png`,
-            checkpoint, locator, mask, redactionReason, blurEditableFocus}));
+            checkpoint, locator, mask, redactionReason, blurEditableFocus,
+            onTiming: timings => checkpointTimings.push({checkpoint, ...timings})}));
     }
     try {
+        const launchMark = performance.now();
         browser = await chromium.launch();
+        browserLaunchMs = performance.now() - launchMark;
         const owner = await actor();
-        await actions({...owner, actor, input, capture, report});
+        const actionsMark = performance.now();
+        try {
+            await actions({...owner, actor, input, capture, report});
+        } finally {
+            actionsMs = performance.now() - actionsMark;
+        }
         expect(report.screenshots.map(image => image.checkpoint).sort()).toEqual(checkpoints.map(point => point.id).sort());
         expect(errors).toEqual([]);
         const denials = reconcileBrowserDenials(failedResponses, report.expected_denials);
@@ -126,10 +140,25 @@ export async function scenario({id, actions}) {
             }
         }
     } finally {
+        const totalMs = performance.now() - scenarioStart;
         if (browser) await browser.close();
         const secrets = [input, ...Object.values(input.identities || {})]
             .flatMap(identity => [identity.token, identity.refresh_token, identity.login_password]);
         fs.writeFileSync(path.join(run, id + '.json'), JSON.stringify(redactReport(report, secrets), null, 2) + '\n');
+        // Timing is diagnostic only: ids and numbers, appended outside the run
+        // directory, and any failure here must leave the scenario untouched.
+        const spanFile = process.env.MANUALE_SPAN_FILE;
+        if (typeof spanFile === 'string' && spanFile) {
+            try {
+                const round = value => Math.round(value * 10) / 10;
+                const lines = checkpointTimings.map(({checkpoint, ...numbers}) => JSON.stringify({
+                    scope: 'checkpoint', scenario: id, checkpoint, ...numbers}) + '\n');
+                lines.push(JSON.stringify({scope: 'scenario', scenario: id, status: report.status,
+                    browser_launch_ms: round(browserLaunchMs), actions_ms: round(actionsMs),
+                    total_ms: round(totalMs), checkpoints: checkpointTimings.length}) + '\n');
+                fs.appendFileSync(spanFile, lines.join(''));
+            } catch {}
+        }
     }
     console.log(`${id}: ${report.status}`);
 }
