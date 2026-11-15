@@ -367,8 +367,20 @@ Receipts are `quality-reports/go-migration/<family>-http-v2doc4-*` (`instance-lo
 
 Left in these families after this change, with the reason:
 - document-views and invoice-views: tutor promotion on a request authorized only by the bypass header (no signed-in actor for the audit entry).
-- documents-writes: a None filename in `documents/add` (the database error text carries the new row's id and timestamp).
+- documents-writes: nothing from that change is left; the None filename in `documents/add` was ported in go-v2only-docupload.
 - Not started in this change: document-views mention keys, `get_signature_base64()` and the template subset; documents-writes files sent as text fields, storage failures and the season error; `medical-appointments/list` with a doc-less appointment; Biella without a primary tutor relation (the promotion has to run after the Document is created); every other invoice and instructor B row (invoice-core, invoice-parties, invoice-generate, invoice-sync-print, instructor-hours, instructor-writes, and the rest of invoice-views).
+
+### Ported in the go-v2only-docupload change
+
+The document upload refusals that a request or a stored row can produce, except the RFC 2231 codecs
+without a faithful decoder (listed below). Receipts are `quality-reports/go-migration/documents-writes-http-docupload-*`;
+the fixture has 186 cases.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| documents-writes | `POST documents/add` with `files[i].filename: null` (B) | `ErrDocumentWritesNotPorted` before any write | RED `docupload-red-r1` (Django 186/186, Go 500 on `add-filename-none`); GREEN `docupload-native-r1` (Django 186/186, Go 186/186) and `docupload-versioned-r1` (186/186 on `/api/v1` and `/api/v2`); mutation `docupload-mutation-r1` (relation name in the driver text) CAUGHT. Cases `add-filename-none`, `add-second-filename-none-removes-last-document`; the body is PostgreSQL's NOT NULL text with the generated Document id and timestamp, checked for shape and request-time timestamp. |
+| documents-writes | `PATCH documents/<pk>/update` with `folder: 1e999`/`-1e999` (B) | same sentinel | same runs; `update-folder-infinite-number` and `update-folder-negative-infinite-number` answer the 500 page (`int(float('inf'))` OverflowError before any write). |
+| documents-writes (and every multipart parser) | `filename*` RFC 2231 name in an 8-bit codec or a multibyte codec shared with Python (B) | `pyheader.NotPorted` | Cases `certificate-rfc2231-{iso8859-2,windows-1251,koi8-r,cp437,mac-roman,big5,gbk,euc-jp,shift-jis,euc-kr,utf8-sig}-name`; Go unit `TestParseRFC2231Decoders`; same receipts. data-restore 157/157, subscription-import-upload 98/98, association-transfer 283/283, subscription-memberships 98/98 and document-render 241/241 re-ran green natively (`docupload-*-r1`). Kept refused: the codecs without a faithful decoder listed in the `documents-writes.md` appendix row. |
 
 ### Ported in the v2-rest-a change
 
@@ -492,7 +504,7 @@ Evidence notes:
 Left refused in these families, with the reason:
 - document-views: `get_signature_base64()` (private storage read or an HTTP fetch of the legacy URL, with the failures logged and
   swallowed) and template inputs outside `djtemplate`'s subset (open-ended).
-- documents-writes: storage provider failures (infrastructure errors, not inputs); archive update fields sent as files.
+- documents-writes: storage provider failures (infrastructure errors, class X); archive update fields sent as files are unreachable (the viewset is `JSONParser` only, class C).
 - invoice-core: random ordering (nothing to compare); smart-search terms in other
   scripts (the database's case folding); bulk bodies with file parts (iterating an uploaded file).
 - invoice-parties: a nested `payment` object (its validation nests the account, associate, instructor, supplier and invoice
@@ -818,13 +830,14 @@ Coordination/status doc; no refusals. Nothing to classify.
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
 | POST subscription/<uid>/medical-certificate/upload, POST document/medical/certificate/ | multipart filename containing `&` (Go refuses any `&`, Django `html.unescape`s) | `BE_GO/internal/handler/documents_writes.go:471-472` (called at :392-394), `ErrDocumentWritesNotPorted` | **ported** (v2-subscriptions, `pyhtml.Unescape`) | `routes/association/Members/detail/sections/modals/medicalCertificateUpload.js:13-15` appends the File with `file.name`; callers `AddMedicalCertificate.svelte:88`, `Members/add/sections/Section4.svelte:50`, `subscribe/wizard/Step3.svelte:16`, `subscribe-multiple/...`, `subscribefamily/...`. A file named e.g. `Rossi & Bianchi.pdf` is refused. |
-| same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` (**ported** in t2docs: header lines, continuations, utf-8/ascii/latin-1/windows-1252 names, base64) / bodies > 250 MiB (stays: the answer depends on the host's memory and proxy limits) / RFC 2231 names in other charsets (stays: decoder not ported) | `handler/documents_writes.go`, `handler/django_header.go` | B (ported, two inputs stay) | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). legacy: no; medium. |
-| POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go:182,488` | B (NUL and surrogates **ported** in v2-documents-4; None in `documents/add` stays: the error text carries the new row's id and timestamp) | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). legacy: no; cheap. |
-| upload-document, archive update | uploaded file as a text field | `service/documents_writes.go:213,481,646` | B (upload-document **ported** in v2-rest-docs; archive update stays) | UI sends JSON. cheap. |
-| PATCH documents/<pk>/update | boolean UUID pk; any input | `BE_GO/internal/dto/documents_writes.go:30,36,68` | B (boolean pk **ported** in v2-documents-4) | Route not called by UI (`DOCUMENTS.UPDATE` unused). cheap. |
-| documents/add, medical uploads | storage key already exists | `service/documents_writes.go:105` | C | Key embeds the new document UUID (`documentkey.UploadName`). |
-| same | storage provider failure | `service/documents_writes.go:286,553` | B | Infrastructure failure, not input. legacy: no; cheap. |
-| medical-certificate/upload | `Subscription.save()` season error | `service/documents_writes.go:688` | B (**ported** in v2-rest-docs) | Needs an invalid season start/end combination (e.g. 29/02) in association settings. legacy: possible; cheap (error text). |
+| same | invalid UTF-8 / RFC 2231 / `Content-Transfer-Encoding` (**ported** in t2docs: header lines, continuations, utf-8/ascii/latin-1/windows-1252 names, base64) / bodies > 250 MiB (stays: the answer depends on the host's memory and proxy limits, class X) / RFC 2231 names in more charsets (**ported in go-v2only-docupload** for the 8-bit codecs and the multibyte codecs x/text shares with Python) | `handler/documents_writes.go`, `handler/django_header.go`, `pyheader/pyheader.go` | B (ported, the codecs without a faithful Go decoder stay) | Browsers send UTF-8 names, no CTE, no RFC 2231; UI caps certificates at 5 MB (`medicalCertificateUpload.js:1,5`). Cases `certificate-rfc2231-{iso8859-2,windows-1251,koi8-r,cp437,mac-roman,big5,gbk,euc-jp,shift-jis,euc-kr,utf8-sig}-name`; Go unit `TestParseRFC2231Decoders`; RED `docupload-red-r1`, GREEN `docupload-native-r1`, `docupload-versioned-r1`, mutation `docupload-mutation-r1` CAUGHT. Kept refused: `cp932`, `cp949`, `cp950`, `big5hkscs`, the 2004/x0213 variants, `gb2312`, the other `iso2022` variants, `johab`, `utf-7`, `utf-16/32`, `unicode-escape`, `raw-unicode-escape`, `idna`, `punycode` (no faithful decoder; an approximation would answer text Python does not produce). |
+| POST documents/add, POST subscription/<uid>/upload-document | filename None / NUL / lone surrogates | `service/documents_writes.go` | B (NUL and surrogates **ported** in v2-documents-4; None in `documents/add` **ported in go-v2only-docupload**: the driver writes the NOT NULL violation, and Go builds the same text from the generated id, token and timestamp) | UI sends `file.name` in JSON (`archive/Archive.svelte:104-119`, `Members/detail/sections/modals/AddFileModal.svelte:36-41`). Cases `add-filename-none`, `add-second-filename-none-removes-last-document`; same receipts. A None filename in upload-document is the 500 page without writes in both. |
+| upload-document, archive update | uploaded file as a text field | `service/documents_writes.go` | B for upload-document (**ported** in v2-rest-docs); C for archive update (not a request refusal) | The archive update route is `JSONParser` only (`archive_views.py:136`), so DRF answers 415 before the serializer and no request can put an upload in its data; the check stays defensive. |
+| PATCH documents/<pk>/update | boolean UUID pk; any input | `BE_GO/internal/dto/documents_writes.go` | B (boolean pk **ported** in v2-documents-4) | Route not called by UI (`DOCUMENTS.UPDATE` unused). cheap. |
+| PATCH documents/<pk>/update, POST documents/ | `folder` a JSON float that overflows to infinity (`1e999`, `-1e999`) | `dto/documents_writes.go` | B (**ported in go-v2only-docupload**) | DRF's related lookup prepares the pk with `int(float('inf'))`: an `OverflowError` and the 500 page before any write. Cases `update-folder-infinite-number`, `update-folder-negative-infinite-number`; same receipts. |
+| documents/add, medical uploads | storage key already exists | `service/documents_writes.go` | C | Key embeds the new document UUID (`documentkey.UploadName`), so only the application's generated state could produce it. |
+| same | storage provider failure | `service/documents_writes.go` | X | Infrastructure/external failure, not an input; Docker/S3 errors keep the handoff. legacy: no. |
+| medical-certificate/upload | `Subscription.save()` season error | `service/documents_writes.go` | B (**ported** in v2-rest-docs) | Needs an invalid season start/end combination (e.g. 29/02) in association settings. legacy: possible; cheap (error text). |
 
 ### data-restore.md
 | route | refusal condition | Go site | class | evidence / notes |

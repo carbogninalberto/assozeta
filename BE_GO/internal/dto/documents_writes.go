@@ -51,7 +51,9 @@ func ParseArchiveUpdate(object domain.RequestObject) (ArchiveUpdate, map[string]
 		if value != nil {
 			pk, code, err := FolderPKValue(value)
 			if err != nil {
-				return update, nil, domain.ErrDocumentWritesNotPorted
+				// int(float('inf')) raises OverflowError while the related lookup
+				// prepares the pk: the view's 500 page, before any write.
+				return update, nil, domain.ErrDocumentWritesFailed
 			}
 			if code != "" {
 				invalid["folder"] = []string{code}

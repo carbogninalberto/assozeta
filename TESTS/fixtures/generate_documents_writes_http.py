@@ -285,6 +285,14 @@ add('add-number-filename-removes-document', 'owner', ADD, 400,
     {'exception': "join() argument must be str, bytes, or os.PathLike object, not 'int'"},
     body={'files': [{'document': B64('x'), 'filename': 7}]},
     effect=effect('owner', documents=[stored('7', 'x', None, kept=False, object_stored=False)], audit=[doc_create(0), doc_delete(0)]))
+# Document.objects.create(filename=None) generates the model defaults and then PostgreSQL
+# refuses the INSERT: the message names that document's id and timestamp, and no row is kept.
+add('add-filename-none', 'owner', ADD, 400, '<null-filename-exception>',
+    body={'files': [{'document': B64('x'), 'filename': None}]})
+add('add-second-filename-none-removes-last-document', 'owner', ADD, 400, '<null-filename-exception>',
+    body={'files': [{'document': B64('primo'), 'filename': 'primo.pdf'}, {'document': B64('x'), 'filename': None}]},
+    effect=effect('owner', documents=[stored('primo.pdf', 'primo', 'application/pdf', kept=False)],
+                  audit=[doc_create(0), archive_create(0), archive_cascade(0), doc_delete(0)]))
 
 # ---------------------------------------------------------------- documents/<pk>/update
 UPDATE = lambda label: f'/documents/{ARCHIVES[label]["id"] if label in ARCHIVES else label}/update'
@@ -344,6 +352,12 @@ add('update-null-primary-key-ignored', 'owner', UPDATE('upk'), 500, SERVER, meth
     body={'sport_association_documents_archive_id': None})
 add('update-boolean-primary-key-ignored', 'owner', UPDATE('upk'), 500, SERVER, method='PATCH',
     body={'sport_association_documents_archive_id': True})
+# A JSON float that overflows to infinity: int(float('inf')) is an OverflowError while the
+# related lookup prepares the pk, so the view answers its 500 page before any write.
+add('update-folder-infinite-number', 'owner', UPDATE('u1'), 500, SERVER, method='PATCH',
+    raw_body='{"folder": 1e999}', content_type='application/json')
+add('update-folder-negative-infinite-number', 'owner', UPDATE('u2'), 500, SERVER, method='PATCH',
+    raw_body='{"folder": -1e999}', content_type='application/json')
 add('update-route-delete', 'owner', UPDATE('ud'), 204, '<empty>', method='DELETE',
     effect=effect('owner', archive_deleted=['ud'], audit=[entry('SportAssociationDocumentsArchive', 'ud', 2, '$deleted', 'changes')]))
 
@@ -523,6 +537,26 @@ certificate_case('rfc2231-continuations-out-of-order', certificate_part(b"filena
                  filename='scanè.pdf', content='%PDF-1.4 parte')
 certificate_case('rfc2231-latin1-name', certificate_part(b"filename*=iso-8859-1''scan%E8.png", extra=()), filename='scanè.png',
                  content='%PDF-1.4 parte', content_type='image/png')
+# The 8-bit codecs are decoded with Python's own tables and the multibyte ones with the
+# codecs Go shares with Python; both replace ill-formed input with U+FFFD.
+certificate_case('rfc2231-iso8859-2-name', certificate_part(b"filename*=iso-8859-2''scan%E8.pdf"), filename='scanč.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-windows-1251-name', certificate_part(b"filename*=windows-1251''%CF%F0%E8%EA%E0%E7.pdf"),
+                 filename='Приказ.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-koi8-r-name', certificate_part(b"filename*=koi8-r''%D0%D2%C9.pdf"), filename='при.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-cp437-name', certificate_part(b"filename*=cp437''caf%E9.pdf"), filename='cafΘ.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-mac-roman-name', certificate_part(b"filename*=mac-roman''caf%E9.pdf"), filename='cafÈ.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-big5-name', certificate_part(b"filename*=big5''%A4%A4.pdf"), filename='中.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-gbk-name', certificate_part(b"filename*=gbk''%D6%D0.pdf"), filename='中.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-euc-jp-name', certificate_part(b"filename*=euc-jp''%C6%FC.pdf"), filename='日.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-shift-jis-name', certificate_part(b"filename*=shift_jis''%93%FA.pdf"), filename='日.pdf',
+                 content='%PDF-1.4 parte')
+certificate_case('rfc2231-euc-kr-name', certificate_part(b"filename*=euc-kr''%C7%D1.pdf"), filename='한.pdf', content='%PDF-1.4 parte')
+certificate_case('rfc2231-utf8-sig-name', certificate_part(b"filename*=utf-8-sig''scan%20%E8.pdf"), filename='scan �.pdf',
+                 content='%PDF-1.4 parte')
 certificate_case('rfc2231-ascii-name-replaces', certificate_part(b"filename*=us-ascii''scan%E8.png", extra=()), filename='scan\ufffd.png',
                  content='%PDF-1.4 parte', content_type='image/png')
 certificate_case('rfc2231-invalid-utf8-name-replaces', certificate_part(b"filename*=utf-8''scan%FF%E2%82.png", extra=()),

@@ -189,6 +189,27 @@ type uploadedFileName string
 
 const tooLongText = "value too long for type character varying(255)\n"
 
+// notNullFilenameError is psycopg2's IntegrityError text for
+// Document.objects.create(filename=None): PostgreSQL lists the failing row in
+// the table's column order (document_id, creation_date, filename, token,
+// filepath, file_size_bytes).
+func notNullFilenameError(document domain.NewDocument) string {
+	return "null value in column \"filename\" of relation \"docmanager_document\" violates not-null constraint\n" +
+		"DETAIL:  Failing row contains (" + document.ID + ", " + postgresTimestamp(document.Created) + ", null, " +
+		document.Token + ", null, null).\n"
+}
+
+// postgresTimestamp is PostgreSQL's timestamptz output in a UTC session: a
+// trailing fractional part with its zeroes trimmed, then +00.
+func postgresTimestamp(value time.Time) string {
+	value = value.UTC()
+	text := value.Format("2006-01-02 15:04:05")
+	if micro := value.Nanosecond() / 1000; micro != 0 {
+		text += "." + strings.TrimRight(fmt.Sprintf("%06d", micro), "0")
+	}
+	return text + "+00"
+}
+
 // documentsUnstorableText is the text of the exception psycopg2 raises while
 // quoting a filename, before any statement runs: a lone surrogate fails the
 // UTF-8 encode (UnicodeEncodeError, consecutive surrogates reported as one
@@ -231,8 +252,12 @@ func documentsUnstorableText(value any) string {
 // decoded bytes and filename to store.
 type addItem struct {
 	before, after string
-	filename      string
-	content       []byte
+	// nullFilename marks Document.objects.create(filename=None): the NOT NULL
+	// violation is raised after the model defaults were generated, so the
+	// message names that document's id and timestamp.
+	nullFilename bool
+	filename     string
+	content      []byte
 }
 
 func planAddItem(item any) (addItem, error) {
@@ -279,7 +304,7 @@ func planAddItem(item any) (addItem, error) {
 		if message := documentsUnstorableText(value); message != "" {
 			return addItem{before: message}, nil
 		}
-		return addItem{}, domain.ErrDocumentWritesNotPorted
+		return addItem{nullFilename: true}, nil
 	}
 	if utf8.RuneCountInString(text) > 255 {
 		return addItem{before: tooLongText}, nil
@@ -365,6 +390,11 @@ func (s *DocumentUploads) Add(ctx context.Context, identity domain.ResolvedIdent
 	for _, step := range plan {
 		if step.before != "" {
 			return nil, fail(step.before)
+		}
+		if step.nullFilename {
+			// Document.objects.create(filename=None): the defaults are generated,
+			// then PostgreSQL refuses the INSERT (no row, no audit entry).
+			return nil, fail(notNullFilenameError(s.newDocument("")))
 		}
 		document := s.newDocument(step.filename)
 		if err = tx.CreateDocument(ctx, document, actorAssociation, context, s.at()); err != nil {
