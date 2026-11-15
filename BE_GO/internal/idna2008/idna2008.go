@@ -85,6 +85,29 @@ func Encode(s string) (string, error) {
 	return result, nil
 }
 
+// Decodes reports whether idna.decode(s) succeeds for an ASCII host: every
+// label (split on U+002E, a trailing dot dropped) goes through ulabel, and an
+// empty host or label fails.
+func Decodes(s string) bool {
+	if !isASCII(s) {
+		return false
+	}
+	labels := strings.Split(s, ".")
+	if len(labels) == 1 && labels[0] == "" {
+		return false
+	}
+	if labels[len(labels)-1] == "" {
+		labels = labels[:len(labels)-1]
+	}
+	for _, label := range labels {
+		decoded, err := ulabelASCII(label)
+		if err != nil || decoded == "" {
+			return false
+		}
+	}
+	return true
+}
+
 // alabel is idna.core.alabel: an ASCII label is validated and returned as it is, any other label is
 // validated, Punycode-encoded and prefixed with "xn--".
 func alabel(label string) (string, error) {

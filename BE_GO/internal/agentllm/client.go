@@ -1,10 +1,11 @@
 // Package agentllm is the OpenAI-compatible chat completions client the
 // Django agent uses: AsyncOpenAI 2.54.0 (openai>=2,<3 in BE/requirements,
 // the version the parity runs pin) over httpx 0.28.1. It reproduces the
-// request (URL, headers, the compact JSON body httpx writes), the SDK's own
-// retries (max_retries=2, x-should-retry, 408/409/429/5xx, connection errors,
-// retry-after-ms/retry-after, exponential backoff with jitter) and the SSE
-// stream decoding the SDK applies before ChatCompletionChunk objects are built.
+// request (the httpx-normalised URL and Host header, headers, the compact JSON
+// body httpx writes), the SDK's own retries (max_retries=2, x-should-retry,
+// 408/409/429/5xx, connection errors, retry-after-ms/retry-after, exponential
+// backoff with jitter) and the SSE stream decoding the SDK applies before
+// ChatCompletionChunk objects are built.
 package agentllm
 
 import (
@@ -30,7 +31,6 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/handoff"
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // SDKVersion is the openai distribution version the requests name.
@@ -53,10 +53,6 @@ const (
 	streamContentHeader = "x-stainless-read-timeout"
 )
 
-// ErrNotPorted refuses an input whose SDK behaviour this client does not
-// reproduce (a base URL httpx would rewrite or reject).
-var ErrNotPorted = refusal.New("agent model endpoint input not ported")
-
 // APIError is an exception the SDK raises from a request or a stream; Text
 // is str(exception), which the agent inspects for its own retry decision.
 type APIError struct{ Text string }
@@ -77,9 +73,9 @@ type Config struct {
 
 // Client is one AsyncOpenAI instance.
 type Client struct {
-	base    *url.URL
-	headers [][2]string
-	http    *http.Client
+	endpoint endpoint
+	headers  [][2]string
+	http     *http.Client
 	// Sleep waits between retries; Random is random.random().
 	Sleep  func(context.Context, time.Duration) error
 	Random func() float64
@@ -99,7 +95,7 @@ func New(cfg Config) (*Client, error) {
 			raw = defaultBaseURL
 		}
 	}
-	base, err := baseURL(raw)
+	target, err := newEndpoint(raw)
 	if err != nil {
 		return nil, err
 	}
@@ -133,30 +129,44 @@ func New(cfg Config) (*Client, error) {
 		}
 		return nil
 	}}
-	return &Client{base: base, headers: headers, http: client, Sleep: sleep, Random: rand.Float64}, nil
+	return &Client{endpoint: target, headers: headers, http: client, Sleep: sleep, Random: rand.Float64}, nil
 }
 
-// baseURL is the SDK's base URL with its enforced trailing slash. Only plain
-// http(s) URLs that httpx keeps as written are ported.
-func baseURL(raw string) (*url.URL, error) {
-	for _, r := range raw {
-		if r <= ' ' || r >= 0x7f || strings.ContainsRune(`"<>\^{|}`+"`", r) {
-			return nil, ErrNotPorted
-		}
+// request is the POST httpx sends: the request target is the URL's raw_path
+// byte for byte (net/url would re-encode the path) and the Host header is the
+// URL's netloc.
+func (c *Client) request(ctx context.Context, body []byte) *http.Request {
+	target := c.endpoint.target
+	location := &url.URL{Scheme: c.endpoint.scheme, Host: c.endpoint.host}
+	// The target stays the URL's path where net/url writes those bytes back
+	// unchanged, which keeps the request in the form a proxy or HTTP/2 needs.
+	// Bytes net/url would re-encode travel in the opaque form instead, which
+	// RequestURI writes verbatim; that form is unusable for a target that
+	// begins "//" because RequestURI prefixes those with the scheme, so such a
+	// target keeps the path form as the closest net/url gets.
+	path, err := url.PathUnescape(target)
+	switch {
+	case err == nil && !strings.HasPrefix(target, "//") && (&url.URL{Path: path, RawPath: target}).EscapedPath() == target:
+		location.Path, location.RawPath = path, target
+	case strings.HasPrefix(target, "//"):
+		location.Path, location.RawPath = target, target
+	default:
+		location.Opaque = target
 	}
-	parsed, err := url.Parse(raw)
-	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" || parsed.User != nil ||
-		parsed.RawQuery != "" || parsed.Fragment != "" || parsed.Opaque != "" || strings.Contains(raw, "%") ||
-		parsed.Host != strings.ToLower(parsed.Host) || strings.HasSuffix(parsed.Host, ":") {
-		return nil, ErrNotPorted
+	request := &http.Request{
+		Method:        http.MethodPost,
+		URL:           location,
+		Header:        make(http.Header),
+		Body:          io.NopCloser(bytes.NewReader(body)),
+		ContentLength: int64(len(body)),
+		Proto:         "HTTP/1.1",
+		ProtoMajor:    1,
+		ProtoMinor:    1,
+		GetBody: func() (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader(body)), nil
+		},
 	}
-	if !strings.HasSuffix(parsed.Path, "/") {
-		parsed.Path += "/"
-	}
-	if parsed.Path == "" {
-		parsed.Path = "/"
-	}
-	return parsed, nil
+	return request.WithContext(ctx)
 }
 
 // platformName is openai._base_client.get_platform() for the platforms Go runs on.
@@ -227,15 +237,10 @@ type Event struct {
 // Create sends POST {base}chat/completions with the SDK's retries. A non-nil
 // *APIError is the exception the SDK raises; other errors are the context's.
 func (c *Client) Create(ctx context.Context, body []byte) (*Stream, error) {
-	target := *c.base
-	target.Path += "chat/completions"
 	handoff.MarkEffect(ctx, "model request")
 	for retries := 0; ; retries++ {
 		remaining := maxRetries - retries
-		request, err := http.NewRequestWithContext(ctx, http.MethodPost, target.String(), bytes.NewReader(body))
-		if err != nil {
-			return nil, err
-		}
+		request := c.request(ctx, body)
 		for _, header := range c.headers {
 			request.Header[header[0]] = []string{header[1]}
 		}
