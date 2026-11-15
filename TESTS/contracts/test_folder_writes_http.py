@@ -1,4 +1,5 @@
 """Independently authored folders/add and folders/<pk>/update HTTP expectations; no Django imports."""
+import re
 from pathlib import Path
 
 from TESTS.contracts import http_family as family
@@ -14,6 +15,9 @@ def load_source(path=SOURCE):
 
 
 def assert_case(case, base_url, *, token, sessions):
+    if '$pad:' in case.get('raw_body', ''):
+        # '$pad:<n>' is n characters of content (a request above the in-memory upload size).
+        case = {**case, 'raw_body': re.sub(r'\$pad:(\d+)', lambda match: 'x' * int(match.group(1)), case['raw_body'])}
     # Folder ids are fixed by the runner; only a server-time created_at varies.
     return family.assert_case(case, base_url, token=token, sessions=sessions, allowed=lambda case: ALLOWED[case['path'].split('/')[-1]],
                               now=('created_at',))

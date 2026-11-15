@@ -267,6 +267,9 @@ add('add-multipart-file-as-parent', 'owner', ADD, 400, {'parent': [incorrect('In
     raw_body=multipart([('name', 'Allegati')], [('parent', 'nota.txt', 'ciao')]), content_type=MULTIPART)
 add('add-multipart-file-as-name-and-parent', 'owner', ADD, 400, {'parent': [incorrect('InMemoryUploadedFile')]},
     raw_body=multipart([('name', 'Allegati'), ('created_at', '')], [('parent', 'nota.txt', '')]), content_type=MULTIPART)
+# A request above FILE_UPLOAD_MAX_MEMORY_SIZE keeps the file on disk ('$pad:<n>' is n characters of content).
+add('add-multipart-large-file-as-parent', 'owner', ADD, 400, {'parent': [incorrect('TemporaryUploadedFile')]},
+    raw_body=multipart([('name', 'Allegati')], [('parent', 'nota.txt', '$pad:2700000')]), content_type=MULTIPART)
 forest.insert('n7', 'Radice', None, OWN, '2026-05-01T00:00:00Z')
 add('add-empty-parent-is-root', 'owner', ADD, 201, forest.render('n7'),
     body={'name': 'Radice', 'parent': '', 'created_at': '2026-05-01T00:00:00Z'}, effect=True)
@@ -299,6 +302,9 @@ add('update-multipart-file-as-parent', 'owner', update('a2'), 400, {'parent': [i
     raw_body=multipart([('name', 'Bilanci')], [('parent', 'nota.txt', 'ciao')]), content_type=MULTIPART)
 add('update-multipart-file-as-association', 'owner', update('a2'), 400, {'sport_association': ['“nota.txt” is not a valid UUID.']},
     method='PATCH', raw_body=multipart([('name', 'Bilanci')], [('sport_association', 'nota.txt', 'ciao')]), content_type=MULTIPART)
+add('update-multipart-large-file-as-association', 'owner', update('a2'), 400,
+    {'sport_association': ['“nota.txt” is not a valid UUID.']}, method='PATCH',
+    raw_body=multipart([('name', 'Bilanci')], [('sport_association', 'nota.txt', '$pad:2700000')]), content_type=MULTIPART)
 add('update-float-parent-overflow-server-error', 'owner', update('a2'), 500, SERVER, method='PATCH',
     raw_body='{"parent": 1e999}', content_type='application/json')
 add('update-empty-association', 'owner', update('a2'), 400, {'sport_association': [NULL]}, method='PATCH', body={'sport_association': ''})

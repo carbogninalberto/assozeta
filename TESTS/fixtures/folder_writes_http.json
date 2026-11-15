@@ -1572,6 +1572,22 @@
    "content_type": "multipart/form-data; boundary=folderwritesboundary"
   },
   {
+   "name": "folder-writes-add-multipart-large-file-as-parent",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/folders/add",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "parent": [
+     "Incorrect type. Expected pk value, received TemporaryUploadedFile."
+    ]
+   },
+   "state": null,
+   "raw_body": "--folderwritesboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nAllegati\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"parent\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\n$pad:2700000\r\n--folderwritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=folderwritesboundary"
+  },
+  {
    "name": "folder-writes-add-empty-parent-is-root",
    "actor": "owner",
    "method": "POST",
@@ -2066,6 +2082,22 @@
    },
    "state": null,
    "raw_body": "--folderwritesboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nBilanci\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"sport_association\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\nciao\r\n--folderwritesboundary--\r\n",
+   "content_type": "multipart/form-data; boundary=folderwritesboundary"
+  },
+  {
+   "name": "folder-writes-update-multipart-large-file-as-association",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/folders/980004/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "sport_association": [
+     "“nota.txt” is not a valid UUID."
+    ]
+   },
+   "state": null,
+   "raw_body": "--folderwritesboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nBilanci\r\n--folderwritesboundary\r\nContent-Disposition: form-data; name=\"sport_association\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\n$pad:2700000\r\n--folderwritesboundary--\r\n",
    "content_type": "multipart/form-data; boundary=folderwritesboundary"
   },
   {

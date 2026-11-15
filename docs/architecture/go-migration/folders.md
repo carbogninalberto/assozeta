@@ -118,5 +118,7 @@ Evidence: `TESTS/fixtures/folder_writes_http.json` (80 cases, generator alongsid
 
 A file part sent as `parent` is an incorrect-type error naming `InMemoryUploadedFile`; as `sport_association` it is the
 invalid-UUID error quoting the file name (`supplierRelated`). A request over `FILE_UPLOAD_MAX_MEMORY_SIZE` (2621440
-bytes of Content-Length) keeps the file on disk (`TemporaryUploadedFile`) and stays refused. A float `parent` that
+bytes of Content-Length) keeps the file on disk: the error names `TemporaryUploadedFile` (ported in long-tail PR 2, cases
+`add-multipart-large-file-as-parent` and `update-multipart-large-file-as-association`, whose bodies the contract pads
+with `$pad:<n>`; `folder-writes` 87/87 on four transports, `lt2B-2`). A float `parent` that
 overflows to infinity is the same 500 page in both (case added).
