@@ -176,10 +176,13 @@ def multipart(*parts, boundary='documentswritesboundary'):
 
 # ---------------------------------------------------------------- documents/add
 ADD = '/documents/add'
-# A name the storage refuses on any call (255 characters, about 1 KB in UTF-8: the stored key passes MinIO's limit),
-# and the text botocore gives for that HEAD answer (no body: the code is the status and the message its reason phrase).
-LONG_NAME = '\U0001F600' * 251 + '.pdf'
-HEAD_REFUSED = 'An error occurred (400) when calling the HeadObject operation: Bad Request'
+# Storage refusals on the private MinIO (the runs store with AWS_S3_FILE_OVERWRITE on, so there is no HEAD first):
+# PutObject refuses a name segment over 255 bytes (under 255 characters, so the Document row is accepted) and a key
+# over 1024 bytes, and botocore raises the ClientError at once.
+LONG_NAME = '\u00e8' * 130 + '.pdf'
+INVALID_NAME = 'An error occurred (XMinioInvalidObjectName) when calling the PutObject operation: Object name contains unsupported characters.'
+LONG_KEY_NAME = '\U0001F600' * 251 + '.pdf'
+KEY_TOO_LONG = 'An error occurred (KeyTooLongError) when calling the PutObject operation: Your key is too long'
 ADD_OPTIONS = {**options('Document Archive', ('application/json',)), 'actions': {'POST': {
     'sport_association_documents_archive_id': {'type': 'string', 'required': False, 'read_only': True,
                                                'label': 'Sport association documents archive id'},
@@ -290,9 +293,13 @@ add('add-number-filename-removes-document', 'owner', ADD, 400,
     body={'files': [{'document': B64('x'), 'filename': 7}]},
     effect=effect('owner', documents=[stored('7', 'x', None, kept=False, object_stored=False)], audit=[doc_create(0), doc_delete(0)]))
 # default_storage.save raises after the Document exists: the view deletes it and answers with botocore's text.
-add('add-storage-refused-removes-document', 'owner', ADD, 400, {'exception': HEAD_REFUSED},
+add('add-storage-refused-removes-document', 'owner', ADD, 400, {'exception': INVALID_NAME},
     body={'files': [{'document': B64('x'), 'filename': LONG_NAME}]},
     effect=effect('owner', documents=[stored(LONG_NAME, 'x', None, kept=False, object_stored=False)], audit=[doc_create(0), doc_delete(0)]))
+add('add-storage-key-too-long-removes-document', 'owner', ADD, 400, {'exception': KEY_TOO_LONG},
+    body={'files': [{'document': B64('x'), 'filename': LONG_KEY_NAME}]},
+    effect=effect('owner', documents=[stored(LONG_KEY_NAME, 'x', None, kept=False, object_stored=False)],
+                  audit=[doc_create(0), doc_delete(0)]))
 # Document.objects.create(filename=None) generates the model defaults and then PostgreSQL
 # refuses the INSERT: the message names that document's id and timestamp, and no row is kept.
 add('add-filename-none', 'owner', ADD, 400, '<null-filename-exception>',
@@ -698,7 +705,7 @@ add('medical-draft-list-data-keeps-certificate', 'owner', MED('list'), 500, {'er
                   audit=[doc_create(0), cert_create(0)]))
 # The storage refuses the stored key: the view catches default_storage.save's exception and answers {'error': str(e)};
 # nothing is atomic here, so the Document row stays.
-add('medical-storage-refused-keeps-certificate', 'owner', MED('main'), 500, {'error': HEAD_REFUSED},
+add('medical-storage-refused-keeps-certificate', 'owner', MED('main'), 500, {'error': INVALID_NAME},
     raw_b64=LONG_CERT[0], content_type=LONG_CERT[1],
     effect=effect('owner', documents=[stored(LONG_NAME, '%PDF-1.4 lungo', None, object_stored=False)], audit=[doc_create(0)]))
 
