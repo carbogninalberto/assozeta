@@ -410,6 +410,13 @@ add('challenge-undecryptable', 'anonymous', CHALLENGE, 409, error('configuration
     state=setup(pairing('generated', secret='$garbage')))
 add('challenge-throttled', 'anonymous', CHALLENGE, 429, {'detail': 'Request was throttled. Expected available in 50 seconds.'},
     method='POST', body=handshake('challenge'), state=setup('generated'), throttle={'preload': 30, 'age': 10.2})
+# The throttle reads whatever the entry holds: a history of integer timestamps counts like one of floats. (An entry
+# that is not a history raises before the view runs, which this family cannot author: it runs with DEBUG on, so
+# Django answers the technical 500 page.)
+UNREACHED_HANDSHAKE = {'protocol': VERSION, 'pairing_id': REMOTE, 'association_id': OWN, 'instance_id': '', 'origin': ORIGIN,
+                       'callback_uri': CALLBACK, 'generation': GEN, 'nonce': f'nonce-{999:037d}', 'expires_at': '$expires+60'}
+add('challenge-integer-history', 'anonymous', CHALLENGE, 429, {'detail': 'Request was throttled. Expected available in 50 seconds.'},
+    method='POST', body=UNREACHED_HANDSHAKE, state=setup('generated'), throttle={'preload': 30, 'age': 10, 'ints': True})
 
 nonce = next(NONCES)
 add('commit-accepted', 'anonymous', COMMIT, 200, {'protocol': VERSION, 'instance_id': INSTANCE, 'proof': '$proof:ack'}, method='POST',

@@ -9115,6 +9115,59 @@
    }
   },
   {
+   "name": "modules-responses-add-anonymous-integer-history",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 429,
+   "response": {
+    "detail": "Request was throttled. Expected available in 590 seconds."
+   },
+   "effect": null,
+   "throttle": {
+    "preload": 30,
+    "age": 10,
+    "ints": true
+   },
+   "retry_after": "590",
+   "body": {
+    "nome": "Eva"
+   }
+  },
+  {
+   "name": "modules-responses-add-anonymous-history-not-a-list",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "throttle": {
+    "stored": "not a history"
+   },
+   "body": {
+    "nome": "Eva"
+   }
+  },
+  {
+   "name": "modules-responses-add-anonymous-history-not-pickled",
+   "actor": "anonymous",
+   "method": "POST",
+   "path": "/modules/a1000000-0000-4000-8000-000000643001/response/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "throttle": {
+    "raw_b64": "bm90IGEgcGlja2xl"
+   },
+   "body": {
+    "nome": "Eva"
+   }
+  },
+  {
    "name": "modules-responses-add-anonymous-body-above-the-limit",
    "actor": "anonymous",
    "method": "POST",

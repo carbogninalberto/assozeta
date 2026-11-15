@@ -830,6 +830,14 @@ add('add-anonymous-below-the-rate', 'anonymous', 'POST', respond('open'), 200, A
 add('add-anonymous-old-history', 'anonymous', 'GET', respond('open'), 405, METHOD('GET'), throttle={'preload': 30, 'age': 601})
 add('add-owner-full-history', 'owner', 'POST', respond('open'), 200, ADDED, body={'nome': 'Gina'}, throttle=FULL,
     effect=responded('open', 'owner', 'owner', {'nome': 'Gina'}))
+# The throttle reads whatever the entry holds. Django compares the entries with a float, so a history of integer
+# timestamps counts like one of floats; any other value raises before the view runs (the 500 page, nothing written).
+add('add-anonymous-integer-history', 'anonymous', 'POST', respond('open'), 429, THROTTLED, body={'nome': 'Eva'},
+    throttle={'preload': 30, 'age': 10, 'ints': True}, retry_after='590')
+add('add-anonymous-history-not-a-list', 'anonymous', 'POST', respond('open'), 500, SERVER, body={'nome': 'Eva'},
+    throttle={'stored': 'not a history'})
+add('add-anonymous-history-not-pickled', 'anonymous', 'POST', respond('open'), 500, SERVER, body={'nome': 'Eva'},
+    throttle={'raw_b64': base64.b64encode(b'not a pickle').decode()})
 add('add-anonymous-body-above-the-limit', 'anonymous', 'POST', respond('open'), 413, TOO_LARGE, body={'nota': BIG_TEXT})
 add('add-anonymous-body-above-the-limit-unknown-module', 'anonymous', 'POST', respond(UNKNOWN), 413, TOO_LARGE, body={'nota': BIG_TEXT})
 add('add-owner-body-above-the-limit', 'owner', 'POST', respond('open'), 200, ADDED, body={'nota': BIG_TEXT},

@@ -543,6 +543,23 @@ Left refused in these families, with the reason:
 - instructor-hours: document deletes that cascade to other models' rows (each with its own audit entry).
 - instructor-writes: report workbook inputs the writer treats as formulas or links with an anchor; subnormal products.
 
+### Ported in the go-v2only-throttle change
+
+The DRF throttle history is a cache entry rather than a database row: `SimpleRateThrottle.allow_request` reads
+`cache.get(key, [])` and treats the value as a list of timestamps. Go read that value with a closed pickled-data decoder
+and refused every shape it did not expect. It now reads it as Django does (`BE_GO/internal/repository/drf_throttle.go`):
+the entries of a list of numbers are the timestamps, and any other value is the exception Django raises before the view
+runs. Receipts are `quality-reports/go-migration/<family>-http-s3throttle-*`; each family doc has the details.
+
+| Family | Route | Was refused | Evidence |
+|---|---|---|---|
+| modules-responses | `POST modules/<id>/response/add`, `POST modules/response/<id>/add-attachment` | the cache entry holds integer timestamps (B): Django compares and counts them like floats, so the history is read and the request is answered normally (429 while full, nothing written) | 243 cases; RED `s3throttle-red-r2` Django 243/243, Go 500 on `add-anonymous-integer-history`; GREEN `s3throttle-green-r1` 4 transports; mutation `s3throttle-mutation-r1` (integer entry read as zero) CAUGHT on `add-anonymous-integer-history` |
+| modules-responses | same | the cache entry is not a list of timestamps, or is not a pickled value Go's decoder reads (B: an entry no application code writes — every writer stores a float list with the window as expiry): Django raises in `initial()` and answers its 500 page with nothing written | same run, cases `add-anonymous-history-not-a-list` and `add-anonymous-history-not-pickled` |
+| sso-pairing | `bakney/v1/{pairing/challenge,pairing/commit,login-start,callback,session}`, `instance/admin/bakney-pairing` | the same two shapes on `HandoffThrottle`'s cache entry (B) | 173 cases; RED `s3throttle-red-r2` Django 173/173, Go 500 on `challenge-integer-history`; GREEN `s3throttle-green-r1` 4 transports |
+
+The 14 routes that could reach the refusal are gone from the reach report (`refusal_reach.py`: 576 rows before, 562 after,
+the difference is exactly these routes for `unsupported throttle history value`).
+
 ### Ported in the go-v2only-xlsxvalue change
 
 The shared pandas coercion of `get_excel_base64` and of the saved-report exporter (`xlsxexport.toNumeric`) and openpyxl's
@@ -1120,6 +1137,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | DELETE add-attachment | non-string `document_id`; document referenced elsewhere | `service/modules_responses.go` | ported (v2-rest-b3) | Integer ids resolve through `UUID(int=...)`; a document other rows reference is deleted with the shared collector. |
 | GET modules/<link>/info | module whose association is not active | `service/modules_responses.go` (`Info`) | ported (v2-rest-a, v2-rest-b) | Not a refusal: the public module page returns the fields the form needs, and a module of an association marked deleted answers `module not found` in Django and Go (v2-rest-b). |
 | GET modules/<id>/export | ints beyond int64 (its values are `int64` and strings only, so the column coercion cannot meet one; pandas' `uint64`/`float64` promotion **ported in go-v2only-xlsxvalue**), xlsxwriter-refused text (**ported** in t2docs except dynamic array functions; list/dict labels and non-dict `props` ported in v2-rest-b3) | `service/modules_export.go:94,114,150,162,176,260,266,272` | B | `routes/association/Members/overview/ModuleOverview.svelte:37`. The form builder writes string labels. Free-text answers starting with `=` or holding URLs with `#` would hit the xlsxwriter path. legacy: yes. Cost: medium. |
+| POST response/add, POST add-attachment | the throttle cache entry holds integer timestamps, is not a list, or is not a pickled value Go reads | `repository/drf_throttle.go` (`throttleHistory`, `throttleTimestamp`) | B (**ported** in go-v2only-throttle) | Django compares the entries with a float, so integer timestamps count like floats; every other value raises before the method dispatch and is the error page with nothing written. Cases `add-anonymous-integer-history`, `add-anonymous-history-not-a-list`, `add-anonymous-history-not-pickled` (`s3throttle-green-r1`). Kept different: an entry out of float64's range and a value Django would carry forward into the rewritten list (a non-number the window scan does not reach, or a tuple of timestamps, which the decoder reads as a list) answer the error page here; only a foreign writer can store them. |
 
 ### modules-writes.md
 | route | refusal condition | Go site | class | evidence / notes |
@@ -1273,6 +1291,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 | pairing/SSO routes | authority replies in UTF-16/32 or with NaN | `bakney_sso_protocol.go` | B | Depends on the authority, not the UI. Kept refused: the replies come from the pairing authority, an external server; `requests` picks the charset by detection, which has no Go equivalent. |
 | pairing/SSO routes | non-ASCII (IDNA) hosts, non-base64 secrets | `service/bakney_sso.go` | B | An admin would have to enter an IDN host in `BakneyPairing.svelte`. Rare. Cost: cheap. Ported in t3plat for IDNA hosts (`normalizeBakneyOrigin` uses `idna2003`, checked against Python in `TestNormalizeBakneyOriginInternationalizedHosts`). Secrets that are not base64 are kept refused: the secret is generated by the app (`secrets.token_urlsafe`) and stored encrypted, so no request can produce another shape. |
 | pairing/SSO | DEBUG technical page, certifi vs system roots | | C | Deployment differences, not refusals. Kept: deployment difference, not a request refusal. |
+| `bakney/v1/*`, `instance/admin/bakney-pairing` | the throttle cache entry holds integer timestamps, is not a list, or is not a pickled value Go reads | `repository/drf_throttle.go` (`throttleHistory`, `throttleTimestamp`) | B (**ported** in go-v2only-throttle) | Integer timestamps count like floats (`challenge-integer-history`, 429); any other value raises before the view runs and is the error page, which Go answers too. The family authors only the integer case: it runs with `DEBUG` on, where Django answers the technical page instead. |
 
 ### subscription-misc.md
 | route | refusal condition | Go site | class | evidence / notes |

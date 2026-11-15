@@ -2,8 +2,11 @@
 
 DRF's cache history is `throttle_<scope>_<address>`: a requests without an account that reaches the throttle adds
 one entry (newest first); a full history answers 429 and records nothing; requests with an account never touch it.
-A case may preload the address's history ({'preload': n, 'age': seconds}); every case starts and ends clean.
+A case may preload the address's history ({'preload': n, 'age': seconds}), preload it as integer timestamps
+({'ints': True}), or place any other cached value there ({'stored': <json value>} or {'raw_b64': <base64 bytes>})
+to pin what Django does with a cache entry that is not a list of timestamps. Every case starts and ends clean.
 """
+import base64
 import json
 import os
 import re
@@ -32,6 +35,30 @@ def client_ident(base_url, require):
     return headers['X-Fixture-Client-IP']
 
 
+def placed(spec):
+    """The case places a cached value itself instead of a history of counted requests."""
+    return 'stored' in spec or 'raw_b64' in spec
+
+
+def history_value(spec):
+    stamps = [time.time() - spec['age']] * spec['preload']
+    return [int(stamp) for stamp in stamps] if spec.get('ints') else stamps
+
+
+def redis_client(require):
+    """The raw client of the cache backend (values Django's serializer never wrote)."""
+    from django.core.cache import cache
+    require(hasattr(cache, 'client'), 'throttle.cache-backend')
+    return cache.client.get_client(write=True)
+
+
+def placed_unchanged(key, spec, require):
+    from django.core.cache import cache
+    if 'raw_b64' in spec:
+        return redis_client(require).get(':1:' + key) == base64.b64decode(spec['raw_b64'], validate=True)
+    return cache.get(key) == spec['stored']
+
+
 def prepare(case, ident, require):
     """The address's history before the request: empty, or what the case preloads for its route."""
     from django.core.cache import cache
@@ -41,27 +68,38 @@ def prepare(case, ident, require):
     if spec:
         scope = scope_of(case)
         require(scope is not None, 'fixture.throttle-path')
-        cache.set(f'throttle_{scope}_{ident}', [time.time() - spec['age']] * spec['preload'], WINDOW)
+        if 'raw_b64' in spec:
+            redis_client(require).set(':1:' + f'throttle_{scope}_{ident}', base64.b64decode(spec['raw_b64'], validate=True), ex=WINDOW)
+        elif 'stored' in spec:
+            cache.set(f'throttle_{scope}_{ident}', spec['stored'], WINDOW)
+        else:
+            cache.set(f'throttle_{scope}_{ident}', history_value(spec), WINDOW)
 
 
 def finish(case, status, ident, require):
     """Only a request without an account that got past authentication is recorded, and only while below the rate."""
     from django.core.cache import cache
     scope = scope_of(case)
-    spec = case.get('throttle') or {'preload': 0, 'age': 0}
+    spec = {'preload': 0, 'age': 0, **(case.get('throttle') or {})}
     live = spec['preload'] if spec['age'] < WINDOW else 0
     reached = scope is not None and case['actor'] == 'anonymous' and status != 401
     require((status == 429) == (reached and live >= REQUESTS), 'throttle.status')
+    placed_value = placed(spec)
     for _pattern, name in ROUTES:
-        history = cache.get(f'throttle_{name}_{ident}')
-        if name == scope and reached and live < REQUESTS:
+        key = f'throttle_{name}_{ident}'
+        if name == scope and placed_value:
+            # Django never writes a value it cannot read: the entry is what the case left there.
+            require(placed_unchanged(key, spec, require), 'throttle.placed-value')
+        elif name == scope and reached and live < REQUESTS:
+            history = cache.get(key)
             require(isinstance(history, list) and len(history) == live + 1 and all(type(item) is float for item in history)
                     and 0 <= time.time() - history[0] < 300 and history == sorted(history, reverse=True), 'throttle.recorded')
         elif name == scope and spec['preload']:
+            history = cache.get(key)
             require(isinstance(history, list) and len(history) == spec['preload'] and len(set(history)) == 1, 'throttle.unchanged')
         else:
-            require(history is None, 'throttle.not-reached')
-        cache.delete(f'throttle_{name}_{ident}')
+            require(cache.get(key) is None, 'throttle.not-reached')
+        cache.delete(key)
 
 
 @contextmanager
