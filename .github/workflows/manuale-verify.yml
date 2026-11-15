@@ -621,11 +621,19 @@ jobs:
             --artifact "verification export=$RUNNER_TEMP/manuale-run/export"
 
   appliance:
-    name: ${{ needs.verify.outputs.appliance_scope == 'full' && 'Historical appliance rehearsal' || 'Package startup, reader and access checks' }}
+    name: ${{ needs.verify.outputs.appliance_scope == 'full' && format('Historical appliance rehearsal ({0})', matrix.part) || 'Package startup, reader and access checks' }}
     needs: verify
     if: ${{ needs.verify.outputs.appliance_required == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    strategy:
+      # The current and historical sequences share no state: each runner builds
+      # what it needs, so one failing part must never cancel the other.
+      fail-fast: false
+      matrix:
+        # A full rehearsal splits into its two independent sequences; every
+        # other scope keeps the single compatibility run, exactly as before.
+        part: ${{ fromJSON(needs.verify.outputs.appliance_scope == 'full' && '["current","historical"]' || '["all"]') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -664,15 +672,18 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.release }}
           CHECK_SCOPE: ${{ needs.verify.outputs.appliance_scope == 'full' && 'full' || 'compatibility' }}
+          PART: ${{ matrix.part }}
         run: >-
           python3 docs/scripts/manuale_timing.py stage "appliance-$CHECK_SCOPE" --
           python3 selfhost/tests/manual-release-smoke.py "$RUNNER_TEMP/manuale-runtime"
-          "$RELEASE_VERSION" --scope "$CHECK_SCOPE" --previous-release 1.0.17
+          "$RELEASE_VERSION" --scope "$CHECK_SCOPE" --part "$PART" --previous-release 1.0.17
       - name: Retain appliance results and phase timings
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: manuale-release-evidence
+          # A full run publishes each part under its own name for the merge; the
+          # single compatibility run keeps uploading the final artifact name.
+          name: ${{ needs.verify.outputs.appliance_scope == 'full' && format('manuale-release-evidence-{0}', matrix.part) || 'manuale-release-evidence' }}
           path: |
             quality-reports/manual-release/
             !quality-reports/manual-release/private-execution.log
@@ -683,11 +694,57 @@ jobs:
         if: always()
         run: python3 docs/scripts/manuale_timing.py summary --title 'Manual appliance'
 
+  appliance-merge:
+    name: Merge current and historical appliance results
+    # verify must be a direct dependency: `needs` only exposes direct jobs.
+    needs: [verify, appliance]
+    # Only the split full run needs a merge; the compatibility run already
+    # uploaded the final artifact, and a failed part leaves nothing to merge.
+    if: ${{ needs.verify.outputs.appliance_required == 'true' && needs.verify.outputs.appliance_scope == 'full' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Download the current part results
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-release-evidence-current
+          path: ${{ runner.temp }}/manuale-release-current
+      - name: Download the historical part results
+        uses: actions/download-artifact@v4
+        with:
+          name: manuale-release-evidence-historical
+          path: ${{ runner.temp }}/manuale-release-historical
+      - name: Merge the current and historical results
+        # Reads both results.json only; logs, fixtures and browser artifacts
+        # stay in the part artifacts and are never republished.
+        run: >-
+          python3 selfhost/tests/manual-release-merge.py
+          --current "$RUNNER_TEMP/manuale-release-current"
+          --historical "$RUNNER_TEMP/manuale-release-historical"
+          --output quality-reports/manual-release
+      - name: Upload the merged appliance results
+        uses: actions/upload-artifact@v4
+        with:
+          # The gate keeps reading this name, so its results.json path is unchanged.
+          name: manuale-release-evidence
+          path: |
+            quality-reports/manual-release/
+            !quality-reports/manual-release/private-execution.log
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 30
+
   gate:
     name: Manual verification gate
     # Runs after failures and cancellations too, so that a missing, skipped or
     # failed mandatory job can never leave this reusable workflow "successful".
-    needs: [contracts, capture-plan, capture, verify, appliance]
+    needs: [contracts, capture-plan, capture, verify, appliance, appliance-merge]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10

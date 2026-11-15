@@ -102,6 +102,47 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("'full' || 'compatibility'", rehearsal['env']['CHECK_SCOPE'])
         self.assertIn('--previous-release 1.0.17', rehearsal['run'])
         self.assertIn('--scope "$CHECK_SCOPE"', rehearsal['run'])
+        self.assertEqual(rehearsal['env']['PART'], '${{ matrix.part }}')
+        self.assertIn('--part "$PART"', rehearsal['run'])
+
+    def test_the_full_appliance_splits_into_parallel_parts_merged_for_the_gate(self):
+        jobs = yaml.safe_load((ROOT / '.github/workflows/manuale-verify.yml').read_text())['jobs']
+        appliance = jobs['appliance']
+        self.assertEqual(appliance['strategy']['fail-fast'], False)
+        self.assertEqual(appliance['strategy']['matrix']['part'],
+                         "${{ fromJSON(needs.verify.outputs.appliance_scope == 'full' && '[\"current\",\"historical\"]' "
+                         "|| '[\"all\"]') }}")
+        # Each part uploads under its own name; the compatibility run keeps the
+        # final name so nothing downstream changes for existing callers.
+        uploads = [step for step in appliance['steps'] if step.get('uses', '').startswith('actions/upload-artifact')]
+        self.assertEqual(len(uploads), 1)
+        self.assertEqual(uploads[0]['with']['name'],
+                         "${{ needs.verify.outputs.appliance_scope == 'full' && "
+                         "format('manuale-release-evidence-{0}', matrix.part) || 'manuale-release-evidence' }}")
+        self.assertIn('quality-reports/manual-release/', uploads[0]['with']['path'])
+        self.assertIn('!quality-reports/manual-release/private-execution.log', uploads[0]['with']['path'])
+        # The merge job runs only for the split full run and republishes exactly
+        # the artifact name the gate already downloads.
+        merge = jobs['appliance-merge']
+        # Its `if` reads verify outputs, so verify must be a direct dependency.
+        self.assertEqual(sorted(merge['needs']), ['appliance', 'verify'])
+        self.assertIn("needs.verify.outputs.appliance_required == 'true'", merge['if'])
+        self.assertIn("needs.verify.outputs.appliance_scope == 'full'", merge['if'])
+        downloads = [step for step in merge['steps']
+                     if step.get('uses', '').startswith('actions/download-artifact')]
+        self.assertEqual([step['with']['name'] for step in downloads],
+                         ['manuale-release-evidence-current', 'manuale-release-evidence-historical'])
+        command = next(step for step in merge['steps'] if 'manual-release-merge.py' in step.get('run', ''))['run']
+        for argument in ('--current "$RUNNER_TEMP/manuale-release-current"',
+                         '--historical "$RUNNER_TEMP/manuale-release-historical"',
+                         '--output quality-reports/manual-release'):
+            self.assertIn(argument, command)
+        published = next(step for step in merge['steps']
+                         if step.get('uses', '').startswith('actions/upload-artifact'))
+        self.assertEqual(published['with']['name'], 'manuale-release-evidence')
+        self.assertIn('!quality-reports/manual-release/private-execution.log', published['with']['path'])
+        self.assertEqual(published['with']['if-no-files-found'], 'error')
+        self.assertIn('appliance-merge', jobs['gate']['needs'])
 
     def test_failed_manual_gate_cannot_allow_release_publication(self):
         jobs = yaml.safe_load((ROOT / '.github/workflows/publish-images.yml').read_text())['jobs']

@@ -34,7 +34,8 @@ def passing_results(scope='full'):
 
 
 def needs(contracts='success', verify='success', appliance='success', *, comprehensive='true', scope='full', required='true',
-          binding=('verified', RELEASE, REVISION), capture_plan=None, shard_count=None, capture=None):
+          binding=('verified', RELEASE, REVISION), capture_plan=None, shard_count=None, capture=None,
+          appliance_merge=None):
     outputs = {'comprehensive': comprehensive, 'appliance_scope': scope, 'appliance_required': required, 'mode': 'reuse'}
     if binding:
         outputs.update(release_binding=binding[0], release_binding_release=binding[1],
@@ -47,6 +48,8 @@ def needs(contracts='success', verify='success', appliance='success', *, compreh
                                  'outputs': {'shard_count': '0' if shard_count is None else shard_count}}
     if capture is not None:
         value['capture'] = {'result': capture, 'outputs': {}}
+    if appliance_merge is not None:
+        value['appliance-merge'] = {'result': appliance_merge, 'outputs': {}}
     return value
 
 
@@ -125,6 +128,19 @@ class GateFunctionTests(unittest.TestCase):
                 value = needs(comprehensive='false', scope='compatibility', **{job: result})
                 self.assertTrue(ci.gate_failures(value, comprehensive=False, release=RELEASE, revision=REVISION,
                                                  results=passing_results('compatibility')))
+
+    def test_failed_parallel_appliance_merge_blocks_release(self):
+        # The merge job writes the single artifact the gate reads: when it runs,
+        # only success may authorize the release. The compatibility run keeps a
+        # single appliance pass, so its skipped merge is not a failure.
+        self.assertEqual(self.failures(needs(appliance_merge='success')), [])
+        self.assertTrue(any('appliance-merge' in failure
+                            for failure in self.failures(needs(appliance_merge='failure'))))
+        self.assertTrue(self.failures(needs(appliance_merge='cancelled')))
+        compatibility = needs(contracts='skipped', appliance='skipped', comprehensive='false',
+                              scope='compatibility', required='false', appliance_merge='skipped')
+        self.assertEqual(self.failures(compatibility, results=passing_results('compatibility'),
+                                       comprehensive=False), [])
 
     def test_gate_command_exits_nonzero_and_reports_unauthorized(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -340,9 +356,11 @@ class ReleaseWorkflowGateTests(unittest.TestCase):
 
     def test_gate_jobs_cannot_be_skipped_into_success(self):
         gate = self.shared['jobs']['gate']
-        # Capture-plan/capture may be added by the distributed fan-out; nothing else.
+        # Capture-plan/capture may be added by the distributed fan-out, and the
+        # parallel full appliance adds its merge; nothing else.
         self.assertTrue({'contracts', 'verify', 'appliance'} <= set(gate['needs']))
-        self.assertLessEqual(set(gate['needs']), {'contracts', 'verify', 'appliance', 'capture-plan', 'capture'})
+        self.assertLessEqual(set(gate['needs']),
+                             {'contracts', 'verify', 'appliance', 'appliance-merge', 'capture-plan', 'capture'})
         self.assertEqual(gate['if'], '${{ always() }}')
         step = next(step for step in gate['steps'] if step.get('id') == 'gate')
         self.assertEqual(step['env']['MANUALE_NEEDS_JSON'], '${{ toJSON(needs) }}')
@@ -393,14 +411,22 @@ class GateEndToEndTests(unittest.TestCase):
 
     def test_results_path_matches_upload_root(self):
         shared = yaml.safe_load((WORKFLOWS / 'manuale-verify.yml').read_text())
-        upload = next(step for step in shared['jobs']['appliance']['steps']
+        # The merged artifact of the split full run keeps the name the gate reads.
+        upload = next(step for step in shared['jobs']['appliance-merge']['steps']
                       if step.get('with', {}).get('name') == 'manuale-release-evidence')
         self.assertIn('quality-reports/manual-release/', upload['with']['path'])
+        merge = next(step for step in shared['jobs']['appliance-merge']['steps']
+                     if 'manual-release-merge.py' in step.get('run', ''))
+        self.assertIn('--output quality-reports/manual-release', merge['run'])
         download = next(step for step in shared['jobs']['gate']['steps']
                         if step.get('with', {}).get('name') == 'manuale-release-evidence')
         gate = next(step for step in shared['jobs']['gate']['steps'] if step.get('id') == 'gate')
         self.assertIn(download['with']['path'].replace('${{ runner.temp }}', '$RUNNER_TEMP') + '/results.json', gate['run'])
         self.assertIn("(output / 'results.json')", (ROOT / 'selfhost/tests/manual-release-smoke.py').read_text())
+        # A compatibility run uploads the same name directly from its single part.
+        compatibility = next(step for step in shared['jobs']['appliance']['steps']
+                             if step.get('uses', '').startswith('actions/upload-artifact'))
+        self.assertIn("|| 'manuale-release-evidence'", compatibility['with']['name'])
 
     def test_gate_without_results_blocks_even_with_successful_jobs(self):
         with patch.dict(os.environ, {'MANUALE_TIMING_FILE': ''}):

@@ -109,7 +109,7 @@
                "selfhost/tests/browser/package-lock.json", "selfhost/tests/browser/manuale/frame.mjs",
                "selfhost/tests/browser/manuale/redaction.mjs", "selfhost/tests/browser/manuale/compile.mjs",
                "selfhost/tests/browser/manuale/embedded.mjs", "selfhost/tests/browser/manuale/verify.mjs",
-               "selfhost/tests/browser/manuale/reader-plan.mjs", "selfhost/tests/manual-release-smoke",
+               "selfhost/tests/browser/manuale/reader-plan.mjs", "selfhost/tests/manual-release-smoke", "selfhost/tests/manual-release-merge.py",
                "docs/manuale/workflow-registry.mjs", "docs/manuale/evidence-contracts.mjs",
                "docs/scripts/manuale.py", "docs/scripts/manuale_impact.py", "docs/scripts/manuale_evidence_store.py",
                "docs/scripts/manuale_timing.py", "docs/scripts/manuale-", "docs/manuale/impact-map.json",

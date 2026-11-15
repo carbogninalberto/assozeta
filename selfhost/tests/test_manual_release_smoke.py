@@ -1,7 +1,11 @@
 """Focused smoke wiring; real image/startup acceptance remains the appliance run."""
+import contextlib
 import importlib.util
 import ast
 import io
+import json
+import subprocess
+import sys
 import tarfile
 import tempfile
 import threading
@@ -11,9 +15,19 @@ from pathlib import Path
 from unittest.mock import patch
 from subprocess import CompletedProcess, CalledProcessError
 
+ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location('manual_release_smoke', Path(__file__).with_name('manual-release-smoke.py'))
 SMOKE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(SMOKE)
+
+MERGE_PATH = Path(__file__).with_name('manual-release-merge.py')
+MERGE_SPEC = importlib.util.spec_from_file_location('manual_release_merge', MERGE_PATH)
+MERGE = importlib.util.module_from_spec(MERGE_SPEC)
+MERGE_SPEC.loader.exec_module(MERGE)
+
+CI_SPEC = importlib.util.spec_from_file_location('manuale_ci_merge_tests', ROOT / 'docs/scripts/manuale-ci.py')
+CI = importlib.util.module_from_spec(CI_SPEC)
+CI_SPEC.loader.exec_module(CI)
 
 
 class ManualReleaseImagesTests(unittest.TestCase):
@@ -287,6 +301,198 @@ class RegistryCleanupTests(unittest.TestCase):
         with patch.object(SMOKE.subprocess, 'run', side_effect=responses):
             result = SMOKE.cleanup_registry('owned-registry', ['owned-volume'], io.StringIO())
         self.assertFalse(result['verified'])
+
+
+class ReleasePartArgumentTests(unittest.TestCase):
+    """--part splits the full sequence; its default keeps one serial rehearsal."""
+
+    def test_part_defaults_to_today_single_rehearsal(self):
+        args = SMOKE.parse_args(['package', '1.2.3'])
+        self.assertEqual((args.part, args.scope, args.previous_release), ('all', 'full', '1.0.17'))
+
+    def test_every_part_is_accepted_for_the_full_scope(self):
+        for part in ('all', 'current', 'historical'):
+            with self.subTest(part=part):
+                self.assertEqual(SMOKE.parse_args(['package', '1.2.3', '--part', part]).part, part)
+        # The compatibility run stays a single pass under the default part.
+        self.assertEqual(SMOKE.parse_args(['package', '1.2.3', '--scope', 'compatibility']).part, 'all')
+
+    def test_historical_part_requires_the_published_full_release(self):
+        for extra in (['--scope', 'compatibility'], ['--previous-package', 'previous-package']):
+            with self.subTest(extra=extra), contextlib.redirect_stderr(io.StringIO()) as errors:
+                with self.assertRaises(SystemExit) as raised:
+                    SMOKE.parse_args(['package', '1.2.3', '--part', 'historical', *extra])
+                self.assertEqual(raised.exception.code, 2)
+                self.assertIn('--part historical', errors.getvalue())
+
+    def test_results_record_the_part_and_the_historical_block_is_never_in_current(self):
+        source = Path(SMOKE.__file__).read_text()
+        self.assertIn("'part': args.part", source)
+        # The historical block runs for all and historical, never for current.
+        self.assertIn("if not previous_bundle and args.part != 'current':", source)
+        # Both parts keep the production-images record; each really resolves it.
+        self.assertEqual(source.count("record('production images built and historical image digests resolved')"), 1)
+        self.assertIn('corrupt_candidates(first_image, verify=True)', source)
+        self.assertIn('corrupt_candidates(first_image, verify=False)', source)
+
+
+CURRENT_CHECKS = [
+    'production images built and historical image digests resolved',
+    'fresh installation: reader, assets, search and real browser assistance without AI or subscription',
+    'current distribution: exact healthy Go artifact serves manual HTTP/assets; stopped-Go v2 rejects fallback while Django remains available',
+    'container recreation retains the image-matched manual',
+    'normal CLI startup recovers activation interrupted between container creation and startup',
+    'failed CLI candidate download restores services with the retained compatible manual',
+    'missing/corrupt index and PNGs and mismatched version reject candidate startup',
+    'failed candidate leaves valid package intact; original image recreates with compatible manual',
+]
+HISTORICAL_CHECKS = [
+    'production images built and historical image digests resolved',
+    'ordinary CLI rejects each missing/corrupt manual candidate before migrations or activation and restores the working historical release',
+    'real published 1.0.17: upgrade preserves association data and delivers the manual with legacy branding and empty download volume',
+    'backup rotation keeps the manual backup across repeated pre-upgrade backups',
+    'historical backup rollback restores the original application/data pair and its honest absence of a manual',
+]
+RELEASE, REVISION = '1.0.18', 'a' * 40
+
+
+def part_results(part, checks, *, status='passed', release=RELEASE, revision=REVISION, phase='images'):
+    value = {'status': status, 'scope': 'full', 'part': part, 'release': release,
+             'application_revision': revision, 'corpus_identity': 'identity-' + part,
+             'previous_source': {'release': 'v1.0.17', 'manifest': 'manifest-url'}, 'checks': list(checks),
+             'timings': [{'phase': phase, 'elapsed_seconds': 1.5}], 'elapsed_seconds': 10.0}
+    # Each part also records evidence only it can produce, exactly as the real
+    # runs do: the current Go artifact and the installed historical runtime.
+    value['current_go_image'] = 'sha256:go' if part == 'current' else None
+    value['historical_runtime_installed'] = {'compose.yml': '0' * 64} if part == 'historical' else None
+    return {key: item for key, item in value.items() if item is not None}
+
+
+class ApplianceMergeTests(unittest.TestCase):
+    """The gate reads one artifact: both parts must merge into that shape."""
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+
+    def run_merge(self, current, historical):
+        for name, value in (('current', current), ('historical', historical)):
+            directory = self.root / name
+            directory.mkdir(exist_ok=True)
+            (directory / 'results.json').write_text(json.dumps(value))
+            # Only results.json may be copied; these must never reach the output.
+            (directory / 'private-execution.log').write_text('private')
+            (directory / 'fresh' / 'browser').mkdir(parents=True, exist_ok=True)
+            (directory / 'fresh' / 'browser' / 'trace.json').write_text('{}')
+        output = self.root / 'merged'
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as errors:
+            code = MERGE.main(['--current', str(self.root / 'current'),
+                               '--historical', str(self.root / 'historical'), '--output', str(output)])
+        self.errors = errors.getvalue()
+        return code, output
+
+    def merged(self, current=None, historical=None):
+        code, output = self.run_merge(current or part_results('current', CURRENT_CHECKS),
+                                      historical or part_results('historical', HISTORICAL_CHECKS))
+        self.assertEqual(code, 0, self.errors)
+        return json.loads((output / 'results.json').read_text()), output
+
+    def test_merged_result_keeps_the_shape_the_gate_reads(self):
+        value, output = self.merged()
+        self.assertEqual(sorted(path.name for path in output.iterdir()), ['results.json'])
+        self.assertEqual(value['status'], 'passed')
+        self.assertEqual((value['release'], value['application_revision'], value['scope']), (RELEASE, REVISION, 'full'))
+        self.assertEqual(value['part'], 'merged')
+        self.assertEqual(value['previous_source'], part_results('current', CURRENT_CHECKS)['previous_source'])
+        self.assertEqual(value['corpus_identity'], 'identity-current')
+
+    def test_part_specific_evidence_from_each_half_is_preserved(self):
+        value, _ = self.merged()
+        # The current-only Go artifact and the historical-only installed runtime
+        # are both evidence of this one release, so neither may be dropped.
+        self.assertEqual(value['current_go_image'], 'sha256:go')
+        self.assertEqual(value['historical_runtime_installed'], {'compose.yml': '0' * 64})
+        self.assertEqual(value['release'], RELEASE)
+
+    def test_checks_are_current_then_historical_with_one_production_images_entry(self):
+        value, _ = self.merged()
+        self.assertEqual(value['checks'], CURRENT_CHECKS + HISTORICAL_CHECKS[1:])
+        self.assertEqual(value['checks'].count(MERGE.DUPLICATED_CHECK), 1)
+        self.assertEqual(value['checks'][0], MERGE.DUPLICATED_CHECK)
+
+    def test_merged_checks_satisfy_every_required_release_check(self):
+        value, _ = self.merged()
+        for check in CI.REQUIRED_RELEASE_CHECKS:
+            with self.subTest(check=check):
+                self.assertTrue(any(check in item for item in value['checks']), value['checks'])
+
+    def test_timings_keep_both_parts_in_order_and_summarize_them(self):
+        value, _ = self.merged()
+        self.assertEqual([(entry['part'], entry['phase']) for entry in value['timings']],
+                         [('current', 'images'), ('historical', 'images')])
+        self.assertEqual(value['parts'], {
+            'current': {'part': 'current', 'status': 'passed', 'elapsed_seconds': 10.0,
+                        'checks_recorded': len(CURRENT_CHECKS)},
+            'historical': {'part': 'historical', 'status': 'passed', 'elapsed_seconds': 10.0,
+                           'checks_recorded': len(HISTORICAL_CHECKS)}})
+
+    def test_every_mismatch_fails_without_writing_a_merged_result(self):
+        cases = {
+            'another release': (part_results('current', CURRENT_CHECKS),
+                                part_results('historical', HISTORICAL_CHECKS, release='1.0.17')),
+            'another revision': (part_results('current', CURRENT_CHECKS),
+                                 part_results('historical', HISTORICAL_CHECKS, revision='b' * 40)),
+            'failed part': (part_results('current', CURRENT_CHECKS),
+                            part_results('historical', HISTORICAL_CHECKS, status='failed')),
+            'swapped parts': (part_results('historical', CURRENT_CHECKS),
+                              part_results('current', HISTORICAL_CHECKS)),
+            'single part repeated': (part_results('current', CURRENT_CHECKS),
+                                     part_results('current', HISTORICAL_CHECKS)),
+        }
+        for name, (current, historical) in cases.items():
+            with self.subTest(name), tempfile.TemporaryDirectory() as directory:
+                for part, value in (('current', current), ('historical', historical)):
+                    (Path(directory) / part).mkdir()
+                    (Path(directory) / part / 'results.json').write_text(json.dumps(value))
+                output = Path(directory) / 'merged'
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as errors:
+                    code = MERGE.main(['--current', str(Path(directory) / 'current'),
+                                       '--historical', str(Path(directory) / 'historical'),
+                                       '--output', str(output)])
+                self.assertEqual(code, 1, name)
+                self.assertIn('Merge rejected', errors.getvalue())
+                self.assertFalse((output / 'results.json').exists())
+
+    def test_compatibility_and_unreadable_parts_are_rejected(self):
+        compatibility = part_results('current', CURRENT_CHECKS)
+        compatibility['scope'] = 'compatibility'
+        cases = {'compatibility scope': (compatibility, part_results('historical', HISTORICAL_CHECKS)),
+                 'missing results': (part_results('current', CURRENT_CHECKS), None)}
+        for name, (current, historical) in cases.items():
+            with self.subTest(name), tempfile.TemporaryDirectory() as directory:
+                for part, value in (('current', current), ('historical', historical)):
+                    (Path(directory) / part).mkdir()
+                    if value is not None:
+                        (Path(directory) / part / 'results.json').write_text(json.dumps(value))
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    code = MERGE.main(['--current', str(Path(directory) / 'current'),
+                                       '--historical', str(Path(directory) / 'historical'),
+                                       '--output', str(Path(directory) / 'merged')])
+                self.assertEqual(code, 1, name)
+
+    def test_the_command_exits_non_zero_on_a_mismatch(self):
+        for part, value in (('current', part_results('current', CURRENT_CHECKS)),
+                            ('historical', part_results('historical', HISTORICAL_CHECKS, status='failed'))):
+            (self.root / part).mkdir()
+            (self.root / part / 'results.json').write_text(json.dumps(value))
+        completed = subprocess.run([sys.executable, str(MERGE_PATH), '--current', str(self.root / 'current'),
+                                    '--historical', str(self.root / 'historical'),
+                                    '--output', str(self.root / 'merged')],
+                                   capture_output=True, text=True)
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn('historical part did not pass', completed.stderr)
+        self.assertFalse((self.root / 'merged' / 'results.json').exists())
 
 
 if __name__ == '__main__':
