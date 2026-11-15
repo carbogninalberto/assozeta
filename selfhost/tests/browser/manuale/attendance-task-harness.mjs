@@ -8,7 +8,7 @@ export function attendanceHarness(action, input) {
     const state = JSON.parse(fs.readFileSync(path.join(run, 'run.json')));
     const args = ['compose', '--env-file', state.env_file, '--project-name', state.project,
         '-f', path.join(state.application, 'selfhost/compose.dev.yml'), '-f', state.override,
-        'run', '--rm', '--no-deps', '--user', `${process.getuid()}:${process.getgid()}`,
+        'exec', '-T', '--user', `${process.getuid()}:${process.getgid()}`,
         'api', 'python', 'manage.py', 'run_manuale_attendance', '--action', action,
         '--reference-date', input.reference_date];
     const log = fs.openSync(path.join(run, 'execution.log'), 'a', 0o600);
