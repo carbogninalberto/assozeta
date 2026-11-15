@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // golden is testdata/kombu_messages.json, captured from the real Celery/kombu
@@ -307,6 +308,12 @@ func TestUnsupportedValuesAreRefused(t *testing.T) {
 	}
 	if _, err := Encode(Task{}, Envelope{}); err == nil {
 		t.Fatal("missing task name accepted")
+	}
+	// Only the application builds task arguments: an unsupported one is an
+	// application-state error, never a refusal handed off to Django.
+	_, err := Encode(Task{Name: "t", Args: []any{1.5}}, Envelope{})
+	if !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("unsupported argument is not app state: %v", err)
 	}
 }
 
