@@ -89,7 +89,8 @@ where `Task.__call__` pushes a fresh request and no child reaches the stored met
 - `send_email_template`: templates outside `internal/emailrender`'s embedded set, `data` that is not a dict or holds lists,
   floats or UUIDs, brand values the renderer refuses.
 - A `sport_association_id` the UUID field rejects (Django swallows the `ValidationError`; no effect either way).
-- Configuration sends whose SMTP message or envelope is outside the smtpsend subset, a non-list `recipient_list`, or a
+- (Long tail PR 3: configuration sends render any SMTP message and envelope; Python's exceptions are send_email's
+  `(False, e)`, so they are planned.) A non-list `recipient_list`, or a
   `reply_to` that is neither None, a string nor a list of strings.
 - `send_mail_async`: instance `email_settings` without the six keys as strings and an integer port 1-65535, a sender
   name that `formataddr` would quote or encode, a non-UTF-8 decrypted password, and every handoff of the first slice

@@ -30,7 +30,11 @@ are not in this family (see the end).
 
 Golden tests: `TESTS/adapters/go/document_template_golden.py` renders all eight document templates for 320 seeded contexts with
 `render_to_string` (both languages; 6 raise in Django and must fail in Go) and runs `filter_mentions` on 516 inputs; the Go tests
-(`go test ./internal/djtemplate ./internal/mentions`) require identical bytes (`testdata/*.json`) and check the refusals.
+(`go test ./internal/djtemplate ./internal/mentions`) require identical bytes (`testdata/*.json`). Since long tail PR 3
+`filter_mentions` runs on the full html.parser and bs4 tree port (`bs4prettify.Parse`, `Node.Decode` = `str(soup)`), so any
+stored markup is answered (`internal/mentions/testdata/filter_python.json`, 55 documents); a legacy alias whose
+`lower()` is no key raises KeyError in Django and is application state in Go. Mention paths the resolvers do not read
+(`service/document_views.go`) are still refused.
 
 ## Views
 

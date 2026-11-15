@@ -127,7 +127,7 @@ Refused before any effect (job fails with `task_failed`):
 - `association_quote_assign`: a run whose active plans need a conversion the apply route does not
   port (fee not a JSON number or plain decimal string, or beyond numeric(9, 2); previous plan or
   plan id not a string or number; `int()` of non-ASCII digits), a plan name or fee the template
-  renderer does not take (lists, dicts), or an SMTP message outside the `smtpsend` subset. The
+  renderer does not take (lists, dicts) (since long tail PR 3 every SMTP message renders). The
   check covers every subscription the run could e-mail (an over-approximation).
 - `mark_as_paid_payments_checking_stripe`: a run in which any listed payment's mark flow, run as
   if its intent had succeeded in a rolled-back transaction with a publisher that sends nothing,

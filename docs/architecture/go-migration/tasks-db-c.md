@@ -147,10 +147,9 @@ have no Go counterpart; Go runs one job per published occurrence.
 
 ## Not ported or refused
 
-- Refused before any effect (job fails with `task_failed`): a run whose SMTP
-  path would need a message or envelope outside the smtpsend subset (for
-  example a reminder title with a line break, or an address with quotes or
-  spaces), and template inputs the renderer refuses. The check covers every
+- Refused before any effect (job fails with `task_failed`): template inputs the
+  renderer refuses. (Long tail PR 3: every SMTP message and envelope renders;
+  one Python raises on is logged and skipped like send_email's `(False, e)`.) The check covers every
   item the run would process; Django would send these.
 - `send_updated_certificate_email`: its only call site
   (`BE/application/views/subscriptions_views.py`) is commented out, so no
