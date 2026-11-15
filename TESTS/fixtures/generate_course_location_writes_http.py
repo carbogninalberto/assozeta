@@ -243,9 +243,10 @@ add('update-document-then-missing-key', 'owner', one('pool', 'update'), 400, MIS
     body={'documents_data': [fourth, {'filename': 'senza.pdf'}]}, effect=effect)
 # Same shape with a list filename: the first item is stored and linked, the second one only writes its row (str(['a'])).
 tenth, tenth_spec = upload('elenco.pdf', 'Elenco corsi', 'application/pdf')
-response, effect = changed('owner', 'gym')
+# On 'pool' (deleted later with its documents): no later answer lists its documents.
+response, effect = changed('owner', 'pool')
 effect['uploads'] = [tenth_spec, {'filename': "['a']", 'row_only': True}]
-add('update-document-then-filename-list', 'owner', one('gym', 'update'), 500, SERVER, method='PATCH',
+add('update-document-then-filename-list', 'owner', one('pool', 'update'), 500, SERVER, method='PATCH',
     body={'documents_data': [tenth, {'document': tenth['document'], 'filename': ['a']}]}, effect=effect)
 fifth, fifth_spec = upload('nuovo.pdf', 'Nuovo regolamento', 'application/pdf')
 response, effect = changed('owner', 'gym', title='Palestra grande')

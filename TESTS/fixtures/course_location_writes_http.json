@@ -1473,19 +1473,19 @@
    "name": "course-location-writes-update-document-then-filename-list",
    "actor": "owner",
    "method": "PATCH",
-   "path": "/course/locations/a1000000-0000-4000-8000-000000980006/update",
+   "path": "/course/locations/a1000000-0000-4000-8000-000000980005/update",
    "headers": {},
    "status": 500,
    "response": "<stable-server-error-page>",
    "effect": {
     "kind": "update",
     "actor": "owner",
-    "label": "gym",
+    "label": "pool",
     "changes": {},
     "stored": {
-     "title": "Palestra",
-     "description": "Nuova",
-     "address": "Via 3"
+     "title": "Copia",
+     "description": "Vasca",
+     "address": ""
     },
     "uploads": [
      {
