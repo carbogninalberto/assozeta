@@ -1729,6 +1729,16 @@ constraint makes it impossible; external, platform or timing sites outside the a
 | `service.ErrBakneyPublicLinkNotPorted` (deleted) | a paired server's `expires_at` whose UTC instant lies outside years 1..9999: Python compares it with now without error (misc-routes `card-paired-server-far-future-grant`, subscription-misc `validate-paired-server-far-future-grant`) | – | – | – |
 | `service.ErrProfileSettingsUpload`, `ErrOnboardingNotPorted` (deleted) | multipart bodies over 2.5 MiB with a file part: Django spools the file (`TemporaryUploadedFile`) and answers as for an in-memory one, except that DRF names the class (profile-settings `post-multipart-spooled-file-saves-user-then-server-error`; profile-misc `multipart-spooled-file-membership-data`, `multipart-spooled-file-without-branch`) | an onboarding fee DRF's `DecimalField` accepted that `float()` rejects (3: none exists) | – | – |
 
+`refusal_reach.py` HTTP and WebSocket rows for these points: 104 before, 43 after (other rows 9 → 7; 35 → 16 sentinels);
+whole report 260 → 199 HTTP/WebSocket (297 → 234 overall). Evidence: local sweep `lt3C-1` from the branch head, 46 HTTP
+families on four transports and the signature migration command harness (10/10), green except camps-periods,
+course-location-writes and subscription-memberships (expectations fixed; reruns `lt3C-2`, `lt3C-3` green: 140, 73, 103
+cases) and associates-draft, whose Django side fails the existing `edit-year-below-1000-born-date-server-error` on macOS
+(the local Python pads `%Y`; the production image does not) in every local sweep, unrelated to this change. Mutations, each CAUGHT: dropping the overview body's render check
+(`lt3C-mut1`, `overview-schedule-nan`), refusing lone surrogates in the runner decoder again (`lt3C-mut3`,
+`overview-ignored-key-lone-surrogate`), a `-` instead of `_` in the alternative storage name (`lt3C-mut2`,
+`upload-key-taken-alternative-name`).
+
 The runner change removes the `service/instance_updates.go` mapping of the runner decoder's refusal (agent B's
 `domain.ErrInstanceAdminRefused` keeps its other sites). `documentkey.AvailableName` (`pkg/storage/documentkey/available.go`) reproduces
 `get_available_name` for every caller that still refuses a taken key.
