@@ -93,14 +93,16 @@ colours. `go test ./internal/emailrender` reproduces all of it and checks that u
 ## Not ported (refused with the 500 page before any write)
 
 - `collaborators/add` e-mail strings with NUL characters or lone surrogates are answered as Django does (see below).
+  Its e-mail values from form bodies and uploads stay refused.
 - Inputs the renderer still refuses are class C/X: template syntax and the embedded template set, a name outside that set,
   a language outside Django's `LANGUAGES` (the request resolvers only return supported variants and the workers use `it`),
   context value types the services build, `instance_email_brand` without a brand, `updated_at` before year 1000 (`auto_now`),
   `floatformat` on text/bool, and Decimal text outside plain notation (every Decimal here is a `numeric(9,2)` column).
-- An invoice payment date before year 1000 is a separate refusal (`ErrEmailRenderNotPorted`, the 500 page): `strftime('%Y')`
-  pads such years differently per platform.
 - `Accept-Language` values other than English are rendered correctly (golden evidence) but the HTTP families run in English only
   (the shared harness requires `Content-Language: en`).
+
+An invoice payment date before year 1000 is formatted as glibc's `strftime` does on the production image (the year is not
+zero-padded: `04/03/999`). macOS pads it, so no parity case runs it (unit test only).
 
 ## Ported in go-v2only-emailtpl
 
@@ -151,3 +153,7 @@ Django does.
 request's own `json.dumps(sort_keys=True)` text, PostgreSQL's jsonb hands the number back as an integer (`-0.0` as `0.0`) and the
 view's second `save()` logs an update entry `[loaded text, request text]` under the same index. Floats with a negative exponent
 read back unchanged and log nothing more.
+
+Long tail PR 3 (agent C): a payment year before 1000 in the invoice e-mail uses glibc's unpadded
+`%Y` (`04/03/999`), as on the production image; macOS pads it, so a unit test covers it and no parity
+case runs it. `collaborators/add` e-mail values from form bodies and uploads stay refused.

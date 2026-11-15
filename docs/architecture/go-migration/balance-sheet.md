@@ -95,9 +95,12 @@ An exception of the export is the same 500 after the save as for `excel`.
 
 ## Not ported (refused before any write)
 
-- In the exports: a non-finite amount, a description that is not text or
-  null, and the workbook inputs `xlsxexport` does not reproduce
-  (`xlsx-exports.md`).
+- In the exports: a description that is a number, list or dict, and the
+  workbook inputs `xlsxexport` does not reproduce (`xlsx-exports.md`).
+  Amounts `float()` reads as `nan` or infinity are formatted as Python does
+  (`nan`, `inf`, `-inf`; the outgoing cell prefixes `-`, so `-nan` and
+  `--inf`). A PDF input `pdfexport` does not reproduce is pdfexport's own
+  refusal.
 - In the `pdf` export: a denomination, city, postal code or address with a
   paragraph tag whose drawing is not ported (`<u>`, `<a>`, `<font>` and the
   others listed in pdf-exports.md, "Paragraph markup"), and
@@ -179,3 +182,8 @@ among the active associations, where Django's reverse accessor resolves the
 row by its owner alone (`sheetRun.profile` now reads the association the run
 holds). GREEN and mutation: see v2-refusals.md, "Ported in the v2-reports-3
 change".
+
+Long tail PR 3 (agent C): amounts `float()` reads as `nan` or infinity are formatted as Python does
+(`nan`, `inf`, `-inf`; the outgoing cell prefixes `-`, so `-nan` and `--inf`). A PDF input
+`pdfexport` does not reproduce is pdfexport's own refusal, and a description that is a number, list
+or dict stays refused.

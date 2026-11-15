@@ -139,7 +139,9 @@ association: another association's username is DRF's 403 `User not allowed.`, be
   `set_signature_from_base64(data)`: an http(s) URL becomes `signature_url`; otherwise the text after the first `,` through
   `base64.b64decode(validate=True)` (invalid: 400 `{'msg': 'Firma non valida.', 'code': '400', 'ref': 'invalid_signature'}`, rolled
   back) is stored at `<AWS_LOCATION>/subscriptions/<id>/signature_<timestamp>.png` (the subscription/sign upload, shared; a storage
-  failure is the 503 `signature_storage` body) and `save(update_fields=[signature_url, signature_storage_key])` writes the name and
+  failure is the 503 `signature_storage` body). A taken key gets `get_available_name`'s alternative name
+  (`<root>_<7 random letters or digits><suffixes>`, e.g. `signature_1731686400_AbC12xY.123456.png`), then
+  `save(update_fields=[signature_url, signature_storage_key])` writes the name and
   the public URL (one update entry; the create entry was written without them). A later failure deletes the stored object.
 - `new_user_account.new_member` true: `new_member_info['email']` (missing: 500) is checked for an account:
   one with that exact e-mail links nothing (the rows stay with the request's user, as without `new_member`, and no account or
@@ -264,7 +266,7 @@ Refused with the 500 page before anything is committed:
 - in a preregistration that renews a subscription: an account name matching several
   associations (application state: `User.username` is unique), a renewed subscription without an associate;
 - new member info with a non-string e-mail, a numeric
-  `new_member` flag; a signature upload whose generated key already exists;
+  `new_member` flag;
 - the placeholder certificate when the names sent are not strings, when the file name is not storable (over 255 characters,
   control characters, a path the storage rejects), when the text is outside `pilplaceholder`'s subset, or when
   `PIL_PLACEHOLDER_ZLIB` names an unknown zlib; 
@@ -434,3 +436,6 @@ Re-run green natively (`famwiz-rerun-r1`): `subscription-renew` 75/75, `subscrip
 - Plan ids compare as `str()`, fees read Python `float()` spellings (a rejected text and inf are 500s, nan no payment), a third decimal
   is rounded in the column and audited as the float, and a membership plan name is `str()`.
 - Cases `group-*`, `form-*`, `born-date-*`, `tutor-*`, `plan-*`, `fee-*` and the two ties.
+
+Long tail PR 3 (agent C): a signature upload whose generated key is already taken gets
+`get_available_name`'s alternative name instead of a refusal.

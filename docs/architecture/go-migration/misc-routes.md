@@ -78,7 +78,6 @@ The other routes looked at for this family are not ported (see the end of this p
   the value). List and object values for the title, the event id and the label were ported earlier (Python repr).
   Float values are ported (v2-rest-c): `str()` of the Python float, also for a JSON float wall message (`1.5`, `1000.0`,
   `1e-07`, `-inf` beyond the float range).
-- Card GET through the paired server: an `expires_at` whose instant lies outside years 1..9999.
 
 Since long-tail PR 3 (agent B) the subscription card's public links are application state (`ErrServerComposition`,
 the 500 page): the server always composes them, and `ErrMiscRoutesNotPorted` is deleted. The paired-server
@@ -140,3 +139,7 @@ upper-case token, a disconnected pairing, a changed origin or association, an in
 - Mutation (`v2misc3-mutation-r2`): accepting an expiry without an offset fails Go on
   `misc-routes-card-paired-server-naive-expiry` (CAUGHT).
 - sso-pairing re-runs green natively (`v2misc3-rerun-r1`): the port reuses its binding check and upstream call.
+
+Long tail PR 3 (agent C): a paired server's `expires_at` whose UTC instant lies outside years 1..9999 is read as
+Django reads it (an aware value it compares with now without error) instead of being refused. Case
+`card-paired-server-far-future-grant`.

@@ -38,10 +38,9 @@
 ## Not ported (explicit refusals before any committed write)
 
 - **`profile/update/subscription/template` is ported separately** in [profile-template.md](profile-template.md), with a bs4 `prettify()` port and a rectangular image bound.
-- In `onboarding/update`, Go answers the 500 page instead of reproducing Django in these cases:
-  - Fee strings with non-ASCII digits (`float()` reads them, the port does not).
-  - Multipart bodies whose Content-Length is over 2621440 bytes and that carry a file part (Django uses another file class there).
-  Inside the atomic block a refusal rolls back like Django's exception.
+- In `onboarding/update`, the former refusals are gone: a fee DRF's `DecimalField` accepted that `float()` rejects cannot
+  exist (the field accepts at most nine ASCII digits, which `float()` reads), so the 500 page is application state; a
+  multipart body over 2621440 bytes with a file part is answered as for an in-memory upload (see **Multipart file parts**).
 
 ## Season/fiscal values and NUL characters
 
@@ -57,7 +56,7 @@ insert: nothing is written and the answer is the fixed message.
 - **Lead values.** A container is stored as its Python `str()` (list and dict repr, floats as `1.5e+20`). A value longer than the column (150, phone 20) fails the UPDATE after auditlog wrote its entry and index row (autocommit), so the entry stays, the row does not change and the answer is the fixed 500 message. When several columns are too long the first in table order reports (phone, then role, size, channel).
 - **Fee repr.** The second save audits `str(float(fee))`; the repr now follows Python (exponent form included). A serializer-valid fee never needs the exponent form (nine digits, two places), so this is covered by a unit test only. A negative zero is stored as `0.00` and audited as `-0.00`, then `-0.0`.
 - **Blank nullable fee.** `membership_fee` of `''` or whitespace is `None` for the serializer (`DecimalField.validate_empty_values`): `sport_association` clears the fee. In `membership_data` the later `float('')` raises, so the answer is the fixed 500 message and the earlier save rolls back. A blank `subscription_fee` stays invalid.
-- **Multipart file parts.** `request.data` holds the uploaded file: a serializer branch answers `Invalid data. Expected a dictionary, but got InMemoryUploadedFile.`, `lead_data` the 500 `'InMemoryUploadedFile' object is not subscriptable`, a text branch value its usual error, and a file under another key is ignored.
+- **Multipart file parts.** `request.data` holds the uploaded file: a serializer branch answers `Invalid data. Expected a dictionary, but got InMemoryUploadedFile.` (the serializer names a spooled upload over 2621440 bytes `TemporaryUploadedFile`), `lead_data` the 500 `'InMemoryUploadedFile' object is not subscriptable`, a text branch value its usual error, and a file under another key is ignored.
 
 ## Evidence
 
@@ -70,6 +69,12 @@ API v2 (v2-misc): the checklist's whole-row `onboarding_data` (own `users_onboar
 Read-only identity fields (sec-onboarding): `users_onboarding_id` and `user` are read-only in `UsersOnboardingSerializer`, and Go no longer refuses any value for them. Six cases send other, malformed and null values for both keys (owner and collaborator, with changed and unchanged flags). RED `seconb-red-r1`: Django 107/107, Go 500. GREEN `seconb-green-r2`: 107/107 on the four transports. Mutation `seconb-mutation-r1` (the row id taken from the body) fails `profile-misc-onboarding-flags-ui-row-uppercase-ids` on Go.
 
 Rest-prof (rows of the former rare-input refusals): 138 cases (31 added). Django 138/138 first run, Go failed only on the negative-zero audit, fixed. The soft-deleted case adds `deleted` to the association and user fixtures (no index row). RED: documented refusals, see the v2-refusals rows; each added case was a 500 page before. Mutation (the lead length check allowing one more character) fails `profile-misc-lead-too-long-role` on Go.
+
+Long tail PR 3 (agent C): a multipart body over 2.5 MiB (`FILE_UPLOAD_MAX_MEMORY_SIZE`, 2621440 bytes) with a file part is no
+longer refused. Django spools the file (`TemporaryUploadedFile`) and the view answers as for an in-memory upload, except
+that the serializer names the class: `multipart-spooled-file-membership-data` answers 400 with
+`Invalid data. Expected a dictionary, but got TemporaryUploadedFile.`, and `multipart-spooled-file-without-branch` answers
+200. The fixture stores the 2.7 MB file content as a repeat count (`raw_parts` in `TESTS/contracts/http_family.py`).
 
 ## Ported in t2docs
 

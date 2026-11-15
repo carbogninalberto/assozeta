@@ -94,9 +94,8 @@ unknown-paths family covers them).
 
 ## Not ported (refused with the 500 page; the views write nothing)
 
-- `get_signature_base64()`'s legacy `signature_url` fetch (the reply of another server): the stored object is ported (t6x2).
 - Markup outside the `filter_mentions` subset, and mention paths that name an attribute the port declares but does not read
-  (for example the model's methods and relations).
+  (for example the model's methods and relations): `mentions.ErrUnsupported`, its own sentinel.
 - Template inputs outside `djtemplate`'s subset: the eight templates are fixed files, so their syntax is fully ported. The JSON columns
   the views read with `json.loads` (`subscription.additional_fields`, the association's and the user association's
   `additional_sections`, the association's `additional_fields`, `subscription.payment_meta`, `medical_appointment.meta`) are ported for
@@ -222,12 +221,15 @@ Caddy `/api/v1` and `/api/v2`. Mutation (`imphard-mutation-r1`): rendering the P
 does (the storage name is joined with `AWS_LOCATION` into the S3 key) and writes
 `"data:image/png;base64," + base64(bytes)`; a read that raises (a missing object, a storage error) falls through
 like Django's logged exception. Without a legacy `signature_url` the method returns `None`, and the template writes
-the text `None` (`<img src="None" .../>`). A record whose legacy `signature_url` is set stays the 500 page (refused):
-the URL is fetched from another server. `service.DocumentViews` takes the reader as an optional
+the text `None` (`<img src="None" .../>`). A record whose legacy `signature_url` is set is fetched like
+`requests.get(url, timeout=10)` (30 redirects, environment proxies, gzip/deflate decoding, a status of 400 or more is a
+failure); any failure gives `None`, as Django logs and returns `None`. `service.DocumentViews` takes the reader as an optional
 `domain.DocumentViewObjects` (`WithSignatureObjects`, wired in `cmd/server` to `composeDocumentObjects` with
-`documentkey.S3Key` and a bounded read); without a configured reader a stored signature keeps the previous refusal.
-`BE_GO/internal/service/document_views_signature_test.go` covers the four outcomes (data URI, `None`, both legacy-URL
-refusals) and the missing reader.
+`documentkey.S3Key` and a bounded read) and the fetcher (`WithLegacySignatureFetcher`); without the reader a stored
+signature is `errDocumentViewSignature`, without the fetcher a legacy URL is `domain.ErrServerComposition` (the server
+wires both).
+`BE_GO/internal/service/document_views_signature_test.go` covers the data URI, `None`, a fetched legacy URL and the
+missing reader.
 
 The fixture has 168 cases (2 new): `document-views-subscription-signature-stored` (the seeded
 `signature_objects` bytes as the data URI) and `document-views-subscription-signature-missing` (a name without an
@@ -267,3 +269,7 @@ no index row). The shared effect check `harness.check_audit_event` accepts `acto
   Django, Go, Caddy `/api/v1` and `/api/v2`.
 - Mutation (`tutorpromo-mutation-r1`): giving the promotion only to requests with a scoped account again (the
   pre-change guard) fails Go on `template-subscription-bypass-promotes-tutor` (500, CAUGHT).
+
+Long tail PR 3 (agent C): a subscription with a legacy signature URL is fetched like `requests.get(url, timeout=10)`;
+any failure gives `None`, as Django does. Case `document-views-subscription-legacy-signature-unreachable`. The mention
+refusal is its own sentinel again, not a document-view one.

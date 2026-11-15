@@ -61,7 +61,8 @@ not an object is the 500 page). `excel` answers `{"file": <base64 workbook>, "fi
 `pdf` answers the same shape with a reportlab table document (`pdfexport.DataTable`, [pdf-exports](pdf-exports.md)): the same
 columns as rows up to `Tags` and `Carnet` (the per-tag columns belong to the workbook), titled `<title> (giorno stampa
 DD/MM/YYYY)` with the rebound title, in a file always named `[DD/MM/YYYY] Iscrizioni corsi filtrate - <denomination>.pdf`.
-A member without phone or e-mail is an empty cell.
+A member without phone or e-mail is an empty cell. A carnet's `lessons_left` stored as a list or a dict renders as
+Python's `str()` of it (keys in stored order); a PDF input `pdfexport` does not reproduce is pdfexport's own refusal.
 
 Row order. None of the export's statements has an ORDER BY: the rows, the tags and the carnets come in the order the database
 returns them. Go sends the statements the ORM compiles, with the same tables, join types, predicates and selected columns
@@ -139,8 +140,6 @@ Membership payments render PaymentSerializer's nested `instructor` and `invoice`
 
 ## Not ported (refused before any write)
 
-- In the list exports a carnet `lessons_left` that is a list or an object: 500 (the list route itself fails on such a
-  row in Django).
 - Update: unmatched installments sharing one payment, and an HTML-form `multiple_quote` or `events` document the jsonb
   column rejects: 500.
 
@@ -229,3 +228,7 @@ tailcourses: the events edit under a non-canonical `X-Group-Id` audits the creat
 HTML-form JSON for `multiple_quote` and `events`. 158 cases GREEN natively. Mutation CAUGHT by `update-form-events-invalid-json`.
 
 t4l3: 168 cases (`router-course-subscriptions` 45, shared seed). GREEN CI `t4l3-1`. Mutation `t4l3-cs-mut` (create entry written for the overwrite instead of the insert) CAUGHT on `update-primary-key-copies-row`.
+
+Long tail PR 3 (agent C): a carnet's `lessons_left` stored as a list or a dict renders as Python's
+`str()` (keys in stored order) in the export; a PDF input `pdfexport` does not reproduce is
+pdfexport's own refusal.

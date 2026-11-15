@@ -43,7 +43,8 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
   indexed through the actor's own association (`actor.sport_association`), none for a collaborator.
 - Service add/update use `CampsAndRetreatsPeriodsServiceAddSerializer` (an empty form fee keeps the model default;
   an omitted fee is the float `0.0` until saved, audited as an update). Update answers its data under `period`, then
-  walks the subscription periods of the service's (new) period whose payment is unpaid: each matching
+  walks the subscription periods of the service's (new) period whose payment is unpaid, in the order PostgreSQL returns
+  for Django's own query (no `ORDER BY`), stopping at the first failure and keeping the earlier saves: each matching
   `meta_payment_categories` item takes the serializer's fee (float), title and `str(payment_category)` and the
   payment is saved; then amount (metas plus the period fee) and notes are recomputed and saved. Every save runs
   `Payment.save()`'s category/description defaults and is audited against the stored row (`amount` as
@@ -59,11 +60,9 @@ are implemented in Go (`BE_GO/internal/{domain,repository,service,handler}/camps
 ## Not ported (refused with a 500 before any write)
 
 - HTML form input carrying the many-to-many services key (QueryDict.getlist) or file parts.
-- Payment walks whose outcome this port does not reproduce: a soft-deleted payment or one outside the request's
-  `X-Group-Id` that has no association (the index row is not characterized), a failure with more than one subscription
-  period in the walk unless every period fails before its first save with the same message (Django's order is the
-  database's), a `Payment.save()` description failure whose text is not known, and amounts or notes PostgreSQL would
-  reject (numeric overflow, the non-negative amount constraint, notes over 5120 characters).
+- Payment walk outcomes: a hidden payment (soft-deleted or outside the request's `X-Group-Id`) without an association,
+  a `Payment.save()` failure without a message, a negative amount (the check constraint's message) and a negative
+  generate-payment total.
 
 ## Primary key in the body (t5pk)
 
@@ -100,3 +99,7 @@ update stays, the failing save writes nothing). A walk whose subscription period
 message, answers that 500 whatever the database's order. Cases `services-update-null-metas-two-payments-server-error`,
 `services-update-description-failure-server-error`, `services-update-transfer-description-two-payments-server-error`
 (139 cases). Local sweep `t11camps-local` and CI `t11camps-1` (run 43196596071) green on four transports.
+
+Long tail PR 3 (agent C): the service update's payment walk follows the order PostgreSQL returns for Django's own
+query and stops at the first failure, keeping the earlier saves. Case
+`services-update-walk-first-completes-second-fails`.

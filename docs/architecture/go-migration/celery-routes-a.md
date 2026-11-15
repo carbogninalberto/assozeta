@@ -60,11 +60,9 @@ listed under "Not ported" with the reason.
 
 ## Not ported
 
-Inputs of `subscription/<uid>/update` refused with the 500 page before any write:
-
-- date strings other than ASCII `YYYY-MM-DD` that contain a digit (`date.fromisoformat`'s other formats such as `20260101` or `2026-W01-1`,
-  `date_re` matches such as `2026-1-5`, non-ASCII digits, which Django may accept);
-- text, dict keys or JSON strings with NUL characters or lone surrogates.
+`subscription/<uid>/update`: text, dict keys or JSON strings with NUL characters or lone surrogates are application
+state (the 500 page with nothing written): auditlog inserts the LogEntry on `pre_save` and PostgreSQL rejects its jsonb.
+JSON fields keep the pre-save entry (`json.dumps` escapes both), then answer the 500 page.
 
 `send-email-reminder`: an associate without an email whose tutor relations are all non-primary is refused with the 500 page
 (`get_main_tutor` would first save the first relation as primary, an audited write).
@@ -102,3 +100,6 @@ JSON fields keep the pre-save entry (json.dumps escapes both) before the 500. Th
 first tutor relation (by key) as primary, with its audit entry indexed through the associate, when the associate has no
 mail and no primary tutor; a deleted, group-hidden or association-less associate resolves the index the same way (the relation is read through base managers; without an association the entry falls back to the actor's, path `actor.sport_association`).
 Cases: `celery-routes-a-date-forms-*`, `*-nothing-saved`, `*-kept-entry`, `reminder-promotes-*`.
+
+Long tail PR 3 (agent C): the date forms above are stored, not refused, and text with a NUL or a lone
+surrogate is application state (the 500 page with nothing written).

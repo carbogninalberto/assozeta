@@ -40,9 +40,9 @@ remains the production execution owner. Add and update are ported too (below).
 ## Go implementation
 
 Three queries for a page (association, count, rows), like Django. Ordering is
-resolved from the model's field names and attnames to a column; relation paths
-(`field__other`) are not ported and answer 500, where Django could order by the
-related column.
+resolved from the model's field names and attnames to a column; a relation path
+(`field__other`) or a transform answers the 500 page like Django (`order_by` of
+`checked_ordering`'s placeholder raises `FieldError`).
 
 ## Evidence (TDD)
 
@@ -52,6 +52,10 @@ Django reference corrected one expectation: under the harness's C ctype,
 RED: Django 48/48 and Go 404 on the first case before any Go code. GREEN:
 native Django, native Go, Caddy `/api/v1` and `/api/v2` pass 48/48 with the
 model state unchanged; dropping the LIKE escaping fails the percent case.
+
+Long tail PR 3 (agent C): ordering by a relation path or transform answers the 500 page like Django
+(`checked_ordering`'s placeholder), and a foreign key to the supplier outside the four the models
+declare is application state.
 
 ## Delete and bulk delete
 
@@ -68,9 +72,9 @@ model state unchanged; dropping the LIKE escaping fails the percent case.
   association are deleted and counted (`"N suppliers deleted."`).
 - **Effects:** hard deletes. The collector sets the four Django references
   (payments, supplier invoices, subscriptions, sold products) to NULL without
-  audit; any other database reference refuses the delete in Go instead of
-  guessing its semantics. Each supplier gets one auditlog delete entry,
-  indexed through `changes_json.sport_association`.
+  audit; any other database reference is application state (the 500 page): only
+  a schema the migrations did not create has one. Each supplier gets one auditlog
+  delete entry, indexed through `changes_json.sport_association`.
 
 `TESTS/fixtures/supplier_deletes_http.json` authors 28 cases; the Django
 reference passed them on the first run. Ignoring the group filter fails the
@@ -115,8 +119,9 @@ indexed from its changes) CAUGHT.
 
 rest-b1: two more cases (36 in all) for the copy that clears `sport_association`; RED is the documented refusal
 (v2-refusals.md, suppliers row). GREEN `restb1-1` on the four transports (CI run in the ledger notes); mutation
-`restb1-mutation-r1` (the copy indexed as if it kept its association) CAUGHT. Deletes still refuse a database reference
-other than the four Django declares: a migrated schema has no other, so there is nothing to reproduce.
+`restb1-mutation-r1` (the copy indexed as if it kept its association) CAUGHT. Deleting a supplier when the
+database has a foreign key to it other than the four the models declare is application state (the 500 page):
+only a schema the migrations did not create has one.
 
 ## Forward relation ordering (t3pay, replaced in t4l1)
 

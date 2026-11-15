@@ -50,7 +50,9 @@ atomic: a claimed lease stays even when the request later fails.
   objects pickled before (the dict keys and the unavailable reason are code constants, a name
   that falls back to the tag is the tag object, `''` and one-character Latin-1 strings are
   interpreter singletons), `BININT1/BININT2/BININT/LONG1`, `APPEND` for one release, `APPENDS`
-  per 1000. `unpickleCatalog` reads exactly those opcodes (a data decoder, no globals).
+  per 1000. `unpickleCatalog` reads exactly those opcodes (a data decoder, no globals). A cached
+  catalog other than a list of `normalize_release` dicts is application state (the 500 page): only the
+  releases view writes that key.
 
 ## admin/email/test
 
@@ -116,7 +118,6 @@ Before the lease or any cache write:
 - (Ported in long tail PR 3: an AI base URL with an empty user information pair, which the
   `AI_BASE_URL` environment default can carry, is prepared and sent as `requests` does; see
   `TestAIRequestEmptyUserInfo`.) Every URL that url split accepts is prepared and sent (see t8out).
-- Cached catalogs that are not the pickle of a `normalize_release` list.
 
 Depending on the response, so after the lease (tests) or a manual refresh bound (releases):
 
@@ -215,3 +216,6 @@ escaped, dot-segment and non-ASCII paths. The HTTP sequence adds `integration-te
 `-quoted-path`, `-escape-case`, `-port-out-of-range` and `-invalid-idn-host`. A valid non-ASCII host cannot reach the
 fake provider (its certificate covers the fixed ASCII hosts only), so the fixture uses an invalid IDNA label, which
 requests raises on: the probe answers the generic failure and sends nothing.
+
+Long tail PR 3 (agent C): a cached release catalog other than a list of `normalize_release` dicts is
+application state (the 500 page); only the releases view writes that key.

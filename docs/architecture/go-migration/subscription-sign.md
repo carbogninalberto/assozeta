@@ -29,8 +29,10 @@ the association (`403 Risorsa non disponibile per questo utente e associazione.`
      otherwise the text after the first `,` goes through `base64.b64decode(..., validate=True)` (ASCII only, strict alphabet and padding;
      invalid or empty: `400 {"msg": "Firma non valida.", "code": "400", "ref": "invalid_signature"}`, rolled back), then
      `default_storage.save('subscriptions/<id>/signature_<str(datetime.now().timestamp())>.png')`: HeadObject and one PutObject
-     (`image/png`, `CacheControl: max-age=86400`, `AWS_DEFAULT_ACL` when set) under `AWS_LOCATION`. With `AWS_S3_USE_OBJECT_ACL`,
-     `put_object_acl(ACL='public-read')` on `_signature_storage_object_key`; any storage failure deletes the object if it was saved and
+     (`image/png`, `CacheControl: max-age=86400`, `AWS_DEFAULT_ACL` when set) under `AWS_LOCATION`. A key already taken gets
+     `get_available_name`'s alternative name: `<root>_<7 random letters or digits><suffixes>` until the HeadObject misses,
+     the suffixes being `PurePath(file_name).suffixes` (e.g. `signature_1731686400_AbC12xY.123456.png`). With
+     `AWS_S3_USE_OBJECT_ACL`, `put_object_acl(ACL='public-read')` on `_signature_storage_object_key`; any storage failure deletes the object if it was saved and
      answers `503 {"msg": "Storage temporaneamente non disponibile.", "code": "503", "ref": "signature_storage"}` (rolled back). The
      key is the saved name (relative to `AWS_LOCATION`) and `signature_url` is `AWS_S3_PUBLIC_BASE_URL + '/' + <object key>` (None
      without a public base);
@@ -46,11 +48,6 @@ the association (`403 Risorsa non disponibile per questo utente e associazione.`
 
 The timestamp is the C `datetime.timestamp()` of a naive local now: whole seconds plus `microsecond / 1e6`, rendered with Python's
 float repr. Go publishes through `internal/celery` after its commit and uses `documentobjects.S3` (`Exists`, `Put`, `PutACL`, `Delete`).
-
-## Not ported
-
-Refused with the 500 page before any write: a generated key that already exists in the bucket (`get_available_name` would choose a
-random alternative name).
 
 ## Evidence
 
@@ -76,3 +73,6 @@ of a seeded association whose owner's season start is 31 April. `save(update_fie
 `Subscription.save()`: the season range raises after the upload, the object is deleted, nothing is written, 500. Go reads
 the same settings before its write (`modelHooksSubscriptionSave`). Native 47/47; mutation (`model-hooks-mutation`: the
 season check returns nil) fails Go with 200 (CAUGHT).
+
+Long tail PR 3 (agent C): an object already stored under the new signature key gets
+`get_available_name`'s alternative name. Case `upload-key-taken-alternative-name`.

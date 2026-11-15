@@ -92,7 +92,9 @@ from the membership fee) CAUGHT.
 - Stored JSON outside the handled shapes: a non-dict truthy subscription meta other than numbers/bools, a non-dict truthy payment
   meta or `course` on a course payment, a non-string meta `description`, non-string `payment_category_id` values, integers beyond
   int64 or float overflow in amounts, `lower()` of the few runes with special Python mappings.
-- Markup outside the document-views subset; template inputs outside `djtemplate`. Mention keys: the invoice's number, dates and
+- Markup outside the document-views subset and template inputs outside `djtemplate`. The mention refusal
+  (`mentions.ErrUnsupported`) and the stored-value refusals above are their own sentinels, no longer wrapped in a document-view
+  sentinel. Mention keys: the invoice's number, dates and
   amounts (also through the legacy aliases) are read, and a name that is not an attribute reads as the empty text (see below).
 - (Long tail PR 3: FatturaPA list/dict line text, Decimal strings with whitespace, underscores, non-ASCII digits or huge
   exponents, Decimal tuples, overflowing floats and XML dates before year 1000 (platform C library) are ported in
@@ -161,3 +163,6 @@ renderer header: after the row lookup (a missing row is still the 500 page) and 
 account gets the 403 of `docmanager.access` (`memberDocumentStaffAccess` in Go). The fixture has 90 cases (5 new or changed).
 RED `secdoc2-red-r1`: Django 90/90, Go 200 on `invoice-views-einvoice-athlete`. GREEN `secdoc2-versioned-final` (after merging the base; `secdoc2-versioned-r1` before): 90/90 on the
 four transports. Mutation `secdoc2-mutation-r1` (the check dropped from the page) CAUGHT.
+
+Long tail PR 3 (agent C): the mention and stored-value refusals are their own sentinels, no longer wrapped in a
+document-view sentinel.

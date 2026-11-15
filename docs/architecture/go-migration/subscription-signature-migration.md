@@ -27,9 +27,10 @@ the Go image (`/app/migrate-subscription-signatures-to-s3`). Django stays the ex
      ASCII only, non-alphabet characters discarded, stops at a complete pad sequence, no incomplete quantum;
      CPython 3.13's `a2b_base64`): failure is `Skipping <id> - not valid base64 or URL`; a dry run prints
      `[DRY-RUN] Would migrate <id> to configured storage`; otherwise, in `transaction.atomic()`,
-     `set_signature_from_base64` (strict decode of the whole text, HeadObject, PutObject `image/png` with
-     `CacheControl`, `put_object_acl(public-read)` with `AWS_S3_USE_OBJECT_ACL`, public URL from
-     `AWS_S3_PUBLIC_BASE_URL`) and the save; `Migrated <id> to storage key subscriptions/<id>/signature_<ts>.png`.
+     `set_signature_from_base64` (strict decode of the whole text, HeadObject, a taken key's alternative name
+     `<root>_<7 random letters or digits><suffixes>`, PutObject `image/png` with `CacheControl`,
+     `put_object_acl(public-read)` with `AWS_S3_USE_OBJECT_ACL`, public URL from `AWS_S3_PUBLIC_BASE_URL`) and the save;
+     `Migrated <id> to storage key subscriptions/<id>/signature_<ts>.png`.
      A save failure deletes the stored object.
    - Exceptions count as errors: `Error processing subscription <id>: <str(e)>` (`InvalidSignatureError` /
      `StorageUnavailableError` render their DRF detail dict; database errors psycopg2's primary message and newline).
@@ -49,8 +50,6 @@ abbreviations (`--dry`, `--batch=3`), `-v/--verbosity`, `--traceback`, `--skip-c
 
 ## Not ported
 
-- A generated key that already exists in the bucket (`get_available_name` would pick a random alternative name): Go stops
-  the run with exit 1 and a refusal line on stderr. The key carries the microsecond timestamp of the upload.
 - `--settings`, `--pythonpath`, `--help`, `--version` (Go exits 2); `--batch-size` with non-ASCII digits or beyond the
   int64 range (exit 2). argparse's and Django's stderr text (usage, tracebacks) is not reproduced: Go prints one line with
   the same exit status.
@@ -81,3 +80,6 @@ stdout and per-row effects.
 - `go test ./internal/service` (lenient base64 outcomes against CPython, save() errors).
 
 Receipts: `quality-reports/go-migration/subscription-signature-migration/{red-r2,green-r2,mutation-r1}/results.json`.
+
+Long tail PR 3 (agent C): an object already stored under the new signature key is no longer refused;
+Go reproduces `get_available_name`'s alternative name and the run continues.

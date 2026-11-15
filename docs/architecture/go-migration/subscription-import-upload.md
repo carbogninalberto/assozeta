@@ -131,7 +131,8 @@ owner. There is no Celery dispatch on this route: the mapping branch imports syn
 - CSV files outside `pandascsv`'s subset (`Read`, `ReadText`): a line that starts with whitespace after a bare carriage
   return, and decimal text whose value depends on how pandas was compiled (1,904 of 97,442 corpus outcomes).
 - Import values: date text or a number in a date column over 64 KiB (date text and numbers are otherwise read by the whole
-  dateutil parser, `internal/pydateutil`, day first unless the text starts with the year); a tax code beyond ASCII in a
+  dateutil parser, `internal/pydateutil`, day first unless the text starts with the year); a date text
+  `internal/pydateutil` does not read is its own refusal (`pydateutil.ErrUnsupported`); a tax code beyond ASCII in a
   complete row or outside the transliteration subset; a `default` that is not an object when a value is missing.
 
 ## Evidence (TDD)
@@ -227,3 +228,6 @@ labels are whole numbers mixed only with floats or nan. `TESTS/adapters/go/panda
 lookups (`pandasxlsx/testdata/pandas_lookups.json`, `TestPandasLookups`). 98 cases; local `t11camps-dbg2` and CI
 `t11camps-1` (run 43196596071) green on four transports; mutation `t11camps-mut2` (int keys always read as labels)
 CAUGHT (`big-float-labels-position-fails`).
+
+Long tail PR 3 (agent C): a date text `internal/pydateutil` does not read is
+`pydateutil.ErrUnsupported`, its own refusal, no longer this family's sentinel.

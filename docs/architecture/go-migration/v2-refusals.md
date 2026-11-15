@@ -1683,7 +1683,7 @@ listed. Per-site table: `tmp/long-tail/pr3-B.md` (worktree notes).
 |---|---|---|---|
 | document upload (`documents-writes.md`) | storage client errors botocore raises at once: documents/add 400 after deleting the Document, medical upload 500 JSON, certificate upload 500 page (`add-storage-refused-removes-document`, `add-storage-key-too-long-removes-document`, `medical-storage-refused-keeps-certificate`, `certificate-storage-refused-keeps-document`) | — | transport and retried storage failures, multipart-size bodies (not replayable), bodies over 250 MiB, RFC 2231 codecs |
 | association transfer (`association-transfer.md`) | import/validate temporary-file OSError text (`import-validate-name-over-255-bytes`); import/start with a password file part (`import-start-password-file`) | — | archive texts, multipart decoder, referenced export document, negative stored size |
-| instance administration (`instance-admin.md`) | nested form list keys as a MultiValueDict repr (`integration-ai-put-form-list-nested`) | runner replies past the decoder (the runner is the app's own process); dead IDNA guard | a multipart upload in a nested list key |
+| instance administration (`instance-admin.md`) | nested form list keys as a MultiValueDict repr (`integration-ai-put-form-list-nested`) | runner replies nested past the decoder (combined branch: agent C's runner depth error; lone surrogates are ported by agent C); dead IDNA guard | a multipart upload in a nested list key |
 | SMTP verify (`communications-smtp.md`) | X1: verified false with Go's text | marker made private; sentinel deleted | — |
 | send e-mail (`communications-send-email.md`) | (combined branch: agent A's smtpsend renders every message, so the send path refuses nothing) | — | — |
 | e-mail tasks (`tasks-db-c.md`) | — | emailrender's refusals returned as application state | concurrent configuration delete (header folding and envelope: agent A's smtpsend) |
@@ -1699,3 +1699,35 @@ listed. Per-site table: `tmp/long-tail/pr3-B.md` (worktree notes).
 before, 26 after. Sentinels deleted: SMTP verify, workflow update, profile template, calendar, misc routes, instructor
 hours, payment state, invoice core, clear-deleted and restore-cleanup workers. Whole report on this branch: 254 → 230
 HTTP/WebSocket rows (43 → 38 other).
+
+## Long tail PR 3, agent C
+
+Same rule as PR 2 (owner decision, 2026-11-15): port what Django answers normally, with a parity case; `refusal.AppState`
+(Django's 500 page, never handed off) where Django raises, or where only the application writes the state or a
+constraint makes it impossible; external, platform or timing sites outside the approved divergences stay refusals.
+
+| Sentinel | Ported (cases) | Now AppState (rule) | Passed through | Left (refusal) |
+|---|---|---|---|---|
+| `service.ErrInstanceBackupsNotPorted` (deleted) | runner replies holding a lone surrogate: kept as Python keeps them; the 500 page where the value reaches a rendered body, a rendered error message or the manual backup's audit entry (instance-backups `overview-ignored-key-lone-surrogate`, `overview-archive-lone-surrogate`, `overview-runner-error-lone-surrogate`, `create-operation-id-lone-surrogate`, `create-operation-note-lone-surrogate`; instance-backups-actions `keep-runner-error-lone-surrogate`, `keep-accepted-lone-surrogate`; instance-updates `status-lone-surrogate`, `status-runner-error-lone-surrogate`) | a reply nested past 500 levels (3: the runner, `selfhost/updater/server.py`, writes `json.dumps` of fixed shapes) | – | – |
+| `service.ErrInvoiceSyncPrintDeferred` | – | the eager print deferred during a restore (2: Celery's `Task.apply` re-applies the Retry signature recursively and the recursion ends in a `RecursionError` no view catches; probed at 960 starting depths) | – | – |
+| `repository.errSupplierReferenceUnknown` | – | a foreign key to the supplier other than the four the models declare (3) | – | – |
+| `repository.ErrReleaseCacheShape` | – | a cached release catalog the releases view did not write (3) | – | – |
+| `service.ErrSupplierOrdering` | – | an ordering outside the model's columns (2: `order_by` raises `FieldError`) | – | – |
+| `service.ErrSubscriptionUpdateNotPorted` | – | text with NUL or a lone surrogate (2: auditlog's pre-save entry is rejected by PostgreSQL before any write) | – | – |
+| `service.ErrCourseListUnported`, `ErrCourseListExportUnported` (deleted) | – | – | pdfexport's own refusal | – (the ordering branch was dead code) |
+| `service.ErrCourseSubscriptionExportUnsupported` (deleted) | `lessons_left` stored as a list or dict: Python's `str()` in stored key order (unit test) | – | pdfexport's own refusal | – |
+| `service.ErrBalanceSheetExportNotPorted` | amounts `float()` reads as nan or infinity, formatted as Python does (unit test) | – | pdfexport's own refusal | a description that is a number, list or dict |
+| `service.ErrSubscriptionSignNotPorted`, `ErrSubscriptionSignatureMigrationNotPorted` (deleted) | an existing object under the new signature key: `get_available_name`'s alternative name (`documentkey.AvailableName`; subscription-sign `upload-key-taken-alternative-name`) | – | – | – |
+| `service.ErrPersonaNotPorted` | a taken picture key (alternative name); HeadObject, PutObject and PutObjectAcl error answers botocore raises without retrying: the serializer's 400 with botocore's text (personas-writes `update-picture-head-denied`, `update-picture-put-denied`, `update-picture-key-taken`) | a key the storage location cannot hold (3) | – | errors botocore retries (HTTP 429, 500, 502, 503, 504, 509, the throttling codes, `RequestTimeout`, `BadDigest`) and connection failures; the router create picture branch; HTML form bodies |
+| `service.errSubscriptionReadsLazyOrder` (deleted) | `sort[field]=?`: `ORDER BY RANDOM()` (subscription-reads `list-sort-random-one-row`, `list-sort-random-desc`, `archived-sort-random-one-row`, `archived-sort-random-desc`) | – | – | – |
+| `service.ErrDocumentViewNotPorted` (deleted) | the legacy signature URL: fetched like `requests.get(url, timeout=10)`, `None` on any failure (document-views `document-views-subscription-legacy-signature-unreachable`) | – | mentions' and the invoice view's own refusals | – |
+| `service.ErrSubscriptionMedicalNotPorted` | NULL member names (`None` in the placeholder); a placeholder name over 255 characters (certificate written, then the 500 page) (unit tests) | an unwired appointment printer (3, `domain.ErrServerComposition`) | – | a placeholder name with a control character or one the storage rejects |
+| `service.ErrEmailRenderNotPorted` | a payment year before 1000: glibc's unpadded `%Y` (production image; macOS pads, so unit test only) | – | – | `collaborators/add` e-mail values from form bodies and uploads |
+| `service.ErrCampsPaymentNotPorted` | walks whose outcome depends on the row order: Go reads the order PostgreSQL returns for Django's own query and stops at the first failure (camps-periods `services-update-walk-first-completes-second-fails`) | – | – | hidden payment without association, a save failure without a message, negative amounts (check-constraint texts) |
+| `service.ErrAssociateDraftNotPorted` (deleted), `ErrInstructorReportNotPorted`, `ErrSubscriptionImportNotPorted` | – | – | pydateutil's own refusal for texts outside its subset | the other sites of the last two |
+| `service.ErrBakneyPublicLinkNotPorted` (deleted) | a paired server's `expires_at` whose UTC instant lies outside years 1..9999: Python compares it with now without error (misc-routes `card-paired-server-far-future-grant`, subscription-misc `validate-paired-server-far-future-grant`) | – | – | – |
+| `service.ErrProfileSettingsUpload`, `ErrOnboardingNotPorted` (deleted) | multipart bodies over 2.5 MiB with a file part: Django spools the file (`TemporaryUploadedFile`) and answers as for an in-memory one, except that DRF names the class (profile-settings `post-multipart-spooled-file-saves-user-then-server-error`; profile-misc `multipart-spooled-file-membership-data`, `multipart-spooled-file-without-branch`) | an onboarding fee DRF's `DecimalField` accepted that `float()` rejects (3: none exists) | – | – |
+
+The runner change removes the `service/instance_updates.go` mapping of the runner decoder's refusal (agent B's
+`domain.ErrInstanceAdminRefused` keeps its other sites). `documentkey.AvailableName` (`pkg/storage/documentkey/available.go`) reproduces
+`get_available_name` for every caller that still refuses a taken key.
