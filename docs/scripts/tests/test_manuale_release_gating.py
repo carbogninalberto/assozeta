@@ -34,14 +34,20 @@ def passing_results(scope='full'):
 
 
 def needs(contracts='success', verify='success', appliance='success', *, comprehensive='true', scope='full', required='true',
-          binding=('verified', RELEASE, REVISION)):
+          binding=('verified', RELEASE, REVISION), capture_plan=None, shard_count=None, capture=None):
     outputs = {'comprehensive': comprehensive, 'appliance_scope': scope, 'appliance_required': required, 'mode': 'reuse'}
     if binding:
         outputs.update(release_binding=binding[0], release_binding_release=binding[1],
                        release_binding_revision=binding[2])
-    return {'contracts': {'result': contracts, 'outputs': {}},
-            'verify': {'result': verify, 'outputs': outputs},
-            'appliance': {'result': appliance, 'outputs': {}}}
+    value = {'contracts': {'result': contracts, 'outputs': {}},
+             'verify': {'result': verify, 'outputs': outputs},
+             'appliance': {'result': appliance, 'outputs': {}}}
+    if capture_plan is not None:
+        value['capture-plan'] = {'result': capture_plan,
+                                 'outputs': {'shard_count': '0' if shard_count is None else shard_count}}
+    if capture is not None:
+        value['capture'] = {'result': capture, 'outputs': {}}
+    return value
 
 
 class GateFunctionTests(unittest.TestCase):
@@ -125,7 +131,8 @@ class GateFunctionTests(unittest.TestCase):
             directory = Path(directory)
             results = directory / 'results.json'
             results.write_text(json.dumps(passing_results()))
-            for value, expected in ((needs(), 0), (needs(appliance='cancelled'), 1), (needs(scope='compatibility'), 1)):
+            for value, expected in ((needs(), 0), (needs(appliance='cancelled'), 1), (needs(scope='compatibility'), 1),
+                                    (needs(capture_plan='success', capture='skipped', shard_count='2'), 1)):
                 github_output = directory / 'output'
                 github_output.write_text('')
                 environment = {**os.environ, 'GITHUB_OUTPUT': str(github_output), 'GITHUB_STEP_SUMMARY': '',
@@ -136,7 +143,12 @@ class GateFunctionTests(unittest.TestCase):
                                            env=environment, capture_output=True, text=True)
                 self.assertEqual(completed.returncode, expected, completed.stdout + completed.stderr)
                 self.assertIn('authorized=' + ('true' if expected == 0 else 'false'), github_output.read_text())
-                self.assertEqual(json.loads((directory / 'gate.json').read_text())['authorized'], expected == 0)
+                report = json.loads((directory / 'gate.json').read_text())
+                self.assertEqual(report['authorized'], expected == 0)
+                self.assertEqual(set(report), {'format', 'authorized', 'comprehensive', 'release',
+                                               'application_revision', 'failures', 'jobs'})
+                if 'capture-plan' in value:
+                    self.assertIn('distributed capture did not succeed (skipped)', report['failures'])
             # A missing results file is a block, never a pass.
             completed = subprocess.run([sys.executable, str(ROOT / 'docs/scripts/manuale-ci.py'), 'gate',
                                         '--comprehensive', 'true', '--release', RELEASE, '--revision', REVISION,
@@ -144,6 +156,117 @@ class GateFunctionTests(unittest.TestCase):
                                        env={**environment, 'MANUALE_NEEDS_JSON': json.dumps(needs())},
                                        capture_output=True, text=True)
             self.assertEqual(completed.returncode, 1)
+
+
+class GateCaptureTests(unittest.TestCase):
+    """A capture fan-out (capture-plan -> capture matrix) must fail closed."""
+
+    def value(self, comprehensive, capture_plan=None, capture=None, shard_count=None, **overrides):
+        kwargs = dict(contracts='success', appliance='success', comprehensive='true', scope='full', required='true',
+                      capture_plan=capture_plan, shard_count=shard_count, capture=capture)
+        if not comprehensive:
+            kwargs.update(contracts='skipped', appliance='skipped', comprehensive='false', scope='compatibility',
+                          required='false')
+        kwargs.update(overrides)
+        return needs(**kwargs)
+
+    def failures(self, value, comprehensive=True):
+        return ci.gate_failures(value, comprehensive=comprehensive, release=RELEASE, revision=REVISION,
+                                results=passing_results('full' if comprehensive else 'compatibility'))
+
+    def test_absent_capture_jobs_keep_the_old_behaviour(self):
+        for comprehensive in (True, False):
+            with self.subTest(comprehensive=comprehensive):
+                self.assertEqual(self.failures(self.value(comprehensive), comprehensive), [])
+
+    def test_capture_plan_must_succeed_or_be_skipped(self):
+        for comprehensive in (True, False):
+            for plan in ('success', 'skipped'):
+                with self.subTest(comprehensive=comprehensive, plan=plan):
+                    self.assertEqual(self.failures(self.value(comprehensive, capture_plan=plan, capture='skipped',
+                                                              shard_count='0'), comprehensive), [])
+            for plan in ('failure', 'cancelled'):
+                with self.subTest(comprehensive=comprehensive, plan=plan):
+                    failures = self.failures(self.value(comprehensive, capture_plan=plan, capture='skipped',
+                                                        shard_count='0'), comprehensive)
+                    self.assertIn('capture planning did not succeed (' + plan + ')', failures)
+            # A plan entry without a result is not a success either.
+            value = self.value(comprehensive, capture_plan='success', shard_count='0')
+            value['capture-plan'].pop('result')
+            with self.subTest(comprehensive=comprehensive, plan='missing'):
+                self.assertIn('capture planning did not succeed (missing)', self.failures(value, comprehensive))
+
+    def test_skipped_plan_and_skipped_capture_are_authorized(self):
+        for comprehensive in (True, False):
+            with self.subTest(comprehensive=comprehensive):
+                self.assertEqual(self.failures(self.value(comprehensive, capture_plan='skipped', capture='skipped',
+                                                          shard_count='0'), comprehensive), [])
+
+    def test_distributed_capture_must_succeed(self):
+        for comprehensive in (True, False):
+            with self.subTest(comprehensive=comprehensive):
+                self.assertEqual(self.failures(self.value(comprehensive, capture_plan='success',
+                                                          capture='success', shard_count='2'), comprehensive), [])
+            for capture in ('skipped', 'failure', 'cancelled'):
+                with self.subTest(comprehensive=comprehensive, capture=capture):
+                    value = self.value(comprehensive, capture_plan='success', capture=capture, shard_count='2')
+                    self.assertIn('distributed capture did not succeed (' + capture + ')',
+                                  self.failures(value, comprehensive))
+            with self.subTest(comprehensive=comprehensive, capture='missing'):
+                value = self.value(comprehensive, capture_plan='success', shard_count='2')
+                self.assertIn('distributed capture did not succeed (missing)',
+                              self.failures(value, comprehensive))
+
+    def test_distributed_capture_still_requires_verify_success(self):
+        for comprehensive in (True, False):
+            with self.subTest(comprehensive=comprehensive):
+                value = self.value(comprehensive, capture_plan='success', capture='success', shard_count='2',
+                                   verify='failure')
+                self.assertIn('manual verification did not succeed (failure)',
+                              self.failures(value, comprehensive))
+
+    def test_plan_failure_with_claimed_shards_still_blocks(self):
+        for comprehensive in (True, False):
+            with self.subTest(comprehensive=comprehensive):
+                value = self.value(comprehensive, capture_plan='failure', capture='success', shard_count='2')
+                self.assertIn('capture planning did not succeed (failure)',
+                              self.failures(value, comprehensive))
+                value = self.value(comprehensive, capture_plan='skipped', shard_count='2')
+                self.assertIn('distributed capture did not succeed (missing)',
+                              self.failures(value, comprehensive))
+
+    def test_malformed_shard_count_is_not_distributed(self):
+        for comprehensive in (True, False):
+            for shard_count in ('x', '', '-1', '0', ' 2', '2.0', 2, True):
+                with self.subTest(comprehensive=comprehensive, shard_count=shard_count):
+                    value = self.value(comprehensive, capture_plan='success', capture='skipped',
+                                       shard_count=shard_count)
+                    self.assertEqual(self.failures(value, comprehensive), [])
+            for missing in ('None', 'no outputs'):
+                value = self.value(comprehensive, capture_plan='success', capture='skipped', shard_count='0')
+                if missing == 'None':
+                    value['capture-plan']['outputs']['shard_count'] = None
+                else:
+                    value['capture-plan'].pop('outputs')
+                with self.subTest(comprehensive=comprehensive, shard_count=missing):
+                    self.assertEqual(self.failures(value, comprehensive), [])
+
+    def test_non_distributed_capture_may_be_absent_skipped_or_successful(self):
+        for comprehensive in (True, False):
+            for capture in (None, 'skipped', 'success'):
+                with self.subTest(comprehensive=comprehensive, capture=capture):
+                    value = self.value(comprehensive, capture_plan='success', capture=capture, shard_count='0')
+                    self.assertEqual(self.failures(value, comprehensive), [])
+            for capture in ('failure', 'cancelled'):
+                with self.subTest(comprehensive=comprehensive, capture=capture):
+                    value = self.value(comprehensive, capture_plan='success', capture=capture, shard_count='0')
+                    self.assertIn('capture ' + capture, self.failures(value, comprehensive))
+            # A capture entry without a result cannot pass as "not run".
+            value = self.value(comprehensive, capture_plan='success', capture='skipped', shard_count='0')
+            value['capture'].pop('result')
+            with self.subTest(comprehensive=comprehensive, capture='missing'):
+                self.assertIn('capture did not run as planned (missing)',
+                              self.failures(value, comprehensive))
 
 
 class ReleaseWorkflowGateTests(unittest.TestCase):
@@ -217,7 +340,9 @@ class ReleaseWorkflowGateTests(unittest.TestCase):
 
     def test_gate_jobs_cannot_be_skipped_into_success(self):
         gate = self.shared['jobs']['gate']
-        self.assertEqual(set(gate['needs']), {'contracts', 'verify', 'appliance'})
+        # Capture-plan/capture may be added by the distributed fan-out; nothing else.
+        self.assertTrue({'contracts', 'verify', 'appliance'} <= set(gate['needs']))
+        self.assertLessEqual(set(gate['needs']), {'contracts', 'verify', 'appliance', 'capture-plan', 'capture'})
         self.assertEqual(gate['if'], '${{ always() }}')
         step = next(step for step in gate['steps'] if step.get('id') == 'gate')
         self.assertEqual(step['env']['MANUALE_NEEDS_JSON'], '${{ toJSON(needs) }}')

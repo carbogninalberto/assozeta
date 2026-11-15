@@ -584,6 +584,22 @@ def gate_failures(needs, *, comprehensive, release, revision, results=None):
     for job in sorted(needs):
         if result(job) in ('failure', 'cancelled'):
             failures.append(f'{job} {result(job)}')
+    # Capture may be planned as a fan-out (one ``capture`` leg per shard) or run
+    # inline in ``verify``. Absent capture jobs are old callers: nothing to check.
+    plan = needs.get('capture-plan')
+    plan_result = result('capture-plan')
+    if 'capture-plan' in needs and plan_result not in ('success', 'skipped'):
+        failures.append('capture planning did not succeed (' + plan_result + ')')
+    shard_count = 0
+    plan_outputs = plan.get('outputs') if isinstance(plan, dict) else None
+    declared = plan_outputs.get('shard_count') if isinstance(plan_outputs, dict) else None
+    if isinstance(declared, str) and declared.isascii() and declared.isdigit():
+        shard_count = int(declared)
+    if shard_count > 0:
+        if result('capture') != 'success':
+            failures.append('distributed capture did not succeed (' + result('capture') + ')')
+    elif 'capture' in needs and result('capture') not in ('success', 'skipped'):
+        failures.append('capture did not run as planned (' + result('capture') + ')')
     if result('verify') != 'success':
         failures.append('manual verification did not succeed (' + result('verify') + ')')
     appliance_required = comprehensive or outputs_.get('appliance_required') == 'true'
