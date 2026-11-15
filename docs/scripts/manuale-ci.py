@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import subprocess
 import sys
 
@@ -816,10 +817,106 @@ def phase(args, runner):
               'reader page render checks.', flush=True)
 
 
+# ---------------------------------------------------------------------------
+# Distributed capture: one planner mints the manifest, N runners capture shards
+# ---------------------------------------------------------------------------
+
+def planned_workflows(plan, key):
+    """Only an explicit list of workflow ids is a usable plan selection."""
+    values = plan.get(key)
+    if not isinstance(values, list) or any(not isinstance(value, str) for value in values):
+        raise RuntimeError('The verification plan has no list of workflow ids for ' + key)
+    return values
+
+
+def transport(args, runner):
+    """Mint the plain-data manifest one plan job hands to one job per capture shard."""
+    run = Path(args.run).resolve()
+    state = json.loads((run / 'run.json').read_text())
+    plan = json.loads((run / 'ci-plan.json').read_text())
+    fresh = planned_workflows(plan, 'fresh_workflows')
+    reused = planned_workflows(plan, 'reused_workflows')
+    run_id = str(args.run_id or os.environ.get('GITHUB_RUN_ID') or '').strip()
+    attempt = args.run_attempt if args.run_attempt is not None else os.environ.get('GITHUB_RUN_ATTEMPT')
+    try:
+        attempt = int(str(attempt).strip())
+    except (TypeError, ValueError) as error:
+        raise RuntimeError('The transport plan needs the numeric CI run id and run attempt') from error
+    if not run_id:
+        raise RuntimeError('The transport plan needs the numeric CI run id and run attempt')
+    transport_module = module('manuale_capture_transport')
+    recipes = runner.recipe_registry(Path(state['application']))['recipes']
+    with Stage('transport', {'runners': args.runners, 'fresh': len(fresh)}) as stage:
+        manifest = transport_module.build_transport(
+            run_id=run_id, run_attempt=attempt, capture_id=secrets.token_hex(8),
+            application_revision=plan['application_revision'], manual_revision=plan['manual_revision'],
+            release=plan['release'], reference_date=state['reference_date'],
+            tooling_hashes=state['tooling_hashes'], recipes=recipes,
+            fresh=fresh, reused=reused, runners=args.runners)
+        stage.detail['shards'] = len(manifest['shards'])
+    output = Path(args.output)
+    output.mkdir(parents=True, exist_ok=True)
+    # Transport is plain data: no paths, tokens or environment values ever enter it.
+    (output / 'transport.json').write_text(transport_module.dumps(manifest))
+    outputs(shard_count=len(manifest['shards']), matrix=json.dumps(transport_module.matrix(manifest)),
+            capture_id=manifest['capture_id'])
+    print(f"Capture transport {manifest['capture_id']}: {len(fresh)} fresh workflow(s) on "
+          f"{len(manifest['shards'])} runner(s); {len(reused)} workflow(s) reused.", flush=True)
+    return manifest
+
+
+def shard_mismatch(state, manifest, workflows):
+    """The first way the prepared run differs from its transport plan (None: identical)."""
+    checks = (
+        ('application revision', (state.get('application_input') or {}).get('revision'), manifest['application_revision']),
+        ('manual revision', (state.get('manual_input') or {}).get('revision'), manifest['manual_revision']),
+        ('tooling hashes', state.get('tooling_hashes'), manifest['tooling_hashes']),
+        ('reference date', state.get('reference_date'), manifest['reference_date']),
+        ('release', state.get('release'), manifest['release']),
+        ('workflow selection', set(state.get('selected_recipes') or ()), set(workflows)),
+    )
+    for label, actual, expected in checks:
+        if actual != expected:
+            # Hash maps are never printed; a single differing value is safe to name.
+            detail = '' if isinstance(expected, dict) else f' ({actual!r} != {expected!r})'
+            return 'Capture shard does not match its transport plan: ' + label + detail
+    return None
+
+
+def capture_shard(args, runner):
+    """Capture exactly one shard of a transport manifest; artifact collection happens later."""
+    transport_module = module('manuale_capture_transport')
+    manifest = transport_module.loads(Path(args.transport).read_text())
+    workflows = transport_module.shard_workflows(manifest, args.shard)
+    # Always cold: this shard owns no baseline, no evidence and no cache.
+    parameters = ['run', '--manual-repo', args.manual_repo, '--output', args.output,
+                  '--release', manifest['release'], '--reference-date', manifest['reference_date'],
+                  '--manual-ref', manifest['manual_revision'], '--no-cache']
+    for identifier in workflows:
+        parameters += ['--workflow', identifier]
+    options = runner.argument_parser().parse_args(parameters)
+    options.baseline_optional = True
+    with Stage('capture-shard', {'shard': args.shard, 'workflows': len(workflows)}) as stage:
+        state = runner.prepare(options)
+        # Fail closed before any capture state is published for this shard.
+        mismatch = shard_mismatch(state, manifest, workflows)
+        if mismatch:
+            raise RuntimeError(mismatch)
+        state['preset_capture_id'] = manifest['capture_id']
+        write(Path(state['run']) / 'run.json', state)
+        try:
+            start_services(state, runner)
+            runner.capture_shard(state)
+        finally:
+            if state.get('env_file') and not state.get('services_removed'):
+                runner.cleanup(state)
+        stage.detail['captured'] = len(workflows)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=('pin', 'baseline', 'prepare', 'phase', 'plan', 'offline', 'lookup', 'report',
-                                            'gate', 'store'))
+                                            'gate', 'store', 'transport', 'capture-shard'))
     parser.add_argument('--manual-repo')
     parser.add_argument('--manual-revision')
     parser.add_argument('--repository', default=os.environ.get('GITHUB_REPOSITORY', 'carbogninalberto/assozeta'))
@@ -848,6 +945,12 @@ def main():
     parser.add_argument('--results', help='gate: appliance results.json')
     parser.add_argument('--evidence-selection', help='prepare: store-materialized selection directory (from store)')
     parser.add_argument('--reference-date', default='2026-09-30', help='store: capture reference date')
+    parser.add_argument('--runners', type=int, default=1, help='transport: capture shards (1..6)')
+    parser.add_argument('--transport', help='capture-shard: transport manifest written by the plan job')
+    parser.add_argument('--shard', type=int, help='capture-shard: index of this runner’s shard')
+    parser.add_argument('--run-id', default=os.environ.get('GITHUB_RUN_ID'), help='transport: CI run id (default GITHUB_RUN_ID)')
+    parser.add_argument('--run-attempt', default=os.environ.get('GITHUB_RUN_ATTEMPT'),
+                        help='transport: CI run attempt (default GITHUB_RUN_ATTEMPT)')
     args = parser.parse_args()
     if args.command == 'plan':
         if not args.output:
@@ -871,6 +974,16 @@ def main():
         if not args.output:
             parser.error('--output is required')
         restore_store(args)
+        return
+    if args.command == 'transport':
+        if not args.run or not args.output:
+            parser.error('--run and --output are required')
+        transport(args, module('manuale'))
+        return
+    if args.command == 'capture-shard':
+        if not args.transport or args.shard is None or not args.manual_repo or not args.output:
+            parser.error('--transport, --shard, --manual-repo and --output are required')
+        capture_shard(args, module('manuale'))
         return
     policy = module('manuale-policy')
     if args.command == 'lookup':
