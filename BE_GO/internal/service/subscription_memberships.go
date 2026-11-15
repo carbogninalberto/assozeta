@@ -49,7 +49,9 @@ var (
 	ErrSubscriptionMembershipDocumentDecode = errors.New("subscription membership document is not base64")
 	// errSubscriptionMembershipDocumentStore is the exception Django raises
 	// while creating or storing a document (the INSERT, os.path.join or
-	// Storage.save): the 500 page, after the earlier writes.
+	// Storage.save): the 500 page, after the earlier writes. A name
+	// Storage.save rejects is a SuspiciousFileOperation, which handleDocuments
+	// returns as a *documentkey.SuspiciousFileError (the 400 page) instead.
 	errSubscriptionMembershipDocumentStore = errors.New("subscription membership document could not be stored")
 	// errSubscriptionMembershipNoStorage is a writer built without its
 	// document storage: cmd/server/main.go always calls WithUploads. An
@@ -291,10 +293,16 @@ func (s *SubscriptionMemberships) handleDocuments(ctx context.Context, tx domain
 			}
 			return added, errSubscriptionMembershipDocumentStore
 		}
-		if _, err = documentkey.UploadName(document.Created, uuid.MustParse(document.ID), filename); err != nil {
-			// default_storage.save's validate_file_name rejects the name after the INSERT.
+		if _, uploadErr := documentkey.UploadName(document.Created, uuid.MustParse(document.ID), filename); uploadErr != nil {
+			// default_storage.save's validate_file_name rejects the name after the INSERT:
+			// a SuspiciousFileOperation is a SuspiciousOperation (the 400 page), any other
+			// failure the 500 page.
 			if err = tx.CreateMembershipDocument(ctx, document, audit, document.Created); err != nil {
 				return added, err
+			}
+			var suspicious *documentkey.SuspiciousFileError
+			if errors.As(uploadErr, &suspicious) {
+				return added, uploadErr
 			}
 			return added, errSubscriptionMembershipDocumentStore
 		}

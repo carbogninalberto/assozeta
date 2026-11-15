@@ -33,6 +33,7 @@ DOCUMENTS, LOCATIONS = SOURCE['documents'], SOURCE['locations']
 UNKNOWN = 'a1000000-0000-4000-8000-000000989999'
 NEW_ID = 'a1000000-0000-4000-8000-000000989001'
 SERVER = '<stable-server-error-page>'
+BAD_REQUEST = '<bad-request-page>'
 STATE = copy.deepcopy(LOCATIONS)
 cases = []
 
@@ -168,7 +169,7 @@ add('add-document-filename-number-keeps-row', 'owner', ADD, 500, SERVER,
     body={'title': 'Nome numero', 'documents_data': [{'document': empty, 'filename': 123}]}, effect=effect)
 response, effect = created('owner', {'title': 'Fuori cartella'})
 effect['uploads'] = [{'filename': '../fuori.pdf', 'row_only': True}]
-add('add-document-filename-traversal-keeps-row', 'owner', ADD, 500, SERVER,
+add('add-document-filename-traversal-keeps-row', 'owner', ADD, 400, BAD_REQUEST,
     body={'title': 'Fuori cartella', 'documents_data': [{'document': empty, 'filename': '../fuori.pdf'}]}, effect=effect)
 
 

@@ -3,6 +3,7 @@
 A family contract names its fixture and how its responses vary; every check
 below applies to every case:
 - the exact status, and for '<stable-server-error-page>' the exact HTML page;
+- for '<bad-request-page>' Django's SuspiciousOperation 400 page, as HTML;
 - the Allow set from `allowed(case)`, Content-Language 'en', no Set-Cookie and
   the Bearer challenge only on a 401;
 - '<empty>' for a response without a body (DRF's Response(status=...));
@@ -18,6 +19,10 @@ from TESTS.http_client import Client
 from TESTS.contracts.test_email_logs_http import SERVER_ERROR_DOCUMENT, ResponseFailure, difference, require, substitute
 
 __all__ = ('require', 'load_source', 'assert_case', 'ResponseFailure')
+
+# Django's SuspiciousOperation answer (the bad_request view).
+BAD_REQUEST_DOCUMENT = (b'\n<!doctype html>\n<html lang="en">\n<head>\n  <title>Bad Request (400)</title>\n</head>\n<body>\n'
+                        b'  <h1>Bad Request (400)</h1><p></p>\n</body>\n</html>\n')
 
 
 def day_first_dates(today):
@@ -125,6 +130,10 @@ def assert_case(case, base_url, *, token, sessions, allowed, new=(), now=(), uno
     if case['response'] == '<stable-server-error-page>':
         check(raw == SERVER_ERROR_DOCUMENT, 'response.error-document')
         check(received.get('Content-Type', '').split(';')[0] == 'text/html', 'response.error-type')
+        return status
+    if case['response'] == '<bad-request-page>':
+        check(raw == BAD_REQUEST_DOCUMENT, 'response.bad-request-document')
+        check(received.get('Content-Type', '').split(';')[0] == 'text/html', 'response.bad-request-type')
         return status
     check(set(received.get('Allow', '').replace(' ', '').split(',')) == set(allowed(case)), 'response.allow')
     check(received.get('Content-Language') == 'en' and received.get('Set-Cookie') is None, 'response.headers')

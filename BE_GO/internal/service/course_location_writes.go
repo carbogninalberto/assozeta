@@ -41,7 +41,9 @@ var (
 	ErrCourseLocationDocumentDecode = errors.New("course location document is not base64")
 	// errCourseLocationDocumentStore is the exception Django raises while
 	// creating or storing a document (the INSERT, os.path.join or
-	// Storage.save): the 500 page, after the earlier writes.
+	// Storage.save): the 500 page, after the earlier writes. A name
+	// Storage.save rejects is a SuspiciousFileOperation, which the walk returns
+	// as a *documentkey.SuspiciousFileError (the 400 page) instead.
 	errCourseLocationDocumentStore = errors.New("course location document could not be stored")
 	// errCourseLocationNoStorage is a writer built without its document
 	// storage: cmd/server/main.go always calls WithUploads. An
@@ -163,8 +165,14 @@ func (s *CourseLocationWrites) courseLocationDocuments(write dto.CourseLocationW
 		}
 		// The stored name uses the document's creation time, which has microsecond precision.
 		if _, err = documentkey.UploadName(s.uploads.at(), uuid.New(), filename); err != nil {
-			// Storage.save's validate_file_name rejects the name after the INSERT.
+			// Storage.save's validate_file_name rejects the name after the INSERT:
+			// a SuspiciousFileOperation is a SuspiciousOperation (the 400 page),
+			// any other failure the 500 page.
 			uploads = append(uploads, courseLocationUpload{filename: filename, rowOnly: true})
+			var suspicious *documentkey.SuspiciousFileError
+			if errors.As(err, &suspicious) {
+				return uploads, err, nil
+			}
 			return uploads, errCourseLocationDocumentStore, nil
 		}
 		uploads = append(uploads, courseLocationUpload{filename: filename, content: content})

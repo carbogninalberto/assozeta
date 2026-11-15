@@ -769,8 +769,8 @@
    "method": "POST",
    "path": "/course/locations/add",
    "headers": {},
-   "status": 500,
-   "response": "<stable-server-error-page>",
+   "status": 400,
+   "response": "<bad-request-page>",
    "effect": {
     "kind": "add",
     "actor": "owner",

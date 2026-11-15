@@ -11,6 +11,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 )
 
 // membershipDocumentTransaction records the document writes handleDocuments
@@ -78,14 +79,16 @@ func TestSubscriptionMembershipDocumentsNoneFilenameKeepsNoRow(t *testing.T) {
 	}
 }
 
-// A name Storage.save rejects is written by the INSERT, then raises: the row
-// stays, nothing is stored or linked.
+// A name Storage.save rejects is written by the INSERT, then raises a
+// SuspiciousFileOperation (the 400 page): the row stays, nothing is stored or
+// linked.
 func TestSubscriptionMembershipDocumentsTraversalFilenameKeepsRow(t *testing.T) {
 	memberships, tx := subscriptionMembershipDocumentWriter()
 	added, err := memberships.handleDocuments(context.Background(), tx, "membership", dto.SubscriptionMembershipWrite{
 		Documents: []domain.RequestObject{membershipDocumentItem("../x.pdf")},
 	}, domain.LoginAuditContext{})
-	if added != 0 || !errors.Is(err, errSubscriptionMembershipDocumentStore) {
+	var suspicious *documentkey.SuspiciousFileError
+	if added != 0 || !errors.As(err, &suspicious) {
 		t.Fatalf("added=%d err=%v", added, err)
 	}
 	if len(tx.created) != 1 || tx.created[0].Filename != "../x.pdf" || len(tx.linked) != 0 {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
 )
 
 // courseLocationDocumentWriter is the writer the document tests walk with: the
@@ -76,14 +77,16 @@ func TestCourseLocationDocumentsLongFilenameKeepsNoRow(t *testing.T) {
 	}
 }
 
-// A name Storage.save rejects is written by the INSERT, then raises: the row
-// stays, nothing is stored or linked.
+// A name Storage.save rejects is written by the INSERT, then raises a
+// SuspiciousFileOperation (the 400 page): the row stays, nothing is stored or
+// linked.
 func TestCourseLocationDocumentsTraversalFilenameKeepsRow(t *testing.T) {
 	writes := courseLocationDocumentWriter()
 	stored, failure, refused := writes.courseLocationDocuments(dto.CourseLocationWrite{
 		Documents: []domain.RequestObject{courseLocationDocumentItem("../x.pdf")},
 	})
-	if refused != nil || !errors.Is(failure, errCourseLocationDocumentStore) {
+	var suspicious *documentkey.SuspiciousFileError
+	if refused != nil || !errors.As(failure, &suspicious) {
 		t.Fatalf("failure=%v refused=%v", failure, refused)
 	}
 	if len(stored) != 1 || stored[0].filename != "../x.pdf" || !stored[0].rowOnly {

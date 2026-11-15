@@ -25,9 +25,9 @@ creation_date, DateFields (DD/MM/YYYY input), nullable CharFields (membership_nu
 list of dicts; ``subscription`` is not a serializer field and is ignored.
 paid is payment.paid (None without a payment). The serializer saves before
 handling documents_data, so a document without its keys (400), with bad base64
-(500), or with a filename the storage path refuses number/is '..' (500, after
-its row and create entry) keeps the saved row; successful uploads write to
-storage and are outside this sequence. auditlog records the create, the changed
+(500), or with a filename the storage path refuses number (500) / '..' (400,
+a SuspiciousOperation) keeps the saved row after its row and create entry;
+successful uploads write to storage and are outside this sequence. auditlog records the create, the changed
 fields and the delete (document links removed, documents kept). Run with
 ``python3 -I``.
 """
@@ -78,6 +78,7 @@ MEMBERSHIPS = {
 UNKNOWN = 'a1000000-0000-4000-8000-000000659999'
 NEW_ID = 'a1000000-0000-4000-8000-000000659001'
 SERVER = '<stable-server-error-page>'
+BAD_REQUEST = '<bad-request-page>'
 STATE = copy.deepcopy(MEMBERSHIPS)
 PAID = {row['id']: row['paid'] for row in PAYMENTS.values()}
 cases = []
@@ -307,7 +308,7 @@ add('add-document-filename-number-keeps-row', 'owner', ADD, 500, SERVER, effect=
     body={'membership_type': 'Numero', 'documents_data': [{'document': UPLOADS[0]['content'], 'filename': 123}]})
 _, effect = created('owner', {'membership_type': 'Numero'})
 effect['documents'] = [{'filename': '../fuori.pdf', 'row_only': True}]
-add('add-document-filename-traversal-keeps-row', 'owner', ADD, 500, SERVER, effect=effect,
+add('add-document-filename-traversal-keeps-row', 'owner', ADD, 400, BAD_REQUEST, effect=effect,
     body={'membership_type': 'Numero', 'documents_data': [{'document': UPLOADS[0]['content'], 'filename': '../fuori.pdf'}]})
 response, effect = created('owner', {'membership_type': 'Con documenti', 'documents': UPLOADS})
 effect['documents'] = UPLOADS

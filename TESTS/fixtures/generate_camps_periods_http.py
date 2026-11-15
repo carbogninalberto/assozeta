@@ -157,7 +157,8 @@ PERIOD_LINKS['december'] = ['skates']
 PERIOD_LINKS['winter'] = ['boots']
 
 # The walk follows the database's order for the unpaid subscription periods of the period, which is insertion order for rows
-# seeded in sequence: the good payment is walked (and saved) before the payment without metas raises.
+# seeded in sequence, but is not guaranteed: the case below authors the effect when the good payment is walked (and saved)
+# before the payment without metas raises and when the broken row comes first.
 PERIODS['february'] = copy.deepcopy(PERIODS['november'])
 PERIODS['february'].update({'id': next(extra_ids), 'start': '2027-02-01T08:00:00Z', 'end': '2027-02-05T18:00:00Z', 'title': 'Febbraio',
                             'created': '2026-06-14T09:00:01Z'})
@@ -841,9 +842,10 @@ description_failure('services-update-transfer-description-two-payments-server-er
                     "'NoneType' object has no attribute 'name'")
 
 
-# The walk follows the unpaid subscription periods of the period in seed order: the first payment is wholly walked (its meta
-# save, then its amount and notes save) and the payment without metas then raises, so the rows after it are not walked.
-def walk_failure(name, label, title, message):
+# The walk reads the period's unpaid subscription periods in the database's order (the filter has no ORDER BY) and stops at
+# the first exception, so which row comes first decides the effect. Both alternatives are authored under the id of the row
+# they are walked from; the adapter picks the one matching the order PostgreSQL returns at the time of the case.
+def walk_alternatives(name, label, title, message):
     row = STATE['services'][label]
     before = service_audit_view(row)
     row['title'] = title
@@ -851,17 +853,22 @@ def walk_failure(name, label, title, message):
                     SERVICE_PATH)]
     rows = {SERVICE: {row['id']: service_row(row)}}
     service = STATE['services'][label]
-    for sp in SUBSCRIPTION_PERIODS.values():
-        if sp['period'] != service['period'] or sp['payment'] is None or STATE['payments'][sp['payment']]['paid']:
-            continue
+    walk = [sp for sp in SUBSCRIPTION_PERIODS.values()
+            if sp['period'] == service['period'] and sp['payment'] is not None and not STATE['payments'][sp['payment']]['paid']]
+    good = next(sp for sp in walk if STATE['payments'][sp['payment']]['meta'] is not None)
+    broken = next(sp for sp in walk if STATE['payments'][sp['payment']]['meta'] is None)
+    # The broken-first effect is the state before any payment save: the ok-first walk below mutates STATE.
+    broken_first = {'actor': 'owner', 'rows': copy.deepcopy(rows), 'audit': copy.deepcopy(events)}
+    for sp in walk:
         if STATE['payments'][sp['payment']]['meta'] is None:
             break  # the walk raises on this payment, so the saves made before it stay and the later rows are not walked
         payment_walk_row(sp, service, rows, events)
-    add(name, 'owner', service_path(label, 'update'), 500, {'error': message}, method='PATCH', body={'title': title},
-        effect={'actor': 'owner', 'rows': rows, 'audit': events})
+    effect = {'actor': 'owner', 'walk_period': PERIODS[service['period']]['id'],
+              'walk_alternatives': {good['id']: {'actor': 'owner', 'rows': rows, 'audit': events}, broken['id']: broken_first}}
+    add(name, 'owner', service_path(label, 'update'), 500, {'error': message}, method='PATCH', body={'title': title}, effect=effect)
 
 
-walk_failure('services-update-walk-first-completes-second-fails', 'poles', 'Racchette', "'NoneType' object is not iterable")
+walk_alternatives('services-update-walk-first-completes-second-fails', 'poles', 'Racchette', "'NoneType' object is not iterable")
 
 # ---------------------------------------------------------------------------
 # periods/services/<uid>/delete

@@ -4776,76 +4776,111 @@
    },
    "effect": {
     "actor": "owner",
-    "rows": {
-     "application.CampsAndRetreatsPeriodsService": {
-      "a1000000-0000-4000-8000-000000985218": {
-       "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985217",
-       "title": "Racchette",
-       "description": null,
-       "fee": "5.00",
-       "payment_category_id": "a1000000-0000-4000-8000-000000985004"
-      }
-     },
-     "application.Payment": {
-      "a1000000-0000-4000-8000-000000985219": {
-       "amount": "25.00",
-       "notes": "Iscrizione al periodo Febbraio del campo Campo estivo è\nMare e monti\n\nRacchette - 5.0€",
-       "meta_payment_categories": [
-        {
-         "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985218",
+    "walk_period": "a1000000-0000-4000-8000-000000985217",
+    "walk_alternatives": {
+     "a1000000-0000-4000-8000-000000985221": {
+      "actor": "owner",
+      "rows": {
+       "application.CampsAndRetreatsPeriodsService": {
+        "a1000000-0000-4000-8000-000000985218": {
+         "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985217",
          "title": "Racchette",
-         "amount": 5.0,
+         "description": null,
+         "fee": "5.00",
          "payment_category_id": "a1000000-0000-4000-8000-000000985004"
         }
-       ]
-      }
-     }
-    },
-    "audit": [
-     {
-      "model": "CampsAndRetreatsPeriodsService",
-      "key": "a1000000-0000-4000-8000-000000985218",
-      "action": 1,
-      "changes": {
-       "title": [
-        "Palline",
-        "Racchette"
-       ]
+       },
+       "application.Payment": {
+        "a1000000-0000-4000-8000-000000985219": {
+         "amount": "25.00",
+         "notes": "Iscrizione al periodo Febbraio del campo Campo estivo è\nMare e monti\n\nRacchette - 5.0€",
+         "meta_payment_categories": [
+          {
+           "camps_and_retreats_period_service_id": "a1000000-0000-4000-8000-000000985218",
+           "title": "Racchette",
+           "amount": 5.0,
+           "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+          }
+         ]
+        }
+       }
       },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "period.camps_and_retreats.sport_association"
+      "audit": [
+       {
+        "model": "CampsAndRetreatsPeriodsService",
+        "key": "a1000000-0000-4000-8000-000000985218",
+        "action": 1,
+        "changes": {
+         "title": [
+          "Palline",
+          "Racchette"
+         ]
+        },
+        "association": "a1000000-0000-4000-8000-000000701001",
+        "path": "period.camps_and_retreats.sport_association"
+       },
+       {
+        "model": "Payment",
+        "key": "a1000000-0000-4000-8000-000000985219",
+        "action": 1,
+        "changes": {
+         "meta_payment_categories": [
+          "[{\"amount\": 5.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985218\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Palline\"}]",
+          "[{\"amount\": 5.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985218\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Racchette\"}]"
+         ]
+        },
+        "association": "a1000000-0000-4000-8000-000000701001",
+        "path": "direct"
+       },
+       {
+        "model": "Payment",
+        "key": "a1000000-0000-4000-8000-000000985219",
+        "action": 1,
+        "changes": {
+         "amount": [
+          "25.00",
+          "25.0"
+         ],
+         "notes": [
+          "None",
+          "Iscrizione al periodo Febbraio del campo Campo estivo è\nMare e monti\n\nRacchette - 5.0€"
+         ]
+        },
+        "association": "a1000000-0000-4000-8000-000000701001",
+        "path": "direct"
+       }
+      ]
      },
-     {
-      "model": "Payment",
-      "key": "a1000000-0000-4000-8000-000000985219",
-      "action": 1,
-      "changes": {
-       "meta_payment_categories": [
-        "[{\"amount\": 5.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985218\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Palline\"}]",
-        "[{\"amount\": 5.0, \"camps_and_retreats_period_service_id\": \"a1000000-0000-4000-8000-000000985218\", \"payment_category_id\": \"a1000000-0000-4000-8000-000000985004\", \"title\": \"Racchette\"}]"
-       ]
+     "a1000000-0000-4000-8000-000000985222": {
+      "actor": "owner",
+      "rows": {
+       "application.CampsAndRetreatsPeriodsService": {
+        "a1000000-0000-4000-8000-000000985218": {
+         "camps_and_retreats_period_id": "a1000000-0000-4000-8000-000000985217",
+         "title": "Racchette",
+         "description": null,
+         "fee": "5.00",
+         "payment_category_id": "a1000000-0000-4000-8000-000000985004"
+        }
+       }
       },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "direct"
-     },
-     {
-      "model": "Payment",
-      "key": "a1000000-0000-4000-8000-000000985219",
-      "action": 1,
-      "changes": {
-       "amount": [
-        "25.00",
-        "25.0"
-       ],
-       "notes": [
-        "None",
-        "Iscrizione al periodo Febbraio del campo Campo estivo è\nMare e monti\n\nRacchette - 5.0€"
-       ]
-      },
-      "association": "a1000000-0000-4000-8000-000000701001",
-      "path": "direct"
+      "audit": [
+       {
+        "model": "CampsAndRetreatsPeriodsService",
+        "key": "a1000000-0000-4000-8000-000000985218",
+        "action": 1,
+        "changes": {
+         "title": [
+          "Palline",
+          "Racchette"
+         ]
+        },
+        "association": "a1000000-0000-4000-8000-000000701001",
+        "path": "period.camps_and_retreats.sport_association"
+       }
+      ]
      }
-    ]
+    }
    },
    "body": {
     "title": "Racchette"
