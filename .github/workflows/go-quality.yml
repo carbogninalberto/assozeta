@@ -472,11 +472,24 @@ jobs:
             quality-reports/go-migration/instance-logo-unlink/results.json
 
   accounts:
-    name: Shared accounts, identities and scoped resources
+    name: Shared accounts, identities and scoped resources (${{ matrix.shard }})
     runs-on: ubuntu-24.04
     # The complete account suite alone takes 10–16 minutes on hosted runners.
-    # Keep its unchanged sequential fixture semantics in an independent job.
+    # Run it as three shards of the same sequential semantics; accounts-merge
+    # below proves their reports still union to the single unsharded report.
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # prewarm lists only the components this shard runs, so it compiles
+        # just their Go build keys instead of every key the full suite imports.
+        include:
+          - shard: tasks
+            prewarm: TESTS/adapters/django/login_http.py TESTS/adapters/django/credential_concurrency.py TESTS/adapters/django/email_balance_reset.py TESTS/adapters/django/subscription_token_cleanup.py TESTS/adapters/django/associate_age_update.py TESTS/adapters/django/audit_retention.py TESTS/adapters/django/subscription_dates.py TESTS/adapters/django/payment_description.py TESTS/adapters/django/payment_save_inputs.py TESTS/adapters/django/subscription_auto_archive.py TESTS/adapters/django/medical_orphan_cleanup.py
+          - shard: identity
+            prewarm: TESTS/adapters/django/social_configuration.py TESTS/adapters/django/actor_authentication.py TESTS/adapters/django/identity.py TESTS/adapters/django/scoped_resources.py TESTS/adapters/django/scoped_requests.py TESTS/adapters/django/session_auth.py TESTS/adapters/django/session_http.py TESTS/adapters/django/restore_admission.py TESTS/adapters/django/refresh_http.py TESTS/adapters/django/identifier_availability.py TESTS/adapters/django/two_factor_info.py TESTS/adapters/django/two_factor_update.py TESTS/adapters/django/two_factor_setup.py TESTS/adapters/django/profile_info.py TESTS/adapters/django/profile_password.py TESTS/adapters/django/profile_update.py TESTS/adapters/django/profile_tables.py TESTS/adapters/django/retired_billing.py
+          - shard: login
+            prewarm: TESTS/adapters/django/social_configuration.py TESTS/adapters/django/actor_authentication.py TESTS/adapters/django/identity.py TESTS/adapters/django/scoped_resources.py TESTS/adapters/django/scoped_requests.py TESTS/adapters/django/login_transport.py TESTS/adapters/django/social_login.py TESTS/adapters/django/login_profile.py TESTS/adapters/django/association_profile.py TESTS/adapters/django/membership_card_configuration.py TESTS/adapters/django/login_finalization.py TESTS/adapters/django/login_response.py TESTS/adapters/django/password_session.py TESTS/adapters/django/login_image_pixels.py TESTS/adapters/django/login_jpeg.py TESTS/adapters/django/login_jpeg_decode.py TESTS/adapters/django/login_jpeg_header.py TESTS/adapters/django/login_jpeg_metadata.py TESTS/adapters/django/login_jpeg_file.py TESTS/adapters/django/login_png_pixels.py TESTS/adapters/django/login_png_header.py TESTS/adapters/django/login_bilevel.py TESTS/adapters/django/login_png_stream.py TESTS/adapters/django/login_png_file.py TESTS/adapters/django/login_bmp.py TESTS/adapters/django/login_ppm.py TESTS/adapters/django/login_pcx.py TESTS/adapters/django/login_tga.py TESTS/adapters/django/login_qoi.py TESTS/adapters/django/login_xbm.py TESTS/adapters/django/login_sgi.py TESTS/adapters/django/login_sun.py TESTS/adapters/django/login_gbr.py TESTS/adapters/django/login_gif.py TESTS/adapters/django/login_ico.py TESTS/adapters/django/login_webp.py TESTS/adapters/django/login_cur.py TESTS/adapters/django/login_pcd.py TESTS/adapters/django/login_pixar.py TESTS/adapters/django/login_images.py TESTS/adapters/django/profile_images.py TESTS/adapters/django/login_msp.py TESTS/adapters/django/password_login.py TESTS/adapters/django/second_factor.py TESTS/adapters/django/login_preparation.py
     steps:
       - uses: actions/checkout@v4
         with:
@@ -517,14 +530,18 @@ jobs:
           python -c "import locale; locale.setlocale(locale.LC_ALL, 'it_IT.UTF-8')"
           echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - name: Prewarm the Go test build cache
-        run: python TESTS/adapters/go/prewarm.py TESTS/adapters/django/accounts.py
-      - name: Verify shared accounts, identities and scoped resources
-        run: python TESTS/adapters/django/accounts.py
+        env:
+          PREWARM_ENTRIES: ${{ matrix.prewarm }}
+        run: python TESTS/adapters/go/prewarm.py $PREWARM_ENTRIES
+      - name: Verify shared accounts, identities and scoped resources (${{ matrix.shard }})
+        run: python TESTS/adapters/django/accounts.py --shard ${{ matrix.shard }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: go-account-evidence
+          name: go-accounts-${{ matrix.shard }}
+          # The shard report plus every evidence path the unsharded job uploaded.
           path: |
+            quality-reports/go-migration/accounts-${{ matrix.shard }}/
             quality-reports/go-migration/accounts/
             quality-reports/go-migration/credential-concurrency/
             quality-reports/go-migration/restore-admission/
@@ -541,6 +558,49 @@ jobs:
             quality-reports/go-migration/cors/public-results.json
             quality-reports/go-migration/security-headers/public-results.json
             quality-reports/go-migration/runtime.json
+
+  accounts-merge:
+    name: Shared accounts, identities and scoped resources
+    runs-on: ubuntu-24.04
+    # GitHub skips this job when any shard fails, so a failed shard fails the
+    # workflow without needing an always() guard that could hide it.
+    needs: accounts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: go-accounts-tasks
+          path: shard-evidence/tasks
+      - uses: actions/download-artifact@v4
+        with:
+          name: go-accounts-identity
+          path: shard-evidence/identity
+      - uses: actions/download-artifact@v4
+        with:
+          name: go-accounts-login
+          path: shard-evidence/login
+      - name: Merge the three account shard reports
+        run: |
+          # upload-artifact roots each archive at the common ancestor of the
+          # paths that existed, so accept the report folder at either level.
+          inputs=()
+          for shard in tasks identity login; do
+            if [[ -d "shard-evidence/$shard/accounts-$shard" ]]; then
+              inputs+=("shard-evidence/$shard/accounts-$shard")
+            else
+              inputs+=("shard-evidence/$shard")
+            fi
+          done
+          python3 TESTS/adapters/django/accounts_merge.py \
+            --input "${inputs[@]}" \
+            --output quality-reports/go-migration/accounts/results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-account-evidence
+          path: quality-reports/go-migration/accounts/
 
   impersonation-management:
     name: Impersonation and collaborator HTTP, shared sessions and packaged recovery
