@@ -1695,7 +1695,7 @@ listed. Per-site table: `tmp/long-tail/pr3-B.md` (worktree notes).
 | docmanager, modules, printing, instructors, payment misc | GetObject client error text; `Content-Disposition: None` | composition, decoders, uuid4 keys, numeric(4,2); instructor-hours sentinel deleted | raw HEAD errors, module depth band and big ints, pdfexport subset, decimal context cases, quote values |
 | audit serializer, saved reports | — | — | JSON nested past 500 (platform); the report/MCP conversions (a subsystem) |
 
-`refusal_reach.py` HTTP/WebSocket rows of agent B's points: 102 before, 79 after (other roots 17 → 12); 36 points
+`refusal_reach.py` HTTP/WebSocket rows of agent B's points: 102 before, 78 after (other roots 17 → 12); 36 points
 before, 26 after. Sentinels deleted: SMTP verify, workflow update, profile template, calendar, misc routes, instructor
-hours, payment state, invoice core, clear-deleted and restore-cleanup workers. Whole report on this branch: 254 → 231
+hours, payment state, invoice core, clear-deleted and restore-cleanup workers. Whole report on this branch: 254 → 230
 HTTP/WebSocket rows (43 → 38 other).
