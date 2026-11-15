@@ -445,7 +445,7 @@ func (s *AssociationTransfer) ImportValidate(ctx context.Context, upload Associa
 		return fileRequired, nil
 	}
 	if len(upload.File.Name) > 255 {
-		return nil, domain.ErrAssociationTransferPlatform // OSError text in Django's own 500 answer
+		return nil, domain.ErrAssociationTransferNotPorted // Django answers its own JSON with the OSError text
 	}
 	dir, err := pythonMkdtemp()
 	if err != nil {
@@ -454,7 +454,7 @@ func (s *AssociationTransfer) ImportValidate(ctx context.Context, upload Associa
 	defer os.RemoveAll(dir)
 	path := dir + "/" + upload.File.Name
 	if err = os.WriteFile(path, upload.File.Content, 0o644); err != nil {
-		return nil, domain.ErrAssociationTransferPlatform
+		return nil, domain.ErrAssociationTransferNotPorted
 	}
 	result, err := s.validateArchive(ctx, path)
 	if err != nil {

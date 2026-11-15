@@ -29,12 +29,6 @@ var (
 	// writes: cmd/server/main.go always wires them (personasHandler.WithWrites),
 	// so the soft delete runs instead. An application-state error.
 	errPersonaDeleteUnwired = refusal.AppState("persona delete without the writes handler")
-	// errPersonaStorage is a picture upload the storage did not complete: no
-	// storage configured, a key the location cannot hold, an object already
-	// under a key built from the microsecond timestamp, or a storage failure
-	// other than a refused ACL. External system and timing (long-tail rule 4):
-	// the 500 page, never a handoff.
-	errPersonaStorage = refusal.AppState("persona picture storage failure")
 )
 
 type Personas struct {

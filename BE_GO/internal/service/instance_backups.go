@@ -23,12 +23,11 @@ import (
 	passwordcrypto "github.com/carbogninalberto/assozeta/BE_GO/pkg/crypto"
 )
 
-// errInstanceBackupsRunnerReply is a runner reply Go's decoder does not read:
-// JSON nested past its limit (Python raises RecursionError at a depth set by
-// the interpreter's live call stack, which call_runner does not catch) or a
-// lone surrogate. The runner is the platform's update service, an external
-// system: the 500 page, never a handoff (long-tail rule 4).
-var errInstanceBackupsRunnerReply = refusal.AppState("instance backups: runner reply outside the decoded range")
+// ErrInstanceBackupsNotPorted is a runner reply Go's decoder does not read:
+// JSON nested past its limit (Python's RecursionError depth depends on the
+// interpreter's live call stack, so Django may still answer) or a lone
+// surrogate (Django answers unless the view renders it). Handed off to Django.
+var ErrInstanceBackupsNotPorted = refusal.New("instance backups request not ported")
 
 // errInstanceBackupsCachedValue is a cached size outside what the writers
 // store: data_sizes (BE/instance/backups.py:101, Go StoreSizes) caches a dict
@@ -124,7 +123,7 @@ func instanceBackupsUnavailable(reason string) *InstanceBackupsReply {
 func instanceBackupsJSON(raw []byte) (any, bool, error) {
 	value, decoded, refused := dto.RunnerJSONDecode(raw)
 	if refused {
-		return nil, false, errInstanceBackupsRunnerReply
+		return nil, false, ErrInstanceBackupsNotPorted
 	}
 	return value, decoded, nil
 }

@@ -15,10 +15,10 @@
 
 ## Not ported (the 500 page, never a guessed body)
 
-Since long-tail PR 2 (agent B) these are application-state errors (`refusal.AppState`): Go answers the 500 page itself and
-never hands them off.
+Since long-tail PR 2 the `title()` item is an application-state error (`refusal.AppState`: the 500 page, never handed
+off). JSON nested deeper than 500 stays `ErrAuditNotPorted` and is handed off to Django.
 
-- `json.loads` input nested deeper than 500 (X: the recursion limit depends on the live call stack; PostgreSQL does store a jsonb value nested that deep, so a form field carrying 501..~900 levels of JSON answers the 500 page where Django may answer; listed for PR 3). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
+- `json.loads` input nested deeper than 500 (X: the recursion limit depends on the live call stack; PostgreSQL does store a jsonb value nested that deep, so a form field carrying 501..~900 levels of JSON is handed off; listed for PR 3). `NaN`/`Infinity` literals and lone surrogate escapes are ported (t3plat): they load, and only a value that reaches `enriched_changes` makes the strict renderer answer the 500.
 - `str.title()` of non-ASCII text (C: the only inputs are content-type model names and `changes` keys, which are Python identifiers the application writes; ASCII labels are ported). `str.capitalize()` of a permission segment is ported (go-v2only-auditser), since a request stores `collaborator_permissions` as sent.
 
 Known unchecked divergences: >4300-digit integers in JSON columns of *resolved* rows (Django swallows the load error; Go formats the row); a database error inside a resolver (Django swallows it; Go answers 500). Tie order of equal sort keys is PostgreSQL's in both.

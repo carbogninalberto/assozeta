@@ -162,8 +162,11 @@ Every upload creates a Document and then calls `default_storage.save(name, conte
 
 ## Not ported (refused before any write unless noted)
 
-Since long-tail PR 2 (agent B) only the codec item is still a refusal; the body limit, the storage failures and the
-unreachable states are application-state errors (the 500 page, never handed off).
+Since long-tail PR 2 the unreachable decoder and key states are application-state errors (the 500 page, never handed
+off). The codec item, multipart bodies over 250 MiB (Django spools the files to disk) and storage provider failures
+(Django answers botocore's text: a 400 on documents/add, its own 500 JSON on the medical upload) stay
+`ErrDocumentWritesNotPorted`. The handoff cannot replay a body over its size limit or a storage failure (the Document
+row and the upload are recorded effects), so Go answers the 500 page there until they are ported.
 
 - Multipart bodies over 250 MiB: the request has to be held in memory, so the answer then depends on the host's memory
   and proxy limits, not on the input (class X).

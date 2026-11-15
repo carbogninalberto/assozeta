@@ -1615,3 +1615,29 @@ HTTP/WebSocket rows (533 → 446 overall). Evidence: personas-writes 257/257 on 
 (`',' element ignored`) CAUGHT on `add-picture-list-comma`; the 42 other families whose routes reach a changed site
 green on four transports (`sweep-lt2C-2`, with camps-subscriptions, modules-responses, sso-pairing and subscription-create
 rerun alone after load or timing failures: `lt2C-3-*`, `lt2C-4-sso-pairing`).
+
+## Long tail PR 2, combined: sites sent back to the Django handoff
+
+Owner decision (2026-11-15) on the combined branch: a site where Django answers normally stays a refusal (handed off to
+Django) until it is ported, even when the answer depends on an external system, the platform or timing. Only the
+approved divergences (X1, X2, X8, X11) get a native answer. The agent sections above listed these sites as application
+state; they are refusal sentinels again:
+
+| Sentinel | Sites | Django | Replay |
+|---|---|---|---|
+| `pdfexport.ErrNotPorted` | `<img>` with a server file or URL, the `<seq*>` tags | reportlab draws them | before any write |
+| `domain.ErrDocumentWritesNotPorted` | multipart body over 250 MiB; storage failure on documents/add and on the medical upload | spools the body to disk; answers botocore's text (400, or its own 500 JSON) | none: the body is over the handoff limit, or the Document row and the upload are recorded effects |
+| `dto.ErrAuditNotPorted` | JSON nested past 500 levels | answers unless the live stack hits the recursion limit | reads: yes |
+| `domain.ErrAssociationTransferNotPorted` | import/validate temporary-file failures | its own JSON with the `OSError` text | yes, when the body fits the handoff limit |
+| `service.ErrInstanceBackupsNotPorted`, `domain.ErrInstanceAdminRefused` | runner reply nested past the decoder or holding a lone surrogate | answers unless RecursionError or the surrogate reaches the response | GET runner calls only; a POST to the runner is a recorded effect |
+| `service.ErrPersonaNotPorted` | picture storage failures, existing object under the new key | botocore's text as a 400; a random name | HeadObject and key failures: yes; after PutObject: no |
+| `service.ErrSubscriptionSignNotPorted` | existing object under the new signature key | a random name | subscription/sign: yes; subscription create: no (after the insert) |
+| `service.ErrDocumentViewNotPorted` | legacy signature URL | fetches it, `None` on failure | yes, unless the main-tutor promotion wrote first |
+| `service.ErrCampsPaymentNotPorted` | walks whose outcome depends on row order | the heap order's outcome | yes (planned before any write) |
+| `service.ErrEmailRenderNotPorted` | payment year before 1000 in the invoice e-mail | the C library's `strftime` | yes |
+| `service.ErrInvoiceSyncPrintDeferred` | print deferral during a restore | re-applies the task until the restore ends | only when the first print of a read is deferred; after a write: no |
+
+Where the replay is not possible Go still answers the 500 page; those sites are on the PR 3 list. Kept as application
+state: the unwired-storage cases (`domain.ErrServerComposition`, `errDocumentViewSignature`) and every other site of the
+agent sections. `refusal_reach.py` HTTP/WebSocket rows: 516 on main, 223 with the three agents' changes, 260 after these
+reverts.

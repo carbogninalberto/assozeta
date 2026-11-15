@@ -32,11 +32,9 @@ var (
 	ErrDocumentViewServer = errors.New("document view: unhandled exception")
 	// ErrDocumentViewNotPorted refuses an input outside the port (the 500 page).
 	ErrDocumentViewNotPorted = refusal.New("document view: input not ported")
-	// errDocumentViewSignature is a signature image Go does not read: a view
-	// built without the signature storage (cmd/server/main.go always calls
-	// WithSignatureObjects), or a legacy signature URL Django fetches from
-	// another server (an external system, long-tail rule 4). The 500 page,
-	// never a handoff.
+	// errDocumentViewSignature is a view built without the signature storage:
+	// cmd/server/main.go always calls WithSignatureObjects. The 500 page, never
+	// a handoff.
 	errDocumentViewSignature = refusal.AppState("document view: signature image not read")
 	// errDocumentViewCollaboratorOwner is an association whose user is a
 	// collaborator: the writers create it for an ASSOCIATION-role owner
@@ -775,7 +773,7 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 			}
 			if renderOptionalEmpty(subscription.SignatureURL) != "" {
 				// The legacy URL is fetched from another server.
-				return nil, errDocumentViewSignature
+				return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
 			}
 			return nil, nil
 		}),

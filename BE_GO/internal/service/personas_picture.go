@@ -109,23 +109,26 @@ func personaPictureURL(settings PersonaPictureSettings, key string) string {
 // uploadPicture is _store_picture, run by create() / update() once the data
 // is valid: the picture saved as associates/<associate id>/picture_<timestamp>.jpg,
 // put_object_acl public-read when object ACLs are on, and the URL stored as
-// picture_path. A refused ACL is the serializer's 400; other storage
-// failures are refused.
+// picture_path. A refused ACL is the serializer's 400; other storage failures
+// and an object already under the new key (Django's get_available_name picks a
+// random name) are refused and handed off: Django answers botocore's text as a
+// 400.
 func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, associate string) (string, error) {
 	if s.pictures == nil {
-		return "", errPersonaStorage
+		// cmd/server/main.go always calls WithPictures.
+		return "", domain.ErrServerComposition
 	}
 	location := strings.Trim(s.pictures.Location(), "/")
 	name := "associates/" + associate + "/picture_" + personaPictureTimestamp(s.now()) + ".jpg"
 	key, err := documentkey.S3Key(name, s.pictures.Location())
 	if err != nil {
-		return "", errPersonaStorage
+		return "", ErrPersonaNotPorted
 	}
 	if !s.pictureSettings.Overwrite {
 		// Storage.save: get_available_name (HeadObject), then one PutObject.
 		exists, err := s.pictures.Exists(ctx, key)
 		if err != nil || exists {
-			return "", errPersonaStorage
+			return "", ErrPersonaNotPorted
 		}
 	}
 	contentType, known, encoding, err := pymime.GuessType(key)
@@ -136,7 +139,7 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, assoc
 		contentType = "application/octet-stream"
 	}
 	if err := s.pictures.Put(ctx, key, decoded, contentType, encoding); err != nil {
-		return "", errPersonaStorage
+		return "", ErrPersonaNotPorted
 	}
 	object := name
 	if location != "" {
@@ -152,7 +155,7 @@ func (s *PersonaWrites) uploadPicture(ctx context.Context, decoded []byte, assoc
 				return "", &PersonaPictureInvalid{Text: "Error processing image: An error occurred (" + api.ErrorCode() +
 					") when calling the PutObjectAcl operation: " + api.ErrorMessage()}
 			}
-			return "", errPersonaStorage
+			return "", ErrPersonaNotPorted
 		}
 	}
 	return personaPictureURL(s.pictureSettings, object), nil

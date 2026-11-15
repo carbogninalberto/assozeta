@@ -284,6 +284,8 @@ func (s *SubscriptionCreates) uploadSignature(ctx context.Context, subscription,
 		return nil, nil, ErrSubscriptionCreateSignatureInvalid
 	case errors.Is(err, ErrSubscriptionSignStorage):
 		return nil, nil, ErrSubscriptionCreateStorage
+	case errors.Is(err, ErrSubscriptionSignNotPorted):
+		return nil, nil, domain.ErrSubscriptionCreateNotPorted
 	case err != nil:
 		return nil, nil, err
 	}

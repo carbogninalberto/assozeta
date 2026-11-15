@@ -14,12 +14,9 @@ import (
 // handed off, so none of them may match refusal.ErrNotPorted.
 func TestLongTailAppStateErrors(t *testing.T) {
 	for name, err := range map[string]error{
-		"errInstanceBackupsRunnerReply":      errInstanceBackupsRunnerReply,
 		"errInstanceBackupsCachedValue":      errInstanceBackupsCachedValue,
 		"errInstanceBackupsTokenActor":       errInstanceBackupsTokenActor,
-		"ErrInvoiceSyncPrintDeferred":        ErrInvoiceSyncPrintDeferred,
 		"errPersonaDeleteUnwired":            errPersonaDeleteUnwired,
-		"errPersonaStorage":                  errPersonaStorage,
 		"errPersonaTutorKey":                 errPersonaTutorKey,
 		"errPersonaSubsFormDepth":            errPersonaSubsFormDepth,
 		"ErrDocumentRenderAppState":          ErrDocumentRenderAppState,
@@ -29,10 +26,7 @@ func TestLongTailAppStateErrors(t *testing.T) {
 		"errCourseEnrolmentRenderedPayment":  errCourseEnrolmentRenderedPayment,
 		"errCourseLocationNoStorage":         errCourseLocationNoStorage,
 		"errSubscriptionMembershipNoStorage": errSubscriptionMembershipNoStorage,
-		"ErrSubscriptionSignNotPorted":       ErrSubscriptionSignNotPorted,
-		"errCampsWalkOrder":                  errCampsWalkOrder,
 		"errCampsGroupRemoved":               errCampsGroupRemoved,
-		"errEmailRenderEarlyYear":            errEmailRenderEarlyYear,
 	} {
 		wrapped := fmt.Errorf("wrapped: %w", err)
 		if _, ok := refusal.AppStateReason(wrapped); !ok || !errors.Is(wrapped, refusal.ErrAppState) {
@@ -50,14 +44,37 @@ func TestLongTailAppStateErrors(t *testing.T) {
 	}
 }
 
-// The runner reply refusal of the instance admin updates keeps its mapping:
-// a reply Go's decoder does not read is still that family's refusal.
-func TestInstanceBackupsRunnerReplyIsAppState(t *testing.T) {
+// A runner reply Go's decoder does not read is the family's refusal, handed
+// off to Django.
+func TestInstanceBackupsRunnerReplyIsHandedOff(t *testing.T) {
 	deep := ""
 	for i := 0; i < 10000; i++ {
 		deep += "["
 	}
-	if _, _, err := instanceBackupsJSON([]byte(deep)); !errors.Is(err, errInstanceBackupsRunnerReply) {
+	_, _, err := instanceBackupsJSON([]byte(deep))
+	if !errors.Is(err, ErrInstanceBackupsNotPorted) {
 		t.Fatalf("deep runner reply: %v", err)
+	}
+	if !errors.Is(err, refusal.ErrNotPorted) {
+		t.Fatalf("deep runner reply is not a refusal: %v", err)
+	}
+}
+
+// The sites the owner sent back to the Django handoff (long tail PR 2):
+// Django answers them normally, so they stay refusal sentinels.
+func TestLongTailHandoffRefusals(t *testing.T) {
+	for name, err := range map[string]error{
+		"ErrInstanceBackupsNotPorted":  ErrInstanceBackupsNotPorted,
+		"ErrInvoiceSyncPrintDeferred":  ErrInvoiceSyncPrintDeferred,
+		"ErrPersonaNotPorted":          ErrPersonaNotPorted,
+		"ErrSubscriptionSignNotPorted": ErrSubscriptionSignNotPorted,
+		"ErrCampsPaymentNotPorted":     ErrCampsPaymentNotPorted,
+		"ErrEmailRenderNotPorted":      ErrEmailRenderNotPorted,
+		"ErrDocumentViewNotPorted":     ErrDocumentViewNotPorted,
+	} {
+		wrapped := fmt.Errorf("wrapped: %w", err)
+		if !errors.Is(wrapped, refusal.ErrNotPorted) || errors.Is(wrapped, refusal.ErrAppState) {
+			t.Errorf("%s must be a refusal sentinel (handed off)", name)
+		}
 	}
 }

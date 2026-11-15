@@ -27,9 +27,10 @@ var (
 	// Python identifiers of the application's models), and NaN, Infinity or a
 	// lone surrogate in text PostgreSQL jsonb never stores.
 	ErrAuditUnreachable = refusal.AppState("audit serializer: unreachable state")
-	// ErrAuditRecursion is JSON nested past 500 levels: Python's answer depends
-	// on the interpreter's live call stack (platform; listed in tmp/long-tail).
-	ErrAuditRecursion = refusal.AppState("audit serializer: JSON nesting past the recursion limit")
+	// ErrAuditNotPorted refuses JSON nested past 500 levels: Python's
+	// RecursionError depth depends on the interpreter's live call stack, so
+	// Django may still answer. Handed off to Django.
+	ErrAuditNotPorted = refusal.New("audit serializer input not ported")
 )
 
 // AuditResolver is resolve_uuid(value, field) for a value is_uuid accepted:
@@ -133,7 +134,7 @@ var auditBooleanFields = map[string]bool{"archived": true, "deleted": true, "dra
 // surrogate escapes and deep nesting are refused.
 func AuditJSONLoads(text string) (any, bool, error) {
 	if auditJSONDepth(text) > 500 {
-		return nil, false, ErrAuditRecursion
+		return nil, false, ErrAuditNotPorted
 	}
 	if auditLoneSurrogate(text) {
 		// jsonb refuses lone surrogates; the instructor-hours form turns any
@@ -160,7 +161,7 @@ func AuditJSONLoads(text string) (any, bool, error) {
 // limit stays refused: the recursion limit depends on the live call stack.
 func auditPythonJSONLoads(text string) (any, bool, error) {
 	if auditJSONDepth(text) > 500 {
-		return nil, false, ErrAuditRecursion
+		return nil, false, ErrAuditNotPorted
 	}
 	data := []byte(text)
 	value, err := parseProfileTablesJSONConstants(data, pythonJSONConstants(data), true)
@@ -168,7 +169,7 @@ func auditPythonJSONLoads(text string) (any, bool, error) {
 	case errors.Is(err, ErrLoginRateJSONValue):
 		return nil, false, ErrAuditUnhandled
 	case errors.Is(err, ErrReferenceNesting):
-		return nil, false, ErrAuditRecursion
+		return nil, false, ErrAuditNotPorted
 	case err != nil:
 		return nil, false, nil
 	}

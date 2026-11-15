@@ -102,9 +102,11 @@ the production execution owner.
 
 ## Not ported (refused with the 500 page before any write)
 
-- Uploads on the router's stock create (its 400 shape and the upload). An existing object under the new key, a storage failure other
-  than a 403/404 answer to the ACL request, and no configured storage are application-state errors since long tail PR 2: the 500
-  page, never handed off (storage and timing, `errPersonaStorage`).
+- Uploads on the router's stock create (its 400 shape and the upload), an existing object under the new key (Django's
+  `get_available_name` picks a random name) and storage failures other than a 403/404 answer to the ACL request (Django
+  answers botocore's and s3transfer's texts as a 400): `ErrPersonaNotPorted`, handed off to Django. A failure after the
+  PutObject cannot be replayed (the upload is a recorded effect), so Go answers the 500 page there. No configured storage
+  is `domain.ErrServerComposition` (the server always wires it).
 - `tutors_data` entries with `born_date` texts with non-ASCII digits, and tutors under an `X-Group-Id` the manager would store raw (not a canonical,
   existing group id) when a tutor may be created; an `X-Group-Id` of that kind on add (Django fails on the insert, or renders the
   raw header).

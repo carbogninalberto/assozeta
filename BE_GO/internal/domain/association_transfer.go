@@ -21,12 +21,6 @@ var ErrAssociationTransferNotPorted = refusal.New("association transfer path not
 // cannot render (NaN, infinities) are its 500 page as well.
 var ErrAssociationTransferUnexpected = refusal.AppState("association transfer: unexpected application state")
 
-// ErrAssociationTransferPlatform is a temporary-file failure of import/validate
-// (a name over the file system's limit, a failed write): Django answers its
-// own 500 JSON with the OSError text, whose errno and temporary path are the
-// host's (platform; listed in tmp/long-tail).
-var ErrAssociationTransferPlatform = refusal.AppState("association transfer: temporary file failure")
-
 // AssociationExportRow is one SportAssociationDocumentsArchive row with its
 // Document, as export/list renders it.
 type AssociationExportRow struct {

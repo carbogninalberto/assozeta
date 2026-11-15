@@ -417,7 +417,7 @@ func (s *DocumentUploads) Add(ctx context.Context, identity domain.ResolvedIdent
 			if failed := unwind(); failed != nil {
 				return nil, failed
 			}
-			return nil, errors.Join(domain.ErrDocumentStorageFailed, err)
+			return nil, errors.Join(domain.ErrDocumentWritesNotPorted, err)
 		}
 		created := s.at()
 		archive := domain.ArchiveRecord{ID: s.ids(), Association: association, Document: document.ID, Folder: folder}
@@ -687,7 +687,7 @@ func (s *DocumentUploads) uploadCertificate(ctx context.Context, tx domain.Docum
 		if commit := tx.Commit(); commit != nil {
 			return document, "", commit
 		}
-		return document, "", errors.Join(domain.ErrDocumentStorageFailed, err)
+		return document, "", errors.Join(domain.ErrDocumentWritesNotPorted, err)
 	}
 	var user *string
 	if identity.ScopeUser != nil {
@@ -843,8 +843,9 @@ func (s *DocumentUploads) MedicalUpload(ctx context.Context, identity domain.Res
 		if commit := tx.Commit(); commit != nil {
 			return nil, commit
 		}
-		// Every date failure is a CalendarDateError; only a cancelled context is left.
-		return nil, errors.Join(domain.ErrDocumentStorageFailed, err)
+		// Every date failure is a CalendarDateError; only a cancelled request (its
+		// client gone) is left.
+		return nil, errors.Join(domain.ErrDocumentWritesUnreachable, err)
 	}
 	if err = tx.AttachCertificate(ctx, *subscription, certificate, dates, context, s.at()); err != nil {
 		return nil, err

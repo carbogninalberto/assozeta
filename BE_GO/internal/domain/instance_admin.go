@@ -9,8 +9,9 @@ import (
 
 // ErrInstanceAdminRefused marks an instance administration request the Go
 // port does not serve: a non-ASCII AI base URL (URLValidator's IDNA 2003
-// fallback) and a form list key with text after its index. Handlers answer
-// with the server error page before any write.
+// fallback), a form list key with text after its index and a runner reply Go's
+// decoder does not read. Handlers answer with the server error page before
+// any write.
 var ErrInstanceAdminRefused = refusal.New("instance administration request not ported")
 
 // ErrInstanceAdminUnexpected is a state only the application writes (stored

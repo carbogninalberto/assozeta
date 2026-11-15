@@ -38,9 +38,9 @@
 ## Not ported (explicit refusals, 500 page, before any write)
 
 Since long-tail PR 2 (agent B) the cached snapshots, Celery result rows, stored and generated storage names and the
-composition checks are application-state errors (the 500 page, never handed off); a temporary-file failure of
-import/validate is one too (platform). The import/validate archive contents, the multipart decoder, `owner_password` as
-a file and the referenced export document stay refusals.
+composition checks are application-state errors (the 500 page, never handed off). The import/validate archive
+contents and temporary-file failures (Django answers its own JSON with the `OSError` text), the multipart decoder,
+`owner_password` as a file and the referenced export document stay refusals.
 
 - **status** when the task owner key exists. Django renders cached progress and the Celery result.
 - **active** when a cached value is outside the unpickled subset, or when `task_id` is not a string. Only the stored status of the task row is read (`SUCCESS`, `FAILURE`, `REVOKED` are ready; no row is not ready).

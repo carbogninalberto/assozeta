@@ -365,7 +365,8 @@ func bufferMultipart(c echo.Context) ([]byte, error) {
 		return nil, err
 	}
 	if len(raw) > uploadBodyLimit {
-		return nil, domain.ErrDocumentUploadTooLarge
+		// Django spools such a body to disk and answers normally: handed off.
+		return nil, domain.ErrDocumentWritesNotPorted
 	}
 	request.Body = io.NopCloser(bytes.NewReader(raw))
 	return raw, nil

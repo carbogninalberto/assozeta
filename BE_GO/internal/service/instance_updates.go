@@ -60,10 +60,8 @@ func (s *InstanceAdmin) callRunner(ctx context.Context, method, path string, pay
 		return nil, err
 	}
 	value, decoded, err := instanceBackupsJSON(reply.Body)
-	if errors.Is(err, errInstanceBackupsRunnerReply) {
-		// The project's own runner never writes a lone surrogate or nesting past
-		// the decoder's limit (listed in tmp/long-tail).
-		return nil, unexpected("runner reply")
+	if errors.Is(err, ErrInstanceBackupsNotPorted) {
+		return nil, domain.ErrInstanceAdminRefused
 	}
 	if err != nil {
 		return nil, err

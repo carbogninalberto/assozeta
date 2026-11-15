@@ -64,7 +64,7 @@ func TestCampsWalkMultiRowFailures(t *testing.T) {
 			request := &campsRequest{tx: campsWalkFake{rows: tc.rows}}
 			saves, err := request.campsWalk(context.Background(), service, nil)
 			if tc.refused {
-				if saves != nil || !errors.Is(err, errCampsWalkOrder) {
+				if saves != nil || !errors.Is(err, ErrCampsPaymentNotPorted) {
 					t.Fatalf("expected refusal %v/%v", saves, err)
 				}
 				return

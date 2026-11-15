@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 	"unicode/utf8"
@@ -114,6 +115,16 @@ func TestAuditJSONLoadsRefusals(t *testing.T) {
 	}
 	if _, decoded, err := AuditJSONLoads(`[1] x`); err != nil || decoded {
 		t.Error("extra data is a JSONDecodeError")
+	}
+}
+
+func TestAuditJSONLoadsDeepNestingIsHandedOff(t *testing.T) {
+	deep := strings.Repeat("[", 501) + strings.Repeat("]", 501)
+	if _, _, err := AuditJSONLoads(deep); !errors.Is(err, ErrAuditNotPorted) || !errors.Is(err, refusal.ErrNotPorted) {
+		t.Errorf("AuditJSONLoads: %v", err)
+	}
+	if _, _, err := auditPythonJSONLoads(deep); !errors.Is(err, ErrAuditNotPorted) || !errors.Is(err, refusal.ErrNotPorted) {
+		t.Errorf("auditPythonJSONLoads: %v", err)
 	}
 }
 

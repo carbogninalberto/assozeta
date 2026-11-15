@@ -27,11 +27,9 @@ var (
 	ErrSubscriptionSignStorage = errors.New("signature storage unavailable")
 	// ErrSubscriptionSignFailed is an exception the view does not handle (the 500 page).
 	ErrSubscriptionSignFailed = errors.New("subscription sign failed")
-	// ErrSubscriptionSignNotPorted is an object already stored under the new
-	// signature key, which holds the request's microsecond timestamp: Django's
-	// get_available_name would then pick a random alternative name. A timing
-	// outcome (long-tail rule 4): the 500 page, never a handoff.
-	ErrSubscriptionSignNotPorted = refusal.AppState("subscription signature key already taken")
+	// ErrSubscriptionSignNotPorted refuses, before any write, a path the port does not reproduce:
+	// an object already stored under the new signature key (get_available_name picks a random name).
+	ErrSubscriptionSignNotPorted = refusal.New("subscription sign path not ported")
 )
 
 // SubscriptionSignUUIDError is is_valid_uuid's ValidationError(<exception>): a 400 list.
