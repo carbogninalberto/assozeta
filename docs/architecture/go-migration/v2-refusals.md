@@ -1569,3 +1569,9 @@ transfer 9 → 4; total 471 → 417.
 | folder writes (`folders.md`) | `TemporaryUploadedFile` above the in-memory limit (2 cases, `lt2B-2`) | — | — (sentinel deleted) |
 | instance administration (`instance-admin.md`) | runner reason `str()`; X2 release feed and provider bodies | stored shapes, missing configuration row, composition, request data without `get()`, invalid env integers | IDNA 2003 AI `base_url`; nested form list keys |
 | association transfer (`association-transfer.md`) | — | snapshots, Celery rows, storage names, composition, NaN renders, temporary-file failures | import/validate archive texts, multipart decoder, password file, referenced export document |
+
+Also in this change: `domain.ErrServerComposition` (AppState) replaces the refusals returned when an optional service
+dependency or the paid-flow transaction is missing (payment state, stripe, invoice parties, data restore, payment reads
+and misc, statistics, subscription create and renew, docmanager): the server always wires them. The saved-report
+integration settings and the setup wizard's import task row are app-written states. Remaining sites of those points stay
+refusals for PR 3. Total HTTP/WebSocket pairs after this change: 413.
