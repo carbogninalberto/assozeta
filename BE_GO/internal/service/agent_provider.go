@@ -80,8 +80,15 @@ func NewAgentAIProvider(env AgentEnvironment, apiKey, model, baseURL any, transp
 		transport(&config)
 	}
 	client, err := agentllm.New(config)
+	var invalid *agentllm.InvalidURLError
+	if errors.As(err, &invalid) {
+		// AsyncOpenAI(base_url=...) raises httpx.InvalidURL while the provider is
+		// built: the consumer closes with 4004 on connect and sends the
+		// "Configurazione AI non disponibile" frame on a refresh.
+		return nil, err
+	}
 	if err != nil {
-		return nil, ErrAgentNotPorted
+		return nil, ErrAgentNotPorted // a base URL that is not UTF-8 text
 	}
 	return &AgentAIProvider{client: client, model: model}, nil
 }

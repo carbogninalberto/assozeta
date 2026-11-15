@@ -362,6 +362,32 @@
    "files": {}
   },
   {
+   "name": "ws-agent-invalid-base-url",
+   "kind": "ws",
+   "path": "/ws/agent/",
+   "query": "token={token:owner}",
+   "headers": [],
+   "handshake": {
+    "status": 403,
+    "reason": "Forbidden",
+    "body": "",
+    "content_type": "text/plain",
+    "content_length": "0"
+   },
+   "ai": {
+    "enabled": true,
+    "base_url": "http://127.0.0.1:abc/v1"
+   },
+   "manual": true,
+   "steps": [],
+   "llm": [],
+   "requests": [],
+   "cache": {},
+   "cache_seed": {},
+   "reports": null,
+   "files": {}
+  },
+  {
    "name": "ws-agent-concurrent-session",
    "kind": "ws",
    "path": "/ws/agent/",
@@ -9107,6 +9133,65 @@
      "ttl": 60
     }
    },
+   "cache_seed": {},
+   "reports": null,
+   "files": {}
+  },
+  {
+   "name": "ws-agent-refresh-invalid-base-url",
+   "kind": "ws",
+   "path": "/ws/agent/",
+   "query": "token={token:owner}",
+   "headers": [],
+   "handshake": {
+    "status": 101,
+    "protocol": null,
+    "extensions": null
+   },
+   "ai": {
+    "enabled": true
+   },
+   "manual": true,
+   "steps": [
+    {
+     "expect": {
+      "text": "{\"type\": \"message\", \"content\": \"Ciao! Posso aiutarti a cercare informazioni nell\\u2019associazione e a capire come usare Assozeta.\\n\\n- **Cerca nei dati**: per esempio, \\u00abQuanti iscritti ho quest\\u2019anno?\\u00bb\\n- **Trova una guida**: per esempio, \\u00abCome posso assegnare un tag?\\u00bb\\n- **Prepara un export** dei dati che ti servono.\\n\\nQuando cerchi istruzioni, ti indico la guida disponibile nel manuale. Se mancano informazioni verificate, te lo segnalo.\\n\\n[Sfoglia il manuale d\\u2019uso](/#/manuale) oppure scrivi qui la tua domanda.\"}"
+     }
+    },
+    {
+     "produce": {
+      "ai": {
+       "enabled": true,
+       "base_url": "http://127.0.0.1:abc/v1"
+      }
+     }
+    },
+    {
+     "send_text": "{\"type\": \"user_message\", \"message\": \"Uno\"}"
+    },
+    {
+     "expect": {
+      "text": "{\"type\": \"error\", \"message\": \"Configurazione AI non disponibile. Contatta il proprietario dell\\u2019istanza.\"}"
+     }
+    },
+    {
+     "close": 1000
+    },
+    {
+     "expect": {
+      "close": 1000,
+      "reason": ""
+     }
+    },
+    {
+     "expect": {
+      "eof": true
+     }
+    }
+   ],
+   "llm": [],
+   "requests": [],
+   "cache": {},
    "cache_seed": {},
    "reports": null,
    "files": {}
