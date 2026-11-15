@@ -1525,3 +1525,30 @@ For later reference, these are reachable with UI-made data if Go takes job owner
 - tasks-db-d: `renew_memberships_payments` when a next period is already paid.
 - tasks-db-e/f: cascades of export or orphan certificate documents.
 - tasks-db-d: persisted Beat row `check_workflows_trigger_cron` rejected.
+
+## Long tail PR 2, agent A
+
+Rule of the long tail (owner, 2026-11-15): a state only the application writes, or one Django itself raises on, is
+`refusal.AppState` (Django's production 500 page, never handed off); a reachable input Django answers is ported. Per-site
+tables are in the long-tail working notes (`A-<point>.md`). `refusal_reach.py` HTTP/WebSocket rows for these points: 138 -> 34
+(all routes: 471 -> 364).
+
+| Sentinel | HTTP/WS before -> after | What changed |
+|---|---|---|
+| `celery.ErrUnsupportedValue` | 39 -> 0 | app state: only the app builds task arguments and broker messages |
+| `xlsxexport.ErrNotPorted` | 21 -> 0 | 17+ digit numeric text **ported** (pandas fuses the digit accumulation on macOS arm64 only; Go follows its platform); the rest is `xlsxexport.ErrUnexpectedInput` (app state). This supersedes "numeric-looking text with 17+ significant digits" in "Ported in the go-v2only-xlsxvalue change" |
+| `emailrender.ErrUnsupported` | 17 -> 0 | app state (templates, names, languages, context types are the app's) |
+| `pdfexport.ErrNotPorted` | 16 -> 16 | split: impossible layouts `ErrUnexpectedLayout`, server-file/URL images and `<seq*>` `ErrOutsideInput` (both app state); B markup and user logos stay refused |
+| `channels.ErrUnsupportedValue` | 8 -> 0 | app state (messages and the Redis notification list are the app's) |
+| `djtemplate.ErrUnsupported` | 7 -> 0 | app state (fixed templates, jsonb columns) |
+| `mentions.ErrUnsupported` | 7 -> 7 | unchanged: stored editor HTML outside the html.parser subset (B, needs a bs4 port) |
+| `pydateutil.ErrUnsupported` | 7 -> 7 | split: local-zone states `ErrUnexpectedZone` (app state); WTF-8 text and texts over 64 KiB stay refused |
+| `fatturapa.ErrUnsupported` | 4 -> 4 | split: non-JSON and 4300+ digit jsonb text `ErrUnexpectedJSON` (app state); Decimal shapes, rounding and pre-1000 dates stay refused |
+| `googleapi.ErrNotPorted` | 4 -> 0 | pre-1000 event years **ported** (glibc unpadded, macOS padded); credentials, client secrets and Google answers `googleapi.ErrUnexpected` (app state) |
+| `instanceprobe.ErrJSONEncoding` | 4 -> 0 | **ported**: UTF-16/UTF-32 JSON bodies (cases `releases-feed-utf16-bom`, `releases-feed-utf32-le`, `releases-feed-utf16-truncated`) |
+| `pilplaceholder.ErrUnsupported` | 4 -> 0 | app state (names are CharField(150), validated before the drawing) |
+
+Left for PR 3: `mentions` (bs4 html.parser port), `pydateutil` WTF-8 and long texts, `fatturapa` Decimal/rounding/float overflow
+and pre-1000 dates (same platform rule as Google), `pdfexport` paragraph markup and user logos. Platform answers ported here
+follow `runtime.GOOS`: the parity harness runs Django on macOS, CI and production on Linux, so they have unit evidence and no
+family case.

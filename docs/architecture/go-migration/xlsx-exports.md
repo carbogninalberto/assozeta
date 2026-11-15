@@ -75,6 +75,12 @@ hyperlinks, long strings, empty frames and multi-sheet openpyxl workbooks. Dropp
 
 ## Not ported
 
+- Long tail PR 2: numeric text with 17+ significant digits is ported. pandas' `precise_xstrtod` fuses the digit accumulation in
+  the macOS arm64 wheel only (measured with pandas 2.2.3 on Linux x86_64 and aarch64: plain), so Go follows the platform it runs
+  on (`xstrtodFMA`; golden `eu-long-digits` is compared on macOS arm64, its capture platform). The other inputs the writer does
+  not reproduce cannot come from a view: they are `xlsxexport.ErrUnexpectedInput`, application state (the 500 page, never handed
+  off).
+
 - `printing/generate`'s `pdf` format (in-process reportlab); its `excel` format runs in Go
   ([printing-generate](printing-generate.md)). `export-all-data` runs in Go ([export-all-data](export-all-data.md)):
   `wb.save(HttpResponse)` streams the zip (flag `0x08`, data descriptors), written by `OpenpyxlRowsResponse` and built by

@@ -120,9 +120,11 @@ Before the lease or any cache write:
 
 Depending on the response, so after the lease (tests) or a manual refresh bound (releases):
 
-- Provider responses `json.loads` reads as UTF-16/UTF-32.
+- (Ported in long tail PR 2: provider responses and release feeds `json.loads` reads as UTF-16/UTF-32, decoded as
+  `detect_encoding` and 'surrogatepass' do; cases `releases-feed-utf16-bom`, `releases-feed-utf32-le`,
+  `releases-feed-utf16-truncated`.)
 - Release feeds Go does not carry: non-integer or out-of-int64 ids, truthy non-string names,
-  dates or notes, lone surrogates, UTF-16/UTF-32 bodies, redirect targets urllib would rewrite,
+  dates or notes, lone surrogates, redirect targets urllib would rewrite,
   a body shorter than its Content-Length (`IncompleteRead`). Nothing is cached.
 - Differences in the deadline: Django's 10 s include the probe interpreter's start; Python's
   strict X.509 checks (`VERIFY_X509_STRICT`) are not applied by Go; a malformed HTTP status line
