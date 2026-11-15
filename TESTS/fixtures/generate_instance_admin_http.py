@@ -214,7 +214,8 @@ def config_body():
 
 
 def admin_body():
-    return {'config': config_body(), 'running_version': 'v0.0.0', 'configured_version': 'latest', 'mode': 'development'}
+    return {'config': config_body(), 'running_version': 'v0.0.0', 'configured_version': 'latest', 'mode': 'development',
+            'go_tasks_enabled': False}
 
 
 CHECKS = (('public_url', 'URL pubblico e HTTPS', True, 'overview'), ('api', 'API', True, 'diagnostics'),
