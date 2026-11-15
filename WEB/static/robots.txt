@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://assozeta.it/sitemap.xml
