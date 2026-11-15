@@ -29,7 +29,7 @@ import (
 // DiagnosticsView (GET; POST in instance_diagnostics.go), and
 // InstanceUpdatesView/InstanceRestartsView (the update runner in production,
 // instance_updates.go). Paths that run outbound probes, and stored shapes
-// the port does not interpret, return domain.ErrInstanceAdminRefused before
+// the port does not interpret, return domain.ErrInstanceAdminUnexpected before
 // any write.
 type InstanceAdmin struct {
 	store     InstanceAdminStore
@@ -104,8 +104,15 @@ var errInstanceAdminCredential = errors.New("stored credential cannot be decrypt
 // view answers the 500 page.
 var errInstanceAdminEnvironmentPort = errors.New("invalid literal for int() with base 10: EMAIL_PORT")
 
-func refused(reason string) error {
-	return fmt.Errorf("%w: %s", domain.ErrInstanceAdminRefused, reason)
+// unexpected is an ErrInstanceAdminUnexpected with a constant site reason.
+// The stored JSON fields (email_settings, integration_settings,
+// diagnostic_results) and the encrypted credentials are written only by the
+// instance views (BE/instance/email_configuration.py,
+// BE/instance/integration_configuration.py, BE/instance/diagnostics.py), always
+// in the shapes read here; the configuration row is required by
+// is_instance_administrator (BE/instance/permissions.py:28) before any view.
+func unexpected(reason string) error {
+	return fmt.Errorf("%w: %s", domain.ErrInstanceAdminUnexpected, reason)
 }
 
 const (
@@ -132,7 +139,7 @@ func (s *InstanceAdmin) production() bool { return s.env.DeploymentMode == "prod
 func (s *InstanceAdmin) config(ctx context.Context) (*dto.InstanceConfig, error) {
 	config, err := s.bootstrap.Config(ctx)
 	if errors.Is(err, domain.ErrInstanceNotConfigured) {
-		return nil, refused("no configuration")
+		return nil, unexpected("no configuration")
 	}
 	return config, err
 }
@@ -191,7 +198,7 @@ func (s *InstanceAdmin) Branding(ctx context.Context, body any, actor string, au
 
 func (s *InstanceAdmin) Updates() (map[string]any, error) {
 	if s.production() {
-		return nil, refused("update runner status")
+		return nil, unexpected("update runner status")
 	}
 	return map[string]any{"available": false, "reason": "Gli aggiornamenti dell’installazione sono disabilitati in sviluppo.",
 		"active": nil, "history": []any{}}, nil
@@ -202,7 +209,7 @@ func (s *InstanceAdmin) RequestUpdate(body any) error {
 		return err
 	}
 	if s.production() {
-		return refused("update runner request")
+		return unexpected("update runner request")
 	}
 	return instanceAdminError("Gli aggiornamenti reali sono disabilitati in sviluppo.", 409)
 }
@@ -219,7 +226,7 @@ func (s *InstanceAdmin) RequestRestart(body any) error {
 		return err
 	}
 	if s.production() {
-		return refused("update runner restart")
+		return unexpected("update runner restart")
 	}
 	return instanceAdminError("Il riavvio dei container è disabilitato in sviluppo.", 409)
 }
@@ -248,7 +255,7 @@ func instanceAdminObject(value any) (map[string]any, error) {
 	}
 	object, ok := value.(map[string]any)
 	if !ok {
-		return nil, refused("stored value is not an object")
+		return nil, unexpected("stored value is not an object")
 	}
 	return object, nil
 }
@@ -368,7 +375,7 @@ func (s *InstanceAdmin) encrypt(prefix, plain string) (string, error) {
 		return "", nil
 	}
 	if len(s.env.SecretKeys) == 0 {
-		return "", refused("no SECRET_KEY")
+		return "", unexpected("no SECRET_KEY")
 	}
 	key := instanceAdminFernetKey(prefix, s.env.SecretKeys[0])
 	block, err := aes.NewCipher(key[16:])
@@ -401,13 +408,13 @@ func (s *InstanceAdmin) decrypt(prefix string, value any) (string, error) {
 	}
 	token, ok := value.(string)
 	if !ok {
-		return "", refused("stored credential is not a string")
+		return "", unexpected("stored credential is not a string")
 	}
 	for _, secret := range s.env.SecretKeys {
 		key := instanceAdminFernetKey(prefix, secret)
 		if plain, ok := fernetOpen(token, key); ok {
 			if !utf8.Valid(plain) {
-				return "", refused("stored credential is not UTF-8")
+				return "", unexpected("stored credential is not UTF-8")
 			}
 			return string(plain), nil
 		}
@@ -454,7 +461,7 @@ func fernetOpen(token string, key [32]byte) ([]byte, bool) {
 func (s *InstanceAdmin) row(ctx context.Context) (*domain.InstanceAdminRow, error) {
 	row, err := s.store.Read(ctx)
 	if err == nil && row == nil {
-		return nil, refused("no configuration")
+		return nil, unexpected("no configuration")
 	}
 	return row, err
 }
@@ -470,7 +477,7 @@ func emailSettings(row *domain.InstanceAdminRow) (map[string]any, bool, error) {
 	}
 	settings, ok := value.(map[string]any)
 	if !ok {
-		return nil, true, refused("email settings are not an object")
+		return nil, true, unexpected("email settings are not an object")
 	}
 	return settings, true, nil
 }
@@ -546,7 +553,7 @@ func (s *InstanceAdmin) Email(ctx context.Context) (map[string]any, error) {
 	if instanceTruthy(lastTest) {
 		test, ok := lastTest.(map[string]any)
 		if !ok {
-			return nil, refused("stored email test is not an object")
+			return nil, unexpected("stored email test is not an object")
 		}
 		if !pythonEqual(test["revision"], row.EmailRevision) {
 			lastTest = nil
@@ -583,12 +590,12 @@ func (s *InstanceAdmin) persistEmail(row *domain.InstanceAdminRow, settings json
 	if stored, present := results["checks"]; present {
 		items, ok := stored.([]any)
 		if !ok {
-			return nil, refused("stored checks are not a list")
+			return nil, unexpected("stored checks are not a list")
 		}
 		for _, item := range items {
 			check, ok := item.(map[string]any)
 			if !ok {
-				return nil, refused("stored check is not an object")
+				return nil, unexpected("stored check is not an object")
 			}
 			if !pythonEqual(check["id"], "email") {
 				checks = append(checks, item)
@@ -616,7 +623,7 @@ func (s *InstanceAdmin) PutEmail(ctx context.Context, body any) (map[string]any,
 	var response map[string]any
 	err = s.store.Locked(ctx, func(row *domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error) {
 		if row == nil {
-			return nil, refused("no configuration")
+			return nil, unexpected("no configuration")
 		}
 		if !pythonEqual(input.Revision, row.EmailRevision) {
 			return nil, instanceAdminError("Configurazione modificata in un’altra sessione. Ricarica prima di salvare.", 409)
@@ -673,7 +680,7 @@ func requestRevision(body any) (*big.Int, error) {
 	switch body.(type) {
 	case domain.RequestObject, dto.InstanceAdminFormInput:
 	default:
-		return nil, refused("request data has no get()")
+		return nil, unexpected("request data has no get()")
 	}
 	value, _ := dto.InstanceAdminFormGet(body, "revision")
 	return dto.InstanceAdminRevision(value)
@@ -688,7 +695,7 @@ func (s *InstanceAdmin) DeleteEmail(ctx context.Context, body any) (map[string]a
 	var response map[string]any
 	err = s.store.Locked(ctx, func(row *domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error) {
 		if row == nil {
-			return nil, refused("no configuration")
+			return nil, unexpected("no configuration")
 		}
 		if !pythonEqual(revision, row.EmailRevision) {
 			return nil, instanceAdminError("Configurazione modificata. Ricarica prima di ripristinare.", 409)
@@ -737,7 +744,7 @@ func (s *InstanceAdmin) effective(provider string, row *domain.InstanceAdminRow,
 		if stored, present := all[provider]; present {
 			object, ok := stored.(map[string]any)
 			if !ok {
-				return nil, refused("integration record is not an object")
+				return nil, unexpected("integration record is not an object")
 			}
 			record = object
 		}
@@ -749,7 +756,7 @@ func (s *InstanceAdmin) effective(provider string, row *domain.InstanceAdminRow,
 	if settings := record["settings"]; settings != nil {
 		object, ok := settings.(map[string]any)
 		if !ok {
-			return nil, refused("integration settings are not an object")
+			return nil, unexpected("integration settings are not an object")
 		}
 		result.value, result.instance = instanceAdminCopy(object), true
 		if decrypt {
@@ -775,7 +782,7 @@ func (s *InstanceAdmin) environmentIntegration(provider string, row *domain.Inst
 	switch provider {
 	case "ai":
 		if s.env.AIIntegersInvalid {
-			return nil, refused("environment AI settings")
+			return nil, unexpected("environment AI settings")
 		}
 		value := map[string]any{"api_key": s.env.AIAPIKey, "model": s.env.AIModel, "cheap_model": s.env.AICheapModel, "base_url": s.env.AIBaseURL}
 		for index, key := range []string{"max_iterations", "max_results", "query_timeout", "ws_rate_limit", "ws_timeout", "history_cap"} {
@@ -838,14 +845,14 @@ func (s *InstanceAdmin) publicIntegration(provider string, row *domain.InstanceA
 	if tests, present := results["integration_tests"]; present {
 		object, ok := tests.(map[string]any)
 		if !ok {
-			return nil, refused("stored integration tests are not an object")
+			return nil, unexpected("stored integration tests are not an object")
 		}
 		lastTest = object[provider]
 	}
 	if instanceTruthy(lastTest) {
 		test, ok := lastTest.(map[string]any)
 		if !ok {
-			return nil, refused("stored integration test is not an object")
+			return nil, unexpected("stored integration test is not an object")
 		}
 		if !pythonEqual(test["revision"], current.revision) {
 			lastTest = nil
@@ -885,7 +892,7 @@ func (s *InstanceAdmin) persistIntegration(row *domain.InstanceAdminRow, provide
 	}
 	all, ok := raw.(map[string]any)
 	if !ok {
-		return nil, refused("integration settings are not an object")
+		return nil, unexpected("integration settings are not an object")
 	}
 	all = instanceAdminCopy(all)
 	all[provider] = map[string]any{"revision": json.Number(revision.String()), "settings": settings}
@@ -911,7 +918,7 @@ func (s *InstanceAdmin) PutIntegration(ctx context.Context, provider string, bod
 	var response map[string]any
 	err = s.store.Locked(ctx, func(row *domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error) {
 		if row == nil {
-			return nil, refused("no configuration")
+			return nil, unexpected("no configuration")
 		}
 		current, err := s.effective(provider, row, false)
 		if err != nil {
@@ -922,7 +929,7 @@ func (s *InstanceAdmin) PutIntegration(ctx context.Context, provider string, bod
 		}
 		revision, ok := instanceAdminInteger(current.revision)
 		if !ok {
-			return nil, refused("stored revision is not an integer")
+			return nil, unexpected("stored revision is not an integer")
 		}
 		values := instanceAdminCopy(input.Values)
 		for _, key := range dto.InstanceAdminSecretFields[provider] {
@@ -935,7 +942,7 @@ func (s *InstanceAdmin) PutIntegration(ctx context.Context, provider string, bod
 			} else if !given {
 				stored, present := current.value[key]
 				if !present {
-					return nil, refused("retained secret is missing")
+					return nil, unexpected("retained secret is missing")
 				}
 				if current.instance {
 					plain, err := s.decrypt(instanceIntegrationCipher, stored)
@@ -1023,7 +1030,7 @@ func (s *InstanceAdmin) DeleteIntegration(ctx context.Context, provider string, 
 	var response map[string]any
 	err = s.store.Locked(ctx, func(row *domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error) {
 		if row == nil {
-			return nil, refused("no configuration")
+			return nil, unexpected("no configuration")
 		}
 		current, err := s.effective(provider, row, false)
 		if err != nil {
@@ -1073,22 +1080,22 @@ func (s *InstanceAdmin) Diagnostics(ctx context.Context) (map[string]any, error)
 	if raw, present := stored["checks"]; present {
 		items, ok := raw.([]any)
 		if !ok {
-			return nil, refused("stored checks are not a list")
+			return nil, unexpected("stored checks are not a list")
 		}
 		for _, item := range items {
 			check, ok := item.(map[string]any)
 			if !ok {
-				return nil, refused("stored check is not an object")
+				return nil, unexpected("stored check is not an object")
 			}
 			id, present := check["id"]
 			if !present {
-				return nil, refused("stored check has no id")
+				return nil, unexpected("stored check has no id")
 			}
 			switch key := id.(type) {
 			case string:
 				values[key] = check
 			case map[string]any, []any:
-				return nil, refused("stored check id is not hashable")
+				return nil, unexpected("stored check id is not hashable")
 			}
 		}
 	}
@@ -1103,7 +1110,7 @@ func (s *InstanceAdmin) Diagnostics(ctx context.Context) (map[string]any, error)
 		if spec.core {
 			status, present := check["status"]
 			if !present {
-				return nil, refused("stored check has no status")
+				return nil, unexpected("stored check has no status")
 			}
 			core = append(core, status)
 		}
@@ -1144,7 +1151,7 @@ func (s *InstanceAdmin) integrationChecks(row *domain.InstanceAdminRow) ([]any, 
 		lookup := func(key string) (any, error) {
 			item, present := value[key]
 			if !present {
-				return nil, refused("integration value is missing " + key)
+				return nil, unexpected("integration value is missing " + key)
 			}
 			return item, nil
 		}
@@ -1171,7 +1178,7 @@ func (s *InstanceAdmin) integrationChecks(row *domain.InstanceAdminRow) ([]any, 
 			publicKey, ok := public.(string)
 			secret, valid := effective.value["secret_key"].(string)
 			if !ok || !valid {
-				return nil, refused("stripe keys are not strings")
+				return nil, unexpected("stripe keys are not strings")
 			}
 			test := strings.HasPrefix(publicKey, "pk_test_") && (strings.HasPrefix(secret, "sk_test_") || strings.HasPrefix(secret, "rk_test_"))
 			live := strings.HasPrefix(publicKey, "pk_live_") && (strings.HasPrefix(secret, "sk_live_") || strings.HasPrefix(secret, "rk_live_"))

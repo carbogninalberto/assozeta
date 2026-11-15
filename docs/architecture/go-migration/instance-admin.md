@@ -182,7 +182,13 @@ The result shape and messages are Django's, including the URL validation.
 
 ## Not ported (Django keeps these)
 
-Go refuses these with the server error page before any write:
+Since long-tail PR 2 (agent B) only the non-ASCII AI `base_url` and the form list key with text after its index are
+still refusals. The stored shapes, the missing configuration row, the composed runner client and the exceptions Django
+lets escape are application-state errors (the 500 page, never handed off). Release feeds and provider bodies Go does
+not read answer Django's provider-failure body (accepted divergence X2), and a runner reason that is not a string is its
+`str()`.
+
+Go answers these with the server error page before any write:
 
 - Form-encoded and multipart bodies on every write (the frontend sends JSON).
 - An AI `base_url` with non-ASCII characters (URLValidator's IDNA fallback).

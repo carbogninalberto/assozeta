@@ -61,7 +61,9 @@ func (s *InstanceAdmin) callRunner(ctx context.Context, method, path string, pay
 	}
 	value, decoded, err := instanceBackupsJSON(reply.Body)
 	if errors.Is(err, ErrInstanceBackupsNotPorted) {
-		return nil, domain.ErrInstanceAdminRefused
+		// The project's own runner never writes a lone surrogate or nesting past
+		// the decoder's limit (listed in tmp/long-tail).
+		return nil, unexpected("runner reply")
 	}
 	if err != nil {
 		return nil, err
@@ -138,7 +140,7 @@ func textOr(value any, fallback string) (string, error) {
 	}
 	text, ok := value.(string)
 	if !ok {
-		return "", domain.ErrInstanceAdminRefused // str() of another JSON value
+		return dto.PythonStr(value), nil // str() of another JSON value
 	}
 	return text, nil
 }
@@ -151,9 +153,6 @@ func (s *InstanceAdmin) RequestUpdateFor(ctx context.Context, actor string, body
 	update, err := dto.InstanceAdminUpdateValues(body)
 	if err != nil {
 		return err
-	}
-	if !update.ReleaseID.IsInt64() {
-		return domain.ErrInstanceAdminRefused
 	}
 	releaseID := update.ReleaseID.Int64()
 	failure := func(err error) error { return runnerFailure(err, instanceUpdatesError) }
@@ -216,13 +215,19 @@ func (s *InstanceAdmin) RequestUpdateFor(ctx context.Context, actor string, body
 		}
 		return failure(&instanceRunnerRejected{message: message, status: 409})
 	}
+	if !update.ReleaseID.IsInt64() {
+		// X2 (accepted divergence): no GitHub release id exceeds int64, so the
+		// provider's answer is the unpublished-release error.
+		return instanceUpdatesError(instanceprobe.ReleaseNotPublished)
+	}
 	release, err := s.releases.FetchRelease(ctx, releaseID)
 	var releaseError *instanceprobe.ReleaseError
 	switch {
 	case errors.As(err, &releaseError):
 		return instanceUpdatesError(releaseError.Message)
 	case errors.Is(err, instanceprobe.ErrReleaseNotPorted), errors.Is(err, instanceprobe.ErrNotPorted):
-		return domain.ErrInstanceAdminRefused
+		// X2 (accepted divergence): answered like a provider failure.
+		return instanceUpdatesError(instanceprobe.ReleaseNotReadable(err).Message)
 	case err != nil:
 		return err
 	}

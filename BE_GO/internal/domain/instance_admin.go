@@ -8,10 +8,17 @@ import (
 )
 
 // ErrInstanceAdminRefused marks an instance administration request the Go
-// port does not serve (outbound probes, the update runner, unsupported stored
-// shapes or form bodies). Handlers answer with the server error page before
-// any write.
+// port does not serve: a non-ASCII AI base URL (URLValidator's IDNA 2003
+// fallback) and a form list key with text after its index. Handlers answer
+// with the server error page before any write.
 var ErrInstanceAdminRefused = refusal.New("instance administration request not ported")
+
+// ErrInstanceAdminUnexpected is a state only the application writes (stored
+// settings, results, leases and credentials written by the instance views,
+// the configuration row the permission check requires, the composed runner
+// client), or an exception Django lets escape too (request data without
+// get(), an environment integer that is not one). Never handed off.
+var ErrInstanceAdminUnexpected = refusal.AppState("instance administration: unexpected application state")
 
 // InstanceAdminRow is the singleton InstanceConfiguration as the owner-only
 // administration views read it, including encrypted credentials.

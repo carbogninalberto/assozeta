@@ -104,6 +104,21 @@ type ReleaseError struct{ Message string }
 
 func (e *ReleaseError) Error() string { return e.Message }
 
+// ReleaseNotPublished is fetch_release's answer for a release that is not a
+// published stable one.
+const ReleaseNotPublished = "The selected release is not a published stable release."
+
+// ReleaseNotReadable is the native answer (accepted divergence X2) for a feed
+// this port does not read: Django's text for an invalid catalog when the feed
+// was read (ErrReleaseNotPorted), its unavailable text for a response Go does
+// not decode (ErrNotPorted).
+func ReleaseNotReadable(err error) *ReleaseError {
+	if errors.Is(err, ErrReleaseNotPorted) {
+		return &ReleaseError{Message: "Invalid release catalog response."}
+	}
+	return &ReleaseError{Message: "Release service is unavailable. Please try again later."}
+}
+
 // ErrReleaseNotPorted is a feed Django would answer with a server error
 // (an exception the view does not catch) or values this port does not
 // carry (non-integer ids, non-string names/dates/notes, lone surrogates).

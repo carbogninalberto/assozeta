@@ -68,10 +68,10 @@ var diagnosticsBusy = &InstanceAdminResponse{Status: 429, RetryAfter: "45",
 // RunDiagnostics is DiagnosticsView.post.
 func (s *InstanceOutbound) RunDiagnostics(ctx context.Context) (map[string]any, error) {
 	if s.diagnostics == nil {
-		return nil, refused("diagnostic probes")
+		return nil, unexpected("diagnostic probes")
 	}
 	if s.admin.production() && s.admin.runner == nil {
-		return nil, refused("update runner client")
+		return nil, unexpected("update runner client")
 	}
 	// Stored shapes snapshot(config) does not interpret are refused before the lease.
 	if _, err := s.admin.Diagnostics(ctx); err != nil {
@@ -112,7 +112,7 @@ func (s *InstanceOutbound) RunDiagnostics(ctx context.Context) (map[string]any, 
 	}
 	err = s.admin.store.Locked(ctx, func(locked *domain.InstanceAdminRow) (*domain.InstanceAdminUpdate, error) {
 		if locked == nil {
-			return nil, refused("no configuration")
+			return nil, unexpected("no configuration")
 		}
 		saved := checks
 		if locked.EmailRevision != revision {

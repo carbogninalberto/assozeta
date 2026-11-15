@@ -18,7 +18,7 @@ func (c *Client) FetchRelease(ctx context.Context, id int64) (*Release, error) {
 		return nil, err
 	}
 	if release == nil {
-		return nil, &ReleaseError{Message: "The selected release is not a published stable release."}
+		return nil, &ReleaseError{Message: ReleaseNotPublished}
 	}
 	return release, nil
 }
