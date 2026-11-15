@@ -43,9 +43,10 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrUnsupported marks input outside the subset proven against Python; it is
-// returned before any connection is made.
-var ErrUnsupported = refusal.New("smtpsend: input outside the supported subset")
+// ErrRaises is a Python exception raised while the message is built or folded.
+// send_email wraps its whole body in try/except and returns (False, e) for it
+// (BE/communications/models.py:94-183), so it is an answer, never a crash.
+var ErrRaises = errors.New("smtpsend: Python raises while rendering the message")
 
 // Server is the SMTP part of a CommunicationConfiguration.
 type Server struct {
@@ -119,24 +120,25 @@ func Verify(ctx context.Context, s Server) error {
 	return c.login(s.User, s.Password)
 }
 
-// Send mirrors the delivery connection of send_email. from and to must pass
-// CheckEnvelope and message must be ASCII (Render's output); otherwise
-// ErrUnsupported is returned before connecting.
+// Send mirrors the delivery connection of send_email: verify has succeeded,
+// so it connects, starts TLS, logs in, sends mail from the user to the
+// recipients and quits. from and to are quoted the way smtplib.quoteaddr
+// parses them (any text; a command Python cannot encode fails when it is
+// sent) and message is Render's output.
 func Send(ctx context.Context, s Server, from string, to []string, message string) error {
-	if err := CheckEnvelope(from, to); err != nil {
-		return err
+	if !isASCII(message) {
+		// Render writes every header as RFC 2047 encoded words and every body
+		// as base64, so its output is ASCII and a message that is not cannot
+		// come from it: application state, never handed off.
+		return refusal.AppState("smtpsend: rendered message is not ASCII")
 	}
 	handoff.MarkEffect(ctx, "smtp send")
-	for i := 0; i < len(message); i++ {
-		if message[i] >= 0x80 {
-			return ErrUnsupported
-		}
-	}
 	c, err := open(ctx, s)
 	if err != nil {
 		return err
 	}
 	defer c.close()
+	c.anyAddress = true
 	if err = c.login(s.User, s.Password); err != nil {
 		return err
 	}
@@ -715,8 +717,9 @@ var periodPattern = regexp.MustCompile(`(?m)^\.`)
 
 func quotePeriods(b []byte) []byte { return periodPattern.ReplaceAll(b, []byte("..")) }
 
-// quoteaddr is smtplib.quoteaddr for addresses CheckEnvelope accepts, which
-// email.utils.parseaddr returns unchanged.
+// quoteaddr is smtplib.quoteaddr for addresses email.utils.parseaddr returns
+// unchanged, which is what Django's EmailMessage path passes; send_email's
+// own path quotes any text with QuoteAddr.
 func quoteaddr(address string) string { return "<" + address + ">" }
 
 func (c *client) quote(address string) string {

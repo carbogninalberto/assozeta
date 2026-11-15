@@ -225,7 +225,7 @@ func (s *CommunicationSendEmail) sendEmail(ctx context.Context, row domain.Commu
 		server := sendEmailServer(row)
 		if err := s.smtp.Verify(work, server); err == nil {
 			message, err := s.render(row, input, recipients)
-			if errors.Is(err, smtpsend.ErrHeader) {
+			if errors.Is(err, smtpsend.ErrRaises) {
 				// as_string() raises inside send_email's try: (False, exception).
 				return SendEmailResult{}, errors.Join(domain.ErrSendEmailServerError, err)
 			}

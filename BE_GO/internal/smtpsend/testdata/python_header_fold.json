@@ -1,0 +1,2104 @@
+{
+ "python": "3.13.16",
+ "generator": "smtpsend_header_golden.py (beside this file)",
+ "message": [
+  {
+   "name": "Subject",
+   "runes": [
+    56448
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?=80?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    97,
+    56448,
+    98
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?b?YYBi?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    56575
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?=FF?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    56448,
+    56575
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?b?gP8=?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    55296
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    55296,
+    56448
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    97,
+    55296,
+    98
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    56515,
+    56488
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?b?w6g=?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    67,
+    105,
+    116,
+    116,
+    224,
+    32,
+    56575
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    67,
+    105,
+    116,
+    116,
+    224,
+    32,
+    56515,
+    56488
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    224,
+    56448
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    108,
+    105,
+    110,
+    101,
+    56448,
+    10,
+    115,
+    101,
+    99,
+    111,
+    110,
+    100
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?line=80?=\n =?unknown-8bit?q?_second?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    108,
+    105,
+    110,
+    101,
+    56448,
+    10,
+    32,
+    115,
+    101,
+    99,
+    111,
+    110,
+    100
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?line=80?=\n =?unknown-8bit?q?_second?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    108,
+    105,
+    110,
+    101,
+    10,
+    56448
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?line?=\n =?unknown-8bit?q?_=80?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    97,
+    56448,
+    98,
+    10,
+    32,
+    99,
+    56575,
+    100
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?b?YYBi?=\n =?unknown-8bit?q?_c=FFd?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    32,
+    56448,
+    32
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?b?IIAg?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    56448,
+    10
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?=80?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    120,
+    56448,
+    121,
+    121,
+    121,
+    121,
+    121,
+    121,
+    121,
+    121,
+    121,
+    121
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?xxxxxxxxxx=80yyyyyyyyyy?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    61,
+    63,
+    117,
+    116,
+    102,
+    45,
+    56,
+    63,
+    113,
+    63,
+    120,
+    63,
+    61,
+    56448
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?b?PT91dGYtOD9xP3g/PYA=?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    80,
+    114,
+    111,
+    109,
+    101,
+    109,
+    111,
+    114,
+    105,
+    97,
+    32,
+    56448,
+    32,
+    101,
+    118,
+    101,
+    110,
+    116,
+    111,
+    32,
+    56575,
+    32,
+    99,
+    111,
+    110,
+    32,
+    116,
+    101,
+    115,
+    116,
+    111,
+    32,
+    108,
+    117,
+    110,
+    103,
+    111,
+    32,
+    101,
+    32,
+    115,
+    112,
+    97,
+    122,
+    105
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?Promemoria_=80_evento_=FF_con_testo_lungo_e_spazi?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    116,
+    97,
+    98,
+    9,
+    104,
+    101,
+    114,
+    101,
+    32,
+    56448
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?tab=09here_=80?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    116,
+    114,
+    97,
+    105,
+    108,
+    105,
+    110,
+    103,
+    32,
+    115,
+    112,
+    97,
+    99,
+    101,
+    32,
+    56448,
+    32
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?trailing_space_=80_?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    102,
+    105,
+    114,
+    115,
+    116,
+    10,
+    9,
+    56448,
+    115,
+    101,
+    99,
+    111,
+    110,
+    100
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?first?=\n =?unknown-8bit?q?_=80second?=\n"
+  },
+  {
+   "name": "From",
+   "runes": [
+    65,
+    115,
+    115,
+    111,
+    99,
+    105,
+    97,
+    122,
+    105,
+    111,
+    110,
+    101,
+    32,
+    56448,
+    32,
+    60,
+    115,
+    101,
+    110,
+    100,
+    101,
+    114,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116,
+    62
+   ],
+   "raised": null,
+   "folded": "From: =?unknown-8bit?q?Associazione_=80_=3Csender=40example=2Etest=3E?=\n"
+  },
+  {
+   "name": "From",
+   "runes": [
+    67,
+    105,
+    116,
+    116,
+    224,
+    32,
+    56515,
+    56488,
+    32,
+    60,
+    115,
+    101,
+    110,
+    100,
+    101,
+    114,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116,
+    62
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "From",
+   "runes": [
+    65,
+    115,
+    115,
+    111,
+    99,
+    105,
+    97,
+    122,
+    105,
+    111,
+    110,
+    101,
+    32,
+    56575,
+    32,
+    60,
+    115,
+    101,
+    110,
+    100,
+    101,
+    114,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116,
+    62
+   ],
+   "raised": null,
+   "folded": "From: =?unknown-8bit?q?Associazione_=FF_=3Csender=40example=2Etest=3E?=\n"
+  },
+  {
+   "name": "To",
+   "runes": [
+    97,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116,
+    44,
+    32,
+    56448,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116
+   ],
+   "raised": null,
+   "folded": "To: =?unknown-8bit?b?YUBleGFtcGxlLnRlc3QsIIBAZXhhbXBsZS50ZXN0?=\n"
+  },
+  {
+   "name": "To",
+   "runes": [
+    224,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116,
+    44,
+    32,
+    56575,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Reply-To",
+   "runes": [
+    111,
+    119,
+    110,
+    101,
+    114,
+    56448,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116
+   ],
+   "raised": null,
+   "folded": "Reply-To: =?unknown-8bit?q?owner=80=40example=2Etest?=\n"
+  },
+  {
+   "name": "Reply-To",
+   "runes": [
+    111,
+    119,
+    110,
+    101,
+    114,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116,
+    44,
+    32,
+    56448,
+    64,
+    101,
+    120,
+    97,
+    109,
+    112,
+    108,
+    101,
+    46,
+    116,
+    101,
+    115,
+    116
+   ],
+   "raised": null,
+   "folded": "Reply-To: =?unknown-8bit?q?owner=40example=2Etest=2C_=80=40example=2Etest?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?b?gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==?=\n"
+  },
+  {
+   "name": "Subject",
+   "runes": [
+    82,
+    101,
+    58,
+    32,
+    56448,
+    32,
+    97,
+    110,
+    100,
+    32,
+    109,
+    111,
+    114,
+    101,
+    32,
+    116,
+    101,
+    120,
+    116,
+    32,
+    119,
+    105,
+    116,
+    104,
+    32,
+    115,
+    112,
+    97,
+    99,
+    101,
+    115,
+    32,
+    56575
+   ],
+   "raised": null,
+   "folded": "Subject: =?unknown-8bit?q?Re=3A_=80_and_more_text_with_spaces_=FF?=\n"
+  },
+  {
+   "name": "Subject",
+   "parts": [
+    {
+     "unit": "a",
+     "count": 1000001
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "f6759515dc6298c1d7131f81615ebbab9d7e9c0d8953b209f19b241f684f1487",
+   "folded_chars": 1000013,
+   "folded_head": "Subject: \n aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "folded_tail": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+  },
+  {
+   "name": "Subject",
+   "parts": [
+    {
+     "unit": "a",
+     "count": 1000000
+    },
+    {
+     "unit": " b",
+     "count": 1
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "c66f9b58bc418baee938f0b97b89a8eae5386fcb32f87c95bc6299e4db6c24cb",
+   "folded_chars": 1000015,
+   "folded_head": "Subject: \n aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "folded_tail": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n b\n"
+  },
+  {
+   "name": "Subject",
+   "parts": [
+    {
+     "unit": "a",
+     "count": 500000
+    },
+    {
+     "unit": " ",
+     "count": 1
+    },
+    {
+     "unit": "b",
+     "count": 500001
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "c8726ff516a1aa1fd6724c4aadd11c29a2121ed0fc123cca5d981bf18f1790b7",
+   "folded_chars": 1000013,
+   "folded_head": "Subject: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "folded_tail": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+  },
+  {
+   "name": "Subject",
+   "parts": [
+    {
+     "unit": "é",
+     "count": 100001
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "befe6535927c0ff1aa5900ac71b9898821b72a90cf7905d84713ce6485b79bd3",
+   "folded_chars": 266694,
+   "folded_head": "Subject: =?utf-8?b?w6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw",
+   "folded_tail": "pw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqQ==?=\n"
+  },
+  {
+   "name": "Subject",
+   "parts": [
+    {
+     "unit": "中文 😀 ",
+     "count": 20000
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "115fd47c5d4e56c2870b28251e701b4e0a63b9d0f7882d28c6aea729ebdcecfe",
+   "folded_chars": 320022,
+   "folded_head": "Subject: =?utf-8?b?5Lit5paHIPCfmIAg5Lit5paHIPCfmIAg5Lit5paHI",
+   "folded_tail": "HIPCfmIAg5Lit5paHIPCfmIAg5Lit5paHIPCfmIAg5Lit5paHIPCfmIAg?=\n"
+  },
+  {
+   "name": "Subject",
+   "parts": [
+    {
+     "unit": "èèèèèèèèèèèèèèèèèèèè\n",
+     "count": 47620
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "49309e178e41644ec05920a5df01fac8f883a7d0dda4de091064230983425e5d",
+   "folded_chars": 3333408,
+   "folded_head": "Subject: =?utf-8?b?w6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow",
+   "folded_tail": "?IMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6g=?=\n"
+  },
+  {
+   "name": "Subject",
+   "parts": [
+    {
+     "unit": "é",
+     "count": 376000
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "8ec9a09df00242824c4541ebfa688cd1d01115f32fcb3b805ea229d03eef318c",
+   "folded_chars": 1002704,
+   "folded_head": "Subject: =?utf-8?b?w6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw",
+   "folded_tail": "DqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6k=?=\n"
+  }
+ ],
+ "header": [
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "",
+   "raised": null,
+   "folded": ""
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": " ",
+   "raised": null,
+   "folded": " "
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "  ",
+   "raised": null,
+   "folded": "  "
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "a",
+   "raised": null,
+   "folded": "a"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "a b",
+   "raised": null,
+   "folded": "a b"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "a  b",
+   "raised": null,
+   "folded": "a  b"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": " a",
+   "raised": null,
+   "folded": " a"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "a ",
+   "raised": null,
+   "folded": "a "
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": " a ",
+   "raised": null,
+   "folded": " a "
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "a\tb",
+   "raised": null,
+   "folded": "a\tb"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "a\t\tb",
+   "raised": null,
+   "folded": "a\t\tb"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "a \t b",
+   "raised": null,
+   "folded": "a \t b"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "Promemoria: evento, promemoria evento",
+   "raised": null,
+   "folded": "Promemoria: evento, promemoria evento"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "a;b;c",
+   "raised": null,
+   "folded": "a;b;c"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "a,b,c",
+   "raised": null,
+   "folded": "a,b,c"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "a; b, c d",
+   "raised": null,
+   "folded": "a; b, c d"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "raised": null,
+   "folded": "\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "raised": null,
+   "folded": "\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "raised": null,
+   "folded": "\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola",
+   "raised": null,
+   "folded": "parola parola parola parola parola parola parola parola parola\n parola parola parola parola parola parola parola parola parola parola\n parola"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola ",
+   "raised": null,
+   "folded": "parola parola parola parola parola parola parola parola parola\n parola parola parola parola parola parola parola parola parola parola\n parola "
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "Città",
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOg?="
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "Città Città Città Città Città Città Città Città Città Città Città Città ",
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOgIENpdHTDoCBDaXR0w6AgQ2l0dMOgIENpdHTDoCBDaXR0w6Ag?=\n =?utf-8?b?Q2l0dMOgIENpdHTDoCBDaXR0w6AgQ2l0dMOgIENpdHTDoCBDaXR0w6Ag?="
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "àààààààààààààààààààààààààààààààààààààààà",
+   "raised": null,
+   "folded": "=?utf-8?b?w6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6A=?=\n =?utf-8?b?w6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOg?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+   "raised": null,
+   "folded": "=?utf-8?b?w6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6g=?=\n =?utf-8?b?w6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6g=?=\n =?utf-8?b?w6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6g=?="
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文",
+   "raised": null,
+   "folded": "=?utf-8?b?5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit?=\n =?utf-8?b?5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH?=\n =?utf-8?b?5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit?=\n =?utf-8?b?5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH?="
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+   "raised": null,
+   "folded": "=?utf-8?b?8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA8J+YgA==?=\n =?utf-8?b?8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA8J+YgA==?="
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "mixed à and ascii words here and there mixed à and ascii words here and there ",
+   "raised": null,
+   "folded": "=?utf-8?q?mixed_=C3=A0_and_ascii_words_here_and_there_mixed_?=\n =?utf-8?q?=C3=A0_and_ascii_words_here_and_there_?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "Oggetto: \"Promemoria, evento\"; nota",
+   "raised": null,
+   "folded": "Oggetto: \"Promemoria, evento\"; nota"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+   "raised": null,
+   "folded": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;",
+   "raised": null,
+   "folded": "\n parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,",
+   "raised": null,
+   "folded": "\n parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ",
+   "raised": null,
+   "folded": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a\n a a a a a a a a a a a a a a a a "
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb ",
+   "raised": null,
+   "folded": "a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb\n a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb "
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "trailing spaces   ",
+   "raised": null,
+   "folded": "trailing spaces   "
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "   leading spaces",
+   "raised": null,
+   "folded": "   leading spaces"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "\tleading tab",
+   "raised": null,
+   "folded": "\tleading tab"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "semi;tab\tand,comma mix that folds somewhere",
+   "raised": null,
+   "folded": "semi;tab\tand,comma mix that folds somewhere"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 76,
+   "value": "Città: sport <u@x.it>",
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOgOiBzcG9ydCA8dUB4Lml0Pg==?="
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 76,
+   "value": "A & B <u@x.it>",
+   "raised": null,
+   "folded": "A & B <u@x.it>"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "value": "verylongwordwithoutanybreakcharacteratallreallylong",
+   "raised": null,
+   "folded": "verylongwordwithoutanybreakcharacteratallreallylong"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 76,
+   "value": "=?utf-8?q?already_encoded?= text",
+   "raised": null,
+   "folded": "=?utf-8?q?already_encoded?= text"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "",
+   "raised": null,
+   "folded": ""
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": " ",
+   "raised": null,
+   "folded": " "
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "  ",
+   "raised": null,
+   "folded": "  "
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "a",
+   "raised": null,
+   "folded": "a"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "a b",
+   "raised": null,
+   "folded": "a b"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "a  b",
+   "raised": null,
+   "folded": "a  b"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": " a",
+   "raised": null,
+   "folded": " a"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "a ",
+   "raised": null,
+   "folded": "a "
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": " a ",
+   "raised": null,
+   "folded": " a "
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "a\tb",
+   "raised": null,
+   "folded": "a\tb"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "a\t\tb",
+   "raised": null,
+   "folded": "a\t\tb"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "a \t b",
+   "raised": null,
+   "folded": "a \t b"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "Promemoria: evento, promemoria evento",
+   "raised": null,
+   "folded": "Promemoria: evento, promemoria evento"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "a;b;c",
+   "raised": null,
+   "folded": "a;b;c"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "a,b,c",
+   "raised": null,
+   "folded": "a,b,c"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "a; b, c d",
+   "raised": null,
+   "folded": "a; b, c d"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "raised": null,
+   "folded": "\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "raised": null,
+   "folded": "\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "raised": null,
+   "folded": "\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola",
+   "raised": null,
+   "folded": "parola parola parola parola parola parola parola parola parola\n parola parola parola parola parola parola parola parola parola parola parola"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola parola ",
+   "raised": null,
+   "folded": "parola parola parola parola parola parola parola parola parola parola\n parola parola parola parola parola parola parola parola parola parola "
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "Città",
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOg?="
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "Città Città Città Città Città Città Città Città Città Città Città Città ",
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOgIENpdHTDoCBDaXR0w6AgQ2l0dMOgIENpdHTDoCBDaXR0w6AgQ2l0?=\n =?utf-8?b?dMOgIENpdHTDoCBDaXR0w6AgQ2l0dMOgIENpdHTDoCBDaXR0w6Ag?="
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "àààààààààààààààààààààààààààààààààààààààà",
+   "raised": null,
+   "folded": "=?utf-8?b?w6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOg?=\n =?utf-8?b?w6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6DDoMOgw6A=?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "èèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèèè",
+   "raised": null,
+   "folded": "=?utf-8?b?w6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOo?=\n =?utf-8?b?w6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOo?=\n =?utf-8?b?w6jDqMOow6jDqMOow6jDqMOow6jDqMOow6jDqMOo?="
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文中文",
+   "raised": null,
+   "folded": "=?utf-8?b?5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit?=\n =?utf-8?b?5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit?=\n =?utf-8?b?5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit?=\n =?utf-8?b?5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH5Lit5paH?="
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+   "raised": null,
+   "folded": "=?utf-8?b?8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA8J+YgPCfmIA=?=\n =?utf-8?b?8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA8J+YgPCfmIDwn5iA?="
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "mixed à and ascii words here and there mixed à and ascii words here and there ",
+   "raised": null,
+   "folded": "=?utf-8?q?mixed_=C3=A0_and_ascii_words_here_and_there_mixed_=C3=A0?=\n =?utf-8?q?_and_ascii_words_here_and_there_?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "Oggetto: \"Promemoria, evento\"; nota",
+   "raised": null,
+   "folded": "Oggetto: \"Promemoria, evento\"; nota"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+   "raised": null,
+   "folded": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;",
+   "raised": null,
+   "folded": "\n parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;parola;"
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,",
+   "raised": null,
+   "folded": "\n parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,parola,"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a ",
+   "raised": null,
+   "folded": "a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a a\n a a a a a a a a a a a a a a a "
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb ",
+   "raised": null,
+   "folded": "a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb\n a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb a\tb "
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "trailing spaces   ",
+   "raised": null,
+   "folded": "trailing spaces   "
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "   leading spaces",
+   "raised": null,
+   "folded": "   leading spaces"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "\tleading tab",
+   "raised": null,
+   "folded": "\tleading tab"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "semi;tab\tand,comma mix that folds somewhere",
+   "raised": null,
+   "folded": "semi;tab\tand,comma mix that folds somewhere"
+  },
+  {
+   "name": "From",
+   "maxlinelen": 78,
+   "value": "Città: sport <u@x.it>",
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOgOiBzcG9ydCA8dUB4Lml0Pg==?="
+  },
+  {
+   "name": "Reply-To",
+   "maxlinelen": 78,
+   "value": "A & B <u@x.it>",
+   "raised": null,
+   "folded": "A & B <u@x.it>"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "value": "verylongwordwithoutanybreakcharacteratallreallylong",
+   "raised": null,
+   "folded": "verylongwordwithoutanybreakcharacteratallreallylong"
+  },
+  {
+   "name": "To",
+   "maxlinelen": 78,
+   "value": "=?utf-8?q?already_encoded?= text",
+   "raised": null,
+   "folded": "=?utf-8?q?already_encoded?= text"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "runes": [
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448
+   ],
+   "raised": null,
+   "folded": "=?unknown-8bit?b?gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA?=\n =?unknown-8bit?b?gICAgA==?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "runes": [
+    97,
+    56448,
+    98,
+    10,
+    32,
+    99,
+    56575,
+    100
+   ],
+   "raised": null,
+   "folded": "=?unknown-8bit?b?YYBi?=\n =?unknown-8bit?q?_c=FFd?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "runes": [
+    55296
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 76,
+   "runes": [
+    56448
+   ],
+   "raised": null,
+   "folded": "=?unknown-8bit?q?=80?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "runes": [
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448,
+    56448
+   ],
+   "raised": null,
+   "folded": "=?unknown-8bit?b?gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA?=\n =?unknown-8bit?b?gICAgA==?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "runes": [
+    97,
+    56448,
+    98,
+    10,
+    32,
+    99,
+    56575,
+    100
+   ],
+   "raised": null,
+   "folded": "=?unknown-8bit?b?YYBi?=\n =?unknown-8bit?q?_c=FFd?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "runes": [
+    55296
+   ],
+   "raised": "UnicodeEncodeError",
+   "folded": null
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 78,
+   "runes": [
+    56448
+   ],
+   "raised": null,
+   "folded": "=?unknown-8bit?q?=80?="
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 0,
+   "parts": [
+    {
+     "unit": "a",
+     "count": 1000001
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "5508197b80d0145222972669ccdde3ab39f8de0ad5fe9a7c862cdc30cbdbf071",
+   "folded_chars": 1000003,
+   "folded_head": "\n aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "folded_tail": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 0,
+   "parts": [
+    {
+     "unit": "a",
+     "count": 1000000
+    },
+    {
+     "unit": " b",
+     "count": 1
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "4fcb0f6e6c29c87c9a172b049f3dbcb341dfde33a733b16bc2d3ec5901d7c8f3",
+   "folded_chars": 1000005,
+   "folded_head": "\n aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "folded_tail": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n b"
+  },
+  {
+   "name": "Subject",
+   "maxlinelen": 0,
+   "parts": [
+    {
+     "unit": "é",
+     "count": 100001
+    }
+   ],
+   "raised": null,
+   "folded_sha256": "66cd11c6f42ff505db6acb18d882fa39550b15705a4dcf18fa2ba4ee4b4af174",
+   "folded_chars": 266684,
+   "folded_head": "=?utf-8?b?w6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6",
+   "folded_tail": "Opw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqcOpw6nDqQ==?="
+  }
+ ],
+ "chunks": [
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "us-ascii",
+     "value": "sport"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOg?= sport"
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "ascii"
+    },
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    }
+   ],
+   "raised": null,
+   "folded": "ascii =?utf-8?b?Q2l0dMOg?="
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "utf-8",
+     "value": "è"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOgIMOo?="
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "uno"
+    },
+    {
+     "charset": "us-ascii",
+     "value": "due"
+    }
+   ],
+   "raised": null,
+   "folded": "uno due"
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "utf-8",
+     "value": " "
+    },
+    {
+     "charset": "utf-8",
+     "value": "club"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?q?Citt=C3=A0___club?="
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "a"
+    },
+    {
+     "charset": "unknown-8bit",
+     "runes": [
+      56448
+     ]
+    }
+   ],
+   "raised": null,
+   "folded": "a =?unknown-8bit?q?=80?="
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "unknown-8bit",
+     "runes": [
+      56448
+     ]
+    },
+    {
+     "charset": "us-ascii",
+     "value": "b"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOg?= =?unknown-8bit?q?=80?= b"
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "plain text that is long enough to fold at seventy six columns"
+    },
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    }
+   ],
+   "raised": null,
+   "folded": "plain text that is long enough to fold at seventy six columns =?utf-8?b?Q2l0dMOg?="
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+     "charset": "utf-8",
+     "value": "yyyyyyyyyyyyyyyyyyyy"
+    }
+   ],
+   "raised": null,
+   "folded": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx =?utf-8?q?yyyyyyyyyyyyyyyyyyyy?="
+  },
+  {
+   "maxlinelen": 0,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": ""
+    },
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    }
+   ],
+   "raised": null,
+   "folded": " =?utf-8?b?Q2l0dMOg?="
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "us-ascii",
+     "value": "sport"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOg?= sport"
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "ascii"
+    },
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    }
+   ],
+   "raised": null,
+   "folded": "ascii =?utf-8?b?Q2l0dMOg?="
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "utf-8",
+     "value": "è"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOgIMOo?="
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "uno"
+    },
+    {
+     "charset": "us-ascii",
+     "value": "due"
+    }
+   ],
+   "raised": null,
+   "folded": "uno due"
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "utf-8",
+     "value": " "
+    },
+    {
+     "charset": "utf-8",
+     "value": "club"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?q?Citt=C3=A0___club?="
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "a"
+    },
+    {
+     "charset": "unknown-8bit",
+     "runes": [
+      56448
+     ]
+    }
+   ],
+   "raised": null,
+   "folded": "a =?unknown-8bit?q?=80?="
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    },
+    {
+     "charset": "unknown-8bit",
+     "runes": [
+      56448
+     ]
+    },
+    {
+     "charset": "us-ascii",
+     "value": "b"
+    }
+   ],
+   "raised": null,
+   "folded": "=?utf-8?b?Q2l0dMOg?= =?unknown-8bit?q?=80?= b"
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "plain text that is long enough to fold at seventy six columns"
+    },
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    }
+   ],
+   "raised": null,
+   "folded": "plain text that is long enough to fold at seventy six columns\n =?utf-8?b?Q2l0dMOg?="
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+     "charset": "utf-8",
+     "value": "yyyyyyyyyyyyyyyyyyyy"
+    }
+   ],
+   "raised": null,
+   "folded": "\n xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n =?utf-8?q?yyyyyyyyyyyyyyyyyyyy?="
+  },
+  {
+   "maxlinelen": 76,
+   "chunks": [
+    {
+     "charset": "us-ascii",
+     "value": ""
+    },
+    {
+     "charset": "utf-8",
+     "value": "Città"
+    }
+   ],
+   "raised": null,
+   "folded": " =?utf-8?b?Q2l0dMOg?="
+  }
+ ],
+ "body": [
+  {
+   "kind": "text",
+   "runes": [
+    97,
+    56448,
+    98
+   ],
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/mixed; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\nYYBi\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "html",
+   "runes": [
+    97,
+    56448,
+    98
+   ],
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/alternative; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/html; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\nYYBi\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "text",
+   "runes": [
+    55296
+   ],
+   "raised": "UnicodeEncodeError",
+   "boundary": "===============0000000000000000001==",
+   "message": null
+  },
+  {
+   "kind": "html",
+   "runes": [
+    67,
+    105,
+    116,
+    116,
+    224,
+    32,
+    56575
+   ],
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/alternative; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/html; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\nQ2l0dMOgIP8=\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "html",
+   "value": "<p>€ 10,00</p>\r\n",
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/alternative; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/html; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\nPHA+4oKsIDEwLDAwPC9wPg0K\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "text",
+   "value": ".line\n..two\r\n",
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/mixed; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\nLmxpbmUKLi50d28NCg==\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "text",
+   "value": "",
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/mixed; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "text",
+   "value": "Ciao è 😀",
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/mixed; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\nQ2lhbyDDqCDwn5iA\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "html",
+   "value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/alternative; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/html; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4\neHh4eHh4eHh4eHh4eHh4eHh4\n\n--===============0000000000000000001==--\n"
+  },
+  {
+   "kind": "text",
+   "value": "\n",
+   "raised": null,
+   "boundary": "===============0000000000000000001==",
+   "message": "Content-Type: multipart/mixed; boundary=\"===============0000000000000000001==\"\nMIME-Version: 1.0\nFrom: Associazione <sender@example.test>\nTo: a@example.test\nSubject: Bakney Sport\n\n--===============0000000000000000001==\nContent-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: base64\n\nCg==\n\n--===============0000000000000000001==--\n"
+  }
+ ]
+}

@@ -22,18 +22,14 @@ type Message struct {
 	Text       string   // otherwise multipart/mixed with a text/plain part
 }
 
-// maxHeaderRunes keeps every header far below the 1,000,000 character line
-// that as_string(maxheaderlen=0) gives Header.encode, so no value is split.
-const maxHeaderRunes = 4096
-
 // Render returns msg.as_string() for the MIMEMultipart send_email builds,
 // with boundary as the generated boundary (Python's random base; the
 // collision suffix is applied here as _make_boundary does).
-func Render(m Message, boundary string) (string, error) {
-	return render(m, boundary, func(_, value string) (string, error) { return headerValue(value) })
-}
+func Render(m Message, boundary string) (string, error) { return render(m, boundary) }
 
-func render(m Message, boundary string, fold func(name, value string) (string, error)) (string, error) {
+// render writes the headers compat32's fold gives for any value (foldHeader:
+// the same folding as RenderAny's) and the base64 text part MIMEText builds.
+func render(m Message, boundary string) (string, error) {
 	from := m.SenderUser
 	if m.SenderName != "" {
 		from = m.SenderName + " <" + m.SenderUser + ">"
@@ -46,19 +42,29 @@ func render(m Message, boundary string, fold func(name, value string) (string, e
 	if m.HTML != "" {
 		subtype, body, content = "alternative", m.HTML, "html"
 	}
-	if !utf8.ValidString(body) {
-		return "", ErrUnsupported
+	// msg.attach(MIMEText(body, content, 'utf-8')) runs before as_string():
+	// Message.set_payload encodes the text with
+	// body.encode('utf-8', 'surrogateescape'), so a lone surrogate
+	// U+DC80..U+DCFF becomes the byte it escapes and any other one raises
+	// UnicodeEncodeError ("surrogates not allowed", models.py:154-156).
+	bodyRunes, ok := pythonRunes(body)
+	if !ok {
+		return "", errNotPythonStr
+	}
+	raw, err := bodyTextBytes(bodyRunes)
+	if err != nil {
+		return "", err
 	}
 	var folded []string
 	for _, header := range headers {
-		value, err := fold(header[0], header[1])
+		value, err := foldHeader(header[0], header[1])
 		if err != nil {
 			return "", err
 		}
 		folded = append(folded, header[0]+": "+value+"\n")
 	}
 	part := "Content-Type: text/" + content + "; charset=\"utf-8\"\nMIME-Version: 1.0\n" +
-		"Content-Transfer-Encoding: base64\n\n" + bodyBase64([]byte(body))
+		"Content-Transfer-Encoding: base64\n\n" + bodyBase64(raw)
 	boundary = uniqueBoundary(boundary, part)
 	var out strings.Builder
 	out.WriteString("Content-Type: multipart/" + subtype + "; boundary=\"" + boundary + "\"\nMIME-Version: 1.0\n")
@@ -86,35 +92,24 @@ func uniqueBoundary(boundary, text string) string {
 	}
 }
 
-// headerValue is compat32's fold of a str value with an unlimited line:
-// ASCII text is written as is, anything else as one RFC 2047 word in UTF-8,
-// base64 when shorter than quoted-printable.
-func headerValue(value string) (string, error) {
-	// Characters str.splitlines() splits on make Header.encode fold the
-	// value (or the generator raise); they are outside the subset.
-	if !utf8.ValidString(value) || utf8.RuneCountInString(value) > maxHeaderRunes || hasLineBreak(value) {
-		return "", ErrUnsupported
-	}
-	if isASCII(value) {
-		return value, nil
-	}
-	raw := []byte(value)
-	length64 := (len(raw) + 2) / 3 * 4
-	var qp strings.Builder
-	for _, c := range raw {
+// bodyTextBytes is Message.set_payload's text.encode('utf-8',
+// 'surrogateescape') for the utf-8 MIMEText send_email attaches: the UTF-8
+// bytes of the text, with a lone surrogate U+DC80..U+DCFF carrying the byte it
+// escapes. Any other surrogate raises UnicodeEncodeError ('surrogates not
+// allowed').
+func bodyTextBytes(runes []rune) ([]byte, error) {
+	raw := make([]byte, 0, len(runes))
+	for _, r := range runes {
 		switch {
-		case c == ' ':
-			qp.WriteByte('_')
-		case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c >= '0' && c <= '9', strings.IndexByte("-!*+/", c) >= 0:
-			qp.WriteByte(c)
+		case r >= 0xDC80 && r <= 0xDCFF:
+			raw = append(raw, byte(r-0xDC00))
+		case r >= 0xD800 && r <= 0xDFFF:
+			return nil, fmt.Errorf("%w: body text with surrogate %U", ErrRaises, r)
 		default:
-			fmt.Fprintf(&qp, "=%02X", c)
+			raw = utf8.AppendRune(raw, r)
 		}
 	}
-	if length64 < qp.Len() {
-		return "=?utf-8?b?" + base64.StdEncoding.EncodeToString(raw) + "?=", nil
-	}
-	return "=?utf-8?q?" + qp.String() + "?=", nil
+	return raw, nil
 }
 
 // bodyBase64 is base64mime.body_encode: 57-byte groups, one line each.
@@ -130,21 +125,15 @@ func bodyBase64(raw []byte) string {
 
 const addressSpecials = ".!#$%&'*+/=?^_`{|}~-"
 
-// CheckEnvelope accepts addresses email.utils.parseaddr returns unchanged
-// (so smtplib.quoteaddr only adds angle brackets): at most one '@' with a
-// non-empty part on each side, made of ASCII letters, digits, the atext
-// specials and dots, or non-ASCII letters (which smtplib then fails to
-// encode, as Python does). A value without '@' (a provider login such as
-// "apikey" used as email_smtp_user) is accepted on the same characters.
-func CheckEnvelope(from string, to []string) error {
-	for _, address := range append([]string{from}, to...) {
-		if !plainAddress(address) {
-			return ErrUnsupported
-		}
-	}
-	return nil
-}
+// CheckEnvelope accepts every envelope address: smtplib.quoteaddr parses any
+// text (email.utils.parseaddr), and a command Python cannot encode fails when
+// it is sent, like any other smtplib failure. The signature is kept for the
+// callers that check the envelope before any effect.
+func CheckEnvelope(from string, to []string) error { return nil }
 
+// plainAddress reports an address without quoting to add: email.utils.parseaddr
+// returns it unchanged. Only Django's EmailMessage path uses it; send_email's
+// Send takes smtplib.quoteaddr's parse of any text.
 func plainAddress(address string) bool {
 	if !utf8.ValidString(address) || address == "" {
 		return false

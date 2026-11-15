@@ -2,16 +2,18 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/smtpsend"
 )
 
 // The text/plain multipart send_email builds; a subject Python raises on is
-// ErrHeader, text that is not valid Unicode stays outside the port.
+// ErrHeader, text a Python str cannot hold is an application-state error.
 func TestCommunicationSendEmailRenderSubset(t *testing.T) {
 	user, name := "mittente@example.test", "Associazione"
 	row := domain.CommunicationConfigurationRecord{User: &user, SenderName: &name}
@@ -30,11 +32,13 @@ func TestCommunicationSendEmailRenderSubset(t *testing.T) {
 		to      []string
 		want    error
 	}{
-		"subject line break":        {"Riga\nseconda", []string{"socio@example.test"}, smtpsend.ErrHeader},
-		"subject continuation line": {"Riga\n seconda", []string{"socio@example.test"}, nil},
-		"quoted recipient":          {"Avviso", []string{`"a b"@example.test`}, nil},
-		"ip literal":                {"Avviso", []string{"socio@[127.0.0.1]"}, nil},
-		"invalid text":              {"Avviso\xff", []string{"socio@example.test"}, smtpsend.ErrUnsupported},
+		"subject line break":         {"Riga\nseconda", []string{"socio@example.test"}, smtpsend.ErrHeader},
+		"subject continuation line":  {"Riga\n seconda", []string{"socio@example.test"}, nil},
+		"subject lone surrogate":     {"Riga\xed\xa0\x80", []string{"socio@example.test"}, smtpsend.ErrRaises},
+		"subject longer than a line": {strings.Repeat("Riga ", 300000), []string{"socio@example.test"}, nil},
+		"quoted recipient":           {"Avviso", []string{`"a b"@example.test`}, nil},
+		"ip literal":                 {"Avviso", []string{"socio@[127.0.0.1]"}, nil},
+		"invalid text":               {"Avviso\xff", []string{"socio@example.test"}, refusal.ErrAppState},
 	} {
 		if _, err := s.render(row, dto.SendEmailInput{Subject: input.subject, Message: "Ciao"}, input.to); !errors.Is(err, input.want) {
 			t.Errorf("%s: err = %v, want %v", name, err, input.want)

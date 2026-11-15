@@ -15,19 +15,17 @@ import (
 // VerifySend mirrors verify_smtp(send_email=True): connect (SMTP_SSL, or SMTP
 // and starttls() for "TLS"), login, sendmail(given, to, message) with a bytes
 // message and quit(). given is the from_addr text ("Name <address>") and
-// address the envelope address smtplib.quoteaddr parses out of it; address
-// and to must pass CheckEnvelope, otherwise ErrUnsupported is returned before
-// connecting. On a failure the socket is closed without QUIT, as the release
-// of Python's SMTP object does.
+// address the envelope address smtplib.quoteaddr parses out of it; both
+// address and to are quoted with quoteaddr's parse of any text, so a command
+// Python cannot encode fails when it is sent. On a failure the socket is
+// closed without QUIT, as the release of Python's SMTP object does.
 func VerifySend(ctx context.Context, s Server, given, address, to string, message []byte) error {
-	if err := CheckEnvelope(address, []string{to}); err != nil {
-		return err
-	}
 	c, err := open(ctx, s)
 	if err != nil {
 		return err
 	}
 	defer c.close()
+	c.anyAddress = true
 	if err = c.login(s.User, s.Password); err != nil {
 		return err
 	}
