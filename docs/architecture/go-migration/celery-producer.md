@@ -49,27 +49,35 @@ not interrupted when the client goes away. Return the error (the 500 page) like 
 `Task.ArgsList` (golden case `list-args`; harness spec `'args_list': True`). `.delay(...)` and tuple args keep the default.
 
 Supported: protocol 2 messages to the default queue (or a named direct queue), positional and keyword arguments of type None,
-bool, int/int64, str, `uuid.UUID`, list and dict (`celery.Dict`, ordered), `ETA` (countdown) and `Expires` as absolute UTC times
+bool, int/int64, str (including the lone surrogates a Python str keeps: the body writes their `\uXXXX` escape and `argsrepr`
+keeps the character, as Celery does — golden case `lone-surrogate`), a JSON number kept as its text (`celery.Number`: floats as
+Python's `repr`, an overflowing one as `Infinity`, a value below the smallest subnormal as `±0.0` — golden case
+`number-underflow`), `uuid.UUID`, list and dict (`celery.Dict`, ordered), `ETA` (countdown) and `Expires` as absolute UTC times
 (with kombu's `expiration` property), the restore stamp, Celery's publish retry policy, TLS through the shared Redis options.
 
-Not supported (refuse the route or path before any write, or extend the package with golden evidence first): float, Decimal,
-datetime/date, bytes, sets, tuples inside arguments and model instances as arguments; `link`/`link_error` callbacks, chains,
-groups, chords and `apply_async(queue=..., priority=..., headers=...)` options; `task_routes`; reading results
-(`AsyncResult.get()`, the django-db result backend), revoking, and anything that waits on the worker; `task_send_sent_event`;
-eta/expires given in a non-UTC timezone (Go renders `+00:00`); other brokers (AMQP) and the `rediss` options kombu derives from
-the URL beyond the shared TLS configuration. Delivery is at least once, as with kombu: a broker timeout after the push can lead
+Not supported (refuse the route or path before any write, or extend the package with golden evidence first): a Go value with no
+Python counterpart (`float64`, `[]byte`, `time.Time`, `map`), Decimal, datetime/date, bytes, sets, tuples inside arguments and
+model instances as arguments; `link`/`link_error` callbacks, chains, groups, chords and `apply_async(queue=..., priority=...,
+headers=...)` options; `task_routes`; reading results (`AsyncResult.get()`, the django-db result backend), revoking, and anything
+that waits on the worker; `task_send_sent_event`; eta/expires given in a non-UTC timezone (Go renders `+00:00`); other brokers
+(AMQP) and the `rediss` options kombu derives from the URL beyond the shared TLS configuration. Delivery is at least once, as with
+kombu: a broker timeout after the push can lead
 to a duplicate on retry.
 
 ## Evidence
 
-- Byte parity: `TESTS/adapters/go/celery_producer_golden.py` publishes eight authored tasks through a Celery app built like
+- Byte parity: `TESTS/adapters/go/celery_producer_golden.py` publishes thirteen authored tasks through a Celery app built like
   `BE/core/celery.py` (`CoordinatedTask`, the restore stamp, broker on a private redis-server DB 0) and records the LPUSH payloads
   and broker commands in `BE_GO/internal/celery/testdata/kombu_messages.json` (the hostname in `origin` is fixed to `golden-host`).
   `go test ./internal/celery` re-encodes each from its inputs with the captured id, delivery tag, reply_to, origin, stamp and
   expiration and requires identical bytes: the subscription-approved call, text escaping (quotes, non-ASCII, astral, control
   characters), ints beyond 2^53, booleans/None, a single-argument tuple, nesting past maxlevels, truncation of long text and of
-  quoted text, countdown and expires. Unit tests cover the stamp, retry delays, resending the same message, no retry on error
-  replies or cancellation, and refusal of unsupported values.
+  quoted text, countdown and expires, a lone surrogate, and a number below the smallest subnormal. Unit tests cover the stamp,
+  retry delays, resending the same message, no retry on error replies or cancellation, the Python string and number forms, and
+  refusal of unsupported values.
+- Reading back: `DecodeJSON` keeps an unpaired surrogate escape outside its decoded subset (`ErrUndecodable`) and
+  `KombuValue` refuses kombu's other registered types (datetime, decimal, bytes): the `lone-surrogate` golden payload is only
+  re-encoded, not round-tripped. This is the consumer-side subset, not a producer refusal.
 - HTTP families: `family_harness.with_celery_broker(...)` points Django's Celery app at the run's private Redis DB 0 with the
   production queue settings (the test settings use `memory://` and queue `contracts`); the Go server publishes to the same Redis.
   `family_harness.celery_published(contract, fixture, expected, since=, until=)` drains the queue after every case and checks each

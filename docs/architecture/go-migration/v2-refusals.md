@@ -18,6 +18,8 @@ below describe what Go itself does not serve; with the handoff on, an A or B ite
 
 Counts (appendix table rows, 2026-11-12, after t11): **377 rows: 276 ported, 72 not a request refusal (structure, ownership or class C notes), 29 kept refused with a one-line reason, 0 open.** Several ported rows keep a narrow sub-case refused, with its reason written in the row. Celery-worker handoffs are not HTTP refusals and are not counted.
 
+After the go-v2only-celery change (2026-11-15): **381 rows: 277 ported, 75 not a request refusal, 29 kept refused, 0 open.** The four new rows classify `internal/celery.ErrUnsupportedValue` by site (one B, ported; three C).
+
 Cross-cutting facts used for the classes:
 - The UI never sends `X-Group-Id` (nothing writes `localStorage.selectedGroup`): every group-header refusal is B.
 - The UI sends JSON bodies everywhere except FormData uploads: JSON-vs-form refusals are B except on those uploads.
@@ -62,6 +64,7 @@ Cross-cutting facts used for the classes:
 | course-writes | course add/update/delete, overview update/delete | association-scoped impersonation session | fixture `course_writes_http.json` 119 cases; RED Django 119/119, Go 500 (`v2c-red`); GREEN 4 transports 119/119 (`v2c-green`); mutation (session filter inverted) CAUGHT |
 | instance-admin | `POST instance/admin/diagnostics` | every run (lease claimable) | fixture `instance_admin_http.json` 172 cases; RED Django 172/172, Go 500 (`diag-red`); GREEN 4 transports 172/172 (`diag-green`); mutation (`diag-mutation`, worker answer other than pong counted) CAUGHT |
 | instance-admin | `GET/PUT admin`, `GET/PUT/DELETE admin/email`, `POST admin/email/test` (B, legacy: yes) | environment `WHITELABEL_NAME`/`EMAIL_HOST_USER` outside the plain atom form | same run (`WHITELABEL_NAME='A.S.D. Polisportiva "Città" (Aurora)'`); `config/parseaddr.go` pinned by 667 parseaddr outputs |
+| celery-producer (go-v2only-celery) | every route that publishes a task (39) | a task argument holding a lone surrogate (a JSON string `"\ud800"`) | `invoice-generate-approve-receipt-lone-surrogate` (68 cases); RED with the previous refusal Django 68/68, Go fails `celery.count` (`v2celery-mutation-r4`, mutation CAUGHT); GREEN 4 transports 68/68 (`v2celery-versioned-r2`); golden `lone-surrogate` |
 
 Details in `instance-admin.md`, `course-locations.md`, `course-calendar.md`, `course-subscriptions.md`, `course-enrolment.md`, `course-writes.md`, `statistic-reads.md`, `payment-writes.md`, `association-transfer.md`, `instance-setup.md`, `data-restore.md` and `instance-updates.md`.
 
@@ -706,7 +709,19 @@ All sites use `domain.ErrCalendarNotPorted` (aliased `errCalendarNotPorted`).
 | attendees / history (`get_extended_prop_for_attendance_day`) | linked event's `event_id` not a valid UUID string; `extendedProps` truthy non-dict; `instructor` truthy non-dict/list; non-dict list items | ported (`attendanceEventLink`, `instructorLabels`) | ported (v2-rest-c; was B, legacy: yes) | Current UI creates UUID ids and dict/list props (`Calendar.svelte:204,231-291`). Events stored by older calendar versions may carry non-UUID ids. Cost: medium (swallowed failing save + logging). |
 
 ### celery-producer.md
-Library doc: unsupported argument types (float, Decimal, datetime, sets, tuples), canvas/options, result reads. No HTTP route of its own; each route that would need them refuses in its own family. Nothing to classify.
+`internal/celery.ErrUnsupportedValue` ("celery: unsupported task argument") is returned by the shared encoder, so every route that
+publishes a task reaches it statically (`python3 tools/go-migration/refusal_reach.py`: 48 rows, 39 HTTP routes before this change;
+48 rows after, all through the same sites). The sites, classified by reading the publish call sites and Django's task calls:
+
+| route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |
+|---|---|---|---|---|
+| every route that publishes a task: `association/export/start`, `association/import/start`, `collaborators/add`, `communications/send/email`, `communications/workflows/<uid>/update`, `document/*`, `instance/admin/data-restore/<id>/<action>`, `instance/admin/diagnostics`, `invoice/list`, `invoice/list/export`, `invoice/<uid>/send`, `oauth2/{signup,partial-signup,reset,delete-account}`, `payment/*`, `stripe/*`, `subscription/*` (39) | a string whose bytes are neither UTF-8 nor the three-byte form of a lone surrogate | python.go:130,258,279 (`ErrUnsupportedValue`) | **B (ported in go-v2only-celery)** | A JSON string may hold a lone surrogate escape (`{"send_receipt_email": "\ud800"}`): Python keeps the code point in `str` (`payment_views.py:1975` passes the raw value into `print_document_invoice`), `saferepr` writes it raw and kombu's `json.dumps` writes it as `\uXXXX`. Go now encodes both (WTF-8 in, `\uXXXX` out). Case `invoice-generate-approve-receipt-lone-surrogate` (RED: 68/68 Django, Go fails `celery.count`, receipt `invoice-generate-http-v2celery-mutation-r4`; GREEN 4 transports 68/68, `invoice-generate-http-v2celery-versioned-r2`); golden case `lone-surrogate`; unit test `TestPythonStrValues`. Bytes outside both forms stay refused: no request body, form decoder or database text produces them (C). |
+| same | a Go value with no Python counterpart: `float64`, `[]byte`, `time.Time`, `map[string]any`, struct | python.go:82,292 (`ErrUnsupportedValue`) | C | No ported producer builds one: every publish site passes nil, bool, int/int64, string, `[]any`, `celery.Dict`, `uuid.UUID` or `celery.Number` (a raw request number is `celery.Number` through `paymentStateReceiptArg`, `service/payment_state.go:60`; dates reach tasks as formatted strings). Kept: only a Go code change can produce one. |
+| `/instance/admin/diagnostics`, worker and cron roots that republish a request (`celery-consumer`, `mark_as_paid_payments_checking_stripe`, `renew_memberships_payments`, `send_reminders`, `send_*_certificate_email`, `send_user_partial_registration_email`, `delete_users_with_request`, `association_quote_assign`) | a republish of a request carrying `shadow`/`group`/`group_index`/`stamped_headers`/`expires`, a non-empty `stamps`, a priority, a named exchange or `replaced_task_nesting` | message.go:256 (`ErrUnsupportedValue`) | C | Django publishes none of those options: `BE/instance/restore/task_base.py:18` keeps only countdown and retries, and no `BE` task uses `expires=`, `priority=`, `group=` or stamps. |
+| worker and cron roots | numeric text `strconv.ParseFloat` rejects | pyjson.go:50 (`ErrUnsupportedValue`) | C | The only failures are a syntax error and an overflow; a `json.loads` number and a Python `repr(float)` are always well formed and an overflow is accepted as `Infinity` (`appendNumber`). A value below the smallest subnormal parses as `±0.0` (golden case `number-underflow`, unit test `TestNumberFloatEdges`). |
+
+The consumer-side subset is separate: `DecodeJSON` refuses an unpaired surrogate escape (`ErrUndecodable`) and `KombuValue` refuses
+kombu's other registered types, so the `lone-surrogate` golden payload is re-encoded, not round-tripped.
 
 ### course-calendar.md
 | route (METHOD path) | refusal condition | Go site (file:line, sentinel) | class | evidence / notes |

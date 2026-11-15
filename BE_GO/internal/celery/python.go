@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -95,14 +96,41 @@ func appendJSONList(b []byte, items []any) ([]byte, error) {
 	return append(b, ']'), nil
 }
 
+// pythonRunes decodes a Python str: UTF-8, plus the three-byte form of a lone
+// surrogate (WTF-8) that a str keeps and this package hands to json.dumps. Any
+// other invalid byte is not a Python string.
+func pythonRunes(s string) ([]rune, bool) {
+	if utf8.ValidString(s) {
+		return []rune(s), true
+	}
+	for i := 0; i < len(s); {
+		if s[i] < utf8.RuneSelf {
+			i++
+			continue
+		}
+		if s[i] == 0xED && i+2 < len(s) && s[i+1] >= 0xA0 && s[i+1] <= 0xBF && s[i+2] >= 0x80 && s[i+2] <= 0xBF {
+			i += 3
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(s[i:])
+		if r == utf8.RuneError && size == 1 {
+			return nil, false
+		}
+		i += size
+	}
+	return pystr.Runes(s), true
+}
+
 // appendJSONString is json.dumps's ensure_ascii string: everything outside
-// printable ASCII is a lowercase \uXXXX escape (surrogate pairs above U+FFFF).
+// printable ASCII is a lowercase \uXXXX escape (surrogate pairs above U+FFFF;
+// a lone surrogate, which Python writes as its own \uXXXX escape).
 func appendJSONString(b []byte, s string) ([]byte, error) {
-	if !utf8.ValidString(s) {
+	runes, ok := pythonRunes(s)
+	if !ok {
 		return nil, fmt.Errorf("%w: invalid UTF-8 text", ErrUnsupportedValue)
 	}
 	b = append(b, '"')
-	for _, r := range s {
+	for _, r := range runes {
 		switch r {
 		case '"':
 			b = append(b, `\"`...)
@@ -226,7 +254,7 @@ func (s *reprStream) value(value any) error {
 		}
 		s.tokens = append(s.tokens, reprToken{kind: reprPlain, text: text})
 	case string:
-		if !utf8.ValidString(v) {
+		if _, ok := pythonRunes(v); !ok {
 			return fmt.Errorf("%w: invalid UTF-8 text", ErrUnsupportedValue)
 		}
 		s.tokens = append(s.tokens, reprToken{kind: reprQuoted, text: v})
@@ -247,7 +275,7 @@ func (s *reprStream) value(value any) error {
 		}
 		s.literal("{", false, 1)
 		for i, item := range v {
-			if !utf8.ValidString(item.Key) {
+			if _, ok := pythonRunes(item.Key); !ok {
 				return fmt.Errorf("%w: invalid UTF-8 key", ErrUnsupportedValue)
 			}
 			s.tokens = append(s.tokens, reprToken{kind: reprKey, text: item.Key})
@@ -313,14 +341,15 @@ func saferepr(value any, maxlen int) (string, error) {
 			text = truncateText(token.text, maxlen)
 		}
 		out.WriteString(text)
-		maxlen -= utf8.RuneCountInString(text)
+		runes, _ := pythonRunes(text)
+		maxlen -= len(runes)
 	}
 	return out.String(), nil
 }
 
 // truncateText is celery.utils.text.truncate(s, maxlen).
 func truncateText(s string, maxlen int) string {
-	runes := []rune(s)
+	runes, _ := pythonRunes(s)
 	if maxlen == 0 || len(runes) < maxlen {
 		return s
 	}
@@ -331,5 +360,5 @@ func truncateText(s string, maxlen int) string {
 			break
 		}
 	}
-	return string(head) + "..."
+	return pystr.String(head) + "..."
 }
