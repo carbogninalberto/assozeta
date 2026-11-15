@@ -217,6 +217,115 @@ class ManualRunnerTests(unittest.TestCase):
         self.assertNotIn('MANUALE_SPAN_FILE', seen[0])
         self.assertEqual(seen[1]['MANUALE_SPAN_FILE'], timing_file + '.spans.jsonl')
 
+    def capture_state(self, run, **overrides):
+        state = {'run': str(run), 'application': str(run), 'selected_recipes': ['guide'],
+                 'tooling_hashes': {}, 'origin': 'http://127.0.0.1:5010', 'reference_date': '2026-09-30'}
+        state.update(overrides)
+        return state
+
+    def test_capture_mints_a_random_capture_id_without_a_preset(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = Path(temporary)
+            state = self.capture_state(run)
+            with patch.object(runner, 'validate_retained_evidence', return_value=None), \
+                    patch.object(runner, 'recipe_registry', return_value={'recipes': [
+                        {'id': 'guide', 'script': 'guide.mjs'}]}), \
+                    patch.object(runner, 'management', return_value=['seed-fixture']), \
+                    patch.object(runner, 'execute'):
+                runner.capture(state)
+            self.assertRegex(state['capture_id'], r'^[0-9a-f]{16}$')
+            self.assertEqual(json.loads((run / 'run.json').read_text())['capture_id'], state['capture_id'])
+            self.assertEqual(state['status'], 'captured')
+
+    def test_capture_uses_the_preset_capture_id_verbatim(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = Path(temporary)
+            preset = '0123456789abcdef'
+            state = self.capture_state(run, preset_capture_id=preset)
+            with patch.object(runner, 'validate_retained_evidence', return_value=None), \
+                    patch.object(runner, 'recipe_registry', return_value={'recipes': [
+                        {'id': 'guide', 'script': 'guide.mjs'}]}), \
+                    patch.object(runner, 'management', return_value=['seed-fixture']), \
+                    patch.object(runner, 'execute'):
+                runner.capture(state)
+            self.assertEqual(state['capture_id'], preset)
+            self.assertEqual(json.loads((run / 'run.json').read_text())['capture_id'], preset)
+            self.assertEqual(json.loads((run / 'capture-execution.json').read_text())['capture_id'], preset)
+
+    def test_capture_rejects_invalid_preset_capture_ids(self):
+        for preset in ('0123456789ABCDEF', '0123456789abcde', '../../0123456789abcdef', ''):
+            with self.subTest(preset=preset), tempfile.TemporaryDirectory() as temporary:
+                state = self.capture_state(Path(temporary), preset_capture_id=preset, status='prepared')
+                with patch.object(runner, 'execute') as execute:
+                    with self.assertRaisesRegex(RuntimeError, 'Invalid preset capture id'):
+                        runner.capture(state)
+                execute.assert_not_called()
+                self.assertEqual(state['status'], 'prepared')
+                self.assertNotIn('capture_id', state)
+
+    def test_capture_shard_stamps_the_shared_id_on_its_own_subset(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = Path(temporary)
+            preset = 'fedcba9876543210'
+            manifest = run / runner.capture_shards.MANIFEST
+            manifest.write_text('{}')
+            state = self.capture_state(run, preset_capture_id=preset, capture_concurrency=4)
+            with patch.object(runner, 'recipe_registry', return_value={'recipes': [
+                        {'id': 'guide', 'script': 'guide.mjs'},
+                        {'id': 'other', 'script': 'other.mjs'}]}), \
+                    patch.object(runner, 'management', return_value=['seed-fixture']), \
+                    patch.object(runner, 'execute'):
+                runner.capture_shard(state)
+            self.assertFalse(manifest.exists())
+            batch = json.loads((run / 'capture-execution.json').read_text())
+            self.assertEqual(batch['capture_id'], preset)
+            self.assertEqual(batch['status'], 'passed')
+            self.assertEqual(batch['scenarios'], [{'id': 'guide', 'status': 'passed'}])
+            saved = json.loads((run / 'run.json').read_text())
+            self.assertEqual(saved['capture_id'], preset)
+            self.assertEqual(saved['status'], 'captured')
+            self.assertEqual(saved['capture_mode'], 'shard')
+            self.assertEqual(state['status'], 'captured')
+            self.assertEqual(state['capture_mode'], 'shard')
+
+    def test_capture_shard_requires_a_subset_and_the_shared_capture_id(self):
+        for overrides, message in (({'selected_recipes': []}, 'at least one selected workflow'),
+                                   ({}, 'needs the shared capture id')):
+            with self.subTest(message=message), tempfile.TemporaryDirectory() as temporary:
+                state = self.capture_state(Path(temporary), **overrides)
+                with patch.object(runner, 'management') as management, \
+                        patch.object(runner, 'execute') as execute:
+                    with self.assertRaisesRegex(RuntimeError, message):
+                        runner.capture_shard(state)
+                management.assert_not_called()
+                execute.assert_not_called()
+                self.assertNotIn('capture_id', state)
+
+    def test_capture_shard_never_compares_merges_or_remembers(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            run = Path(temporary)
+            preset = '0011223344556677'
+            state = self.capture_state(run, preset_capture_id=preset,
+                                       manual_repository=str(run / 'manual'))
+            commands = []
+
+            def management(current, *args):
+                commands.append(args)
+                return ['seed-fixture']
+
+            with patch.object(runner, 'recipe_registry', return_value={'recipes': [
+                        {'id': 'guide', 'script': 'guide.mjs'}]}), \
+                    patch.object(runner, 'management', side_effect=management), \
+                    patch.object(runner, 'execute'), \
+                    patch.object(runner, 'remember_run') as remember, \
+                    patch.object(runner.capture_shards, 'capture_sharded') as sharded:
+                runner.capture_shard(state)
+            self.assertNotIn('compare_manuale_captures', [arg for args in commands for arg in args])
+            remember.assert_not_called()
+            sharded.assert_not_called()
+            self.assertFalse((run / 'capture-baseline').exists())
+            self.assertFalse((run / 'variance.json').exists())
+
     def bootstrap_fixture(self, root):
         """Real Git/Node preparation fixture, with no application services."""
         application, manual = root / 'application-input', root / 'manual-input'

@@ -1098,6 +1098,11 @@ def start(state):
 def capture(state):
     run = Path(state['run'])
     validate_tooling(state)
+    # A distributed plan mints the capture id once; local runs keep minting
+    # their own. Reject anything the merge could not accept as an id.
+    preset = state.get('preset_capture_id')
+    if preset is not None and (not isinstance(preset, str) or not re.fullmatch(r'[0-9a-f]{16}', preset)):
+        raise RuntimeError('Invalid preset capture id')
     retained = validate_retained_evidence(state)
     if not state['selected_recipes']:
         if not retained or not retained['reused_recipes']:
@@ -1128,7 +1133,7 @@ def capture(state):
                     target = baseline / master
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(run / master, target)
-    state.update({'status': 'capturing', 'capture_id': secrets.token_hex(8)})
+    state.update({'status': 'capturing', 'capture_id': preset if preset is not None else secrets.token_hex(8)})
     write_json(run / 'run.json', state)
     concurrency = capture_shards.resolve_concurrency(state.get('capture_concurrency'))
     plan = capture_shards.partition(recipe_registry(Path(state['application']))['recipes'],
@@ -1145,6 +1150,31 @@ def capture(state):
     state['status'] = 'captured'
     write_json(run / 'run.json', state)
     remember_run(state)
+
+
+def capture_shard(state):
+    """Capture this runner's subset under a capture id minted by the plan job.
+
+    The merge rejects reports stamped with a different id, so the shared id is
+    mandatory. A shard owns no baseline, merges no stacks and caches nothing:
+    its partial corpus is never comparable evidence on its own.
+    """
+    run = Path(state['run'])
+    validate_tooling(state)
+    if not state.get('selected_recipes'):
+        raise RuntimeError('A capture shard needs at least one selected workflow')
+    preset = state.get('preset_capture_id')
+    if preset is None:
+        raise RuntimeError('A capture shard needs the shared capture id')
+    if not isinstance(preset, str) or not re.fullmatch(r'[0-9a-f]{16}', preset):
+        raise RuntimeError('Invalid preset capture id')
+    state.update(status='capturing', capture_id=preset, capture_mode='shard')
+    write_json(run / 'run.json', state)
+    # One private stack on this runner: shard locally, never repartition again.
+    (run / capture_shards.MANIFEST).unlink(missing_ok=True)
+    capture_batch(state)
+    state['status'] = 'captured'
+    write_json(run / 'run.json', state)
 
 
 def capture_runner():
