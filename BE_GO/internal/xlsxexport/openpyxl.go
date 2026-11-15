@@ -50,7 +50,7 @@ func openpyxlString(col int, text string, styled bool) (opCell, error) {
 		text = string([]rune(text)[:32767])
 	}
 	if openpyxlIllegal.MatchString(text) {
-		return opCell{}, ErrDjango
+		return opCell{}, djangoFailure(text + " cannot be used in worksheets.")
 	}
 	cell := opCell{col: col, kind: 's', text: text, styled: styled}
 	if pyLen(text) > 1 && strings.HasPrefix(text, "=") {

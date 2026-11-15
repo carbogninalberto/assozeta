@@ -30,6 +30,18 @@ import (
 // exception of the export.
 var ErrLayout = errors.New("pdfexport: reportlab fails to build this document")
 
+// LayoutError is such a failure with str(exception), which the agent's tool
+// result carries ({"error": str(e)}); every LayoutError matches ErrLayout.
+type LayoutError struct{ Text string }
+
+func (e *LayoutError) Error() string { return e.Text }
+
+// Is matches ErrLayout: callers that only answer a server error keep using
+// errors.Is.
+func (e *LayoutError) Is(target error) bool { return target == ErrLayout }
+
+func layoutFailure(text string) error { return &LayoutError{Text: text} }
+
 // ErrNotPorted is an input whose document this package does not reproduce:
 // callers refuse it before any write.
 var ErrNotPorted = refusal.New("pdfexport: document input not ported")

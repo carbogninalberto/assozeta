@@ -8,7 +8,12 @@
     import {Camera} from '@capacitor/camera';
     import {onMount} from 'svelte';
     import {oemConfig} from 'store/instanceStore.js';
-    import {getWebSocketUrl} from 'utils/websocketUrl.js';
+    import {
+        getWebSocketUrl,
+        isWebSocketV2Path,
+        noteWebSocketV2OpenFailure,
+        noteWebSocketV2Opened,
+    } from 'utils/websocketUrl.js';
 
     let settings = writable({
         showScanner: true,
@@ -67,9 +72,14 @@
     }
 
     function initWebSocket() {
-        const socket = new WebSocket(getWebSocketUrl(__bakney.env.WS.UPDATES));
+        const wsPath = __bakney.env.WS.UPDATES;
+        const socket = new WebSocket(getWebSocketUrl(wsPath));
+        const v2Socket = isWebSocketV2Path(wsPath);
+        let opened = false;
 
         socket.onopen = function (e) {
+            opened = true;
+            if (v2Socket) noteWebSocketV2Opened(wsPath);
             console.log('WebSocket connection established');
             socket.send(JSON.stringify({message: 'Hello from client'}));
         };
@@ -81,6 +91,8 @@
         };
 
         socket.onclose = function (e) {
+            // A v2 socket that never opened counts towards the fallback to Django.
+            if (!opened && v2Socket) noteWebSocketV2OpenFailure(wsPath, `close ${e.code} before open`);
             console.log('WebSocket connection closed');
         };
 

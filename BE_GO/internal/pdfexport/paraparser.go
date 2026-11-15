@@ -1,6 +1,7 @@
 package pdfexport
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -229,7 +230,15 @@ type paraParser struct {
 
 func (p *paraParser) fail(format string, args ...any) bool {
 	if p.err == nil {
-		p.err = fmt.Errorf("%w: "+format, append([]any{ErrLayout}, args...)...)
+		p.err = layoutFailure(fmt.Sprintf(format, args...))
+	}
+	return false
+}
+
+// syntaxError is reportlab's _syntax_error: a ValueError the parser prefixes.
+func (p *paraParser) syntaxError(format string, args ...any) bool {
+	if p.err == nil {
+		p.err = layoutFailure("paraparser: syntax error: " + fmt.Sprintf(format, args...))
 	}
 	return false
 }
@@ -778,11 +787,11 @@ func (p *paraParser) data(text string) bool {
 	top := p.stack[len(p.stack)-1]
 	if top.img != nil {
 		if text != "" {
-			return p.fail("Only empty <img> tag allowed")
+			return p.syntaxError("Only empty <img> tag allowed")
 		}
 	} else if top.selfClosing != "" {
 		if text != "" {
-			return p.fail("No content allowed in %s tag", top.selfClosing)
+			return p.syntaxError("No content allowed in %s tag", top.selfClosing)
 		}
 		return true
 	}
@@ -866,13 +875,64 @@ func parseParagraph(text string, style paraStyle) ([]*frag, paraStyle, error) {
 		raw = []rune("<para>" + text + "</para>")
 	}
 	ok := (&htmlParser{raw: raw, events: parser}).feed()
-	if parser.err != nil {
+	if errors.Is(parser.err, ErrNotPorted) {
 		return nil, style, parser.err
 	}
-	if !ok || !parser.started || len(parser.stack) > 0 {
+	if parser.err != nil {
+		// ParaParser.parse: annotateException wraps a failure of feed() with the
+		// paragraph text; _complete_parse reports the tags left open.
+		return nil, style, layoutFailure("\nparagraph text " + pythonAscii(string(raw)) + " caused exception " + parser.err.Error())
+	}
+	if len(parser.stack) > 0 {
+		tags := make([]string, 0, len(parser.stack))
+		for i := len(parser.stack) - 1; i >= 0; i-- {
+			tags = append(tags, parser.stack[i].tag)
+		}
+		return nil, style, layoutFailure(fmt.Sprintf("paraparser: syntax error: parse ended with %d unclosed tags\n %s",
+			len(tags), strings.Join(tags, "\n ")))
+	}
+	if !ok || !parser.started {
 		return nil, style, fmt.Errorf("%w: paragraph markup", ErrLayout)
 	}
 	return parser.frags, parser.style, nil
+}
+
+// pythonAscii is ascii() of a str: repr() with every non-ASCII character
+// escaped (reportlab annotates a failed parse with it).
+func pythonAscii(value string) string {
+	var out strings.Builder
+	out.WriteByte('\'')
+	for _, r := range value {
+		switch {
+		case r == '\'' || r == '\\':
+			out.WriteByte('\\')
+			out.WriteRune(r)
+		case r == '\t':
+			out.WriteString(`\t`)
+		case r == '\n':
+			out.WriteString(`\n`)
+		case r == '\r':
+			out.WriteString(`\r`)
+		case r >= ' ' && r < 0x7f:
+			out.WriteRune(r)
+		case r < 0x100:
+			out.WriteString(`\x` + padHex(int(r), 2))
+		case r < 0x10000:
+			out.WriteString(`\u` + padHex(int(r), 4))
+		default:
+			out.WriteString(`\U` + padHex(int(r), 8))
+		}
+	}
+	out.WriteByte('\'')
+	return out.String()
+}
+
+func padHex(value, width int) string {
+	text := strconv.FormatInt(int64(value), 16)
+	for len(text) < width {
+		text = "0" + text
+	}
+	return text
 }
 
 // startAnchor is the <a name="..."/> variant of start_a: the attribute errors
@@ -889,7 +949,7 @@ func (p *paraParser) startAnchor(attrs []htmlAttr) bool {
 	}
 	name := values["name"]
 	if !name.has || pyTrimUnicode(name.value) == "" {
-		return p.fail("<a name=\"...\"/> anchor variant requires non-blank name")
+		return p.syntaxError("<a name=\"...\"/> anchor variant requires non-blank name")
 	}
 	return p.unsupported()
 }

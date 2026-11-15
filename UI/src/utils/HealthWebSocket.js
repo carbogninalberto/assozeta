@@ -1,4 +1,4 @@
-import {getWebSocketUrl} from './websocketUrl.js';
+import {getWebSocketUrl, isWebSocketV2Path, noteWebSocketV2OpenFailure, noteWebSocketV2Opened} from './websocketUrl.js';
 import WebSocketHeartbeat from './WebSocketHeartbeat.js';
 
 /**
@@ -43,11 +43,15 @@ class HealthWebSocket {
         if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) return;
         const wsPath = __bakney.env.WS.HEALTH;
         const url = getWebSocketUrl(wsPath);
+        const v2Socket = isWebSocketV2Path(wsPath);
+        let opened = false;
 
         this.ws = new WebSocket(url);
         const socket = this.ws;
 
         this.ws.onopen = () => {
+            opened = true;
+            if (v2Socket) noteWebSocketV2Opened(wsPath);
             console.log('[HealthWebSocket] Connected');
             this.reconnectAttempts = 0;
             this.heartbeat.start();
@@ -74,6 +78,9 @@ class HealthWebSocket {
             this.onDisconnect?.(event.code);
 
             if (this.manualCloseSockets.has(socket)) return;
+
+            // A v2 socket that never opened counts towards the fallback to Django.
+            if (!opened && v2Socket) noteWebSocketV2OpenFailure(wsPath, `close ${event.code} before open`);
 
             // Attempt reconnection
             this.attemptReconnect();

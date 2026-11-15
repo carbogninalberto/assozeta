@@ -143,6 +143,40 @@ class VersionedRoutingContracts(unittest.TestCase):
                     sock.sendall(b'\x88\x80abcd')
                     self.assertEqual(reader.read(2), b'\x88\x00')
 
+    def test_notification_websocket_prefix_and_query_are_exact(self):
+        """The versioned prefix is stripped for Go; /ws stays on Django; queries survive."""
+        url = urlsplit(os.environ['TESTS_ROUTING_URL'])
+        for prefix, owner, upstream in [
+                ('/api/v2', 'go', '/ws/notifications/?token=abc&impersonation=xyz'),
+                ('', 'django', '/ws/notifications/?token=abc')]:
+            with self.subTest(prefix=prefix or '/ws'):
+                with socket.create_connection((url.hostname, url.port), timeout=3) as sock:
+                    key = base64.b64encode(b'0123456789abcdef').decode()
+                    request = f'{prefix}{upstream}'
+                    sock.sendall((f'GET {request} HTTP/1.1\r\nHost: {url.netloc}\r\n'
+                        'Connection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Version: 13\r\n'
+                        f'Sec-WebSocket-Key: {key}\r\nSec-WebSocket-Protocol: fixture\r\n\r\n').encode())
+                    with sock.makefile('rb') as reader:
+                        self.assertIn(b' 101 ', reader.readline())
+                        headers = {}
+                        while (line := reader.readline()) != b'\r\n':
+                            self.assertTrue(line)
+                            name, value = line.decode().split(':', 1)
+                            headers[name.lower()] = value.strip()
+                        expected = base64.b64encode(hashlib.sha1((key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11').encode()).digest()).decode()
+                        self.assertEqual(headers['sec-websocket-accept'], expected)
+                        message, mask = b'notifications', b'abcd'
+                        sock.sendall(bytes([0x81, 0x80 | len(message)]) + mask
+                                     + bytes(c ^ mask[i % 4] for i, c in enumerate(message)))
+                        opcode, size = reader.read(2)
+                        self.assertEqual(opcode, 0x81)
+                        if size == 126:
+                            size = struct.unpack('!H', reader.read(2))[0]
+                        self.assertEqual(json.loads(reader.read(size)),
+                                         {'backend': owner, 'path': upstream, 'message': 'notifications'})
+                        sock.sendall(b'\x88\x80abcd')
+                        self.assertEqual(reader.read(2), b'\x88\x00')
+
     def test_admitted_stream_finishes_after_maintenance_starts(self):
         controls = json.loads(os.environ['TESTS_ROUTING_CONTROLS'])
         control = Client(controls['django'])

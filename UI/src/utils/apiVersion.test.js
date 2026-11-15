@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-    API_OVERRIDE_KEY, API_PROBE_KEY, activeApiHost, activeApiVersion, clearApiOverride, fallbackToDefaultApi, parseApiParam,
-    probeApiV2, readApiOverride, resetApiVersionState, rewriteApiUrl, rewriteFetchInput, selectApiVersion, setActiveApiVersion,
+    API_OVERRIDE_KEY, API_PROBE_KEY, API_VERSION_EVENT, activeApiHost, activeApiVersion, clearApiOverride, fallbackToDefaultApi,
+    parseApiParam, probeApiV2, readApiOverride, resetApiVersionState, rewriteApiUrl, rewriteFetchInput, selectApiVersion,
+    setActiveApiVersion,
 } from './apiVersion.js';
 
 function memoryStorage() {
@@ -181,4 +182,44 @@ test('the override survives a localStorage.clear() (login, logout) within the ta
     clearApiOverride();
     assert.equal(sessionStorage.values.has(API_OVERRIDE_KEY), false);
     assert.equal(readApiOverride({search: '', hash: ''}), null);
+});
+
+test('a version change is announced to the page, a repeated value is not', t => {
+    resetApiVersionState();
+    const events = [];
+    class TestCustomEvent {
+        constructor(type, init = {}) {
+            this.type = type;
+            this.detail = init.detail;
+        }
+    }
+    withGlobals(t, {
+        CustomEvent: TestCustomEvent,
+        dispatchEvent: event => {
+            events.push(event);
+            return true;
+        },
+    });
+    assert.equal(setActiveApiVersion('v1'), 'v1');
+    assert.equal(events.length, 0, 'an unchanged version is not announced');
+    assert.equal(setActiveApiVersion('v2'), 'v2');
+    assert.deepEqual(events.map(event => [event.type, event.detail.version]), [[API_VERSION_EVENT, 'v2']]);
+    assert.equal(setActiveApiVersion('v2'), 'v2');
+    assert.equal(events.length, 1, 'setting the same version again is not announced');
+    fallbackToDefaultApi('HTTP 502');
+    assert.deepEqual(events.map(event => event.type + ':' + event.detail.version), [
+        `${API_VERSION_EVENT}:v2`, `${API_VERSION_EVENT}:v1`,
+    ]);
+    fallbackToDefaultApi();
+    assert.equal(events.length, 2, 'a fallback while already on v1 is not announced');
+    assert.equal(activeApiVersion(), 'v1');
+});
+
+test('the announcement is skipped where globalThis has no event target', t => {
+    resetApiVersionState();
+    withGlobals(t, {dispatchEvent: undefined, CustomEvent: undefined});
+    assert.doesNotThrow(() => setActiveApiVersion('v2'));
+    assert.equal(activeApiVersion(), 'v2');
+    assert.doesNotThrow(() => fallbackToDefaultApi('HTTP 502'));
+    assert.equal(activeApiVersion(), 'v1');
 });

@@ -314,7 +314,8 @@ def check_cache(raw, case, seeded, values, captures):
         elif 'pickle' in spec:
             want = seeded[key]
         else:
-            document = json.loads(contract.render(spec['pickle_export'], values, captures, ascii_only=False))
+            document = json.loads(contract.render(spec['pickle_export'], values, captures, ascii_only=False,
+                                                 files=case.get('files')))
             want = pickle.dumps({'save_info': document['save_info'], 'filename': document.get('filename', 'export')}, 4)
         contract.require(value == want, f'cache.value:{key.decode()}')
 
@@ -401,6 +402,7 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
                     values['schema'] = schema
                 captures = {}
                 cursor = observer.cursor()
+                started = datetime.now(dt_timezone.utc)
                 if case['kind'] == 'ws':
                     log = contract.run_ws_case(case, base_url, values=values, captures=captures, substitute=substitute,
                                                produce=producer(fixture, source, case), wait_requests=stub.wait)
@@ -413,7 +415,8 @@ def run_workload(label, backend, base_url, fixture, apps, raw, observer):
                 with stub.lock:
                     recorded, unexpected = list(stub.recorded), stub.unexpected
                 contract.require(unexpected == 0, f'stub.unexpected:{unexpected}')
-                contract.check_requests(case, recorded, values, captures)
+                contract.check_requests(case, recorded, values, captures,
+                                        window=(started, datetime.now(dt_timezone.utc)))
                 contract.require(observer.delta(cursor) == [], 'attribution.http-requests')
                 check_cache(raw, case, seeded, values, captures)
                 check_reports(source, case, captures)

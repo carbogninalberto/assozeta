@@ -339,6 +339,9 @@ func (t *BusinessMCPTools) exportData(ctx context.Context, arguments domain.Requ
 		file, err = t.exportPDF(ctx, data, labels, titleText, arguments)
 	}
 	if err != nil || file == nil {
+		if text, raised := raisedText(err); raised {
+			return mcpRaisedResult(ctx, text)
+		}
 		return mcpErrorResult(""), err // a nil file is an exception of the exporter (marked raised)
 	}
 	params := mcpObj("model_name", modelName, "format", formatText)

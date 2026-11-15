@@ -14,6 +14,7 @@ export const API_V2_READYZ = '/api/v2/readyz';
 export const API_OVERRIDE_KEY = 'assozeta_api_override';
 export const API_PROBE_KEY = 'assozeta_api_v2_probe';
 export const API_PROBE_TIMEOUT_MS = 2500;
+export const API_VERSION_EVENT = 'assozeta:api-version';
 
 const VERSIONS = new Set(['v1', 'v2']);
 let active = 'v1';
@@ -90,17 +91,34 @@ export function activeApiHost() {
     return active === 'v2' ? API_V2_HOST : API_DEFAULT_HOST;
 }
 
+/**
+ * Tells the page that the active version changed, so services holding an open
+ * connection can reconnect on the new one. Browsers expose an event target on
+ * globalThis; Node test runs do not, where the dispatch is skipped.
+ */
+function announceApiVersion(version) {
+    if (typeof globalThis.dispatchEvent !== 'function') return;
+    if (typeof globalThis.CustomEvent !== 'function') return;
+    globalThis.dispatchEvent(new globalThis.CustomEvent(API_VERSION_EVENT, {detail: {version}}));
+}
+
 export function setActiveApiVersion(version) {
-    active = version === 'v2' ? 'v2' : 'v1';
+    const next = version === 'v2' ? 'v2' : 'v1';
+    if (next !== active) {
+        active = next;
+        announceApiVersion(active);
+    }
     return active;
 }
 
 /** Returns the session to '/api' and remembers that v2 is unavailable for this session. */
 export function fallbackToDefaultApi(reason = '') {
     if (active === 'v2' && reason) console.warn(`API v2 non disponibile, uso /api: ${reason}`);
+    const changed = active !== 'v1';
     active = 'v1';
     probeResult = false;
     writeStorage('sessionStorage', API_PROBE_KEY, 'fail');
+    if (changed) announceApiVersion(active);
 }
 
 /**
