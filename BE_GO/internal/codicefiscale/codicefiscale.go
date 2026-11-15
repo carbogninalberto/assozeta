@@ -2,9 +2,10 @@
 // 0.10.3, with the parts of python-slugify 8.0.4, text-unidecode 1.3 and
 // python-dateutil 2.9.0.post0 it relies on, keeping its output byte for byte.
 //
-// Only text that is no Python str (malformed UTF-8 other than a lone
-// surrogate) is reported with ErrUnsupported; dates written with words go
-// through internal/pydateutil.
+// Text is read as the Python str it stands for: a lone surrogate keeps its
+// code point and any other invalid byte reads as U+FFFD, as Django's decoding
+// of request input does. Dates written with words go through
+// internal/pydateutil.
 package codicefiscale
 
 import (
@@ -22,8 +23,6 @@ var (
 	ErrNotMapped = errors.New("codicefiscale: birthplace not mapped to code")
 	// ErrInvalid is any other exception the library raises.
 	ErrInvalid = errors.New("codicefiscale: invalid input")
-	// ErrUnsupported marks input outside the ported subset.
-	ErrUnsupported = refusal.New("codicefiscale: input outside the ported subset")
 )
 
 const (
@@ -84,18 +83,12 @@ func Encode(lastname, firstname, gender, birthdate, birthplace string, now time.
 }
 
 func encodeLastname(lastname string) (string, error) {
-	slug, err := slugify(lastname)
-	if err != nil {
-		return "", err
-	}
+	slug := slugify(lastname)
 	return consonantsAndVowels(pick(slug, consonants), pick(slug, vowels)), nil
 }
 
 func encodeFirstname(firstname string) (string, error) {
-	slug, err := slugify(firstname)
-	if err != nil {
-		return "", err
-	}
+	slug := slugify(firstname)
 	cons := pick(slug, consonants)
 	if len(cons) > 3 {
 		cons = cons[:1] + cons[2:]
@@ -127,7 +120,7 @@ func first(s string, n int) string {
 func encodeBirthdate(birthdate, gender string, now time.Time) (time.Time, string, error) {
 	date, err := getDate(birthdate, now)
 	if err != nil {
-		if errors.Is(err, ErrUnsupported) || errors.Is(err, refusal.ErrAppState) {
+		if errors.Is(err, refusal.ErrAppState) {
 			return time.Time{}, "", err
 		}
 		return time.Time{}, "", ErrInvalid
@@ -176,10 +169,7 @@ func encodeBirthplace(data *lookupData, birthplace string, date time.Time) (stri
 
 // birthplace ports _get_birthplace(name, date) for a non-None date.
 func (d *lookupData) birthplace(name string, date time.Time) (*place, error) {
-	slug, err := slugify(name)
-	if err != nil {
-		return nil, err
-	}
+	slug := slugify(name)
 	options, ok := d.municipalities[slug]
 	if !ok {
 		options, ok = d.countries[slug]
@@ -241,10 +231,7 @@ func encodeCIN(code string) (string, error) {
 // decode ports the checks decode(code) makes; any failure is ErrInvalid.
 func decode(data *lookupData, code string, now time.Time) error {
 	// decode_raw
-	slug, err := slugify(code)
-	if err != nil {
-		return err
-	}
+	slug := slugify(code)
 	code = strings.ToUpper(strings.ReplaceAll(slug, "-", ""))
 	if !validSyntax(code) {
 		return ErrInvalid

@@ -55,10 +55,7 @@ func (errWrongCIN) Error() string { return "codicefiscale: wrong CIN" }
 
 // decodedName ports decode(code)['birthplace']['name'].
 func decodedName(data *lookupData, names map[string][]string, code string, now time.Time) (string, error) {
-	slug, err := slugify(code)
-	if err != nil {
-		return "", err
-	}
+	slug := slugify(code)
 	code = strings.ToUpper(strings.ReplaceAll(slug, "-", ""))
 	if !validSyntax(code) {
 		return "", ErrInvalid
@@ -138,8 +135,7 @@ func decodedName(data *lookupData, names map[string][]string, code string, now t
 // get_data_from_italian_fiscal_code(code): codicefiscale.decode(code), once
 // more with the expected control character in place of the last character
 // when only that one is wrong. found is false where the helper returns None
-// (every exception). ErrUnsupported marks a code outside the ported
-// transliteration subset.
+// (every exception).
 func DecodedBirthplaceName(code string, now time.Time) (name string, found bool, err error) {
 	data, err := loadData()
 	if err != nil {
@@ -154,9 +150,6 @@ func DecodedBirthplaceName(code string, now time.Time) (name string, found bool,
 	if errors.As(err, &wrong) {
 		runes := []rune(code)
 		name, err = decodedName(data, names, string(runes[:len(runes)-1])+wrong.expected, now)
-	}
-	if errors.Is(err, ErrUnsupported) {
-		return "", false, err
 	}
 	if err != nil {
 		return "", false, nil

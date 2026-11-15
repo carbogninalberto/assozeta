@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"unicode/utf8"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -50,27 +50,6 @@ func unidecode(r rune) string {
 		}
 	})
 	return unidecodeTable[r-1]
-}
-
-// pyRunes are the code points of a Python str. A lone surrogate reaches Go
-// as its three-byte generalized UTF-8 form; any other malformed sequence has
-// no Python counterpart (ok false).
-func pyRunes(text string) (runes []rune, ok bool) {
-	runes = make([]rune, 0, len(text))
-	for i := 0; i < len(text); {
-		r, size := utf8.DecodeRuneInString(text[i:])
-		if r == utf8.RuneError && size == 1 {
-			if i+2 < len(text) && text[i] == 0xed && text[i+1] >= 0xa0 && text[i+1] <= 0xbf && text[i+2] >= 0x80 && text[i+2] <= 0xbf {
-				runes = append(runes, rune(text[i]&0x0f)<<12|rune(text[i+1]&0x3f)<<6|rune(text[i+2]&0x3f))
-				i += 3
-				continue
-			}
-			return nil, false
-		}
-		runes = append(runes, r)
-		i += size
-	}
-	return runes, true
 }
 
 func isSurrogate(r rune) bool { return r >= 0xd800 && r <= 0xdfff }
@@ -116,12 +95,11 @@ func nfkd(text []rune) []rune {
 }
 
 // slugify ports python-slugify 8.0.4 slugify(text) with default options.
-// It returns ErrUnsupported for text that is no Python str.
-func slugify(text string) (string, error) {
-	runes, ok := pyRunes(text)
-	if !ok {
-		return "", ErrUnsupported
-	}
+// text is the Python str the input stands for: a lone surrogate keeps its
+// code point, other invalid bytes read as U+FFFD, which is also what Django
+// leaves after decoding request input with errors='replace'.
+func slugify(text string) string {
+	runes := pystr.RunesReplace(text)
 	runes = replaceQuotes(runes, '-')
 	var ascii strings.Builder
 	for _, r := range nfkd(runes) {
@@ -150,7 +128,7 @@ func slugify(text string) (string, error) {
 			dash = true
 		}
 	}
-	return strings.TrimRight(b.String(), "-"), nil
+	return strings.TrimRight(b.String(), "-")
 }
 
 // replaceQuotes is QUOTE_PATTERN.sub(repl, text): every run of ' becomes repl

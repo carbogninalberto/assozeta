@@ -60,7 +60,9 @@ func TestSubscriptionMiscTaxCodeInputs(t *testing.T) {
 		{person(domain.RequestField{Name: "last_name", Value: json.Number("5")}), ErrSubscriptionMiscInvalidData},
 		{person(domain.RequestField{Name: "last_name", Value: "王"}), nil},
 		{person(domain.RequestField{Name: "born_date", Value: "10 maggio 1990"}), ErrSubscriptionMiscInvalidData},
-		{person(domain.RequestField{Name: "born_city", Value: "Roma\xff"}), domain.ErrSubscriptionMiscNotPorted},
+		// Django decodes the byte as U+FFFD, which python-slugify drops:
+		// codicefiscale.encode(..., 'Roma\ufffd') is RSSMRA90E10H501G.
+		{person(domain.RequestField{Name: "born_city", Value: "Roma\xff"}), nil},
 		{[]any{"Rossi"}, domain.ErrSubscriptionMiscServer},
 	} {
 		if _, err := misc.TaxCode(item.body); !errors.Is(err, item.want) {

@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandascsv"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pandasxlsx"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // subscriptionImportFields is SubscriptionMaps.KEY_TO_FIELD_ASSOCIATE.
@@ -324,6 +325,9 @@ func (s *SubscriptionImportUpload) subscriptionImportPlan(lookup func(column any
 				continue // decode raises on anything but text
 			}
 			name, found, err := codicefiscale.DecodedBirthplaceName(text, now)
+			if errors.Is(err, refusal.ErrAppState) {
+				return effects, err
+			}
 			if err != nil {
 				return effects, ErrSubscriptionImportNotPorted
 			}
