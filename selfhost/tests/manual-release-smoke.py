@@ -220,7 +220,8 @@ def cleanup_registry(registry_name, volume_ids, log, *, data_directory=None):
         result['error_type'] = type(exc).__name__
     return result
 
-def main():
+def parse_args(argv=None):
+    """Every rehearsal input; ``--part`` splits the full sequence across jobs."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('package', type=Path)
     parser.add_argument('release')
@@ -230,7 +231,20 @@ def main():
                         help='Optional independently verified synthetic rollback package')
     parser.add_argument('--previous-release', default='1.0.17',
                         help='Actual published source version (default: last release without a bundled manual)')
-    args = parser.parse_args()
+    parser.add_argument('--part', choices=('all', 'current', 'historical'), default='all',
+                        help='Rehearse the current sequence, the published historical sequence, or both on one installation (default)')
+    args = parser.parse_args(argv)
+    # The historical block runs on empty volumes after the current sequence and
+    # needs the published runtime; a synthetic previous package has none.
+    if args.part == 'historical' and args.scope != 'full':
+        parser.error('--part historical requires --scope full')
+    if args.part == 'historical' and args.previous_package:
+        parser.error('--part historical requires the published release, not --previous-package')
+    return args
+
+
+def main():
+    args = parse_args()
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     bundle = load_bundle(args.package, revision=revision, release=args.release,
                          required=True, verify_assets=True)
@@ -240,7 +254,8 @@ def main():
         raise ValueError('Upgrade rehearsal requires two distinct versions')
     output = ROOT / 'quality-reports/manual-release'
     output.mkdir(parents=True, exist_ok=True)
-    result = {'status': 'running', 'scope': args.scope, 'application_revision': revision, 'release': args.release,
+    result = {'status': 'running', 'scope': args.scope, 'part': args.part,
+              'application_revision': revision, 'release': args.release,
               'corpus_identity': bundle.value['identity'], 'checks': [], 'timings': [],
               'proof_scope': {'current_distribution': 'Django default plus required Go manual artifact and HTTP/assets',
                   'historical': ('independently verified synthetic package' if previous_bundle else
@@ -418,8 +433,6 @@ def main():
             # when configure retains optional legacy download settings.
             env_file.write_text('\n'.join(line for line in env_file.read_text().splitlines()
                                           if not line.startswith('MANUAL_')) + '\n')
-            command([cli, 'start'], env=env)
-            ready()
             account = {'username': 'manual-owner@example.invalid', 'password': 'ManualRehearsal123!'}
             def initialize_association():
                 setup_token = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
@@ -440,20 +453,61 @@ def main():
                 if status != 200 or owner.request('GET', '/profile/info')[1]['user_data']['requires_welcome']:
                     raise RuntimeError('Disposable association onboarding did not complete through the public API')
                 return owner, association_id
-            owner, association_id = initialize_association()
-            # Select a supported query from the existing shared reader plan.
-            planned = subprocess.check_output(['node', '--input-type=module', '-e',
-                "import fs from 'node:fs'; import {readerPlan} from './selfhost/tests/browser/manuale/reader-plan.mjs'; "
-                "const p=readerPlan(JSON.parse(fs.readFileSync(process.argv[1])).chunks); "
-                "console.log(JSON.stringify({query:p.query,id:p.section.id,title:p.section.title,sections:p.sections.length}));",
-                str(args.package / 'index.json')], cwd=ROOT, text=True)
-            plan = json.loads(planned)
-            fixture = {'accounts': {'missing': account}, 'session': {'access_token': owner.token}, 'manual': {'release': args.release,
-                'application_revision': revision, 'corpus_identity': bundle.value['identity'],
-                'public_sections': plan['sections'], 'query': plan['query'], 'section_id': plan['id'],
-                'section_title': plan['title']}}
-            fixture_path = work / 'fixture.json'
-            fixture_path.write_text(json.dumps(fixture)); fixture_path.chmod(0o600)
+            def manual_fixture(token):
+                """Fixture over synthetic data; the historical part refreshes the session."""
+                # Select a supported query from the existing shared reader plan.
+                planned = subprocess.check_output(['node', '--input-type=module', '-e',
+                    "import fs from 'node:fs'; import {readerPlan} from './selfhost/tests/browser/manuale/reader-plan.mjs'; "
+                    "const p=readerPlan(JSON.parse(fs.readFileSync(process.argv[1])).chunks); "
+                    "console.log(JSON.stringify({query:p.query,id:p.section.id,title:p.section.title,sections:p.sections.length}));",
+                    str(args.package / 'index.json')], cwd=ROOT, text=True)
+                plan = json.loads(planned)
+                value = {'accounts': {'missing': account}, 'session': {'access_token': token},
+                         'manual': {'release': args.release, 'application_revision': revision,
+                                    'corpus_identity': bundle.value['identity'],
+                                    'public_sections': plan['sections'], 'query': plan['query'],
+                                    'section_id': plan['id'], 'section_title': plan['title']}}
+                path = work / 'fixture.json'
+                path.write_text(json.dumps(value)); path.chmod(0o600)
+                return value, path
+            def corrupt_candidates(first_image, *, verify):
+                """Fault images derived from this part's verified candidate backend.
+
+                The current sequence starts each one and proves the application
+                rejects it; the historical part needs the same images for the
+                ordinary upgrade rejections, whose startup gate the current
+                sequence already recorded.
+                """
+                # Supply fault commands as JSON exec-form RUN, avoiding shell path interpolation.
+                faults = {
+                    'missing-index': "from pathlib import Path; Path('/app/release-manual/index.json').unlink()",
+                    'corrupt-index': "from pathlib import Path; Path('/app/release-manual/index.json').write_text('{}')",
+                    'wrong-version': "from pathlib import Path; Path('/app/VERSION').write_text('incompatible')",
+                    'missing-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ').unlink()',
+                    'corrupt-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ").write_bytes(b'corrupt')",
+                }
+                expected_errors = {
+                    'missing-index': 'FileNotFoundError', 'missing-image': 'FileNotFoundError',
+                    'corrupt-index': 'Invalid or unsupported manual index',
+                    'wrong-version': 'No verified manual for the running application',
+                    'corrupt-image': 'Bundled screenshot differs from verified evidence',
+                }
+                built = {}
+                for name, mutation in faults.items():
+                    damaged = work / name
+                    damaged.mkdir()
+                    (damaged / 'Dockerfile').write_text(f'FROM {backend}\nUSER root\nRUN ' +
+                        json.dumps(['python', '-c', mutation]) + '\nUSER assozeta\n')
+                    corrupt = image(name, damaged)
+                    built[name] = corrupt
+                    if not verify:
+                        continue
+                    attempt = subprocess.run(['docker', 'run', '--rm', corrupt], capture_output=True, text=True, timeout=60)
+                    log.write((attempt.stdout + attempt.stderr).encode())
+                    if (attempt.returncode == 0 or expected_errors[name] not in attempt.stderr
+                            or 'Starting gunicorn' in attempt.stderr or 'ImproperlyConfigured' in attempt.stderr):
+                        raise RuntimeError(name + ' did not reject candidate startup at the manual validation gate')
+                return built
             def contracts(phase, browser=False, api_prefix='/api'):
                 command([ROOT / 'TESTS/run', 'manual', '--base-url', origin + api_prefix, '--fixture', fixture_path,
                          '--output', output / phase], cwd=ROOT)
@@ -468,126 +522,119 @@ def main():
                     command(['node', ROOT / 'TESTS/browser/manual-release.mjs'], cwd=ROOT,
                             env={**os.environ, 'TESTS_ORIGIN': origin, 'TESTS_FIXTURE': str(fixture_path),
                                  'TESTS_OUTPUT': str(output / phase / 'browser')})
-            contracts('fresh', browser=True)
-            record('fresh installation: reader, assets, search and real browser assistance without AI or subscription')
-            go_container = subprocess.check_output([str(arg) for arg in compose('ps', '-q', 'api-go')],
-                                                  env=env, text=True).strip()
-            go_state = json.loads(subprocess.check_output(['docker', 'inspect', go_container], text=True))[0]
-            if (go_state['Image'] != result['target_images']['backend-go']
-                    or go_state['State'].get('Health', {}).get('Status') != 'healthy'):
-                raise RuntimeError('Current-distribution Go image is not the expected healthy artifact')
-            result['current_go_image'] = go_state['Image']
-            # A real stopped upstream must fail on v2 while the Django alias still works.
-            command(compose('stop', 'api-go'), env=env)
-            go_owner = Client(origin + '/api/v2', owner.token)
-            first_asset = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
-            asset_path = '/manuale/assets/' + quote(first_asset, safe='/')
-            controls = {
-                'go_health': Client(origin + '/api/v2').request('GET', '/healthz')[0],
-                'django_health': public.request('GET', '/healthz')[0],
-                'go_sections': go_owner.request('GET', '/manuale/sections')[0],
-                'django_sections': owner.request('GET', '/manuale/sections')[0],
-                'go_asset': go_owner.request('GET', asset_path, raw=True)[0],
-                'django_asset': owner.request('GET', asset_path, raw=True)[0],
-            }
-            result['go_upstream_negative_control'] = controls
-            if controls != {'go_health': 502, 'django_health': 200, 'go_sections': 502,
-                            'django_sections': 200, 'go_asset': 502, 'django_asset': 200}:
-                raise RuntimeError('Go manual route negative control did not isolate the real upstream')
-            command(compose('up', '-d', '--wait', 'api-go'), env=env)
-            contracts('fresh-go', api_prefix='/api/v2')
-            record('current distribution: exact healthy Go artifact serves manual HTTP/assets; stopped-Go v2 rejects fallback while Django remains available')
-            before_restart = application_containers()
-            # The shipped CLI handles workers with disabled healthchecks and
-            # waits for public API readiness, including older Compose versions.
-            command([cli, 'restart'], env=env)
-            after_restart = application_containers()
-            if any(after_restart[service] == identifier for service, identifier in before_restart.items()):
-                raise RuntimeError('CLI restart did not recreate every application container')
-            ready(); contracts('recreated')
-            contracts('recreated-go', api_prefix='/api/v2')
-            record('container recreation retains the image-matched manual')
-            if args.scope == 'compatibility':
-                result['status'] = 'passed'
-                return
-            # Stop at the real create/start boundary, as if activation had been
-            # interrupted after replacing the container but before starting it.
-            command(compose('up', '--no-start', '--no-deps', '--force-recreate', 'api'), env=env)
-            candidate = subprocess.check_output([str(arg) for arg in compose('ps', '-a', '-q', 'api')],
-                                                env=env, text=True).strip()
-            state = subprocess.check_output(['docker', 'inspect', '--format', '{{.State.Status}}', candidate],
-                                            text=True).strip()
-            if state != 'created':
-                raise RuntimeError('Activation interruption did not leave an unstarted candidate')
-            command([cli, 'start'], env=env)
-            ready(); contracts('interrupted-start-recovery')
-            contracts('interrupted-start-recovery-go', api_prefix='/api/v2')
-            record('normal CLI startup recovers activation interrupted between container creation and startup')
-            # Exercise the shipped upgrade error path: backup stops services,
-            # the missing candidate fails to pull, and the CLI restores them.
-            unavailable = subprocess.run([str(cli), 'upgrade', 'manual-unavailable-candidate'],
-                                         env=env, stdout=log, stderr=log)
-            configured = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
-                              if line.startswith('ASSOZETA_VERSION='))
-            if unavailable.returncode == 0 or configured != args.release:
-                raise RuntimeError('Failed candidate download did not retain the installed release')
-            ready(); contracts('failed-upgrade-recovery')
-            contracts('failed-upgrade-recovery-go', api_prefix='/api/v2')
-            record('failed CLI candidate download restores services with the retained compatible manual')
-            if previous_bundle:
-                previous_expected = {**fixture['manual'], 'release': args.previous_release,
-                                     'corpus_identity': previous_bundle.value['identity']}
-                original_expected = fixture['manual']
-                def select_expected(expected):
-                    fixture['manual'] = expected
-                    fixture_path.write_text(json.dumps(fixture))
-                command([cli, 'upgrade', args.previous_release], env=env); ready()
-                select_expected(previous_expected); contracts('previous-compatible')
-                command([cli, 'upgrade', args.release], env=env); ready()
-                select_expected(original_expected); contracts('upgrade-compatible')
-                record('upgrade from a different verified package selects the new version')
-                command([cli, 'upgrade', args.previous_release], env=env); ready()
-                select_expected(previous_expected); contracts('rollback-compatible', browser=True)
-                record('rollback selects the previous version with its own compatible manual')
-                command([cli, 'upgrade', args.release], env=env); ready(); select_expected(original_expected)
-            # Reject corrupt candidate image startup while the valid deployment
-            # and its package remain untouched, then recreate the original image.
+            # Both parts share everything above; only the sequence that owns the
+            # disposable installation is split. --part historical skips it and
+            # recreates exactly the two values the historical block borrows from
+            # it (the fault images and the fixture file) below.
             first_image = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
-            # Supply fault commands as JSON exec-form RUN, avoiding shell path interpolation.
-            faults = {
-                'missing-index': "from pathlib import Path; Path('/app/release-manual/index.json').unlink()",
-                'corrupt-index': "from pathlib import Path; Path('/app/release-manual/index.json').write_text('{}')",
-                'wrong-version': "from pathlib import Path; Path('/app/VERSION').write_text('incompatible')",
-                'missing-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ').unlink()',
-                'corrupt-image': 'from pathlib import Path; Path(' + repr('/app/release-manual/' + first_image) + ").write_bytes(b'corrupt')",
-            }
-            corrupt_images = {}
-            for name, mutation in faults.items():
-                damaged = work / name
-                damaged.mkdir()
-                (damaged / 'Dockerfile').write_text(f'FROM {backend}\nUSER root\nRUN ' +
-                    json.dumps(['python', '-c', mutation]) + '\nUSER assozeta\n')
-                corrupt = image(name, damaged)
-                corrupt_images[name] = corrupt
-                attempt = subprocess.run(['docker', 'run', '--rm', corrupt], capture_output=True, text=True, timeout=60)
-                log.write((attempt.stdout + attempt.stderr).encode())
-                expected_error = {
-                    'missing-index': 'FileNotFoundError', 'missing-image': 'FileNotFoundError',
-                    'corrupt-index': 'Invalid or unsupported manual index',
-                    'wrong-version': 'No verified manual for the running application',
-                    'corrupt-image': 'Bundled screenshot differs from verified evidence',
-                }[name]
-                if (attempt.returncode == 0 or expected_error not in attempt.stderr
-                        or 'Starting gunicorn' in attempt.stderr or 'ImproperlyConfigured' in attempt.stderr):
-                    raise RuntimeError(name + ' did not reject candidate startup at the manual validation gate')
-            record('missing/corrupt index and PNGs and mismatched version reject candidate startup')
-            contracts('retained-after-failure')
-            contracts('retained-after-failure-go', api_prefix='/api/v2')
-            command(compose('up', '-d', '--wait', '--force-recreate', 'api'), env=env)
-            ready(); contracts('rollback')
-            contracts('rollback-go', api_prefix='/api/v2')
-            record('failed candidate leaves valid package intact; original image recreates with compatible manual')
-            if not previous_bundle:
+            if args.part != 'historical':
+                command([cli, 'start'], env=env)
+                ready()
+                owner, association_id = initialize_association()
+                fixture, fixture_path = manual_fixture(owner.token)
+                contracts('fresh', browser=True)
+                record('fresh installation: reader, assets, search and real browser assistance without AI or subscription')
+                go_container = subprocess.check_output([str(arg) for arg in compose('ps', '-q', 'api-go')],
+                                                      env=env, text=True).strip()
+                go_state = json.loads(subprocess.check_output(['docker', 'inspect', go_container], text=True))[0]
+                if (go_state['Image'] != result['target_images']['backend-go']
+                        or go_state['State'].get('Health', {}).get('Status') != 'healthy'):
+                    raise RuntimeError('Current-distribution Go image is not the expected healthy artifact')
+                result['current_go_image'] = go_state['Image']
+                # A real stopped upstream must fail on v2 while the Django alias still works.
+                command(compose('stop', 'api-go'), env=env)
+                go_owner = Client(origin + '/api/v2', owner.token)
+                first_asset = next(image['path'] for chunk in bundle.value['chunks'] for image in chunk['screenshots'])
+                asset_path = '/manuale/assets/' + quote(first_asset, safe='/')
+                controls = {
+                    'go_health': Client(origin + '/api/v2').request('GET', '/healthz')[0],
+                    'django_health': public.request('GET', '/healthz')[0],
+                    'go_sections': go_owner.request('GET', '/manuale/sections')[0],
+                    'django_sections': owner.request('GET', '/manuale/sections')[0],
+                    'go_asset': go_owner.request('GET', asset_path, raw=True)[0],
+                    'django_asset': owner.request('GET', asset_path, raw=True)[0],
+                }
+                result['go_upstream_negative_control'] = controls
+                if controls != {'go_health': 502, 'django_health': 200, 'go_sections': 502,
+                                'django_sections': 200, 'go_asset': 502, 'django_asset': 200}:
+                    raise RuntimeError('Go manual route negative control did not isolate the real upstream')
+                command(compose('up', '-d', '--wait', 'api-go'), env=env)
+                contracts('fresh-go', api_prefix='/api/v2')
+                record('current distribution: exact healthy Go artifact serves manual HTTP/assets; stopped-Go v2 rejects fallback while Django remains available')
+                before_restart = application_containers()
+                # The shipped CLI handles workers with disabled healthchecks and
+                # waits for public API readiness, including older Compose versions.
+                command([cli, 'restart'], env=env)
+                after_restart = application_containers()
+                if any(after_restart[service] == identifier for service, identifier in before_restart.items()):
+                    raise RuntimeError('CLI restart did not recreate every application container')
+                ready(); contracts('recreated')
+                contracts('recreated-go', api_prefix='/api/v2')
+                record('container recreation retains the image-matched manual')
+                if args.scope == 'compatibility':
+                    result['status'] = 'passed'
+                    return
+                # Stop at the real create/start boundary, as if activation had been
+                # interrupted after replacing the container but before starting it.
+                command(compose('up', '--no-start', '--no-deps', '--force-recreate', 'api'), env=env)
+                candidate = subprocess.check_output([str(arg) for arg in compose('ps', '-a', '-q', 'api')],
+                                                    env=env, text=True).strip()
+                state = subprocess.check_output(['docker', 'inspect', '--format', '{{.State.Status}}', candidate],
+                                                text=True).strip()
+                if state != 'created':
+                    raise RuntimeError('Activation interruption did not leave an unstarted candidate')
+                command([cli, 'start'], env=env)
+                ready(); contracts('interrupted-start-recovery')
+                contracts('interrupted-start-recovery-go', api_prefix='/api/v2')
+                record('normal CLI startup recovers activation interrupted between container creation and startup')
+                # Exercise the shipped upgrade error path: backup stops services,
+                # the missing candidate fails to pull, and the CLI restores them.
+                unavailable = subprocess.run([str(cli), 'upgrade', 'manual-unavailable-candidate'],
+                                             env=env, stdout=log, stderr=log)
+                configured = next(line.split('=', 1)[1] for line in env_file.read_text().splitlines()
+                                  if line.startswith('ASSOZETA_VERSION='))
+                if unavailable.returncode == 0 or configured != args.release:
+                    raise RuntimeError('Failed candidate download did not retain the installed release')
+                ready(); contracts('failed-upgrade-recovery')
+                contracts('failed-upgrade-recovery-go', api_prefix='/api/v2')
+                record('failed CLI candidate download restores services with the retained compatible manual')
+                if previous_bundle:
+                    previous_expected = {**fixture['manual'], 'release': args.previous_release,
+                                         'corpus_identity': previous_bundle.value['identity']}
+                    original_expected = fixture['manual']
+                    def select_expected(expected):
+                        fixture['manual'] = expected
+                        fixture_path.write_text(json.dumps(fixture))
+                    command([cli, 'upgrade', args.previous_release], env=env); ready()
+                    select_expected(previous_expected); contracts('previous-compatible')
+                    command([cli, 'upgrade', args.release], env=env); ready()
+                    select_expected(original_expected); contracts('upgrade-compatible')
+                    record('upgrade from a different verified package selects the new version')
+                    command([cli, 'upgrade', args.previous_release], env=env); ready()
+                    select_expected(previous_expected); contracts('rollback-compatible', browser=True)
+                    record('rollback selects the previous version with its own compatible manual')
+                    command([cli, 'upgrade', args.release], env=env); ready(); select_expected(original_expected)
+                # Reject corrupt candidate image startup while the valid deployment
+                # and its package remain untouched, then recreate the original image.
+                corrupt_images = corrupt_candidates(first_image, verify=True)
+                record('missing/corrupt index and PNGs and mismatched version reject candidate startup')
+                contracts('retained-after-failure')
+                contracts('retained-after-failure-go', api_prefix='/api/v2')
+                command(compose('up', '-d', '--wait', '--force-recreate', 'api'), env=env)
+                ready(); contracts('rollback')
+                contracts('rollback-go', api_prefix='/api/v2')
+                record('failed candidate leaves valid package intact; original image recreates with compatible manual')
+            else:
+                # --part historical never runs the current sequence, so recreate
+                # exactly what it lends the historical block and nothing else:
+                # the same five fault images from the same verified candidate
+                # backend (built without replaying their startup rejection, which
+                # the current part records) and the same fixture file (the
+                # historical block refreshes its session token from the
+                # post-upgrade owner before its own contract run).
+                corrupt_images = corrupt_candidates(first_image, verify=False)
+                fixture, fixture_path = manual_fixture('')
+            if not previous_bundle and args.part != 'current':
                 # Start the real historical schema in empty, owned volumes.
                 # The published runtime has no Go service. Keep that real
                 # composition for the bounded Django schema/manual transition;
