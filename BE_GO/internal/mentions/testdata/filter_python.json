@@ -1,0 +1,425 @@
+{
+ "bs4": "4.13.3",
+ "python": "3.13.16",
+ "context": {
+  "associate": {
+   "first_name": "Mario & <Luigi>",
+   "last_name": "Rossi",
+   "tax_code": "RSSMRA80A01H501U",
+   "born_date": "1980-01-02",
+   "born_city": "Roma",
+   "address": "Via Roma 1",
+   "address_city": "Roma",
+   "address_cap": "00100",
+   "nationality": "Italiana",
+   "email": "mario.rossi@example.test",
+   "phone": "+39 06 1234567",
+   "notes": null
+  },
+  "main_tutor": {
+   "first_name": "Anna",
+   "last_name": "Bianchi",
+   "tax_code": "BNCNNA75B02F205X",
+   "email": "anna.bianchi@example.test",
+   "phone": "333 1234567"
+  },
+  "invoice": {
+   "number": "2026/17",
+   "creation_date": "2026-03-04",
+   "activity_fee": " 100,00 ",
+   "membership_fee": "20,00",
+   "total_amount": "120,00"
+  },
+  "other": {
+   "today": "15/11/2026",
+   "courses_list": "corso A, corso B"
+  }
+ },
+ "cases": [
+  {
+   "name": "comment",
+   "html": "<p>a<!-- @nome -->b</p>",
+   "output": "<p>a Mario &amp; &lt;Luigi&gt; b</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "comment-only-mention-span",
+   "html": "<p><!-- <span class=\"mention\" data-type=\"mention\" key=\"associate.last_name\">x</span> --></p>",
+   "output": "<p><!-- <span class=\"mention\" data-type=\"mention\" key=\"associate.last_name\">x</span> --></p>",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "doctype",
+   "html": "<!DOCTYPE html><p>@nome</p>",
+   "output": "<!DOCTYPE html>\n<p>Mario &amp; &lt;Luigi&gt;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "processing-instruction",
+   "html": "<?pi value?><p>x</p>",
+   "output": "<?pi value?><p>x</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "cdata",
+   "html": "<![CDATA[@nome]]>",
+   "output": "Mario &amp; &lt;Luigi&gt;",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "cdata-kept",
+   "html": "<p><![CDATA[a < b & c]]></p>",
+   "output": "<p><![CDATA[a < b & c]]></p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "script",
+   "html": "<script>var a = \"@nome\"; if (a < b) { x = \"&amp;\"; }</script>",
+   "output": "<script>var a = \"@nome\"; if (a < b) { x = \"&amp;\"; }</script>",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "style",
+   "html": "<style>p::after { content: \"@nome\"; }</style>",
+   "output": "<style>p::after { content: \"@nome\"; }</style>",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "textarea",
+   "html": "<textarea>@nome & <b></textarea>",
+   "output": "<textarea>Mario &amp; &lt;Luigi&gt; &amp; &lt;b&gt;</textarea>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mismatched-end-tags",
+   "html": "<p>a<b>c</p>d</b>e",
+   "output": "<p>a<b>c</b></p>de",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "extra-end-tag",
+   "html": "<p>x</p></p>",
+   "output": "<p>x</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "unknown-entity",
+   "html": "<p>&foo; &amp x &nbsp y</p>",
+   "output": "<p>&amp;foo &amp; x   y</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "entity-without-semicolon",
+   "html": "<p>a &amp b &lt c</p>",
+   "output": "<p>a &amp; b &lt; c</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "ampersand-at-end",
+   "html": "<p>x &amp",
+   "output": "<p>x &amp;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "br-after-br",
+   "html": "<p>a<br>b<br/>c<br />d</p>",
+   "output": "<p>a<br/>b<br>c<br/>d</br></p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "odd-attribute-syntax",
+   "html": "<p a = \"b\"c='d' e f=>x</p>",
+   "output": "<p a=\"b\" c=\"d\" e=\"\" f=\"\">x</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "duplicate-attribute",
+   "html": "<p class=\"mention\" class=\"other\">x</p>",
+   "output": "<p class=\"other\">x</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "upper-case-tags",
+   "html": "<P>@nome</P><BR><SPAN CLASS=\"mention\" DATA-TYPE=\"mention\" KEY=\"associate.last_name\">x</SPAN>",
+   "output": "<p>Mario &amp; &lt;Luigi&gt;</p><br/>Rossi",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "nested-mention-spans",
+   "html": "<span class=\"mention\" data-type=\"mention\" key=\"associate.first_name\"><span class=\"mention\" data-type=\"mention\" key=\"associate.last_name\">x</span>y</span>",
+   "output": "Mario &amp; &lt;Luigi&gt;",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mention-span-class-list",
+   "html": "<span class=\"other mention\" data-type=\"mention\" key=\"associate.first_name\">x</span>",
+   "output": "Mario &amp; &lt;Luigi&gt;",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mention-span-two-classes-joined",
+   "html": "<p><span class=\"mention other\" data-type=\"mention\" key=\"associate.first_name\">x</span></p>",
+   "output": "<p>Mario &amp; &lt;Luigi&gt;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mention-span-no-data-type",
+   "html": "<span class=\"mention\" key=\"associate.first_name\">x</span>",
+   "output": "<span class=\"mention\" key=\"associate.first_name\">x</span>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mention-span-no-key",
+   "html": "<span class=\"mention\" data-type=\"mention\">x</span>",
+   "output": "<span class=\"mention\" data-type=\"mention\">x</span>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mention-span-empty-key",
+   "html": "<span class=\"mention\" data-type=\"mention\" key=\"\">x</span>",
+   "output": "<span class=\"mention\" data-type=\"mention\" key=\"\">x</span>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mention-span-unresolved-key",
+   "html": "<span class=\"mention\" data-type=\"mention\" key=\"associate.unknown\">x</span>",
+   "output": "",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "mention-span-none-value",
+   "html": "<span class=\"mention\" data-type=\"mention\" key=\"associate.notes\">x</span>",
+   "output": "",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "mention-span-date",
+   "html": "<span class=\"mention\" data-type=\"mention\" key=\"associate.born_date\">x</span>",
+   "output": "02/01/1980",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "mention-span-entity-value",
+   "html": "<p>a<span class=\"mention\" data-type=\"mention\" key=\"associate.first_name\">x</span>b</p>",
+   "output": "<p>aMario &amp; &lt;Luigi&gt;b</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-uppercase-first",
+   "html": "<p>@Nome</p>",
+   "output": "<p>Mario &amp; &lt;Luigi&gt;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-uppercase-all",
+   "html": "<p>@NOME</p>",
+   "output": "<p>Mario &amp; &lt;Luigi&gt;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-mixed-case-date",
+   "html": "<p>@DataDiNascita</p>",
+   "output": "<p>02/01/1980</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-masculine-ordinal",
+   "html": "<p>@nºme</p>",
+   "output": "<p>@nºme</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-long-s",
+   "html": "<p>@ſomething</p>",
+   "output": "<p>@ſomething</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-preceded-by-letter",
+   "html": "<p>x@nome</p>",
+   "output": "<p>x@nome</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-followed-by-letter",
+   "html": "<p>@nomeX</p>",
+   "output": "<p>@nomeX</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-followed-by-underscore",
+   "html": "<p>@nome_</p>",
+   "output": "<p>@nome_</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-after-punctuation",
+   "html": "<p>e-mail @email.</p>",
+   "output": "<p>e-mail mario.rossi@example.test.</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-after-at-sign",
+   "html": "<p>@@nome</p>",
+   "output": "<p>@@nome</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-longest-wins",
+   "html": "<p>@codicefiscaletutore @codicefiscale @cf</p>",
+   "output": "<p>BNCNNA75B02F205X RSSMRA80A01H501U RSSMRA80A01H501U</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-in-attribute-not-text",
+   "html": "<p title=\"@nome\">x</p>",
+   "output": "<p title=\"@nome\">x</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-kelvin-sign",
+   "html": "<p>@Knome K @listacorsiK</p>",
+   "output": "<p>@Knome K @listacorsiK</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-after-non-word",
+   "html": "<p>€@nome</p>",
+   "output": "<p>€Mario &amp; &lt;Luigi&gt;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-after-accented-letter",
+   "html": "<p>è@nome</p>",
+   "output": "<p>è@nome</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-after-cjk-ext-i",
+   "html": "<p>𮯰@nome 𮹞@cognome</p>",
+   "output": "<p>𮯰@nome 𮹞Rossi</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-after-dotted-i",
+   "html": "<p>İ@nome</p>",
+   "output": "<p>İ@nome</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "alias-superscript",
+   "html": "<p>@nom&amp;e @nome</p>",
+   "output": "<p>@nom&amp;e Mario &amp; &lt;Luigi&gt;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "only-whitespace",
+   "html": "<p>  \n\t </p>",
+   "output": "<p>\n</p>",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "only-whitespace-and-comment",
+   "html": "<p> <!-- @cf --> </p>",
+   "output": "<p>  RSSMRA80A01H501U  </p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "only-whitespace-and-style",
+   "html": "<p> <style>a</style> </p>",
+   "output": "<p> <style>a</style> </p>",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "blank-with-mention",
+   "html": "<p><span class=\"mention\" data-type=\"mention\" key=\"associate.first_name\"></span></p>",
+   "output": "<p>Mario &amp; &lt;Luigi&gt;</p>",
+   "blank": false,
+   "error": null
+  },
+  {
+   "name": "blank-after-empty-value",
+   "html": "<p><span class=\"mention\" data-type=\"mention\" key=\"associate.notes\">x</span></p>",
+   "output": "<p></p>",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "nbsp-only",
+   "html": "<p>&nbsp;</p>",
+   "output": "<p> </p>",
+   "blank": true,
+   "error": null
+  },
+  {
+   "name": "keyerror-long-s",
+   "html": "<p>@cittadinaſcita @codicefiſscale</p>",
+   "output": null,
+   "blank": null,
+   "error": "KeyError"
+  },
+  {
+   "name": "keyerror-dotless-i",
+   "html": "<p>@cittadınascita</p>",
+   "output": null,
+   "blank": null,
+   "error": "KeyError"
+  },
+  {
+   "name": "keyerror-dotted-i",
+   "html": "<p>@cittadİnascita @cİtta</p>",
+   "output": null,
+   "blank": null,
+   "error": "KeyError"
+  }
+ ]
+}
