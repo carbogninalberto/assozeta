@@ -211,7 +211,7 @@ class CaptureShardTests(unittest.TestCase):
     def test_one_shard_pins_every_planned_input_cold(self):
         result = self.shard()
         parameters = result.parameters
-        self.assertEqual(parameters[0], 'run')
+        self.assertEqual(parameters[0], 'prepare')
         self.assertIn('--no-cache', parameters)
         self.assertNotIn('--reuse-evidence', parameters)
         self.assertNotIn('--reuse-store', parameters)

@@ -921,7 +921,9 @@ def capture_shard(args, runner):
     manifest = transport_module.loads(Path(args.transport).read_text())
     workflows = transport_module.shard_workflows(manifest, args.shard)
     # Always cold: this shard owns no baseline, no evidence and no cache.
-    parameters = ['run', '--manual-repo', args.manual_repo, '--output', args.output,
+    # `prepare`, not `run`: a complete run always selects every workflow and
+    # would ignore this shard's --workflow subset.
+    parameters = ['prepare', '--manual-repo', args.manual_repo, '--output', args.output,
                   '--release', manifest['release'], '--reference-date', manifest['reference_date'],
                   '--manual-ref', manifest['manual_revision'], '--no-cache']
     for identifier in workflows:
