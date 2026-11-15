@@ -34,6 +34,7 @@ Run with ``python3 -I``.
 """
 import base64
 import json
+import uuid
 from pathlib import Path
 
 OUTPUT = Path(__file__).with_name('subscription_create_http.json')
@@ -625,6 +626,11 @@ add('quick-associate-malformed-server-error', 'owner', 500, SERVER, query='?m=on
     setup=QUICK_SETUP)
 add('quick-associate-unknown-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': UNKNOWN})
 add('quick-associate-null-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': None})
+# UUIDField.to_python reads an int (a bool too) as uuid.UUID(int=...): no member has that key, so .get() raises; a float
+# is a ValidationError. Both are the 500 page.
+add('quick-associate-number-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': 5})
+add('quick-associate-true-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': True})
+add('quick-associate-float-server-error', 'owner', 500, SERVER, query='?m=only_associate', body={'associate': 1.5})
 # The payment is written, then associate.user.user_id raises: everything rolls back.
 add('quick-associate-without-account-server-error', 'owner', 500, SERVER, query='?m=only_associate',
     body={'associate': ASSOCIATES['quick_no_account']['id']})
@@ -632,6 +638,10 @@ add('quick-duplicate-current', 'owner', 409, {'msg': 'Questa iscrizione esiste g
     query='?m=only_associate', body={'associate': ASSOCIATES['current']['id']})
 quick('owner', 'quick', 'Quinto Rapido', payment={'amount': '25.00', '$audit': '25.00'},
       subscription={'medical_id': CERTIFICATES['quick_latest']['id']})
+# The member's key sent as the integer of its UUID finds the same row.
+quick('owner', 'quick', 'Quinto Rapido', payment={'amount': '25.00', '$audit': '25.00'},
+      subscription={'medical_id': CERTIFICATES['quick_latest']['id']}, name='quick-associate-id-as-integer',
+      raw_body='{"associate": %d}' % uuid.UUID(ASSOCIATES['quick']['id']).int, content_type='application/json')
 quick('full_collaborator', 'quick_plan', 'Pia Pianificata', setup={'association': {'multiple_subscription_fee': True}}, plan='plan-base',
       payment={'amount': '40.00', '$audit': '40', 'meta': {'subscription_data': {'subscription_fee': 40, 'name': 'Piano base', 'id': 'plan-base'}}},
       subscription={})

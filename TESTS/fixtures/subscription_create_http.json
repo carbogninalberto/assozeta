@@ -8098,6 +8098,48 @@
    "setup": null
   },
   {
+   "name": "subscription-create-quick-associate-number-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate": 5
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-quick-associate-true-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate": true
+   },
+   "setup": null
+  },
+  {
+   "name": "subscription-create-quick-associate-float-server-error",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": null,
+   "body": {
+    "associate": 1.5
+   },
+   "setup": null
+  },
+  {
    "name": "subscription-create-quick-associate-without-account-server-error",
    "actor": "owner",
    "method": "POST",
@@ -8235,6 +8277,115 @@
     "associate": "a1000000-0000-4000-8000-000000930017"
    },
    "setup": null
+  },
+  {
+   "name": "subscription-create-quick-associate-id-as-integer",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/add?m=only_associate",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "status": "success",
+    "payment_id": "$new"
+   },
+   "effect": {
+    "actor": "owner",
+    "associate": {
+     "match": "quick",
+     "columns": {}
+    },
+    "payment": {
+     "match": "new",
+     "columns": {
+      "payment_date": null,
+      "meta_payment_categories": null,
+      "meta": null,
+      "amount": "25.00"
+     }
+    },
+    "subscription": {
+     "type": 2,
+     "role": 1,
+     "status_flag": 1,
+     "meta": {
+      "plan_id": null
+     },
+     "subscription_number": "0",
+     "subscription_type": null,
+     "start_date": "$season_start",
+     "end_date": "$season_end",
+     "medical_id": "a1000000-0000-4000-8000-000000930022"
+    },
+    "broadcast_created": false,
+    "audit": [
+     {
+      "model": "payment",
+      "action": 0,
+      "ref": "payment",
+      "changes": {
+       "amount": [
+        "None",
+        "25.00"
+       ]
+      },
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     },
+     {
+      "model": "subscription",
+      "action": 0,
+      "ref": "subscription",
+      "changes": {},
+      "index": [
+       "a1000000-0000-4000-8000-000000701001",
+       "direct"
+      ]
+     }
+    ],
+    "celery": [
+     {
+      "task": "check_workflows_trigger",
+      "args": [],
+      "kwargs": [
+       [
+        "trigger_type",
+        "new_subscription"
+       ],
+       [
+        "sport_association_id",
+        {
+         "uuid": "a1000000-0000-4000-8000-000000701001"
+        }
+       ],
+       [
+        "subscription_id",
+        "$subscription_uuid"
+       ]
+      ]
+     },
+     {
+      "task": "print_document_subscription",
+      "args": [
+       "$subscription",
+       "$authorization"
+      ],
+      "kwargs": []
+     }
+    ],
+    "notification": {
+     "msg": "Nuova Iscrizione aggiunta per Quinto Rapido.",
+     "association": "a1000000-0000-4000-8000-000000701001"
+    }
+   },
+   "body": {
+    "associate": "a1000000-0000-4000-8000-000000930017"
+   },
+   "setup": null,
+   "raw_body": "{\"associate\": 214005707321371757778191212399293562903}",
+   "content_type": "application/json"
   },
   {
    "name": "subscription-create-quick-quick-plan",
