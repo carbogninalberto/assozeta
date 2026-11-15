@@ -5,6 +5,7 @@ the previous release uses the immutable images in its published update manifest.
 An optional independently verified package supports additional synthetic tests.
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from urllib.request import urlopen
 from urllib.parse import quote
@@ -32,21 +34,145 @@ def free_port():
         return sock.getsockname()[1]
 
 
-def build_manual_backends(work, package, release, revision, image, *, prefix=''):
-    """Build both current backend artifacts with one independently verified corpus."""
-    built = {}
+def run_concurrently(jobs):
+    """Run independent zero-argument jobs concurrently, keeping their order.
+
+    Results come back in submission order. Every submitted job runs to
+    completion before anything is re-raised, and the reported failure is the
+    first one in submission order, so ordering never depends on thread timing.
+    """
+    jobs = list(jobs)
+    if not jobs:
+        return []
+    results, failure = [], None
+    with ThreadPoolExecutor(max_workers=min(len(jobs), 4)) as executor:
+        futures = [executor.submit(job) for job in jobs]
+        for future in futures:
+            try:
+                results.append(future.result())
+            except BaseException as exc:
+                results.append(None)
+                if failure is None:
+                    failure = exc
+    if failure is not None:
+        raise failure
+    return results
+
+
+class ConcurrentImages:
+    """Owned image commands that may run together without mixing their output.
+
+    Each command writes to its own file under ``work``; the files and the owned
+    tags are folded into the shared execution log and cleanup list in submission
+    order once the whole batch has finished, failures included. Nested batches
+    hand their ordered records to the enclosing batch instead of replaying them
+    early, so concurrently built backends still append their tags in the order
+    the serial code produced.
+    """
+
+    def __init__(self, work, log, images):
+        self.work, self.log, self.images = Path(work), log, images
+        self._lock = threading.Lock()
+        self._logs = 0
+        self._local = threading.local()
+
+    def path(self, name):
+        """Reserve one private log path for a single command."""
+        with self._lock:
+            self._logs += 1
+            number = self._logs
+        slug = ''.join(char if char.isalnum() or char in '-._' else '-' for char in str(name))
+        return self.work / f'build-{number:02d}-{slug}.log'
+
+    def run(self, jobs):
+        """Run independent builds concurrently; replay their logs in job order."""
+        jobs = list(jobs)
+        slots = [[] for _ in jobs]
+        def wrapped(index, job):
+            def owned():
+                self._local.records = slots[index]
+                try:
+                    return job()
+                finally:
+                    self._local.records = None
+            return owned
+        enclosing = getattr(self._local, 'records', None)
+        try:
+            return run_concurrently([wrapped(index, job) for index, job in enumerate(jobs)])
+        finally:
+            ordered = [record for slot in slots for record in slot]
+            if enclosing is None:
+                with self._lock:
+                    for path, tag in ordered:
+                        self._replay(path, tag)
+            else:
+                enclosing.extend(ordered)
+
+    def command(self, name, argv):
+        """Run one command and record its private log for ordered replay."""
+        path, done = self._execute(name, argv)
+        self._record(path, None)
+        return done
+
+    def image(self, name, tag, argv):
+        """Build one owned image and record its tag for ordered cleanup."""
+        path, _ = self._execute(name, argv)
+        self._record(path, tag)
+        return tag
+
+    def _execute(self, name, argv):
+        path = self.path(name)
+        try:
+            with path.open('wb') as stream:
+                return path, subprocess.run([str(arg) for arg in argv], check=True,
+                                            stdout=stream, stderr=stream)
+        except BaseException:
+            self._record(path, None)
+            raise
+
+    def _record(self, path, tag):
+        records = getattr(self._local, 'records', None)
+        if records is not None:
+            records.append((path, tag))
+            return
+        with self._lock:
+            self._replay(path, tag)
+
+    def _replay(self, path, tag):
+        # A build that never opened its log must not mask its own failure.
+        if path.exists():
+            with path.open('rb') as stream:
+                shutil.copyfileobj(stream, self.log)
+            # Later commands write straight to the same descriptor, so the
+            # replayed bytes must leave the buffer before they do.
+            self.log.flush()
+        if tag is not None:
+            self.images.append(tag)
+
+
+def build_manual_backends(work, package, release, revision, image, *, prefix='', builds=None):
+    """Build both current backend artifacts with one independently verified corpus.
+
+    The artifacts are independent, so they build concurrently when an owning
+    ``ConcurrentImages`` batch is supplied. Each build stages its own context
+    because ``package`` is copied into that context's release-manual directory.
+    """
+    jobs = []
     for key, directory, name in (('backend', 'BE', 'bundled'), ('backend-go', 'BE_GO', 'go-bundled')):
-        context = work / directory
-        destination = context / 'release-manual'
-        if destination.exists():
-            shutil.rmtree(destination)
-        shutil.copytree(package, destination)
-        target = ('--target', 'production') if key == 'backend' else ()
-        built[key] = image(prefix + name, context, *target,
-                           '--build-arg', 'VERSION=' + release,
-                           '--build-arg', 'CODE_REVISION=' + revision,
-                           '--build-arg', 'REQUIRE_MANUAL=true')
-    return built
+        def build(key=key, directory=directory, name=name):
+            context = work / directory
+            destination = context / 'release-manual'
+            if destination.exists():
+                shutil.rmtree(destination)
+            shutil.copytree(package, destination)
+            target = ('--target', 'production') if key == 'backend' else ()
+            return image(prefix + name, context, *target,
+                         '--build-arg', 'VERSION=' + release,
+                         '--build-arg', 'CODE_REVISION=' + revision,
+                         '--build-arg', 'REQUIRE_MANUAL=true')
+        jobs.append((key, build))
+    run = run_concurrently if builds is None else builds.run
+    return {key: tag for (key, _), tag in zip(jobs, run([job for _, job in jobs]))}
 
 
 def verified_historical_runtime(content, manifest):
@@ -126,7 +252,8 @@ def main():
     images = []
     with tempfile.TemporaryDirectory(prefix=project + '-') as temporary:
         work = Path(temporary)
-        log = (work / 'execution.log').open('w')
+        log = (work / 'execution.log').open('wb')
+        builds = ConcurrentImages(work, log, images)
         env_file = work / 'instance.env'
         installation = work / 'selfhost'
         cli = installation / 'bin/assozeta'
@@ -152,9 +279,7 @@ def main():
             env_file.write_text('\n'.join(lines) + '\n')
         def image(name, context, *build_args):
             tag = project + '-' + name + ':test'
-            command(['docker', 'build', '-t', tag, *build_args, context])
-            images.append(tag)
-            return tag
+            return builds.image(name, tag, ['docker', 'build', '-t', tag, *build_args, context])
         port = free_port()
         origin = f'http://localhost:{port}'
         public = Client(origin + '/api')
@@ -191,31 +316,51 @@ def main():
             with archive.open('wb') as stream:
                 subprocess.run(['git', 'archive', 'HEAD', 'BE', 'BE_GO', 'selfhost'], cwd=ROOT, stdout=stream, check=True)
             command(['tar', '-xf', archive, '-C', work])
-            backends = build_manual_backends(work, args.package, args.release, revision, image)
-            backend = backends['backend']
-            web = image('web', ROOT / 'UI', '--target', 'production', '--build-arg', 'VERSION=' + args.release)
-            renderer = image('renderer', ROOT / 'selfhost/renderer')
-            if args.scope == 'compatibility':
-                previous_images = None
-                result['previous_source'] = 'historical rehearsal not selected; compatible verified infrastructure'
-            elif previous_bundle:
-                previous_backends = build_manual_backends(work, args.previous_package,
-                    args.previous_release, revision, image, prefix='previous-')
-                previous_images = {**previous_backends, 'web': web, 'renderer': renderer}
-                result['previous_source'] = 'independently verified synthetic package'
-            else:
+            # Both backend contexts receive a generated release-manual directory,
+            # so a concurrently built previous release gets its own source copy.
+            previous_work = work / 'previous'
+            def historical_release():
+                """Fetch and authenticate the published manifest, archive and images."""
                 tag = 'v' + args.previous_release.removeprefix('v')
                 url = f'https://github.com/carbogninalberto/assozeta/releases/download/{tag}/assozeta-update.json'
                 with urlopen(url, timeout=60) as response:
                     previous_manifest = validate_manifest(json.load(response), tag)
-                previous_images = {name: previous_manifest['images'][name] for name in ('backend', 'web', 'renderer')}
+                published = {name: previous_manifest['images'][name] for name in ('backend', 'web', 'renderer')}
                 archive_url = f'https://github.com/carbogninalberto/assozeta/releases/download/{tag}/assozeta-selfhost-{tag}.tar.gz'
-                historical_runtime = verified_historical_runtime(download(archive_url), previous_manifest)
-                result['previous_source'] = {'release': tag, 'manifest': url, 'images': previous_images,
+                runtime = verified_historical_runtime(download(archive_url), previous_manifest)
+                source = {'release': tag, 'manifest': url, 'images': published,
                     'archive': archive_url, 'bundle_sha256': previous_manifest['bundle_sha256'],
-                    'runtime_files': {name: digest(value[0]) for name, value in historical_runtime.items()}}
-                for reference in previous_images.values():
-                    command(['docker', 'pull', reference])
+                    'runtime_files': {name: digest(value[0]) for name, value in runtime.items()}}
+                # Recorded before the pulls, exactly as the serial rehearsal did.
+                result['previous_source'] = source
+                for reference in published.values():
+                    builds.command('pull-' + reference, ['docker', 'pull', reference])
+                return published, runtime
+            # Current backends, UI, renderer and the historical side are independent.
+            jobs = [
+                lambda: build_manual_backends(work, args.package, args.release, revision, image, builds=builds),
+                lambda: image('web', ROOT / 'UI', '--target', 'production', '--build-arg', 'VERSION=' + args.release),
+                lambda: image('renderer', ROOT / 'selfhost/renderer'),
+            ]
+            previous_jobs = []
+            if args.scope != 'compatibility':
+                if previous_bundle:
+                    previous_work.mkdir()
+                    command(['tar', '-xf', archive, '-C', previous_work])
+                    previous_jobs.append(lambda: build_manual_backends(previous_work, args.previous_package,
+                        args.previous_release, revision, image, prefix='previous-', builds=builds))
+                else:
+                    previous_jobs.append(historical_release)
+            backends, web, renderer, *previous = builds.run(jobs + previous_jobs)
+            backend = backends['backend']
+            if args.scope == 'compatibility':
+                previous_images = None
+                result['previous_source'] = 'historical rehearsal not selected; compatible verified infrastructure'
+            elif previous_bundle:
+                previous_images = {**previous[0], 'web': web, 'renderer': renderer}
+                result['previous_source'] = 'independently verified synthetic package'
+            else:
+                previous_images, historical_runtime = previous[0]
             registry_port = free_port()
             registry_data.mkdir(mode=0o700)
             # Docker may create the container then fail to bind its port. The
@@ -425,7 +570,7 @@ def main():
                 corrupt = image(name, damaged)
                 corrupt_images[name] = corrupt
                 attempt = subprocess.run(['docker', 'run', '--rm', corrupt], capture_output=True, text=True, timeout=60)
-                log.write(attempt.stdout + attempt.stderr)
+                log.write((attempt.stdout + attempt.stderr).encode())
                 expected_error = {
                     'missing-index': 'FileNotFoundError', 'missing-image': 'FileNotFoundError',
                     'corrupt-index': 'Invalid or unsupported manual index',

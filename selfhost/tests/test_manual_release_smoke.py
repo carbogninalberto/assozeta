@@ -3,9 +3,11 @@ import importlib.util
 import ast
 import io
 import tarfile
-from pathlib import Path
 import tempfile
+import threading
+import time
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 from subprocess import CompletedProcess, CalledProcessError
 
@@ -70,6 +72,112 @@ class ManualReleaseImagesTests(unittest.TestCase):
                 return 'owned-django'
             with self.assertRaisesRegex(RuntimeError, 'Go manual gate rejected package'):
                 SMOKE.build_manual_backends(root, package, 'target-version', 'exact-revision', image)
+
+
+class ConcurrentRunTests(unittest.TestCase):
+    def test_jobs_overlap_and_results_keep_input_order(self):
+        barrier = threading.Barrier(2, timeout=10)
+        def paired(delay):
+            def job():
+                barrier.wait()
+                time.sleep(delay)
+                return delay
+            return job
+        self.assertEqual(SMOKE.run_concurrently([paired(.05), paired(0)]), [.05, 0])
+
+    def test_first_failure_in_input_order_is_raised_after_every_job_finishes(self):
+        finished = []
+        def failing_first():
+            finished.append('first')
+            raise ValueError('first failure wins')
+        def slower_success():
+            time.sleep(.05)
+            finished.append('second')
+            return 'second'
+        def failing_last():
+            finished.append('third')
+            raise RuntimeError('later failure must not be reported')
+        with self.assertRaisesRegex(ValueError, 'first failure wins'):
+            SMOKE.run_concurrently([failing_first, slower_success, failing_last])
+        self.assertEqual(sorted(finished), ['first', 'second', 'third'])
+
+    def test_single_and_empty_job_lists(self):
+        self.assertEqual(SMOKE.run_concurrently([lambda: 'only']), ['only'])
+        self.assertEqual(SMOKE.run_concurrently([]), [])
+
+
+class ConcurrentImagesTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.work = Path(self.temporary.name)
+        self.stream = (self.work / 'execution.log').open('w+b')
+        self.addCleanup(self.stream.close)
+        self.images = []
+        self.builds = SMOKE.ConcurrentImages(self.work, self.stream, self.images)
+
+    def replay(self):
+        self.stream.flush()
+        self.stream.seek(0)
+        return self.stream.read()
+
+    @staticmethod
+    def writing_run(delays=None):
+        delays = delays or {}
+        def run(argv, **kwargs):
+            kwargs['stdout'].write((Path(argv[-1]).name + '\n').encode())
+            time.sleep(delays.get(Path(argv[-1]).name, 0))
+            return CompletedProcess(argv, 0, stdout='', stderr='')
+        return run
+
+    def test_private_logs_and_owned_tags_replay_in_job_order(self):
+        def slow():
+            return self.builds.image('slow', 'slow:test', ['docker', 'build', '-t', 'slow:test', self.work / 'slow'])
+        def fast():
+            return self.builds.image('fast', 'fast:test', ['docker', 'build', '-t', 'fast:test', self.work / 'fast'])
+        with patch.object(SMOKE.subprocess, 'run', side_effect=self.writing_run({'slow': .1})):
+            self.assertEqual(self.builds.run([slow, fast]), ['slow:test', 'fast:test'])
+        self.assertEqual(self.replay(), b'slow\nfast\n')
+        self.assertEqual(self.images, ['slow:test', 'fast:test'])
+        # One private file per build: numbering follows whichever build got its
+        # log first, so only the per-build content is deterministic.
+        self.assertEqual({path.name.split('-', 2)[2]: path.read_bytes()
+                          for path in self.work.glob('build-*.log')},
+                         {'slow.log': b'slow\n', 'fast.log': b'fast\n'})
+
+    def test_failed_build_log_is_replayed_without_owning_its_tag(self):
+        def run(argv, **kwargs):
+            kwargs['stdout'].write((Path(argv[-1]).name + '\n').encode())
+            if Path(argv[-1]).name == 'broken':
+                raise CalledProcessError(1, argv)
+            return CompletedProcess(argv, 0, stdout='', stderr='')
+        def broken():
+            return self.builds.image('broken', 'broken:test', ['docker', 'build', '-t', 'broken:test', self.work / 'broken'])
+        def healthy():
+            return self.builds.image('healthy', 'healthy:test', ['docker', 'build', '-t', 'healthy:test', self.work / 'healthy'])
+        with patch.object(SMOKE.subprocess, 'run', side_effect=run):
+            with self.assertRaises(CalledProcessError):
+                self.builds.run([broken, healthy])
+        self.assertEqual(self.replay(), b'broken\nhealthy\n')
+        self.assertEqual(self.images, ['healthy:test'])
+
+    def test_concurrent_backends_keep_the_serial_log_and_cleanup_order(self):
+        package = self.work / 'package'; package.mkdir()
+        (package / 'index.json').write_bytes(b'index')
+        for backend in ('BE', 'BE_GO', 'UI', 'renderer'):
+            (self.work / backend).mkdir()
+        def image(name, context, *args):
+            return self.builds.image(name, name + ':test', ['docker', 'build', '-t', name + ':test', context])
+        with patch.object(SMOKE.subprocess, 'run', side_effect=self.writing_run({'BE': .1, 'BE_GO': .05})):
+            backends, web, renderer = self.builds.run([
+                lambda: SMOKE.build_manual_backends(self.work, package, '1.2.3', 'revision', image, builds=self.builds),
+                lambda: image('web', self.work / 'UI'),
+                lambda: image('renderer', self.work / 'renderer'),
+            ])
+        self.assertEqual(backends, {'backend': 'bundled:test', 'backend-go': 'go-bundled:test'})
+        self.assertEqual((web, renderer), ('web:test', 'renderer:test'))
+        self.assertEqual(self.replay(), b'BE\nBE_GO\nUI\nrenderer\n')
+        self.assertEqual(self.images, ['bundled:test', 'go-bundled:test', 'web:test', 'renderer:test'])
 
 
 class HistoricalRuntimeTests(unittest.TestCase):
