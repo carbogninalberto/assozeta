@@ -94,8 +94,9 @@ from the membership fee) CAUGHT.
   int64 or float overflow in amounts, `lower()` of the few runes with special Python mappings.
 - Markup outside the document-views subset; template inputs outside `djtemplate`. Mention keys: the invoice's number, dates and
   amounts (also through the legacy aliases) are read, and a name that is not an attribute reads as the empty text (see below).
-- FatturaPA shapes outside the proven subset (`fatturapa.ErrUnsupported`): list/dict line text, decimal strings with whitespace,
-  underscores or non-ASCII digits, dates before year 1000, arithmetic beyond Decimal's 28-digit context.
+- (Long tail PR 3: FatturaPA list/dict line text, Decimal strings with whitespace, underscores, non-ASCII digits or huge
+  exponents, Decimal tuples, overflowing floats and XML dates before year 1000 (platform C library) are ported in
+  `internal/fatturapa`; the 28-digit context rounding is ported in the same PR.)
 - `HEAD` and the slash-less paths.
 
 ## Follow-up: invoice-customers/add and invoice/<uid>/update (ported in [invoice-sync-print](invoice-sync-print.md))

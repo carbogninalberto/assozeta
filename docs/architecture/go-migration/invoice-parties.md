@@ -145,8 +145,7 @@ it: 500 with the entry kept (case `customer-update-paid-as-file-audited-server-e
 
 ## Not ported (refused with a 500 before any write)
 
-- Customer-list invoices without a PDF whose FatturaPA inputs are outside `internal/fatturapa`'s subset (`ErrUnsupported`,
-  checked for all of them before the first save).
+- (Long tail PR 3: the FatturaPA inputs of customer-list invoices without a PDF are ported in `internal/fatturapa`.)
 - A valid customer add was refused here; it is ported in
   [invoice-sync-print](invoice-sync-print.md) (save, XML/JSON, eager print task).
 - Two sub-cases stay refused through the persona helpers: a `DD/MM/YYYY` date with non-ASCII digits, and form JSON nested

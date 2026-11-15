@@ -44,8 +44,6 @@ func (s *InvoiceParties) customerListPending(ctx context.Context, request Invoic
 	for i := range pending {
 		_, err = fatturapa.XML(InvoiceViewsFattura(&pending[i].Row), sample)
 		switch {
-		case errors.Is(err, fatturapa.ErrUnsupported):
-			return domain.ErrInvoicePartyNotPorted
 		case errors.Is(err, fatturapa.ErrUnexpectedJSON):
 			return err // Django's queryset raises reading the row, before any write
 		}
@@ -153,7 +151,7 @@ func (s *InvoiceParties) customerAddSave(ctx context.Context, request InvoicePar
 	// The lines here are the request's, not a jsonb column: JSON text Go does
 	// not read (fatturapa.ErrUnexpectedJSON) is refused too.
 	for _, build := range []func(fatturapa.Invoice, string) (string, error){fatturapa.XML, fatturapa.JSON} {
-		if _, err = build(fattura, sample); errors.Is(err, fatturapa.ErrUnsupported) || errors.Is(err, fatturapa.ErrUnexpectedJSON) {
+		if _, err = build(fattura, sample); errors.Is(err, fatturapa.ErrUnexpectedJSON) {
 			return domain.ErrInvoicePartyNotPorted
 		}
 	}

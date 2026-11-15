@@ -81,8 +81,8 @@ transports. Mutation (the cancelled flag taken from a literal true) CAUGHT.
 
 - A restore that becomes pending (or a lock that becomes busy) between the request's admission and the task: Django re-applies the
   eager task synchronously until admission passes. Go answers the 500 page after the writes (`ErrInvoiceSyncPrintDeferred`).
-- Add dates before year 1000 (`strftime('%Y')` is unpadded on glibc) and FatturaPA inputs outside `internal/fatturapa`'s subset
-  (`ErrUnsupported`, checked with a dry run before the insert).
+- (Long tail PR 3: dates before year 1000 follow the platform's `strftime('%Y')` and the FatturaPA inputs are ported in
+  `internal/fatturapa`; the dry run before the insert now only catches JSON text Go does not read.)
 - Not compared: the outbound header order (Go writes `Host`, `User-Agent`, then the rest sorted); redirects to another host follow Go's
   `Authorization` forwarding rule (same host or subdomain) rather than requests' (same hostname).
 

@@ -13,9 +13,10 @@
 //     e-mail, 8..256 characters) is required (code 00426).
 //   - the cessionario's empty IdFiscaleIVA is a model, not None: rule 00417
 //     never applies.
-//   - DecimalField quantizes half up to its decimals range; Python's context
-//     arithmetic (28 digits, half even) is exact for the values that fit, and
-//     inputs whose arithmetic would round are refused (ErrUnsupported).
+//   - DecimalField quantizes half up to its decimals range; the context
+//     arithmetic (+ and *, and the division by 100) keeps 28 significant
+//     digits, rounding half even, and an adjusted exponent past Emax overflows
+//     (Python raises, so Go answers ErrInvalid).
 //   - Decimal(str) follows _decimal: surrounding whitespace, ignored
 //     underscores and Unicode digits; json.loads' numbers are ints, or floats
 //     whose overflow is +/-inf. A (sign, digits, exponent) list builds a
@@ -35,8 +36,6 @@ import (
 )
 
 var (
-	// ErrUnsupported is arithmetic that Python's 28-digit context would round.
-	ErrUnsupported = refusal.New("fatturapa: arithmetic Python's context would round")
 	// ErrUnexpectedJSON is JSON text the invoice columns never hold: the lines
 	// are a jsonb column (CustomerInvoice.lines, a JSONField), so the text is
 	// one valid JSON value; an integer of more than 4300 digits makes Django's
@@ -44,7 +43,8 @@ var (
 	// generate_einvoice), the 500 page. An application-state error, never
 	// handed off.
 	ErrUnexpectedJSON = refusal.AppState("fatturapa: unexpected JSON column text")
-	// ErrInvalid is an input for which generate_einvoice raises.
+	// ErrInvalid is an input for which generate_einvoice raises, including
+	// context arithmetic whose adjusted exponent reaches past Emax (Overflow).
 	ErrInvalid = errors.New("fatturapa: generate_einvoice raises")
 )
 
@@ -133,8 +133,7 @@ type fattura struct {
 
 // builder carries the outcome flags of one build.
 type builder struct {
-	invalid bool // a raise or validation error independent of rounding
-	inexact bool // Python's context arithmetic would have rounded
+	invalid bool // a raise or validation error
 }
 
 func optionalText(value *string) string {
@@ -257,11 +256,8 @@ func build(inv Invoice, progressivo string) (*fattura, error) {
 	if err := b.summarize(f); err != nil {
 		return nil, err
 	}
-	switch {
-	case b.invalid:
+	if b.invalid {
 		return nil, ErrInvalid
-	case b.inexact:
-		return nil, ErrUnsupported
 	}
 	return f, nil
 }
@@ -273,15 +269,6 @@ func containsDigit(text string) bool {
 		}
 	}
 	return false
-}
-
-// raise is an exception during the build: certain unless it depends on a
-// rounded amount.
-func (b *builder) raise(dependent bool) error {
-	if dependent && b.inexact && !b.invalid {
-		return ErrUnsupported
-	}
-	return ErrInvalid
 }
 
 func (b *builder) lines(f *fattura, raw *string) error {
@@ -349,13 +336,13 @@ func (b *builder) lines(f *fattura, raw *string) error {
 		case quantity == nil:
 			l.unitPrice, l.total = *price, *price
 		default:
-			product, exact := price.mul(*quantity)
-			if !exact {
-				b.inexact = true
+			product, err := price.mul(*quantity)
+			if err != nil {
+				return err
 			}
 			total, ok := product.clean(2, 8)
 			if !ok {
-				return b.raise(true)
+				return ErrInvalid
 			}
 			l.unitPrice, l.total = *price, total
 		}
@@ -385,9 +372,7 @@ func (b *builder) lines(f *fattura, raw *string) error {
 
 // dependentInvalid is a validation error on a computed amount.
 func (b *builder) dependentInvalid() {
-	if !b.inexact {
-		b.invalid = true
-	}
+	b.invalid = true
 }
 
 // decimalField is DecimalField.clean_value of a JSON value (nil for None).
@@ -435,38 +420,43 @@ func (b *builder) summarize(f *fattura) error {
 	for _, g := range groups {
 		imponibile := decimal{coef: zeroInt()}
 		for _, l := range g.lines {
-			var exact bool
-			if imponibile, exact = imponibile.add(l.total); !exact {
-				b.inexact = true
+			next, err := imponibile.add(l.total)
+			if err != nil {
+				return err
 			}
+			imponibile = next
 		}
-		product, exact := imponibile.mul(g.vat)
-		if !exact {
-			b.inexact = true
+		product, err := imponibile.mul(g.vat)
+		if err != nil {
+			return err
 		}
 		taxable, ok := imponibile.clean(2, 2)
 		if !ok {
-			return b.raise(true)
+			return ErrInvalid
 		}
-		tax, ok := product.div100().clean(2, 2)
+		divided, err := product.div100()
+		if err != nil {
+			return err
+		}
+		tax, ok := divided.clean(2, 2)
 		if !ok {
-			return b.raise(true)
+			return ErrInvalid
 		}
 		if len(taxable.String()) > 15 || len(tax.String()) > 15 {
 			b.dependentInvalid()
 		}
 		f.summaries = append(f.summaries, summary{vat: g.vat, taxable: taxable, tax: tax})
-		both, exact := taxable.add(tax)
-		if !exact {
-			b.inexact = true
+		both, err := taxable.add(tax)
+		if err != nil {
+			return err
 		}
-		if total, exact = total.add(both); !exact {
-			b.inexact = true
+		if total, err = total.add(both); err != nil {
+			return err
 		}
 	}
 	cleaned, ok := total.clean(2, 2)
 	if !ok {
-		return b.raise(true)
+		return ErrInvalid
 	}
 	f.total = cleaned
 	if len(cleaned.String()) > 15 {

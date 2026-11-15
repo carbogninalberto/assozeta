@@ -13,12 +13,13 @@ import (
 
 // testdata/a38_renders.json comes from TESTS/adapters/go/fatturapa_golden.py:
 // the real generate_invoice_{html,xml,json} on authored and seeded invoices.
+// The file's "unsupported" tags marked the cases whose amounts round in Python's
+// 28-digit context; the port rounds them the same way, so they are plain cases.
 type goldenFile struct {
 	Progressivi [][3]any `json:"progressivi"`
 	Cases       []struct {
 		Name        string                    `json:"name"`
 		Fields      map[string]any            `json:"fields"`
-		Unsupported *string                   `json:"unsupported"`
 		Progressivo string                    `json:"progressivo"`
 		Outputs     map[string]map[string]any `json:"outputs"`
 	} `json:"cases"`
@@ -121,11 +122,6 @@ func TestGoldenRenders(t *testing.T) {
 			want := c.Outputs[kind]
 			got, err := render()
 			switch {
-			case errors.Is(err, ErrUnsupported):
-				if c.Unsupported == nil {
-					t.Errorf("%s %s: unexpected ErrUnsupported", c.Name, kind)
-				}
-				counts["unsupported"]++
 			case want["raised"] != nil:
 				if !errors.Is(err, ErrInvalid) {
 					t.Errorf("%s %s: Python raised %v, Go gave %v", c.Name, kind, want["raised"], err)
@@ -143,11 +139,6 @@ func TestGoldenRenders(t *testing.T) {
 					}
 				}
 				counts["identical"]++
-			}
-		}
-		if c.Unsupported != nil {
-			if _, err := HTML(inv); !errors.Is(err, ErrUnsupported) {
-				t.Errorf("%s: tagged unsupported but Go answered %v", c.Name, err)
 			}
 		}
 	}

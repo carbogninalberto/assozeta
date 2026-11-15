@@ -11,8 +11,16 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pystr"
 )
 
-// precision is Python's default decimal context precision (prec=28).
-const precision = 28
+// The default decimal context (decimal.getcontext()): prec=28 digits,
+// ROUND_HALF_EVEN, Emax=999999 and Emin=-999999, with InvalidOperation,
+// DivisionByZero and Overflow trapped.
+const (
+	precision = 28
+	emax      = 999999
+	emin      = -999999
+	// etiny is the smallest exponent a subnormal result keeps.
+	etiny = emin - precision + 1
+)
 
 // decimal is a Python decimal.Decimal finite value: (-1)^neg * coef * 10^exp,
 // trailing zeros and the sign of zero kept.
@@ -170,29 +178,75 @@ func (d decimal) clean(minimum, maximum int) (decimal, bool) {
 	return d, true
 }
 
-// add is context addition; exact false when Python would round (more than 28 digits).
-func (d decimal) add(other decimal) (decimal, bool) {
+// contextRound rounds an exact coefficient and exponent the way the default
+// context does: at most 28 significant digits, half even, the exponent raised
+// by one for every digit it drops, and a subnormal result quantized to Etiny.
+// ErrInvalid is the context's trapped Overflow: the adjusted exponent reaches
+// past Emax, so Python raises instead of answering a finite number.
+func contextRound(neg bool, coef *big.Int, exp int) (decimal, error) {
+	result := decimal{neg: neg, coef: coef, exp: exp}
+	if result.isZero() {
+		// Zero has no digits to round; its exponent is clamped to the context's
+		// range (0E+1000000 * 1 is 0E+999999, 0E-1000040 * 1 is 0E-1000026).
+		result.exp = min(max(exp, etiny), emax)
+		return result, nil
+	}
+	digits := result.digits()
+	if exp+digits-1 > emax {
+		return decimal{}, ErrInvalid
+	}
+	target := exp
+	if dropped := digits - precision; dropped > 0 {
+		target += dropped
+	}
+	if exp+digits-1 < emin && target < etiny {
+		target = etiny // subnormal: only the digits down to Etiny are kept
+	}
+	if target > exp {
+		result = result.rescale(target, true)
+		if result.exp+result.digits()-1 > emax {
+			return decimal{}, ErrInvalid // the carry reached past Emax
+		}
+		if carried := result.digits() - precision; carried > 0 {
+			// Rounding up carried into a new leading digit (99..9 -> 100..0).
+			result = decimal{neg: result.neg, coef: new(big.Int).Quo(result.coef, pow10(carried)),
+				exp: result.exp + carried}
+		}
+	}
+	return result, nil
+}
+
+// add is context addition: the exact sum at the smaller exponent, rounded to
+// 28 significant digits (half even).
+func (d decimal) add(other decimal) (decimal, error) {
 	exp := min(d.exp, other.exp)
 	sum := new(big.Int).Add(d.rescale(exp, false).signed(), other.rescale(exp, false).signed())
-	result := decimal{neg: sum.Sign() < 0, coef: sum.Abs(sum), exp: exp}
-	if result.isZero() {
-		result.neg = d.neg && other.neg
+	neg := sum.Sign() < 0
+	coef := new(big.Int).Abs(sum)
+	if coef.Sign() == 0 {
+		// A zero sum keeps the sign only when both addends are negative zero
+		// or negative: (+0) + (-0.00) is 0.00.
+		neg = d.neg && other.neg
 	}
-	return result, result.digits() <= precision
+	return contextRound(neg, coef, exp)
 }
 
-func (d decimal) mul(other decimal) (decimal, bool) {
-	result := decimal{neg: d.neg != other.neg, coef: new(big.Int).Mul(d.coef, other.coef), exp: d.exp + other.exp}
-	return result, result.digits() <= precision
+// mul is context multiplication: the exact product at the summed exponents,
+// rounded to 28 significant digits (half even).
+func (d decimal) mul(other decimal) (decimal, error) {
+	return contextRound(d.neg != other.neg, new(big.Int).Mul(d.coef, other.coef), d.exp+other.exp)
 }
 
-// div100 is d / 100 (always exact): the quotient at the ideal exponent d.exp
-// when it fits, otherwise the smallest exponent that represents it.
-func (d decimal) div100() decimal {
+// div100 is context division by Decimal(100): the exact quotient at the
+// preferred exponent d.exp - 2, or at the smallest exponent above it that still
+// represents the quotient exactly (the ideal exponent is d.exp), rounded to 28
+// significant digits when the coefficient is longer than that.
+func (d decimal) div100() (decimal, error) {
 	result := decimal{neg: d.neg, coef: new(big.Int).Set(d.coef), exp: d.exp - 2}
 	if result.isZero() {
-		result.exp = d.exp
-		return result
+		// A zero quotient keeps the dividend's exponent: 0E+5/100 is 0E+5,
+		// -0.00/100 is -0.00.
+		return contextRound(d.neg, result.coef, d.exp)
 	}
 	remainder := new(big.Int)
 	for result.exp < d.exp {
@@ -203,7 +257,7 @@ func (d decimal) div100() decimal {
 		result.coef = quotient
 		result.exp++
 	}
-	return result
+	return contextRound(result.neg, result.coef, result.exp)
 }
 
 func (d decimal) cmp(other decimal) int {

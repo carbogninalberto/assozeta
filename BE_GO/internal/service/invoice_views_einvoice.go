@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/fatturapa"
@@ -27,9 +26,6 @@ func (s *InvoiceViews) einvoice(ctx context.Context, identity domain.ResolvedIde
 	}
 	html, err := fatturapa.HTML(InvoiceViewsFattura(row))
 	if err != nil {
-		if errors.Is(err, fatturapa.ErrUnsupported) {
-			return nil, fmt.Errorf("%w: %v", errInvoiceViewsNotPorted, err)
-		}
 		if errors.Is(err, fatturapa.ErrInvalid) {
 			return nil, ErrDocumentViewServer
 		}
