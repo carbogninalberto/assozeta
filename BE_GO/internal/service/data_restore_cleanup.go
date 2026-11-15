@@ -209,9 +209,9 @@ func dataRestoreMedia(raw json.RawMessage) ([]string, map[string]string, bool) {
 	return order, values, true
 }
 
-// plan refuses, before any effect, the runs in which prune_storage would raise
-// after a partial, set-ordered series of deletes: media that is not an object
-// of strings, or a name it would delete outside AWS_LOCATION.
+// plan reports, before any effect, the states in which prune_storage could
+// not have completed: media that is not an object of strings, or a name it
+// would delete outside AWS_LOCATION. No stored row produces them.
 func (s *DataRestoreCleanup) plan(ctx context.Context, job domain.Job) error {
 	tx, err := s.store.BeginDataRestoreCleanup(ctx, job)
 	if err != nil {
@@ -253,8 +253,9 @@ func (s *DataRestoreCleanup) plan(ctx context.Context, job domain.Job) error {
 }
 
 func (s *DataRestoreCleanup) refuse(ctx context.Context) error {
-	s.logger.WarnContext(ctx, "data restore cleanup refused", "code", "data_restore_cleanup_unsupported")
-	return domain.ErrDataRestoreCleanupUnsupported
+	s.logger.WarnContext(ctx, "data restore cleanup refused", "code", "data_restore_cleanup_unreachable")
+	// media and backup_path are written only by restore/execution.py (stage_media, RecoveryExport.save_to_storage), under restores/<id>/.
+	return domain.ErrDataRestoreCleanupUnreachable
 }
 
 // recoveryRetained is int(os.environ.get('DATA_RESTORE_RECOVERY_BACKUPS', 1))
@@ -357,7 +358,8 @@ func (s *DataRestoreCleanup) prune(ctx context.Context, job domain.Job) error {
 func (s *DataRestoreCleanup) pruneMedia(ctx context.Context, job domain.Job, op *domain.DataRestoreReceipt, referenced map[string]bool) error {
 	order, media, ok := dataRestoreMedia(op.Media)
 	if !ok {
-		return domain.ErrDataRestoreCleanupUnsupported
+		// media and backup_path are written only by restore/execution.py (stage_media, RecoveryExport.save_to_storage), under restores/<id>/.
+		return domain.ErrDataRestoreCleanupUnreachable
 	}
 	kept := []string{}
 	deleted := map[string]bool{}

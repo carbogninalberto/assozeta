@@ -26,8 +26,6 @@ type InstanceSetupInput struct {
 	GoogleClientID, AppleClientID                          string
 	Fresh                                                  bool
 	AssociationName, OwnerEmail, OwnerPassword, ImportTask string
-	// RefusedURL marks a URLField value that needs URLValidator's IDNA fallback.
-	RefusedURL bool
 }
 
 type setupField struct {
@@ -120,13 +118,9 @@ var setupOAuth = []setupField{
 	{name: "appleClientId", field: drfText{max: 255, allowBlank: true, allowNull: true}, fallback: setupDefault("")},
 }
 
-func setupStripe(refused *bool) []setupField {
+func setupStripe() []setupField {
 	url := func(text string) []string {
-		valid, ascii := DjangoURL(text)
-		if !ascii {
-			*refused = true
-		}
-		if !valid {
+		if valid, _ := DjangoURL(text); !valid {
 			return []string{InstanceAdminURL}
 		}
 		return nil
@@ -194,7 +188,7 @@ func InstanceSetupData(body any) (*InstanceSetupInput, error) {
 	if nested, present, failure := setupNested(object, "stripe", false); failure != nil {
 		errs["stripe"] = failure
 	} else if present {
-		if _, nestedErrors := runSetupFields(nested, setupStripe(&input.RefusedURL), false); len(nestedErrors) > 0 {
+		if _, nestedErrors := runSetupFields(nested, setupStripe(), false); len(nestedErrors) > 0 {
 			errs["stripe"] = nestedErrors
 		}
 	}
@@ -264,7 +258,6 @@ type InstanceReconfigure struct {
 	Columns         map[string]any
 	DisplaySettings any
 	HasDisplay      bool
-	RefusedURL      bool
 }
 
 // InstanceReconfigureInput is InstanceReconfigureSerializer(config,
@@ -306,7 +299,7 @@ func InstanceReconfigureInput(body any) (*InstanceReconfigure, error) {
 		errs["stripe"] = failure
 	} else if present {
 		// Validated, never written: Stripe credentials are environment-owned.
-		if _, nestedErrors := runSetupFields(nested, setupStripe(&result.RefusedURL), true); len(nestedErrors) > 0 {
+		if _, nestedErrors := runSetupFields(nested, setupStripe(), true); len(nestedErrors) > 0 {
 			errs["stripe"] = nestedErrors
 		}
 	}

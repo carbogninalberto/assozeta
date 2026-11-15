@@ -9,9 +9,8 @@ import (
 // ErrInstanceSetupRefused marks an instance setup request the Go port does
 // not serve (an import whose task has a ready result, values the database
 // columns would reject inside Django's transaction, a domain that needs
-// Python's Unicode lowercasing, URL values that need the IDNA fallback, a
-// storage name collision after the old logos are deleted). Handlers answer
-// with the server error page before any write.
+// Python's Unicode lowercasing, a storage name collision after the old logos
+// are deleted). Handlers answer with the server error page before any write.
 var ErrInstanceSetupRefused = refusal.New("instance setup request not ported")
 
 // ErrInstanceSetupExists is InstanceConfiguration.save's singleton check

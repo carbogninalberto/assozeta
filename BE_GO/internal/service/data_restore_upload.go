@@ -72,7 +72,8 @@ func (s *DataRestore) acceptUpload(ctx context.Context, user string, config *dom
 	defer archive.Close()
 	preview, err := archive.summary(run)
 	if err != nil {
-		return nil, domain.ErrDataRestoreNotPorted
+		// validation already ran skipped_records on the same archive; every count is an int.
+		return nil, domain.ErrDataRestoreUnreachable
 	}
 	// Keep a bounded number of review uploads per owner.
 	reviews, err := s.store.Reviews(ctx, user)

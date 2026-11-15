@@ -596,8 +596,6 @@ var InstanceAdminSecretFields = map[string][]string{"ai": {"api_key"}, "stripe":
 
 // InstanceAdminIntegration is the provider serializer's is_valid():
 // StripeSettingsSerializer, AISettingsSerializer or LoginSettingsSerializer.
-// It returns ErrInstanceAdminRefused-wrapped errors for input it does not
-// validate (a non-ASCII AI base URL).
 func InstanceAdminIntegration(provider string, body any) (*InstanceAdminIntegrationInput, error) {
 	object, err := instanceAdminObject(body)
 	if err != nil {
@@ -606,7 +604,6 @@ func InstanceAdminIntegration(provider string, body any) (*InstanceAdminIntegrat
 	errs := map[string]any{}
 	input := &InstanceAdminIntegrationInput{Values: map[string]any{}, Clear: []string{}}
 	zero := int64(0)
-	var refused error
 	if value, ok := object.Lookup("revision"); !ok {
 		errs["revision"] = []string{PaymentCategoryValidationRequired}
 	} else if number, codes := drfIntegerField(value, &zero, nil); codes != nil {
@@ -675,11 +672,7 @@ func InstanceAdminIntegration(provider string, body any) (*InstanceAdminIntegrat
 		text("model", drfText{max: 255}, true, nil)
 		text("cheap_model", drfText{max: 255}, true, nil)
 		urlValidator := func(value string) []string {
-			valid, ascii := DjangoURL(value)
-			if !ascii {
-				refused = domain.ErrInstanceAdminRefused
-			}
-			if !valid {
+			if valid, _ := DjangoURL(value); !valid {
 				return []string{InstanceAdminURL}
 			}
 			return nil
@@ -704,9 +697,6 @@ func InstanceAdminIntegration(provider string, body any) (*InstanceAdminIntegrat
 			}
 			return nil
 		})
-	}
-	if refused != nil {
-		return nil, refused
 	}
 	if len(errs) > 0 {
 		return nil, &InstanceAdminInvalid{Body: errs}

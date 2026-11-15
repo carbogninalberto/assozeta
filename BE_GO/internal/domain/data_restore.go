@@ -43,10 +43,13 @@ type DataRestoreInstance struct {
 }
 
 // ErrDataRestoreNotPorted marks requests Django answers with code Go does not
-// carry (archive validation of an upload, cached progress values outside the
-// decoded subset, request bodies outside JSON/multipart); they are refused
-// with the server error page before any write.
+// carry (archive validation of an upload, a multipart body outside the ported
+// subset); they are refused with the server error page before any write.
 var ErrDataRestoreNotPorted = refusal.New("data restore path not ported")
+
+// ErrDataRestoreUnreachable is a state no request or stored row produces
+// (each site names the writer that rules it out). Never handed off.
+var ErrDataRestoreUnreachable = refusal.AppState("data restore: unreachable state")
 
 // ErrDataRestoreNotFound is get_object_or_404's Http404 for DataRestore.
 var ErrDataRestoreNotFound = errors.New("No DataRestore matches the given query.")

@@ -15,11 +15,11 @@ import (
 // (@shared_task(name='instance.restore.cleanup')), as persisted Beat rows name it.
 const JobCleanupDataRestores = "instance.restore.cleanup"
 
-// ErrDataRestoreCleanupUnsupported refuses a run before any effect: a completed
-// receipt's media is not a JSON object of strings, or a storage name the
-// pruning would delete resolves outside AWS_LOCATION. Django raises midway
-// through those runs, after deletes whose order follows a Python set.
-var ErrDataRestoreCleanupUnsupported = refusal.New("data restore cleanup input outside the ported subset")
+// ErrDataRestoreCleanupUnreachable is a state no request or stored row
+// produces: a completed receipt's media is not a JSON object of strings, or a
+// storage name the pruning would delete resolves outside AWS_LOCATION. Never
+// handed off.
+var ErrDataRestoreCleanupUnreachable = refusal.AppState("data restore cleanup: unreachable state")
 
 // ErrDataRestoreRecoveryBackups is int(DATA_RESTORE_RECOVERY_BACKUPS) raising
 // ValueError: the task ends there, after the receipt loop.
