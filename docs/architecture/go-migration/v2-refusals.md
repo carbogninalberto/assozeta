@@ -22,7 +22,7 @@ Cross-cutting facts used for the classes:
 - The UI never sends `X-Group-Id` (nothing writes `localStorage.selectedGroup`): every group-header refusal is B.
 - The UI sends JSON bodies everywhere except FormData uploads: JSON-vs-form refusals are B except on those uploads.
 - `/ws/*` is routed to Django by Caddy (`selfhost/caddy/Caddyfile`); the v2 switch rewrites only `/api`, so websocket
-  refusals (agent exports) are B today and become A if `/ws/agent/` moves to Go.
+  refusals (the agent tool inputs listed below) are B today and become A if `/ws/agent/` moves to Go.
 - The `document/*/view/` routes are fetched by the PDF renderer from `CURRENT_HOST_PUPPETEER` (Django), not by the UI.
 - Several docs are behind the code: associates-draft approve, `collaborators/<uid>/delete`, `calendar/events/export`,
   course overview add, `course-subscriptions/add`, `admin/logo`, instructor hours compensation, lessons hours,
@@ -570,8 +570,6 @@ Why these stay (v2-misc):
   existing-account sign-in and invite handling. What stays refused: an identity or body name that is not a string, and a
   non-ASCII identity e-mail or username when a new account would be created.
 
-Not HTTP (websocket, Django today): agent exports to XLSX/PDF (`service/business_mcp_query.go:290`).
-
 ## B items a self-hosted dataset may contain
 
 The appendix rows marked `legacy: yes` (54). Recommendation: port them with the A item of the same family when it
@@ -1004,7 +1002,7 @@ Status report; it lists no per-route refusals beyond those in the family docs. N
 ### mcp-server.md
 | route | refusal condition | Go site | class | evidence / notes |
 |---|---|---|---|---|
-| stdio `run_mcp_server` tools; also UI agent websocket `/ws/agent/` | `export_data` / `export_multi_sheet` / `get_attendance_matrix(export=true)` building XLSX/PDF | `service/business_mcp_query.go:290` (`ErrBusinessMCPNotPorted`), mapped to `ErrAgentNotPorted` at `service/agent_tools.go:70` | A (agent channel) / B (stdio) | The UI agent (`utils/AgentWebSocket.js`, `endpoints.js:38` `AGENT: /ws/agent/`) runs the same business tools. A user who asks the agent for an Excel/PDF export gets a refusal. This is websocket, not HTTP. Not an HTTP request refusal: stdio / websocket tool channel. |
+| stdio `run_mcp_server` tools; also UI agent websocket `/ws/agent/` | `export_data` / `export_multi_sheet` / `get_attendance_matrix(export=true)` building XLSX/PDF | ported (`service/report_files.go`, `internal/xlsxexport`, `internal/pdfexport`) | ported | The XLSX and PDF results are built on both channels (v2-reports-3, `ws-agent-exports-green1`). The agent answers an exporter exception as the tool result `{"error": str(e)}` with Django's text; the stdio transport answers the same dict. What stays refused: the exporter inputs and the PDF markup listed in [ws-agent](ws-agent.md) and [mcp-server](mcp-server.md). |
 | same | ORM lookup edge cases (regex, JSON containment, iso_* transforms, `?` ordering, non-numeric aggregates, odd UUID/ISO/digit spellings, etc.) | `service/business_mcp_query.go` (multiple sites) | B | The LLM builds these arguments, not UI widgets. Rare. legacy: no. Cost: expensive. Not an HTTP request refusal: tool arguments written by an LLM. |
 | same | `sanitize_text` replacement containing `\` | `service/business_mcp.go:129` | B | Tool-only argument. Not an HTTP request refusal: tool argument. |
 | CLI | argparse / global Django options | cmd | B | CLI only. Not a request refusal: command line. |

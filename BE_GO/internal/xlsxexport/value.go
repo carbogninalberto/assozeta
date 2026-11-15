@@ -18,6 +18,22 @@ import (
 // returns None, or the library raises): the views answer 500.
 var ErrDjango = errors.New("xlsxexport: Django fails to build this workbook")
 
+// DjangoError is such a failure with str(exception), which the agent's tool
+// result carries ({"error": str(e)}); every DjangoError matches ErrDjango.
+type DjangoError struct{ Text string }
+
+func (e *DjangoError) Error() string { return e.Text }
+
+// Is matches ErrDjango: callers that only answer a server error keep using
+// errors.Is.
+func (e *DjangoError) Is(target error) bool { return target == ErrDjango }
+
+func djangoFailure(text string) error { return &DjangoError{Text: text} }
+
+// DjangoFailure is an exception of the Django exporter with its str(e); the
+// callers that render the agent tool result use its text.
+func DjangoFailure(text string) error { return djangoFailure(text) }
+
 // ErrNotPorted is an input whose workbook this package does not reproduce:
 // callers refuse it before any write.
 var ErrNotPorted = refusal.New("xlsxexport: workbook input not ported")

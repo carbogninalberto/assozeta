@@ -256,9 +256,6 @@ func (a *Agent) processMessage(ctx context.Context, message string) error {
 	if err := a.callback.OnStatus(ctx, "thinking"); err != nil {
 		return err
 	}
-	if dto.AgentHasSurrogate(bounded) {
-		return ErrAgentNotPorted
-	}
 	a.mu.Lock()
 	pending := a.pending
 	a.mu.Unlock()

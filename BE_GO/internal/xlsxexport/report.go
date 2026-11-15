@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 )
 
 // ReportSheet is one sheet of a saved-report workbook after
@@ -172,21 +174,19 @@ func typedLabels(sheet *opSheet, labels []Value) error {
 	if labels == nil || len(sheet.rows) == 0 {
 		return nil
 	}
-	nones := 0
 	for i, label := range labels {
 		cell := opCell{col: i + 1, styled: true}
 		switch label.Kind {
 		case Str:
 			continue
 		case None:
+			// pandas writes a NaN header; openpyxl makes it an empty inline string.
 			cell.kind = 's'
-			if nones++; nones > 1 {
-				return ErrNotPorted // two None labels
-			}
 		case Int, BigInt:
 			number := labelFloat64(label)
 			if math.IsInf(number, 0) {
-				return ErrNotPorted // float(label) overflows where pandas reads it
+				// openpyxl converts the label to a float.
+				return djangoFailure("int too large to convert to float")
 			}
 			cell.kind, cell.text = 'n', percentG(number, false)
 		case Float:
@@ -218,8 +218,11 @@ type sheetTitles []string
 var errSheetExists = errors.New("xlsxexport: sheet title already used")
 
 func (titles *sheetTitles) add(title string) error {
-	if title == "" || openpyxlInvalidTitle.MatchString(title) {
-		return ErrDjango
+	if title == "" {
+		return djangoFailure("Title must have at least one character")
+	}
+	if bad := openpyxlInvalidTitle.FindString(title); bad != "" {
+		return djangoFailure("Invalid character " + bad + " found in sheet title")
 	}
 	for _, earlier := range *titles {
 		if earlier == title {
@@ -227,14 +230,19 @@ func (titles *sheetTitles) add(title string) error {
 		}
 		if strings.EqualFold(earlier, title) {
 			if strings.ToLower(earlier) == strings.ToLower(title) {
-				return ErrDjango
+				// openpyxl renames the sheet instead of failing; pandas then
+				// looks up the name it asked for and raises KeyError(name).
+				return djangoFailure(pythonKeyError(title))
 			}
-			return ErrNotPorted
+			return ErrNotPorted // openpyxl's case-insensitive naming beyond lower()
 		}
 	}
 	*titles = append(*titles, title)
 	return nil
 }
+
+// pythonKeyError is str(KeyError(key)): the key's repr.
+func pythonKeyError(key string) string { return dto.PythonStringRepr(key) }
 
 func pySlice(text string, n int) string {
 	runes := []rune(text)
@@ -470,7 +478,8 @@ func attendanceFrame(title string, lead int, columns []string, frame []frameColu
 
 func courseSheet(title string, course AttendanceCourse) (opSheet, error) {
 	if len(course.Rows) == 0 {
-		return opSheet{}, ErrDjango // DataFrame([]) has no 'Nome e Cognome' column
+		// DataFrame([]) has no 'Nome e Cognome' column.
+		return opSheet{}, djangoFailure(pythonKeyError("Nome e Cognome"))
 	}
 	columns := []string{"#", "Nome e Cognome"}
 	index := map[string]int{}
@@ -545,7 +554,8 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 			return nil, ErrNotPorted
 		}
 		if courses[0].Untitled {
-			return nil, ErrDjango // the sheet name is a slice of the title
+			// The sheet name is a slice of the title.
+			return nil, djangoFailure("'NoneType' object is not subscriptable")
 		}
 		name := pySlice(courses[0].Course, 31)
 		if err := titles.add(name); err != nil {
@@ -570,7 +580,7 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 			}
 			// The frame is built (and fails without rows) before the sheet is named.
 			if len(course.Rows) == 0 {
-				return nil, ErrDjango
+				return nil, djangoFailure(pythonKeyError("Nome e Cognome"))
 			}
 			err := titles.add(name)
 			exists := errors.Is(err, errSheetExists)
@@ -640,7 +650,8 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 			}
 		}
 		if rows == 0 {
-			return nil, ErrDjango // DataFrame([]) has no 'Corso' column
+			// DataFrame([]) has no 'Corso' column.
+			return nil, djangoFailure(pythonKeyError("Corso"))
 		}
 		widths := []string{"6", strconv.Itoa(min(corso+2, 40)), strconv.Itoa(min(names+2, 40))}
 		for range ordered {

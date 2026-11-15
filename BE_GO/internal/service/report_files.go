@@ -162,7 +162,16 @@ func mcpExportXLSXValue(value any) (xlsxexport.Value, error) {
 	return xlsxexport.Value{}, ErrBusinessMCPNotPorted
 }
 
-// reportSheet is one DataFrame of XLSXExporter: the formatted values by column.
+// labelFailureText is the TypeError pandas raises for a column label that is a
+// list or a dict (a label that is not hashable cannot rename a column).
+func labelFailureText(value any) string {
+	if _, list := value.([]any); list {
+		return "unhashable type: 'list'"
+	}
+	return "Passing a dict as an indexer is not supported. Use a list instead."
+}
+
+// mcpReportSheet is one DataFrame of XLSXExporter: the formatted values by column.
 func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsxexport.ReportSheet, error) {
 	columns, _, _ := mcpExportColumns(data, nil)
 	sheet := xlsxexport.ReportSheet{Title: title, Data: make([][]xlsxexport.Value, len(columns))}
@@ -186,7 +195,7 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 					return xlsxexport.ReportSheet{}, err
 				}
 			default:
-				return xlsxexport.ReportSheet{}, xlsxexport.ErrDjango
+				return xlsxexport.ReportSheet{}, xlsxexport.DjangoFailure(labelFailureText(value))
 			}
 		}
 		sheet.Labels = append(sheet.Labels, label)
@@ -206,13 +215,45 @@ func mcpReportSheet(title string, data []any, labels domain.RequestObject) (xlsx
 	return sheet, nil
 }
 
-// builtFile maps a document builder's outcome: an exception of the Django
-// exporter marks the call raised (nil file), a refused input stays refused.
+// djangoFailureText is str(exception) of an exporter failure.
+func djangoFailureText(err error) (string, bool) {
+	var xlsx *xlsxexport.DjangoError
+	if errors.As(err, &xlsx) {
+		return xlsx.Text, true
+	}
+	var pdf *pdfexport.LayoutError
+	if errors.As(err, &pdf) {
+		return pdf.Text, true
+	}
+	return "", false
+}
+
+// raisedFile is the exception of a document builder with str(e); the call
+// answers {"error": str(e)} and is marked raised for a saved-report run.
+type raisedFile struct{ text string }
+
+func (r *raisedFile) Error() string { return r.text }
+
+// raisedText is the text of a document builder's exception.
+func raisedText(err error) (string, bool) {
+	var raised *raisedFile
+	if errors.As(err, &raised) {
+		return raised.text, true
+	}
+	return "", false
+}
+
+// mcpBuiltFile maps a document builder's outcome: an exception of the Django
+// exporter is a raisedFile with its text, a refused input stays refused.
 func mcpBuiltFile(ctx context.Context, file []byte, err error) ([]byte, error) {
-	switch {
-	case errors.Is(err, xlsxexport.ErrDjango), errors.Is(err, pdfexport.ErrLayout):
-		return nil, mcpRunOnly(ctx)
-	case errors.Is(err, xlsxexport.ErrNotPorted), errors.Is(err, pdfexport.ErrNotPorted):
+	if errors.Is(err, xlsxexport.ErrDjango) || errors.Is(err, pdfexport.ErrLayout) {
+		text, ok := djangoFailureText(err)
+		if !ok {
+			return nil, mcpRunOnly(ctx)
+		}
+		return nil, &raisedFile{text: text}
+	}
+	if errors.Is(err, xlsxexport.ErrNotPorted) || errors.Is(err, pdfexport.ErrNotPorted) {
 		return nil, ErrBusinessMCPNotPorted
 	}
 	return file, err
@@ -346,6 +387,9 @@ func (t *BusinessMCPTools) exportSheets(ctx context.Context, prepared []reportSh
 	}
 	file, err := xlsxexport.ReportSheetsWorkbook(sheets, t.now())
 	if file, err = mcpBuiltFile(ctx, file, err); err != nil || file == nil {
+		if text, raised := raisedText(err); raised {
+			return mcpRaisedResult(ctx, text)
+		}
 		return mcpErrorResult(""), err
 	}
 	result := mcpFileResult(name+".xlsx", reportXLSXType, file)
@@ -436,6 +480,9 @@ func (t *BusinessMCPTools) attendanceFile(ctx context.Context, matrices []*atten
 		file, err = xlsxexport.AttendanceWorkbook(mode, courses, t.now())
 	}
 	if file, err = mcpBuiltFile(ctx, file, err); err != nil || file == nil {
+		if text, raised := raisedText(err); raised {
+			return mcpRaisedResult(ctx, text)
+		}
 		return mcpErrorResult(""), err
 	}
 	result := mcpFileResult(name, contentType, file)

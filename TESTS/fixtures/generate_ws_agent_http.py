@@ -20,6 +20,9 @@ records every request. These sessions pin, in Django's order:
   detection, the iteration limit, deferred exports and saved reports), the
   history cap and every outbound request (headers, exact JSON body, SDK and
   agent retries);
+- the exports: the XLSX and PDF files handed to the browser and cached, and the
+  exporter exceptions answered as ``{"error": str(e)}`` (a case's ``files``
+  compare the encoded workbook or document part by part);
 - ``manage.py run_agent``: the CLI transcript (stdout and stderr bytes).
 Run with ``python3 -I``.
 """
@@ -311,11 +314,11 @@ NO_AI = {'enabled': False}
 
 
 def add(name, steps=(), *, handshake=ACCEPTED, query='token={token:owner}', ai=AI, manual=True, llm=(), requests=(),
-        cache=None, cache_seed=None, reports=None, kind='ws'):
+        cache=None, cache_seed=None, reports=None, kind='ws', files=None):
     cases.append({'name': f'ws-agent-{name}', 'kind': kind, 'path': '/ws/agent/', 'query': query, 'headers': [],
                   'handshake': handshake, 'ai': ai, 'manual': manual, 'steps': list(steps), 'llm': list(llm),
                   'requests': list(requests), 'cache': cache or {}, 'cache_seed': cache_seed or {},
-                  'reports': reports})
+                  'reports': reports, 'files': files or {}})
 
 
 def welcome(text=WELCOME_FULL):
@@ -372,6 +375,11 @@ add('unhashable-type-crash', [welcome(), send('{"type": [1, "a", null]}'), *CRAS
 add('array-crash', [welcome(), send('[1]'), *CRASH])
 add('binary-crash', [welcome(), {'send_binary': '7b7d'}, *CRASH])
 add('message-not-string-crash', [welcome(), send({'type': 'user_message', 'message': 5}), *CRASH])
+# A lone surrogate cannot be encoded for the provider: httpx raises while the
+# request is built, so no request is sent and the agent answers its generic
+# error (the text would have carried the UnicodeEncodeError).
+add('message-surrogate', [welcome(), send({'type': 'user_message', 'message': '\ud800'}), status('thinking'),
+                          error_frame(TEMPORARY), DONE, *CLOSE], llm=[], requests=[], cache=throttle(1))
 
 # --- saved reports --------------------------------------------------------
 add('reports-disabled', [welcome(WELCOME_MANUAL_ONLY),
@@ -723,6 +731,166 @@ add('export-and-save', [
          'params': {'model_name': 'Tags'}, 'ui_config': {}},
         {'saved_report_id': '<<uuid:2>>', 'name': 'Etichette salvate', 'user': OWNER, 'description': 'Mie',
          'tool_name': 'export_data', 'params': SAVE_INFO['params'], 'ui_config': SAVE_INFO['ui_config']}]})
+
+# --- XLSX and PDF exports (the agent channel) -----------------------------
+# A file the agent hands to the browser: the workbook and the document are
+# compared part by part (TESTS/contracts/xlsx.py and pdf.py), the frame and the
+# tool result carry the same bytes.
+XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+EXPORT_UI = [{'key': 'format', 'type': 'select', 'label': 'Formato', 'options': ['csv', 'xlsx', 'pdf']},
+             {'key': 'filters', 'type': 'json', 'label': 'Filtri'}]
+TABLE_ARGS = {'model_name': 'Tags', 'fields': ['tag_name'], 'filters': {'tag_name__startswith': 'WSAgent'},
+               'order_by': ['tag_name'], 'title': 'Etichette'}
+
+
+def export_args(fmt, **extra):
+    return {**TABLE_ARGS, 'format': fmt, **extra}
+
+
+def export_save_info(fmt, **params):
+    return {'tool_name': 'export_data',
+            'params': {'model_name': 'Tags', 'format': fmt, **params},
+            'name': 'Etichette - <<today_dmy>>',
+            'description': f'Export Etichette ({fmt.upper()}) - 2 righe, 1 filtro applicato',
+            'description_hint': '2 righe, 1 filtro applicato',
+            'ui_config': {'fields': EXPORT_UI}, 'model_name': 'Tags'}
+
+
+def export_tool_text(token, filename, content_type, save_info, **extra):
+    """The tool result: json.dumps(result, default=str, ensure_ascii=False)."""
+    value = {'type': 'export_ready', 'filename': filename, 'content_type': content_type, 'data_base64': token}
+    value.update(extra)
+    value['save_info'] = save_info
+    return tool_text(value)
+
+
+def export_ready_frame(token, filename, content_type, save_info, row_count, **extra):
+    """WebSocketAgentCallback.on_export_ready's payload, in its key order."""
+    value = {'type': 'export_ready', 'filename': filename, 'content_type': content_type, 'data_base64': token,
+             'row_count': row_count, 'can_save': True}
+    value.update(extra)
+    value.update(default_name=save_info['name'], default_description=save_info['description'],
+                 description_hint=save_info['description_hint'])
+    return frame(value)
+
+
+XLSX_SAVE = export_save_info('xlsx', title='Etichette', fields=['tag_name'],
+                             filters={'tag_name__startswith': 'WSAgent'}, order_by=['tag_name'])
+XLSX_TEXT = export_tool_text('<<xlsx1>>', 'Etichette.xlsx', XLSX_TYPE, XLSX_SAVE, row_count=2, total_count=2)
+XLSX_READY = export_ready_frame('<<xlsx1>>', 'Etichette.xlsx', XLSX_TYPE, XLSX_SAVE, 2, total_count=2)
+# XLSXExporter.export: one DataFrame, the labels renamed, the sheet named after the title.
+XLSX_SHEETS = {'engine': 'report_sheets', 'sheets': [
+    {'title': 'Etichette', 'columns': ['tag_name'], 'rows': [['WSAgent Alfa'], ['WSAgent Beta']]}]}
+c = Conversation()
+c.user('Esporta i tag in Excel')
+c.request()
+c.tool_calls('', [('x1', 'export_data', export_args('xlsx'))])
+c.tool_result('x1', XLSX_TEXT)
+c.request()
+c.assistant('Ho preparato il file Excel.')
+add('export-xlsx', [
+    welcome(),
+    send({'type': 'user_message', 'message': 'Esporta i tag in Excel'}), status('thinking'),
+    status('querying'), tool_call_frame('export_data', export_args('xlsx')),
+    chunk_frame('Ho preparato il file Excel.'), END,
+    XLSX_READY, DONE, *CLOSE],
+    llm=[tool_reply(('x1', 'export_data', json.dumps(export_args('xlsx')))), reply('Ho preparato il file Excel.')],
+    requests=c.requests, files={'xlsx1': {'$xlsx': XLSX_SHEETS}},
+    cache={**throttle(1), f'agent_save_info:{OWNER}': {'pickle_export': XLSX_TEXT, 'ttl': 3600}})
+
+PDF_SAVE = export_save_info('pdf', title='Etichette', fields=['tag_name'],
+                            filters={'tag_name__startswith': 'WSAgent'}, order_by=['tag_name'])
+PDF_TEXT = export_tool_text('<<pdf1>>', 'Etichette.pdf', 'application/pdf', PDF_SAVE, row_count=2, total_count=2)
+PDF_READY = export_ready_frame('<<pdf1>>', 'Etichette.pdf', 'application/pdf', PDF_SAVE, 2, total_count=2)
+# PDFExporter.export: the header row and the body rows are Paragraphs in one Table.
+PDF_TABLE = {'engine': 'report_table', 'headers': ['tag_name'], 'rows': [['WSAgent Alfa'], ['WSAgent Beta']],
+             'title': 'Etichette'}
+c = Conversation()
+c.user('Esporta i tag in PDF')
+c.request()
+c.tool_calls('', [('p1', 'export_data', export_args('pdf'))])
+c.tool_result('p1', PDF_TEXT)
+c.request()
+c.assistant('Ho preparato il PDF.')
+add('export-pdf', [
+    welcome(),
+    send({'type': 'user_message', 'message': 'Esporta i tag in PDF'}), status('thinking'),
+    status('querying'), tool_call_frame('export_data', export_args('pdf')),
+    chunk_frame('Ho preparato il PDF.'), END,
+    PDF_READY, DONE, *CLOSE],
+    llm=[tool_reply(('p1', 'export_data', json.dumps(export_args('pdf')))), reply('Ho preparato il PDF.')],
+    requests=c.requests, files={'pdf1': {'$pdf': PDF_TABLE}},
+    cache={**throttle(1), f'agent_save_info:{OWNER}': {'pickle_export': PDF_TEXT, 'ttl': 3600}})
+
+# An exporter that raises answers {"error": str(e)} as the tool result: the
+# conversation continues (no export_ready, nothing cached).
+BAD_TITLE_ARGS = export_args('xlsx', title='a/b')
+c = Conversation()
+c.user('Esporta con un titolo non valido')
+c.request()
+c.tool_calls('', [('t1', 'export_data', BAD_TITLE_ARGS)])
+c.tool_result('t1', raised('Invalid character / found in sheet title'))
+c.request()
+c.assistant('Non riesco a creare il file.')
+add('export-xlsx-title-error', [
+    welcome(),
+    send({'type': 'user_message', 'message': 'Esporta con un titolo non valido'}), status('thinking'),
+    status('querying'), tool_call_frame('export_data', BAD_TITLE_ARGS),
+    chunk_frame('Non riesco a creare il file.'), END, DONE, *CLOSE],
+    llm=[tool_reply(('t1', 'export_data', json.dumps(BAD_TITLE_ARGS))), reply('Non riesco a creare il file.')],
+    requests=c.requests, cache=throttle(1))
+
+# reportlab's paragraphs: a cell or a label with markup raises before any page.
+MARKUP_LABEL = export_args('pdf', column_labels={'tag_name': 'A<B'})
+STRAY_LABEL = export_args('pdf', column_labels={'tag_name': 'a</i>'})
+c = Conversation()
+c.user('Esporta con etichette non valide')
+c.request()
+c.tool_calls('', [('m1', 'export_data', MARKUP_LABEL), ('m2', 'export_data', STRAY_LABEL)])
+c.tool_result('m1', raised('paraparser: syntax error: parse ended with 1 unclosed tags\n para'))
+c.tool_result('m2', raised("\nparagraph text '<para>a</i></para>' caused exception Parse error: saw </i> instead of expected </para>"))
+c.request()
+c.assistant('Le etichette non sono valide.')
+add('export-pdf-markup-error', [
+    welcome(),
+    send({'type': 'user_message', 'message': 'Esporta con etichette non valide'}), status('thinking'),
+    status('querying'), tool_call_frame('export_data', MARKUP_LABEL),
+    status('querying'), tool_call_frame('export_data', STRAY_LABEL),
+    chunk_frame('Le etichette non sono valide.'), END, DONE, *CLOSE],
+    llm=[tool_reply(('m1', 'export_data', json.dumps(MARKUP_LABEL)), ('m2', 'export_data', json.dumps(STRAY_LABEL))),
+         reply('Le etichette non sono valide.')],
+    requests=c.requests, cache=throttle(1))
+
+# export_multi_sheet: one workbook, a sheet per data set, the whole result
+# (row and sheet counts, save_info) on the transport.
+SHEETS = [{'model_name': 'Tags', 'title': 'Tags', 'fields': ['tag_name'], 'order_by': ['tag_name']},
+          {'model_name': 'Tags', 'title': 'Copia', 'fields': ['tag_name'], 'order_by': ['tag_name']}]
+MULTI_ARGS = {'sheets': SHEETS, 'filename': 'Riepilogo'}
+MULTI_SAVE = {'tool_name': 'export_multi_sheet',
+              'params': {'filename': 'Riepilogo', 'sheets': SHEETS},
+              'name': 'Riepilogo - <<today_dmy>>', 'description': 'Export multi-foglio Riepilogo - 4 righe, 2 fogli',
+              'description_hint': '4 righe, 2 fogli', 'ui_config': {}, 'model_names': ['Tags', 'Tags']}
+MULTI_TEXT = export_tool_text('<<multi1>>', 'Riepilogo.xlsx', XLSX_TYPE, MULTI_SAVE, row_count=4, sheet_count=2)
+MULTI_READY = export_ready_frame('<<multi1>>', 'Riepilogo.xlsx', XLSX_TYPE, MULTI_SAVE, 4, sheet_count=2)
+MULTI_SHEETS = {'engine': 'report_sheets', 'sheets': [
+    {'title': 'Tags', 'columns': ['tag_name'], 'rows': [['WSAgent Alfa'], ['WSAgent Beta']]},
+    {'title': 'Copia', 'columns': ['tag_name'], 'rows': [['WSAgent Alfa'], ['WSAgent Beta']]}]}
+c = Conversation()
+c.user('Esporta due fogli')
+c.request()
+c.tool_calls('', [('s1', 'export_multi_sheet', MULTI_ARGS)])
+c.tool_result('s1', MULTI_TEXT)
+c.request()
+c.assistant('Ecco il riepilogo.')
+add('export-multi-sheet', [
+    welcome(),
+    send({'type': 'user_message', 'message': 'Esporta due fogli'}), status('thinking'),
+    status('querying'), tool_call_frame('export_multi_sheet', MULTI_ARGS),
+    chunk_frame('Ecco il riepilogo.'), END,
+    MULTI_READY, DONE, *CLOSE],
+    llm=[tool_reply(('s1', 'export_multi_sheet', json.dumps(MULTI_ARGS))), reply('Ecco il riepilogo.')],
+    requests=c.requests, files={'multi1': {'$xlsx': MULTI_SHEETS}},
+    cache={**throttle(1), f'agent_save_info:{OWNER}': {'pickle_export': MULTI_TEXT, 'ttl': 3600}})
 
 # Manual tools inside the loop: no evidence, then one verified hit (score as ManualIndex.search computes it).
 weight = math.log(1 + (1 - 1 + .5) / (1 + .5))

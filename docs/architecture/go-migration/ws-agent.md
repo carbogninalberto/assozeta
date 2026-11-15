@@ -59,6 +59,22 @@ loop detection (three identical calls: one forced request without tools),
 the iteration limit, deferred `export_ready` frames (and the cached
 `save_info`) and `report_saved` frames, then `done`.
 
+**Exports.** `export_data` (xlsx and pdf), `export_multi_sheet` and
+`get_attendance_matrix(export=true)` build the file with the same writers as
+a saved-report run (`internal/xlsxexport`, `internal/pdfexport`): the tool
+result carries `filename`, `content_type`, `data_base64`, the counts and
+`save_info`, and the deferred `export_ready` frame the same file with
+`can_save` and the `default_name`/`default_description`/`description_hint` of
+`save_info`; the frame's `save_info` is also cached as
+`agent_save_info:<user>` (the pickle below). A file Django's exporter raises
+on answers the exception as the tool result, `{"error": str(e)}` (for example
+`Invalid character / found in sheet title`, or reportlab's
+`paraparser: syntax error: …`), and the conversation continues: the same
+exceptions a saved-report run answers with its 500 page, here with their
+text. A user message with a lone surrogate cannot be encoded for the
+provider: no request is sent and the generic temporary-error frame answers
+(Django raises while the request body is encoded).
+
 **Provider** (AsyncOpenAI 2.54.0 over httpx 0.28.1): `POST
 <base_url>/chat/completions` with the SDK headers (`AsyncOpenAI/Python
 2.54.0`, the `X-Stainless-*` set, retry count, read timeout, bearer key) and
@@ -112,11 +128,42 @@ Refused explicitly (the connection ends, or run-agent exits 1):
   query, fragment, percent escapes).
 - Configuration values outside the integer/number forms (`max_iterations`,
   `history_cap`, `ws_rate_limit`, `ws_timeout`), missing configuration keys.
-- Business tool inputs the [mcp-server](mcp-server.md) family refuses (XLSX/PDF
-  files and the listed ORM inputs), `save_report` with a non-string
-  `tool_name` or a non-object `params`/`ui_config` (Django stores or fails
-  with a database error), cached `agent_save_info` values that are not the
-  pickle of a JSON-like dict, user messages with lone surrogates.
+- A business tool input the [mcp-server](mcp-server.md) family refuses (the
+  listed ORM inputs, `sanitize_text` with a backslash in the replacement),
+  `save_report` with a non-string `tool_name` or a non-object
+  `params`/`ui_config` (Django stores or fails with a database error),
+  cached `agent_save_info` values that are not the pickle of a JSON-like dict.
+- An exporter exception whose text Go does not reproduce, and an exporter input
+  the writers do not reproduce: the PDF paragraph tags still refused in
+  [pdf-exports](pdf-exports.md) (`u`, `strike`, `a`, `font`, `sup`, `img` and
+  the others), a reportlab `LayoutError` (its text carries object addresses),
+  an attendance date label equal to `#`, `Corso`, `Nome e Cognome` or
+  `Presenze`, more than 702 columns, and a numeric column with an integer
+  beyond the int64 range or 17+ significant digits (pandas' platform-dependent
+  parse).
+- Cached agent values outside the ported shape (`ws_throttle`,
+  `ws_concurrent`), and the AI configuration of another shape: only the app
+  writes them, no request can create the state.
+
+Ported refusals (the agent answers what Django answers; a saved-report run
+keeps its own 500/400 answers, and the stdio transport answers the same
+`{"error": str(e)}` result):
+- `Invalid character <c> found in sheet title`, `Title must have at least one
+  character` (an XLSX sheet title openpyxl refuses), `'<name>'` (a KeyError
+  for a title openpyxl renamed because it differs only by case), `<value>
+  cannot be used in worksheets.` (an `IllegalCharacterError`),
+  `int too large to convert to float` (an integer column label beyond the
+  float range), `unhashable type: 'list'` and `Passing a dict as an indexer is
+  not supported. Use a list instead.` (a column label that is a list or a
+  dict), `'Nome e Cognome'` / `'Corso'` (an attendance workbook without rows)
+  and `'NoneType' object is not subscriptable` (an untitled course).
+- reportlab's paragraph failures: `paraparser: syntax error: parse ended with
+  <n> unclosed tags` and the `\nparagraph text '<para>…' caused exception …`
+  annotation of a tag mismatch, a stray closing tag or content in a
+  self-closing tag.
+- A lone surrogate in a user message: the request body cannot be encoded, so
+  no request is sent and the generic temporary-error frame answers (Django
+  raises the `UnicodeEncodeError` inside the provider and answers the same).
 
 Not reproduced: request header order and name case (compared as a set);
 the jitter values of SDK retries; Django's log records; `run_agent`'s
@@ -129,7 +176,7 @@ later keys.
 
 ## Evidence (TDD)
 
-`TESTS/fixtures/ws_agent_http.json` (generator alongside, 54 cases: 48
+`TESTS/fixtures/ws_agent_http.json` (generator alongside, 60 cases: 54
 WebSocket sessions and 6 run_agent transcripts) runs through
 `TESTS/contracts/test_ws_agent_http.py` (sessions with the RFC 6455 client,
 `<<uuid:N>>` captures and run values, request comparison, CLI transcripts)
@@ -139,7 +186,11 @@ scripted per case (streams, tool calls, status errors with
 a sealed manual runtime index, the instance configuration with the
 encrypted key, seeded saved reports and tags; after every case the exact
 outbound requests, the agent cache keys (values and TTL bounds, the pickle
-bytes), the saved report rows and the complete model state.
+bytes), the saved report rows and the complete model state. A case may carry
+`files`: a token of that name stands for a base64 file in a frame or a
+request body, and `TESTS/contracts/xlsx.py` / `pdf.py` compare the workbook
+or document part by part (the body includes the tool result, so an export
+proves the file twice).
 `go test ./internal/service -run TestAgentRouting` compares 76 routes and the
 follow-up pattern with CPython's results (`testdata/agent_routes.json`).
 
@@ -160,3 +211,24 @@ CLI stderr is compared without Django's log records; Django runs with
 - Re-run on the shared code: `websockets` (75/75, `websocket.go`), `templates-reports`
   (84/84, the business tool engine) and the MCP server tool adapter
   (`TESTS/adapters/go/mcp_server_tools.py`, all calls and stdio sessions identical).
+
+Exports and the remaining refusals (`ws-agent-exports-*`):
+- Cases: `export-xlsx` (the workbook, `export_ready`, the cached pickle),
+  `export-pdf`, `export-multi-sheet` (one workbook, `sheet_count`),
+  `export-xlsx-title-error` and `export-pdf-markup-error` (the exception as the
+  tool result) and `message-surrogate`; the fixture now has 60 cases.
+- RED (`ws-agent-exports-red5`, the pre-port refusal restored): Django 59/59,
+  Go ends the connection on `export-xlsx-title-error`.
+- GREEN (`ws-agent-exports-green2`, all six cases): 60/60 on native Django and
+  native Go, 54/54 sessions on Caddy `/api/v1` and `/api/v2`; the earlier
+  `ws-agent-exports-green1` (59 cases, before `message-surrogate`) was 59/59
+  native and 53/53 on both Caddy prefixes.
+- Mutation (`ws-agent-exports-mutation1`): `found in title` instead of
+  `found in sheet title` fails Go on `export-xlsx-title-error` (CAUGHT,
+  restored).
+- `go test ./internal/xlsxexport ./internal/pdfexport ./internal/service`:
+  the exception texts (`TestDjangoExceptionTexts`,
+  `TestParagraphExceptionTexts`, `TestPythonAscii`) and the export results
+  through the agent's tool runner (`TestExportDataFiles`,
+  `TestExportDataFileErrors`).
+
