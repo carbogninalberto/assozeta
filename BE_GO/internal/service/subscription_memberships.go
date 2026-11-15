@@ -10,6 +10,8 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
+	"github.com/carbogninalberto/assozeta/BE_GO/pkg/storage/documentkey"
+	"github.com/google/uuid"
 )
 
 type SubscriptionMemberships struct {
@@ -45,10 +47,10 @@ var (
 	// ErrSubscriptionMembershipDocumentDecode is base64.b64decode's failure
 	// (500), raised after the membership was saved.
 	ErrSubscriptionMembershipDocumentDecode = errors.New("subscription membership document is not base64")
-	// ErrSubscriptionMembershipUploadUnsupported refuses documents_data that
-	// would reach Document creation and the storage upload (not ported)
-	// before any write.
-	ErrSubscriptionMembershipUploadUnsupported = refusal.New("subscription membership document upload is not ported")
+	// errSubscriptionMembershipDocumentStore is the exception Django raises
+	// while creating or storing a document (the INSERT, os.path.join or
+	// Storage.save): the 500 page, after the earlier writes.
+	errSubscriptionMembershipDocumentStore = errors.New("subscription membership document could not be stored")
 	// errSubscriptionMembershipNoStorage is a writer built without its
 	// document storage: cmd/server/main.go always calls WithUploads. An
 	// application-state error.
@@ -220,23 +222,32 @@ func (s *SubscriptionMemberships) validate(ctx context.Context, tx domain.Subscr
 	return nil
 }
 
-// subscriptionMembershipDocuments checks documents_data before any write:
-// multipart bodies and items whose upload the port does not reproduce are
-// refused.
-func (s *SubscriptionMemberships) subscriptionMembershipDocuments(write dto.SubscriptionMembershipWrite) (error, error) {
-	if write.FormDocuments {
-		return nil, ErrSubscriptionMembershipUploadUnsupported
-	}
+// subscriptionMembershipDocuments checks documents_data before any write: the
+// items _handle_documents raises on after the save are left to it, and every
+// item that would create a Document needs the document storage.
+func (s *SubscriptionMemberships) subscriptionMembershipDocuments(write dto.SubscriptionMembershipWrite) error {
 	for _, item := range write.Documents {
 		switch dto.CourseLocationDocument(item) {
 		case dto.CourseLocationDocumentMissingKey, dto.CourseLocationDocumentUndecodable:
-			return nil, nil // raised in order after the save
+			return nil // raised in order after the save
 		}
 		if s.uploads == nil {
-			return nil, errSubscriptionMembershipNoStorage
+			return errSubscriptionMembershipNoStorage
 		}
 	}
-	return nil, nil
+	return nil
+}
+
+// subscriptionMembershipDocumentName is str() of a filename: a str unchanged,
+// an uploaded file its name, anything else its Python repr.
+func subscriptionMembershipDocumentName(value any) string {
+	switch name := value.(type) {
+	case domain.RequestFile:
+		return name.Name
+	case domain.RequestUpload:
+		return name.Name
+	}
+	return dto.PythonStr(value)
 }
 
 // handleDocuments is _handle_documents after the save, item by item (not
@@ -259,12 +270,34 @@ func (s *SubscriptionMemberships) handleDocuments(ctx context.Context, tx domain
 			return added, ErrSubscriptionMembershipDocumentDecode
 		}
 		raw, _ := item.Lookup("filename")
-		filename, storable := storedText(raw)
-		if !storable || utf8.RuneCountInString(filename) > 255 {
-			// Document.objects.create(filename=...) fails (NULL, NUL, over 255 characters): the 500 page, after the saved rows.
+		if raw == nil {
+			// Document.objects.create(filename=None): NOT NULL, no row.
+			return added, ErrSubscriptionMembershipDocumentDecode
+		}
+		// CharField stores str(value): a str unchanged, a JSON number/bool/
+		// list/object its Python repr, an uploaded file its name.
+		filename := subscriptionMembershipDocumentName(raw)
+		if !dto.AssociateDraftStorable(filename) || utf8.RuneCountInString(filename) > 255 {
+			// Document.objects.create(filename=...) fails (NUL, lone surrogates, over 255
+			// characters): the 500 page, no row.
 			return added, ErrSubscriptionMembershipDocumentDecode
 		}
 		document := s.uploads.newDocument(filename)
+		if _, isText := raw.(string); !isText {
+			// os.path.join(storing_path, document.filename) is a TypeError for a value that
+			// is not a str: the row and its entry are written, then it raises.
+			if err = tx.CreateMembershipDocument(ctx, document, audit, document.Created); err != nil {
+				return added, err
+			}
+			return added, errSubscriptionMembershipDocumentStore
+		}
+		if _, err = documentkey.UploadName(document.Created, uuid.MustParse(document.ID), filename); err != nil {
+			// default_storage.save's validate_file_name rejects the name after the INSERT.
+			if err = tx.CreateMembershipDocument(ctx, document, audit, document.Created); err != nil {
+				return added, err
+			}
+			return added, errSubscriptionMembershipDocumentStore
+		}
 		if err = tx.CreateMembershipDocument(ctx, document, audit, document.Created); err != nil {
 			return added, err
 		}
@@ -392,7 +425,7 @@ func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.Resol
 	if err != nil {
 		return nil, err
 	}
-	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form)
+	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form, false)
 	// request.data['sport_association'] replaces any client value.
 	delete(invalid, "sport_association")
 	if len(invalid) == 0 {
@@ -402,9 +435,8 @@ func (s *SubscriptionMemberships) Add(ctx context.Context, identity domain.Resol
 	if err = s.validate(ctx, tx, association, write, invalid, supplierGroup(request.GroupHeader)); err != nil {
 		return nil, err
 	}
-	_, refused := s.subscriptionMembershipDocuments(write)
-	if refused != nil {
-		return nil, refused
+	if err = s.subscriptionMembershipDocuments(write); err != nil {
+		return nil, err
 	}
 	at := s.now().UTC().Truncate(time.Microsecond)
 	zero := "0"
@@ -429,13 +461,12 @@ func (s *SubscriptionMemberships) Update(ctx context.Context, identity domain.Re
 	if err != nil {
 		return nil, err
 	}
-	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form)
+	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form, true)
 	if err = s.validate(ctx, tx, association, write, invalid, supplierGroup(request.GroupHeader)); err != nil {
 		return nil, err
 	}
-	_, refused := s.subscriptionMembershipDocuments(write)
-	if refused != nil {
-		return nil, refused
+	if err = s.subscriptionMembershipDocuments(write); err != nil {
+		return nil, err
 	}
 	old := current.SubscriptionMembership
 	row := old
@@ -496,7 +527,7 @@ func (s *SubscriptionMemberships) Create(ctx context.Context, identity domain.Re
 	if associationErr != nil && !errors.Is(associationErr, domain.ErrAssociationNotFound) {
 		return nil, associationErr
 	}
-	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form)
+	write, invalid := dto.ParseSubscriptionMembershipWrite(body, form, false)
 	if _, ok := body.(domain.RequestObject); ok && !write.Association.Present && invalid["sport_association"] == nil {
 		if invalid == nil {
 			invalid = map[string]any{}
@@ -512,9 +543,8 @@ func (s *SubscriptionMemberships) Create(ctx context.Context, identity domain.Re
 	if associationErr != nil {
 		return nil, associationErr
 	}
-	_, refused := s.subscriptionMembershipDocuments(write)
-	if refused != nil {
-		return nil, refused
+	if err = s.subscriptionMembershipDocuments(write); err != nil {
+		return nil, err
 	}
 	at := s.now().UTC().Truncate(time.Microsecond)
 	zero := "0"

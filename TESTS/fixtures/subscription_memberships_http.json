@@ -1953,6 +1953,90 @@
    }
   },
   {
+   "name": "subscription-memberships-add-document-filename-number-keeps-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Numero",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "123",
+      "row_only": true
+     }
+    ]
+   },
+   "body": {
+    "membership_type": "Numero",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": 123
+     }
+    ]
+   }
+  },
+  {
+   "name": "subscription-memberships-add-document-filename-traversal-keeps-row",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 500,
+   "response": "<stable-server-error-page>",
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Numero",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "../fuori.pdf",
+      "row_only": true
+     }
+    ]
+   },
+   "body": {
+    "membership_type": "Numero",
+    "documents_data": [
+     {
+      "document": "JVBERi0xLjQgdGVzc2VyYQ==",
+      "filename": "../fuori.pdf"
+     }
+    ]
+   }
+  },
+  {
    "name": "subscription-memberships-add-with-documents",
    "actor": "owner",
    "method": "POST",
@@ -2532,6 +2616,83 @@
    "content_type": "application/x-www-form-urlencoded"
   },
   {
+   "name": "subscription-memberships-update-form-indexed-keys-ignored",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/update",
+   "headers": {},
+   "status": 200,
+   "response": {
+    "subscription_membership_id": "a1000000-0000-4000-8000-000000650016",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "2026-10-01T10:00:00Z",
+    "start_date": "2025-10-01",
+    "end_date": "2026-08-31",
+    "membership_type": "Indice",
+    "membership_number": "12",
+    "description": "Tessera è",
+    "price": "30.00",
+    "paid": false,
+    "payment": "a1000000-0000-4000-8000-000000650012",
+    "attached_membership_documents": [
+     {
+      "document_id": "a1000000-0000-4000-8000-000000650001",
+      "creation_date": "2026-09-01T08:00:00.500000Z",
+      "filepath": "docs/tessera.pdf",
+      "filename": "tessera è.pdf",
+      "file_size_bytes": 4096,
+      "token": "a1000000-0000-4000-8000-000000650002"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "update",
+    "actor": "owner",
+    "label": "m1",
+    "changes": {
+     "membership_type": [
+      "Mensile",
+      "Indice"
+     ]
+    },
+    "stored": {
+     "subscription": "a1000000-0000-4000-8000-000000650009",
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": "a1000000-0000-4000-8000-000000650012",
+     "creation_date": "2026-10-01T10:00:00Z",
+     "start_date": "2025-10-01",
+     "end_date": "2026-08-31",
+     "membership_type": "Indice",
+     "membership_number": "12",
+     "description": "Tessera è",
+     "price": "30.00"
+    }
+   },
+   "raw_body": "documents_data[0].document=JVBERi0xLjQgdGVzc2VyYQ%3D%3D&documents_data[0].filename=tessera.pdf&membership_type=Indice",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
+   "name": "subscription-memberships-update-form-documents-data-key",
+   "actor": "owner",
+   "method": "PATCH",
+   "path": "/subscription/memberships/a1000000-0000-4000-8000-000000650016/update",
+   "headers": {},
+   "status": 400,
+   "response": {
+    "documents_data": {
+     "0": [
+      "Expected a dictionary of items but got type \"str\"."
+     ]
+    }
+   },
+   "effect": null,
+   "raw_body": "documents_data=abc",
+   "content_type": "application/x-www-form-urlencoded"
+  },
+  {
    "name": "subscription-memberships-update-group-payment",
    "actor": "owner",
    "method": "PATCH",
@@ -2790,6 +2951,65 @@
     }
    },
    "raw_body": "--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_type\"\r\n\r\nNome numerico\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"price\"; filename=\"12\"\r\nContent-Type: text/plain\r\n\r\nx\r\n--tail-boundary-7f3a--\r\n",
+   "content_type": "multipart/form-data; boundary=tail-boundary-7f3a"
+  },
+  {
+   "name": "subscription-memberships-add-multipart-indexed-documents",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/subscription/memberships/add",
+   "headers": {},
+   "status": 201,
+   "response": {
+    "subscription_membership_id": "$new",
+    "sport_association": "a1000000-0000-4000-8000-000000701001",
+    "associate_id": null,
+    "associate": null,
+    "creation_date": "$now",
+    "start_date": null,
+    "end_date": null,
+    "membership_type": "Multipart",
+    "membership_number": "0",
+    "description": null,
+    "price": null,
+    "paid": null,
+    "payment": null,
+    "attached_membership_documents": [
+     {
+      "document_id": "$new_document",
+      "creation_date": "$new_document",
+      "filepath": null,
+      "filename": "tessera.pdf",
+      "file_size_bytes": null,
+      "token": "$new_document"
+     }
+    ]
+   },
+   "effect": {
+    "kind": "add",
+    "actor": "owner",
+    "id": "$new",
+    "stored": {
+     "subscription": null,
+     "sport_association": "a1000000-0000-4000-8000-000000701001",
+     "associate": null,
+     "payment": null,
+     "creation_date": "$now",
+     "start_date": null,
+     "end_date": null,
+     "membership_type": "Multipart",
+     "membership_number": "0",
+     "description": null,
+     "price": null
+    },
+    "documents": [
+     {
+      "filename": "tessera.pdf",
+      "content": "JVBERi0xLjQgdGVzc2VyYQ=="
+     }
+    ]
+   },
+   "raw_body": "--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"membership_type\"\r\n\r\nMultipart\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"documents_data[0].document\"\r\n\r\nJVBERi0xLjQgdGVzc2VyYQ==\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"documents_data[0].filename\"\r\n\r\ntessera.pdf\r\n--tail-boundary-7f3a\r\nContent-Disposition: form-data; name=\"allegato\"; filename=\"nota.txt\"\r\nContent-Type: text/plain\r\n\r\ntesto\r\n--tail-boundary-7f3a--\r\n",
    "content_type": "multipart/form-data; boundary=tail-boundary-7f3a"
   },
   {

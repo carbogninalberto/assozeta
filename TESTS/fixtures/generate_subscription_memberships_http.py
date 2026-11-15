@@ -24,16 +24,18 @@ creation_date, DateFields (DD/MM/YYYY input), nullable CharFields (membership_nu
 0 and may be blank), DecimalField(9, 2) price and a write-only documents_data
 list of dicts; ``subscription`` is not a serializer field and is ignored.
 paid is payment.paid (None without a payment). The serializer saves before
-handling documents_data, so a document without its keys (400) or with bad
-base64 (500) keeps the saved row; successful uploads write to storage and
-are outside this sequence. auditlog records the create, the changed fields
-and the delete (document links removed, documents kept). Run with
+handling documents_data, so a document without its keys (400), with bad base64
+(500), or with a filename the storage path refuses number/is '..' (500, after
+its row and create entry) keeps the saved row; successful uploads write to
+storage and are outside this sequence. auditlog records the create, the changed
+fields and the delete (document links removed, documents kept). Run with
 ``python3 -I``.
 """
 import base64
 import copy
 import json
 from pathlib import Path
+from urllib.parse import quote
 
 OUTPUT = Path(__file__).with_name('subscription_memberships_http.json')
 IDS = json.loads(Path(__file__).with_name('message_mutations.json').read_text())['ids']
@@ -296,6 +298,17 @@ add('add-document-bad-base64-keeps-membership', 'owner', ADD, 500, SERVER,
 # the work before it stays.
 UPLOADS = [{'filename': 'tessera.pdf', 'content': base64.b64encode(b'%PDF-1.4 tessera').decode()},
            {'filename': 'ricevuta è.png', 'content': base64.b64encode(b'\x89PNG ricevuta').decode()}]
+# A filename the Document column stores but the storage path cannot take: the row and its create entry are written, then
+# _handle_documents raises (a number stays an int, so os.path.join is a TypeError; '..' is a SuspiciousFileOperation) and
+# the membership saved before the documents stays, without the document or its link.
+_, effect = created('owner', {'membership_type': 'Numero'})
+effect['documents'] = [{'filename': '123', 'row_only': True}]
+add('add-document-filename-number-keeps-row', 'owner', ADD, 500, SERVER, effect=effect,
+    body={'membership_type': 'Numero', 'documents_data': [{'document': UPLOADS[0]['content'], 'filename': 123}]})
+_, effect = created('owner', {'membership_type': 'Numero'})
+effect['documents'] = [{'filename': '../fuori.pdf', 'row_only': True}]
+add('add-document-filename-traversal-keeps-row', 'owner', ADD, 500, SERVER, effect=effect,
+    body={'membership_type': 'Numero', 'documents_data': [{'document': UPLOADS[0]['content'], 'filename': '../fuori.pdf'}]})
 response, effect = created('owner', {'membership_type': 'Con documenti', 'documents': UPLOADS})
 effect['documents'] = UPLOADS
 add('add-with-documents', 'owner', ADD, 201, response,
@@ -347,6 +360,16 @@ response, effect = changed('owner', 'm2', membership_type=None, price=None, star
 add('update-form-blank-values', 'owner', one('m2', 'update'), 200, response, method='PATCH',
     raw_body=f'membership_type=&price=&start_date=&associate={A("mario")}&membership_number=',
     content_type='application/x-www-form-urlencoded', effect=effect)
+# A partial update skips DRF's parse_html_list (it runs only for a full create): the indexed keys are ignored.
+response, effect = changed('owner', 'm1', membership_type='Indice')
+add('update-form-indexed-keys-ignored', 'owner', one('m1', 'update'), 200, response, method='PATCH', effect=effect,
+    raw_body=(f'documents_data[0].document={quote(UPLOADS[0]["content"], safe="")}'
+              '&documents_data[0].filename=tessera.pdf&membership_type=Indice'),
+    content_type='application/x-www-form-urlencoded')
+# A form body ListField.get_value returns the values of the plain key: each string fails as a dict, under its index.
+add('update-form-documents-data-key', 'owner', one('m1', 'update'), 400,
+    {'documents_data': {'0': ['Expected a dictionary of items but got type "str".']}}, method='PATCH',
+    raw_body='documents_data=abc', content_type='application/x-www-form-urlencoded')
 response, effect = changed('owner', 'm3', payment=P('grouped_pay'), end_date='2027-01-31')
 add('update-group-payment', 'owner', one('m3', 'update'), 200, response, method='PATCH',
     body={'payment': P('grouped_pay'), 'end_date': '31/01/2027'}, headers=GROUP, effect=effect)
@@ -392,6 +415,13 @@ add('add-multipart-file-in-fields', 'owner', ADD, 400, {
 response, effect = created('owner', {'price': '12.00', 'membership_type': 'Nome numerico'})
 add('add-multipart-numeric-file-name-price', 'owner', ADD, 201, response, content_type=FORM_TYPE, effect=effect, raw_body=multipart(
     ('membership_type', 'Nome numerico'), ('price', '12', 'x')))
+# A file part (not a serializer field here) keeps the body a mutable copy, so add can assign sport_association; the
+# documents_data[N].name text parts are parsed into one document (parse_html_list).
+response, effect = created('owner', {'membership_type': 'Multipart', 'documents': UPLOADS[:1]})
+effect['documents'] = UPLOADS[:1]
+add('add-multipart-indexed-documents', 'owner', ADD, 201, response, content_type=FORM_TYPE, effect=effect, raw_body=multipart(
+    ('membership_type', 'Multipart'), ('documents_data[0].document', UPLOADS[0]['content']),
+    ('documents_data[0].filename', 'tessera.pdf'), ('allegato', 'nota.txt', 'testo')))
 # update: the form path with a file part (the file is ignored)
 response, effect = changed('owner', 'm3', membership_number='77')
 add('update-multipart-with-file', 'owner', one('m3', 'update'), 200, response, method='PATCH', content_type=FORM_TYPE, effect=effect,

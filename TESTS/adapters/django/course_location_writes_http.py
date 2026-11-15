@@ -5,7 +5,9 @@ switches Django's default storage to S3Boto3Storage on it before either
 server starts. documents_data uploads are checked as new Documents (bound to
 their auditlog create entries in write order, uuid4 keys, recent timestamps),
 their links to the location and the stored objects (django-storages' own key,
-exact bytes and metadata), which are removed once verified.
+exact bytes and metadata), which are removed once verified. An upload spec with
+'row_only' has its Document row and create entry checked, but no stored object
+and no link (the item failed after the INSERT).
 
 Seeds the course-locations list rows and documents (audit disabled) and
 verifies each case against the complete model state: location creates,
@@ -78,7 +80,11 @@ def object_key(created, document_id, filename):
 
 
 def check_uploads(case, effect, before, after, key, added):
-    """The new Documents (create entries in write order), their links to the location and stored objects."""
+    """The new Documents (create entries in write order), their links to the location and stored objects.
+
+    A 'row_only' spec (and only its filename) documents an item whose Document row and create entry were written before
+    the failure: no stored object and no link. Returns the links, the other audit entries and the Document entry count.
+    """
     specs = effect.get('uploads', [])
     old_d, new_d = keyed(before[DOCUMENT], 'document_id'), keyed(after[DOCUMENT], 'document_id')
     contract.require(all(new_d.get(k) == v for k, v in old_d.items()), 'state.documents-kept')
@@ -100,8 +106,9 @@ def check_uploads(case, effect, before, after, key, added):
         contract.require(row['filename'] == spec['filename'] and row['filepath'] is None and row['file_size_bytes'] is None
                          and row['token'] == changes['token'][1], 'state.document-row')
         contract.require(event['object_repr'] == f'Document object ({ident})', 'audit.document-repr')
-        expected_objects[object_key(stamp, ident, spec['filename'])] = spec
-        links.add((key, ident))
+        if not spec.get('row_only'):
+            expected_objects[object_key(stamp, ident, spec['filename'])] = spec
+            links.add((key, ident))
     contract.require(objects() == set(expected_objects), 'storage.keys')
     client = STORAGE.get('client')
     for name, spec in expected_objects.items():
@@ -110,7 +117,7 @@ def check_uploads(case, effect, before, after, key, added):
         contract.require(stored['ContentType'] == spec['content_type'] and stored.get('ContentEncoding') == spec['encoding']
                          and stored.get('CacheControl') == 'max-age=86400', 'storage.metadata')
         client.delete_object(Bucket=BUCKET, Key=name)
-    return links, [e for e in added if e not in events]
+    return links, [e for e in added if e not in events], len(events)
 
 
 def location_model():
@@ -160,12 +167,13 @@ def assert_effect(case, before, after, source, context):
     added, indexes = harness.audit_delta(contract, before, after)
     added.sort(key=lambda event: int(event['id']))
     if effect['kind'] != 'delete':
-        links, added = check_uploads(case, effect, before, after, key, added)
+        links, added, documents = check_uploads(case, effect, before, after, key, added)
         old_pairs = harness.pairs(before[LINK], 'courselocation_id', 'document_id')
         contract.require(harness.pairs(after[LINK], 'courselocation_id', 'document_id') == old_pairs | links
                          and len(after[LINK]) == len(before[LINK]) + len(links), 'state.links')
-        # Document create entries are indexed to the actor's own association (the owner's), the location's entry directly.
-        contract.require(len(indexes) == len(added) + (len(links) if effect['actor'] == 'owner' else 0), 'index.count')
+        # Document create entries (stored and linked, or only written) are indexed to the actor's own association (the
+        # owner's), the location's entry directly.
+        contract.require(len(indexes) == len(added) + (documents if effect['actor'] == 'owner' else 0), 'index.count')
     else:
         contract.require(len(indexes) == len(added), 'index.count')
     contract.require(len(added) == (1 if changes else 0), 'audit.count')
