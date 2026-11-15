@@ -8,9 +8,10 @@ JSON Django signs.
 
 Dispatching routes answer generated values: '$task' accepts a uuid4 task id,
 '$isonow' a request-time aware UTC isoformat(); a '$tmp-path:<prefix>:<name>'
-error text accepts <prefix> followed by a path in a fresh tempfile.mkdtemp()
-directory ending with /<name>. LAST holds the most recent JSON body for the
-runner's effect check.
+error text accepts <prefix> (whose literal '{errno}' matches the platform's
+errno digits) followed by a path in a fresh tempfile.mkdtemp() directory
+ending with /<name>. LAST holds the most recent JSON body for the runner's
+effect check.
 """
 import base64
 from datetime import datetime, timezone
@@ -57,7 +58,8 @@ def _generated(expected, actual):
         return actual if abs((datetime.now(timezone.utc) - moment).total_seconds()) < 120 else expected
     if isinstance(expected, str) and expected.startswith('$tmp-path:') and isinstance(actual, str):
         prefix, name = expected[len('$tmp-path:'):].rsplit(':', 1)
-        pattern = re.escape(prefix) + r'/\S*/tmp[a-z0-9_]{8}/' + re.escape(name) + r'\Z'
+        prefix = re.escape(prefix).replace(re.escape('{errno}'), r'\d+')
+        pattern = prefix + r'/\S*/tmp[a-z0-9_]{8}/' + re.escape(name) + r'\Z'
         return actual if re.match(pattern, actual) else expected
     if isinstance(expected, dict) and isinstance(actual, dict):
         return {key: _generated(value, actual.get(key)) for key, value in expected.items()}

@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/associationexport"
@@ -438,14 +439,33 @@ func pythonMkdtemp() (string, error) {
 	return "", errors.New("no usable temporary directory name")
 }
 
+// pythonOSErrorText is str() of the OSError an open()/write()/close() failure
+// raises: '[Errno <errno>] <strerror>: <repr(path)>' for open, the same
+// without the path for write and close.
+func pythonOSErrorText(err error) (string, bool) {
+	var pathErr *os.PathError
+	if !errors.As(err, &pathErr) {
+		return "", false
+	}
+	var errno syscall.Errno
+	if !errors.As(pathErr.Err, &errno) {
+		return "", false
+	}
+	text := "[Errno " + strconv.Itoa(int(errno)) + "] " + errnoText(errno)
+	switch pathErr.Op {
+	case "open":
+		return text + ": " + dto.PythonStringRepr(pathErr.Path), true
+	case "write", "close":
+		return text, true
+	}
+	return "", false
+}
+
 // ImportValidate mirrors validate_import: the upload is written to
 // <mkdtemp>/<name> and checked by ImportValidator.validate_all().
 func (s *AssociationTransfer) ImportValidate(ctx context.Context, upload AssociationImportUpload) (*AssociationTransferReply, error) {
 	if upload.File == nil {
 		return fileRequired, nil
-	}
-	if len(upload.File.Name) > 255 {
-		return nil, domain.ErrAssociationTransferNotPorted // Django answers its own JSON with the OSError text
 	}
 	dir, err := pythonMkdtemp()
 	if err != nil {
@@ -454,7 +474,11 @@ func (s *AssociationTransfer) ImportValidate(ctx context.Context, upload Associa
 	defer os.RemoveAll(dir)
 	path := dir + "/" + upload.File.Name
 	if err = os.WriteFile(path, upload.File.Content, 0o644); err != nil {
-		return nil, domain.ErrAssociationTransferNotPorted
+		if text, ok := pythonOSErrorText(err); ok {
+			return &AssociationTransferReply{Status: 500,
+				Body: map[string]string{"error": "Errore durante la validazione: " + text}}, nil
+		}
+		return nil, domain.ErrAssociationTransferNotPorted // an error the OS reports without an errno: not reproduced
 	}
 	result, err := s.validateArchive(ctx, path)
 	if err != nil {

@@ -8403,6 +8403,27 @@
    "content_type": "multipart/form-data; boundary=association-transfer-boundary"
   },
   {
+   "name": "association-transfer-import-validate-name-over-255-bytes",
+   "actor": "owner",
+   "method": "POST",
+   "path": "/association/import/validate",
+   "headers": {},
+   "status": 500,
+   "response": {
+    "error": "$tmp-path:Errore durante la validazione: [Errno {errno}] File name too long: ':📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦.zip'"
+   },
+   "effect": null,
+   "setup": {
+    "instance": true,
+    "cache": {},
+    "objects": {}
+   },
+   "cache_after": null,
+   "objects_after": null,
+   "raw_b64": "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",
+   "content_type": "multipart/form-data; boundary=association-transfer-boundary"
+  },
+  {
    "name": "association-transfer-import-validate-admin-impersonating-owner-archive",
    "actor": "admin",
    "method": "POST",
