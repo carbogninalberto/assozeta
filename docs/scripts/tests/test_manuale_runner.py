@@ -1,6 +1,7 @@
 """Exercise incremental selection and snapshot integrity using real files/Git."""
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -193,6 +194,46 @@ class ManualRunnerTests(unittest.TestCase):
                 self.assertNotEqual(state['status'], 'captured')
                 if not seed_fails:
                     self.assertEqual(batch['scenarios'], [{'id': 'first', 'status': 'failed'}, {'id': 'second', 'status': 'passed'}])
+
+    def test_management_starts_a_one_off_container_unless_reuse_is_requested(self):
+        state = {'env_file': 'owned-environment', 'project': 'owned-project', 'application': '/fixture/application',
+                 'override': '/fixture/override.yml'}
+        prefix = ['docker', 'compose', '--env-file', 'owned-environment', '--project-name', 'owned-project',
+                  '-f', str(Path('/fixture/application') / 'selfhost/compose.dev.yml'), '-f', '/fixture/override.yml']
+        uid_gid = f'{os.getuid()}:{os.getgid()}'
+        self.assertEqual(runner.management(state, 'x'),
+                         prefix + ['run', '--rm', '--no-deps', '--user', uid_gid,
+                                   'api', 'python', 'manage.py', 'x'])
+        self.assertEqual(runner.management(state, 'x', reuse=True),
+                         prefix + ['exec', '-T', '--user', uid_gid,
+                                   'api', 'python', 'manage.py', 'x'])
+
+    def test_capture_batch_reuses_the_running_service_only_for_scenario_resets(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state = {'run': temporary, 'application': temporary, 'selected_recipes': ['guide'],
+                     'tooling_hashes': {}, 'origin': 'http://127.0.0.1:5010', 'reference_date': '2026-09-30',
+                     'capture_id': 'fixture', 'env_file': 'owned-environment', 'project': 'owned-project',
+                     'override': str(Path(temporary) / 'override.yml')}
+            commands = {}
+            def execute(command, run, label, **kwargs):
+                commands[label] = command
+            with patch.object(runner, 'recipe_registry', return_value={'recipes': [
+                        {'id': 'guide', 'script': 'guide.mjs'}]}), \
+                    patch.object(runner, 'execute', side_effect=execute):
+                runner.capture_batch(state)
+        uid_gid = f'{os.getuid()}:{os.getgid()}'
+        reset = commands['Reset owned scenario state and browser session for guide']
+        restore = commands['Restore baseline after the capture batch']
+        self.assertEqual(reset[reset.index('exec'):], [
+            'exec', '-T', '--user', uid_gid, 'api', 'python', 'manage.py', 'seed_manuale',
+            '--reference-date', '2026-09-30', '--origin', 'http://127.0.0.1:5010',
+            '--output', '/manual-run/browser-input.json', '--scenario', 'baseline'])
+        self.assertNotIn('run', reset)
+        self.assertEqual(restore[restore.index('run'):], [
+            'run', '--rm', '--no-deps', '--user', uid_gid, 'api', 'python', 'manage.py', 'seed_manuale',
+            '--reference-date', '2026-09-30', '--origin', 'http://127.0.0.1:5010',
+            '--output', '/manual-run/browser-input.json'])
+        self.assertNotIn('exec', restore)
 
     def test_capture_environment_carries_the_span_file_only_with_a_timing_file(self):
         with tempfile.TemporaryDirectory() as temporary:

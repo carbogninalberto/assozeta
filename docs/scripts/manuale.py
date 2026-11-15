@@ -749,9 +749,15 @@ def compose(state, *args):
             '-f', str(Path(state['application']) / 'selfhost/compose.dev.yml'), '-f', state['override'], *args]
 
 
-def management(state, *args):
+def management(state, *args, reuse=False):
     # Host ownership makes private mode-0600 artifacts readable by the runner
     # on Linux as well as Docker Desktop. Keep the service itself independent.
+    if reuse:
+        # The running api service already has the image, environment and the
+        # /manual-run mount; a fresh one-off container would only add cold
+        # Django startup to every repeated fixture command.
+        return compose(state, 'exec', '-T', '--user', f'{os.getuid()}:{os.getgid()}',
+                       'api', 'python', 'manage.py', *args)
     return compose(state, 'run', '--rm', '--no-deps', '--user', f'{os.getuid()}:{os.getgid()}',
                    'api', 'python', 'manage.py', *args)
 
@@ -1199,7 +1205,7 @@ def capture_batch(state):
                 continue
             execute(management(state, 'seed_manuale', '--reference-date', state['reference_date'],
                             '--origin', state['origin'], '--output', '/manual-run/browser-input.json',
-                            *recipe_seed_options(recipe)),
+                            *recipe_seed_options(recipe), reuse=True),
                     run, 'Reset owned scenario state and browser session for ' + recipe['id'])
             try:
                 execute(['node', str(Path(state['application']) / recipe['script'])], run,
