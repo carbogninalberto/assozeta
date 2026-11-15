@@ -1575,3 +1575,43 @@ dependency or the paid-flow transaction is missing (payment state, stripe, invoi
 and misc, statistics, subscription create and renew, docmanager): the server always wires them. The saved-report
 integration settings and the setup wizard's import task row are app-written states. Remaining sites of those points stay
 refusals for PR 3. Total HTTP/WebSocket pairs after this change: 413.
+
+## Long tail PR 2, agent C
+
+Rule per return site (owner decision, 2026-11-15): port what a request or a stored row reaches when Django answers
+normally; `refusal.AppState` (Django's production 500 page, never handed off) where Django itself raises, where only the
+app writes the state or a constraint makes it impossible, and for external, platform or timing outcomes outside the
+approved divergences. Per-site tables: `tmp/long-tail/C-*.md` (worktree notes).
+
+| Refusal | Ported | Now AppState | Left for PR 3 |
+|---|---|---|---|
+| collaborator delete reaches an unsupported model | – | all 5 sites (committed graph, C) | – |
+| unsupported throttle history value | already done in go-v2only-throttle | – | – |
+| instance backups request not ported | – (sentinel deleted) | runner reply past the decoder (4), cached sizes (3), signed token actor (3); the seven action-validator sites were dead code | – |
+| cached backup value not ported | – | both sites (3) | – |
+| cached data restore progress not ported | – | the shared unpickler's error (3: every reader's key is app-written) | – |
+| print task deferred for maintenance | – | the eager-task deferral (4: Celery re-applies synchronously until the restore ends) | – |
+| bakney sso input not ported | – | all 3 sites (Django raises on non-ASCII / non-base64; inputs are app-written) | – |
+| persona input not ported | `picture_path` list or dict on add/update (personas-writes, 6 cases) | delete without writes, tutor key change, form JSON depth, picture storage failures (3/4) | router create picture branch and form body |
+| document render: input not ported | – | missing form storage, scope user role, unbuffered multipart (3); body read errors propagate | filename headers, rejected generated name, X8 signature overlay |
+| document view: input not ported | – | missing signature storage, legacy signature URL (4), collaborator-owned association (3) | template/mention subsets, invoice values |
+| course enrolment input is not ported | – | make-payment's new payment with instructor/invoice (3) | form JSON the jsonb column rejects |
+| course location / subscription membership upload | – | missing document storage (3) | filenames, multipart `documents_data` |
+| subscription sign path not ported | – | key already taken (4, timing) | – |
+| camps payment walk is not ported | – | row-order dependent outcomes (4), group removed mid-request (4) | hidden payment without association, check-constraint texts, other failures |
+| api schema: outside the ported input range | – | OPTIONS on Swagger and identity errors now answer the plain 500 (Django raises) | the eight `apiSchemaRefuse` conditions |
+| email render route input not ported | – | payment year before 1000 (4, C library) | form/upload email values |
+| payment ordering not ported | – | internal marker, never returned (the lazy order stays `domain.ErrPaymentReadsNotPorted`) | annotation ordering |
+| business MCP, course subscription input, invoice view value | – | – | all sites (see the per-point notes) |
+
+Rule-4 sites where Django still answers normally and Go now answers the 500 page (listed for review, not in
+`accepted-divergences.md`): persona picture storage failures (Django answers botocore's text as a 400), an existing object
+under a new picture or signature key (Django picks a random name), a legacy signature URL (Django fetches it), a runner
+reply with a lone surrogate in a key the view ignores, camps walks whose outcome depends on row order, a payment year
+before 1000 in the invoice e-mail, and the print deferral during a restore (Django loops until the restore ends).
+
+`refusal_reach.py` HTTP and WebSocket rows for these points: 134 before, 51 after (all kinds 141 → 54); whole report 471 → 388
+HTTP/WebSocket rows (533 → 446 overall). Evidence: personas-writes 257/257 on four transports (`lt2C-1`), mutation
+(`',' element ignored`) CAUGHT on `add-picture-list-comma`; the 42 other families whose routes reach a changed site
+green on four transports (`sweep-lt2C-2`, with camps-subscriptions, modules-responses, sso-pairing and subscription-create
+rerun alone after load or timing failures: `lt2C-3-*`, `lt2C-4-sso-pairing`).
