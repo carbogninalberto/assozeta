@@ -34,6 +34,11 @@ func NewCourseEnrolment(store domain.CourseEnrolmentStore, now func() time.Time,
 // before any write (see course-enrolment.md).
 var ErrCourseEnrolmentNotPorted = refusal.New("course enrolment input is not ported")
 
+// errCourseEnrolmentRenderedPayment is make-payment's new payment read back
+// with an instructor or an invoice, which its own insert never sets. An
+// application-state error: the 500 page, never a handoff.
+var errCourseEnrolmentRenderedPayment = refusal.AppState("course enrolment: new payment read back with an instructor or invoice")
+
 // CourseEnrolmentInvalid is the serializer's 400: one field map, or one per
 // item for a list body.
 type CourseEnrolmentInvalid struct {

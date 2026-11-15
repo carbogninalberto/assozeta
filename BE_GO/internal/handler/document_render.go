@@ -140,7 +140,9 @@ func documentRenderBody(c echo.Context, raw []byte) (any, bool, error) {
 		return wrap(body, true, err)
 	case "multipart/form-data":
 		if raw == nil {
-			return nil, false, service.ErrDocumentRenderNotPorted
+			// bufferMultipart buffers every multipart body with content;
+			// net/http never hands over a nil Body.
+			return nil, false, service.ErrDocumentRenderAppState
 		}
 		body, err := parseDjangoMultipart(raw, params["boundary"])
 		return wrap(body, true, err)

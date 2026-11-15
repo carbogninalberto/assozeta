@@ -24,6 +24,16 @@ var (
 	// ErrCampsPaymentNotPorted refuses a payment walk outcome this port does
 	// not reproduce before any write.
 	ErrCampsPaymentNotPorted = refusal.New("camps payment walk is not ported")
+	// errCampsWalkOrder is a payment walk whose outcome depends on the order
+	// the database returns the subscription periods in: Django's loop has no
+	// ORDER BY and stops at the first row that raises, so with several rows
+	// and a failure among them the saves made and the message shown are the
+	// heap order's (a platform outcome, long-tail rule 4). The 500 page, never
+	// a handoff.
+	errCampsWalkOrder = refusal.AppState("camps payment walk outcome depends on row order")
+	// errCampsGroupRemoved is a group removed while the request ran (the
+	// registrations resolve inside it): timing, long-tail rule 4.
+	errCampsGroupRemoved = refusal.AppState("camps group removed during the request")
 )
 
 // CampsForbidden is the view's PermissionDenied with its message (403).
@@ -736,14 +746,14 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 		saves, failure, rejected, err := r.campsWalkRow(ctx, walkRow, update, state, group)
 		if err != nil {
 			if failureSeen {
-				return nil, ErrCampsPaymentNotPorted
+				return nil, errCampsWalkOrder
 			}
 			return nil, err
 		}
 		if rejected {
 			// A save the database refuses stops the walk immediately.
 			if failureSeen {
-				return nil, ErrCampsPaymentNotPorted
+				return nil, errCampsWalkOrder
 			}
 			plans = append(plans, campsPaymentRowPlan{saves: saves})
 			var all []campsPaymentSave
@@ -777,12 +787,12 @@ func (r *campsRequest) campsWalk(ctx context.Context, row domain.CampsService, g
 	// is answered: every walked row fails before its first save, with the same
 	// message.
 	if failed != len(plans) {
-		return nil, ErrCampsPaymentNotPorted
+		return nil, errCampsWalkOrder
 	}
 	message := plans[0].failure.Message
 	for _, plan := range plans {
 		if plan.failure == nil || len(plan.saves) != 0 || plan.failure.Message != message {
-			return nil, ErrCampsPaymentNotPorted
+			return nil, errCampsWalkOrder
 		}
 	}
 	return []campsPaymentSave{{failure: plans[0].failure}}, nil

@@ -27,6 +27,11 @@ var (
 	ErrEmailRenderServer = errors.New("email render route raised")
 	// ErrEmailRenderNotPorted refuses inputs outside the port (500 before any write).
 	ErrEmailRenderNotPorted = refusal.New("email render route input not ported")
+	// errEmailRenderEarlyYear is a payment date before year 1000:
+	// strftime('%d/%m/%Y') pads such a year or not depending on the C
+	// library the interpreter runs on (a platform outcome, long-tail rule 4).
+	// The 500 page, never a handoff.
+	errEmailRenderEarlyYear = refusal.AppState("email render: payment year before 1000")
 	// ErrEmailAlreadyPaid is payment_request's 412.
 	ErrEmailAlreadyPaid = errors.New("email not sent, payment already paid.")
 	// ErrEmailNoRecipient is invoice_send's 412.
@@ -443,7 +448,7 @@ func (s *EmailRenderRoutes) SendInvoice(ctx context.Context, identity domain.Res
 	}
 	paid := payment.PaymentDate.UTC()
 	if paid.Year() < 1000 {
-		return ErrEmailRenderNotPorted
+		return errEmailRenderEarlyYear
 	}
 	day := paid.Format("02/01/2006")
 	membership, err := strconv.ParseFloat(invoice.MembershipFee, 64)

@@ -44,6 +44,15 @@ var (
 	ErrDocumentRenderServer = errors.New("document render: unhandled exception")
 	// ErrDocumentRenderNotPorted refuses an input before any write (the 500 page).
 	ErrDocumentRenderNotPorted = refusal.New("document render: input not ported")
+	// ErrDocumentRenderAppState is a state no request or stored row produces:
+	// a renderer built without its form storage (cmd/server/main.go always
+	// calls WithFormStorage), a multipart body net/http did not hand over, or
+	// a scope user whose role is neither athlete nor association (role is one
+	// of ROLE_CHOICES, BE/application/models/user_models.py:49, and a
+	// collaborator's scope user is the account that invited it,
+	// BE/application/views/collaborator_views.py:90-91, never a collaborator).
+	// The 500 page, never a handoff.
+	ErrDocumentRenderAppState = refusal.AppState("document render: unexpected application state")
 	// ErrDocumentRenderUnauthenticated is DRF's NotAuthenticated (401).
 	ErrDocumentRenderUnauthenticated = errors.New("document render: not authenticated")
 )
@@ -280,7 +289,10 @@ func (s *DocumentRender) print(ctx context.Context, identity domain.ResolvedIden
 	}
 	if job.fill != nil {
 		// A name default_storage.save would reject answers an exception text after the Document: not ported.
-		if s.forms == nil || s.forms.GeneratedName(created, document.ID, document.Filename) != nil {
+		if s.forms == nil {
+			return nil, ErrDocumentRenderAppState
+		}
+		if s.forms.GeneratedName(created, document.ID, document.Filename) != nil {
 			return nil, ErrDocumentRenderNotPorted
 		}
 	}
@@ -606,7 +618,7 @@ func (s *DocumentRender) requestAssociation(ctx context.Context, identity domain
 	case user.Role == domain.RoleAthlete:
 		return "", renderException(500, "User is not a sport association"), nil
 	case user.Role != domain.RoleAssociation:
-		return "", nil, ErrDocumentRenderNotPorted
+		return "", nil, ErrDocumentRenderAppState
 	}
 	owned, err := s.store.OwnedAssociations(ctx, user.ID)
 	if err != nil {
@@ -751,7 +763,10 @@ func (s *DocumentRender) templateJob(ctx context.Context, identity domain.Resolv
 	case errors.As(err, &input):
 		failed = renderException(500, input.Detail)
 	case err != nil:
-		return nil, nil, ErrDocumentRenderNotPorted
+		// A body read failure (the client or the network, long-tail rule 4)
+		// is the 500 page; a multipart body the parser refuses keeps its
+		// own refusal (domain.ErrDocumentWritesNotPorted).
+		return nil, nil, err
 	default:
 		plan := planTemplateData(body)
 		if plan.failure != "" {

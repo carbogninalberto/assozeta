@@ -49,6 +49,10 @@ var (
 	// would reach Document creation and the storage upload (not ported)
 	// before any write.
 	ErrSubscriptionMembershipUploadUnsupported = refusal.New("subscription membership document upload is not ported")
+	// errSubscriptionMembershipNoStorage is a writer built without its
+	// document storage: cmd/server/main.go always calls WithUploads. An
+	// application-state error.
+	errSubscriptionMembershipNoStorage = refusal.AppState("subscription memberships without document storage")
 )
 
 // SubscriptionMembershipValidationError is DRF's 400 field map.
@@ -229,7 +233,7 @@ func (s *SubscriptionMemberships) subscriptionMembershipDocuments(write dto.Subs
 			return nil, nil // raised in order after the save
 		}
 		if s.uploads == nil {
-			return nil, ErrSubscriptionMembershipUploadUnsupported
+			return nil, errSubscriptionMembershipNoStorage
 		}
 	}
 	return nil, nil

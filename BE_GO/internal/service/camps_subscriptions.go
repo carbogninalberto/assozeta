@@ -443,7 +443,7 @@ func (r *campsSubscriptionRequest) generatePayment(ctx context.Context, cs domai
 			// Registrations resolve inside the group, so only a group removed
 			// during the request gets here; the foreign key error names a
 			// constraint the Go side cannot know.
-			return ErrCampsPaymentNotPorted
+			return errCampsGroupRemoved
 		}
 	}
 	_, stored, ok := dto.CampsStoredAmount(amount)

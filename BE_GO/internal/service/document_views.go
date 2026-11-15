@@ -32,6 +32,17 @@ var (
 	ErrDocumentViewServer = errors.New("document view: unhandled exception")
 	// ErrDocumentViewNotPorted refuses an input outside the port (the 500 page).
 	ErrDocumentViewNotPorted = refusal.New("document view: input not ported")
+	// errDocumentViewSignature is a signature image Go does not read: a view
+	// built without the signature storage (cmd/server/main.go always calls
+	// WithSignatureObjects), or a legacy signature URL Django fetches from
+	// another server (an external system, long-tail rule 4). The 500 page,
+	// never a handoff.
+	errDocumentViewSignature = refusal.AppState("document view: signature image not read")
+	// errDocumentViewCollaboratorOwner is an association whose user is a
+	// collaborator: the writers create it for an ASSOCIATION-role owner
+	// (BE/instance/views.py:200-209, the import's owner user,
+	// BE/application/services/import_service.py:1059-1063). The 500 page.
+	errDocumentViewCollaboratorOwner = refusal.AppState("document view: collaborator account as an association's user")
 )
 
 // PreviewRenderer is pdfrender.Client's call with the request's
@@ -755,7 +766,7 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 			// data URI, then the legacy URL, then None.
 			if key := renderOptionalEmpty(subscription.SignatureStorageKey); key != "" {
 				if s.signatures == nil {
-					return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
+					return nil, errDocumentViewSignature
 				}
 				if content, err := s.signatures.Read(ctx, key); err == nil {
 					return "data:image/png;base64," + base64.StdEncoding.EncodeToString(content), nil
@@ -764,7 +775,7 @@ func (s *DocumentViews) subscription(ctx context.Context, identity domain.Resolv
 			}
 			if renderOptionalEmpty(subscription.SignatureURL) != "" {
 				// The legacy URL is fetched from another server.
-				return nil, fmt.Errorf("%w: signature image", ErrDocumentViewNotPorted)
+				return nil, errDocumentViewSignature
 			}
 			return nil, nil
 		}),
@@ -830,7 +841,7 @@ func (s *DocumentViews) preview(ctx context.Context, identity domain.ResolvedIde
 	case domain.RoleAthlete:
 		return &DocumentViewReply{Status: 403, JSON: map[string]string{"detail": "User is not a sport association"}}, nil
 	case domain.RoleCollaborator:
-		return nil, fmt.Errorf("%w: collaborator account as an association's user", ErrDocumentViewNotPorted)
+		return nil, errDocumentViewCollaboratorOwner
 	}
 	owned, err := s.store.AssociationsOfUser(ctx, association.UserID)
 	if err != nil {

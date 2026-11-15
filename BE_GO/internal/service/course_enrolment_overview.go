@@ -476,7 +476,9 @@ func (s *CourseEnrolment) MakePayment(ctx context.Context, identity domain.Resol
 		return nil, err
 	}
 	if rendered.InstructorID != nil || rendered.InvoiceID != nil {
-		return nil, ErrCourseEnrolmentNotPorted
+		// The payment this transaction has just created (tx.CreatePayment
+		// above, no instructor and no invoice): no request reaches this.
+		return nil, errCourseEnrolmentRenderedPayment
 	}
 	if err = tx.Commit(); err != nil {
 		return nil, err

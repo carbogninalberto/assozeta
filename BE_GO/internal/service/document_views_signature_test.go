@@ -82,7 +82,7 @@ func TestDocumentViewsSubscriptionSignature(t *testing.T) {
 			reply, err := views.Render(context.Background(), domain.ResolvedIdentity{},
 				DocumentViewRequest{View: ViewSubscription, UID: uid, Language: "en"})
 			if test.refused {
-				if !errors.Is(err, ErrDocumentViewNotPorted) {
+				if !errors.Is(err, errDocumentViewSignature) {
 					t.Fatalf("error %v, want the signature refusal", err)
 				}
 				return
