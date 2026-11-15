@@ -41,7 +41,7 @@ func (h *ExportAllDataHandler) Export(c echo.Context) error {
 	case errors.Is(err, service.ErrExportAllDataAthlete):
 		return restError(c, &restInputError{Status: http.StatusForbidden, Detail: service.ErrExportAllDataAthlete.Error()})
 	case err != nil:
-		if !errors.Is(err, domain.ErrExportAllDataServer) && !errors.Is(err, domain.ErrExportAllDataNotPorted) {
+		if !errors.Is(err, domain.ErrExportAllDataServer) {
 			c.Logger().Error(err)
 		}
 		return messageReadsError(c, err)

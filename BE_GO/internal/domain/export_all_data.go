@@ -3,17 +3,11 @@ package domain
 import (
 	"context"
 	"errors"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // ErrExportAllDataServer is an exception export_all_data does not catch (the
-// 500 page); ErrExportAllDataNotPorted is an output Go does not reproduce,
-// refused with the 500 page.
-var (
-	ErrExportAllDataServer    = errors.New("export all data: unhandled exception")
-	ErrExportAllDataNotPorted = refusal.New("export all data: output not ported")
-)
+// 500 page).
+var ErrExportAllDataServer = errors.New("export all data: unhandled exception")
 
 // ExportAllDataColumn is one exported model field: Kind tells how its value
 // becomes str(value) (see repository.exportAllDataExpression).
