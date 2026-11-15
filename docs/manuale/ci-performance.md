@@ -520,9 +520,16 @@ above in place): 51.5 min end to end, against 89 min at the start.
 | `appliance` | 21 min (image phase 6.2 min; it was 4.6 min on run 43739593638 and 8.3 min before the change, so hosted-runner variance is large) |
 | gate and evidence publish | 1 min |
 
-The appliance is now the longest single job. Its checks after the image phase
-are one chained install, upgrade and rollback sequence on a single
-installation, so they stay serial.
+### Appliance split
+
+A full rehearsal now runs as two parallel jobs: `--part current` (fresh
+install through failed-candidate recovery) and `--part historical` (published
+release, upgrade, backup rotation, rollback). Each builds its own images; the
+historical part rebuilds only the corrupt candidate images and the reader
+fixture it used to inherit. `appliance-merge` combines both into the
+`results.json` the gate already checks; `--part all` keeps the old single run.
+On run 43764477224 the appliance stretch took 11.5 min instead of 21 (current
+10 min, historical 11.5 min, merge 20 s), and the whole run 41.7 min.
 
 ## After
 
