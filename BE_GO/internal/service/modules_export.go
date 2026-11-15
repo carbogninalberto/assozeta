@@ -12,6 +12,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -95,8 +96,8 @@ func (s *ModulesExport) Export(ctx context.Context, identity domain.ResolvedIden
 	frame.Rows = rows
 	workbook, err := xlsxexport.PandasXlsxwriter(frame, s.now())
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, domain.ErrModuleResponsesNotPorted
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case err != nil:
 		return nil, domain.ErrModulesExportServer
 	}

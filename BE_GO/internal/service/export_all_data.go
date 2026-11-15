@@ -10,6 +10,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfrender"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -78,8 +79,8 @@ func (s *ExportAllData) Export(ctx context.Context, identity domain.ResolvedIden
 	}
 	workbook, err := xlsxexport.OpenpyxlRowsResponse([]string{"Iscrizioni", "Pagamenti"}, [][][]string{subscriptions, payments}, s.now())
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, domain.ErrExportAllDataNotPorted
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case err != nil:
 		return nil, domain.ErrExportAllDataServer // IllegalCharacterError in sheet.append
 	}

@@ -191,7 +191,7 @@ func typedLabels(sheet *opSheet, labels []Value) error {
 			cell.kind, cell.text = 'n', percentG(number, false)
 		case Float:
 			if math.IsNaN(label.Float) || math.IsInf(label.Float, 0) {
-				return ErrNotPorted
+				return ErrUnexpectedInput
 			}
 			cell.kind, cell.text = 'n', percentG(label.Float, false)
 		case Bool:
@@ -200,7 +200,7 @@ func typedLabels(sheet *opSheet, labels []Value) error {
 				cell.text = "1"
 			}
 		default:
-			return ErrNotPorted
+			return ErrUnexpectedInput
 		}
 		sheet.rows[0].cells[i] = cell
 	}
@@ -259,7 +259,7 @@ func pySlice(text string, n int) string {
 // 2, 50).
 func reportSheet(title string, columns []string, labels []Value, data [][]Value) (opSheet, error) {
 	if len(data) != len(columns) || len(columns) > 702 {
-		return opSheet{}, ErrNotPorted
+		return opSheet{}, ErrUnexpectedInput
 	}
 	if len(columns) == 0 {
 		return opSheet{title: title}, nil // a frame without columns writes no cell
@@ -274,11 +274,11 @@ func reportSheet(title string, columns []string, labels []Value, data [][]Value)
 	widths := make([]string, len(columns))
 	for i := range columns {
 		if len(data[i]) != rows || rows == 0 {
-			return opSheet{}, ErrNotPorted
+			return opSheet{}, ErrUnexpectedInput
 		}
 		for _, value := range data[i] {
 			if value.Kind == None || value.Kind == Bool || (value.Kind == Float && (math.IsNaN(value.Float) || math.IsInf(value.Float, 0))) {
-				return opSheet{}, ErrNotPorted // format_export_data leaves no None or bool
+				return opSheet{}, ErrUnexpectedInput // format_export_data leaves no None or bool
 			}
 		}
 		column, err := inferColumn(data[i])
@@ -431,7 +431,7 @@ func ReportSheetsWorkbook(sheets []ReportSheet, now time.Time) ([]byte, error) {
 		out = append(out, built)
 	}
 	if len(out) == 0 {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpectedInput
 	}
 	return openpyxlPackage(out, true, now)
 }
@@ -484,7 +484,7 @@ func courseSheet(title string, course AttendanceCourse) (opSheet, error) {
 	for _, date := range course.Dates {
 		if _, ok := index[date]; !ok {
 			if date == "#" || date == "Nome e Cognome" || date == "Presenze" {
-				return opSheet{}, ErrNotPorted
+				return opSheet{}, ErrUnexpectedInput
 			}
 			index[date] = len(columns)
 			columns = append(columns, date)
@@ -549,7 +549,7 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 	switch mode {
 	case "single":
 		if len(courses) != 1 {
-			return nil, ErrNotPorted
+			return nil, ErrUnexpectedInput
 		}
 		if courses[0].Untitled {
 			// The sheet name is a slice of the title.
@@ -606,7 +606,7 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 			for _, date := range course.Dates {
 				if _, ok := seen[date]; !ok {
 					if date == "#" || date == "Corso" || date == "Nome e Cognome" || date == "Presenze" {
-						return nil, ErrNotPorted
+						return nil, ErrUnexpectedInput
 					}
 					seen[date] = len(ordered) + 3
 					ordered = append(ordered, date)
@@ -665,10 +665,10 @@ func AttendanceWorkbook(mode string, courses []AttendanceCourse, now time.Time) 
 		}
 		out = append(out, sheet)
 	default:
-		return nil, ErrNotPorted
+		return nil, ErrUnexpectedInput
 	}
 	if len(out) == 0 {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpectedInput
 	}
 	return openpyxlPackage(out, true, now)
 }

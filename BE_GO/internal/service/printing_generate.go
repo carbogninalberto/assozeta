@@ -15,6 +15,7 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/pdfexport"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/xlsxexport"
 )
 
@@ -209,8 +210,8 @@ func (r *printingRun) finish(report *printingReport) (*printingReport, error) {
 	case "excel":
 		workbook, err := xlsxexport.PandasOpenpyxl(report.data, report.columns, r.now)
 		switch {
-		case errors.Is(err, xlsxexport.ErrNotPorted):
-			return nil, domain.ErrPrintingGenerateNotPorted
+		case errors.Is(err, refusal.ErrAppState):
+			return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 		case err != nil:
 			return nil, errPrintingFailure
 		}

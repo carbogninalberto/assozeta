@@ -546,7 +546,7 @@ func xwStyles(header, link bool) string {
 // fixes the shared string order.
 func PandasXlsxwriter(frame Frame, now time.Time) ([]byte, error) {
 	if frame.Sheet == "" || len(frame.Sheet) > 31 || strings.ContainsAny(frame.Sheet, `[]:*?/\'`) {
-		return nil, ErrNotPorted
+		return nil, ErrUnexpectedInput
 	}
 	sheet := &xwSheet{cells: map[int]map[int]xwCell{}, index: map[string]int{}}
 	offset := 0

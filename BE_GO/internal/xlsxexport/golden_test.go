@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/big"
 	"os"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
@@ -14,7 +15,7 @@ import (
 
 // The golden workbooks come from Django's own functions
 // (TESTS/fixtures/generate_xlsx_golden.py); a case Django raises on must
-// fail here with ErrDjango, and ErrNotPorted marks the inputs Go refuses.
+// fail here with ErrDjango.
 
 type goldenEntry struct {
 	Name     string `json:"name"`
@@ -37,10 +38,11 @@ type golden struct {
 	Parts map[string]string `json:"parts"`
 }
 
-// goldenNotPorted are the golden inputs Go refuses (ErrNotPorted) instead of
-// reproducing; every other case must match.
-var goldenNotPorted = map[string]bool{
-	"eu-long-digits": true, // 17+ significant digits: platform-dependent parse
+// goldenPlatform are the golden inputs whose workbook depends on the platform
+// the pandas wheel was built for (preciseXstrtod): the golden file was
+// captured on macOS arm64, so they are compared there only.
+var goldenPlatform = map[string]string{
+	"eu-long-digits": "darwin/arm64", // 17+ significant digits: the fused digit accumulation
 }
 
 func decodeValue(t *testing.T, raw json.RawMessage) Value {
@@ -312,11 +314,8 @@ func TestGoldenWorkbooks(t *testing.T) {
 			from := time.Now()
 			workbook, err := buildGolden(t, item, from)
 			to := time.Now()
-			if goldenNotPorted[item.Name] {
-				if !errors.Is(err, ErrNotPorted) {
-					t.Fatalf("expected ErrNotPorted, got %v", err)
-				}
-				return
+			if platform, ok := goldenPlatform[item.Name]; ok && platform != runtime.GOOS+"/"+runtime.GOARCH {
+				t.Skipf("golden output of %s", platform)
 			}
 			if item.Raises != "" {
 				if !errors.Is(err, ErrDjango) {

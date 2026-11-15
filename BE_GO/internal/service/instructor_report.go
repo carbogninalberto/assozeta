@@ -272,8 +272,8 @@ func (s *InstructorReport) Report(ctx context.Context, identity domain.ResolvedI
 	workbook, err := xlsxexport.PandasXlsxwriter(frame, s.now())
 	var report any
 	switch {
-	case errors.Is(err, xlsxexport.ErrNotPorted):
-		return nil, ErrInstructorReportNotPorted
+	case errors.Is(err, refusal.ErrAppState):
+		return nil, err // an input no view builds (xlsxexport.ErrUnexpectedInput)
 	case err != nil:
 		report = nil // generate_report_from_data logs and returns None
 	default:
