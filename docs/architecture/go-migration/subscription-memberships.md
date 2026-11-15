@@ -41,12 +41,11 @@ timestamp)>/<document id>/<filename>', bytes)` through the documents-writes uplo
   a valid UUID.`) and the price (a file named `12` is the price 12.00), and as an object the other fields reject (`Not a valid string.`,
   the date and datetime format messages). Without a file part the data stays an immutable QueryDict (500).
 - A `documents_data` item whose filename the Document column rejects (null, NUL, over 255 characters): `Document.objects.create` raises
-  after the membership and the earlier uploads were saved, so the 500 leaves them.
-
-## Not ported (refused before any write)
-
-- Form keys for `documents_data` (the UI sends JSON), and a storage key that already exists (`get_available_name` appends a random suffix,
-  not reproducible): 500.
+  after the membership and the earlier uploads were saved, so the 500 leaves them. A filename that is not a str (stored as
+  `str(value)`, then `os.path.join` raises `TypeError`) or a name `Storage.save` rejects leaves the `Document` row and its create
+  entry (not stored, not linked), then the 500 page.
+- Form bodies read `documents_data` as DRF's `ListField` reads HTML input: every value of the repeated key (each a str, so the
+  per-index dictionary error), otherwise, except on the partial update, the dicts built from `documents_data[N].name` keys.
 
 ## Evidence
 
@@ -61,3 +60,8 @@ v2-sub-create: documents_data uploads (88 cases; `add-with-documents`, `add-docu
 - RED (`v2create-red-r2`): Django 88/88; Go 500 on `subscription-memberships-add-with-documents`.
 - GREEN (`v2create-versioned-r1`): 88/88 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with the stored objects.
 - Mutation (`v2create-mutation-r1`): skipping the document link (CAUGHT).
+
+Long tail PR 3 (agent C): form `documents_data` and the filenames Django cannot store are served instead of refused (a taken
+storage key cannot occur: the key holds the new document's uuid4). Cases `add-document-filename-number-keeps-row`,
+`add-document-filename-traversal-keeps-row`, `update-form-documents-data-key`, `update-form-indexed-keys-ignored`,
+`add-multipart-indexed-documents`.
