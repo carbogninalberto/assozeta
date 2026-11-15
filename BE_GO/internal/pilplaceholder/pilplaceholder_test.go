@@ -100,7 +100,8 @@ func TestRenderRefusals(t *testing.T) {
 	for _, text := range []string{"\xff", "ok\n\xc3", "\xed\xa0\x80"} {
 		for _, v := range variants {
 			_, err := RenderWith(text, v.zlib)
-			if !errors.Is(err, ErrUnsupported) || !errors.Is(err, refusal.ErrNotPorted) {
+			// Only the application draws these texts: application state, never a handoff.
+			if !errors.Is(err, ErrUnsupported) || !errors.Is(err, refusal.ErrAppState) || errors.Is(err, refusal.ErrNotPorted) {
 				t.Errorf("%q: %v", text, err)
 			}
 		}

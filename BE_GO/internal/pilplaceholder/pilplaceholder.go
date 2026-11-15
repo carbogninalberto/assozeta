@@ -44,10 +44,16 @@ import (
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
-// ErrUnsupported is returned for inputs whose Django output Go cannot
-// reproduce: text that is not valid UTF-8 (a Python str has no such value) and
-// the sizes at which Pillow itself raises instead of returning an image.
-var ErrUnsupported = refusal.New("pilplaceholder: input outside the supported subset")
+// ErrUnsupported is returned for inputs the application never draws: an
+// unknown Zlib (ParseZlib maps the setting at start-up), text that is not
+// valid UTF-8 (the callers check the file name, which holds the same names,
+// first), and the sizes at which Pillow itself raises instead of returning an
+// image (the text holds the first and last name, CharField(max_length=150)
+// in BE/application/models/user_models.py:284-285 and validated by
+// AssociateSerializer before the drawing, so a line stays far below a million
+// characters and the image below Image.MAX_IMAGE_PIXELS). It is an
+// application-state error (Django's 500 page), never handed off.
+var ErrUnsupported = refusal.AppState("pilplaceholder: input outside the supported subset")
 
 const (
 	canvasWidth  = 600

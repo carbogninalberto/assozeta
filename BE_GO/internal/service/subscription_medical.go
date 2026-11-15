@@ -461,8 +461,11 @@ func (r *medicalRequest) placeholderExpiration(ctx context.Context, subscription
 			return "", ErrSubscriptionMedicalNotPorted // str(None) in the file name and the image
 		}
 		document.Filename = placeholderFilename(*first, *last)
-		planned, ok := s.placeholders.plan(placeholderExpirationText(*first, *last, date+" 00:00:00+00:00"), document.Filename, created,
+		planned, ok, err := s.placeholders.plan(placeholderExpirationText(*first, *last, date+" 00:00:00+00:00"), document.Filename, created,
 			document.ID)
+		if err != nil {
+			return "", err
+		}
 		if !ok {
 			return "", ErrSubscriptionMedicalNotPorted
 		}
