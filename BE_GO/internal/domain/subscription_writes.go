@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"time"
-
-	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 var (
@@ -15,9 +13,6 @@ var (
 	ErrSubscriptionEditForeignReference = errors.New("subscription edit references another association")
 	// ErrSubscriptionEditServer is an exception Django raises (the 500 page).
 	ErrSubscriptionEditServer = errors.New("subscription edit server error")
-	// ErrSubscriptionEditNotPorted refuses input this port does not handle,
-	// before any write (the 500 page).
-	ErrSubscriptionEditNotPorted = refusal.New("subscription edit input not ported")
 )
 
 // SubscriptionEditAssociate is the stored Associate row the edit reads and
