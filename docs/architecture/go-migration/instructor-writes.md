@@ -90,8 +90,8 @@ and the workbook inputs stay refusals.
 ## Rare inputs (v2-rest-docs)
 
 - report dates go through `dateutil` (`dayfirst=True`, `internal/pydateutil`): ISO dates, month names, two-digit years, times and
-  swapped months are read; a text it does not read is `pydateutil.ErrUnsupported`, its own refusal. Zone-aware results (the
-  view keeps the zone) stay refused.
+  swapped months are read, and any other text as dateutil reads it (long tail PR 3). Zone-aware results (the view keeps the
+  zone) are the 500 page.
 - report: `course_subscription_id` values that are integers or booleans read as `UUID(int=...)` and name no athlete; floats,
   integers outside 0..2^128-1, lists and objects are the 500 page.
 - compensation: the header is read as a uuid in any spelling, the payment keeps the text as sent in memory (create entry and the
@@ -126,5 +126,5 @@ and the workbook inputs stay refusals.
 
 The report workbook writes dynamic array formulas (`cm="1"`, expanded `_xlfn.` names, `xl/metadata.xml`); the golden `sub-dynamic` case now matches Python byte for byte. 177 cases GREEN natively. Mutation (`cm` value) CAUGHT.
 
-Long tail PR 3 (agent C): a report date text `internal/pydateutil` does not read is
-`pydateutil.ErrUnsupported`, its own refusal, no longer this family's sentinel.
+Long tail PR 3: `internal/pydateutil` reads every Python str (agent A), so no report date text is refused here any more; the
+only other result is pydateutil's unexpected local zone, application state (every caller passes UTC).

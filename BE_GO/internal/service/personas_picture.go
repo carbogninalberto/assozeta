@@ -206,7 +206,7 @@ func botocoreClientError(err error, operation string, head bool) (string, bool) 
 	}
 	var api smithy.APIError
 	known := errors.As(err, &api)
-	if status == http.StatusBadRequest && known && botocoreRetriedCodes[api.ErrorCode()] {
+	if status == http.StatusBadRequest && known && botocoreRetried400Codes[api.ErrorCode()] {
 		return "", false
 	}
 	if !head && !known {
@@ -223,9 +223,9 @@ func botocoreClientError(err error, operation string, head bool) (string, bool) 
 // retries (retryhandler.py's throttle and general error checks).
 var botocoreRetriedStatuses = map[int]bool{429: true, 500: true, 502: true, 503: true, 504: true, 509: true}
 
-// botocoreRetriedCodes are the HTTP 400 codes botocore's legacy retry mode
+// botocoreRetried400Codes are the HTTP 400 codes botocore's legacy retry mode
 // retries.
-var botocoreRetriedCodes = map[string]bool{"Throttling": true, "ThrottlingException": true, "ThrottledException": true,
+var botocoreRetried400Codes = map[string]bool{"Throttling": true, "ThrottlingException": true, "ThrottledException": true,
 	"RequestThrottledException": true, "ProvisionedThroughputExceededException": true, "RequestTimeout": true, "BadDigest": true}
 
 // botocoreHTTPPhrases holds http.client.responses for HTTPStatus 400-599: a

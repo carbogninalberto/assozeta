@@ -279,8 +279,9 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 	case dto.DateutilFailed:
 		return false, ErrAssociateDraftFailed
 	case dto.DateutilUnsupported:
-		// pydateutil's own refusal: the text is outside its supported subset.
-		return false, pydateutil.ErrUnsupported
+		// pydateutil reads every Python str; with any year allowed the only
+		// result left is its unexpected-zone application state (time.UTC is passed).
+		return false, pydateutil.ErrUnexpectedZone
 	}
 	if date.Year() < 1000 {
 		// strftime('%d/%m/%Y') leaves the year unpadded and strptime rejects it.
@@ -308,8 +309,9 @@ func (s *AssociateDrafts) associateDraftValidity(editData domain.RequestObject) 
 	case dto.DateutilFailed:
 		return valid, nil
 	case dto.DateutilUnsupported:
-		// pydateutil's own refusal: the text is outside its supported subset.
-		return false, pydateutil.ErrUnsupported
+		// pydateutil reads every Python str; with any year allowed the only
+		// result left is its unexpected-zone application state (time.UTC is passed).
+		return false, pydateutil.ErrUnexpectedZone
 	}
 	if date.Year() < 1000 {
 		return valid, nil // the same round trip fails: logged and ignored

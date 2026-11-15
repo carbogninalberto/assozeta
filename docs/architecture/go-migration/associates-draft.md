@@ -67,5 +67,5 @@ whole request the same way, and its ported quick-mode ids stay ported. Nothing e
 - GREEN (`versioned-r1`): 128/128 on native Django, native Go, Caddy `/api/v1` and `/api/v2`, with exact draft, status, certificate, audit and index effects.
 - Mutation (`mutation-r1`): rolling back the edit when the expiration date does not parse fails the first case that expects the saved draft and the created certificate (CAUGHT).
 
-Long tail PR 3 (agent C): a date text `internal/pydateutil` does not read is
-`pydateutil.ErrUnsupported`, its own refusal, no longer this family's sentinel.
+Long tail PR 3: `internal/pydateutil` reads every Python str (agent A), so no date text is refused here any more; the
+only other result is pydateutil's unexpected local zone, application state (every caller passes UTC).

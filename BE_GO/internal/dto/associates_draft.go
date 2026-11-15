@@ -103,7 +103,7 @@ const (
 	// OverflowError for a text that is no date).
 	DateutilFailed
 	// DateutilUnsupported: a reading Go does not reproduce (refused): a year
-	// before 1000, or a text internal/pydateutil refuses.
+	// before 1000, or pydateutil's unexpected-zone application state.
 	DateutilUnsupported
 )
 

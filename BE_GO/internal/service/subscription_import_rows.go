@@ -66,8 +66,9 @@ func subscriptionImportTextColumns(mapping any) map[string]bool {
 // subscriptionImportDate is import_date(text) for a value that is no date
 // cell: dateutil.parser.parse(text, dayfirst=...) with the day first unless
 // the text starts with the year (dto.PersonDateText), at now. parsed is false
-// where parse raises (import_date answers None); a text internal/pydateutil
-// refuses is its own refusal (pydateutil.ErrUnsupported).
+// where parse raises (import_date answers None). internal/pydateutil reads
+// every Python str, so the only other result is its unexpected-zone
+// application state (time.UTC is passed).
 func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed bool, err error) {
 	date, result := dto.PersonDateAnyYear(text, now)
 	switch result {
@@ -76,8 +77,7 @@ func subscriptionImportDate(text string, now time.Time) (date time.Time, parsed 
 	case dto.DateutilFailed:
 		return time.Time{}, false, nil
 	}
-	// pydateutil's own refusal: the text is outside its supported subset.
-	return time.Time{}, false, pydateutil.ErrUnsupported
+	return time.Time{}, false, pydateutil.ErrUnexpectedZone
 }
 
 // subscriptionImportUnstorable is a value json.dumps does not encode (a
