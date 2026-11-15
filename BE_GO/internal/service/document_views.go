@@ -161,7 +161,7 @@ func (s *DocumentViews) AuthorizeBypass(authorization *string) (bool, error) {
 func (s *DocumentViews) Render(ctx context.Context, identity domain.ResolvedIdentity, request DocumentViewRequest) (*DocumentViewReply, error) {
 	reply, err := s.render(withViewPromotion(ctx, identity, request.Promotion), identity, request)
 	if err != nil {
-		if errors.Is(err, djtemplate.ErrUnsupported) || errors.Is(err, mentions.ErrUnsupported) {
+		if errors.Is(err, mentions.ErrUnsupported) { // djtemplate.ErrUnsupported is app state: it passes through
 			return nil, fmt.Errorf("%w: %v", ErrDocumentViewNotPorted, err)
 		}
 		if errors.Is(err, djtemplate.ErrPython) {

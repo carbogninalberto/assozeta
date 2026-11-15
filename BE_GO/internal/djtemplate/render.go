@@ -33,7 +33,14 @@ import (
 var files embed.FS
 
 // ErrUnsupported marks a template feature or context value outside the port.
-var ErrUnsupported = refusal.New("djtemplate: unsupported template input")
+// Every one is a state only the application writes, so it is an
+// application-state error (Django's 500 page, never handed off): the eight
+// templates are fixed files (BE/templates/document, embedded here), so their
+// tags, filters, lookups and format letters are known; the context values are
+// built by the views; the language comes from the request resolver (a
+// LANGUAGES variant); and the JSON columns are jsonb (JSONField in
+// BE/application/models), which never holds a duplicate key or trailing data.
+var ErrUnsupported = refusal.AppState("djtemplate: unsupported template input")
 
 func unsupported(format string, args ...any) error {
 	return fmt.Errorf("%w: %s", ErrUnsupported, fmt.Sprintf(format, args...))
