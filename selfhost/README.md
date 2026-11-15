@@ -127,6 +127,36 @@ supports public-ACL providers outside this bundled lifecycle: for example,
 `AWS_S3_PUBLIC_BASE_URL` can override the derived public bucket origin with a
 DigitalOcean CDN or custom domain.
 
+### Behind a front proxy
+
+Use this when a shared reverse proxy on the same host, for example another
+Caddy, terminates TLS and forwards to this installation. Keep `APP_URL` as the
+public `https://` URL, point the web server at plain http, and name the external
+Docker network shared with that proxy:
+
+```bash
+SITE_ADDRESS=http://example.org
+ASSOZETA_EDGE_NETWORK=edge
+ASSOZETA_EDGE_ALIAS=assozeta-web
+ASSOZETA_TRUSTED_PROXIES=private_ranges
+```
+
+The alias defaults to `assozeta-web`; `ASSOZETA_TRUSTED_PROXIES` accepts
+`private_ranges` or space-separated CIDRs so the forwarded client IP and https
+scheme reach the backends. Create the network once if needed
+(`docker network create edge`), then point the front proxy here:
+
+```
+example.org {
+    reverse_proxy assozeta-web:80
+}
+```
+
+Run `./selfhost/bin/assozeta restart`. The overlay `selfhost/compose.edge.yml`
+drops the `web` host ports and joins the network; upgrades keep it, and Docker
+Compose v2.24.0 or newer is required. Leaving `ASSOZETA_EDGE_NETWORK` empty
+keeps the default host ports and automatic HTTPS.
+
 ## Release quality
 
 See [release quality automation](QUALITY.md) for the Linux/browser publication

@@ -25,7 +25,7 @@ def managed_path(name):
     path = PurePosixPath(name)
     if path.is_absolute() or '..' in path.parts or not path.parts or str(path) != name:
         return False
-    return name in ('compose.yml', 'compose.updater.yml', '.env.example', '.env.dev.example') or path.parts[0] in ('bin', 'config', 'caddy', 'updater')
+    return name in ('compose.yml', 'compose.updater.yml', 'compose.edge.yml', '.env.example', '.env.dev.example') or path.parts[0] in ('bin', 'config', 'caddy', 'updater')
 
 
 def digest(data):

@@ -86,6 +86,9 @@ def compose_command(root, env_file, updater=False):
     external = Path(root) / '.updater' / 'env-mount.json'
     if updater and external.exists():
         command += ['-f', str(external)]
+    if not updater and edge_enabled(env_file):
+        # Same optional front-proxy overlay as bin/assozeta.
+        command += ['-f', str(Path(root) / EDGE_OVERLAY)]
     if not updater and go_tasks_enabled(env_file):
         # Same opt-in Go task consumer profile as bin/assozeta.
         command += ['--profile', GO_TASKS_PROFILE]
@@ -97,6 +100,13 @@ GO_TASKS_PROFILE = 'go-tasks'
 
 def go_tasks_enabled(env_file):
     return read_env(env_file).get('ASSOZETA_GO_TASKS') == '1'
+
+
+EDGE_OVERLAY = 'compose.edge.yml'
+
+
+def edge_enabled(env_file):
+    return bool(read_env(env_file).get('ASSOZETA_EDGE_NETWORK'))
 
 
 def compose_environment(root, env_file):

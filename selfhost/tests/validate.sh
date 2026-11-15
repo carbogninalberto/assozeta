@@ -46,6 +46,7 @@ python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_manual_sync.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_operational_diagnostics.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_remote_backups.py
 python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_remote_endpoint_guard.py
+python3 -m unittest discover -s "$ROOT/selfhost/tests" -p test_edge_proxy.py
 
 ASSOZETA_SELFHOST_DIR="$ROOT/selfhost" ASSOZETA_ENV_FILE="$TEMPORARY/prod.env" \
     ASSOZETA_UPDATER_API_VOLUME=assozeta_updater_api ASSOZETA_UPDATER_STATUS_VOLUME=assozeta_updater_status \

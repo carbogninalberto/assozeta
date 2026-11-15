@@ -8,6 +8,9 @@ PROD_COMPOSE="$SELFHOST_DIR/compose.yml"
 DEV_COMPOSE="$SELFHOST_DIR/compose.dev.yml"
 REQUIRED_ENV="$SELFHOST_DIR/config/required.env"
 MIN_COMPOSE_VERSION=2.20.0
+EDGE_COMPOSE="$SELFHOST_DIR/compose.edge.yml"
+# compose.edge.yml uses `!reset`, available from Compose v2.24.0.
+EDGE_MIN_COMPOSE_VERSION=2.24.0
 PROD_LOCK_DIR="$SELFHOST_DIR/.lifecycle.lock"
 READINESS_ATTEMPTS=${ASSOZETA_READINESS_ATTEMPTS:-60}
 READINESS_DELAY=${ASSOZETA_READINESS_DELAY:-2}
@@ -183,6 +186,10 @@ preflight() {
     detected_compose_version=$(compose_version)
     compose_version_at_least "$detected_compose_version" "$MIN_COMPOSE_VERSION" \
         || die "Docker Compose v$MIN_COMPOSE_VERSION or newer is required (found $detected_compose_version)"
+    if [ -n "$(edge_network_value "$PROD_ENV")" ]; then
+        compose_version_at_least "$detected_compose_version" "$EDGE_MIN_COMPOSE_VERSION" \
+            || die "ASSOZETA_EDGE_NETWORK requires Docker Compose v$EDGE_MIN_COMPOSE_VERSION or newer (found $detected_compose_version)"
+    fi
 }
 
 pid_is_running() {
@@ -326,7 +333,13 @@ compose_with_env() {
         MINIO_IMAGE=$(storage_image_ref server "$(env_value MINIO_IMAGE "$compose_env_file")")
         MINIO_CLIENT_IMAGE=$(storage_image_ref client "$(env_value MINIO_CLIENT_IMAGE "$compose_env_file")")
         export MINIO_IMAGE MINIO_CLIENT_IMAGE
-        docker compose --env-file "$compose_env_file" -f "$compose_file" "$@"
+        # Production only: the optional front-proxy overlay (compose.edge.yml).
+        if [ "$compose_file" = "$PROD_COMPOSE" ] && [ -n "$(edge_network_value "$compose_env_file")" ]; then
+            [ -f "$EDGE_COMPOSE" ] || die "ASSOZETA_EDGE_NETWORK is set but $EDGE_COMPOSE is missing"
+            docker compose --env-file "$compose_env_file" -f "$compose_file" -f "$EDGE_COMPOSE" "$@"
+        else
+            docker compose --env-file "$compose_env_file" -f "$compose_file" "$@"
+        fi
     )
 }
 
@@ -384,6 +397,16 @@ env_value() {
             exit
         }
     ' "$file"
+}
+
+edge_network_value() {
+    # Same rule as the updater's read_env: surrounding quotes and blanks are not a value.
+    [ -f "$1" ] || return 0
+    edge_value=$(env_value ASSOZETA_EDGE_NETWORK "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+    case "$edge_value" in
+        \"*\"|\'*\') edge_value=${edge_value#?}; edge_value=${edge_value%?} ;;
+    esac
+    printf '%s\n' "$edge_value"
 }
 
 env_has_key() {

@@ -1,0 +1,17 @@
+# Optional overlay for running behind a shared front reverse proxy.
+# bin/assozeta and the updater add it automatically when ASSOZETA_EDGE_NETWORK
+# is set in the installation .env. Requires Docker Compose v2.24.0 or newer.
+services:
+  web:
+    # The front proxy terminates TLS; publish nothing on the host.
+    ports: !reset []
+    networks:
+      internal: {}
+      edge:
+        aliases:
+          - ${ASSOZETA_EDGE_ALIAS:-assozeta-web}
+
+networks:
+  edge:
+    external: true
+    name: ${ASSOZETA_EDGE_NETWORK:?ASSOZETA_EDGE_NETWORK is required by compose.edge.yml}
