@@ -354,6 +354,92 @@ class MergeTests(unittest.TestCase):
         scenarios, copies = shards.validate_merge(REGISTRY, [self.shard(0, ['echo'], extra=upload)], self.state)
         self.assertNotIn('selfhost/tests/browser/manuale/fixtures/members-import.csv', copies[0][1])
 
+    def strict_state(self, reference_date='2026-09-30'):
+        return {**self.state, 'reference_date': reference_date}
+
+    def assertStrictRejected(self, pattern, plan, **options):
+        state = options.pop('state', self.strict_state())
+        with self.assertRaisesRegex(shards.ShardError, pattern):
+            shards.validate_merge(REGISTRY, plan, state, strict=True, **options)
+
+    def test_assignments_must_match_the_required_workflows(self):
+        plan = [self.shard(0, ['alpha', 'delta']), self.shard(1, ['bravo', 'charlie'])]
+        scenarios, copies = shards.validate_merge(REGISTRY, plan, self.state,
+                                                 required=['delta', 'charlie', 'bravo', 'alpha'])
+        self.assertEqual([item['id'] for item in scenarios], ['alpha', 'bravo', 'charlie', 'delta'])
+        self.assertEqual(len(copies), 2)
+        with self.assertRaises(shards.ShardError) as raised:
+            shards.validate_merge(REGISTRY, plan, self.state,
+                                  required=['alpha', 'bravo', 'charlie', 'delta', 'echo'])
+        self.assertEqual(str(raised.exception),
+                         'Shard assignments differ from the required workflows: missing echo')
+        with self.assertRaises(shards.ShardError) as raised:
+            shards.validate_merge(REGISTRY, plan, self.state, required=['alpha', 'delta', 'echo'])
+        self.assertEqual(str(raised.exception),
+                         'Shard assignments differ from the required workflows: '
+                         'missing echo; extra bravo, charlie')
+
+    def test_strict_mode_accepts_a_valid_shard(self):
+        scenarios, copies = shards.validate_merge(REGISTRY, [self.shard(1, ['bravo'])],
+                                                  self.strict_state(), strict=True)
+        self.assertEqual(scenarios, [{'id': 'bravo', 'status': 'passed'}])
+        self.assertIn('bravo.json', copies[0][1])
+        self.assertIn('captures/images/bravo/1.png', copies[0][1])
+
+    def test_strict_mode_accepts_declared_allowed_extra_files(self):
+        shard = self.shard(1, ['bravo'])
+        for name in ('shard-result.json', 'fixture-identity.json'):
+            (Path(shard['dir']) / name).write_text('{}')
+        scenarios, copies = shards.validate_merge(
+            REGISTRY, [shard], self.strict_state(), strict=True,
+            allowed_extra=('shard-result.json', 'fixture-identity.json'))
+        self.assertEqual(scenarios, [{'id': 'bravo', 'status': 'passed'}])
+        self.assertIn('bravo.json', copies[0][1])
+
+    def test_strict_mode_requires_the_run_reference_date_in_every_report(self):
+        plan = [self.shard(1, ['bravo'])]
+        with self.assertRaisesRegex(shards.ShardError, 'Capture report for bravo disagrees on reference_date'):
+            shards.validate_merge(REGISTRY, plan, self.strict_state('2026-10-01'), strict=True)
+        # The same mismatch is accepted without strict, as the local path always did.
+        shards.validate_merge(REGISTRY, plan, self.strict_state('2026-10-01'))
+        with self.assertRaisesRegex(shards.ShardError, 'reference_date'):
+            shards.validate_merge(REGISTRY, plan, self.state, strict=True)
+
+    def test_strict_mode_rejects_undeclared_private_and_symlinked_files(self):
+        shard = self.shard(1, ['bravo'])
+        undeclared = Path(shard['dir']) / 'captures/images/bravo/9.png'
+        undeclared.write_bytes(PNG)
+        self.assertStrictRejected(re.escape('Undeclared file in shard: captures/images/bravo/9.png'), [shard])
+
+        private = Path(shard['dir']) / 'browser-input.json'
+        private.write_text('{}')
+        self.assertStrictRejected(re.escape('Private file in shard: browser-input.json'), [shard])
+        private.unlink()
+
+        link = Path(shard['dir']) / 'copied.png'
+        link.symlink_to(Path(shard['dir']) / 'captures/images/bravo/1.png')
+        self.assertStrictRejected(re.escape('Symlink in shard: copied.png'), [shard])
+        link.unlink()
+
+        directory_link = Path(shard['dir']) / 'elsewhere'
+        directory_link.symlink_to(self.root, target_is_directory=True)
+        self.assertStrictRejected(re.escape('Symlink in shard: elsewhere'), [shard])
+        directory_link.unlink()
+
+        undeclared.unlink()
+        scenarios, _ = shards.validate_merge(REGISTRY, [shard], self.strict_state(), strict=True)
+        self.assertEqual(scenarios, [{'id': 'bravo', 'status': 'passed'}])
+
+    def test_undeclared_files_are_still_accepted_outside_strict_mode(self):
+        shard = self.shard(1, ['bravo'])
+        undeclared = Path(shard['dir']) / 'captures/images/bravo/9.png'
+        undeclared.write_bytes(PNG)
+        (Path(shard['dir']) / 'browser-input.json').write_text('{}')
+        scenarios, copies = shards.validate_merge(REGISTRY, [shard], self.strict_state())
+        self.assertEqual(scenarios, [{'id': 'bravo', 'status': 'passed'}])
+        self.assertNotIn('captures/images/bravo/9.png', copies[0][1])
+        self.assertNotIn('browser-input.json', copies[0][1])
+
 
 class ShardedCaptureTests(unittest.TestCase):
     def test_sharded_capture_produces_the_sequential_evidence(self):

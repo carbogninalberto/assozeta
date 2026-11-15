@@ -52,6 +52,14 @@ REQUIRED_REPORT_FIELDS = ('id', 'status', 'source_hashes', 'fixture_profile', 's
 SHA256 = re.compile(r'[0-9a-f]{64}')
 # Run-directory roots that browser workflows write and later phases read.
 RUN_ARTIFACT_ROOTS = ('captures', 'masters', 'downloads', 'receipt-pdfs', 'browser-print-pdfs', 'diagnostics')
+# Copied from manuale-cache.py (its hyphenated name makes it unimportable); keep the two lists in sync.
+PRIVATE_NAMES = {'browser-input.json', 'execution.log', 'preview.log', 'diagnostics.json',
+                 '.npmrc', '.pypirc', '.netrc', '.pgpass', 'auth.json', 'credentials',
+                 'credentials.json', 'service-account.json', 'kubeconfig',
+                 'id_rsa', 'id_dsa', 'id_ecdsa', 'id_ed25519',
+                 # Run state and private configuration never belong to a captured shard.
+                 'run.json', '.env', '.env.dev'}
+PRIVATE_SUFFIXES = ('.pem', '.key', '.p12', '.pfx')
 
 
 class ShardError(RuntimeError):
@@ -293,10 +301,13 @@ def expected_report_fields(state):
             'tooling_hashes': state['tooling_hashes'], 'backend': 'real'}
 
 
-def validate_merge(recipes, shards, state):
+def validate_merge(recipes, shards, state, *, required=None, strict=False, allowed_extra=()):
     """Validate every shard result before anything is merged.
 
     ``shards`` is a list of ``{'index', 'dir', 'workflows', 'scenarios'}``.
+    ``required`` states the workflows the run asked for; ``strict`` additionally
+    trusts an external runner's directory only when it holds nothing but the
+    declared artifacts, and ``allowed_extra`` names further files it may hold.
     Returns the ordered scenario list and the files to copy per shard.
     """
     by_id = {recipe['id']: recipe for recipe in recipes}
@@ -314,6 +325,14 @@ def validate_merge(recipes, shards, state):
             if assigned.get(identifier) != shard['index']:
                 raise ShardError('Workflow result from an unassigned shard: ' + str(identifier))
             executed[identifier] = scenario.get('status')
+    if required is not None:
+        wanted = set(required)
+        missing = sorted(wanted - set(assigned))
+        extra = sorted(set(assigned) - wanted)
+        if missing or extra:
+            parts = [f'missing {", ".join(missing)}'] if missing else []
+            parts += [f'extra {", ".join(extra)}'] if extra else []
+            raise ShardError('Shard assignments differ from the required workflows: ' + '; '.join(parts))
     missing = sorted(set(assigned) - set(executed))
     if missing:
         raise ShardError('Incomplete shard results: ' + ', '.join(missing))
@@ -321,6 +340,10 @@ def validate_merge(recipes, shards, state):
     if failed:
         raise ShardError('Capture batch failed for ' + ', '.join(failed))
     expected = expected_report_fields(state)
+    if strict:
+        if 'reference_date' not in state:
+            raise ShardError('Capture state is missing reference_date')
+        expected['reference_date'] = state['reference_date']
     shared, claims, copies = None, {}, []
     for shard in shards:
         files = {}
@@ -337,10 +360,33 @@ def validate_merge(recipes, shards, state):
                     raise ShardError(f'Artifact claimed by {claims[relative]} and {identifier}: {relative}')
                 claims[relative] = identifier
             files.update(owned)
+        if strict:
+            check_inventory(shard['dir'], files, allowed_extra)
         copies.append((shard, files))
     scenarios = sorted(({'id': identifier, 'status': status} for identifier, status in executed.items()),
                        key=lambda item: order[item['id']])
     return scenarios, copies
+
+
+def check_inventory(directory, declared, allowed_extra=()):
+    """Reject symlinks, private files and anything a shard's reports do not declare."""
+    root = Path(directory)
+    allowed = set(declared) | set(allowed_extra)
+    for current, directories, entries in os.walk(root, followlinks=False):
+        base = Path(current)
+        for name in sorted(directories):
+            if (base / name).is_symlink():
+                raise ShardError('Symlink in shard: ' + (base / name).relative_to(root).as_posix())
+        for name in sorted(entries):
+            path = base / name
+            relative = path.relative_to(root).as_posix()
+            # Private files are reported as private even when they are also undeclared.
+            if name in PRIVATE_NAMES or name.lower().endswith(PRIVATE_SUFFIXES):
+                raise ShardError('Private file in shard: ' + relative)
+            if path.is_symlink():
+                raise ShardError('Symlink in shard: ' + relative)
+            if relative not in allowed:
+                raise ShardError('Undeclared file in shard: ' + relative)
 
 
 def copy_validated(run, copies):
