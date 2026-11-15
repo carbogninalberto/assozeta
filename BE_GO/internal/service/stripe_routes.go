@@ -229,7 +229,8 @@ func cents(amounts ...string) (int64, error) {
 	total.Mul(total, big.NewRat(100, 1))
 	quotient := new(big.Int).Quo(total.Num(), total.Denom())
 	if !quotient.IsInt64() {
-		return 0, domain.ErrStripeNotPorted
+		// Payment.amount is numeric(9, 2) (payment_models.py: max_digits=9): one payment is at most 99999999999 cents, and a body under the size limit cannot list the ~92 million payments an overflow needs.
+		return 0, domain.ErrStripeUnreachable
 	}
 	return quotient.Int64(), nil
 }

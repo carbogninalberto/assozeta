@@ -152,7 +152,8 @@ func (s *InvoiceCore) List(ctx context.Context, request InvoiceCoreRequest) (any
 		} else {
 			search, err := personaSearch(raw, s.now().UTC().Year()%100)
 			if err != nil {
-				return nil, domain.ErrInvoiceCoreNotPorted
+				// personaSearch never fails.
+				return nil, domain.ErrInvoiceCoreUnreachable
 			}
 			filter.Smart = &domain.PaymentReadsSmartSearch{Words: search.Words, Dates: search.Dates, Permutations: search.Permutations}
 		}

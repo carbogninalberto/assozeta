@@ -84,22 +84,6 @@ func paymentPaidFlowSentGroup(header string) (stored, sent *string, err error) {
 	return &canonical, &header, nil
 }
 
-// paymentPaidFlowInvoiceGroup is the group Invoice.objects.create stores: the
-// raw X-Group-Id (a non-canonical spelling is not ported).
-func paymentPaidFlowInvoiceGroup(header string) (*string, error) {
-	if header == "" {
-		return nil, nil
-	}
-	parsed, err := uuid.Parse(header)
-	if err != nil {
-		return nil, domain.ErrPaymentStateServer
-	}
-	if parsed.String() != header {
-		return nil, domain.ErrPaymentStateNotPorted
-	}
-	return &header, nil
-}
-
 // paymentPaidFlowMessage is the notification text both views build:
 // 'Pagamento di € <amount with a comma>', 'per <description>' (no space) when
 // there is one, '.', then the associate's or the user's full name.
@@ -136,7 +120,7 @@ func paymentPaidFlowStripeFees(subject int, payment domain.InvoiceGeneratePaymen
 	if subject != 1 {
 		return invoiceFeesAny(subject, payment)
 	}
-	zero, _ := floatFee(0)
+	zero, _ := floatFeeAny(0)
 	pair := invoiceFeePair{membership: decimalFee(payment.Amount), activity: zero}
 	if payment.MetaPaymentCategories == nil {
 		return pair, nil
@@ -307,8 +291,8 @@ func (s *PaymentStates) approvePaid(ctx context.Context, tx domain.PaymentPaidFl
 	}
 	user := identity.ScopeUser
 	if user == nil || (user.Role != domain.RoleAssociation && user.Role != domain.RoleCollaborator) {
-		// send_notification without an association id: not ported.
-		return nil, domain.ErrPaymentStateNotPorted
+		// The scope user is the association's owner (role ASSOCIATION, BE/instance/views.py:198-211) or a collaborator; athletes are refused before the view (impersonation_scope.ATHLETE_VIEWS).
+		return nil, domain.ErrPaymentStateUnreachable
 	}
 	payment, err := tx.InvoiceGeneratePayment(ctx, row.ID)
 	if err != nil {

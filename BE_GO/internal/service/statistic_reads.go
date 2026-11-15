@@ -13,6 +13,7 @@ import (
 
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/dto"
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
 // StatisticResult is a view's status and body (rendered as JSON).
@@ -314,7 +315,8 @@ func (s *StatisticReads) expiringCarnets(ctx context.Context, scope domain.Stati
 		}
 		left, ok := dto.PythonNumberRat(number)
 		if !ok {
-			return StatisticResult{}, domain.ErrStatisticNotPorted
+			// jsonb stores numbers as plain digits (never an exponent), so json.loads reads an exact int.
+			return StatisticResult{}, domain.ErrStatisticUnreachable
 		}
 		if left.Sign() == 0 {
 			recent, err := statisticRecentLesson(meta, thirtyDaysAgo)
@@ -375,7 +377,8 @@ func statisticRecentLesson(meta domain.RequestObject, since time.Time) (bool, er
 			return false, nil // strptime TypeError, caught
 		}
 		if dto.StrptimeUnicodeDigits(text) {
-			return false, domain.ErrStatisticNotPorted
+			// Only the app writes registry dates, as str(datetime) (attendee_views.py:500, tasks.py:736, statistic_views.py:1027).
+			return false, domain.ErrStatisticUnreachable
 		}
 		moment, ok := dto.StrptimeLessonDate(text)
 		if !ok {
@@ -695,7 +698,9 @@ func (s *StatisticReads) Athlete(ctx context.Context, identity domain.ResolvedId
 		return StatisticResult{Status: 403, Body: []string{"error: forbidden."}}, nil
 	}
 	result, err := s.athlete(ctx, identity, group)
-	if err != nil && !errors.Is(err, domain.ErrStatisticNotPorted) {
+	// An application-state error is a value the strict renderer refuses after
+	// the view returned (outside its try): the 500 page, not the view's JSON 500.
+	if err != nil && !errors.Is(err, domain.ErrStatisticNotPorted) && !errors.Is(err, refusal.ErrAppState) {
 		return StatisticResult{}, errors.Join(ErrStatisticAthleteFailure, err)
 	}
 	return result, err
@@ -861,7 +866,8 @@ func (s *StatisticReads) registryLessons(ctx context.Context, scope domain.Stati
 			return nil, ErrStatisticPythonError // AttributeError on subscription.associate
 		}
 		if !dto.PythonJSONFinite(eventID) || !dto.PythonJSONFinite(title) {
-			return nil, domain.ErrStatisticNotPorted
+			// The events jsonb only holds numbers read from a request body: json.loads turns an overflow into inf, which jsonb refuses, so no stored event has one.
+			return nil, domain.ErrStatisticUnreachable
 		}
 		lesson := statisticLesson{EventID: dto.PythonJSONDumpsCompact(eventID), IsAbsent: absent, IsPresent: attending,
 			AttendanceDayID: day.ID, Title: dto.PythonJSONDumpsCompact(title), Start: start.Format("02/01/2006"),
@@ -1048,7 +1054,8 @@ func (s *StatisticReads) paymentTitle(ctx context.Context, payment domain.Statis
 		}
 		value, err := dto.ParseReferenceJSON([]byte(*text))
 		if err != nil {
-			return nil, domain.ErrStatisticNotPorted
+			// jsonb always holds valid JSON, and a request body nested past Python's limit fails to parse before it is stored.
+			return nil, domain.ErrStatisticUnreachable
 		}
 		return value, nil
 	}

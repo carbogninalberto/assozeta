@@ -15,6 +15,8 @@ var (
 	ErrInvoiceCoreNotPorted = refusal.New("invoice core path not ported")
 	// ErrInvoiceCoreMissing is invoice_list's 404 {'error': 'Invoice not found'}.
 	ErrInvoiceCoreMissing = errors.New("Invoice not found")
+	// ErrInvoiceCoreUnreachable is a state no request or stored row reaches.
+	ErrInvoiceCoreUnreachable = refusal.AppState("invoice core: unreachable state")
 )
 
 // InvoiceCoreYear is invoice_list's query[current_year] filter: a second

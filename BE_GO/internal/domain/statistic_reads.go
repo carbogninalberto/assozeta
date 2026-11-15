@@ -12,6 +12,10 @@ import (
 // characterize; the handler answers with the stable 500 page before any work.
 var ErrStatisticNotPorted = refusal.New("statistic input is not ported")
 
+// ErrStatisticUnreachable is a state no request or stored row produces (each
+// site names the decoder or constraint that rules it out).
+var ErrStatisticUnreachable = refusal.AppState("statistic: unreachable state")
+
 // StatisticScope is the request's association, X-Group-Id (nil when absent or
 // not a UUID) and, during association-scoped impersonation, that association.
 type StatisticScope struct {

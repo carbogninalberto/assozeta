@@ -100,7 +100,8 @@ func (s *InvoiceParties) CustomerList(ctx context.Context, request InvoicePartyR
 			return nil, err
 		}
 		if pending {
-			return nil, domain.ErrInvoicePartyNotPorted
+			// cmd/server always calls WithPendingCustomerInvoices.
+			return nil, domain.ErrServerComposition
 		}
 	} else if err := s.customerListPending(ctx, request, association); err != nil {
 		return nil, err
@@ -667,9 +668,6 @@ func (s *InvoiceParties) SupplierAdd(ctx context.Context, request InvoicePartyRe
 	if len(errors) > 0 {
 		return &dto.InvoicePartyValidationError{Errors: errors}
 	}
-	if input.NotPorted {
-		return domain.ErrInvoicePartyNotPorted
-	}
 	var paymentGroup *string
 	if request.Group != "" {
 		// GroupAwareManager.create stores the raw header (rejected: 500).
@@ -769,10 +767,6 @@ func (s *InvoiceParties) SupplierUpdate(ctx context.Context, request InvoicePart
 	}
 	if len(errors) > 0 {
 		return &dto.InvoicePartyValidationError{Errors: errors}
-	}
-	if input.NotPorted {
-		// An input this port refuses: kept as a guard, nothing sets the flag.
-		return domain.ErrInvoicePartyNotPorted
 	}
 	if input.NestedSupplierSet || input.NestedPaymentSet {
 		// A valid nested supplier or payment object on update: DRF's

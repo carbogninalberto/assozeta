@@ -147,7 +147,8 @@ func (a *paymentReadsAthlete) excluded(ctx context.Context, scope domain.Payment
 func (s *PaymentReads) athleteList(ctx context.Context, request PaymentReadsRequest) (any, error) {
 	a := s.athletes
 	if a == nil {
-		return nil, domain.ErrPaymentReadsNotPorted
+		// cmd/server always wires it (WithAthleteList / WithStripeFees).
+		return nil, domain.ErrServerComposition
 	}
 	identity := request.Identity
 	scope := domain.PaymentAthleteScope{Association: paymentReadsScope(identity), Person: identity.ScopeUser.ID,

@@ -291,7 +291,8 @@ func (s *PaymentExport) search(filter *domain.PaymentReadsFilter, raw string) er
 	}
 	search, err := personaSearch(raw, s.now().UTC().Year()%100)
 	if err != nil {
-		return domain.ErrPaymentReadsNotPorted
+		// personaSearch never fails.
+		return domain.ErrPaymentReadsUnreachable
 	}
 	filter.Smart = &domain.PaymentReadsSmartSearch{Words: search.Words, Dates: search.Dates, Permutations: search.Permutations}
 	return nil
@@ -480,8 +481,9 @@ func paymentExportPythonStr(value any) (string, error) {
 		}
 		return dto.PythonFloatStr(number), nil
 	}
-	// A list or object label renders as its Python repr: not ported.
-	return "", domain.ErrPaymentReadsNotPorted
+	// A list or object label renders as its Python repr: the only caller routes
+	// those to paymentExportLabelRepr first.
+	return "", domain.ErrPaymentReadsUnreachable
 }
 
 // workbook is the m=xlsx branch: the column lists handed to
@@ -682,11 +684,13 @@ func paymentExportCourseValue(text *string) (xlsxexport.Value, error) {
 			// float() of a huge exponent is inf, of a tiny one 0.0.
 			number, err := strconv.ParseFloat(item.String(), 64)
 			if err != nil && !errors.Is(err, strconv.ErrRange) {
-				return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted
+				// The text comes from encoding/json: it is always a valid number.
+				return xlsxexport.Value{}, domain.ErrPaymentReadsUnreachable
 			}
 			return xlsxexport.FloatValue(number), nil
 		}
-		return xlsxexport.Value{}, domain.ErrPaymentReadsNotPorted
+		// A type outside the decoded JSON types.
+		return xlsxexport.Value{}, domain.ErrPaymentReadsUnreachable
 	}
 	return xlsxexport.Value{}, domain.ErrPaymentReadsServer
 }

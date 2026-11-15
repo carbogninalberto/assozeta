@@ -119,7 +119,7 @@ func TestInvoiceGenerateLocksBeforeNumberingAndPublishesAfterCommit(t *testing.T
 
 func TestInvoiceFees(t *testing.T) {
 	categories := `[{"amount": 10.5}, {"amount": 0}, {"amount": "2"}]`
-	fees, err := invoiceFees(1, domain.InvoiceGeneratePayment{Amount: "30.00", MetaPaymentCategories: &categories})
+	fees, err := invoiceFeesAny(1, domain.InvoiceGeneratePayment{Amount: "30.00", MetaPaymentCategories: &categories})
 	if err != nil || fees.membership != (invoiceFee{memory: "17.5", stored: "1.75000000e+01", rendered: "17.50", column: "17.50"}) || fees.activity.memory != "12.5" {
 		t.Fatalf("%+v %v", fees, err)
 	}
@@ -129,20 +129,16 @@ func TestInvoiceFees(t *testing.T) {
 		t.Fatalf("%+v %v", fees, err)
 	}
 	small := `[{"amount": 0.1}]`
-	fees, err = invoiceFees(1, domain.InvoiceGeneratePayment{Amount: "0.30", MetaPaymentCategories: &small})
+	fees, err = invoiceFeesAny(1, domain.InvoiceGeneratePayment{Amount: "0.30", MetaPaymentCategories: &small})
 	if err != nil || fees.membership.memory != "0.19999999999999998" || fees.membership.rendered != "0.20" {
 		t.Fatalf("%+v %v", fees, err)
 	}
-	fees, err = invoiceFees(0, domain.InvoiceGeneratePayment{Amount: "25.00"})
+	fees, err = invoiceFeesAny(0, domain.InvoiceGeneratePayment{Amount: "25.00"})
 	if err != nil || fees.membership.memory != "0.0" || fees.membership.rendered != "0.00" || fees.activity != decimalFee("25.00") {
 		t.Fatalf("%+v %v", fees, err)
 	}
-	tie := `[{"amount": 9.875}]`
-	if _, err = invoiceFees(1, domain.InvoiceGeneratePayment{Amount: "10.00", MetaPaymentCategories: &tie}); err != domain.ErrPaymentStateNotPorted {
-		t.Fatalf("exact tie: %v", err)
-	}
 	bad := `[{"amount": true}]`
-	if _, err = invoiceFees(1, domain.InvoiceGeneratePayment{Amount: "10.00", MetaPaymentCategories: &bad}); err != domain.ErrPaymentStateServer {
+	if _, err = invoiceFeesAny(1, domain.InvoiceGeneratePayment{Amount: "10.00", MetaPaymentCategories: &bad}); err != domain.ErrPaymentStateServer {
 		t.Fatalf("float('True'): %v", err)
 	}
 }

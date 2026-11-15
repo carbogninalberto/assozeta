@@ -211,7 +211,8 @@ func (r *InvoiceCore) InvoiceRows(ctx context.Context, filter domain.InvoiceCore
 		terms = make([]string, len(filter.Order))
 		for i, order := range filter.Order {
 			if !invoiceCoreColumns[order.Column] {
-				return nil, domain.ErrInvoiceCoreNotPorted
+				// invoiceCoreOrder only sets columns of invoiceCoreFields, all in invoiceCoreColumns.
+				return nil, domain.ErrInvoiceCoreUnreachable
 			}
 			terms[i] = "i." + order.Column
 			if order.Descending {

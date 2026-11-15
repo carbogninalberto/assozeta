@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/carbogninalberto/assozeta/BE_GO/internal/domain"
 	"github.com/carbogninalberto/assozeta/BE_GO/internal/refusal"
 )
 
@@ -27,6 +28,12 @@ func TestLongTailAppStateErrors(t *testing.T) {
 		"errCourseLocationNoStorage":         errCourseLocationNoStorage,
 		"errSubscriptionMembershipNoStorage": errSubscriptionMembershipNoStorage,
 		"errCampsGroupRemoved":               errCampsGroupRemoved,
+		"ErrPaymentStateUnreachable":         domain.ErrPaymentStateUnreachable,
+		"ErrStripeUnreachable":               domain.ErrStripeUnreachable,
+		"ErrInvoiceCoreUnreachable":          domain.ErrInvoiceCoreUnreachable,
+		"ErrPaymentReadsUnreachable":         domain.ErrPaymentReadsUnreachable,
+		"ErrStatisticUnreachable":            domain.ErrStatisticUnreachable,
+		"ErrCalendarUnreachable":             domain.ErrCalendarUnreachable,
 	} {
 		wrapped := fmt.Errorf("wrapped: %w", err)
 		if _, ok := refusal.AppStateReason(wrapped); !ok || !errors.Is(wrapped, refusal.ErrAppState) {

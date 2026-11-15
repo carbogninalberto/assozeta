@@ -261,7 +261,8 @@ func (s *PaymentWrites) attachmentsStored(input dto.PaymentEntryInput) (paymentA
 			return plan, nil
 		}
 		if s.documents == nil {
-			return plan, domain.ErrPaymentWritesNotPorted
+			// cmd/server always wires it (WithDocuments / WithInvoicePrint).
+			return plan, domain.ErrServerComposition
 		}
 		// base64.b64decode comes first: a document that is not a string (TypeError) or not base64 fails before any Document exists.
 		text, isText := document.(string)
@@ -661,18 +662,6 @@ func (s *PaymentWrites) entry(ctx context.Context, tx domain.PaymentWritesTransa
 	return input, nil
 }
 
-// createGroup is GroupAwareManager.create's raw X-Group-Id: a value the
-// UUIDField rejects, or an unknown group (deferred foreign key), fails the
-// create; another spelling of the uuid is refused here (createGroupSent
-// serves it).
-func (s *PaymentWrites) createGroup(ctx context.Context, tx domain.PaymentWritesTransaction, header string) (*string, error) {
-	group, sent, err := s.createGroupSent(ctx, tx, header)
-	if err == nil && sent != nil {
-		return nil, domain.ErrPaymentWritesNotPorted
-	}
-	return group, err
-}
-
 // createGroupSent is createGroup for every spelling the UUIDField accepts:
 // the column stores the uuid; sent is the header text when it differs (the
 // in-memory payment keeps it).
@@ -707,7 +696,7 @@ func paymentWritesFees(m *paymentMemory) (invoiceFeePair, error) {
 	}
 	amount := *m.amountFloat
 	if m.row.Subject != 1 {
-		zero, _ := floatFee(0)
+		zero, _ := floatFeeAny(0)
 		activity, err := floatFeeAny(amount)
 		return invoiceFeePair{membership: zero, activity: activity}, err
 	}
@@ -840,7 +829,8 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 		return nil, err
 	}
 	if autoPaid && s.printer == nil {
-		return nil, domain.ErrPaymentWritesNotPorted
+		// cmd/server always wires it (WithDocuments / WithInvoicePrint).
+		return nil, domain.ErrServerComposition
 	}
 	object = replaceField(object, "paid", autoPaid)
 	creation, present := object.Lookup("creation_date")
@@ -894,12 +884,6 @@ func (s *PaymentWrites) Add(ctx context.Context, identity domain.ResolvedIdentit
 	// The model default amount is the float 0.00.
 	m.setFloat(0)
 	m.apply(input, total)
-	if item, present := object.Lookup("complex_item"); present && dto.PythonTruthy(item) && m.row.Paid && !m.row.Expense {
-		// A float fee the invoice columns round differently is refused before any write.
-		if _, err := paymentWritesFees(m); errors.Is(err, domain.ErrPaymentStateNotPorted) {
-			return nil, domain.ErrPaymentWritesNotPorted
-		}
-	}
 	if err = s.defaults(ctx, tx, m); err != nil {
 		return nil, err
 	}
@@ -1093,7 +1077,8 @@ func (s *PaymentWrites) Update(ctx context.Context, identity domain.ResolvedIden
 		return nil, err
 	}
 	if row.InvoiceID != nil && s.printer == nil {
-		return nil, domain.ErrPaymentWritesNotPorted
+		// cmd/server always wires it (WithDocuments / WithInvoicePrint).
+		return nil, domain.ErrServerComposition
 	}
 	attachments, err := s.attachmentsStored(input)
 	if err != nil {

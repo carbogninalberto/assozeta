@@ -18,6 +18,8 @@ var (
 	ErrPaymentStateNotFound = errors.New("payment not found")
 	// ErrPaymentStateNotPaid is payment_cancel's 400 {'error': 'Payment not paid.'}.
 	ErrPaymentStateNotPaid = errors.New("payment not paid")
+	// ErrPaymentStateUnreachable is a state no request or stored row reaches.
+	ErrPaymentStateUnreachable = refusal.AppState("payment state: unreachable state")
 )
 
 // PaymentStateRow is a locked live payment with what the approve, cancel and

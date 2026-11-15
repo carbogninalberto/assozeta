@@ -84,11 +84,9 @@ type StatisticTodayLessons interface {
 }
 
 // todayLessonsError maps the attendance helpers' outcomes to the dashboard's:
-// unhandled exceptions and refused inputs are both the 500 page.
+// an unhandled exception is the 500 page.
 func todayLessonsError(err error) error {
 	switch {
-	case errors.Is(err, domain.ErrCalendarNotPorted):
-		return domain.ErrStatisticNotPorted
 	case errors.Is(err, domain.ErrCalendarRaised):
 		return ErrStatisticPythonError
 	}

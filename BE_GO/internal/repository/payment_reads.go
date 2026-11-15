@@ -288,7 +288,8 @@ func (r *PaymentReads) Payments(ctx context.Context, filter domain.PaymentReadsF
 		terms := make([]string, len(filter.Order))
 		for i, order := range filter.Order {
 			if !paymentReadsColumns[order.Column] {
-				return nil, domain.ErrPaymentReadsNotPorted
+				// paymentReadsOrder only emits columns of paymentReadsFields, all in paymentReadsColumns.
+				return nil, domain.ErrPaymentReadsUnreachable
 			}
 			terms[i] = "p." + order.Column
 			if order.Descending {

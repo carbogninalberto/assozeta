@@ -16,9 +16,9 @@ var ErrCalendarCourseNotFound = errors.New("Course not found.")
 // exception is committed; the atomic views roll back.
 var ErrCalendarRaised = errors.New("calendar view raised")
 
-// ErrCalendarNotPorted refuses, before any write, an input whose Django
-// semantics are not ported (see docs/architecture/go-migration/course-calendar.md).
-var ErrCalendarNotPorted = refusal.New("calendar input not ported")
+// ErrCalendarUnreachable is a state no request or stored row produces (each
+// site names the decoder or constraint that rules it out).
+var ErrCalendarUnreachable = refusal.AppState("calendar: unreachable state")
 
 // CalendarValidation is a DRF ValidationError with one string detail (a list body).
 type CalendarValidation struct{ Detail string }

@@ -49,15 +49,3 @@ func TestPaymentPaidFlowStripeFees(t *testing.T) {
 		t.Fatal("float() of a list must fail")
 	}
 }
-
-func TestPaymentPaidFlowInvoiceGroup(t *testing.T) {
-	if group, err := paymentPaidFlowInvoiceGroup(""); group != nil || err != nil {
-		t.Fatalf("no header: %v %v", group, err)
-	}
-	if _, err := paymentPaidFlowInvoiceGroup("A1000000-0000-4000-8000-000000000001"); err != domain.ErrPaymentStateNotPorted {
-		t.Fatalf("non-canonical header: %v", err)
-	}
-	if _, err := paymentPaidFlowInvoiceGroup("nope"); err != domain.ErrPaymentStateServer {
-		t.Fatalf("malformed header: %v", err)
-	}
-}

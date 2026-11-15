@@ -46,9 +46,6 @@ func TestParseSupplierInvoiceNestedSupplierJSONID(t *testing.T) {
 			if !reflect.DeepEqual(input.NestedSupplierID, test.id) {
 				t.Fatalf("id %v, want %v", input.NestedSupplierID, test.id)
 			}
-			if input.NotPorted {
-				t.Fatal("a nested supplier_id is ported")
-			}
 		})
 	}
 }
@@ -113,18 +110,18 @@ func TestParseSupplierInvoiceNestedSupplierForm(t *testing.T) {
 	// No supplier.<key> field means no nested value; the payment.<key> fields
 	// form the nested payment value instead.
 	absent, _ := ParseSupplierInvoice(instanceAdminFormBody(t, "notes=n"), false, true)
-	if absent.NestedSupplierSet || absent.NestedPaymentSet || absent.NotPorted {
+	if absent.NestedSupplierSet || absent.NestedPaymentSet {
 		t.Fatalf("absent nested supplier %#v", absent)
 	}
 	payment, _ := ParseSupplierInvoice(instanceAdminFormBody(t, "payment.notes=n"), false, true)
-	if payment.NestedSupplierSet || !payment.NestedPaymentSet || !payment.NestedPaymentForm || payment.NotPorted {
+	if payment.NestedSupplierSet || !payment.NestedPaymentSet || !payment.NestedPaymentForm {
 		t.Fatalf("nested payment form %#v", payment)
 	}
 }
 
 func TestParseSupplierInvoiceNestedPaymentJSON(t *testing.T) {
 	input, errors := ParseSupplierInvoice(invoicePartyJSONBody(t, `{"payment":{"amount":"3"}}`), true, false)
-	if !input.NestedPaymentSet || input.NestedPaymentForm || input.NotPorted || input.PaymentNull {
+	if !input.NestedPaymentSet || input.NestedPaymentForm || input.PaymentNull {
 		t.Fatalf("nested payment object %#v", input)
 	}
 	nested, ok := input.NestedPayment.(domain.RequestObject)
@@ -157,7 +154,7 @@ func TestParseSupplierInvoiceNestedPaymentJSON(t *testing.T) {
 func TestParseSupplierInvoiceNestedPaymentForm(t *testing.T) {
 	input, errors := ParseSupplierInvoice(instanceAdminFormBody(t,
 		"payment.amount=x&payment.user.email=y&payment.instructor.documents=abc&payment.instructor.documents=doc&notes=n"), true, true)
-	if !input.NestedPaymentSet || !input.NestedPaymentForm || input.NotPorted || len(errors) > 0 {
+	if !input.NestedPaymentSet || !input.NestedPaymentForm || len(errors) > 0 {
 		t.Fatalf("nested payment form %#v %#v", input, errors)
 	}
 	nested, ok := input.NestedPayment.(domain.RequestObject)
