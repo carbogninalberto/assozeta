@@ -102,7 +102,7 @@ def go_tasks_enabled(env_file):
     return read_env(env_file).get('ASSOZETA_GO_TASKS') == '1'
 
 
-EDGE_OVERLAY = 'compose.edge.yml'
+EDGE_OVERLAY = 'config/compose.edge.yml'
 
 
 def edge_enabled(env_file):

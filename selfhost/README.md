@@ -152,10 +152,11 @@ example.org {
 }
 ```
 
-Run `./selfhost/bin/assozeta restart`. The overlay `selfhost/compose.edge.yml`
-drops the `web` host ports and joins the network; upgrades keep it, and Docker
-Compose v2.24.0 or newer is required. Leaving `ASSOZETA_EDGE_NETWORK` empty
-keeps the default host ports and automatic HTTPS.
+Run `./selfhost/bin/assozeta restart`. The overlay
+`selfhost/config/compose.edge.yml` drops the `web` host ports and joins the
+network; upgrades keep it, and Docker Compose v2.24.0 or newer is required.
+Leaving `ASSOZETA_EDGE_NETWORK` empty keeps the default host ports and
+automatic HTTPS.
 
 ## Release quality
 

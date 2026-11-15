@@ -1,11 +1,14 @@
 """Optional front-proxy overlay: CLI, updater, Compose and Caddy contracts."""
+import hashlib
+import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import shutil
 import subprocess
 import sys
+import tarfile
 from tempfile import TemporaryDirectory
 import unittest
 
@@ -25,6 +28,36 @@ FORWARDED = {'x-forwarded-for', 'x-forwarded-proto', 'x-forwarded-host'}
 # The installation env file decides these; a developer shell must not.
 OVERLAY_VARIABLES = ('ASSOZETA_EDGE_NETWORK', 'ASSOZETA_EDGE_ALIAS', 'ASSOZETA_TRUSTED_PROXIES')
 HERMETIC = {key: value for key, value in os.environ.items() if key not in OVERLAY_VARIABLES}
+
+
+def historical_managed_path(name):
+    """selfhost/updater/distribution.py as shipped in v1.0.17."""
+    path = PurePosixPath(name)
+    return name in ('compose.yml', 'compose.updater.yml', '.env.example', '.env.dev.example') or path.parts[0] in ('bin', 'config', 'caddy', 'updater')
+
+
+def git_tracked_files():
+    """Every file a `tar -czf <archive> selfhost` bundle would carry."""
+    result = subprocess.run(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard', 'selfhost'],
+                            cwd=ROOT, capture_output=True)
+    if result.returncode != 0:
+        return []
+    return sorted(path for path in result.stdout.decode().split('\0')
+                  if path and (ROOT / path).is_file() and not (ROOT / path).is_symlink())
+
+
+def release_archive(paths):
+    """The published bundle, built hermetically instead of by the release workflow."""
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode='w:gz') as archive:
+        for path in paths:
+            source = ROOT / path
+            data = source.read_bytes()
+            member = tarfile.TarInfo(path)
+            member.size = len(data)
+            member.mode = source.stat().st_mode & 0o777
+            archive.addfile(member, io.BytesIO(data))
+    return buffer.getvalue()
 
 
 def docker_available(*arguments):
@@ -56,8 +89,10 @@ if args[:2] == ['compose', 'version']:
             environment = {**self.fake_docker(root), 'FAKE_COMPOSE_VERSION': version}
             installation = root / 'installation'
             (installation / 'bin').mkdir(parents=True)
-            for name in ('compose.yml', 'compose.dev.yml', 'compose.edge.yml'):
+            for name in ('compose.yml', 'compose.dev.yml'):
                 shutil.copy2(ROOT / 'selfhost' / name, installation / name)
+            (installation / 'config').mkdir()
+            shutil.copy2(ROOT / 'selfhost/config/compose.edge.yml', installation / 'config/compose.edge.yml')
             shutil.copy2(CLI, installation / 'bin/assozeta')
             (installation / 'bin/assozeta').chmod(0o755)
             for name in ('.env', '.env.dev'):
@@ -83,7 +118,7 @@ if args[:2] == ['compose', 'version']:
             with self.subTest(edge_line=edge_line):
                 arguments, installation = self.production_call(edge_line)
                 self.assertIn(str(installation / 'compose.yml'), arguments)
-                self.assertNotIn(str(installation / 'compose.edge.yml'), arguments)
+                self.assertNotIn(str(installation / 'config/compose.edge.yml'), arguments)
 
     def test_configured_network_appends_the_overlay_after_the_production_compose(self):
         for edge_line in ('ASSOZETA_EDGE_NETWORK=edge-test\n', 'ASSOZETA_EDGE_NETWORK="edge-test"\n'):
@@ -91,7 +126,7 @@ if args[:2] == ['compose', 'version']:
                 arguments, installation = self.production_call(edge_line)
                 self.assertEqual(arguments[:3], ['compose', '--env-file', str(installation / '.env')])
                 self.assertEqual(arguments[3:7], ['-f', str(installation / 'compose.yml'),
-                                                  '-f', str(installation / 'compose.edge.yml')])
+                                                  '-f', str(installation / 'config/compose.edge.yml')])
 
     def test_absent_network_keeps_the_exact_production_command(self):
         arguments, installation = self.production_call('')
@@ -106,7 +141,7 @@ if args[:2] == ['compose', 'version']:
         self.assertEqual(result.returncode, 0, result.stderr)
         arguments = calls[-1]
         self.assertIn(str(installation / 'compose.dev.yml'), arguments)
-        self.assertNotIn(str(installation / 'compose.edge.yml'), arguments)
+        self.assertNotIn(str(installation / 'config/compose.edge.yml'), arguments)
 
     def test_compose_before_2_24_refuses_the_overlay_but_not_plain_usage(self):
         result, calls, _ = self.exercise(['logs', 'web'], edge_line='ASSOZETA_EDGE_NETWORK=edge-test\n',
@@ -124,8 +159,9 @@ class EdgeComposeConfigTests(unittest.TestCase):
 
     def installation(self, directory):
         root = Path(directory)
-        for name in ('compose.yml', 'compose.edge.yml'):
-            shutil.copy2(ROOT / 'selfhost' / name, root / name)
+        shutil.copy2(ROOT / 'selfhost/compose.yml', root / 'compose.yml')
+        (root / 'config').mkdir()
+        shutil.copy2(ROOT / 'selfhost/config/compose.edge.yml', root / 'config/compose.edge.yml')
         return root
 
     def render(self, root, extra=''):
@@ -196,20 +232,45 @@ class EdgeUpdaterTests(unittest.TestCase):
                 index = command.index(production)
                 self.assertEqual(command[index - 1], '-f')
                 if enabled:
-                    self.assertEqual(command[index + 1:index + 3], ['-f', str(root / 'compose.edge.yml')])
+                    self.assertEqual(command[index + 1:index + 3], ['-f', str(root / 'config/compose.edge.yml')])
                 else:
-                    self.assertNotIn(str(root / 'compose.edge.yml'), command)
+                    self.assertNotIn(str(root / 'config/compose.edge.yml'), command)
 
     def test_updater_project_never_uses_the_application_overlay(self):
         for content in ('APP_URL=x\n', 'ASSOZETA_EDGE_NETWORK=edge-test\n'):
             with self.subTest(content=content):
                 command, root = self.command(content, updater=True)
                 self.assertIn(str(root / 'compose.updater.yml'), command)
-                self.assertNotIn(str(root / 'compose.edge.yml'), command)
+                self.assertNotIn(str(root / 'config/compose.edge.yml'), command)
 
     def test_release_bundles_install_the_overlay(self):
-        self.assertEqual(EDGE_OVERLAY, 'compose.edge.yml')
-        self.assertTrue(distribution.managed_path('compose.edge.yml'))
+        self.assertEqual(EDGE_OVERLAY, 'config/compose.edge.yml')
+        self.assertTrue(distribution.managed_path('config/compose.edge.yml'))
+
+
+@unittest.skipUnless(shutil.which('git'), 'git is unavailable')
+class HistoricalUpdaterManifestTests(unittest.TestCase):
+    """Updaters already in the field judge this bundle by the v1.0.17 rule."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.paths = git_tracked_files()
+        cls.files = distribution.unpack(release_archive(cls.paths))
+
+    def test_overlay_is_installed_inside_the_managed_config_directory(self):
+        self.assertIn('selfhost/config/compose.edge.yml', self.paths)
+        self.assertIn('config/compose.edge.yml', self.files)
+        self.assertNotIn('compose.edge.yml', self.files)
+
+    def test_the_historical_rule_accepts_every_installed_file(self):
+        manifest = {name: hashlib.sha256(data).hexdigest() for name, (data, _) in self.files.items()}
+        offenders = [name for name in manifest if not historical_managed_path(name)]
+        self.assertEqual(offenders, [])
+
+    def test_the_current_rule_is_no_broader_than_the_historical_one(self):
+        offenders = [relative for relative in (path.removeprefix('selfhost/') for path in self.paths)
+                     if distribution.managed_path(relative) and not historical_managed_path(relative)]
+        self.assertEqual(offenders, [])
 
 
 @unittest.skipUnless(docker_available('info'), 'Docker is unavailable')

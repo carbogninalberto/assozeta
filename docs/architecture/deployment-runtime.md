@@ -16,7 +16,7 @@ Self-hosted deployments are coordinated from `selfhost/compose.yml` and `selfhos
 - `web`: reverse proxy/static frontend (Caddy in production compose)
 - `ui` (dev compose): Vite dev server
 
-`selfhost/compose.edge.yml` is an optional production overlay applied by the CLI
+`selfhost/config/compose.edge.yml` is an optional production overlay applied by the CLI
 and the updater when `ASSOZETA_EDGE_NETWORK` is set: no `web` host ports, `web`
 joins that external network under `ASSOZETA_EDGE_ALIAS`, and
 `ASSOZETA_TRUSTED_PROXIES` lets web Caddy trust the front proxy's forwarded
